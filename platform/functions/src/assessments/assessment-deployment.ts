@@ -457,13 +457,26 @@ export async function deployAssessmentRevision(
       // duplicate; the `create` write adds a server-enforced
       // "must-not-exist" precondition so that even a hypothetical
       // concurrent second commit that beat the transaction's retry logic
-      // could not silently overwrite an immutable revision. The parent
-      // `assessments/{assessmentId}` document is legitimately created OR
-      // updated (its `currentRevisionId` advances on republication) and
-      // therefore remains a `set`.
+      // could not silently overwrite an immutable revision.
+      //
+      // Sprint 11E I-2. The parent `assessments/{assessmentId}` document
+      // is legitimately created OR updated (its `currentRevisionId`
+      // advances on republication). The pre-Sprint-11E write was a
+      // full-document `set(...)` that would silently erase any non-
+      // deployment field a future revision may add to the parent
+      // assessment document. The deployment path owns only the three
+      // fields projected onto `AssessmentDeploymentWrite`
+      // (`assessmentId`, `activityId`, `currentRevisionId`); every other
+      // field is out-of-scope for this writer. Switching to a merged
+      // set narrows the write to those three fields so a republication
+      // preserves any future metadata the parent doc carries. The
+      // deterministic assessmentId keeps the create-on-first-publication
+      // semantics intact (merge creates the document if it is absent).
       tx.create(assessmentRevisionDeploymentDocRef(revisionId), revisionWrite);
       tx.create(assessmentAnswerKeyDeploymentDocRef(revisionId), answerKeyWrite);
-      tx.set(assessmentDeploymentDocRef(assessmentId), assessmentWrite);
+      tx.set(assessmentDeploymentDocRef(assessmentId), assessmentWrite, {
+        merge: true,
+      });
 
       return {
         assessmentId,

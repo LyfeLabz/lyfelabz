@@ -249,7 +249,9 @@ The function confirms the requester is permitted to perform the operation. Role,
 The function performs the state change using its privileged credentials. Writes are transactional where correctness demands it, and idempotency keys are used where retries are possible. The client is not asked to help.
 
 **Audit creation.**
-Security-relevant operations write an audit record as part of the same transaction. Audit records name the actor, the operation, the affected resources, and the outcome. They are immutable once written.
+Security-relevant operations emit an audit record for every successful state transition. Audit records name the actor, the operation, the affected resources, and the outcome. They are immutable once written.
+
+The canonical implementation pattern across every callable in `platform/functions/src` writes the audit event as a best-effort post-commit side effect immediately after the state-transition transaction resolves, and only on the success path. The state transition is the authoritative source of truth; a commit followed by a transient audit-write failure yields a durable state transition without an audit event and does not roll the transition back. Idempotent replays emit no event, preserving the one-event-per-successful-transition invariant. The audit sink is observability, not lifecycle. See `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §32.1 for the reconciliation record.
 
 **Response.**
 The function returns only what the client needs to know: success or failure, and, where appropriate, the minimum result payload. It does not leak information about other users, other classes, or the internal structure of the platform.
@@ -279,6 +281,20 @@ The messages surfaced to students and teachers describe the situation in classro
 
 **Failure containment.**
 A failure in a rollup function must never corrupt the underlying submission. A failure in an audit write must never silently succeed. The platform prefers a loud, contained failure over a quiet, ambiguous one.
+
+**Canonical error vocabulary and HTTPS mapping.**
+Every callable throws domain-namespaced `PlatformError` codes (for example `assessmentSessions.notOwned`, `submissions.forbidden`, `enrollments.invalidTransition`) or short flat codes shared across domains (`role-forbidden`, `district-mismatch`, `enrollment-inactive`, `assignment-not-found`). The `platformCallable(...)` wrapper in `platform/functions/src/shared/errors/https-callable.ts` is the sole translation point to the wire; it preserves the canonical platform identifier on `HttpsError.details.code` and derives the Firebase-visible `code` from the following mapping:
+
+| Firebase `code` | Selectors (exact code or suffix) |
+| --- | --- |
+| `unauthenticated` | `unauthenticated`, `claim-stale`, any code ending in `.unauthenticated` |
+| `permission-denied` | `role-forbidden`, `district-mismatch`, `district-unassigned`, `school-district-mismatch`, `claim-state-mismatch`, `account-inactive`, any code ending in `.unauthorized`, `.forbidden`, `.notOwned`, `.notEnrolled` |
+| `not-found` | `assignment-not-found`, `session-not-found`, `assessment-not-found`, `assessment-revision-missing`, any code ending in `.notFound`, `.sessionNotFound`, `.assignmentNotFound`, `.revisionMissing`, `.answerKeyMissing` |
+| `already-exists` | any code ending in `.conflict`, `.writeConflict`, `.alreadyExists` |
+| `invalid-argument` | any code ending in `.invalidRequest`, `.invalidSessionId`, `.invalidIdempotencyKey`, `.invalidAssignmentId`, `.invalidResponses`, `.invalidScore`, `.invalidSubmissionId`, `.invalidDurationMs`, `.invalidAttemptCount`, `.invalidResponse`, `.malformedSession` |
+| `failed-precondition` | Every code that does not match the selectors above. Conservative default for a business-rule refusal. |
+
+The table is authoritative for the current implementation in `https-callable.ts`. Introducing a new namespaced suffix (for example a new `.invalidX` variant on a domain) is a mapper change and MUST update this table in the same slice. Canonical platform identifiers are never renamed by the mapper; they are preserved verbatim in `HttpsError.details.code` so clients that read the details channel see the exact platform code.
 
 ---
 

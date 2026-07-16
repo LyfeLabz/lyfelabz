@@ -116,7 +116,7 @@ type Fixture = {
 };
 
 const fixture: Fixture = {};
-const txSets: Array<{ ref: unknown; data: unknown }> = [];
+const txSets: Array<{ ref: unknown; data: unknown; options?: unknown }> = [];
 const txDeletes: unknown[] = [];
 
 function makeSnap(exists: boolean, data?: () => unknown) {
@@ -138,8 +138,8 @@ function installTransactionRunner() {
         }
         throw new Error(`Unexpected ref: ${JSON.stringify(ref)}`);
       },
-      set: (ref: unknown, data: unknown) => {
-        txSets.push({ ref, data });
+      set: (ref: unknown, data: unknown, options?: unknown) => {
+        txSets.push({ ref, data, options });
       },
       create: (ref: unknown, data: unknown) => {
         // Sprint 11D I-2. `deployAssessmentRevision` now uses tx.create()
@@ -518,9 +518,9 @@ describe("deployAssessmentRevision", () => {
             if (ref.__kind === "answerKey") return makeSnap(false);
             throw new Error("unexpected");
           },
-          set: (ref: unknown, data: unknown) => {
+          set: (ref: unknown, data: unknown, options?: unknown) => {
             observedTxSize += 1;
-            txSets.push({ ref, data });
+            txSets.push({ ref, data, options });
           },
           create: (ref: unknown, data: unknown) => {
             observedTxSize += 1;
@@ -570,5 +570,43 @@ describe("deployAssessmentRevision", () => {
     // Both the revision and answer-key immutable writes went through
     // tx.create(); parent assessment went through tx.set().
     expect(created).toHaveLength(2);
+  });
+
+  // Sprint 11E I-2. On republication the parent
+  // `assessments/{assessmentId}` document must NOT lose fields the
+  // deployment writer does not own. The pre-Sprint-11E full-document
+  // `set(...)` would silently erase such fields; the merged set narrows
+  // the write to the three deployment-owned fields
+  // (`assessmentId`, `activityId`, `currentRevisionId`) so any future
+  // non-deployment metadata on the parent document is preserved. This
+  // test asserts the merged set option is present on the parent write
+  // and the deployment payload carries only the three deployment-owned
+  // fields.
+  it("I-2 (Sprint 11E): republication merges the parent assessment write rather than overwriting future fields", async () => {
+    fixture.assessment = {
+      assessmentId: ASSESSMENT_ID,
+      activityId: ACTIVITY_ID,
+      currentRevisionId: REVISION_ID_1,
+    };
+    await deployAssessmentRevision(baseInput({ revisionOrdinal: 2 }));
+
+    const parentWrite = txSets[2];
+    expect(parentWrite.ref).toEqual({
+      __kind: "assessmentDeployment",
+      id: ASSESSMENT_ID,
+    });
+    expect(parentWrite.options).toEqual({ merge: true });
+    // Deployment writer owns exactly these three fields; nothing else
+    // is projected onto the parent document by this path.
+    expect(parentWrite.data).toEqual({
+      assessmentId: ASSESSMENT_ID,
+      activityId: ACTIVITY_ID,
+      currentRevisionId: REVISION_ID_2,
+    });
+    expect(Object.keys(parentWrite.data as Record<string, unknown>)).toEqual([
+      "assessmentId",
+      "activityId",
+      "currentRevisionId",
+    ]);
   });
 });

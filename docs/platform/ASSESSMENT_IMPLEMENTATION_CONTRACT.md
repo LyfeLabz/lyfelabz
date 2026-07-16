@@ -595,6 +595,43 @@ No blocking gap remains. Implementation of the attempt write path can proceed ag
 
 ---
 
+## 32. Sprint 11E Reconciliations
+
+The following clarifications are recorded here so the contract matches the certified, deployed implementation. No new requirement is introduced; each item narrows or clarifies existing language against the canonical implementation pattern.
+
+### 32.1 Audit event write ordering (reconciles §29.4)
+
+§29.4 lists the audit event write alongside the session read, session delete, and attempt write inside the finalize transaction. The canonical implementation pattern across every callable in `platform/functions/src` emits the audit event as a best-effort post-commit write, immediately after the transaction resolves and only when the state transition itself committed. The reconciliation is:
+
+- The state transition (attempt write plus session delete for `assessmentAttemptsFinalize`, and the equivalent commit for every other callable) is the authoritative source of truth. On commit, the transition is durable regardless of whether the audit event write subsequently succeeds.
+- The audit event write is issued exactly once per successful commit and only on the success path. A commit followed by a transient audit-write failure yields a state transition without an audit event; the state transition is not rolled back. The audit sink is observability, not lifecycle.
+- Idempotent replay paths (e.g. §8 attempt idempotency) emit no audit event, matching the "one event per successful transition" invariant.
+
+This pattern is uniform across `src/assessments/**`, `src/assignments/**`, `src/classes/**`, `src/enrollments/**`, `src/submissions/**`, `src/lms/**`, `src/teachers/**`, `src/students/**`, and `src/schools/**`. The transaction-scoped alternative would require an additional Firestore write per operation inside every transaction; the certified architecture does not require it, and no callable currently implements it.
+
+### 32.2 Attempt count in `assessmentAttemptsFinalize` (reconciles §8 and §29)
+
+The finalize transaction derives the new `attemptNumber` from a transactional `.get(query)` that reads the existing attempts for the (studentId, assignmentId) pair and takes the snapshot size. This snapshot-count pattern is canonical for two reasons the certified architecture depends on:
+
+- Deterministic ordinal semantics per §12: `attemptId = {assignmentId}__{studentId}__a{attemptNumber}`. The ordinal must be strictly monotonic across concurrent finalize attempts for the same (studentId, assignmentId) pair; a snapshot count over the transactional read set participates in Firestore's transactional contention detection so a concurrent attempt-write causes the transaction to retry with the fresh count. The deterministic attemptId then refuses a colliding derived id at the `assessmentAttempts.writeConflict` boundary.
+- The certified `(studentId, assignmentId)` composite index (§23) already serves this query. No new index is required.
+
+The Firebase Admin SDK's `AggregateQuery.count()` is available inside `runTransaction` (see `@google-cloud/firestore/build/src/transaction.d.ts`), but substituting it here would remove the document-level entries from the transactional read set that make the monotonic-ordinal guarantee free. Retaining the snapshot count keeps the read set and the ordinal derivation coupled. No code change is required.
+
+### 32.3 Persisted response purity in `assessmentSessionsAutosave` (clarifies §6, §15)
+
+Persisted session response records contain exactly `{ itemId, response }` per §6 and §15. The autosave request validator enforces this in two independent ways:
+
+- The top-level element check refuses any key other than `itemId` and `response` (`assessmentSessions.invalidResponses`). A client that includes an extra field is rejected at the request boundary rather than having the field silently stripped.
+- The normalized element written to Firestore is an explicit two-field projection (`{ itemId, response }`), so even if the top-level check were bypassed, the persisted shape carries only the two canonical fields.
+
+The response value itself is validated recursively for JSON-serializable primitives, bounded depth, and the absence of scoring-artifact keys (`score`, `isCorrect`, `pointsEarned`, `explanation`, etc.). Attempt persistence copies the session `responses` unmodified inside the finalize transaction, so the same two-field shape carries through to `attempts/{attemptId}.responses`.
+
+### 32.4 Session ordinal deferral (reconciles §12)
+
+The current implementation writes `sessionOrdinal = 1` at `assessmentSessionsBegin` and does not increment across archival cycles. Multi-session ordinal semantics remain deferred to the archived-session lifecycle callables (`assessmentSessionsSweepExpired`, `assessmentSessionsRecover`), which are out of scope for the current pipeline and are named as reserved surfaces in §22. The deterministic session identifier construction in §12 remains authoritative once those callables ship. No behavior change is warranted in the current slice.
+
 ## Change Log
 
 - 2026-07-12 - Initial issuance under Sprint 10A step F-2. Ratified by PDR-026.
+- 2026-07-16 - Sprint 11E reconciliation. Added §32 recording audit-write ordering, attempt-count derivation, response-purity guarantees, and session-ordinal deferral against the certified implementation. No behavioral requirement is added; §32 clarifies existing sections against the deployed pattern.

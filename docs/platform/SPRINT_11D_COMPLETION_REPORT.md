@@ -145,3 +145,18 @@ Every Minor finding from the Sprint 11C independent implementation review and re
 ## Scope confirmation
 
 Only the nine Sprint 11D Important findings (I-1 through I-9) and the two refinements (R-1, R-2) were implemented. No Critical, Important, or Minor finding from any other slice was introduced. No commit was made.
+
+---
+
+## Sprint 11E reconciliation
+
+The Sprint 11D follow-up review surfaced small residuals against I-1, I-2, I-4, I-6, I-7, and I-8. Sprint 11E closes them without redesigning the certified architecture. Prior sections of this report are preserved verbatim. The Sprint 11E notes below point forward to the current state.
+
+- I-1. Reconciled by documentation. `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` §5 (Audit creation) and `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §32.1 now record that the canonical implementation pattern emits the audit event post-commit as best-effort observability, with the state transition as the authoritative source of truth. This matches the deployed pattern across every callable in `platform/functions/src`.
+- I-2. Reconciled by code. `deployAssessmentRevision` now writes the parent `assessments/{assessmentId}` document through `tx.set(..., { merge: true })` so a republication no longer erases fields the deployment writer does not own. Immutable revision and answer-key writes still use `tx.create`. A new Jest case pins the merge option and the deployment-owned field set.
+- I-4. Reconciled by documentation. `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` §6 now carries the canonical error-vocabulary table matching the actual selectors in `shared/errors/https-callable.ts`. No canonical identifier is renamed.
+- I-6. Reconciled by documentation. `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §32.2 records why the in-transaction snapshot count remains canonical (monotonic ordinal derivation coupled with the transactional read set) even though `AggregateQuery.count()` is available inside `runTransaction` on the Admin SDK. No behavior change.
+- I-7. Reconciled by documentation. `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §32.3 records that the autosave validator both rejects unexpected element keys at the request boundary AND persists an explicit two-field projection, so the persisted shape is guaranteed to contain only `{ itemId, response }`. The behavior exceeds the "strip extras" requirement.
+- I-8. Reconciled by documentation. `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §32.4 records the explicit deferral of multi-session ordinal semantics to the archived-session lifecycle callables (`assessmentSessionsSweepExpired`, `assessmentSessionsRecover`), matching the deferral already recorded in the Sprint 11D report.
+
+See `docs/platform/SPRINT_11E_COMPLETION_REPORT.md` for the full Sprint 11E record.

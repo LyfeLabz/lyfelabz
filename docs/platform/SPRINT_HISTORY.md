@@ -2560,3 +2560,50 @@ Sprint 11D closes the Important findings (I-1 through I-9) and refinements (R-1,
 - The certified architecture is unchanged.
 - Firestore Rules were not modified.
 - No commit was made.
+
+## Sprint 11E: Sprint 11D Follow-Up Reconciliation
+
+**Date:** 2026-07-16
+**Anchor decisions:** PDR-025, PDR-026.
+**Anchor contracts:** ASSESSMENT_IMPLEMENTATION_CONTRACT.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md.
+**Detailed report:** SPRINT_11E_COMPLETION_REPORT.md
+
+Sprint 11E closes the residual Important findings surfaced by the Sprint 11D independent follow-up review. The certified architecture is preserved. No PDR is added or amended. Firestore Rules, retrieval APIs, dashboards, LMS features, assessment authoring, and app-side surfaces remain untouched.
+
+### Findings addressed
+
+- I-1 Audit consistency: documentation reconciliation. Charter §5 and Assessment Contract §32.1 record that the canonical pattern emits the audit event post-commit as best-effort observability, with the state transition as the authoritative source of truth.
+- I-2 Republication overwrite protection: code fix. `deployAssessmentRevision` writes the parent `assessments/{assessmentId}` document with `tx.set(..., { merge: true })` so a republication no longer erases fields the deployment writer does not own; immutable revision and answer-key writes still use `tx.create(...)`.
+- I-4 Error vocabulary reconciliation: documentation reconciliation. Charter §6 now carries the canonical error-vocabulary table matching the exact selectors in `shared/errors/https-callable.ts`. No canonical identifier is renamed.
+- I-6 Attempt counting: documentation reconciliation. Assessment Contract §32.2 records why the in-transaction snapshot count remains canonical (monotonic ordinal derivation coupled with the transactional read set) even though the Admin SDK's `AggregateQuery.count()` is available inside `runTransaction`. No behavior change.
+- I-7 Persisted response purity: documentation reconciliation. Assessment Contract §32.3 records that the autosave validator both rejects unexpected element keys and persists an explicit two-field projection, so the persisted shape is guaranteed to contain only `{ itemId, response }`.
+- I-8 Session ordinal: documentation reconciliation. Assessment Contract §32.4 records the explicit deferral of multi-session ordinal semantics to the archived-session lifecycle callables.
+
+### Files added
+
+- `docs/platform/SPRINT_11E_COMPLETION_REPORT.md`
+
+### Files modified
+
+- `platform/functions/src/assessments/assessment-deployment.ts` and its test
+- `docs/platform/ASSESSMENT_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/LYFELABZ_CLOUD_FUNCTION_CHARTER.md`
+- `docs/platform/SPRINT_11D_COMPLETION_REPORT.md` (appended Sprint 11E reconciliation section only; prior sections preserved verbatim)
+- `docs/platform/SPRINT_HISTORY.md` (this entry)
+
+### Validation results
+
+- `npm run lint` passes.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm test` passes.
+- `git diff --check` passes.
+- Completion report and this entry contain no em dashes.
+
+### Confirmation
+
+- Only Sprint 11E certification-remediation work was performed.
+- The single behavioral change is the narrowed parent-assessment write in `deployAssessmentRevision`; every other change is documentation reconciliation.
+- No new PDR, no new callable, no new Firestore collection, no rules change, no rename of any canonical identifier.
+- No touch of retrieval APIs, LMS, dashboards, workspace, or app code.
+- No commit was made.
