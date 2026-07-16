@@ -308,6 +308,152 @@ service cloud.firestore {
         && resource.data.ownerUid == request.auth.uid;
     }
 
+    // ---------- Assessment helpers ----------
+    //
+    // Sprint 12B Slice 1 (PDR-025, PDR-026). Small, stateless helpers used
+    // only by the five assessment collection blocks below. Each helper reads
+    // trusted values only (request.auth.token.* and the target document's
+    // immutable ownership fields on resource.data). None of these helpers
+    // call get() or exists(); assessment session and attempt authorization
+    // is decided on the document itself, in accordance with the certified
+    // access matrix in SPRINT_12A_ASSESSMENT_DATA_ACCESS_REVIEW.md §14.
+    function matchesResourceDistrict() {
+      return request.auth.token.districtId is string
+        && request.auth.token.districtId.size() > 0
+        && resource.data.districtId == request.auth.token.districtId;
+    }
+
+    function isOwningStudent() {
+      return resource.data.studentId == request.auth.uid;
+    }
+
+    function isOwningTeacher() {
+      return resource.data.teacherId == request.auth.uid;
+    }
+
+    // ---------- assessments/{assessmentId} ----------
+    //
+    // Sprint 12B Slice 1 (PDR-026). Assessment metadata pointer. Carries no
+    // answer-key material, no student data, and no district scope
+    // (assessment content is district-neutral per PDR-026 and Contract §11).
+    //
+    // Reads:
+    //   - `get`: any authenticated caller. Required so students can render
+    //     assessment metadata and teachers can render assessment metadata
+    //     for their class assignments.
+    //   - `list` is not enabled; the assessment content surface is
+    //     addressable by known assessmentId and does not require collection
+    //     enumeration.
+    //
+    // Writes:
+    //   - All client writes denied. The deployment pipeline
+    //     (`deployAssessmentRevision`) is the sole writer and runs through
+    //     the Admin SDK, bypassing Rules.
+    match /assessments/{assessmentId} {
+      allow get: if isSignedIn();
+    }
+
+    // ---------- assessmentRevisions/{revisionId} ----------
+    //
+    // Sprint 12B Slice 1 (PDR-026, ASSESSMENT_SCORING_CONTRACT §6). The
+    // scorable content shape. The deployment pipeline enforces that this
+    // document carries no correct-answer material; the paired
+    // `assessmentAnswerKeys/{revisionId}` document holds the answer key.
+    //
+    // Reads:
+    //   - `get`: any authenticated caller. Immutable after write.
+    //   - `list` is not enabled.
+    //
+    // Writes:
+    //   - All client writes denied. `deployAssessmentRevision` creates the
+    //     document under Admin SDK authority and never mutates it.
+    match /assessmentRevisions/{revisionId} {
+      allow get: if isSignedIn();
+    }
+
+    // ---------- assessmentAnswerKeys/{revisionId} ----------
+    //
+    // Sprint 12B Slice 1 (PDR-026d, ASSESSMENT_IMPLEMENTATION_CONTRACT §22,
+    // LYFELABZ_FIREBASE_SECURITY_MODEL Sprint 9A Reconciliation Notice).
+    // Correct-answer material and per-item explanations. Server-confidential
+    // for every role including `platformAdministrator`.
+    //
+    // The sole authorized reader is the scorer inside
+    // `assessmentAttemptsFinalize`, which runs under Admin SDK authority
+    // and bypasses Rules. The permitted answer-key subset
+    // (`correctOptionId`, `explanation`) is delivered to the student only
+    // through their own `attempts/{attemptId}` document per
+    // ASSESSMENT_SCORING_CONTRACT §10.4.
+    //
+    // This block is intentionally more restrictive than the terminal deny:
+    // an explicit `allow read, write: if false;` documents the confidentiality
+    // contract at the surface with the strongest confidentiality requirement
+    // and prevents accidental future relaxation by a broader edit.
+    match /assessmentAnswerKeys/{revisionId} {
+      allow read, write: if false;
+    }
+
+    // ---------- assessmentSessions/{sessionId} ----------
+    //
+    // Sprint 12B Slice 1 (PDR-025e, PDR-026, ASSESSMENT_IMPLEMENTATION_CONTRACT
+    // §6, §22). Transient per-student working state during a Live attempt.
+    //
+    // Reads:
+    //   - `get`: only the owning student, and only when the caller's
+    //     verified `districtId` claim matches the session's frozen
+    //     `districtId`. Ownership fields on the session are frozen at
+    //     creation (`assessment-sessions-begin.ts:345-357`), so both
+    //     comparisons are decidable on the document itself without a
+    //     second read.
+    //   - Teachers do NOT read live sessions per PDR-026. This is
+    //     intentional and is a client-boundary invariant.
+    //   - `list` is not enabled.
+    //
+    // Writes:
+    //   - All client writes denied. `assessmentSessionsBegin` (create),
+    //     `assessmentSessionsAutosave` (narrow update), and
+    //     `assessmentAttemptsFinalize` (delete inside the finalize
+    //     transaction) write through the Admin SDK from the Cloud Function
+    //     trust boundary and therefore bypass Rules.
+    match /assessmentSessions/{sessionId} {
+      allow get: if isSignedIn()
+        && isOwningStudent()
+        && matchesResourceDistrict();
+    }
+
+    // ---------- attempts/{attemptId} ----------
+    //
+    // Sprint 12B Slice 1 (PDR-025e, PDR-026a, PDR-026c,
+    // ASSESSMENT_IMPLEMENTATION_CONTRACT §7, §22, ASSESSMENT_SCORING_CONTRACT
+    // §10.4). Immutable authoritative record of a scored assessment attempt.
+    //
+    // Reads:
+    //   - `get`: either the owning student (matched by `studentId`) or the
+    //     owning teacher (matched by the denormalized `teacherId`), and in
+    //     both cases the caller's verified `districtId` claim MUST match
+    //     the attempt's frozen `districtId`. `teacherId` on `attempts` is
+    //     the class's owning teacher, denormalized through the session
+    //     from the assignment (`assessment-attempts-finalize.ts:797-815`);
+    //     immutable class ownership per PDR-005 guarantees this cannot
+    //     drift and therefore serves as the class-ownership proxy the Rule
+    //     evaluates on the document itself. Same-district access alone is
+    //     NOT sufficient; ownership is also required.
+    //   - `list` is not enabled in Sprint 12B; collection-scoped attempt
+    //     queries are the deliverable of the rollup slice.
+    //
+    // Writes:
+    //   - All direct client writes denied, and denied explicitly rather
+    //     than through the terminal deny alone, to document the PDR-026a
+    //     immutability invariant on the surface with the strongest
+    //     immutability requirement. `assessmentAttemptsFinalize` is the
+    //     sole writer and runs through the Admin SDK.
+    match /attempts/{attemptId} {
+      allow get: if isSignedIn()
+        && matchesResourceDistrict()
+        && (isOwningStudent() || isOwningTeacher());
+      allow create, update, delete: if false;
+    }
+
     // ---------- auditEvents/{eventId} ----------
     //
     // Append-only server-write, server-read per Security Model §11 and

@@ -2666,3 +2666,36 @@ Sprint 12B introduces five new `match` blocks in `platform/firebase/firestore.ru
 - No dependency changes.
 - No deployment.
 - No commit.
+
+## Sprint 12B Slice 1: Assessment Firestore Rules
+
+**Date:** 2026-07-16
+**Category:** Firestore Rules and Rules tests (no code, no dependencies, no deployment)
+**Certification:** CERTIFIED: Sprint 12B is complete.
+
+### Objective
+
+Translate the certified Sprint 12A access model into Firestore Rules for the five canonical assessment collections and add focused Rules tests for the same slice.
+
+### Scope implemented
+
+- Added five `match` blocks in `platform/firebase/firestore.rules` covering `assessments/{assessmentId}`, `assessmentRevisions/{revisionId}`, `assessmentAnswerKeys/{revisionId}`, `assessmentSessions/{sessionId}`, and `attempts/{attemptId}`.
+- Added three small, stateless helper functions (`matchesResourceDistrict`, `isOwningStudent`, `isOwningTeacher`) alongside the existing `isSignedIn` and `isSelf` helpers.
+- Added four new Rules-test files: `assessments.rules.test.ts`, `assessment-revisions.rules.test.ts`, `assessment-answer-keys.rules.test.ts`, `assessment-sessions.rules.test.ts`, and `attempts.rules.test.ts`.
+
+### Validation results
+
+- Targeted assessment Rules tests: all pass.
+- Full Firestore Rules test suite: 14 suites, 173 tests, all pass.
+- No Cloud Functions, application, schema, configuration, or dependency files were modified.
+- No em dashes appear in any created or modified file.
+
+### Confirmation
+
+- No production code changes.
+- No Cloud Functions changes.
+- No schema changes.
+- No configuration changes.
+- No dependency changes.
+- No deployment.
+- No commit.
