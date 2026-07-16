@@ -2699,3 +2699,37 @@ Translate the certified Sprint 12A access model into Firestore Rules for the fiv
 - No dependency changes.
 - No deployment.
 - No commit.
+
+## Sprint 12C Slice 1: Assessment Retrieval APIs (authenticated student)
+
+**Date:** 2026-07-16
+**Category:** Cloud Functions (retrieval layer, no schema, no Rules, no deployment)
+**Certification:** CERTIFIED: Sprint 12C Slice 1 is complete.
+
+### Objective
+
+Begin the authenticated-student retrieval layer for the certified assessment pipeline. Add two bounded callables that surface a student's own completed attempts without exposing answer-key material, scoring internals, teacher-only metadata, internal audit records, or district-security internals.
+
+### Scope implemented
+
+- Added `assessmentAttemptsList` and `assessmentAttemptGet` callables in `platform/functions/src/assessments/`, wrapped by the shared `platformCallable` translator.
+- Both callables derive student identity from `requireDistrictContext` and refuse a non-student caller with `role-forbidden`. Neither callable accepts a student identifier or any district-scoping field on the request.
+- Introduced a shared projection (`projectAttemptSummary`) that returns only the approved student-visible fields: `attemptId`, `assessmentId`, `assignmentId`, `assessmentRevisionId`, `attemptNumber`, `score`, `maxScore`, `percentage`, `submittedAt`, and a constant `status: "completed"`.
+- Added two focused unit-test files (21 tests) covering positive retrieval, cross-student refusal, cross-district refusal, cross-school refusal, unauthenticated refusal, non-student refusal, malformed request refusal, empty-history behavior, and confidentiality of every excluded field.
+
+### Validation results
+
+- Targeted retrieval tests: 2 suites, 21 tests, all pass.
+- Full assessments suite: 6 suites, 142 tests, all pass.
+- Full Cloud Functions suite: 32 suites, 568 tests, all pass.
+- Lint, typecheck, and build all pass.
+- No em dashes appear in any created or modified file.
+
+### Confirmation
+
+- No certified backend behavior changed.
+- No Firestore Rules changes.
+- No schema, index, or configuration changes.
+- No dependency changes.
+- No deployment.
+- No commit.
