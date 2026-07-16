@@ -2607,3 +2607,62 @@ Sprint 11E closes the residual Important findings surfaced by the Sprint 11D ind
 - No new PDR, no new callable, no new Firestore collection, no rules change, no rename of any canonical identifier.
 - No touch of retrieval APIs, LMS, dashboards, workspace, or app code.
 - No commit was made.
+
+## Sprint 12A: Assessment Data Access Review
+
+**Date:** 2026-07-16
+**Anchor decisions:** PDR-025, PDR-026.
+**Anchor contracts:** ASSESSMENT_IMPLEMENTATION_CONTRACT.md, ASSESSMENT_SCORING_CONTRACT.md, ASSESSMENT_PIPELINE_SPECIFICATION.md, DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md.
+**Detailed report:** SPRINT_12A_ASSESSMENT_DATA_ACCESS_REVIEW.md
+
+Sprint 12A produces the approved blueprint for the Sprint 12B Firestore Rules sprint. This is a documentation-only sprint: no code, Rules, tests, configuration, or dependencies were changed. The review inspects the Sprint 11 certified assessment backend and records a code-grounded access control matrix, field-level sensitivity matrix, mutation ownership table, student and teacher access models, answer-key confidentiality model, session lifecycle model, attempt immutability model, district and class isolation chains, existing Rules gap analysis, Sprint 12B Rules specification, and Sprint 12C test matrix.
+
+### Objective
+
+Verify the certified Sprint 11 assessment implementation against the Assessment Implementation Contract §22 rule intents and produce a document sufficiently precise that Sprint 12B can translate it directly into Firestore Rules and Rules tests without rediscovering the access model.
+
+### Scope
+
+- Read: assessment domain types, deployment, session begin, session autosave, attempt finalize, district context helper, typed Firestore references, current firestore.rules, current Rules tests, ASSESSMENT_IMPLEMENTATION_CONTRACT.md, ASSESSMENT_SCORING_CONTRACT.md, ASSESSMENT_PIPELINE_SPECIFICATION.md, DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, PDR-025 and PDR-026, prior Sprint 11 completion reports.
+- Not touched: any file outside `docs/platform/`.
+
+### Files created
+
+- `docs/platform/SPRINT_12A_ASSESSMENT_DATA_ACCESS_REVIEW.md`
+
+### Files modified
+
+- `docs/platform/SPRINT_HISTORY.md` (this entry)
+
+### Major findings
+
+- Every assessment write path is server-only via Admin SDK typed references; no client write path exists on any of the five assessment collections.
+- The current firestore.rules contains no `match` block for any assessment collection; every read and write falls through to the terminal deny. This is safe but functionally incomplete.
+- Answer-key confidentiality is already enforced by the terminal deny; Sprint 12B is asked to add an explicit block that documents the intent.
+- Attempt immutability is enforced structurally (no update or delete reference exists in typed-ref.ts). Sprint 12B is asked to add an explicit client-write deny.
+- Minor documentation drift between the contract (`beganAt`, `state`) and implementation (`startedAt`, `status`); Sprint 12B Rules text MUST use the implemented names.
+- Rollup collections named in Contract §22 (`attemptRollups`, `assignmentRollups`) are not implemented and MUST NOT be introduced by Sprint 12B.
+
+### Certification result
+
+CERTIFIED: Sprint 12B may proceed.
+
+### Next step
+
+Sprint 12B introduces five new `match` blocks in `platform/firebase/firestore.rules` per the specification in Sprint 12A §14, and Sprint 12C adds the paired Rules-test matrix per §15.
+
+### Validation results
+
+- No code, Rules, tests, configuration, or dependency files were modified.
+- Only two files were touched: the new review document and this history entry.
+- No em dashes appear in either created or modified file.
+
+### Confirmation
+
+- No production code changes.
+- No Firestore Rules changes.
+- No Rules-test changes.
+- No configuration changes.
+- No dependency changes.
+- No deployment.
+- No commit.
