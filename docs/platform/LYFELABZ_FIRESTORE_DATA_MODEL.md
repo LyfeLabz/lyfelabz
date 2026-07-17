@@ -29,6 +29,22 @@ Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the
 
 ---
 
+## Sprint 12E-A Reconciliation Notice
+
+PDR-029 (Assignment Summary and Recipient Population Policy) introduces one additive canonical subcollection: `assignments/{assignmentId}/recipients/{studentId}`. The `assignments/{assignmentId}` document shape defined in §3.6 is not changed. Recipients are stored inside the assignment ownership boundary so the existing Firestore rules for the parent assignment govern access.
+
+- The document identifier is `studentId` so each recipient is unique per assignment by construction.
+- Minimum fields per record are `assignmentId`, `studentId`, `classId`, `schoolId`, `districtId`, `assignedAt` (server timestamp), `assignedBy` (uid of the teacher whose action produced the recipient), `source` (one of `classPublication`, `manualAddition`, `lmsImport`), and `status` set to `assigned`.
+- Recipient records are append-only after first publication. They are not editable by clients, are not deleted by unenrollment, and are not deleted by class archive. An administrative correction path may be added by superseding sprint under PDR-029g.
+- Recipient records MUST NOT carry a denormalized display name (PDR-028h) and MUST NOT duplicate answer-key, assessment, or user profile data (PDR-011).
+- Canonical writers: `assignmentsPublish` writes the recipient snapshot at first publication under PDR-029d and PDR-029j. A superseding late-recipient callable writes single-recipient additions under PDR-029h.
+- Canonical readers: `assessmentAssignmentSummary` (teacher aggregate metrics), teacher assignment attempt list, teacher roster progress list, `assessmentSessionsBegin` (session authorization gate), `assessmentAttemptsFinalize` (attempt authorization gate), and the student My Assignments query.
+- No top-level `assignmentRecipients` collection is introduced. No embedded recipient array or map is written to the assignment document.
+
+The concrete Firestore Rules block, index strategy, and Cloud Function writer for this subcollection land in a superseding Sprint 12E implementation slice. This notice is documentation only.
+
+---
+
 ## Sprint 10A F-4 Reconciliation Notice
 
 The display-name portion of this document is further reconciled by `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` under PDR-028. The `users/{uid}.displayName` field defined in §3.1 and the `enrollments/{enrollmentId}.displayNameOverride` field defined in §3.4 retain the shapes named in this document and are further constrained as follows:

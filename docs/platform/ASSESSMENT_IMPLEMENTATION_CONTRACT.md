@@ -13,6 +13,12 @@ Where this contract and any earlier document conflict on implementation detail, 
 
 ---
 
+## Sprint 12E-A Reconciliation Notice
+
+PDR-029 (Assignment Summary and Recipient Population Policy) ratifies two policies that were previously inferred from §17, §18, and §20: (a) the representative attempt for every aggregate assignment metric is the student's highest valid completed attempt, with deterministic tie-breaking by higher `attemptNumber`, then later `completedAt`, then ascending `attemptId`; and (b) an assignment has a frozen recipient population captured at first publication in the canonical subcollection `assignments/{assignmentId}/recipients/{studentId}`. §17 is amended by pointer: the assignment recipient collection is the canonical population source for teacher analytics (§20) and for the student My Assignments surface. `assessmentSessionsBegin` and `assessmentAttemptsFinalize` MUST enforce recipient membership under PDR-029l. Rollup adoption under §18 and §20 MUST preserve the representative-attempt and frozen-population semantics without redefinition. No callable rename, no schema change, and no commit is authorized by this notice; the concrete writer for the recipient collection, the Rules extension, and the summary migration land in a superseding Sprint 12E implementation slice.
+
+---
+
 ## 1. Purpose
 
 The LyfeLabz certified corpus ratified the formative assessment pipeline as session-authoritative, server-scored, unlimited-attempt, and immutable (PDR-021). The rules that follow from that stance are distributed across `ASSESSMENT_PIPELINE_SPECIFICATION.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_FIRESTORE_QUERY_AND_INDEX_STRATEGY.md`, `LYFELABZ_SUBMISSION_ROLLUP_STRATEGY.md`, and `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`. This contract collapses those statements into one authoritative reference so engineers do not have to reconstruct the assessment implementation model from many partial statements.

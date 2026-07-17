@@ -1,4 +1,5 @@
 export {
+  assessmentAssignmentSummary,
   assessmentAttemptGet,
   assessmentAttemptGetForTeacher,
   assessmentAttemptsFinalize,

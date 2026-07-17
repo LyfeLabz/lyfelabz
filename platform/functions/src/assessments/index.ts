@@ -37,6 +37,13 @@ export {
   type TeacherVisibleAttemptResponse,
 } from "./assessment-attempt-get-for-teacher";
 export {
+  assessmentAssignmentSummary,
+  selectHighestCompletedAttempt,
+  type AssessmentAssignmentSummaryRequest,
+  type AssessmentAssignmentSummaryResponse,
+  type SelectedCompletedAttempt,
+} from "./assessment-assignment-summary";
+export {
   assessmentAttemptsListForClass,
   projectTeacherClassAttemptSummary,
   type AssessmentAttemptsListForClassRequest,

@@ -2864,3 +2864,102 @@ Added `assessmentAttemptGetForTeacher`, a bounded teacher retrieval callable tha
 - No application file changes.
 - No deployment.
 - No commit.
+
+## Sprint 12E Slice 1: Teacher Assessment Summary APIs
+
+- Objective: add `assessmentAssignmentSummary`, a bounded aggregate teacher-facing callable that returns participation counts and completed-attempt score metrics for one assignment currently owned by the authenticated teacher.
+- Location: `platform/functions/src/assessments/assessment-assignment-summary.ts`.
+- Input contract: `{ assignmentId: string }` (URL-safe token). Every owner-scoping, routing, filter, or aggregation key is refused with `assignments.invalidRequest`; malformed or blank ids are refused with `assignments.invalidAssignmentId`.
+- Authorization chain: `requireDistrictContext` (auth + active + claims + district agreement); role must be `teacher` (`role-forbidden`); assignment loaded (`assignments.notFound` on missing, empty, or missing `classId`); assignment frozen `teacherId` and `schoolId` must equal the caller (`assignments.forbidden`); class loaded (`classes.notFound`); class `teacherId` and `schoolId` must equal the caller (`classes.forbidden`); assignment frozen ownership must match the loaded class record (`assignments.notFound` on inconsistency). Same-district or same-school access alone never authorizes.
+- Assignment lifecycle: `draft`, `published`, `closed`, `archived` are all readable to the owning teacher; the summary is inherently empty for `draft` and `archived` states because no session or attempt is producible.
+- Canonical student population: unique `studentId`s from `enrollments` where `classId` matches the assignment's frozen class, `schoolId` matches the caller, and `status === "active"`. No frozen recipient snapshot is written by this slice.
+- Historical enrollment: documented deviation. A student who completed the assignment and then transferred or withdrew is not in the current active population and does not appear in `completedStudents`. A future recipient-snapshot model would fix this.
+- Student status classification: completed (>= 1 valid frozen attempt) beats in-progress (>= 1 live session) beats not-started; each student is counted exactly once.
+- Attempt selection policy: highest completed attempt per student by `percentage`, ties broken by higher `attemptNumber` then lexicographic `attemptId`. Evidence: ASSESSMENT_IMPLEMENTATION_CONTRACT section 20 enumerates "Highest score" first among the five teacher-visible metrics, and section 18 defines the pilot rollup's `bestScore` / `bestAttemptId` as the canonical "best" attempt.
+- Metric definitions: `totalStudents`, `completedStudents`, `inProgressStudents`, `notStartedStudents`, `completionPercentage` (integer, half-up rounded, `0` when population is empty), `averagePercentage` / `highestPercentage` / `lowestPercentage` (integers or `null` when no completed attempts), `perfectScoreStudents` (raw `score === maxScore` with `maxScore > 0`).
+- Numeric integrity: attempts with non-finite `percentage`, `score`, `maxScore`, or `attemptNumber` are silently dropped; `maxScore === 0` never counts as a perfect score and never causes division by zero; response fields never carry `NaN` or `Infinity`.
+- Defense in depth: every attempt, session, and enrollment document is re-checked against the loaded assignment/class ownership fields (`assignmentId`, `classId`, `teacherId`, `schoolId`, `districtId`, `status`) before it contributes to any metric; mismatched documents are dropped silently.
+- Query and scalability: three single-field `where(... == ...)` queries against `attempts`, `assessmentSessions`, and `enrollments`. No composite index is introduced. This is a bounded direct-query implementation suitable for the current pilot class sizes; the certified long-term shape uses `assignmentRollups` and `attemptRollups` per ASSESSMENT_IMPLEMENTATION_CONTRACT sections 18 and 20 and remains out of scope.
+- Response allowlist: `assignmentId`, `classId`, `totalStudents`, `completedStudents`, `inProgressStudents`, `notStartedStudents`, `completionPercentage`, `averagePercentage`, `highestPercentage`, `lowestPercentage`, `perfectScoreStudents`. No student, attempt, session, enrollment, item-result, response, answer-key, teacher, or audit value crosses the boundary.
+- Audit behavior: no audit event is written; retrieval reads remain unaudited, matching Sprint 12C, 12D Slice 1, and 12D Slice 3.
+
+### Tests added
+
+- `platform/functions/src/assessments/assessment-assignment-summary.test.ts` (83 tests): empty class, all-not-started, one-in-progress, one-completed, mixed populations, count invariant, multiple attempts by one student, completed beats in-progress, closed/archived/draft assignments, highest-selection policy including ties and malformed rows, perfect-score detection via raw score, deterministic rounding, unauthenticated/student/platformAdministrator/inactive/malformed-claim refusals, missing/blank/non-string/malformed `assignmentId` refusals, seventeen forbidden request keys, nonexistent/missing-class-ref/missing-class refusals, cross-owner/cross-school/cross-district refusals, forged-id refusal, cross-assignment/class/district/school attempt exclusions, cross-scope session exclusions, non-live session exclusions, non-active and cross-class/cross-school enrollment exclusions, duplicate enrollment de-duplication, zero max-score handling, projection allowlist enforcement, and forbidden-field absence.
+
+### Validation results
+
+- Targeted `assessmentAssignmentSummary` tests: 1 suite, 83 tests, all pass.
+- Full Cloud Functions suite: 36 suites, 770 tests, all pass.
+- Lint, typecheck, and build all pass.
+- No em dashes appear in any created or modified file.
+
+### Confirmation
+
+- No certified backend behavior changed.
+- No Firestore Rules changes.
+- No schema, index, dependency, or configuration changes.
+- No application file changes.
+- No deployment.
+- No commit.
+
+## Sprint 12E-A: Assignment Summary Policy Ratification
+
+Documentation-only architecture reconciliation slice. Ratified the two canonical policies required by `assessmentAssignmentSummary` before its implementation is committed and certified.
+
+### Decisions ratified
+
+- Representative-attempt policy: the student's highest valid completed attempt per assignment represents the student in every aggregate assignment score metric. All completed attempts remain preserved. Individual attempt drill-down is unaffected. Additional attempts do not inflate the number of completed students. A lower later attempt does not reduce the student's aggregate representation.
+- Tie-breaking: (1) higher `percentage`, (2) higher `attemptNumber`, (3) later `completedAt` when both attempts carry comparable timestamps, (4) ascending `attemptId` as the final technical fallback. Raw `score` is not used across attempts whose `maxScore` differs.
+- Canonical assignment population: every assignment has a frozen recipient set captured atomically at first publication. Roster changes after publication do not silently rewrite the population.
+- Persistence: `assignments/{assignmentId}/recipients/{studentId}` subcollection. Top-level collection and embedded array or map shapes are rejected.
+- Recipient immutability: append-only after publication. Unenrollment does not delete recipients. Client writes are prohibited. Trusted Cloud Functions are the sole writers.
+- Late-recipient behavior: newly enrolled students are not silently added. Explicit manual addition creates a `source === "manualAddition"` recipient record.
+- Removed-student behavior: historical attempts and recipient records persist; assignment history is not rewritten by roster changes.
+- Assignment lifecycle: first publication is the sole event that creates the recipient population; reopening, editing metadata, republishing, and archiving do not change recipients; duplicating an assignment creates a new population.
+- Sessions and attempts: `assessmentSessionsBegin` and `assessmentAttemptsFinalize` MUST enforce recipient membership. Recipient identity is student-based, not attempt-based.
+- Pilot direct-query: acceptable for the bounded pilot provided it reads the frozen recipient collection after Sprint 12E Slice 2C.
+- Future rollup: `assignmentRollups` and `attemptRollups` remain the certified long-term shape and MUST preserve the ratified representative-attempt and frozen-population semantics without redefinition.
+
+### PDR added
+
+- PDR-029: Assignment Summary and Recipient Population Policy (`docs/platform/LYFELABZ_PLATFORM_DECISIONS.md`).
+
+### Files created
+
+- `docs/platform/SPRINT_12E_A_ASSIGNMENT_SUMMARY_POLICY_RATIFICATION.md`.
+
+### Files modified
+
+- `docs/platform/LYFELABZ_PLATFORM_DECISIONS.md` (PDR-029 added; Change Log entry appended).
+- `docs/platform/ASSESSMENT_IMPLEMENTATION_CONTRACT.md` (Sprint 12E-A Reconciliation Notice added).
+- `docs/platform/LYFELABZ_FIRESTORE_DATA_MODEL.md` (Sprint 12E-A Reconciliation Notice added).
+- `docs/platform/LYFELABZ_CLOUD_FUNCTION_CHARTER.md` (Sprint 12E-A Reconciliation Notice added).
+- `docs/platform/SPRINT_12E_SLICE_1_COMPLETION_REPORT.md` (Sprint 12E-A Ratification Notice added).
+
+### Sprint 12E Slice 1 certification status
+
+Sprint 12E Slice 1 remains CONDITIONALLY CERTIFIED. The representative-attempt policy is ratified. The current-active-enrollment population is not the canonical long-term policy; the summary callable must be remediated to read the frozen recipient collection under a subsequent implementation slice before Sprint 12E Slice 1 is fully certified.
+
+### Recommended remediation sequence
+
+- Sprint 12E Slice 2A: data model and publication writer (recipient subcollection, `assignmentsPublish` snapshot writer, manual-addition callable, Rules, tests, `assignments.recipientAdded` audit event).
+- Sprint 12E Slice 2B: session and attempt enforcement (recipient membership gates in `assessmentSessionsBegin` and `assessmentAttemptsFinalize`, tests).
+- Sprint 12E Slice 2C: summary migration and Sprint 12E Slice 1 recertification (`assessmentAssignmentSummary` reads recipients, `selectHighestCompletedAttempt` gains the `completedAt` tie-breaker, tests).
+
+### Validation results
+
+- No Cloud Functions files changed.
+- No Firestore Rules files changed.
+- No application files changed.
+- No schema, index, dependency, or configuration files changed.
+- PDR-029 number is unique and sequential.
+- Zero em dashes in any created or modified file.
+- No deployment.
+- No commit.
+
+### Confirmation
+
+- No certified backend behavior changed.
+- No code, Rules, application, schema, index, dependency, or configuration files were modified.
+- Sprint 12E Slice 1 remains conditionally certified pending the Sprint 12E Slice 2 remediation sequence.

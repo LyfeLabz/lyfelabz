@@ -21,6 +21,20 @@ Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the
 
 ---
 
+## Sprint 12E-A Reconciliation Notice
+
+The assignment publication, session begin, and attempt finalization portion of this charter is further reconciled by PDR-029 (Assignment Summary and Recipient Population Policy). PDR-029 introduces one additive canonical subcollection, `assignments/{assignmentId}/recipients/{studentId}`, and the following callable responsibilities.
+
+- `assignmentsPublish` becomes the sole writer of the initial recipient snapshot at first publication. The snapshot MUST be atomic with the `draft` to `published` status transition. Republication is a no-op on the recipient set.
+- A superseding late-recipient callable (name to be finalized in the implementation slice) becomes the sole writer of `source === "manualAddition"` recipient records for students who joined after publication. Bulk addition gestures are prohibited until a superseding sprint authorizes them.
+- `assessmentSessionsBegin` MUST refuse to create a session for a student who is not a recipient of the target assignment.
+- `assessmentAttemptsFinalize` MUST refuse to persist an attempt whose `(studentId, assignmentId)` does not resolve to a recipient record.
+- `assessmentAssignmentSummary`, teacher assignment attempt list, teacher roster progress list, and the student My Assignments query read the recipient subcollection as the canonical assignment population.
+
+Where this charter names assignment publication or assessment session and attempt callables, read forward under the callable ownership matrix in `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §21 as further constrained by PDR-029. The charter's guiding principles (server-authoritative, single-purpose, idempotent, atomic) survive intact. No commit is authorized by this notice; the concrete callable landings, Rules extensions, and the summary migration occur in a superseding Sprint 12E implementation slice.
+
+---
+
 ## Sprint 10A F-4 Reconciliation Notice
 
 The display-name portion of this charter is further reconciled by `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` under PDR-028. The implementation contract names the canonical callables and triggers that write any teacher-readable name (`authOnUserCreate`, `teachersCompleteVerification`, `studentsCompleteOnboarding`, `usersFirstSignInActivation`, `usersUpdateProfile` or the Sprint 2 rules-allowlisted self-write plus `usersOnDisplayNameChange`, `enrollmentsSetDisplayNameOverride`, `lmsClassImport`, `lmsClassRefresh`), fixes the shared validator and the resolver, and enumerates the sole authorized writers of `users/{uid}.displayName`, `enrollments/{enrollmentId}.displayNameOverride`, and the roster placeholder name. Where this charter names identity, enrollment, or LMS callables that touch a display-name field, read forward under the callable ownership matrix in `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` §14. The charter's guiding principles (server-authoritative, single-purpose, idempotent, atomic) survive intact. No commit is authorized by this notice; the actual callable landings occur in the implementation sprint that follows Sprint 10A.
