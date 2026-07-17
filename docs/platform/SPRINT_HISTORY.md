@@ -3015,3 +3015,48 @@ Implementation slice that introduces the canonical assignment-recipient persiste
 ### Certification
 
 Sprint 12E Slice 2A is CERTIFIED. Sprint 12E Slice 1 remains CONDITIONALLY CERTIFIED and is unblocked to move into the Sprint 12E Slice 2B and Sprint 12E Slice 2C remediation sequence.
+
+---
+
+## Sprint 12E Slice 2B: Recipient Enforcement
+
+**Dates:** 2026-07-17
+**Status:** Complete
+**Detailed report:** SPRINT_12E_SLICE_2B_COMPLETION_REPORT.md
+
+### Objective
+
+Implement the PDR-029l recipient membership gate on `assessmentSessionsBegin` and `assessmentAttemptsFinalize`. Only canonical recipients recorded at `assignments/{assignmentId}/recipients/{studentId}` may begin or finalize an assignment-linked assessment.
+
+### Deliverables
+
+- New canonical helper `isCanonicalRecipient` in `platform/functions/src/assignments/assignment-recipients.ts`. Exactly one document read per invocation via the Slice 2A `assignmentRecipientDocRef`. Fails closed on missing, malformed, wrong-student, cross-school, cross-district, wrong-assignment, or non-`assigned` recipient records. Reader is injected so the same helper serves both the plain read in session-begin and the transactional read in finalize.
+- `assessmentSessionsBegin` refuses assignment-linked session creation with the new refusal identifier `assessmentSessions.recipientRequired` when the recipient gate fails. No session is written and no audit event is emitted on refusal. Behavior for non-assignment paths, anonymous exploration, teacher preview, and every prior authorization path is preserved.
+- `assessmentAttemptsFinalize` refuses assignment-linked finalize with the new refusal identifier `assessmentAttempts.recipientRequired` when the recipient gate fails. The recipient read participates in the same Firestore transaction as the attempt write so a mid-transaction recipient change refuses the finalize instead of racing a stale snapshot. Idempotent replay paths return the previously scored attempt payload unchanged and do not re-run the recipient gate.
+
+### Files created
+
+- `docs/platform/SPRINT_12E_SLICE_2B_COMPLETION_REPORT.md`.
+
+### Files modified
+
+- `platform/functions/src/assignments/assignment-recipients.ts` (new `isCanonicalRecipient` helper and `RecipientEnforcementContext` and `RecipientReader` types).
+- `platform/functions/src/assessments/assessment-sessions-begin.ts` (recipient gate).
+- `platform/functions/src/assessments/assessment-sessions-begin.test.ts` (recipient enforcement tests).
+- `platform/functions/src/assessments/assessment-attempts-finalize.ts` (recipient gate inside the transaction).
+- `platform/functions/src/assessments/assessment-attempts-finalize.test.ts` (recipient enforcement tests).
+
+### Validation results
+
+- Cloud Functions typecheck: passed.
+- Cloud Functions lint: passed.
+- Cloud Functions build: passed.
+- Cloud Functions test suite: 38 suites, 830 tests, all passed.
+- No Firestore Rules, publication code, recipient-persistence code, summary code, UI, LMS, schema, dependency, configuration, or index files were modified.
+- Zero em dashes across every created or modified documentation file.
+- No deployment.
+- No commit.
+
+### Certification
+
+Sprint 12E Slice 2B is CERTIFIED. Sprint 12E Slice 1 remains CONDITIONALLY CERTIFIED pending Sprint 12E Slice 2C summary migration.

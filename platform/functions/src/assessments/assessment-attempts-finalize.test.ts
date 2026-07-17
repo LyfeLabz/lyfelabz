@@ -43,6 +43,13 @@ const mockAttemptCreationDocRef = jest.fn((id: string) => ({
   __kind: "attemptCreation",
   id,
 }));
+const mockAssignmentRecipientDocRef = jest.fn(
+  (assignmentId: string, studentId: string) => ({
+    __kind: "recipient",
+    assignmentId,
+    studentId,
+  }),
+);
 
 // Query builder returned by attemptsCollectionRef(). Chainable .where().
 function makeQuery(hasLimit = false) {
@@ -85,6 +92,8 @@ jest.mock("../shared", () => {
     attemptDocRef: mockAttemptDocRef,
     attemptCreationDocRef: mockAttemptCreationDocRef,
     attemptsCollectionRef: mockAttemptsCollectionRef,
+    assignmentRecipientDocRef: mockAssignmentRecipientDocRef,
+    enrollmentsCollectionRef: jest.fn(),
   };
 });
 
@@ -198,6 +207,7 @@ type Fixture = {
   existingAttempt?: unknown;
   assignment?: unknown;
   enrollment?: unknown;
+  recipient?: unknown;
 };
 
 const fixture: Fixture = {};
@@ -241,6 +251,18 @@ function seedDefaultFixture(overrides: Partial<Fixture> = {}) {
     status: "active",
     enrolledAt: {},
   };
+  fixture.recipient = {
+    assignmentId: ASSIGNMENT_ID,
+    studentId: STUDENT_UID,
+    classId: CLASS_ID,
+    teacherId: TEACHER_UID,
+    schoolId: SCHOOL_ID,
+    districtId: DISTRICT_ID,
+    assignedAt: {},
+    assignedBy: TEACHER_UID,
+    source: "classPublication",
+    status: "assigned",
+  };
   Object.assign(fixture, overrides);
 }
 
@@ -268,6 +290,12 @@ function installTransactionRunner() {
           return makeSnap({
             exists: fixture.enrollment !== undefined,
             data: () => fixture.enrollment,
+          });
+        }
+        if (refOrQuery.__kind === "recipient") {
+          return makeSnap({
+            exists: fixture.recipient !== undefined,
+            data: () => fixture.recipient,
           });
         }
         if (refOrQuery.__kind === "revision") {
@@ -348,6 +376,7 @@ describe("assessmentAttemptsFinalize", () => {
     mockAttemptDocRef.mockClear();
     mockAttemptCreationDocRef.mockClear();
     mockAttemptsCollectionRef.mockClear();
+    mockAssignmentRecipientDocRef.mockClear();
     mockLogInfo.mockReset();
     mockLogWarn.mockReset();
     mockLogError.mockReset();
@@ -359,6 +388,7 @@ describe("assessmentAttemptsFinalize", () => {
     fixture.existingAttempt = undefined;
     fixture.assignment = undefined;
     fixture.enrollment = undefined;
+    fixture.recipient = undefined;
     seedDefaultFixture();
     installTransactionRunner();
   });
@@ -1099,6 +1129,157 @@ describe("assessmentAttemptsFinalize", () => {
         __parseAssignmentIdFromSessionId("assign-1__student-uid__1"),
       ).toBe("assign-1");
     });
+  });
+
+  // -------- Sprint 12E Slice 2B - PDR-029l recipient enforcement --------
+
+  it("recipient: refuses finalize when no recipient document exists", async () => {
+    seedDefaultFixture({ recipient: undefined });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.recipientRequired" });
+    expect(txSets).toHaveLength(0);
+    expect(txDeletes).toHaveLength(0);
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    expect(mockAssignmentRecipientDocRef).toHaveBeenCalledWith(
+      ASSIGNMENT_ID,
+      STUDENT_UID,
+    );
+  });
+
+  it("recipient: refuses finalize when the recipient names a different student", async () => {
+    seedDefaultFixture({
+      recipient: {
+        assignmentId: ASSIGNMENT_ID,
+        studentId: "someone-else",
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+        assignedAt: {},
+        assignedBy: TEACHER_UID,
+        source: "classPublication",
+        status: "assigned",
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.recipientRequired" });
+    expect(txSets).toHaveLength(0);
+    expect(txDeletes).toHaveLength(0);
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("recipient: refuses a cross-school recipient", async () => {
+    seedDefaultFixture({
+      recipient: {
+        assignmentId: ASSIGNMENT_ID,
+        studentId: STUDENT_UID,
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: "other-school",
+        districtId: DISTRICT_ID,
+        assignedAt: {},
+        assignedBy: TEACHER_UID,
+        source: "classPublication",
+        status: "assigned",
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.recipientRequired" });
+    expect(txSets).toHaveLength(0);
+  });
+
+  it("recipient: refuses a cross-district recipient", async () => {
+    seedDefaultFixture({
+      recipient: {
+        assignmentId: ASSIGNMENT_ID,
+        studentId: STUDENT_UID,
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        districtId: "other-district",
+        assignedAt: {},
+        assignedBy: TEACHER_UID,
+        source: "classPublication",
+        status: "assigned",
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.recipientRequired" });
+    expect(txSets).toHaveLength(0);
+  });
+
+  it("recipient: refuses when the recipient references a different assignment", async () => {
+    seedDefaultFixture({
+      recipient: {
+        assignmentId: "other-assignment",
+        studentId: STUDENT_UID,
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+        assignedAt: {},
+        assignedBy: TEACHER_UID,
+        source: "classPublication",
+        status: "assigned",
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.recipientRequired" });
+  });
+
+  it("recipient: refuses a recipient with non-assigned status", async () => {
+    seedDefaultFixture({
+      recipient: {
+        assignmentId: ASSIGNMENT_ID,
+        studentId: STUDENT_UID,
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+        assignedAt: {},
+        assignedBy: TEACHER_UID,
+        source: "classPublication",
+        status: "invalidated",
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.recipientRequired" });
+  });
+
+  it("recipient: idempotent replay skips the recipient check", async () => {
+    seedDefaultFixture({
+      recipient: undefined,
+      existingAttempt: {
+        studentId: STUDENT_UID,
+        assignmentId: ASSIGNMENT_ID,
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+        activityId: ACTIVITY_ID,
+        assessmentId: ASSESSMENT_ID,
+        assessmentRevisionId: REVISION_ID,
+        attemptNumber: 1,
+        score: 2,
+        maxScore: 2,
+        percentage: 100,
+        itemResults: [],
+        responses: DEFAULT_RESPONSES,
+        idempotencyKey: IDEMPOTENCY_KEY,
+        submittedAt: {},
+      },
+    });
+    const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+    expect(result.replay).toBe(true);
+    expect(txSets).toHaveLength(0);
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    expect(mockAssignmentRecipientDocRef).not.toHaveBeenCalled();
   });
 
   it("C-2: refuses finalize when the assignment is archived", async () => {

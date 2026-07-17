@@ -27,6 +27,8 @@ import {
   type AssignmentRecord,
 } from "../shared";
 
+import { isCanonicalRecipient } from "../assignments/assignment-recipients";
+
 // Grace period per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7.1 and
 // ASSESSMENT_PIPELINE_SPECIFICATION.md §7.1: one hour after
 // `assignment.windowClosesAt` during which sessions live at close MAY
@@ -732,6 +734,33 @@ async function assessmentAttemptsFinalizeHandler(
         throw new PlatformError(
           "enrollment-inactive",
           "Caller is not actively enrolled in the referenced class.",
+        );
+      }
+
+      // PDR-029l recipient enforcement. Assignment-linked finalize
+      // requires the caller to be a canonical recipient of the target
+      // assignment. Recipient membership is server-authoritative via the
+      // frozen `assignments/{assignmentId}/recipients/{studentId}` document
+      // (Sprint 12E Slice 2A). The read participates in the same
+      // transaction as the attempt write so a mid-transaction recipient
+      // change refuses the finalize instead of racing a stale snapshot.
+      // Skipped on the idempotent-replay paths above because the recipient
+      // was validated at the first successful commit and the attempt
+      // record itself is the canonical replay authority. Fails closed on
+      // any anomaly with no attempt write, no scoring, and no audit event.
+      const recipientOk = await isCanonicalRecipient(
+        {
+          assignmentId: session.assignmentId,
+          studentId: actor.uid,
+          schoolId: actor.schoolId,
+          districtId: actor.districtId,
+        },
+        (ref) => tx.get(ref),
+      );
+      if (!recipientOk) {
+        throw new PlatformError(
+          "assessmentAttempts.recipientRequired",
+          "Caller is not a recipient of the referenced assignment.",
         );
       }
 

@@ -4,6 +4,7 @@ const mockAssignmentGet = jest.fn();
 const mockEnrollmentGet = jest.fn();
 const mockSessionGet = jest.fn();
 const mockSessionCreate = jest.fn();
+const mockRecipientGet = jest.fn();
 
 const mockAssignmentDocRef = jest.fn(() => ({ get: mockAssignmentGet }));
 const mockEnrollmentDocRef = jest.fn(() => ({ get: mockEnrollmentGet }));
@@ -11,6 +12,9 @@ const mockSessionDocRef = jest.fn(() => ({ get: mockSessionGet }));
 const mockSessionCreationDocRef = jest.fn(() => ({
   set: mockSessionCreate,
   create: mockSessionCreate,
+}));
+const mockAssignmentRecipientDocRef = jest.fn(() => ({
+  get: mockRecipientGet,
 }));
 
 const mockWriteAuditEvent = jest.fn();
@@ -50,6 +54,8 @@ jest.mock("../shared", () => {
     enrollmentDocRef: mockEnrollmentDocRef,
     assessmentSessionDocRef: mockSessionDocRef,
     assessmentSessionCreationDocRef: mockSessionCreationDocRef,
+    assignmentRecipientDocRef: mockAssignmentRecipientDocRef,
+    enrollmentsCollectionRef: jest.fn(),
     requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
   };
@@ -129,6 +135,29 @@ function absentSessionSnapshot() {
   return { exists: false, data: () => undefined };
 }
 
+function recipientSnapshot(overrides: Record<string, unknown> = {}) {
+  return {
+    exists: true,
+    data: () => ({
+      assignmentId: ASSIGNMENT_ID,
+      studentId: STUDENT_UID,
+      classId: CLASS_ID,
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+      assignedAt: {} as never,
+      assignedBy: TEACHER_UID,
+      source: "classPublication",
+      status: "assigned",
+      ...overrides,
+    }),
+  };
+}
+
+function absentRecipientSnapshot() {
+  return { exists: false, data: () => undefined };
+}
+
 function existingLiveSessionSnapshot(overrides: Record<string, unknown> = {}) {
   return {
     exists: true,
@@ -156,10 +185,13 @@ describe("assessmentSessionsBegin", () => {
     mockEnrollmentGet.mockReset();
     mockSessionGet.mockReset();
     mockSessionCreate.mockReset();
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValue(recipientSnapshot());
     mockAssignmentDocRef.mockClear();
     mockEnrollmentDocRef.mockClear();
     mockSessionDocRef.mockClear();
     mockSessionCreationDocRef.mockClear();
+    mockAssignmentRecipientDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
     mockRequireDistrictContext.mockReset();
     mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
@@ -511,6 +543,108 @@ describe("assessmentSessionsBegin", () => {
   // `assessmentSessions.conflict` identifier so the caller observes the
   // same refusal identifier they would have observed on a mid-check
   // conflict.
+  // -------- Sprint 12E Slice 2B - PDR-029l recipient enforcement --------
+
+  it("recipient: refuses when no recipient document exists", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(absentRecipientSnapshot());
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
+    expect(mockAssignmentRecipientDocRef).toHaveBeenCalledWith(
+      ASSIGNMENT_ID,
+      STUDENT_UID,
+    );
+    expect(mockSessionGet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("recipient: refuses when the recipient document is malformed (empty data)", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => undefined,
+    });
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("recipient: refuses when the recipient names a different student", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ studentId: "someone-else" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("recipient: refuses a cross-school recipient", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ schoolId: "other-school" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("recipient: refuses a cross-district recipient", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ districtId: "other-district" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("recipient: refuses when the recipient references a different assignment", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ assignmentId: "other-assignment" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("recipient: creates a session when a canonical recipient exists", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-r", record: {} });
+    const result = await __assessmentSessionsBeginHandler(makeRequest());
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false });
+    expect(mockAssignmentRecipientDocRef).toHaveBeenCalledWith(
+      ASSIGNMENT_ID,
+      STUDENT_UID,
+    );
+    expect(mockRecipientGet).toHaveBeenCalledTimes(1);
+  });
+
   it("I-3: maps a create-time ALREADY_EXISTS race to assessmentSessions.conflict", async () => {
     mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());

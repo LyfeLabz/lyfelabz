@@ -1,8 +1,14 @@
-import { FieldValue } from "firebase-admin/firestore";
+import {
+  FieldValue,
+  type DocumentReference,
+  type DocumentSnapshot,
+} from "firebase-admin/firestore";
 
 import {
+  assignmentRecipientDocRef,
   enrollmentsCollectionRef,
   type AssignmentRecipientCreationWrite,
+  type AssignmentRecipientRecord,
   type AssignmentRecipientSource,
   type EnrollmentRecord,
 } from "../shared";
@@ -90,4 +96,56 @@ export async function loadInitialRecipientPopulation(
     seen.add(data.studentId);
   }
   return Array.from(seen).sort();
+}
+
+// Ownership snapshot required by `isCanonicalRecipient` to verify that a
+// recipient record represents the authenticated caller against the target
+// assignment. Every field is derived server-side: `assignmentId` and
+// `studentId` from the request + caller identity, and `schoolId` +
+// `districtId` from the caller's verified district context (PDR-025). No
+// client-supplied ownership value participates.
+export type RecipientEnforcementContext = {
+  readonly assignmentId: string;
+  readonly studentId: string;
+  readonly schoolId: string;
+  readonly districtId: string;
+};
+
+// Reader abstraction so the same helper serves both the plain `.get()`
+// call site in `assessmentSessionsBegin` and the transactional `tx.get()`
+// call site in `assessmentAttemptsFinalize` without duplicating Firestore
+// path construction. Callers pass a bound `tx.get` (or `(ref) => ref.get()`)
+// so the read participates in whatever surrounding read set is required.
+export type RecipientReader = (
+  ref: DocumentReference<AssignmentRecipientRecord>,
+) => Promise<DocumentSnapshot<AssignmentRecipientRecord>>;
+
+// Canonical assignment-recipient membership check per PDR-029l. Returns
+// `true` only when the recipient document exists AND every ownership field
+// on the record matches the enforcement context. Every other outcome
+// (missing document, empty data, ownership mismatch, non-`assigned`
+// status) fails closed with `false`. The caller translates `false` into
+// its own domain-scoped refusal identifier so no client observes a
+// broader authorization framework.
+//
+// Exactly one document read per invocation; no enumeration, no query, no
+// derivation from enrollment, sessions, attempts, or user profiles.
+export async function isCanonicalRecipient(
+  context: RecipientEnforcementContext,
+  read: RecipientReader,
+): Promise<boolean> {
+  const ref = assignmentRecipientDocRef(
+    context.assignmentId,
+    context.studentId,
+  );
+  const snapshot = await read(ref);
+  if (!snapshot.exists) return false;
+  const data = snapshot.data();
+  if (!data) return false;
+  if (data.assignmentId !== context.assignmentId) return false;
+  if (data.studentId !== context.studentId) return false;
+  if (data.schoolId !== context.schoolId) return false;
+  if (data.districtId !== context.districtId) return false;
+  if (data.status !== "assigned") return false;
+  return true;
 }

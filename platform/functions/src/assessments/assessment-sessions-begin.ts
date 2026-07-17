@@ -17,6 +17,8 @@ import {
   type EnrollmentRecord,
 } from "../shared";
 
+import { isCanonicalRecipient } from "../assignments/assignment-recipients";
+
 // Client-supplied request payload for assessmentSessionsBegin per
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §21. The authenticated student
 // supplies only the target `assignmentId`; every ownership field on the
@@ -315,6 +317,30 @@ async function assessmentSessionsBeginHandler(
   assertAssignmentBeginWindow(assignment);
 
   await loadActiveEnrollment(assignment.classId, actor.uid);
+
+  // PDR-029l recipient enforcement. Assignment-linked session creation
+  // requires the caller to be a canonical recipient of the target
+  // assignment. Recipient membership is server-authoritative via the
+  // frozen `assignments/{assignmentId}/recipients/{studentId}` document
+  // (Sprint 12E Slice 2A) and no client-supplied ownership value
+  // participates. Fails closed on any anomaly (missing, malformed,
+  // wrong-owner, non-`assigned`) with the narrow refusal identifier so no
+  // session is created and no audit event is emitted.
+  const recipientOk = await isCanonicalRecipient(
+    {
+      assignmentId: input.assignmentId,
+      studentId: actor.uid,
+      schoolId: actor.schoolId,
+      districtId: actor.districtId,
+    },
+    (ref) => ref.get(),
+  );
+  if (!recipientOk) {
+    throw new PlatformError(
+      "assessmentSessions.recipientRequired",
+      "Caller is not a recipient of the referenced assignment.",
+    );
+  }
 
   const sessionId = sessionIdFor(input.assignmentId, actor.uid);
   const existingSnapshot = await assessmentSessionDocRef(sessionId).get();
