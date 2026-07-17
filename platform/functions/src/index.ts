@@ -14,6 +14,7 @@ export {
   assignmentsCreateDraft,
   assignmentsPublish,
   assignmentsRecipientAdd,
+  assignmentsTeacherList,
   assignmentsUpdateDraft,
 } from "./assignments";
 export { authOnUserCreate } from "./auth";

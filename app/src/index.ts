@@ -24,6 +24,8 @@ import type { AssignmentSummaryCallable } from "./assignments/summary/types";
 import { createAssignmentDetailRegistry } from "./assignments/detail/registry";
 import { createAssignmentDetailMetadataReader } from "./assignments/detail/wire";
 import { renderAssignmentDetail } from "./assignments/detail/detail";
+import { hydrateAssignmentDetailRegistry } from "./assignments/detail/hydrate";
+import { createAssignmentsTeacherListCallable } from "./assignments/detail/hydrate-wire";
 
 // Client entry point. Waits for the Canonical Session Bootstrap to
 // resolve, then hands the resulting immutable Session to the router.
@@ -92,6 +94,12 @@ async function run(): Promise<void> {
     open: (assignmentId: string) => {
       openAssignmentDetail(assignmentId);
     },
+    // Sprint 13C: expose the current registry contents so the Curriculum
+    // surface can restore its per-lesson mapping after a full page
+    // reload. Returns only teacher-owned metadata (title, className,
+    // status, lessonSlug, classId); never student, recipient, attempt,
+    // or session identifiers.
+    list: () => assignmentDetailRegistry.list(),
   });
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
@@ -126,6 +134,19 @@ async function run(): Promise<void> {
       });
       assignments = createAssignmentsCallables(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
+      // Sprint 13C: hydrate the session-scoped assignment-detail registry
+      // from the certified `assignmentsTeacherList` retrieval path. The
+      // hydration runs once per active-teacher session and is calm on
+      // failure so a callable outage never blocks the workspace. Newly
+      // published assignments in the current session still register
+      // through the Sprint 13B publish path; deduplication is by canonical
+      // assignmentId inside the registry.
+      const teacherList = createAssignmentsTeacherListCallable(functions);
+      await hydrateAssignmentDetailRegistry(
+        assignmentDetailRegistry,
+        teacherList,
+      );
+      if (runToken !== currentRunToken) return;
     } else {
       integrations = null;
       assignments = null;

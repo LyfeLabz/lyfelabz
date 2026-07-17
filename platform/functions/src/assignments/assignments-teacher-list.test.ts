@@ -1,0 +1,241 @@
+import type { CallableRequest } from "firebase-functions/v2/https";
+
+const mockAssignmentsGet = jest.fn();
+const mockWhere1 = jest.fn();
+const mockWhere2 = jest.fn();
+const mockWhere3 = jest.fn();
+
+const mockAssignmentsCollectionRef = jest.fn(() => ({ where: mockWhere1 }));
+
+const mockClassGet = jest.fn();
+const mockClassDocRef = jest.fn(() => ({ get: mockClassGet }));
+
+const mockRequireDistrictContext = jest.fn();
+
+const mockLogInfo = jest.fn();
+
+jest.mock("firebase-admin/firestore", () => ({}));
+
+jest.mock("firebase-functions/v2/https", () => ({
+  onCall: <T,>(handler: T) => handler,
+}));
+
+jest.mock("../shared", () => {
+  const { PlatformError } = jest.requireActual(
+    "../shared/errors/platform-error",
+  );
+  return {
+    platformCallable: (handler: unknown) => handler,
+    PlatformError,
+    log: { info: mockLogInfo, warn: jest.fn(), error: jest.fn() },
+    assignmentsCollectionRef: mockAssignmentsCollectionRef,
+    classDocRef: mockClassDocRef,
+    requireDistrictContext: mockRequireDistrictContext,
+  };
+});
+
+import { PlatformError } from "../shared/errors/platform-error";
+import { __assignmentsTeacherListHandler } from "./assignments-teacher-list";
+
+const TEACHER_UID = "teacher-uid";
+const SCHOOL_ID = "school-a";
+const DISTRICT_ID = "district-1";
+
+const VALID_CONTEXT = Object.freeze({
+  uid: TEACHER_UID,
+  role: "teacher" as const,
+  schoolId: SCHOOL_ID,
+  districtId: DISTRICT_ID,
+});
+
+function makeRequest(): CallableRequest<unknown> {
+  return {
+    data: {},
+    auth: { uid: TEACHER_UID, token: {} } as never,
+    rawRequest: {} as never,
+  };
+}
+
+function assignmentDoc(
+  id: string,
+  overrides: Record<string, unknown> = {},
+): { readonly id: string; data(): unknown } {
+  return {
+    id,
+    data: () => ({
+      classId: "class-a",
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
+      lessonSlug: "lesson_g7_earths-layers",
+      lessonVersion: "1",
+      mode: "classroom",
+      status: "published",
+      createdAt: {},
+      title: "Earth's Layers",
+      ...overrides,
+    }),
+  };
+}
+
+function classDoc(
+  id: string,
+  overrides: Record<string, unknown> = {},
+): { readonly exists: boolean; data(): unknown } {
+  return {
+    exists: true,
+    data: () => ({
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
+      title: `Class ${id}`,
+      grade: "7",
+      block: "A",
+      joinCode: "abc",
+      status: "active",
+      createdAt: {},
+      ...overrides,
+    }),
+  };
+}
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockWhere1.mockReturnValue({ where: mockWhere2 });
+  mockWhere2.mockReturnValue({ where: mockWhere3 });
+  mockWhere3.mockReturnValue({ get: mockAssignmentsGet });
+  mockRequireDistrictContext.mockResolvedValue(VALID_CONTEXT);
+});
+
+describe("assignmentsTeacherList - authorization", () => {
+  test("rejects non-teacher role", async () => {
+    mockRequireDistrictContext.mockResolvedValue({
+      ...VALID_CONTEXT,
+      role: "student",
+    });
+    await expect(
+      __assignmentsTeacherListHandler(makeRequest()),
+    ).rejects.toBeInstanceOf(PlatformError);
+  });
+
+  test("propagates missing-district-context rejection", async () => {
+    const err = new PlatformError("district.missing", "no district");
+    mockRequireDistrictContext.mockRejectedValue(err);
+    await expect(__assignmentsTeacherListHandler(makeRequest())).rejects.toBe(
+      err,
+    );
+  });
+});
+
+describe("assignmentsTeacherList - query shape", () => {
+  test("queries by teacherId, schoolId, and published/closed statuses", async () => {
+    mockAssignmentsGet.mockResolvedValue({ docs: [] });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(mockWhere1).toHaveBeenCalledWith("teacherId", "==", TEACHER_UID);
+    expect(mockWhere2).toHaveBeenCalledWith("schoolId", "==", SCHOOL_ID);
+    expect(mockWhere3).toHaveBeenCalledWith(
+      "status",
+      "in",
+      ["published", "closed"],
+    );
+    expect(res.items).toEqual([]);
+  });
+});
+
+describe("assignmentsTeacherList - response filtering", () => {
+  test("returns owned published assignment with resolved className", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a1")],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toEqual([
+      {
+        assignmentId: "a1",
+        lessonSlug: "lesson_g7_earths-layers",
+        title: "Earth's Layers",
+        classId: "class-a",
+        className: "Class class-a",
+        status: "published",
+      },
+    ]);
+  });
+
+  test("excludes cross-owner assignment defensively", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a2", { teacherId: "other-teacher" })],
+    });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toEqual([]);
+  });
+
+  test("excludes cross-district assignment defensively", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a3", { schoolId: "other-school" })],
+    });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toEqual([]);
+  });
+
+  test("excludes assignment whose class is owned by another teacher", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a4")],
+    });
+    mockClassGet.mockResolvedValue(
+      classDoc("class-a", { teacherId: "other-teacher" }),
+    );
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toEqual([]);
+  });
+
+  test("closed assignment retained", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a5", { status: "closed" })],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toHaveLength(1);
+    expect(res.items[0].status).toBe("closed");
+  });
+
+  test("deterministic ordering by (classId, assignmentId)", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [
+        assignmentDoc("z", { classId: "class-b" }),
+        assignmentDoc("a", { classId: "class-b" }),
+        assignmentDoc("m", { classId: "class-a" }),
+      ],
+    });
+    mockClassGet.mockImplementation(() => Promise.resolve(classDoc("c")));
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId)).toEqual(["m", "a", "z"]);
+  });
+
+  test("returns no student or attempt fields", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a6")],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    const item = res.items[0];
+    const keys = Object.keys(item);
+    for (const forbidden of [
+      "studentId",
+      "recipientId",
+      "attemptId",
+      "sessionId",
+      "teacherId",
+      "districtId",
+      "schoolId",
+      "answerKey",
+      "explanation",
+      "recipients",
+    ]) {
+      expect(keys).not.toContain(forbidden);
+    }
+  });
+
+  test("empty result returns empty items array", async () => {
+    mockAssignmentsGet.mockResolvedValue({ docs: [] });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toEqual([]);
+  });
+});

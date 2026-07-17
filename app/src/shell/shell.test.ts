@@ -2820,3 +2820,434 @@ describe("Assign Experience - Sprint 13B remediation", () => {
     }
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 13C remediation - multiple-assignment selection interface
+// -----------------------------------------------------------------------------
+
+describe("Assign Experience - Sprint 13C multiple-assignment selection", () => {
+  const teacher = teacherSession();
+
+  const twoClasses: ReadonlyArray<ClassSummary> = freeze([
+    freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
+    freeze({ id: "c2", title: "7B Systems", grade: "7", status: "active" }),
+  ] as ClassSummary[]);
+  const listTwo: ListClasses = () => Promise.resolve(twoClasses);
+
+  type CreateDraftIn = {
+    assignmentId: string;
+    classId: string;
+    lessonSlug: string;
+    lessonVersion: string;
+    mode: "practice" | "classroom";
+    title?: string;
+  };
+  type PublishIn = { assignmentId: string };
+  const makeAssignments = () => {
+    const drafts: CreateDraftIn[] = [];
+    const publishes: PublishIn[] = [];
+    return {
+      drafts,
+      publishes,
+      seam: {
+        createDraft: async (input: CreateDraftIn) => {
+          drafts.push(input);
+          return {
+            assignmentId: input.assignmentId,
+            status: "draft" as const,
+            alreadyCreated: false,
+          };
+        },
+        publish: async (input: PublishIn) => {
+          publishes.push(input);
+          return {
+            assignmentId: input.assignmentId,
+            status: "published" as const,
+            alreadyPublished: false,
+          };
+        },
+      },
+    };
+  };
+
+  type Registered = {
+    assignmentId: string;
+    title: string;
+    className: string;
+    status: "draft" | "published" | "closed";
+    lessonSlug?: string;
+    classId?: string;
+  };
+  const makeHydratedSeam = (initial: ReadonlyArray<Registered>) => {
+    const store = new Map<string, Registered>();
+    for (const m of initial) store.set(m.assignmentId, { ...m });
+    const opened: string[] = [];
+    return {
+      opened,
+      seam: {
+        register: (m: Registered) => {
+          store.set(m.assignmentId, { ...m });
+        },
+        open: (id: string) => {
+          opened.push(id);
+        },
+        list: () => Array.from(store.values()),
+      },
+    };
+  };
+
+  const confirmAllClasses = async (
+    mount: HTMLElement,
+    lessonSlug: string,
+  ): Promise<void> => {
+    mount
+      .querySelector<HTMLButtonElement>(
+        `[data-testid=lesson-assign-${lessonSlug}]`,
+      )
+      ?.click();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+  };
+
+  const closeSelection = (): void => {
+    document
+      .querySelectorAll("[data-testid=summary-select-overlay]")
+      .forEach((el) => el.remove());
+  };
+
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+    closeSelection();
+  });
+
+  test("hydrated multiple assignments render View summaries (not View summary)", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "a1",
+        title: "Earth's Layers",
+        className: "6A Life Science · Grade 6",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "a2",
+        title: "Earth's Layers",
+        className: "7B Systems · Grade 7",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(view).not.toBeNull();
+    expect(view?.textContent).toBe("View summaries");
+    expect(view?.getAttribute("data-assignment-count")).toBe("2");
+    expect(view?.getAttribute("aria-label")).toContain("View summaries for");
+    expect(view?.hasAttribute("data-assignment-id")).toBe(false);
+  });
+
+  test("clicking View summaries opens a selection interface listing every assignment", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "a1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "a2",
+        title: "Earth's Layers",
+        className: "7B Systems",
+        status: "closed",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-view-summary-earths-layers]",
+      )
+      ?.click();
+    const dialog = document.querySelector(
+      "[data-testid=summary-select-dialog]",
+    );
+    expect(dialog).not.toBeNull();
+    expect(dialog?.getAttribute("role")).toBe("dialog");
+    expect(dialog?.getAttribute("aria-modal")).toBe("true");
+    expect(
+      document.querySelector("[data-testid=summary-select-title]")?.textContent,
+    ).toContain("Earth's Layers");
+    const choices = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        "[data-testid^=summary-select-choice-]",
+      ),
+    );
+    expect(choices).toHaveLength(2);
+    for (const c of choices) expect(c.tagName).toBe("BUTTON");
+    const texts = choices.map((c) => c.textContent ?? "");
+    expect(texts.some((t) => t.includes("6A Life Science"))).toBe(true);
+    expect(texts.some((t) => t.includes("7B Systems"))).toBe(true);
+    expect(texts.some((t) => t.includes("Published"))).toBe(true);
+    expect(texts.some((t) => t.includes("Closed"))).toBe(true);
+    for (const t of texts) {
+      expect(t).not.toContain("a1");
+      expect(t).not.toContain("a2");
+    }
+  });
+
+  test("choices sort by class name ascending, then by status", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "z",
+        title: "T",
+        className: "6C",
+        status: "closed",
+        lessonSlug: "earths-layers",
+        classId: "cc",
+      },
+      {
+        assignmentId: "y",
+        title: "T",
+        className: "6A",
+        status: "closed",
+        lessonSlug: "earths-layers",
+        classId: "ca",
+      },
+      {
+        assignmentId: "x",
+        title: "T",
+        className: "6A",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "cb",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-view-summary-earths-layers]",
+      )
+      ?.click();
+    const ids = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        "[data-testid^=summary-select-choice-]",
+      ),
+    ).map((b) => b.getAttribute("data-assignment-id"));
+    expect(ids).toEqual(["x", "y", "z"]);
+  });
+
+  test("selecting a specific choice opens that exact assignment ID", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "a-first",
+        title: "T",
+        className: "6A",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "a-second",
+        title: "T",
+        className: "6B",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-view-summary-earths-layers]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=summary-select-choice-a-second]",
+      )
+      ?.click();
+    expect(detail.opened).toEqual(["a-second"]);
+    expect(
+      document.querySelector("[data-testid=summary-select-overlay]"),
+    ).toBeNull();
+  });
+
+  test("Escape dismisses the selection interface without opening anything", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "a1",
+        title: "T",
+        className: "6A",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "a2",
+        title: "T",
+        className: "6B",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-view-summary-earths-layers]",
+      )
+      ?.click();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(
+      document.querySelector("[data-testid=summary-select-overlay]"),
+    ).toBeNull();
+    expect(detail.opened).toEqual([]);
+  });
+
+  test("publishing a second assignment for the same lesson flips View summary to View summaries", async () => {
+    const asn = makeAssignments();
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "existing",
+        title: "Earth's Layers",
+        className: "9Z Legacy",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "cX",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    const before = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(before?.textContent).toBe("View summary");
+    // Publish to c1 - now two assignments exist for the same lesson.
+    await confirmAllClasses(mount, "earths-layers");
+    const after = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(after?.textContent).toBe("View summaries");
+    // The newly published assignment appears immediately without reload.
+    after?.click();
+    const choices = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        "[data-testid^=summary-select-choice-]",
+      ),
+    );
+    // 1 hydrated + 2 published (one per class) = 3 choices.
+    expect(choices.length).toBeGreaterThanOrEqual(3);
+  });
+
+  test("publishing another lesson does not alter the first lesson's choices", async () => {
+    const asn = makeAssignments();
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "e1",
+        title: "Earth's Layers",
+        className: "6A",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "e2",
+        title: "Earth's Layers",
+        className: "6B",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    await confirmAllClasses(mount, "what-is-life");
+    // earths-layers still has exactly its 2 hydrated choices.
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-view-summary-earths-layers]",
+      )
+      ?.click();
+    const ids = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        "[data-testid^=summary-select-choice-]",
+      ),
+    )
+      .map((b) => b.getAttribute("data-assignment-id"))
+      .sort();
+    expect(ids).toEqual(["e1", "e2"]);
+  });
+
+  test("malformed hydrated entry does not suppress valid siblings", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "",
+        title: "",
+        className: "",
+        status: "published",
+        lessonSlug: "earths-layers",
+      },
+      {
+        assignmentId: "a-valid",
+        title: "Earth's Layers",
+        className: "6A",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    // Only the valid entry remains, so singular label applies.
+    expect(view?.textContent).toBe("View summary");
+    expect(view?.getAttribute("data-assignment-id")).toBe("a-valid");
+  });
+});

@@ -14,7 +14,14 @@ import {
   type LessonTopic,
   type SurfaceableLesson,
 } from "../../curriculum/curriculumManifest";
-import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
+import type {
+  AssignmentDetailMetadata,
+  AssignmentStatus,
+} from "../../assignments/detail/types";
+import {
+  compareAssignmentsForSelection,
+  isValidForSelection,
+} from "../../assignments/detail/grouping";
 
 // Sprint 13B remediation: narrow visible entry-point seam so an
 // authenticated teacher can reach the certified Assignment Detail
@@ -26,6 +33,10 @@ import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
 export type CurriculumAssignmentDetailSeam = {
   readonly register: (metadata: AssignmentDetailMetadata) => void;
   readonly open: (assignmentId: string) => void;
+  // Sprint 13C: enumeration accessor used at Curriculum mount to restore
+  // the per-lesson mapping after a full page reload. When absent the
+  // surface behaves exactly as Sprint 13B (session-only affordance).
+  readonly list?: () => ReadonlyArray<AssignmentDetailMetadata>;
 };
 
 // Curriculum surface. The teacher curriculum landing page introduced by
@@ -123,36 +134,55 @@ type Assignment = {
 // its unassigned state, mirroring section 8 of ASSIGN_EXPERIENCE.md.
 const sessionAssignments: Map<string, Assignment> = new Map();
 
-// Sprint 13B remediation. Session-scoped map from lesson slug to the
-// most recently published assignmentId for that lesson. Populated only
-// after `assignmentsPublish` resolves; consumed by the lesson card to
-// render the visible `View summary` affordance. The registry itself is
-// owned by the entry point; this map only remembers which id belongs
-// to which visible lesson card so the card opens its own assignment.
-// UID-scoped so a same-tab teacher swap cannot leak the prior teacher's
-// mapping into the new session.
-let sessionAssignmentIdsByLesson: {
+// Sprint 13B remediation extended by Sprint 13C: session-scoped map from
+// lesson slug to every registered assignment metadata for that lesson.
+// A lesson may have more than one concurrent assignment when a teacher
+// has assigned the same lesson to multiple classes (or across
+// publication cycles). Populated at surface mount from the certified
+// retrieval-hydrated registry and after every `assignmentsPublish`
+// resolves. Deduplicated by canonical `assignmentId`. UID-scoped so a
+// same-tab teacher swap cannot leak the prior teacher's mapping.
+let sessionAssignmentsByLesson: {
   readonly uid: string;
-  readonly map: Map<string, string>;
+  readonly map: Map<string, Map<string, AssignmentDetailMetadata>>;
 } | null = null;
 
-function ensureAssignmentIdBucket(uid: string): Map<string, string> {
+function ensureAssignmentBucket(
+  uid: string,
+): Map<string, Map<string, AssignmentDetailMetadata>> {
   if (
-    sessionAssignmentIdsByLesson === null ||
-    sessionAssignmentIdsByLesson.uid !== uid
+    sessionAssignmentsByLesson === null ||
+    sessionAssignmentsByLesson.uid !== uid
   ) {
-    sessionAssignmentIdsByLesson = { uid, map: new Map() };
+    sessionAssignmentsByLesson = { uid, map: new Map() };
   }
-  return sessionAssignmentIdsByLesson.map;
+  return sessionAssignmentsByLesson.map;
 }
 
-function readAssignmentIdForLesson(
+function registerAssignmentMetadata(
+  uid: string,
+  metadata: AssignmentDetailMetadata,
+): void {
+  if (!isValidForSelection(metadata)) return;
+  const bucket = ensureAssignmentBucket(uid);
+  const slug = metadata.lessonSlug as string;
+  let byId = bucket.get(slug);
+  if (byId === undefined) {
+    byId = new Map<string, AssignmentDetailMetadata>();
+    bucket.set(slug, byId);
+  }
+  byId.set(metadata.assignmentId, metadata);
+}
+
+function readAssignmentsForLesson(
   uid: string,
   slug: string,
-): string | null {
-  const bucket = sessionAssignmentIdsByLesson;
-  if (bucket === null || bucket.uid !== uid) return null;
-  return bucket.map.get(slug) ?? null;
+): ReadonlyArray<AssignmentDetailMetadata> {
+  const bucket = sessionAssignmentsByLesson;
+  if (bucket === null || bucket.uid !== uid) return [];
+  const byId = bucket.map.get(slug);
+  if (byId === undefined) return [];
+  return Array.from(byId.values()).sort(compareAssignmentsForSelection);
 }
 
 // Teacher class list cache. Populated lazily on surface mount so the
@@ -301,6 +331,23 @@ export function renderCurriculumSurface(
   const assignments = deps.assignments ?? null;
   const assignmentDetail = deps.assignmentDetail ?? null;
   const doc = mount.ownerDocument;
+
+  // Sprint 13C: restore the session-scoped per-lesson assignment map from
+  // the certified retrieval-hydrated registry so a full page reload does
+  // not lose the visible `View summary` (or `View summaries`) affordance.
+  // Only teacher-owned metadata is consumed. Deduplication is by canonical
+  // `assignmentId`; multiple assignments for the same lesson slug are
+  // preserved so the calm selection interface can surface them.
+  if (assignmentDetail !== null && typeof assignmentDetail.list === "function") {
+    try {
+      for (const entry of assignmentDetail.list()) {
+        registerAssignmentMetadata(session.uid, entry);
+      }
+    } catch {
+      // Calm degradation. A registry-list failure never blocks Curriculum
+      // rendering; the surface reverts to Sprint 13B session-only behavior.
+    }
+  }
 
   const welcome = doc.createElement("h2");
   welcome.id = "surface-headline";
@@ -627,12 +674,22 @@ function renderLessonCard(
   return card;
 }
 
-// Sprint 13B remediation. Renders (or removes) the visible `View
-// summary` secondary action on a lesson card. The control is present
-// only when a valid assignment ID is registered for this lesson in the
-// current active-teacher session AND an `open` callback has been wired
-// through deps. Invoking the control passes the stored assignmentId to
-// the entry-point opener; the card never re-implements detail mounting.
+// Sprint 13B remediation, extended by Sprint 13C. Renders (or removes)
+// the visible teacher-facing secondary action on a lesson card. When
+// exactly one valid assignment is registered for the lesson the control
+// is labeled `View summary` and opens that assignment directly. When two
+// or more valid assignments are registered the control is labeled
+// `View summaries` and opens a compact deterministic selection interface.
+// Invoking the resolved choice always passes the exact selected
+// `assignmentId` to the entry-point opener; the card never re-implements
+// detail mounting.
+const STATUS_LABEL_FOR_SELECTION: Readonly<Record<AssignmentStatus, string>> =
+  Object.freeze({
+    draft: "Draft",
+    published: "Published",
+    closed: "Closed",
+  });
+
 function refreshViewSummaryControl(
   card: HTMLElement,
   lesson: SurfaceableLesson,
@@ -645,31 +702,180 @@ function refreshViewSummaryControl(
   const existing = actions.querySelector<HTMLButtonElement>(
     `[data-testid=lesson-view-summary-${lesson.slug}]`,
   );
-  const assignmentId =
+  const assignments =
     assignmentDetail === null
-      ? null
-      : readAssignmentIdForLesson(teacherUid, lesson.slug);
-  if (assignmentId === null || assignmentDetail === null) {
+      ? []
+      : readAssignmentsForLesson(teacherUid, lesson.slug);
+  if (assignments.length === 0 || assignmentDetail === null) {
     if (existing !== null) existing.remove();
     return;
   }
-  if (existing !== null) {
-    existing.setAttribute("data-assignment-id", assignmentId);
-    return;
-  }
+  // Rebuild the control so the singular/plural label stays consistent
+  // when the count crosses the 1 -> 2 boundary during the same session.
+  if (existing !== null) existing.remove();
   const view = doc.createElement("button");
   view.type = "button";
   view.className = "shell-lesson-view-summary";
   view.setAttribute("data-testid", `lesson-view-summary-${lesson.slug}`);
-  view.setAttribute("data-assignment-id", assignmentId);
-  view.setAttribute("aria-label", `View summary for ${lesson.title}`);
-  view.textContent = "View summary";
-  view.addEventListener("click", () => {
-    const id = view.getAttribute("data-assignment-id");
-    if (id === null || id.length === 0) return;
-    assignmentDetail.open(id);
-  });
+  if (assignments.length === 1) {
+    const only = assignments[0]!;
+    view.setAttribute("data-assignment-id", only.assignmentId);
+    view.setAttribute("data-assignment-count", "1");
+    view.setAttribute("aria-label", `View summary for ${lesson.title}`);
+    view.textContent = "View summary";
+    view.addEventListener("click", () => {
+      const id = view.getAttribute("data-assignment-id");
+      if (id === null || id.length === 0) return;
+      assignmentDetail.open(id);
+    });
+  } else {
+    view.setAttribute("data-assignment-count", String(assignments.length));
+    view.setAttribute(
+      "aria-label",
+      `View summaries for ${lesson.title}`,
+    );
+    view.textContent = "View summaries";
+    view.addEventListener("click", () => {
+      openAssignmentSelection({
+        doc,
+        lesson,
+        assignments: readAssignmentsForLesson(teacherUid, lesson.slug),
+        onSelect: (assignmentId) => {
+          assignmentDetail.open(assignmentId);
+        },
+        returnFocusTo: view,
+      });
+    });
+  }
   actions.appendChild(view);
+}
+
+// -----------------------------------------------------------------------------
+// Assignment selection interface (Sprint 13C remediation)
+// -----------------------------------------------------------------------------
+//
+// Compact overlay reused from the existing Assign dialog pattern so no new
+// design system is introduced. The interface has a clear heading, names
+// the lesson, lists each registered assignment as a native button with an
+// accessible name that includes class and status, supports keyboard
+// navigation and Escape-dismissal, restores focus to the invoking
+// `View summaries` control, and never displays assignment/class/teacher
+// identifiers or any student-scoped data.
+
+type OpenAssignmentSelectionInput = {
+  readonly doc: Document;
+  readonly lesson: SurfaceableLesson;
+  readonly assignments: ReadonlyArray<AssignmentDetailMetadata>;
+  readonly onSelect: (assignmentId: string) => void;
+  readonly returnFocusTo: HTMLElement | null;
+};
+
+function openAssignmentSelection(input: OpenAssignmentSelectionInput): void {
+  const { doc, lesson, assignments, onSelect, returnFocusTo } = input;
+  if (assignments.length === 0) return;
+
+  const overlay = doc.createElement("div");
+  overlay.className = "shell-assign-overlay shell-summary-select-overlay";
+  overlay.setAttribute("data-testid", "summary-select-overlay");
+
+  const dialog = doc.createElement("div");
+  dialog.className = "shell-assign-dialog shell-summary-select-dialog";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "summary-select-title");
+  dialog.setAttribute("data-testid", "summary-select-dialog");
+  dialog.setAttribute("data-lesson-slug", lesson.slug);
+
+  const title = doc.createElement("h3");
+  title.id = "summary-select-title";
+  title.className = "shell-assign-title";
+  title.setAttribute("data-testid", "summary-select-title");
+  title.textContent = `Choose an assignment for ${lesson.title}`;
+  dialog.appendChild(title);
+
+  const list = doc.createElement("ul");
+  list.className = "shell-summary-select-list";
+  list.setAttribute("data-testid", "summary-select-list");
+  list.setAttribute("role", "list");
+  dialog.appendChild(list);
+
+  let closed = false;
+  const close = (): void => {
+    if (closed) return;
+    closed = true;
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    doc.removeEventListener("keydown", onKey);
+    if (returnFocusTo !== null) {
+      try {
+        returnFocusTo.focus({ preventScroll: true });
+      } catch {
+        // ignored
+      }
+    }
+  };
+  const onKey = (ev: KeyboardEvent): void => {
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      close();
+    }
+  };
+
+  for (const meta of assignments) {
+    const item = doc.createElement("li");
+    item.className = "shell-summary-select-item";
+    item.setAttribute("role", "listitem");
+    const btn = doc.createElement("button");
+    btn.type = "button";
+    btn.className = "shell-summary-select-choice";
+    btn.setAttribute(
+      "data-testid",
+      `summary-select-choice-${meta.assignmentId}`,
+    );
+    btn.setAttribute("data-assignment-id", meta.assignmentId);
+    const statusLabel = STATUS_LABEL_FOR_SELECTION[meta.status];
+    const visibleLabel = `${meta.className} · ${statusLabel}`;
+    btn.textContent = visibleLabel;
+    btn.setAttribute(
+      "aria-label",
+      `Open assignment summary for ${meta.className}, ${statusLabel}`,
+    );
+    // Status is not conveyed through color alone; the visible text carries
+    // the label and the accessible name repeats it.
+    btn.setAttribute("data-status", meta.status);
+    btn.addEventListener("click", () => {
+      const id = meta.assignmentId;
+      close();
+      onSelect(id);
+    });
+    item.appendChild(btn);
+    list.appendChild(item);
+  }
+
+  const footer = doc.createElement("div");
+  footer.className = "shell-assign-footer";
+  const cancel = doc.createElement("button");
+  cancel.type = "button";
+  cancel.className = "shell-assign-cancel";
+  cancel.setAttribute("data-testid", "summary-select-cancel");
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", close);
+  footer.appendChild(cancel);
+  dialog.appendChild(footer);
+
+  overlay.appendChild(dialog);
+  doc.body.appendChild(overlay);
+  doc.addEventListener("keydown", onKey);
+  overlay.addEventListener("click", (ev) => {
+    if (ev.target === overlay) close();
+  });
+  try {
+    const firstChoice = list.querySelector<HTMLButtonElement>(
+      ".shell-summary-select-choice",
+    );
+    (firstChoice ?? cancel).focus({ preventScroll: true });
+  } catch {
+    // ignored
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -1334,13 +1540,16 @@ async function runAssignmentLifecycle(input: {
       // `View summary` opener. Only teacher-owned metadata is stored.
       if (assignmentDetail !== null) {
         try {
-          assignmentDetail.register({
+          const meta: AssignmentDetailMetadata = {
             assignmentId,
             title: lesson.title,
             className: row.className,
             status: "published",
-          });
-          ensureAssignmentIdBucket(teacherUid).set(lesson.slug, assignmentId);
+            lessonSlug: lesson.slug,
+            classId: row.classId,
+          };
+          assignmentDetail.register(meta);
+          registerAssignmentMetadata(teacherUid, meta);
         } catch {
           // defensive no-op: registry failure never disturbs the
           // authoritative publish outcome
@@ -1445,5 +1654,5 @@ export function _resetCurriculumSessionStateForTest(): void {
   sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
   sessionPreferences.topic = "";
   sessionPreferences.lmsTopicId = "";
-  sessionAssignmentIdsByLesson = null;
+  sessionAssignmentsByLesson = null;
 }

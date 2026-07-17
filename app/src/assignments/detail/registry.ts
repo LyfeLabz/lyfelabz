@@ -21,6 +21,7 @@ import type { AssignmentDetailMetadata } from "./types";
 export type AssignmentDetailRegistry = {
   readonly register: (metadata: AssignmentDetailMetadata) => void;
   readonly lookup: (assignmentId: string) => AssignmentDetailMetadata | null;
+  readonly list: () => ReadonlyArray<AssignmentDetailMetadata>;
   readonly clear: () => void;
 };
 
@@ -28,9 +29,15 @@ export function createAssignmentDetailRegistry(): AssignmentDetailRegistry {
   const store = new Map<string, AssignmentDetailMetadata>();
   return Object.freeze({
     register: (metadata) => {
+      // Sprint 13C: deduplicate by canonical assignmentId. A hydrated copy
+      // and a current-session publication of the same assignment collapse
+      // into one entry; the latest write wins so a subsequent status
+      // transition observed in-session (for example, a publish followed by
+      // a close) supersedes the stale hydrated status.
       store.set(metadata.assignmentId, metadata);
     },
     lookup: (assignmentId) => store.get(assignmentId) ?? null,
+    list: () => Array.from(store.values()),
     clear: () => {
       store.clear();
     },

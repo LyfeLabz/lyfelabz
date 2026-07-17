@@ -18,6 +18,17 @@ export type AssignmentDetailMetadata = {
   readonly title: string;
   readonly status: AssignmentStatus;
   readonly className: string;
+  // Sprint 13C: canonical lesson association so hydrated assignments can be
+  // mapped back to the Curriculum lesson card that produced them. Absent on
+  // pre-Sprint-13C registrations (backward compatible); present on every
+  // hydrated assignment returned by the certified teacher-list retrieval
+  // path.
+  readonly lessonSlug?: string;
+  // Sprint 13C: canonical class association so multiple assignments for the
+  // same lesson (one per class) can be distinguished by the client-side
+  // selection UI without leaking student, recipient, attempt, or session
+  // identifiers.
+  readonly classId?: string;
 };
 
 // Injected reader seam. The detail surface never imports from

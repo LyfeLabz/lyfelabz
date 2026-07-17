@@ -26,6 +26,12 @@ export {
   type AssignmentsRecipientAddResponse,
 } from "./assignments-recipient-add";
 export {
+  assignmentsTeacherList,
+  type AssignmentsTeacherListItem,
+  type AssignmentsTeacherListRequest,
+  type AssignmentsTeacherListResponse,
+} from "./assignments-teacher-list";
+export {
   assignmentsUpdateDraft,
   type AssignmentsUpdateDraftRequest,
   type AssignmentsUpdateDraftResponse,
