@@ -3060,3 +3060,49 @@ Implement the PDR-029l recipient membership gate on `assessmentSessionsBegin` an
 ### Certification
 
 Sprint 12E Slice 2B is CERTIFIED. Sprint 12E Slice 1 remains CONDITIONALLY CERTIFIED pending Sprint 12E Slice 2C summary migration.
+
+---
+
+## Sprint 12E Slice 2C: Summary Migration and Recertification
+
+**Dates:** 2026-07-17
+**Status:** Complete
+**Detailed report:** SPRINT_12E_SLICE_2C_COMPLETION_REPORT.md
+
+### Objective
+
+Migrate `assessmentAssignmentSummary` from the current-active-enrollment population authority to the canonical frozen assignment-recipient population at `assignments/{assignmentId}/recipients/{studentId}` per PDR-029h and PDR-029l. Implement the ratified PDR-029 section 6 tie-break policy, including the `completedAt` tie-breaker mapped to the on-disk `submittedAt` Timestamp. Recertify Sprint 12E Slice 1.
+
+### Deliverables
+
+- `assessmentAssignmentSummary` now reads `assignmentRecipientsCollectionRef(assignmentId)` as the sole population authority and no longer queries `enrollments`. Every recipient is validated against the loaded assignment and the caller context (assignmentId, classId, teacherId, schoolId, districtId, status === "assigned", non-empty studentId, and document id === studentId). Malformed rows are silently dropped consistent with the repository's defense-in-depth pattern and cannot corrupt the count invariant.
+- `selectHighestCompletedAttempt` implements the full PDR-029 section 6 canonical order: percentage, `attemptNumber`, `completedAt` (on-disk `submittedAt`), ascending `attemptId`. Valid timestamps outrank missing or malformed timestamps at rule 3; two missing timestamps fall through to rule 4.
+- Historical roster stability is guaranteed by construction and asserted by tests: students who transfer, withdraw, or are archived remain in the summary; students newly enrolled without a recipient record are excluded; late `manualAddition` recipients are included.
+- Response allowlist and confidentiality invariants are preserved. No student, recipient, attempt, or session identifier crosses the boundary.
+- Sprint 12E Slice 1 is fully certified. The Slice 1 completion report gains an additive Sprint 12E Slice 2C recertification section that preserves the original conditional certification record.
+
+### Files created
+
+- `docs/platform/SPRINT_12E_SLICE_2C_COMPLETION_REPORT.md`.
+
+### Files modified
+
+- `platform/functions/src/assessments/assessment-assignment-summary.ts` (recipient population migration; `completedAt` tie-breaker; documentation and shape updates).
+- `platform/functions/src/assessments/assessment-assignment-summary.test.ts` (recipient seeder, historical stability tests, malformed recipient tests, PDR-029 tie-break tests).
+- `docs/platform/SPRINT_12E_SLICE_1_COMPLETION_REPORT.md` (Sprint 12E Slice 2C recertification section).
+
+### Validation results
+
+- Cloud Functions typecheck: passed.
+- Cloud Functions lint: passed.
+- Cloud Functions build: passed.
+- Cloud Functions test suite: 38 suites, 861 tests, all passed.
+- Targeted summary suite: 1 suite, 114 tests, all passed.
+- No Firestore Rules, publication, recipient-persistence, session, finalize, autosave, enrollment, UI, LMS, schema, dependency, configuration, or index files were modified.
+- Zero em dashes across every created or modified documentation file.
+- No deployment.
+- No commit.
+
+### Certification
+
+Sprint 12E Slice 2C is CERTIFIED. Sprint 12E Slice 1 is recertified as CERTIFIED under the additive Sprint 12E Slice 2C recertification section of its completion report.

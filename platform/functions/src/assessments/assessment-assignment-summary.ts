@@ -1,20 +1,21 @@
 import { type CallableRequest } from "firebase-functions/v2/https";
+import { type Timestamp } from "firebase-admin/firestore";
 
 import {
   platformCallable,
   PlatformError,
   assessmentSessionsCollectionRef,
   assignmentDocRef,
+  assignmentRecipientsCollectionRef,
   attemptsCollectionRef,
   classDocRef,
-  enrollmentsCollectionRef,
   log,
   requireDistrictContext,
   type AssessmentAttemptRecord,
   type AssessmentSessionRecord,
+  type AssignmentRecipientRecord,
   type AssignmentRecord,
   type ClassRecord,
-  type EnrollmentRecord,
 } from "../shared";
 
 // Client-supplied request payload for assessmentAssignmentSummary. The
@@ -28,7 +29,7 @@ export type AssessmentAssignmentSummaryRequest = {
 };
 
 // Aggregate teacher-facing summary of one assignment. Every field is a
-// bounded numeric aggregate; no student, attempt, session, enrollment,
+// bounded numeric aggregate; no student, attempt, session, recipient,
 // item-result, response, or answer-key value crosses the boundary. Score
 // metrics are `null` when no completed attempt exists so the client renders
 // an unambiguous empty state instead of misleading zeros.
@@ -83,6 +84,29 @@ function isNonEmptyString(value: unknown): value is string {
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+// PDR-029 tie-break policy rule 3 compares the canonical completion
+// timestamp on each attempt. The certified attempt record freezes exactly
+// one completion instant: `submittedAt`, stamped by the sole authorized
+// writer (`assessmentAttemptsFinalize`) via `FieldValue.serverTimestamp()`
+// per `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` sections 7 and 21. The
+// ratified policy names this instant "completedAt"; the on-disk
+// representation is `submittedAt`. Nothing else on the attempt or session
+// record is a valid substitute: session `startedAt` is not the completion
+// instant, and Firestore document creation time is not part of the
+// certified schema. We convert the timestamp to a finite millisecond
+// number so the comparison remains total and deterministic.
+function completedAtMillis(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "object" && value !== null) {
+    const maybe = value as { toMillis?: () => unknown };
+    if (typeof maybe.toMillis === "function") {
+      const raw = maybe.toMillis();
+      if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+    }
+  }
+  return null;
 }
 
 function validateRequest(
@@ -177,20 +201,25 @@ async function loadClass(classId: string): Promise<ClassRecord> {
 }
 
 // Selects the score-metric-bearing attempt for a single completed student
-// per the certified attempt-selection policy documented in the Sprint 12E
-// Slice 1 completion report. The current policy is "highest completed
-// attempt": among the student's valid frozen attempts for the assignment,
-// pick the one with the largest `percentage`. Ties are broken by the
-// larger `attemptNumber` and then by the lexicographic `attemptId` so the
-// selection is fully deterministic and does not depend on Firestore
-// document ordering. `AssessmentAttemptRecord.percentage`,
-// `attemptNumber`, `score`, and `maxScore` are all frozen at finalize.
+// per PDR-029 section 6. The canonical order is:
+//   1. Higher `percentage` wins.
+//   2. Higher `attemptNumber` wins.
+//   3. Later `completedAt` (on-disk `submittedAt`) wins when both
+//      attempts carry comparable timestamps. A valid timestamp outranks a
+//      missing or malformed timestamp.
+//   4. Ascending `attemptId` wins as the final deterministic fallback so
+//      the selection never depends on Firestore document ordering.
+// `AssessmentAttemptRecord.percentage`, `attemptNumber`, `score`,
+// `maxScore`, and `submittedAt` are all frozen at finalize. Raw `score`
+// MUST NOT be used for comparison because `maxScore` may differ across
+// assessment revisions (PDR-029 section 5).
 export type SelectedCompletedAttempt = {
   readonly attemptId: string;
   readonly percentage: number;
   readonly score: number;
   readonly maxScore: number;
   readonly attemptNumber: number;
+  readonly completedAtMillis: number | null;
 };
 
 export function selectHighestCompletedAttempt(
@@ -211,26 +240,44 @@ export function selectHighestCompletedAttempt(
       score: data.score,
       maxScore: data.maxScore,
       attemptNumber: data.attemptNumber,
+      completedAtMillis: completedAtMillis(data.submittedAt),
     };
     if (best === null) {
       best = candidate;
       continue;
     }
+    // Rule 1: higher percentage wins.
     if (candidate.percentage > best.percentage) {
       best = candidate;
       continue;
     }
-    if (candidate.percentage === best.percentage) {
-      if (candidate.attemptNumber > best.attemptNumber) {
+    if (candidate.percentage < best.percentage) continue;
+    // Rule 2: higher attemptNumber wins.
+    if (candidate.attemptNumber > best.attemptNumber) {
+      best = candidate;
+      continue;
+    }
+    if (candidate.attemptNumber < best.attemptNumber) continue;
+    // Rule 3: later completedAt wins. A valid finite timestamp outranks
+    // a missing or malformed timestamp so a well-formed record never
+    // loses to a malformed peer.
+    const candTs = candidate.completedAtMillis;
+    const bestTs = best.completedAtMillis;
+    if (candTs !== null && bestTs === null) {
+      best = candidate;
+      continue;
+    }
+    if (candTs === null && bestTs !== null) continue;
+    if (candTs !== null && bestTs !== null) {
+      if (candTs > bestTs) {
         best = candidate;
         continue;
       }
-      if (
-        candidate.attemptNumber === best.attemptNumber &&
-        candidate.attemptId > best.attemptId
-      ) {
-        best = candidate;
-      }
+      if (candTs < bestTs) continue;
+    }
+    // Rule 4: ascending attemptId is the final deterministic fallback.
+    if (candidate.attemptId < best.attemptId) {
+      best = candidate;
     }
   }
   return best;
@@ -260,9 +307,12 @@ function safeLog(fn: () => void): void {
 // assessmentAssignmentSummary
 //
 // Returns aggregate teacher-facing metrics for one assignment owned by a
-// class the authenticated teacher currently owns. Sprint 12E Slice 1
-// (retrieval, authenticated teacher surface for the future assignment
-// summary card).
+// class the authenticated teacher currently owns. Sprint 12E Slice 2C
+// migrates the population authority from the current active enrollment
+// roster to the canonical frozen assignment-recipient subcollection at
+// `assignments/{assignmentId}/recipients/{studentId}` per PDR-029h and
+// PDR-029l. Roster changes after publication no longer alter the
+// historical summary population.
 //
 // Authorization is layered:
 //   1. `requireDistrictContext(request)` gates authentication, active
@@ -304,48 +354,50 @@ function safeLog(fn: () => void): void {
 //   - `draft`, `published`, `closed`, and `archived` are all readable to
 //     the owning teacher per the certified read pattern for teacher-owned
 //     assignment history (ASSESSMENT_IMPLEMENTATION_CONTRACT section 17).
-//     No new session or attempt can be produced for `draft` or `archived`
-//     assignments, so a summary for those states is inherently
-//     zero-populated unless historical attempts exist. The lifecycle
-//     itself is not a gate on this read; the ownership chain is.
+//     `draft` assignments have no recipient snapshot yet, so the summary
+//     is inherently zero-populated for a draft. The lifecycle itself is
+//     not a gate on this read; the ownership chain is.
 //
 // Canonical student population:
-//   - Active `enrollments` for the assignment's frozen class, filtered by
-//     `status === "active"`. The certified data model does not currently
-//     define a frozen assignment-recipient snapshot, so "who is expected
-//     to complete this assignment right now" is the currently-enrolled
-//     roster. Historical accuracy has a documented caveat: a student who
-//     completed the assignment and then transferred or withdrew is not
-//     in the current population and is therefore not counted. This
-//     interpretation is a material deviation from a future
-//     recipient-snapshot model and is called out in the completion report.
+//   - The subcollection `assignments/{assignmentId}/recipients` is the
+//     sole authority for "who is in this assignment". Every recipient
+//     record is validated against the loaded assignment and the caller
+//     context (assignmentId, classId, schoolId, districtId, teacherId,
+//     status === "assigned", non-empty studentId, and document id ===
+//     studentId). Malformed rows that fail any predicate are silently
+//     dropped from the population per the repository's existing
+//     defense-in-depth pattern, and are not permitted to contribute to
+//     totalStudents. The recipient snapshot is captured at first
+//     publication (Sprint 12E Slice 2A) and augmented only by
+//     `assignmentsRecipientAdd` (Sprint 12E Slice 2A), so current
+//     enrollment status does not silently rewrite the summary
+//     population. Historical accuracy: a student who completed the
+//     assignment and then transferred, withdrew, or was archived
+//     remains in the summary.
 //
 // Attempt selection for score metrics:
-//   - Highest completed attempt per student, with ties broken by higher
-//     `attemptNumber` then lexicographic `attemptId`. The certified
-//     teacher-visible metric list in
-//     ASSESSMENT_IMPLEMENTATION_CONTRACT section 20 enumerates "Highest
-//     score" first, and section 18 defines the pilot rollup's
-//     `bestScore`/`bestAttemptId` as the canonical "best" attempt. This
-//     slice uses direct queries rather than the rollup, but preserves the
-//     same selection semantics so the summary card renders the same
-//     "highest" number the rollup would.
+//   - PDR-029 section 6: percentage first, then attemptNumber, then
+//     `completedAt` (on-disk `submittedAt`), then ascending `attemptId`
+//     as the final deterministic fallback. Raw `score` is never used
+//     for selection or as a tie-breaker.
 //
 // Query:
+//   - `assignments/{assignmentId}/recipients` (subcollection read)
 //   - `attempts.where("assignmentId", "==", assignmentId)` (auto index)
 //   - `assessmentSessions.where("assignmentId", "==", assignmentId)` (auto index)
-//   - `enrollments.where("classId", "==", classId)` (auto index)
-//   No composite index is introduced. Every returned document is
-//   defense-in-depth-checked against the loaded assignment/class ownership
-//   fields before it contributes to metrics; a mismatch is treated as a
-//   silent drop rather than an error because the sole documented cause is
-//   a data-invariant violation the retrieval layer must not amplify.
+//   No composite index is introduced. Every returned attempt or session
+//   document is defense-in-depth-checked against the loaded
+//   assignment/class ownership fields before it contributes to metrics;
+//   a mismatch is treated as a silent drop rather than an error because
+//   the sole documented cause is a data-invariant violation the
+//   retrieval layer must not amplify.
 //
 // Projection:
 //   - Only the fields enumerated on
 //     `AssessmentAssignmentSummaryResponse` cross the callable boundary.
-//     No student identifier, name, attempt identifier, session identifier,
-//     score, response, item result, or answer-key value is ever returned.
+//     No student identifier, name, recipient identifier, attempt
+//     identifier, session identifier, score, response, item result, or
+//     answer-key value is ever returned.
 async function assessmentAssignmentSummaryHandler(
   request: CallableRequest<unknown>,
 ): Promise<AssessmentAssignmentSummaryResponse> {
@@ -395,7 +447,7 @@ async function assessmentAssignmentSummaryHandler(
 
   const classId = assignment.classId;
 
-  const [attemptsSnapshot, sessionsSnapshot, enrollmentsSnapshot] =
+  const [attemptsSnapshot, sessionsSnapshot, recipientsSnapshot] =
     await Promise.all([
       attemptsCollectionRef()
         .where("assignmentId", "==", input.assignmentId)
@@ -403,26 +455,38 @@ async function assessmentAssignmentSummaryHandler(
       assessmentSessionsCollectionRef()
         .where("assignmentId", "==", input.assignmentId)
         .get(),
-      enrollmentsCollectionRef().where("classId", "==", classId).get(),
+      assignmentRecipientsCollectionRef(input.assignmentId).get(),
     ]);
 
-  // Canonical student population: unique studentIds whose enrollment in
-  // the assignment's class is currently `active`. Duplicate enrollment
-  // documents that share a studentId collapse into a single entry.
+  // Canonical student population per PDR-029l: unique studentIds whose
+  // canonical recipient record for this assignment is well-formed and
+  // owned by the same district, school, class, teacher, and assignment
+  // as the loaded assignment record. The recipient document identifier
+  // is `studentId`, so a duplicate recipient row is structurally
+  // impossible; the deduplicating `Set` is a defensive guard, not a
+  // correctness dependency. Malformed rows are silently dropped and
+  // MUST NOT contribute to `totalStudents`.
   const population = new Set<string>();
-  for (const doc of enrollmentsSnapshot.docs) {
-    const data = doc.data() as EnrollmentRecord | undefined;
+  for (const doc of recipientsSnapshot.docs) {
+    const data = doc.data() as AssignmentRecipientRecord | undefined;
     if (!data) continue;
-    if (data.classId !== classId) continue;
-    if (data.schoolId !== actor.schoolId) continue;
-    if (data.status !== "active") continue;
     if (!isNonEmptyString(data.studentId)) continue;
+    if (doc.id !== data.studentId) continue;
+    if (data.assignmentId !== input.assignmentId) continue;
+    if (data.classId !== classId) continue;
+    if (data.teacherId !== actor.uid) continue;
+    if (data.schoolId !== actor.schoolId) continue;
+    if (data.districtId !== actor.districtId) continue;
+    if (data.status !== "assigned") continue;
     population.add(data.studentId);
   }
 
   // Group defense-in-depth-admitted attempts by studentId so multiple
   // attempts by the same student contribute exactly one completed count
-  // and exactly one selected score.
+  // and exactly one selected score. Attempts by students who are not in
+  // the canonical recipient population are excluded from the summary
+  // even if the attempt record itself is otherwise well-formed; this
+  // preserves PDR-029l historical stability under roster churn.
   const attemptsByStudent = new Map<
     string,
     Array<{ id: string; data: AssessmentAttemptRecord }>
@@ -552,6 +616,13 @@ async function assessmentAssignmentSummaryHandler(
     perfectScoreStudents,
   };
 }
+
+// `Timestamp` is imported for the type-side dependency on
+// `AssessmentAttemptRecord.submittedAt` in the tie-break helper's
+// documentation contract. The actual runtime read goes through
+// `completedAtMillis` so the helper never depends on an admin-SDK
+// runtime symbol during unit testing.
+export type { Timestamp };
 
 export const assessmentAssignmentSummary = platformCallable(
   assessmentAssignmentSummaryHandler,

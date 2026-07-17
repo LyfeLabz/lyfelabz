@@ -252,3 +252,32 @@ No Critical finding remains open.
 CONDITIONALLY CERTIFIED: Sprint 12E Slice 1 requires the listed remediation.
 
 The conditional certification reflects two documented interpretations that remain to be explicitly ratified: (a) the "highest completed attempt" attempt-selection policy for teacher summaries and (b) the "current active roster" canonical population absent a frozen recipient snapshot. Both interpretations are traceable to the certified contracts and produce a safe, bounded, aggregate-only response with correct district, school, class, and assignment isolation. The implementation itself is complete, tested, lint- and typecheck- and build-clean.
+
+## 28. Sprint 12E Slice 2C Recertification
+
+**Date:** 2026-07-17
+**Recertification result:** CERTIFIED.
+
+The original conditional-certification record above is preserved unchanged for historical accuracy. This section is an additive remediation and recertification record produced under Sprint 12E Slice 2C; it does not rewrite the prior evaluation.
+
+### Remediation completed
+
+- **Frozen assignment-recipient snapshot exists.** PDR-029 section 8 ratified the recipient persistence shape at `assignments/{assignmentId}/recipients/{studentId}`. Sprint 12E Slice 2A implemented the initial-snapshot writer inside `assignmentsPublish` and the late-recipient writer `assignmentsRecipientAdd`. Sprint 12E Slice 2B implemented the recipient membership gate on `assessmentSessionsBegin` and `assessmentAttemptsFinalize` via `isCanonicalRecipient`.
+- **Summary population authority migrated.** Sprint 12E Slice 2C reworked `assessmentAssignmentSummary` to read the recipient subcollection as the sole canonical population and stopped querying `enrollments`. Historical roster stability is now guaranteed: a student who completed the assignment and then transferred, withdrew, or was archived remains in the summary.
+- **Representative-attempt policy is ratified and implemented in full.** PDR-029 section 5 ratified the highest completed attempt as the representative attempt per student for summary metrics. `selectHighestCompletedAttempt` implements this policy.
+- **Full PDR-029 tie-breaking is implemented.** The canonical order (percentage, `attemptNumber`, `completedAt`, ascending `attemptId`) is enforced. The `completedAt` tie-breaker maps to the on-disk `AssessmentAttemptRecord.submittedAt` Timestamp; the equivalence is documented in code and in `SPRINT_12E_SLICE_2C_COMPLETION_REPORT.md` section 11.
+- **Historical roster stability is test-covered.** Ten stability scenarios are asserted, including inactive enrollment persistence, cross-class and cross-school transfer persistence, late `manualAddition` inclusion, non-recipient exclusion, and the count invariant.
+- **Direct-query pilot implementation remains approved.** No composite index is introduced. The pilot bound continues to be classroom-sized populations.
+- **Rollup migration remains explicit future work.** `assignmentRollups` and `attemptRollups` are still the certified long-term shape; they are not built in this sprint.
+
+### Prior Important items resolved
+
+- "No frozen assignment recipient snapshot exists" - resolved (Slice 2A recipients; Slice 2C summary migration).
+- "No certified summary-specific attempt-selection policy exists" - resolved (PDR-029 sections 5 and 6).
+- "The direct-query implementation is interim" - status unchanged; still explicitly a bounded pilot, and rollup migration is scheduled work.
+
+No unresolved Critical or Important finding remains against Sprint 12E Slice 1.
+
+### Recertification statement
+
+CERTIFIED: Sprint 12E Slice 1 is complete.

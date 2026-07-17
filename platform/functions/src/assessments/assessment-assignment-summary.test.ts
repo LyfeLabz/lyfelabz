@@ -13,6 +13,12 @@ type Fixture = {
 
 const attemptsFixture: Fixture[] = [];
 const sessionsFixture: Fixture[] = [];
+const recipientsFixture: Fixture[] = [];
+// Historical enrollment fixture is preserved so tests can prove that
+// current-active-roster state does NOT affect the summary population under
+// the Sprint 12E Slice 2C migration. Nothing in the production code reads
+// enrollments any more; the mock is only used to construct realistic
+// roster-change scenarios inside a single test.
 const enrollmentsFixture: Fixture[] = [];
 
 const assignmentFixture: {
@@ -56,8 +62,8 @@ const mockAttemptsCollectionRef = jest.fn(() =>
 const mockAssessmentSessionsCollectionRef = jest.fn(() =>
   makeQuery(sessionsFixture, []),
 );
-const mockEnrollmentsCollectionRef = jest.fn(() =>
-  makeQuery(enrollmentsFixture, []),
+const mockAssignmentRecipientsCollectionRef = jest.fn(() =>
+  makeQuery(recipientsFixture, []),
 );
 
 const mockAssignmentDocRef = jest.fn((): {
@@ -93,7 +99,7 @@ jest.mock("../shared", () => {
     requireDistrictContext: mockRequireDistrictContext,
     attemptsCollectionRef: mockAttemptsCollectionRef,
     assessmentSessionsCollectionRef: mockAssessmentSessionsCollectionRef,
-    enrollmentsCollectionRef: mockEnrollmentsCollectionRef,
+    assignmentRecipientsCollectionRef: mockAssignmentRecipientsCollectionRef,
     assignmentDocRef: mockAssignmentDocRef,
     classDocRef: mockClassDocRef,
   };
@@ -160,6 +166,33 @@ function seedOwnedAssignment(overrides: Record<string, unknown> = {}) {
     createdAt: { toMillis: () => 1_600_000_000_000 },
     ...overrides,
   };
+}
+
+// Canonical seeder for the frozen recipient population authorized under
+// Sprint 12E Slice 2A. The document id equals studentId by construction
+// (`assignmentRecipientDocRef(assignmentId, studentId)`); tests that need
+// to exercise malformed rows pass an explicit `docId` override.
+function seedRecipient(
+  studentId: string,
+  overrides: Record<string, unknown> = {},
+  docIdOverride?: string,
+) {
+  recipientsFixture.push({
+    id: docIdOverride ?? studentId,
+    data: {
+      assignmentId: ASSIGNMENT_ID,
+      studentId,
+      classId: CLASS_ID,
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+      assignedAt: { toMillis: () => 1_650_000_000_000 },
+      assignedBy: TEACHER_UID,
+      source: "classPublication",
+      status: "assigned",
+      ...overrides,
+    },
+  });
 }
 
 function seedEnrollment(studentId: string, overrides: Record<string, unknown> = {}) {
@@ -257,12 +290,13 @@ describe("assessmentAssignmentSummary", () => {
     });
     mockAttemptsCollectionRef.mockClear();
     mockAssessmentSessionsCollectionRef.mockClear();
-    mockEnrollmentsCollectionRef.mockClear();
+    mockAssignmentRecipientsCollectionRef.mockClear();
     mockAssignmentDocRef.mockClear();
     mockClassDocRef.mockClear();
     mockLogInfo.mockReset();
     attemptsFixture.length = 0;
     sessionsFixture.length = 0;
+    recipientsFixture.length = 0;
     enrollmentsFixture.length = 0;
     assignmentFixture.present = false;
     assignmentFixture.data = null;
@@ -274,7 +308,7 @@ describe("assessmentAssignmentSummary", () => {
 
   // ---- Positive summary cases
 
-  it("returns zero counts for an empty class", async () => {
+  it("returns zero counts for an empty recipient population", async () => {
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result).toEqual({
       assignmentId: ASSIGNMENT_ID,
@@ -291,9 +325,16 @@ describe("assessmentAssignmentSummary", () => {
     });
   });
 
-  it("all students not started", async () => {
+  it("empty recipient population yields zero students even when class currently has active enrollments", async () => {
     seedEnrollment(STUDENT_A);
     seedEnrollment(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(0);
+  });
+
+  it("all students not started", async () => {
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.totalStudents).toBe(2);
     expect(result.notStartedStudents).toBe(2);
@@ -304,8 +345,8 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("one student in progress", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_B);
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
     seedSession({ studentId: STUDENT_A });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.inProgressStudents).toBe(1);
@@ -314,7 +355,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("one student completed", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A, score: 2, maxScore: 2, percentage: 100 });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.totalStudents).toBe(1);
@@ -325,10 +366,10 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("mixed completed, in-progress, not-started", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_B);
-    seedEnrollment(STUDENT_C);
-    seedEnrollment(STUDENT_D);
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedRecipient(STUDENT_C);
+    seedRecipient(STUDENT_D);
     seedAttempt({ studentId: STUDENT_A, percentage: 80, score: 4, maxScore: 5 });
     seedSession({ studentId: STUDENT_B });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
@@ -340,7 +381,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("multiple attempts by one student count as one completed student", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A, percentage: 60, score: 3, maxScore: 5, attemptId: "a1" });
     seedAttempt({ studentId: STUDENT_A, percentage: 100, score: 5, maxScore: 5, attemptId: "a2" });
     seedAttempt({ studentId: STUDENT_A, percentage: 80, score: 4, maxScore: 5, attemptId: "a3" });
@@ -353,7 +394,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("completed student with active session remains completed", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     seedSession({ studentId: STUDENT_A });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
@@ -362,9 +403,9 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("count invariant holds", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_B);
-    seedEnrollment(STUDENT_C);
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedRecipient(STUDENT_C);
     seedAttempt({ studentId: STUDENT_A });
     seedSession({ studentId: STUDENT_B });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
@@ -377,7 +418,7 @@ describe("assessmentAssignmentSummary", () => {
 
   it("completion percentage is correct", async () => {
     for (const s of [STUDENT_A, STUDENT_B, STUDENT_C, STUDENT_D]) {
-      seedEnrollment(s);
+      seedRecipient(s);
     }
     seedAttempt({ studentId: STUDENT_A });
     seedAttempt({ studentId: STUDENT_B });
@@ -391,7 +432,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("no-completion score metrics return null", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.averagePercentage).toBeNull();
     expect(result.highestPercentage).toBeNull();
@@ -400,9 +441,9 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("average, highest, lowest reflect selected attempts", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_B);
-    seedEnrollment(STUDENT_C);
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedRecipient(STUDENT_C);
     seedAttempt({ studentId: STUDENT_A, percentage: 60, score: 3, maxScore: 5 });
     seedAttempt({ studentId: STUDENT_B, percentage: 100, score: 5, maxScore: 5 });
     seedAttempt({ studentId: STUDENT_C, percentage: 80, score: 4, maxScore: 5 });
@@ -414,23 +455,34 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("perfect score uses raw score and max score", async () => {
-    seedEnrollment(STUDENT_A);
-    // percentage lies (99) but raw equals max - counted as perfect
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A, percentage: 99, score: 5, maxScore: 5 });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.perfectScoreStudents).toBe(1);
   });
 
   it("percentage 100 without matching raw score is not perfect", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A, percentage: 100, score: 4, maxScore: 5 });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.perfectScoreStudents).toBe(0);
   });
 
+  it("invalid maxScore does not produce false perfect score", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({
+      studentId: STUDENT_A,
+      score: 0,
+      maxScore: 0,
+      percentage: 100,
+    });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.perfectScoreStudents).toBe(0);
+  });
+
   it("multiple perfect-score students are counted correctly", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_B);
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
     seedAttempt({ studentId: STUDENT_A, percentage: 100, score: 5, maxScore: 5 });
     seedAttempt({ studentId: STUDENT_B, percentage: 100, score: 5, maxScore: 5 });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
@@ -438,7 +490,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("highest-attempt selection policy is applied consistently", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A, percentage: 40, score: 2, maxScore: 5, attemptId: "a1" });
     seedAttempt({ studentId: STUDENT_A, percentage: 80, score: 4, maxScore: 5, attemptId: "a2" });
     seedAttempt({ studentId: STUDENT_A, percentage: 60, score: 3, maxScore: 5, attemptId: "a3" });
@@ -450,7 +502,7 @@ describe("assessmentAssignmentSummary", () => {
 
   it("summary works for closed assignment", async () => {
     seedOwnedAssignment({ status: "closed" });
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.completedStudents).toBe(1);
@@ -458,7 +510,7 @@ describe("assessmentAssignmentSummary", () => {
 
   it("summary works for archived assignment", async () => {
     seedOwnedAssignment({ status: "archived" });
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.completedStudents).toBe(1);
@@ -466,10 +518,173 @@ describe("assessmentAssignmentSummary", () => {
 
   it("summary works for draft assignment (empty by construction)", async () => {
     seedOwnedAssignment({ status: "draft" });
-    seedEnrollment(STUDENT_A);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(0);
+    expect(result.completedStudents).toBe(0);
+  });
+
+  // ---- PDR-029l historical roster stability
+
+  it("student active at publication remains after enrollment becomes inactive", async () => {
+    seedRecipient(STUDENT_A);
+    seedEnrollment(STUDENT_A, { status: "withdrawn" });
+    seedAttempt({ studentId: STUDENT_A });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.totalStudents).toBe(1);
-    expect(result.completedStudents).toBe(0);
+    expect(result.completedStudents).toBe(1);
+  });
+
+  it("student remains in summary after enrollment is removed entirely", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+    expect(result.completedStudents).toBe(1);
+  });
+
+  it("student remains in summary after transfer to another class", async () => {
+    seedRecipient(STUDENT_A);
+    seedEnrollment(STUDENT_A, { classId: OTHER_CLASS_ID });
+    seedAttempt({ studentId: STUDENT_A });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("student remains in summary after transfer to another school (recipient still owned by assignment)", async () => {
+    seedRecipient(STUDENT_A);
+    seedEnrollment(STUDENT_A, { schoolId: OTHER_SCHOOL_ID });
+    seedAttempt({ studentId: STUDENT_A });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+    expect(result.completedStudents).toBe(1);
+  });
+
+  it("newly enrolled student without a recipient record is excluded", async () => {
+    seedRecipient(STUDENT_A);
+    seedEnrollment(STUDENT_A);
+    seedEnrollment(STUDENT_B);
+    seedAttempt({ studentId: STUDENT_A });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("late recipient added via manualAddition is included", async () => {
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B, { source: "manualAddition" });
+    seedAttempt({ studentId: STUDENT_B });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(2);
+    expect(result.completedStudents).toBe(1);
+  });
+
+  it("current active roster changes do not change totalStudents", async () => {
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedRecipient(STUDENT_C);
+    seedEnrollment(STUDENT_A, { status: "withdrawn" });
+    seedEnrollment(STUDENT_D);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(3);
+  });
+
+  it("attempts from non-recipients do not affect completion counts", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A });
+    seedAttempt({ studentId: OUTSIDE_STUDENT, attemptId: "outside", percentage: 20 });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.completedStudents).toBe(1);
+  });
+
+  it("sessions from non-recipients do not affect in-progress counts", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: OUTSIDE_STUDENT });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.inProgressStudents).toBe(0);
+  });
+
+  it("removed recipient history remains visible in aggregate metrics", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A, percentage: 80, score: 4, maxScore: 5 });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.averagePercentage).toBe(80);
+    expect(result.completedStudents).toBe(1);
+  });
+
+  it("recipient population is independent of user-profile existence", async () => {
+    seedRecipient(STUDENT_A);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("missing display name does not affect membership", async () => {
+    seedRecipient(STUDENT_A);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("duplicate recipient document ids cannot inflate counts", async () => {
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_A);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  // ---- Malformed recipient policy (documented silent-drop, count invariant preserved)
+
+  it("recipient with document id not equal to studentId is silently dropped", async () => {
+    seedRecipient(STUDENT_A, {}, "wrong-doc-id");
+    seedRecipient(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("recipient with wrong assignmentId is silently dropped", async () => {
+    seedRecipient(STUDENT_A, { assignmentId: OTHER_ASSIGNMENT_ID });
+    seedRecipient(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("recipient with wrong classId is silently dropped", async () => {
+    seedRecipient(STUDENT_A, { classId: OTHER_CLASS_ID });
+    seedRecipient(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("recipient with wrong teacherId is silently dropped", async () => {
+    seedRecipient(STUDENT_A, { teacherId: OTHER_TEACHER_UID });
+    seedRecipient(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("recipient with wrong schoolId is silently dropped", async () => {
+    seedRecipient(STUDENT_A, { schoolId: OTHER_SCHOOL_ID });
+    seedRecipient(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("recipient with wrong districtId is silently dropped", async () => {
+    seedRecipient(STUDENT_A, { districtId: OTHER_DISTRICT_ID });
+    seedRecipient(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("recipient with non-assigned status is silently dropped", async () => {
+    seedRecipient(STUDENT_A, { status: "revoked" });
+    seedRecipient(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
+  });
+
+  it("recipient with blank studentId is silently dropped", async () => {
+    seedRecipient(STUDENT_A, { studentId: "   " });
+    seedRecipient(STUDENT_B);
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.totalStudents).toBe(1);
   });
 
   // ---- Authentication and role
@@ -670,7 +885,6 @@ describe("assessmentAssignmentSummary", () => {
 
   it("refuses assignment whose frozen ownership disagrees with class record", async () => {
     seedOwnedActiveClass({ teacherId: TEACHER_UID, schoolId: OTHER_SCHOOL_ID });
-    // Assignment says caller's school; class says other school; ownership check on class fires first.
     await expect(
       __assessmentAssignmentSummaryHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "classes.forbidden" });
@@ -685,10 +899,10 @@ describe("assessmentAssignmentSummary", () => {
     ).rejects.toMatchObject({ code: "assignments.forbidden" });
   });
 
-  // ---- Population isolation (defense in depth)
+  // ---- Attempt scope isolation (defense in depth)
 
   it("excludes attempts from another assignment", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     seedAttempt({
       studentId: STUDENT_A,
@@ -704,7 +918,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("excludes attempts from another class", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     seedAttempt({
       studentId: STUDENT_A,
@@ -719,7 +933,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("excludes attempts from another district", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     seedAttempt({
       studentId: STUDENT_A,
@@ -734,7 +948,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("excludes attempts from another school", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     seedAttempt({
       studentId: STUDENT_A,
@@ -748,83 +962,52 @@ describe("assessmentAssignmentSummary", () => {
     expect(result.averagePercentage).toBe(100);
   });
 
-  it("excludes attempts for a student outside the canonical population", async () => {
-    seedEnrollment(STUDENT_A);
-    seedAttempt({ studentId: STUDENT_A });
-    seedAttempt({ studentId: OUTSIDE_STUDENT, attemptId: "outside", percentage: 20 });
-    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
-    expect(result.completedStudents).toBe(1);
-  });
-
   it("excludes sessions from another assignment", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedSession({ studentId: STUDENT_A, assignmentId: OTHER_ASSIGNMENT_ID });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.inProgressStudents).toBe(0);
   });
 
   it("excludes sessions from another class", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedSession({ studentId: STUDENT_A, classId: OTHER_CLASS_ID });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.inProgressStudents).toBe(0);
   });
 
   it("excludes sessions from another district", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedSession({ studentId: STUDENT_A, districtId: OTHER_DISTRICT_ID });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.inProgressStudents).toBe(0);
   });
 
   it("excludes sessions from another school", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedSession({ studentId: STUDENT_A, schoolId: OTHER_SCHOOL_ID });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.inProgressStudents).toBe(0);
   });
 
-  it("excludes sessions for students outside the population", async () => {
-    seedEnrollment(STUDENT_A);
-    seedSession({ studentId: OUTSIDE_STUDENT });
-    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
-    expect(result.inProgressStudents).toBe(0);
-  });
-
   it("excludes non-live sessions from in-progress count", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedSession({ studentId: STUDENT_A, status: "archived" });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(result.inProgressStudents).toBe(0);
     expect(result.notStartedStudents).toBe(1);
   });
 
-  it("does not double-count duplicate enrollments for one student", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_A);
+  it("multiple live sessions count one student once", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: STUDENT_A, sessionId: "s1" });
+    seedSession({ studentId: STUDENT_A, sessionId: "s2" });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
-    expect(result.totalStudents).toBe(1);
-  });
-
-  it("excludes non-active enrollments from the population", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_B, { status: "withdrawn" });
-    seedEnrollment(STUDENT_C, { status: "transferred" });
-    seedEnrollment(STUDENT_D, { status: "archived" });
-    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
-    expect(result.totalStudents).toBe(1);
-  });
-
-  it("excludes enrollments from another class or school", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_B, { classId: OTHER_CLASS_ID });
-    seedEnrollment(STUDENT_C, { schoolId: OTHER_SCHOOL_ID });
-    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
-    expect(result.totalStudents).toBe(1);
+    expect(result.inProgressStudents).toBe(1);
   });
 
   it("malformed attempt records do not corrupt metrics", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({
       studentId: STUDENT_A,
       attemptId: "malformed",
@@ -845,10 +1028,18 @@ describe("assessmentAssignmentSummary", () => {
     expect(result.averagePercentage).toBe(80);
   });
 
+  it("malformed session records do not affect classification", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: STUDENT_A, status: "unknown-status" });
+    seedSession({ studentId: STUDENT_A, sessionId: "live", status: "live" });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.inProgressStudents).toBe(1);
+  });
+
   // ---- Numeric integrity
 
-  it("zero max score does not cause division errors or counts as perfect", async () => {
-    seedEnrollment(STUDENT_A);
+  it("zero max score does not cause division errors or count as perfect", async () => {
+    seedRecipient(STUDENT_A);
     seedAttempt({
       studentId: STUDENT_A,
       score: 0,
@@ -861,7 +1052,7 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("never returns NaN or Infinity", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     for (const value of [
@@ -875,14 +1066,13 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("rounds percentages deterministically (half-up)", async () => {
-    seedEnrollment(STUDENT_A);
-    seedEnrollment(STUDENT_B);
-    seedEnrollment(STUDENT_C);
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedRecipient(STUDENT_C);
     seedAttempt({ studentId: STUDENT_A, percentage: 66.6, score: 2, maxScore: 3 });
     seedAttempt({ studentId: STUDENT_B, percentage: 66.6, score: 2, maxScore: 3 });
     seedAttempt({ studentId: STUDENT_C, percentage: 66.7, score: 2, maxScore: 3 });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
-    // 66.6, 66.6, 66.7 -> avg 66.6333 -> 67
     expect(result.averagePercentage).toBe(67);
     expect(result.highestPercentage).toBe(67);
     expect(result.lowestPercentage).toBe(67);
@@ -891,7 +1081,7 @@ describe("assessmentAssignmentSummary", () => {
   // ---- Confidentiality
 
   it("returns exactly the approved projection fields", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(Object.keys(result).sort()).toEqual(
@@ -911,8 +1101,8 @@ describe("assessmentAssignmentSummary", () => {
     );
   });
 
-  it("never surfaces student-level, attempt-level, or scoring-internal fields", async () => {
-    seedEnrollment(STUDENT_A);
+  it("never surfaces student-level, attempt-level, recipient-level, or scoring-internal fields", async () => {
+    seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A });
     seedSession({ studentId: STUDENT_A });
     const result = await __assessmentAssignmentSummaryHandler(makeRequest());
@@ -922,6 +1112,8 @@ describe("assessmentAssignmentSummary", () => {
       "studentIds",
       "students",
       "studentDisplayName",
+      "recipients",
+      "recipientIds",
       "attemptId",
       "attemptIds",
       "attempts",
@@ -948,17 +1140,19 @@ describe("assessmentAssignmentSummary", () => {
   });
 
   it("scopes queries to the requested assignment and class", async () => {
-    seedEnrollment(STUDENT_A);
+    seedRecipient(STUDENT_A);
     await __assessmentAssignmentSummaryHandler(makeRequest());
     expect(mockAssignmentDocRef).toHaveBeenCalledWith(ASSIGNMENT_ID);
     expect(mockClassDocRef).toHaveBeenCalledWith(CLASS_ID);
+    expect(mockAssignmentRecipientsCollectionRef).toHaveBeenCalledWith(
+      ASSIGNMENT_ID,
+    );
     expect(mockAttemptsCollectionRef).toHaveBeenCalled();
     expect(mockAssessmentSessionsCollectionRef).toHaveBeenCalled();
-    expect(mockEnrollmentsCollectionRef).toHaveBeenCalled();
   });
 });
 
-describe("selectHighestCompletedAttempt", () => {
+describe("selectHighestCompletedAttempt (PDR-029 tie-break policy)", () => {
   const base = {
     studentId: STUDENT_A,
     assignmentId: ASSIGNMENT_ID,
@@ -975,40 +1169,147 @@ describe("selectHighestCompletedAttempt", () => {
     submittedAt: { toMillis: () => 0 } as unknown as never,
   };
 
+  function ts(ms: number) {
+    return { toMillis: () => ms } as unknown as never;
+  }
+
   it("returns null on empty input", () => {
     expect(selectHighestCompletedAttempt([])).toBeNull();
   });
 
-  it("selects the highest percentage attempt", () => {
+  it("higher percentage wins", () => {
     const selected = selectHighestCompletedAttempt([
-      {
-        id: "a1",
-        data: { ...base, percentage: 50, score: 1, maxScore: 2, attemptNumber: 1 },
-      },
-      {
-        id: "a2",
-        data: { ...base, percentage: 100, score: 2, maxScore: 2, attemptNumber: 2 },
-      },
-      {
-        id: "a3",
-        data: { ...base, percentage: 75, score: 3, maxScore: 4, attemptNumber: 3 },
-      },
+      { id: "a1", data: { ...base, percentage: 50, score: 1, maxScore: 2, attemptNumber: 1 } },
+      { id: "a2", data: { ...base, percentage: 100, score: 2, maxScore: 2, attemptNumber: 2 } },
+      { id: "a3", data: { ...base, percentage: 75, score: 3, maxScore: 4, attemptNumber: 3 } },
     ]);
     expect(selected?.attemptId).toBe("a2");
   });
 
-  it("breaks ties by higher attemptNumber", () => {
+  it("higher attemptNumber breaks equal-percentage ties", () => {
     const selected = selectHighestCompletedAttempt([
-      {
-        id: "a1",
-        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1 },
-      },
-      {
-        id: "a2",
-        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 2 },
-      },
+      { id: "a1", data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1 } },
+      { id: "a2", data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 2 } },
     ]);
     expect(selected?.attemptId).toBe("a2");
+  });
+
+  it("later completedAt breaks equal-percentage-and-attemptNumber ties", () => {
+    const selected = selectHighestCompletedAttempt([
+      {
+        id: "b1",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: ts(1_000) },
+      },
+      {
+        id: "b2",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: ts(2_000) },
+      },
+    ]);
+    expect(selected?.attemptId).toBe("b2");
+  });
+
+  it("ascending attemptId is the final deterministic fallback", () => {
+    const selected = selectHighestCompletedAttempt([
+      {
+        id: "z-later-lex",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: ts(1_000) },
+      },
+      {
+        id: "a-earlier-lex",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: ts(1_000) },
+      },
+    ]);
+    expect(selected?.attemptId).toBe("a-earlier-lex");
+  });
+
+  it("raw score does not outrank percentage", () => {
+    const selected = selectHighestCompletedAttempt([
+      { id: "high-raw", data: { ...base, percentage: 50, score: 50, maxScore: 100, attemptNumber: 1 } },
+      { id: "high-pct", data: { ...base, percentage: 100, score: 2, maxScore: 2, attemptNumber: 1 } },
+    ]);
+    expect(selected?.attemptId).toBe("high-pct");
+  });
+
+  it("higher raw score with lower percentage loses", () => {
+    const selected = selectHighestCompletedAttempt([
+      { id: "raw", data: { ...base, percentage: 60, score: 60, maxScore: 100, attemptNumber: 1 } },
+      { id: "pct", data: { ...base, percentage: 90, score: 9, maxScore: 10, attemptNumber: 1 } },
+    ]);
+    expect(selected?.attemptId).toBe("pct");
+  });
+
+  it("lower later attempt does not replace higher earlier attempt", () => {
+    const selected = selectHighestCompletedAttempt([
+      { id: "early", data: { ...base, percentage: 100, score: 5, maxScore: 5, attemptNumber: 1, submittedAt: ts(1_000) } },
+      { id: "later", data: { ...base, percentage: 60, score: 3, maxScore: 5, attemptNumber: 2, submittedAt: ts(2_000) } },
+    ]);
+    expect(selected?.attemptId).toBe("early");
+  });
+
+  it("invalid percentage is excluded", () => {
+    const selected = selectHighestCompletedAttempt([
+      { id: "bad", data: { ...base, percentage: Number.NaN, score: 5, maxScore: 5, attemptNumber: 1 } },
+      { id: "good", data: { ...base, percentage: 50, score: 1, maxScore: 2, attemptNumber: 1 } },
+    ]);
+    expect(selected?.attemptId).toBe("good");
+  });
+
+  it("non-finite percentage is excluded", () => {
+    const selected = selectHighestCompletedAttempt([
+      { id: "inf", data: { ...base, percentage: Number.POSITIVE_INFINITY, score: 5, maxScore: 5, attemptNumber: 1 } },
+      { id: "good", data: { ...base, percentage: 50, score: 1, maxScore: 2, attemptNumber: 1 } },
+    ]);
+    expect(selected?.attemptId).toBe("good");
+  });
+
+  it("valid completedAt outranks missing completedAt when prior keys tie", () => {
+    const selected = selectHighestCompletedAttempt([
+      {
+        id: "missing",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: undefined as never },
+      },
+      {
+        id: "valid",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: ts(1_000) },
+      },
+    ]);
+    expect(selected?.attemptId).toBe("valid");
+  });
+
+  it("two missing completedAt values fall through to ascending attemptId", () => {
+    const selected = selectHighestCompletedAttempt([
+      {
+        id: "b-missing",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: undefined as never },
+      },
+      {
+        id: "a-missing",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: undefined as never },
+      },
+    ]);
+    expect(selected?.attemptId).toBe("a-missing");
+  });
+
+  it("malformed completedAt (no toMillis) is treated as missing", () => {
+    const selected = selectHighestCompletedAttempt([
+      {
+        id: "malformed",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: "not-a-timestamp" as never },
+      },
+      {
+        id: "valid",
+        data: { ...base, percentage: 80, score: 4, maxScore: 5, attemptNumber: 1, submittedAt: ts(1_000) },
+      },
+    ]);
+    expect(selected?.attemptId).toBe("valid");
+  });
+
+  it("cross-revision comparability: highest percentage wins across different maxScore", () => {
+    const selected = selectHighestCompletedAttempt([
+      { id: "r1", data: { ...base, percentage: 90, score: 9, maxScore: 10, attemptNumber: 1 } },
+      { id: "r2", data: { ...base, percentage: 100, score: 5, maxScore: 5, attemptNumber: 2 } },
+    ]);
+    expect(selected?.attemptId).toBe("r2");
   });
 
   it("ignores malformed numeric fields", () => {
