@@ -2821,3 +2821,46 @@ Introduced one reusable backend resolver for teacher-facing student display name
 - No schema, index, dependency, or configuration changes.
 - No deployment.
 - No commit.
+
+## Sprint 12D Slice 3: Teacher Assessment Retrieval APIs
+
+- **Date:** 2026-07-16
+- **Category:** Cloud Functions (retrieval-layer callable, no schema, no Rules, no deployment)
+- **Certification:** CERTIFIED
+
+### Summary
+
+Added `assessmentAttemptGetForTeacher`, a bounded teacher retrieval callable that returns one completed attempt owned by a class the caller currently owns. The callable accepts exactly `{ attemptId }`, layers authentication and role, verifies the attempt's frozen district and school against the caller, loads the referenced class to verify current class ownership, and projects an explicit teacher-visible detail (summary fields plus the certified per-item `responses` and `itemResults` frozen on the attempt). The canonical roster display-name resolver from Slice 2 is reused; no answer-key collection is read; no mutation path is introduced; no Rules, schema, index, dependency, or configuration change was required.
+
+### Implementation notes
+
+- Location: `platform/functions/src/assessments/assessment-attempt-get-for-teacher.ts`.
+- Input contract: `{ attemptId: string }` (URL-safe token). Any of `studentId`, `uid`, `userId`, `districtId`, `schoolId`, `classId`, `teacherId`, `assignmentId` is refused with `assessmentAttempts.invalidRequest`.
+- Authorization chain: `requireDistrictContext` (auth + active status + claims + district agreement); role must be `teacher` (`role-forbidden`); attempt loaded (`assessmentAttempts.notFound` on missing or empty); attempt frozen `districtId` and `schoolId` must equal caller context (`assessmentAttempts.forbidden`, generic so cross-district existence is not leaked); attempt `classId` and `studentId` must be non-empty (`assessmentAttempts.notFound` on malformed); class loaded via the attempt's frozen `classId` (`classes.notFound`); class `teacherId` and `schoolId` must equal caller uid and school (`classes.forbidden`); attempt frozen `teacherId` and `schoolId` must equal the loaded class record (`assessmentAttempts.notFound` on inconsistency).
+- Current class ownership: class ownership fields are immutable per Data Model section 1.2, so current ownership equals frozen ownership. A teacher who never owned the class cannot reach the projection.
+- Historical attempts: current class ownership authorizes historical attempts even when the student has since exited the class. Enrollment removal manifests only as the canonical `"Name unavailable"` fallback from the resolver.
+- Canonical display name: reuses `createRosterDisplayNameResolver` with the trusted `(classId, schoolId, districtId)` scope from the loaded attempt and verified caller context. Exactly one resolution per request.
+- Teacher-visible detail: `attemptId`, `studentId`, `studentDisplayName`, `assessmentId`, `assignmentId`, `assessmentRevisionId`, `attemptNumber`, `score`, `maxScore`, `percentage`, `submittedAt` (millis), `status: "completed"`, `responses[]` (`itemId`, `response`), `itemResults[]` (`itemId`, `isCorrect`, `pointsEarned`, `correctOptionId`, `explanation`, `studentResponse`).
+- Answer-key confidentiality: `assessmentAnswerKeys/*` is never read. `correctOptionId` and `explanation` are the certified permitted subset frozen on the immutable attempt by the scorer per ASSESSMENT_SCORING_CONTRACT sections 10.3 and 10.4; returning them from the immutable attempt does not widen the answer-key boundary.
+- Excluded fields: `idempotencyKey`, `teacherId`, `classId`, `schoolId`, `districtId`, `activityId`, resolver `source`, every unknown attempt or item-result or response property, and every future addition to the persisted record shape.
+- Audit behavior: no audit event is written; retrieval reads remain unaudited, matching Sprint 12C and 12D Slice 1.
+
+### Tests added
+
+- `platform/functions/src/assessments/assessment-attempt-get-for-teacher.test.ts` (47 tests): positive retrieval and approved projection keys, response and item-result projection sub-shapes, canonical display-name integration and fallback and one-call-per-request memoization, trusted-scope handoff, authentication and role refusals, input validation and forbidden owner-scoping keys, missing and cross-district and cross-school and cross-class refusals, current-class-ownership refusals, malformed attempt refusals, historical-attempt retrievability, and answer-key/routing/scoring-internal absence including no-spread defenses on unknown top-level, item-result, and response properties.
+
+### Validation results
+
+- Targeted `assessmentAttemptGetForTeacher` tests: 1 suite, 47 tests, all pass.
+- Full Cloud Functions suite: 35 suites, 687 tests, all pass.
+- Lint, typecheck, and build all pass.
+- No em dashes appear in any created or modified file.
+
+### Confirmation
+
+- No certified backend behavior changed.
+- No Firestore Rules changes.
+- No schema, index, dependency, or configuration changes.
+- No application file changes.
+- No deployment.
+- No commit.

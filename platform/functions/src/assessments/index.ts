@@ -28,6 +28,15 @@ export {
   type AssessmentAttemptGetResponse,
 } from "./assessment-attempt-get";
 export {
+  assessmentAttemptGetForTeacher,
+  projectTeacherAttemptDetail,
+  type AssessmentAttemptGetForTeacherRequest,
+  type AssessmentAttemptGetForTeacherResponse,
+  type TeacherVisibleAttemptDetail,
+  type TeacherVisibleAttemptItemResult,
+  type TeacherVisibleAttemptResponse,
+} from "./assessment-attempt-get-for-teacher";
+export {
   assessmentAttemptsListForClass,
   projectTeacherClassAttemptSummary,
   type AssessmentAttemptsListForClassRequest,

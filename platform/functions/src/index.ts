@@ -1,5 +1,6 @@
 export {
   assessmentAttemptGet,
+  assessmentAttemptGetForTeacher,
   assessmentAttemptsFinalize,
   assessmentAttemptsList,
   assessmentAttemptsListForClass,
