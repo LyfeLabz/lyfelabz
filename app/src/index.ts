@@ -27,7 +27,11 @@ import { renderAssignmentDetail } from "./assignments/detail/detail";
 import { hydrateAssignmentDetailRegistry } from "./assignments/detail/hydrate";
 import { createAssignmentsTeacherListCallable } from "./assignments/detail/hydrate-wire";
 import { createAssignmentsCloseCallable } from "./assignments/detail/close-wire";
-import type { AssignmentsCloseCallable } from "./assignments/detail/types";
+import { createAssignmentsReopenCallable } from "./assignments/detail/reopen-wire";
+import type {
+  AssignmentsCloseCallable,
+  AssignmentsReopenCallable,
+} from "./assignments/detail/types";
 
 // Client entry point. Waits for the Canonical Session Bootstrap to
 // resolve, then hands the resulting immutable Session to the router.
@@ -66,6 +70,12 @@ async function run(): Promise<void> {
   // session resolves; the detail surface renders no close action when
   // null.
   let assignmentClose: AssignmentsCloseCallable | null = null;
+  // Sprint 13E: certified `assignmentsReopen` callable seam consumed by
+  // the Assignment Detail surface. Rebound per active-teacher session so
+  // cross-session state cannot leak. Null before an active-teacher
+  // session resolves; the detail surface renders no reopen action when
+  // null.
+  let assignmentReopen: AssignmentsReopenCallable | null = null;
   // Sprint 13B: session-scoped registry of teacher-owned assignment
   // metadata (title, status, class name). Populated by the certified
   // lifecycle path; consumed by the Assignment Detail metadata reader.
@@ -91,6 +101,13 @@ async function run(): Promise<void> {
       // through the existing Sprint 13C selection interface without a
       // page reload.
       closeCallable: assignmentClose ?? undefined,
+      // Sprint 13E: inverse lifecycle wire. The certified reopen
+      // callable transitions a closed assignment back to published and
+      // re-registers the updated metadata into the session-scoped
+      // registry so a later navigation to Curriculum reflects the new
+      // `published` status through the existing Sprint 13C selection
+      // interface without a page reload.
+      reopenCallable: assignmentReopen ?? undefined,
       onStatusChange: (metadata) => {
         assignmentDetailRegistry.register(metadata);
       },
@@ -152,6 +169,7 @@ async function run(): Promise<void> {
       assignments = createAssignmentsCallables(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
       assignmentClose = createAssignmentsCloseCallable(functions);
+      assignmentReopen = createAssignmentsReopenCallable(functions);
       // Sprint 13C: hydrate the session-scoped assignment-detail registry
       // from the certified `assignmentsTeacherList` retrieval path. The
       // hydration runs once per active-teacher session and is calm on
@@ -170,6 +188,7 @@ async function run(): Promise<void> {
       assignments = null;
       assignmentSummary = null;
       assignmentClose = null;
+      assignmentReopen = null;
       assignmentDetailRegistry.clear();
     }
     dispatch(session, table, mount, window.history);

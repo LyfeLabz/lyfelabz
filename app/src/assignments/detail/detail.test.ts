@@ -547,6 +547,8 @@ describe("renderAssignmentDetail - request posture", () => {
 import type {
   AssignmentsCloseCallable,
   AssignmentsCloseResult,
+  AssignmentsReopenCallable,
+  AssignmentsReopenResult,
 } from "./types";
 
 const resolvingClose = (
@@ -853,6 +855,341 @@ describe("renderAssignmentDetail - close lifecycle (Sprint 13D)", () => {
     document
       .querySelector<HTMLButtonElement>(
         "[data-testid=assignment-detail-close-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-back]",
+      )
+      ?.click();
+    expect(backClicks).toBe(1);
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Sprint 13E: Reopen assignment lifecycle
+// -----------------------------------------------------------------------------
+
+const resolvingReopen = (
+  result?: Partial<AssignmentsReopenResult>,
+): {
+  readonly callable: AssignmentsReopenCallable;
+  readonly calls: Array<string>;
+} => {
+  const calls: Array<string> = [];
+  const callable: AssignmentsReopenCallable = ({ assignmentId }) => {
+    calls.push(assignmentId);
+    return Promise.resolve(
+      Object.freeze({
+        assignmentId,
+        status: "published" as const,
+        alreadyPublished: false,
+        ...(result ?? {}),
+      }),
+    );
+  };
+  return { callable, calls };
+};
+
+const rejectingReopen = (): {
+  readonly callable: AssignmentsReopenCallable;
+  readonly calls: Array<string>;
+} => {
+  const calls: Array<string> = [];
+  const callable: AssignmentsReopenCallable = ({ assignmentId }) => {
+    calls.push(assignmentId);
+    return Promise.reject(new Error("reopen failed"));
+  };
+  return { callable, calls };
+};
+
+describe("renderAssignmentDetail - reopen lifecycle (Sprint 13E)", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  test("closed assignment shows Reopen assignment when the reopen callable is wired", async () => {
+    const mount = mkMount();
+    const close = resolvingClose();
+    const reopen = resolvingReopen();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
+    });
+    await flush();
+    await flush();
+    const action = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-reopen-action]",
+    );
+    expect(action).not.toBeNull();
+    expect(action?.textContent).toBe("Reopen assignment");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-close-action]"),
+    ).toBeNull();
+    // Sprint 13E: exactly one lifecycle action visible; the closed
+    // label is superseded by the reopen action.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-closed-label]"),
+    ).toBeNull();
+  });
+
+  test("published assignment continues to show Close assignment", async () => {
+    const mount = mkMount();
+    const close = resolvingClose();
+    const reopen = resolvingReopen();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
+    });
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-close-action]")
+        ?.textContent,
+    ).toBe("Close assignment");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).toBeNull();
+  });
+
+  test("closed assignment falls back to the Sprint 13D label when reopen is not wired", async () => {
+    const mount = mkMount();
+    const close = resolvingClose();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      closeCallable: close.callable,
+    });
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-closed-label]")
+        ?.textContent,
+    ).toBe("Assignment closed");
+  });
+
+  test("clicking Reopen assignment opens the confirmation dialog", async () => {
+    const mount = mkMount();
+    const reopen = resolvingReopen();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      reopenCallable: reopen.callable,
+    });
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-action]",
+      )
+      ?.click();
+    const dialog = document.querySelector(
+      "[data-testid=assignment-detail-reopen-dialog]",
+    );
+    expect(dialog).not.toBeNull();
+    expect(dialog?.getAttribute("role")).toBe("dialog");
+    expect(dialog?.getAttribute("aria-modal")).toBe("true");
+    expect(
+      document.querySelector("[data-testid=assignment-detail-reopen-title]")
+        ?.textContent,
+    ).toBe("Reopen this assignment?");
+    expect(
+      document.querySelector(
+        "[data-testid=assignment-detail-reopen-description]",
+      )?.textContent,
+    ).toContain("Students will be able to submit new work again.");
+    expect(reopen.calls).toEqual([]);
+  });
+
+  test("Cancel leaves the assignment unchanged and never invokes the callable", async () => {
+    const mount = mkMount();
+    const reopen = resolvingReopen();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      reopenCallable: reopen.callable,
+    });
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-cancel]",
+      )
+      ?.click();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assignment-detail-reopen-dialog]"),
+    ).toBeNull();
+    expect(reopen.calls).toEqual([]);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-status-value]")
+        ?.textContent,
+    ).toBe("Closed");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).not.toBeNull();
+  });
+
+  test("Confirm invokes the callable exactly once and updates the header to Published", async () => {
+    const mount = mkMount();
+    const close = resolvingClose();
+    const reopen = resolvingReopen();
+    const statusChanges: Array<AssignmentDetailMetadata> = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
+      onStatusChange: (m) => {
+        statusChanges.push(m);
+      },
+    });
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(reopen.calls).toEqual(["assign-1"]);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-status-value]")
+        ?.textContent,
+    ).toBe("Published");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).toBeNull();
+    // Sprint 13E lifecycle swap: after a successful reopen, the Sprint
+    // 13D Close assignment action is the visible lifecycle action.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-close-action]")
+        ?.textContent,
+    ).toBe("Close assignment");
+    expect(statusChanges).toHaveLength(1);
+    expect(statusChanges[0]?.status).toBe("published");
+    expect(statusChanges[0]?.assignmentId).toBe("assign-1");
+  });
+
+  test("Failure preserves the Closed state and renders a generic error message", async () => {
+    const mount = mkMount();
+    const reopen = rejectingReopen();
+    const statusChanges: Array<AssignmentDetailMetadata> = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      reopenCallable: reopen.callable,
+      onStatusChange: (m) => {
+        statusChanges.push(m);
+      },
+    });
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(reopen.calls).toEqual(["assign-1"]);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-status-value]")
+        ?.textContent,
+    ).toBe("Closed");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).not.toBeNull();
+    const err = mount.querySelector(
+      "[data-testid=assignment-detail-reopen-error]",
+    );
+    expect(err).not.toBeNull();
+    expect(err?.getAttribute("role")).toBe("alert");
+    expect(err?.textContent).not.toMatch(/firestore|callable|assignments\.|stack/i);
+    expect(statusChanges).toHaveLength(0);
+  });
+
+  test("Escape closes the confirmation dialog without invoking the callable", async () => {
+    const mount = mkMount();
+    const reopen = resolvingReopen();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      reopenCallable: reopen.callable,
+    });
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-action]",
+      )
+      ?.click();
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }),
+    );
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assignment-detail-reopen-dialog]"),
+    ).toBeNull();
+    expect(reopen.calls).toEqual([]);
+  });
+
+  test("Back button remains functional in the reopened state after a successful reopen", async () => {
+    const mount = mkMount();
+    const reopen = resolvingReopen();
+    let backClicks = 0;
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      reopenCallable: reopen.callable,
+      onBack: () => {
+        backClicks += 1;
+      },
+    });
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-confirm]",
       )
       ?.click();
     await flush();

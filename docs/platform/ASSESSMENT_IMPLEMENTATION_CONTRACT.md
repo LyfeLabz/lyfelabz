@@ -637,7 +637,129 @@ The response value itself is validated recursively for JSON-serializable primiti
 
 The current implementation writes `sessionOrdinal = 1` at `assessmentSessionsBegin` and does not increment across archival cycles. Multi-session ordinal semantics remain deferred to the archived-session lifecycle callables (`assessmentSessionsSweepExpired`, `assessmentSessionsRecover`), which are out of scope for the current pipeline and are named as reserved surfaces in §22. The deterministic session identifier construction in §12 remains authoritative once those callables ship. No behavior change is warranted in the current slice.
 
+## 33. Sprint 13E Reconciliations (Assignment Close and Reopen Lifecycle)
+
+The following clarifications narrow §17 (Assignment Relationship) against the certified Sprint 13D `assignmentsClose` and Sprint 13E `assignmentsReopen` implementations. No new pipeline requirement is introduced; §33 records the assignment-lifecycle semantics the assessment pipeline already depends on, in one place, so the assessment surface can rely on them without reconstructing behavior from the assignment domain.
+
+The assessment pipeline is unchanged by §33. Session expiration (§6), grace-period (§17 and `ASSESSMENT_PIPELINE_SPECIFICATION.md` §7.1), autosave, attempt numbering (§8, §12), representative-attempt selection under PDR-029, and the frozen recipient population under PDR-029l all continue to apply verbatim.
+
+### 33.1 Canonical assignment lifecycle transitions
+
+The certified `assignments/{assignmentId}.status` field admits the enumeration named in `LYFELABZ_FIRESTORE_DATA_MODEL.md` §3.6: `draft`, `published`, `closed`, `archived`. The lifecycle-mutating transitions authorized on the active teacher-facing surface are exactly:
+
+| From | To | Callable | Audit action |
+| --- | --- | --- | --- |
+| `draft` | `published` | `assignmentsPublish` | `assignments.published` |
+| `published` | `closed` | `assignmentsClose` | `assignments.closed` |
+| `closed` | `published` | `assignmentsReopen` | `assignments.reopened` |
+| `draft` / `published` / `closed` | `archived` | `assignmentsArchive` | `assignments.archived` |
+
+Every other current-status / callable pairing is a disallowed transition and MUST be rejected with the canonical `assignments.invalidTransition` error identifier, verified against the implemented handlers (`platform/functions/src/assignments/assignments-close.ts`, `platform/functions/src/assignments/assignments-reopen.ts`). No partial write occurs on rejection and no lifecycle audit event is emitted on rejection.
+
+### 33.2 Close semantics (reconciles §17)
+
+`assignmentsClose` advances `assignments/{assignmentId}.status` from `published` to `closed` through the narrow `assignmentCloseDocRef(assignmentId).update({ status: "closed" })` typed write and modifies no other field. Closing means:
+
+- no new student assessment session may begin against the assignment; `assessmentSessionsBegin` continues to refuse non-`published` targets per §17 and §21.
+- no new attempt may be finalized after the grace period elapses; in-grace submission behavior at §17 and `ASSESSMENT_PIPELINE_SPECIFICATION.md` §7.1 is preserved verbatim.
+- every existing `attempts/{attemptId}` document remains immutable and preserved per §7 and §14.
+- every existing assignment summary and rollup remains readable per §18, §19, §20, and PDR-029.
+- the frozen recipient set at `assignments/{assignmentId}/recipients/{studentId}` remains untouched per PDR-029l.
+- the assignment remains teacher-discoverable through the Sprint 13C `assignmentsTeacherList` allowlist (`["published", "closed"]`).
+- the assignment is neither archived nor deleted; `archived` remains a distinct terminal state reachable only through `assignmentsArchive`.
+
+### 33.3 Reopen semantics (extends §17)
+
+`assignmentsReopen` advances `assignments/{assignmentId}.status` from `closed` back to `published` through the narrow `assignmentReopenDocRef(assignmentId).update({ status: "published" })` typed write and modifies no other field. Reopening means:
+
+- authorized frozen recipients (PDR-029l) MAY begin new assessment sessions again through `assessmentSessionsBegin` as soon as the record is `published`.
+- authorized frozen recipients MAY resume an existing session only where the existing canonical session rules in §6 still permit resume; expired sessions do not become valid again merely because the assignment reopened.
+- reopening does not reset the session expiration constant, does not extend an already-elapsed grace period, and does not mutate any prior `assessmentSessions/{sessionId}` record.
+- reopening does not regenerate or replace the frozen recipient collection at `assignments/{assignmentId}/recipients/{studentId}`. The population captured at first publication remains authoritative; the roster is not re-evaluated against current class enrollment.
+- every existing `attempts/{attemptId}` document remains immutable and preserved per §7 and §14. Attempt numbering under §8 and §12 continues from the current maximum; reopening does not restart or renumber attempts and does not reclassify the current representative attempt.
+- every existing assignment summary and rollup remains readable and continues to include the historical attempts already recorded. New attempts finalized after reopening participate in aggregate recomputation under the existing representative-attempt policy (PDR-029) without erasing prior values.
+- reopening does not create a new assignment record and does not alter `assignmentId`, `classId`, `teacherId`, `schoolId`, `districtId`, `lessonSlug`, `lessonVersion`, `mode`, or any LMS / Google Classroom linkage. No metadata edit is possible through this callable.
+- reopening does not touch `assessmentSessions/*`, `attempts/*`, `attemptRollups/*`, `assignmentRollups/*`, `assessmentAnswerKeys/*`, or any Google Classroom coursework.
+
+### 33.4 Authorization
+
+`assignmentsClose` and `assignmentsReopen` MUST both satisfy the identical authorization gate implemented in `platform/functions/src/assignments/assignments-close.ts` and `platform/functions/src/assignments/assignments-reopen.ts`:
+
+- Authenticated caller (`requireDistrictContext` resolves; every other case rejected with `unauthenticated`, `account-inactive`, `claim-stale`, or `district-mismatch` per `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §12).
+- `context.role === "teacher"`; every other role (student, pending teacher, inactive teacher, platform administrator) is rejected with `role-forbidden` before any Firestore access.
+- `existing.teacherId === context.uid` AND `existing.schoolId === context.schoolId` on the loaded assignment record; every other case is rejected with `assignments.forbidden`.
+- District boundary is enforced through the server-derived `context.districtId` against the record's denormalized `schoolId`.
+
+Client identity is never trusted. The request payload carries only `assignmentId`. Any client-supplied teacher, school, or district field is ignored; ownership fields are derived server-side from the loaded record and the resolved district context.
+
+### 33.5 Idempotency
+
+`assignmentsClose` against an already-`closed` record returns `{ status: "closed", alreadyClosed: true }` with no second write, no second state transition, and no second audit event.
+
+`assignmentsReopen` against an already-`published` record returns `{ status: "published", alreadyPublished: true }` with no second write, no second state transition, and no second audit event.
+
+Each side of the idempotent path emits an informational observability log (`assignments.closeIdempotent`, `assignments.reopenIdempotent`) but never an audit event.
+
+### 33.6 Invalid transitions
+
+`assignmentsClose` rejects every current status other than `published` (and the idempotent `closed`) with `assignments.invalidTransition`. In particular, `draft` cannot be closed through this callable and `archived` cannot be closed through this callable; archival is served by `assignmentsArchive`.
+
+`assignmentsReopen` rejects every current status other than `closed` (and the idempotent `published`) with `assignments.invalidTransition`. In particular, `draft` cannot be reopened and `archived` cannot be reopened; the terminal `archived` state is not recoverable through the active lifecycle callable set.
+
+Rejected transitions fail closed: no partial write, no lifecycle audit event, and no side effect on recipients, sessions, attempts, summaries, rollups, or LMS integration.
+
+### 33.7 Recipient behavior
+
+The frozen recipient collection at `assignments/{assignmentId}/recipients/{studentId}` remains the sole authorized population source under PDR-029l for both `assessmentSessionsBegin` membership enforcement and the teacher-facing assignment summary surface. Neither `assignmentsClose` nor `assignmentsReopen`:
+
+- adds a recipient,
+- removes a recipient,
+- regenerates the recipient collection,
+- replaces the recipient collection with current class enrollment, or
+- re-evaluates the roster against enrollment changes since first publication.
+
+Any future recipient mutation continues to use the separately certified recipient-management path and is out of scope for the lifecycle callables named here.
+
+### 33.8 Assessment session behavior
+
+While `closed`:
+
+- `assessmentSessionsBegin` MUST refuse new session creation against a non-`published` assignment per §17 and §21.
+- new attempt finalization MUST be refused once the grace period at `ASSESSMENT_PIPELINE_SPECIFICATION.md` §7.1 has elapsed; in-grace finalization for sessions live at close remains authorized until grace elapses.
+- existing stored session state (Live and Archived) remains preserved and is not mutated by the close write.
+
+After reopening:
+
+- eligible frozen recipients MAY begin new sessions through `assessmentSessionsBegin` as soon as the record is `published`.
+- eligible frozen recipients MAY resume an existing Live session only if the canonical session rules in §6 still permit resume; the 24-hour session-inactivity expiration constant is not reset by reopening.
+- an Archived session is not returned to Live merely because the assignment reopened; recovery of an archived session remains the sole responsibility of `assessmentSessionsRecover` under audited authority per §21.
+- reopening does not extend an already-elapsed grace period and does not mutate any prior session record.
+
+### 33.9 Attempt and submission behavior
+
+Reopening does not restart attempt numbering, does not erase prior scores, and does not replace the representative-attempt selection recorded on `attemptRollups/{assignmentId}__{studentId}` or `assignmentRollups/{assignmentId}` per §8, §12, and PDR-029. New attempts finalized after reopening receive the next `attemptNumber` derived by the certified snapshot-count pattern in §32.2 and participate in representative-attempt selection under the same policy. No prior attempt is relabeled or reclassified.
+
+### 33.10 Summary behavior
+
+Assignment summaries remain readable while `closed` and remain readable after reopening. Reopening does not clear or reset aggregate counts on `attemptRollups/*` or `assignmentRollups/*`. New attempts recorded after reopening may change aggregate results under the existing rollup recomputation trigger (`assessmentRollupsRecomputeAttempt`, §21). Historical recipients with no new attempt continue to be represented under the frozen-recipient summary contract at PDR-029l without alteration.
+
+### 33.11 Audit contract
+
+The canonical audit vocabulary for the assignment lifecycle callables is:
+
+| Callable | Successful transition | Idempotent no-op |
+| --- | --- | --- |
+| `assignmentsClose` | Exactly one `assignments.closed` event | No event |
+| `assignmentsReopen` | Exactly one `assignments.reopened` event | No event |
+
+Each successful lifecycle write emits its audit event exactly once via `writeAuditEvent`, carrying `actorUserId`, `actorRole: "teacher"`, `targetType: "assignment"`, `targetId: assignmentId`, `schoolId`, `districtId`, and a `{ classId }` payload. Failed or unauthorized requests write no lifecycle audit event unless an existing security-audit policy separately requires one. The `assignments.reopened` value is a canonical member of the `AuditAction` union alongside `assignments.published`, `assignments.closed`, and `assignments.archived`; no additional lifecycle audit action is introduced by Sprint 13E.
+
+### 33.12 Relationship between close and reopen
+
+`assignmentsClose` and `assignmentsReopen` are inverse lifecycle callables on the same field with symmetric authorization, symmetric idempotency, symmetric audit vocabulary, and symmetric write narrowness. Neither callable is a metadata-edit path; ownership, class, lesson, revision, and LMS references are frozen across both transitions. The pair together defines the complete `published` <-> `closed` bidirectional segment of the assignment lifecycle. Movement into or out of `draft` remains owned by `assignmentsPublish`, and terminal `archived` remains owned by `assignmentsArchive`.
+
 ## Change Log
 
 - 2026-07-12 - Initial issuance under Sprint 10A step F-2. Ratified by PDR-026.
 - 2026-07-16 - Sprint 11E reconciliation. Added §32 recording audit-write ordering, attempt-count derivation, response-purity guarantees, and session-ordinal deferral against the certified implementation. No behavioral requirement is added; §32 clarifies existing sections against the deployed pattern.
+- 2026-07-17 - Sprint 13E reconciliation. Added §33 recording the canonical assignment close and reopen lifecycle semantics against the certified Sprint 13D `assignmentsClose` and Sprint 13E `assignmentsReopen` implementations. No pipeline behavior is added; §33 narrows §17 by naming the transitions, authorization gate, idempotency, invalid-transition rejection, frozen-recipient preservation, session/attempt/summary preservation, and audit vocabulary the assessment surface relies on.

@@ -50,6 +50,7 @@ export {
   assignmentDraftUpdateDocRef,
   assignmentLmsPublicationDocRef,
   assignmentPublishDocRef,
+  assignmentReopenDocRef,
   assignmentRecipientCreationDocRef,
   assignmentRecipientDocRef,
   assignmentRecipientsCollectionRef,
@@ -101,6 +102,7 @@ export {
   type AssignmentLmsPublicationWrite,
   type AssignmentMode,
   type AssignmentPublishWrite,
+  type AssignmentReopenWrite,
   type AssignmentRecord,
   type AssignmentStatus,
 } from "./types/assignment";

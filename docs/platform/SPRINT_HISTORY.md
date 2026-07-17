@@ -3264,3 +3264,39 @@ Sprint 13D introduces the first teacher assignment lifecycle action on the certi
 ### Certification
 
 Sprint 13D is CONDITIONALLY CERTIFIED. Implementation is complete, targeted tests pass, full Cloud Functions regression passes, lint / typecheck / build pass, and only the pre-existing `curriculum/curriculumManifest.test.ts` baseline failure remains outstanding in the full application suite. Final certification is conditional pending resolution or formal acceptance of that baseline failure.
+
+## Sprint 13E: Teacher Assignment Reopen Workflow
+
+Dates: 2026-07-17. Status: CONDITIONALLY CERTIFIED pending resolution of the pre-existing `curriculum/curriculumManifest.test.ts` baseline failure.
+
+Sprint 13E completes the teacher assignment lifecycle on the certified Sprint 13B Assignment Detail surface by adding the inverse of Sprint 13D: reopening a closed assignment. The architecture review confirmed that no certified `assignmentsReopen` callable existed and that no backward-compatible additive extension of an existing lifecycle callable would satisfy the brief cleanly, so Option C was selected: one narrowly bounded new callable, `assignmentsReopen`, in the assignments domain. The callable authenticates through `requireDistrictContext`, requires an active-teacher role, enforces owning-teacher and same-school ownership, transitions `assignments/{assignmentId}.status` from `closed` back to `published` through a new narrow `AssignmentReopenWrite` typed write helper (`assignmentReopenDocRef`), and writes exactly one canonical `assignments.reopened` audit event via `writeAuditEvent`. Recipients, attempts, sessions, summaries, answer keys, lessonSlug, lessonVersion, classId, teacherId, and schoolId are never touched. Repeated reopen requests against an already-published record are idempotent and skip both the write and the audit event. Non-`closed` non-`published` current statuses (`draft`, `archived`) are rejected with `assignments.invalidTransition`. Client integration adds a narrow entry-point wire (`reopen-wire.ts`) mirroring the Sprint 13D `close-wire.ts` seam. The pure Assignment Detail surface gains an optional `reopenCallable` seam; when supplied and the loaded metadata is `closed`, a secondary `Reopen assignment` action supersedes the Sprint 13D `Assignment closed` label so exactly one lifecycle action is visible. Activating the action opens a calm accessible confirmation dialog reusing the existing `.shell-assign-overlay` / `.shell-assign-dialog` visual language with the exact prompt and buttons the brief prescribes. Successful reopen transitions the header status to `Published` in place, replaces the `Reopen assignment` action with the Sprint 13D `Close assignment` action, and invokes `onStatusChange(metadata)` so the session-scoped registry is re-registered and the Sprint 13C selection interface immediately reflects the new status without a page reload. Failure preserves the `Closed` state, restores the `Reopen assignment` action, and renders a generic teacher-facing `role="alert"` message that never names Firestore, callable identifiers, stack traces, or document paths. Sprint 13A Assignment Summary continues to render unchanged. The four-item Teacher Workspace navigation remains unchanged. Eleven targeted backend tests, four targeted reopen-wire tests, and nine new detail-surface tests all pass. Cloud Functions regression: 883 of 883. Full application suite: 354 of 355 (sole remaining failure is the pre-existing `curriculum/curriculumManifest.test.ts` baseline drift, unchanged from Sprint 13B through 13D). Lint, typecheck, and production build pass. Firestore Rules unchanged, indexes unchanged, LMS unchanged, Google Classroom unchanged, browser persistence unchanged, realtime listeners unchanged, polling unchanged. No deployment. No commit. Zero em dashes across the completion report and this entry.
+
+### Files created
+
+- `platform/functions/src/assignments/assignments-reopen.ts`.
+- `platform/functions/src/assignments/assignments-reopen.test.ts`.
+- `app/src/assignments/detail/reopen-wire.ts`.
+- `app/src/assignments/detail/reopen-wire.test.ts`.
+- `docs/platform/SPRINT_13E_COMPLETION_REPORT.md`.
+
+### Files modified
+
+- `platform/functions/src/shared/types/assignment.ts` (additive `AssignmentReopenWrite` write shape).
+- `platform/functions/src/shared/types/audit-event.ts` (additive `assignments.reopened` audit action).
+- `platform/functions/src/shared/firestore/typed-ref.ts` (additive `assignmentReopenDocRef` typed reference).
+- `platform/functions/src/shared/index.ts` (additive re-exports).
+- `platform/functions/src/assignments/index.ts` (additive re-export of the new callable).
+- `platform/functions/src/index.ts` (additive callable registration).
+- `app/src/assignments/detail/types.ts` (additive `AssignmentsReopenResult` and `AssignmentsReopenCallable` types).
+- `app/src/assignments/detail/detail.ts` (Reopen assignment action, confirmation dialog, pending / error handling; no firebase imports).
+- `app/src/assignments/detail/detail.test.ts` (nine appended reopen-lifecycle tests).
+- `app/src/index.ts` (per-session `assignmentReopen` binding; wired into `renderAssignmentDetail`).
+- `docs/platform/SPRINT_HISTORY.md` (this Sprint 13E entry).
+
+### Certification
+
+Sprint 13E is CONDITIONALLY CERTIFIED. Implementation is complete, targeted tests pass, full Cloud Functions regression passes, lint / typecheck / build pass, and only the pre-existing `curriculum/curriculumManifest.test.ts` baseline failure remains outstanding in the full application suite. Final certification is conditional pending resolution or formal acceptance of that baseline failure.
+
+### Sprint 13E Documentation Reconciliation (2026-07-17)
+
+A documentation-only reconciliation pass followed Sprint 13E implementation to incorporate the new `closed` -> `published` transition into the canonical platform contracts. `docs/platform/ASSESSMENT_IMPLEMENTATION_CONTRACT.md` gained §33 "Sprint 13E Reconciliations (Assignment Close and Reopen Lifecycle)" recording the bidirectional `published` <-> `closed` transitions, the shared authorization gate, idempotency semantics, `assignments.invalidTransition` rejection language, frozen-recipient preservation under PDR-029l, session behavior while closed and after reopening (no reset of the 24-hour inactivity expiration; no extension of an already-elapsed grace period; no recovery of Archived sessions), attempt and summary preservation, and the canonical `assignments.reopened` audit action alongside `assignments.closed`. `docs/platform/LYFELABZ_CLOUD_FUNCTION_CHARTER.md` gained the `assignmentsReopen` inventory entry immediately after `assignmentsClose`. No PDR is required; the reopen behavior is a narrow additive clarification of the certified `LYFELABZ_FIRESTORE_DATA_MODEL.md` §3.6 lifecycle enumeration and does not alter policy, callable pattern, Firestore Rules, indexes, schema, LMS integration, or the district boundary. `docs/platform/SPRINT_13E_COMPLETION_REPORT.md` records the reconciliation as §14A without disturbing the original §§1 through 15. No implementation, test, Rules, index, schema, LMS, Google Classroom, configuration, or deployment change was performed. Zero em dashes across the four modified documentation files. No deployment. No commit.

@@ -27,6 +27,7 @@ export type AuditAction =
   | "assignments.updated"
   | "assignments.published"
   | "assignments.closed"
+  | "assignments.reopened"
   | "assignments.archived"
   | "assignments.recipientAdded"
   | "submissions.created"

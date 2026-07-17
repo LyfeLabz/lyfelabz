@@ -120,6 +120,16 @@ export type AssignmentCloseWrite = {
   readonly status: "closed";
 };
 
+// Write shape for the reopen callable (assignmentsReopen). Conforms to
+// Data Model 3.6 lifecycle: `status` moves from `closed` back to
+// `published` and no other field is modified. This is the inverse of
+// AssignmentCloseWrite and preserves the same field-narrowness posture,
+// so the reopen path cannot be laundered into a metadata edit or an
+// ownership change.
+export type AssignmentReopenWrite = {
+  readonly status: "published";
+};
+
 // Write shape for the archive callable (assignmentsArchive). Conforms to
 // Data Model §3.6 lifecycle: `status` advances to the terminal `archived`
 // state and no other field is modified.
