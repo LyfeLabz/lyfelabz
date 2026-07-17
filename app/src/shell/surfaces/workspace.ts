@@ -5,7 +5,10 @@ import type {
   IntegrationsDeps,
 } from "../../settings/integrations/types";
 import type { WorkspaceSurfaceKey } from "../navigation";
-import { renderCurriculumSurface } from "./curriculum";
+import {
+  renderCurriculumSurface,
+  type CurriculumAssignmentDetailSeam,
+} from "./curriculum";
 import { renderClassesSurface } from "./classes";
 import { renderPresentModeSurface } from "./presentMode";
 import { renderSettingsSurface } from "./settings";
@@ -49,6 +52,10 @@ export type WorkspaceDeps = {
   // When null the Assign Experience runs UI-only session state (test
   // harness path). The entry point wires the real seam.
   readonly assignments?: AssignmentsCallables | null;
+  // Sprint 13B remediation: entry-point seam that lets the Curriculum
+  // surface register published assignment metadata and open the
+  // certified Assignment Detail surface via the entry-point opener.
+  readonly assignmentDetail?: CurriculumAssignmentDetailSeam | null;
 };
 
 export type WorkspaceSurface = {
@@ -77,6 +84,7 @@ export const WORKSPACE_SURFACES: Readonly<
         listClasses: deps.listClasses,
         integrations: deps.integrations ?? null,
         assignments: deps.assignments ?? null,
+        assignmentDetail: deps.assignmentDetail ?? null,
       }),
   }),
   classes: Object.freeze({

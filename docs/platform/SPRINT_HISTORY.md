@@ -3163,3 +3163,70 @@ Repository baseline validation:
 ### Certification
 
 Sprint 13A is CONDITIONALLY CERTIFIED. Implementation completed, targeted validation passed, and backend regression passed. Final certification remains conditional pending repository-wide validation, specifically resolution or formal acceptance of the pre-existing `curriculum/curriculumManifest.test.ts` failure.
+
+---
+
+## Sprint 13B: Teacher Assignment Detail Surface
+
+**Dates:** 2026-07-17
+**Status:** Implementation complete; conditionally certified pending repository-wide validation.
+**Detailed report:** SPRINT_13B_COMPLETION_REPORT.md
+
+### Objective
+
+Introduce the first authenticated teacher-facing Assignment Detail surface. The surface composes the certified Sprint 13A `renderAssignmentSummaryCard` unchanged and adds a small header of already-known assignment metadata (title, status, class name). No backend contract, callable, Firestore Rule, index, LMS integration, or schema is introduced.
+
+### Deliverables
+
+- `renderAssignmentDetail(mount, deps)` pure DOM builder with loading, ready, empty, and error states inside a stable-height container.
+- Injected `AssignmentDetailMetadataReader` seam that resolves the header fields; the surface itself imports nothing from any firebase module and opens no listener.
+- Session-scoped in-memory `assignmentDetailRegistry` and its `AssignmentDetailMetadataReader` wire; both live in `app/src/assignments/detail/`.
+- Entry-point `openAssignmentDetail(assignmentId)` that mounts the detail surface into the app mount and returns to the workspace shell on Back.
+- Full targeted UI test coverage (21 tests): loading, success, navigation, empty, error, retry, confidentiality, accessibility, request posture.
+
+### Files created
+
+- `app/src/assignments/detail/types.ts`.
+- `app/src/assignments/detail/detail.ts`.
+- `app/src/assignments/detail/registry.ts`.
+- `app/src/assignments/detail/wire.ts`.
+- `app/src/assignments/detail/detail.test.ts`.
+- `docs/platform/SPRINT_13B_COMPLETION_REPORT.md`.
+
+### Files modified
+
+- `app/src/index.ts` (additive per-session `assignmentDetailRegistry`, `openAssignmentDetail`, and non-teacher registry clearing; certified integrations, assignments-lifecycle, and route-table wiring unchanged).
+- `docs/platform/SPRINT_HISTORY.md` (this Sprint 13B entry).
+
+### Validation results
+
+Sprint 13B implementation validation:
+
+- Targeted Sprint 13B UI tests: 21 of 21 passed.
+- Cloud Functions regression: 38 suites, 861 of 861 tests passed.
+- Lint: passed.
+- Typecheck: passed.
+- Production build: passed.
+- Backend files unchanged. Firestore Rules unchanged. Indexes unchanged. LMS integration unchanged. Callable contracts unchanged. Schema unchanged.
+- Zero em dashes across the Sprint 13B completion report and this Sprint 13B entry.
+- No deployment.
+- No commit.
+
+Repository baseline validation:
+
+- Full app test suite: 296 tests passed, 1 test failed.
+- Failing test, exactly as observed: `curriculum/curriculumManifest.test.ts`.
+- The failure reproduces outside Sprint 13B, is unrelated to any Sprint 13B files, and Sprint 13B did not modify curriculum manifests, curriculum generation, or build tooling.
+- Application validation is therefore blocked only by this pre-existing curriculum manifest test failure.
+
+### Certification
+
+Sprint 13B is CONDITIONALLY CERTIFIED. Implementation completed, targeted validation passed, and backend regression passed. Final certification remains conditional pending repository-wide validation, specifically resolution or formal acceptance of the pre-existing `curriculum/curriculumManifest.test.ts` failure.
+
+### Remediation (2026-07-17): Visible entry-path integration
+
+The initial Sprint 13B implementation established the Assignment Detail surface, the session-scoped registry, the metadata reader wire, and the entry-point `openAssignmentDetail(assignmentId)` opener, but did not expose a visible teacher-facing control that reached that opener. A bounded remediation added one visible secondary action, labelled exactly `View summary`, to each already-assigned lesson card in the Curriculum surface. After each successful `assignmentsPublish` call resolves, the Curriculum surface records the minimal teacher-owned metadata (`assignmentId`, `title`, `className`, `status: "published"`) through an injected registry seam and reveals the `View summary` control on that lesson card. Selecting the control invokes the entry-point `openAssignmentDetail(assignmentId)` opener; the certified detail surface renders; the certified `Back` control returns the teacher to the workspace shell. The four-item Teacher Workspace navigation is unchanged. No backend, Firestore Rules, callable contract, LMS integration, schema, or index configuration was modified.
+
+Nine targeted remediation tests were added to `app/src/shell/shell.test.ts`. All 132 targeted shell tests pass. All 21 targeted Assignment Detail tests pass. Cloud Functions regression: 861 of 861 tests pass. Lint, typecheck, and production build pass. The only remaining full-suite failure is the pre-existing `curriculum/curriculumManifest.test.ts` baseline drift. See `docs/platform/SPRINT_13B_COMPLETION_REPORT.md` §23 for the full remediation record.
+
+Sprint 13B remains CONDITIONALLY CERTIFIED: implementation is now functionally complete; final certification remains conditional pending the pre-existing baseline failure.

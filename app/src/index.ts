@@ -21,6 +21,9 @@ import type {
 } from "./settings/integrations/types";
 import { createAssignmentSummaryCallable } from "./assignments/summary/wire";
 import type { AssignmentSummaryCallable } from "./assignments/summary/types";
+import { createAssignmentDetailRegistry } from "./assignments/detail/registry";
+import { createAssignmentDetailMetadataReader } from "./assignments/detail/wire";
+import { renderAssignmentDetail } from "./assignments/detail/detail";
 
 // Client entry point. Waits for the Canonical Session Bootstrap to
 // resolve, then hands the resulting immutable Session to the router.
@@ -53,7 +56,43 @@ async function run(): Promise<void> {
   // consumed by the reusable Assignment Summary card. Rebound per
   // active-teacher session so cross-session state cannot leak.
   let assignmentSummary: AssignmentSummaryCallable | null = null;
-  void assignmentSummary;
+  // Sprint 13B: session-scoped registry of teacher-owned assignment
+  // metadata (title, status, class name). Populated by the certified
+  // lifecycle path; consumed by the Assignment Detail metadata reader.
+  // Rebuilt per active-teacher session so cross-session state cannot
+  // leak.
+  const assignmentDetailRegistry = createAssignmentDetailRegistry();
+  const openAssignmentDetail = (assignmentId: string): void => {
+    if (assignmentSummary === null) return;
+    const target = findMount();
+    target.textContent = "";
+    renderAssignmentDetail(target, {
+      assignmentId,
+      loadMetadata: createAssignmentDetailMetadataReader(
+        assignmentDetailRegistry,
+      ),
+      summaryCallable: assignmentSummary,
+      onBack: () => {
+        void rerun();
+      },
+    });
+  };
+  // Sprint 13B remediation. Stable per-tab seam consumed by the
+  // Curriculum surface. `register` records teacher-owned metadata into
+  // the session-scoped registry after a successful publish; `open`
+  // invokes the entry-point Assignment Detail opener. The seam is
+  // stable across reruns; the underlying registry is cleared on any
+  // non-teacher bootstrap outcome, so `open` is a safe no-op after
+  // sign-out (the registry lookup returns null and the detail surface
+  // renders its empty state).
+  const assignmentDetailSeam = Object.freeze({
+    register: (metadata: Parameters<typeof assignmentDetailRegistry.register>[0]) => {
+      assignmentDetailRegistry.register(metadata);
+    },
+    open: (assignmentId: string) => {
+      openAssignmentDetail(assignmentId);
+    },
+  });
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
     renderLoadingSurface(mount);
@@ -91,6 +130,7 @@ async function run(): Promise<void> {
       integrations = null;
       assignments = null;
       assignmentSummary = null;
+      assignmentDetailRegistry.clear();
     }
     dispatch(session, table, mount, window.history);
   };
@@ -163,6 +203,7 @@ async function run(): Promise<void> {
     onLaunchPresentMode,
     integrations: () => integrations,
     assignments: () => assignments,
+    assignmentDetail: () => assignmentDetailSeam,
   });
 
   await rerun();

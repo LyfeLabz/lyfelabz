@@ -14,6 +14,19 @@ import {
   type LessonTopic,
   type SurfaceableLesson,
 } from "../../curriculum/curriculumManifest";
+import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
+
+// Sprint 13B remediation: narrow visible entry-point seam so an
+// authenticated teacher can reach the certified Assignment Detail
+// surface from the Curriculum lesson card that produced the
+// assignment. The Curriculum surface only stores minimal teacher-owned
+// metadata (title, class name, status, assignmentId) in the injected
+// registry and invokes the entry-point opener. No student roster, no
+// recipient identifier, no attempt or session identifier is stored.
+export type CurriculumAssignmentDetailSeam = {
+  readonly register: (metadata: AssignmentDetailMetadata) => void;
+  readonly open: (assignmentId: string) => void;
+};
 
 // Curriculum surface. The teacher curriculum landing page introduced by
 // Sprint 6D and extended in Sprint 6E with the first working version of
@@ -53,6 +66,12 @@ export type CurriculumSurfaceDeps = {
   // that do not exercise the callable lifecycle); no LyfeLabz assignment
   // is persisted and no LMS publication is issued.
   readonly assignments?: AssignmentsCallables | null;
+  // Sprint 13B remediation. When present, a successful publish records
+  // teacher-owned metadata through `register` and each already-assigned
+  // lesson card renders a visible `View summary` secondary action that
+  // invokes `open(assignmentId)`. When absent-or-null the card renders
+  // unchanged; no affordance is added and no metadata is registered.
+  readonly assignmentDetail?: CurriculumAssignmentDetailSeam | null;
 };
 
 const DEFAULT_LIST_CLASSES: ListClasses = () =>
@@ -103,6 +122,38 @@ type Assignment = {
 // is enabled; the last-enabled row's deselection returns the card to
 // its unassigned state, mirroring section 8 of ASSIGN_EXPERIENCE.md.
 const sessionAssignments: Map<string, Assignment> = new Map();
+
+// Sprint 13B remediation. Session-scoped map from lesson slug to the
+// most recently published assignmentId for that lesson. Populated only
+// after `assignmentsPublish` resolves; consumed by the lesson card to
+// render the visible `View summary` affordance. The registry itself is
+// owned by the entry point; this map only remembers which id belongs
+// to which visible lesson card so the card opens its own assignment.
+// UID-scoped so a same-tab teacher swap cannot leak the prior teacher's
+// mapping into the new session.
+let sessionAssignmentIdsByLesson: {
+  readonly uid: string;
+  readonly map: Map<string, string>;
+} | null = null;
+
+function ensureAssignmentIdBucket(uid: string): Map<string, string> {
+  if (
+    sessionAssignmentIdsByLesson === null ||
+    sessionAssignmentIdsByLesson.uid !== uid
+  ) {
+    sessionAssignmentIdsByLesson = { uid, map: new Map() };
+  }
+  return sessionAssignmentIdsByLesson.map;
+}
+
+function readAssignmentIdForLesson(
+  uid: string,
+  slug: string,
+): string | null {
+  const bucket = sessionAssignmentIdsByLesson;
+  if (bucket === null || bucket.uid !== uid) return null;
+  return bucket.map.get(slug) ?? null;
+}
 
 // Teacher class list cache. Populated lazily on surface mount so the
 // dialog opens without a round trip. Keyed by uid to avoid returning a
@@ -248,6 +299,7 @@ export function renderCurriculumSurface(
 ): void {
   const integrations = deps.integrations ?? null;
   const assignments = deps.assignments ?? null;
+  const assignmentDetail = deps.assignmentDetail ?? null;
   const doc = mount.ownerDocument;
 
   const welcome = doc.createElement("h2");
@@ -401,15 +453,29 @@ export function renderCurriculumSurface(
       listClasses: deps.listClasses,
       integrations,
       assignments,
+      assignmentDetail,
       onConfirm: (summary) => {
         refreshAssignControl(card, lesson);
+        refreshViewSummaryControl(card, lesson, session.uid, assignmentDetail);
         showSuccess(successBanner, summary);
+      },
+      onLifecycleComplete: () => {
+        refreshViewSummaryControl(card, lesson, session.uid, assignmentDetail);
       },
     });
   };
 
   for (const lesson of LESSONS) {
-    grid.appendChild(renderLessonCard(doc, lesson, state.activation, openAssignDialog));
+    grid.appendChild(
+      renderLessonCard(
+        doc,
+        lesson,
+        state.activation,
+        openAssignDialog,
+        session.uid,
+        assignmentDetail,
+      ),
+    );
   }
   applyFilters();
 
@@ -463,6 +529,8 @@ function renderLessonCard(
   lesson: SurfaceableLesson,
   activation: Map<string, boolean>,
   onAssign: (lesson: SurfaceableLesson, card: HTMLElement) => void,
+  teacherUid: string,
+  assignmentDetail: CurriculumAssignmentDetailSeam | null,
 ): HTMLElement {
   const card = doc.createElement("article");
   card.className = "shell-card shell-lesson-card";
@@ -555,7 +623,53 @@ function renderLessonCard(
   actions.appendChild(assign);
 
   card.appendChild(actions);
+  refreshViewSummaryControl(card, lesson, teacherUid, assignmentDetail);
   return card;
+}
+
+// Sprint 13B remediation. Renders (or removes) the visible `View
+// summary` secondary action on a lesson card. The control is present
+// only when a valid assignment ID is registered for this lesson in the
+// current active-teacher session AND an `open` callback has been wired
+// through deps. Invoking the control passes the stored assignmentId to
+// the entry-point opener; the card never re-implements detail mounting.
+function refreshViewSummaryControl(
+  card: HTMLElement,
+  lesson: SurfaceableLesson,
+  teacherUid: string,
+  assignmentDetail: CurriculumAssignmentDetailSeam | null,
+): void {
+  const doc = card.ownerDocument;
+  const actions = card.querySelector<HTMLElement>(".shell-lesson-actions");
+  if (actions === null) return;
+  const existing = actions.querySelector<HTMLButtonElement>(
+    `[data-testid=lesson-view-summary-${lesson.slug}]`,
+  );
+  const assignmentId =
+    assignmentDetail === null
+      ? null
+      : readAssignmentIdForLesson(teacherUid, lesson.slug);
+  if (assignmentId === null || assignmentDetail === null) {
+    if (existing !== null) existing.remove();
+    return;
+  }
+  if (existing !== null) {
+    existing.setAttribute("data-assignment-id", assignmentId);
+    return;
+  }
+  const view = doc.createElement("button");
+  view.type = "button";
+  view.className = "shell-lesson-view-summary";
+  view.setAttribute("data-testid", `lesson-view-summary-${lesson.slug}`);
+  view.setAttribute("data-assignment-id", assignmentId);
+  view.setAttribute("aria-label", `View summary for ${lesson.title}`);
+  view.textContent = "View summary";
+  view.addEventListener("click", () => {
+    const id = view.getAttribute("data-assignment-id");
+    if (id === null || id.length === 0) return;
+    assignmentDetail.open(id);
+  });
+  actions.appendChild(view);
 }
 
 // -----------------------------------------------------------------------------
@@ -569,7 +683,9 @@ type OpenDialogInput = {
   readonly listClasses: ListClasses;
   readonly integrations: IntegrationsDeps | null;
   readonly assignments: AssignmentsCallables | null;
+  readonly assignmentDetail: CurriculumAssignmentDetailSeam | null;
   readonly onConfirm: (summary: string) => void;
+  readonly onLifecycleComplete?: () => void;
 };
 
 async function openDialog(input: OpenDialogInput): Promise<void> {
@@ -580,7 +696,9 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     listClasses,
     integrations,
     assignments,
+    assignmentDetail,
     onConfirm,
+    onLifecycleComplete,
   } = input;
 
   const overlay = doc.createElement("div");
@@ -745,9 +863,13 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     let firstEnabledLmsTopicId = "";
     type EnabledRow = {
       readonly classId: string;
+      readonly className: string;
       readonly cfg: RowConfig;
       readonly link: IntegrationsClassLink | null;
     };
+    const classById = new Map<string, ClassSummary>(
+      classes.map((c) => [c.id, c] as const),
+    );
     const enabledRows: EnabledRow[] = [];
     for (const [cid, cfg] of rowState) {
       stored.rows.set(cid, { ...cfg });
@@ -757,8 +879,14 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         if (!firstEnabledTopic && cfg.topic) firstEnabledTopic = cfg.topic;
         if (!firstEnabledLmsTopicId && cfg.lmsTopicId)
           firstEnabledLmsTopicId = cfg.lmsTopicId;
+        const cls = classById.get(cid);
         enabledRows.push({
           classId: cid,
+          className: cls
+            ? cls.grade.length > 0
+              ? `${cls.title} · Grade ${cls.grade}`
+              : cls.title
+            : cid,
           cfg,
           link: linksByClassId.get(cid) ?? null,
         });
@@ -812,7 +940,9 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       enabledRows,
       assignments,
       integrations,
+      assignmentDetail,
       onConfirm,
+      onLifecycleComplete,
     });
   });
 
@@ -1128,15 +1258,26 @@ async function runAssignmentLifecycle(input: {
   readonly teacherUid: string;
   readonly enabledRows: readonly {
     readonly classId: string;
+    readonly className: string;
     readonly cfg: RowConfig;
     readonly link: IntegrationsClassLink | null;
   }[];
   readonly assignments: AssignmentsCallables;
   readonly integrations: IntegrationsDeps | null;
+  readonly assignmentDetail: CurriculumAssignmentDetailSeam | null;
   readonly onConfirm: (summary: string) => void;
+  readonly onLifecycleComplete?: () => void;
 }): Promise<void> {
-  const { lesson, teacherUid, enabledRows, assignments, integrations, onConfirm } =
-    input;
+  const {
+    lesson,
+    teacherUid,
+    enabledRows,
+    assignments,
+    integrations,
+    assignmentDetail,
+    onConfirm,
+    onLifecycleComplete,
+  } = input;
   const nonce = mintNonce();
   const lyfelabzUrl =
     typeof window !== "undefined" && window.location
@@ -1188,6 +1329,24 @@ async function runAssignmentLifecycle(input: {
         };
       }
 
+      // Sprint 13B remediation. Record the published assignment in the
+      // session-scoped registry so the lesson card can render the visible
+      // `View summary` opener. Only teacher-owned metadata is stored.
+      if (assignmentDetail !== null) {
+        try {
+          assignmentDetail.register({
+            assignmentId,
+            title: lesson.title,
+            className: row.className,
+            status: "published",
+          });
+          ensureAssignmentIdBucket(teacherUid).set(lesson.slug, assignmentId);
+        } catch {
+          // defensive no-op: registry failure never disturbs the
+          // authoritative publish outcome
+        }
+      }
+
       // Step 3: optional LMS publication using the authoritative id.
       if (!wantsLms || row.link === null || integrations === null) {
         return {
@@ -1224,6 +1383,7 @@ async function runAssignmentLifecycle(input: {
   );
 
   onConfirm(summarizeOutcomes(lesson, outcomes));
+  onLifecycleComplete?.();
 }
 
 function summarizeOutcomes(
@@ -1285,4 +1445,5 @@ export function _resetCurriculumSessionStateForTest(): void {
   sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
   sessionPreferences.topic = "";
   sessionPreferences.lmsTopicId = "";
+  sessionAssignmentIdsByLesson = null;
 }

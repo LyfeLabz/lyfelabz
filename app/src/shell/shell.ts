@@ -9,6 +9,7 @@ import { renderNavigation, type WorkspaceSurfaceKey } from "./navigation";
 import { renderFooter } from "./footer";
 import { mountWorkspaceOutlet } from "./surfaces/workspace";
 import type { SnapshotPreview } from "./surfaces/snapshot";
+import type { CurriculumAssignmentDetailSeam } from "./surfaces/curriculum";
 
 // Top-level teacher-workspace shell mount.
 //
@@ -43,6 +44,10 @@ export type ShellDeps = {
   // Sprint 8D.1: authoritative assignment lifecycle callables consumed
   // by the Assign Experience.
   readonly assignments?: AssignmentsCallables | null;
+  // Sprint 13B remediation: entry-point seam that lets the Curriculum
+  // surface register published assignment metadata and open the
+  // certified Assignment Detail surface.
+  readonly assignmentDetail?: CurriculumAssignmentDetailSeam | null;
 };
 
 export function mountTeacherShell(
@@ -72,6 +77,7 @@ export function mountTeacherShell(
     snapshotPreview: deps.snapshotPreview ?? null,
     integrations: deps.integrations ?? null,
     assignments: deps.assignments ?? null,
+    assignmentDetail: deps.assignmentDetail ?? null,
   };
 
   const renderNav = (): void => {

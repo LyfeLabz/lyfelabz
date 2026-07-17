@@ -4,6 +4,7 @@ import type {
   AssignmentsCallables,
   IntegrationsDeps,
 } from "../../settings/integrations/types";
+import type { CurriculumAssignmentDetailSeam } from "../../shell/surfaces/curriculum";
 import { mountTeacherShell } from "../../shell/shell";
 import {
   clear,
@@ -49,6 +50,13 @@ export type SurfaceDeps = {
     | AssignmentsCallables
     | null
     | (() => AssignmentsCallables | null);
+  // Sprint 13B remediation. Same getter pattern as `integrations` /
+  // `assignments` so per-session state (registry, opener) can rebind
+  // across reruns without rebuilding the route table.
+  readonly assignmentDetail?:
+    | CurriculumAssignmentDetailSeam
+    | null
+    | (() => CurriculumAssignmentDetailSeam | null);
 };
 
 // -----------------------------------------------------------------------------
@@ -327,12 +335,17 @@ export const makeActiveTeacherSurface =
       typeof deps.assignments === "function"
         ? deps.assignments()
         : (deps.assignments ?? null);
+    const assignmentDetail =
+      typeof deps.assignmentDetail === "function"
+        ? deps.assignmentDetail()
+        : (deps.assignmentDetail ?? null);
     mountTeacherShell(session, mount, {
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
       onLaunchPresentMode: deps.onLaunchPresentMode,
       integrations,
       assignments,
+      assignmentDetail,
     });
   };
 

@@ -2521,3 +2521,302 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
     expect(creates).toBe(2);
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 13B remediation - visible View summary opener
+// -----------------------------------------------------------------------------
+
+describe("Assign Experience - Sprint 13B remediation", () => {
+  const teacher = teacherSession();
+
+  type CreateDraftIn = {
+    assignmentId: string;
+    classId: string;
+    lessonSlug: string;
+    lessonVersion: string;
+    mode: "practice" | "classroom";
+    title?: string;
+  };
+  type PublishIn = { assignmentId: string };
+
+  const twoClasses: ReadonlyArray<ClassSummary> = freeze([
+    freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
+    freeze({ id: "c2", title: "7B Systems", grade: "7", status: "active" }),
+  ] as ClassSummary[]);
+  const listTwo: ListClasses = () => Promise.resolve(twoClasses);
+
+  const makeAssignments = (opts: { failPublish?: boolean } = {}) => {
+    const drafts: CreateDraftIn[] = [];
+    const publishes: PublishIn[] = [];
+    return {
+      drafts,
+      publishes,
+      seam: {
+        createDraft: async (input: CreateDraftIn) => {
+          drafts.push(input);
+          return {
+            assignmentId: input.assignmentId,
+            status: "draft" as const,
+            alreadyCreated: false,
+          };
+        },
+        publish: async (input: PublishIn) => {
+          if (opts.failPublish) {
+            throw new Error("publish failed");
+          }
+          publishes.push(input);
+          return {
+            assignmentId: input.assignmentId,
+            status: "published" as const,
+            alreadyPublished: false,
+          };
+        },
+      },
+    };
+  };
+
+  const makeDetailSeam = () => {
+    const registered: Array<{
+      assignmentId: string;
+      title: string;
+      className: string;
+      status: string;
+    }> = [];
+    const opened: string[] = [];
+    return {
+      registered,
+      opened,
+      seam: {
+        register: (m: {
+          assignmentId: string;
+          title: string;
+          className: string;
+          status: "draft" | "published" | "closed";
+        }) => {
+          registered.push({ ...m });
+        },
+        open: (id: string) => {
+          opened.push(id);
+        },
+      },
+    };
+  };
+
+  const confirmSingleClass = async (
+    mount: HTMLElement,
+    lessonSlug: string,
+    keepClassId: string,
+  ): Promise<void> => {
+    mount
+      .querySelector<HTMLButtonElement>(
+        `[data-testid=lesson-assign-${lessonSlug}]`,
+      )
+      ?.click();
+    await flush();
+    for (const cid of ["c1", "c2"]) {
+      if (cid === keepClassId) continue;
+      const cb = document.querySelector<HTMLInputElement>(
+        `[data-testid=assign-row-enabled-${cid}]`,
+      );
+      if (cb) {
+        cb.checked = false;
+        cb.dispatchEvent(new Event("change"));
+      }
+    }
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+  };
+
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+  });
+
+  test("View summary is absent before publication", () => {
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    expect(
+      mount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
+    ).toBeNull();
+  });
+
+  test("successful publish registers metadata and reveals View summary on the correct card", async () => {
+    const asn = makeAssignments();
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    await confirmSingleClass(mount, "earths-layers", "c1");
+    expect(detail.registered.length).toBe(1);
+    expect(detail.registered[0]?.status).toBe("published");
+    expect(detail.registered[0]?.title).toBe(
+      // certified curriculum manifest entry
+      mount
+        .querySelector("[data-testid=lesson-title-earths-layers]")
+        ?.textContent,
+    );
+    expect(detail.registered[0]?.className).toContain("6A Life Science");
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(view).not.toBeNull();
+    expect(view?.tagName).toBe("BUTTON");
+    expect(view?.textContent).toBe("View summary");
+    expect(view?.getAttribute("aria-label")).toContain("View summary for");
+    // The affordance is not attached to any other card.
+    const others = mount.querySelectorAll(
+      "[data-testid^=lesson-view-summary-]",
+    );
+    expect(others.length).toBe(1);
+  });
+
+  test("clicking View summary invokes the entry-point opener exactly once with the correct assignmentId", async () => {
+    const asn = makeAssignments();
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    await confirmSingleClass(mount, "earths-layers", "c1");
+    const expectedId = detail.registered[0]!.assignmentId;
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    view!.click();
+    expect(detail.opened).toEqual([expectedId]);
+  });
+
+  test("failed publish does not register anything and does not reveal View summary", async () => {
+    const asn = makeAssignments({ failPublish: true });
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    await confirmSingleClass(mount, "earths-layers", "c1");
+    expect(detail.registered.length).toBe(0);
+    expect(
+      mount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
+    ).toBeNull();
+  });
+
+  test("multiple published lessons each retain their own View summary that opens its own assignment", async () => {
+    const asn = makeAssignments();
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    await confirmSingleClass(mount, "earths-layers", "c1");
+    await confirmSingleClass(mount, "what-is-life", "c1");
+    const a = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    const b = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-what-is-life]",
+    );
+    expect(a).not.toBeNull();
+    expect(b).not.toBeNull();
+    const aId = a!.getAttribute("data-assignment-id")!;
+    const bId = b!.getAttribute("data-assignment-id")!;
+    expect(aId).not.toBe(bId);
+    a!.click();
+    b!.click();
+    expect(detail.opened).toEqual([aId, bId]);
+  });
+
+  test("Curriculum re-render preserves View summary for the active session", async () => {
+    const asn = makeAssignments();
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    await confirmSingleClass(mount, "earths-layers", "c1");
+    const remount = mkMount();
+    renderCurriculumSurface(remount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    expect(
+      remount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
+    ).not.toBeNull();
+  });
+
+  test("View summary is absent when no assignmentDetail seam is wired", async () => {
+    const asn = makeAssignments();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+    });
+    await confirmSingleClass(mount, "earths-layers", "c1");
+    expect(
+      mount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
+    ).toBeNull();
+  });
+
+  test("test-only reset clears the session-scoped assignmentId map", async () => {
+    const asn = makeAssignments();
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    await confirmSingleClass(mount, "earths-layers", "c1");
+    _resetCurriculumSessionStateForTest();
+    const remount = mkMount();
+    renderCurriculumSurface(remount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    expect(
+      remount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
+    ).toBeNull();
+  });
+
+  test("the four-item Teacher Workspace navigation remains unchanged when the seam is wired", () => {
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, {
+      ...makeShellDeps({ listClasses: listTwo }),
+      assignmentDetail: detail.seam,
+    });
+    const items = NAVIGATION_ITEMS.filter((i) => i.variant === "item");
+    expect(items.map((i) => i.label)).toEqual([
+      "Curriculum",
+      "Classes",
+      "Present Mode",
+      "Settings",
+    ]);
+    for (const i of items) {
+      expect(
+        mount.querySelector<HTMLElement>(`[data-testid=nav-${i.key}]`),
+      ).not.toBeNull();
+    }
+  });
+});
