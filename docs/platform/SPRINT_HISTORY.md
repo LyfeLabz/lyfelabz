@@ -2779,3 +2779,45 @@ Add one bounded teacher-facing retrieval callable that consumes the certified as
 - No dependency changes.
 - No deployment.
 - No commit.
+
+## Sprint 12D Slice 2: Canonical Roster Display-Name Resolver
+
+- **Date:** 2026-07-16
+- **Category:** Cloud Functions (retrieval-layer helper, no schema, no Rules, no deployment)
+- **Certification:** CERTIFIED
+
+### Summary
+
+Introduced one reusable backend resolver for teacher-facing student display names and wired it into `assessmentAttemptsListForClass`. Each returned attempt summary now carries a canonical `studentDisplayName` resolved through the enrollment override, then the user profile display name, then a fixed non-empty fallback per PDR-028 sections 9 and 12. No new callable is exported; no new authorization surface is added; Sprint 12D Slice 1's authorization chain is preserved unchanged.
+
+### Implementation notes
+
+- Location: `platform/functions/src/enrollments/resolve-roster-display-name.ts`. Colocated with the enrollments domain because the per-class override lives on `enrollments/{enrollmentId}.displayNameOverride`.
+- Precedence: (1) non-blank enrollment override on the `(classId, studentId)` enrollment that also matches the trusted `schoolId`; (2) non-blank `users/{studentId}.displayName` when the user record's stored `schoolId` (if present) matches the trusted `schoolId`; (3) fixed `"Name unavailable"` fallback aligned with PDR-028 section 9.4.
+- Normalization: trim leading and trailing whitespace, collapse internal whitespace runs to a single space, preserve punctuation and diacritics. Blank values fall through to the next approved source.
+- Integrity: enrollment documents whose stored `studentId`, `classId`, or `schoolId` disagree with the trusted scope are ignored. User records whose stored `authUid` disagrees with the intended student, or whose stored `schoolId` disagrees with the trusted `schoolId`, are ignored.
+- Data access: two point reads per unique student per request (`enrollmentDocRef` and `userRecordDocRef`), launched in parallel via `Promise.all`. No new collection, no new query shape, no new index.
+- Request-local caching: `createRosterDisplayNameResolver(scope)` returns a memoizing resolver whose in-request map holds one in-flight promise per unique `studentId`. Concurrent and sequential lookups share one result. A new factory clears the cache; no persistent cache is introduced.
+- Confidentiality: the resolver never reads the Google profile display name, the LMS-reported name, an email address, or an attempt-local name. It never spreads user or enrollment documents; it returns only `{ studentId, displayName, source }`. The `source` indicator remains internal and is not exposed to teacher clients in this slice.
+- Callable integration: `assessmentAttemptsListForClass` runs the existing certified authorization chain unchanged, admits attempts through the existing defense-in-depth ownership filter, constructs a request-local resolver bound to the trusted scope, and projects each admitted attempt with the resolved display name. Sensitive-field exclusions, response envelope, and newest-first ordering are all preserved.
+
+### Tests added
+
+- `platform/functions/src/enrollments/resolve-roster-display-name.test.ts` (30 tests): normalization, precedence, blank-value fallthrough, cross-class and cross-school and cross-student integrity, historical-consistency override, missing-record fallthrough, non-empty and non-sensitive return, invalid input short-circuits, and request-local memoization including shared in-flight promise for concurrent lookups.
+- Extended `platform/functions/src/assessments/assessment-attempts-list-for-class.test.ts` from 33 to 42 tests: `studentDisplayName` on every attempt, canonical fallback, per-student resolution reuse, per-student independence, trusted-scope handoff, no resolver invocation for filtered attempts, preserved sensitive-field exclusions, preserved newest-first ordering, and preserved empty-class behavior.
+
+### Validation results
+
+- Targeted resolver tests: 1 suite, 30 tests, all pass.
+- Targeted teacher retrieval tests: 1 suite, 42 tests, all pass.
+- Full Cloud Functions suite: 34 suites, 640 tests, all pass.
+- Lint, typecheck, and build all pass.
+- No em dashes appear in any created or modified file.
+
+### Confirmation
+
+- No certified backend behavior changed.
+- No Firestore Rules changes.
+- No schema, index, dependency, or configuration changes.
+- No deployment.
+- No commit.

@@ -15,3 +15,11 @@ export {
   type EnrollmentsTeacherAddRequest,
   type EnrollmentsTeacherAddResponse,
 } from "./enrollments-teacher-add";
+export {
+  createRosterDisplayNameResolver,
+  FALLBACK_ROSTER_DISPLAY_NAME,
+  normalizeDisplayName,
+  resolveRosterDisplayName,
+  type ResolvedRosterDisplayName,
+  type RosterDisplayNameScope,
+} from "./resolve-roster-display-name";

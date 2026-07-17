@@ -10,6 +10,10 @@ import {
   type AssessmentAttemptRecord,
   type ClassRecord,
 } from "../shared";
+import {
+  createRosterDisplayNameResolver,
+  type ResolvedRosterDisplayName,
+} from "../enrollments/resolve-roster-display-name";
 
 // Approved teacher-visible summary of a completed attempt in one owned
 // class per Sprint 12D Slice 1. The projection deliberately excludes every
@@ -23,18 +27,17 @@ import {
 // remain confined to the finalize response boundary where they are first
 // delivered.
 //
-// `studentId` is included so the caller can correlate the attempt with a
-// roster entry. `studentDisplayName` is intentionally omitted from this
-// slice: the certified backend does not yet expose a reusable canonical
-// display-name resolver that reconciles the enrollment
-// `displayNameOverride` (Data Model section 3.5) with the user
-// `displayName` (Data Model section 3.1). Inventing a second resolver at
-// the retrieval boundary would duplicate architecture. Display-name
-// resolution is captured as the next bounded integration requirement and
-// recorded in the completion report.
+// `studentId` is the opaque stable reference. `studentDisplayName` is
+// resolved through the canonical roster display-name resolver in the
+// enrollments domain (PDR-028 section 9): the enrollment
+// `displayNameOverride` takes precedence, then the user profile
+// `displayName`, and finally a fixed non-empty fallback. No name is ever
+// read from the attempt document; attempts remain opaque per Data Model
+// section 3.7 and ASSESSMENT_PIPELINE_SPECIFICATION.md section 466.
 export type TeacherClassAttemptSummary = {
   readonly attemptId: string;
   readonly studentId: string;
+  readonly studentDisplayName: string;
   readonly assessmentId: string;
   readonly assignmentId: string;
   readonly assessmentRevisionId: string;
@@ -154,10 +157,12 @@ async function loadClass(classId: string): Promise<ClassRecord> {
 export function projectTeacherClassAttemptSummary(
   attemptId: string,
   attempt: AssessmentAttemptRecord,
+  resolved: ResolvedRosterDisplayName,
 ): TeacherClassAttemptSummary {
   return {
     attemptId,
     studentId: attempt.studentId,
+    studentDisplayName: resolved.displayName,
     assessmentId: attempt.assessmentId,
     assignmentId: attempt.assignmentId,
     assessmentRevisionId: attempt.assessmentRevisionId,
@@ -251,15 +256,31 @@ async function assessmentAttemptsListForClassHandler(
     .where("classId", "==", input.classId)
     .get();
 
-  const summaries: TeacherClassAttemptSummary[] = [];
+  const admitted: Array<{ id: string; data: AssessmentAttemptRecord }> = [];
   for (const doc of snapshot.docs) {
     const data = doc.data();
     if (!data) continue;
     if (data.teacherId !== actor.uid) continue;
     if (data.schoolId !== actor.schoolId) continue;
     if (data.districtId !== actor.districtId) continue;
-    summaries.push(projectTeacherClassAttemptSummary(doc.id, data));
+    admitted.push({ id: doc.id, data });
   }
+
+  // Canonical roster display-name resolver, memoized per request. Multiple
+  // attempts by the same student share one resolved name and one pair of
+  // Firestore reads.
+  const resolveDisplayName = createRosterDisplayNameResolver({
+    classId: input.classId,
+    schoolId: actor.schoolId,
+    districtId: actor.districtId,
+  });
+
+  const summaries: TeacherClassAttemptSummary[] = await Promise.all(
+    admitted.map(async (entry) => {
+      const resolved = await resolveDisplayName(entry.data.studentId);
+      return projectTeacherClassAttemptSummary(entry.id, entry.data, resolved);
+    }),
+  );
 
   summaries.sort((a, b) => {
     if (b.submittedAt !== a.submittedAt) return b.submittedAt - a.submittedAt;

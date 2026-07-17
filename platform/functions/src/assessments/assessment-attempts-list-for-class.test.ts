@@ -75,6 +75,46 @@ jest.mock("../shared", () => {
   };
 });
 
+// Track resolver invocations so integration tests can assert per-request
+// memoization: multiple attempts by the same student share a single
+// resolver call.
+const resolverCalls: Array<{
+  scope: { classId: string; schoolId: string; districtId: string };
+  studentId: string;
+}> = [];
+const displayNameFixture = new Map<string, string>();
+const FALLBACK = "Name unavailable";
+
+jest.mock("../enrollments/resolve-roster-display-name", () => ({
+  createRosterDisplayNameResolver: (scope: {
+    classId: string;
+    schoolId: string;
+    districtId: string;
+  }) => {
+    const cache = new Map<string, Promise<{
+      studentId: string;
+      displayName: string;
+      source: "enrollmentOverride" | "userProfile" | "fallback";
+    }>>();
+    return (studentId: string) => {
+      const cached = cache.get(studentId);
+      if (cached) return cached;
+      resolverCalls.push({ scope, studentId });
+      const name = displayNameFixture.get(studentId);
+      const source: "userProfile" | "fallback" = name
+        ? "userProfile"
+        : "fallback";
+      const result = Promise.resolve({
+        studentId,
+        displayName: name ?? FALLBACK,
+        source,
+      });
+      cache.set(studentId, result);
+      return result;
+    };
+  },
+}));
+
 import { PlatformError } from "../shared/errors/platform-error";
 import {
   __assessmentAttemptsListForClassHandler,
@@ -176,6 +216,8 @@ describe("assessmentAttemptsListForClass", () => {
     attemptsFixture.length = 0;
     classFixture.present = false;
     classFixture.data = null;
+    resolverCalls.length = 0;
+    displayNameFixture.clear();
     seedOwnedActiveClass();
   });
 
@@ -255,6 +297,7 @@ describe("assessmentAttemptsListForClass", () => {
         "percentage",
         "score",
         "status",
+        "studentDisplayName",
         "studentId",
         "submittedAt",
       ].sort(),
@@ -523,5 +566,119 @@ describe("assessmentAttemptsListForClass", () => {
     await __assessmentAttemptsListForClassHandler(makeRequest());
     expect(mockAttemptsCollectionRef).toHaveBeenCalled();
     expect(mockClassDocRef).toHaveBeenCalledWith(CLASS_ID);
+  });
+
+  // Display-name integration
+
+  it("attaches the canonical resolved display name to every returned attempt", async () => {
+    displayNameFixture.set(STUDENT_A, "Alex Rivera");
+    displayNameFixture.set(STUDENT_B, "Bailey Chen");
+    seedAttempt({ attemptId: "a1", studentId: STUDENT_A });
+    seedAttempt({ attemptId: "b1", studentId: STUDENT_B });
+    const result = await __assessmentAttemptsListForClassHandler(makeRequest());
+    const byId = Object.fromEntries(
+      result.attempts.map((a) => [a.attemptId, a] as const),
+    );
+    expect(byId.a1.studentDisplayName).toBe("Alex Rivera");
+    expect(byId.b1.studentDisplayName).toBe("Bailey Chen");
+  });
+
+  it("returns the canonical fallback when the resolver reports no name", async () => {
+    seedAttempt({ attemptId: "a1", studentId: STUDENT_A });
+    const result = await __assessmentAttemptsListForClassHandler(makeRequest());
+    expect(result.attempts[0].studentDisplayName).toBe(FALLBACK);
+  });
+
+  it("reuses one resolved display name for multiple attempts by the same student", async () => {
+    displayNameFixture.set(STUDENT_A, "Alex Rivera");
+    seedAttempt({ attemptId: "a1", studentId: STUDENT_A, attemptNumber: 1 });
+    seedAttempt({ attemptId: "a2", studentId: STUDENT_A, attemptNumber: 2 });
+    seedAttempt({ attemptId: "a3", studentId: STUDENT_A, attemptNumber: 3 });
+    const result = await __assessmentAttemptsListForClassHandler(makeRequest());
+    expect(
+      result.attempts.every((a) => a.studentDisplayName === "Alex Rivera"),
+    ).toBe(true);
+    const callsForA = resolverCalls.filter((c) => c.studentId === STUDENT_A);
+    expect(callsForA).toHaveLength(1);
+  });
+
+  it("resolves each unique student independently", async () => {
+    displayNameFixture.set(STUDENT_A, "Alex Rivera");
+    displayNameFixture.set(STUDENT_B, "Bailey Chen");
+    seedAttempt({ attemptId: "a1", studentId: STUDENT_A });
+    seedAttempt({ attemptId: "b1", studentId: STUDENT_B });
+    await __assessmentAttemptsListForClassHandler(makeRequest());
+    const ids = resolverCalls.map((c) => c.studentId).sort();
+    expect(ids).toEqual([STUDENT_A, STUDENT_B].sort());
+  });
+
+  it("passes the trusted class, school, and district scope to the resolver", async () => {
+    displayNameFixture.set(STUDENT_A, "Alex Rivera");
+    seedAttempt({ studentId: STUDENT_A });
+    await __assessmentAttemptsListForClassHandler(makeRequest());
+    expect(resolverCalls[0].scope).toEqual({
+      classId: CLASS_ID,
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+    });
+  });
+
+  it("never resolves a display name for an attempt that failed the ownership filter", async () => {
+    displayNameFixture.set(STUDENT_A, "Alex Rivera");
+    displayNameFixture.set(STUDENT_B, "Leaked");
+    seedAttempt({ attemptId: "mine", studentId: STUDENT_A });
+    seedAttempt({
+      attemptId: "cross-class",
+      studentId: STUDENT_B,
+      classId: OTHER_CLASS_ID,
+    });
+    seedAttempt({
+      attemptId: "cross-district",
+      studentId: STUDENT_B,
+      districtId: OTHER_DISTRICT_ID,
+    });
+    seedAttempt({
+      attemptId: "cross-school",
+      studentId: STUDENT_B,
+      schoolId: OTHER_SCHOOL_ID,
+    });
+    const result = await __assessmentAttemptsListForClassHandler(makeRequest());
+    expect(result.attempts.map((a) => a.attemptId)).toEqual(["mine"]);
+    expect(resolverCalls.map((c) => c.studentId)).toEqual([STUDENT_A]);
+  });
+
+  it("preserves all existing sensitive-field exclusions when the display name is present", async () => {
+    displayNameFixture.set(STUDENT_A, "Alex Rivera");
+    seedAttempt();
+    const result = await __assessmentAttemptsListForClassHandler(makeRequest());
+    const projected = result.attempts[0] as unknown as Record<string, unknown>;
+    for (const forbidden of [
+      "itemResults",
+      "responses",
+      "correctOptionId",
+      "explanation",
+      "idempotencyKey",
+      "districtId",
+      "schoolId",
+      "teacherId",
+      "classId",
+      "activityId",
+    ]) {
+      expect(projected).not.toHaveProperty(forbidden);
+    }
+  });
+
+  it("preserves newest-first ordering when display names are attached", async () => {
+    displayNameFixture.set(STUDENT_A, "Alex Rivera");
+    seedAttempt({ attemptId: "old", submittedAt: { toMillis: () => 1_000 } });
+    seedAttempt({ attemptId: "new", submittedAt: { toMillis: () => 5_000 } });
+    const result = await __assessmentAttemptsListForClassHandler(makeRequest());
+    expect(result.attempts.map((a) => a.attemptId)).toEqual(["new", "old"]);
+  });
+
+  it("returns an empty array for an empty class without touching the resolver", async () => {
+    const result = await __assessmentAttemptsListForClassHandler(makeRequest());
+    expect(result.attempts).toEqual([]);
+    expect(resolverCalls).toHaveLength(0);
   });
 });
