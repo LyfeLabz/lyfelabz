@@ -3251,3 +3251,242 @@ describe("Assign Experience - Sprint 13C multiple-assignment selection", () => {
     expect(view?.getAttribute("data-assignment-id")).toBe("a-valid");
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 13F - Persistent Draft Assignment Discovery
+// -----------------------------------------------------------------------------
+
+describe("Curriculum - Sprint 13F draft discovery", () => {
+  const teacher = teacherSession();
+
+  const twoClasses: ReadonlyArray<ClassSummary> = freeze([
+    freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
+    freeze({ id: "c2", title: "7B Systems", grade: "7", status: "active" }),
+  ] as ClassSummary[]);
+  const listTwo: ListClasses = () => Promise.resolve(twoClasses);
+
+  type Registered = {
+    assignmentId: string;
+    title: string;
+    className: string;
+    status: "draft" | "published" | "closed";
+    lessonSlug?: string;
+    classId?: string;
+  };
+  const makeHydratedSeam = (initial: ReadonlyArray<Registered>) => {
+    const store = new Map<string, Registered>();
+    for (const m of initial) store.set(m.assignmentId, { ...m });
+    const opened: string[] = [];
+    return {
+      opened,
+      seam: {
+        register: (m: Registered) => {
+          store.set(m.assignmentId, { ...m });
+        },
+        open: (id: string) => {
+          opened.push(id);
+        },
+        list: () => Array.from(store.values()),
+      },
+    };
+  };
+
+  const closeSelection = (): void => {
+    document
+      .querySelectorAll("[data-testid=summary-select-overlay]")
+      .forEach((el) => el.remove());
+  };
+
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    closeSelection();
+  });
+
+  test("single hydrated draft shows View drafts and opens directly", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "d1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(view).not.toBeNull();
+    expect(view?.textContent).toBe("View drafts");
+    expect(view?.getAttribute("data-draft-only")).toBe("true");
+    expect(view?.getAttribute("data-assignment-id")).toBe("d1");
+    expect(view?.getAttribute("aria-label")).toContain("View drafts for");
+    view?.click();
+    expect(detail.opened).toEqual(["d1"]);
+  });
+
+  test("multiple hydrated drafts show View drafts and open selector", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "d1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "d2",
+        title: "Earth's Layers",
+        className: "7B Systems",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(view?.textContent).toBe("View drafts");
+    expect(view?.getAttribute("data-assignment-count")).toBe("2");
+    view?.click();
+    const dialog = document.querySelector(
+      "[data-testid=summary-select-dialog]",
+    );
+    expect(dialog).not.toBeNull();
+    const choices = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        "[data-testid^=summary-select-choice-]",
+      ),
+    );
+    expect(choices).toHaveLength(2);
+    const texts = choices.map((c) => c.textContent ?? "");
+    expect(texts.some((t) => t.includes("Draft"))).toBe(true);
+    choices[0]?.click();
+    expect(detail.opened).toHaveLength(1);
+  });
+
+  test("selector ordering is deterministic across drafts", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "z",
+        title: "Earth's Layers",
+        className: "7B Systems",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+      {
+        assignmentId: "a",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-view-summary-earths-layers]",
+      )
+      ?.click();
+    const ids = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        "[data-testid^=summary-select-choice-]",
+      ),
+    ).map((b) => b.getAttribute("data-assignment-id"));
+    expect(ids).toEqual(["a", "z"]);
+  });
+
+  test("published-only lesson still uses View summary label unchanged", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "p1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(view?.textContent).toBe("View summary");
+    expect(view?.hasAttribute("data-draft-only")).toBe(false);
+  });
+
+  test("mixed draft + published preserves View summaries label", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "d1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "p1",
+        title: "Earth's Layers",
+        className: "7B Systems",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(view?.textContent).toBe("View summaries");
+    expect(view?.hasAttribute("data-draft-only")).toBe(false);
+  });
+
+  test("closed-only preserves prior behavior", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "c1x",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "closed",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+    const view = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-view-summary-earths-layers]",
+    );
+    expect(view?.textContent).toBe("View summary");
+    expect(view?.hasAttribute("data-draft-only")).toBe(false);
+  });
+});

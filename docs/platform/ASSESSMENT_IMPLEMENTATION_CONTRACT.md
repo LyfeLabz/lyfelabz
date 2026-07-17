@@ -758,8 +758,35 @@ Each successful lifecycle write emits its audit event exactly once via `writeAud
 
 `assignmentsClose` and `assignmentsReopen` are inverse lifecycle callables on the same field with symmetric authorization, symmetric idempotency, symmetric audit vocabulary, and symmetric write narrowness. Neither callable is a metadata-edit path; ownership, class, lesson, revision, and LMS references are frozen across both transitions. The pair together defines the complete `published` <-> `closed` bidirectional segment of the assignment lifecycle. Movement into or out of `draft` remains owned by `assignmentsPublish`, and terminal `archived` remains owned by `assignmentsArchive`.
 
+## 34. Sprint 13F Reconciliations (Teacher Draft Discoverability)
+
+The following clarification narrows §17 and §21 against the certified Sprint 13F extension of `assignmentsTeacherList`. No new pipeline behavior is introduced; §34 records the confidentiality and lifecycle invariants the assessment surface already depends on, in one place, so that teacher-facing draft discovery cannot silently create student-visible state.
+
+### 34.1 Draft discovery is teacher-visible only
+
+The optional `includeDrafts: true` request field on `assignmentsTeacherList` widens the returned status filter to include `draft` records owned by the authenticated teacher in the caller's own school. No student surface consumes this callable, and no student-role code path is authorized to invoke it. A draft assignment MUST NOT become student-visible through any surface until publication (`assignmentsPublish`) occurs.
+
+### 34.2 Draft discovery creates no recipient, session, attempt, or summary state
+
+Enumerating draft assignments through `assignmentsTeacherList`:
+
+- creates no `assignments/{assignmentId}/recipients/{studentId}` document; the frozen-recipient collection under PDR-029l is authored only at first publication.
+- creates no `assessmentSessions/*` document; `assessmentSessionsBegin` continues to refuse non-`published` targets per §17 and §21.
+- creates no `attempts/*` document and never triggers `assessmentRollupsRecomputeAttempt`.
+- creates no `attemptRollups/*` or `assignmentRollups/*` document; the aggregate-only summary surface (§18, §19, §20, PDR-029) remains unchanged for a draft.
+- emits no lifecycle audit event; the callable remains a read-only enumeration under the Sprint 13C audit-vocabulary boundary and emits only its aggregate observability log line.
+
+### 34.3 Draft discovery does not affect summaries
+
+The Sprint 13A `assessmentAssignmentSummary` callable continues to refuse non-`published`/non-`closed` targets in its own certified boundary. A teacher client that renders `assignments/{assignmentId}` in a `draft` state MUST NOT compose the Sprint 13A summary surface against that assignment; the teacher client for a draft renders a calm informational panel in place of the summary card so no student-population read is attempted against a draft record.
+
+### 34.4 Publication remains the transition that exposes an assignment to students
+
+The certified §33.1 transition table is unchanged. `assignmentsPublish` continues to be the sole lifecycle-mutating callable authorized to advance an assignment from `draft` to `published`. Draft discoverability is a teacher-facing read affordance and MUST NOT be interpreted as a lifecycle transition, a publish substitute, or a mechanism for exposing an assignment to any student surface. Movement into `archived` remains owned by `assignmentsArchive`; the terminal state is not reachable through Sprint 13F draft discovery.
+
 ## Change Log
 
 - 2026-07-12 - Initial issuance under Sprint 10A step F-2. Ratified by PDR-026.
 - 2026-07-16 - Sprint 11E reconciliation. Added §32 recording audit-write ordering, attempt-count derivation, response-purity guarantees, and session-ordinal deferral against the certified implementation. No behavioral requirement is added; §32 clarifies existing sections against the deployed pattern.
 - 2026-07-17 - Sprint 13E reconciliation. Added §33 recording the canonical assignment close and reopen lifecycle semantics against the certified Sprint 13D `assignmentsClose` and Sprint 13E `assignmentsReopen` implementations. No pipeline behavior is added; §33 narrows §17 by naming the transitions, authorization gate, idempotency, invalid-transition rejection, frozen-recipient preservation, session/attempt/summary preservation, and audit vocabulary the assessment surface relies on.
+- 2026-07-17 - Sprint 13F reconciliation. Added §34 recording that the Sprint 13F extension of `assignmentsTeacherList` with `includeDrafts` is teacher-visible only, creates no recipient/session/attempt/summary state, never affects summaries, and does not replace `assignmentsPublish` as the transition that exposes an assignment to students. No pipeline behavior is added; §34 narrows §17 and §21 against the certified Sprint 13F implementation.

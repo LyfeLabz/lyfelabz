@@ -1202,3 +1202,164 @@ describe("renderAssignmentDetail - reopen lifecycle (Sprint 13E)", () => {
     expect(backClicks).toBe(1);
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 13F - Draft assignment discovery in Assignment Detail
+// -----------------------------------------------------------------------------
+
+describe("renderAssignmentDetail - draft state (Sprint 13F)", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  test("draft assignment shows the Draft status label", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+    });
+    await flush();
+    const status = mount.querySelector(
+      "[data-testid=assignment-detail-status-value]",
+    );
+    expect(status?.textContent).toBe("Draft");
+  });
+
+  test("draft assignment renders the Draft assignment lifecycle label", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+    });
+    await flush();
+    const label = mount.querySelector(
+      "[data-testid=assignment-detail-draft-label]",
+    );
+    expect(label).not.toBeNull();
+    expect(label?.textContent).toBe("Draft assignment");
+  });
+
+  test("draft assignment does not expose Close or Reopen actions", async () => {
+    const closer = resolvingClose();
+    const reopener = resolvingReopen();
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      closeCallable: closer.callable,
+      reopenCallable: reopener.callable,
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-close-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-closed-label]"),
+    ).toBeNull();
+  });
+
+  test("published workflow is unchanged when neither draft nor closed", async () => {
+    const closer = resolvingClose();
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      closeCallable: closer.callable,
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-close-action]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-label]"),
+    ).toBeNull();
+  });
+
+  test("draft hides the Sprint 13A Assignment Summary card and never invokes the summary callable", async () => {
+    const summary = spyingSummary(freezeSummary());
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: summary.callable,
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-summary-host]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-summary]"),
+    ).toBeNull();
+    expect(summary.calls.length).toBe(0);
+  });
+
+  test("draft renders the informational Assignment results panel", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+    });
+    await flush();
+    const panel = mount.querySelector(
+      "[data-testid=assignment-detail-draft-summary]",
+    );
+    expect(panel).not.toBeNull();
+    expect(panel?.getAttribute("role")).toBe("status");
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-draft-summary-heading]",
+      )?.textContent,
+    ).toBe("Assignment results");
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-draft-summary-body]",
+      )?.textContent,
+    ).toBe(
+      "Assignment results will appear after this draft is published and students begin submitting work.",
+    );
+  });
+
+  test("published still renders the Sprint 13A Assignment Summary card", async () => {
+    const summary = spyingSummary(freezeSummary());
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
+      summaryCallable: summary.callable,
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-summary-host]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-summary]"),
+    ).toBeNull();
+    expect(summary.calls).toEqual(["assign-1"]);
+  });
+
+  test("closed still renders the Sprint 13A Assignment Summary card", async () => {
+    const summary = spyingSummary(freezeSummary());
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: summary.callable,
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-summary-host]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-summary]"),
+    ).toBeNull();
+    expect(summary.calls).toEqual(["assign-1"]);
+  });
+});

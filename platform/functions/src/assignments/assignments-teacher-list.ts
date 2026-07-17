@@ -32,11 +32,13 @@ import {
 // teacher or district identifiers are ignored; the request payload carries no
 // authority fields.
 //
-// Status scope: `published` and `closed`. `draft` records exist only
-// transiently between `assignmentsCreateDraft` and `assignmentsPublish`; they
-// are never rendered in the Curriculum "View summary" affordance and are
-// omitted here. `archived` records are terminal per Data Model §3.6 and are
-// removed from active teacher views by definition, so they are omitted.
+// Status scope: `published` and `closed` are always returned. Sprint 13F
+// adds optional draft enumeration through the additive
+// `includeDrafts` request flag. When the flag is present and true, `draft`
+// records owned by the caller are also returned so the client can restore
+// the persistent draft discovery affordance after a full page reload.
+// `archived` records remain terminal per Data Model §3.6 and are never
+// returned.
 
 // Client-visible per-item shape. Deliberately mirrors the client
 // `AssignmentDetailMetadata` union plus `lessonSlug` and `classId`, which are
@@ -48,10 +50,16 @@ export type AssignmentsTeacherListItem = {
   readonly title: string;
   readonly classId: string;
   readonly className: string;
-  readonly status: Exclude<AssignmentStatus, "draft" | "archived">;
+  readonly status: Exclude<AssignmentStatus, "archived">;
 };
 
-export type AssignmentsTeacherListRequest = Record<string, never>;
+// Sprint 13F: the request payload gains a single optional boolean field
+// that opts the caller in to draft enumeration. Every existing caller
+// (Sprint 13C hydration prior to this sprint) passes `{}` and continues
+// to receive published and closed items only, unchanged.
+export type AssignmentsTeacherListRequest = {
+  readonly includeDrafts?: boolean;
+};
 
 export type AssignmentsTeacherListResponse = {
   readonly items: ReadonlyArray<AssignmentsTeacherListItem>;
@@ -82,12 +90,29 @@ function safeLog(fn: () => void): void {
   }
 }
 
-const RETURNED_STATUSES: ReadonlyArray<AssignmentStatus> = ["published", "closed"];
+const PUBLISHED_CLOSED_STATUSES: ReadonlyArray<AssignmentStatus> = [
+  "published",
+  "closed",
+];
+const PUBLISHED_CLOSED_DRAFT_STATUSES: ReadonlyArray<AssignmentStatus> = [
+  "published",
+  "closed",
+  "draft",
+];
 
 function isReturnedStatus(
   status: AssignmentStatus,
-): status is Exclude<AssignmentStatus, "draft" | "archived"> {
-  return status === "published" || status === "closed";
+  includeDrafts: boolean,
+): status is Exclude<AssignmentStatus, "archived"> {
+  if (status === "published" || status === "closed") return true;
+  if (includeDrafts && status === "draft") return true;
+  return false;
+}
+
+function readIncludeDraftsFlag(data: unknown): boolean {
+  if (data === null || typeof data !== "object") return false;
+  const flag = (data as { readonly includeDrafts?: unknown }).includeDrafts;
+  return flag === true;
 }
 
 // Resolve className via a bounded batch of teacher-owned class document
@@ -127,14 +152,20 @@ async function assignmentsTeacherListHandler(
   request: CallableRequest<unknown>,
 ): Promise<AssignmentsTeacherListResponse> {
   const actor = await assertActiveTeacherInDistrict(request);
+  const includeDrafts = readIncludeDraftsFlag(request.data);
 
   // Canonical query: filter by teacher ownership and the teacher's own
   // school. Both fields are denormalized on the assignment record
-  // (Data Model §3.6). The status filter is applied server-side.
+  // (Data Model §3.6). The status filter is applied server-side. Sprint
+  // 13F opts the caller in to draft enumeration by widening the status
+  // `in` clause; ownership and district scoping are unchanged.
+  const returnedStatuses = includeDrafts
+    ? PUBLISHED_CLOSED_DRAFT_STATUSES
+    : PUBLISHED_CLOSED_STATUSES;
   const snapshot = await assignmentsCollectionRef()
     .where("teacherId", "==", actor.uid)
     .where("schoolId", "==", actor.schoolId)
-    .where("status", "in", RETURNED_STATUSES as string[])
+    .where("status", "in", returnedStatuses as string[])
     .get();
 
   const raw: {
@@ -151,7 +182,7 @@ async function assignmentsTeacherListHandler(
       // records.
       continue;
     }
-    if (!isReturnedStatus(data.status)) continue;
+    if (!isReturnedStatus(data.status, includeDrafts)) continue;
     if (typeof data.classId !== "string" || data.classId.length === 0) continue;
     if (typeof data.lessonSlug !== "string" || data.lessonSlug.length === 0) continue;
     raw.push({ assignmentId: doc.id, record: data });
@@ -164,7 +195,7 @@ async function assignmentsTeacherListHandler(
   for (const { assignmentId, record } of raw) {
     const className = classNames.get(record.classId);
     if (className === undefined) continue;
-    if (!isReturnedStatus(record.status)) continue;
+    if (!isReturnedStatus(record.status, includeDrafts)) continue;
     const title =
       typeof record.title === "string" && record.title.length > 0
         ? record.title
@@ -193,6 +224,7 @@ async function assignmentsTeacherListHandler(
     log.info("assignments.teacherList", {
       actorUserId: actor.uid,
       returned: items.length,
+      includeDrafts,
     }),
   );
 

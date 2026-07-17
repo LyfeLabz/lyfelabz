@@ -18,7 +18,11 @@ export function createAssignmentsTeacherListCallable(
 ): AssignmentsTeacherListCallable {
   const callable = httpsCallable(functions, "assignmentsTeacherList");
   return async () => {
-    const res = await callable({});
+    // Sprint 13F: opt in to draft enumeration so persistent draft
+    // discovery survives a full page reload. The additive request field
+    // is ignored by pre-Sprint-13F callable deployments and returns the
+    // Sprint 13C behavior unchanged.
+    const res = await callable({ includeDrafts: true });
     const data = (res.data ?? {}) as CallableRecord;
     const rawItems = Array.isArray(data.items) ? data.items : [];
     const parsed: AssignmentDetailMetadata[] = [];

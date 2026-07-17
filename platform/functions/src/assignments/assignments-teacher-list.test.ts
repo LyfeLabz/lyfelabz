@@ -48,9 +48,11 @@ const VALID_CONTEXT = Object.freeze({
   districtId: DISTRICT_ID,
 });
 
-function makeRequest(): CallableRequest<unknown> {
+function makeRequest(
+  data: Record<string, unknown> = {},
+): CallableRequest<unknown> {
   return {
-    data: {},
+    data,
     auth: { uid: TEACHER_UID, token: {} } as never,
     rawRequest: {} as never,
   };
@@ -236,6 +238,111 @@ describe("assignmentsTeacherList - response filtering", () => {
   test("empty result returns empty items array", async () => {
     mockAssignmentsGet.mockResolvedValue({ docs: [] });
     const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toEqual([]);
+  });
+});
+
+describe("assignmentsTeacherList - Sprint 13F draft enumeration", () => {
+  test("default request omits drafts from status filter", async () => {
+    mockAssignmentsGet.mockResolvedValue({ docs: [] });
+    await __assignmentsTeacherListHandler(makeRequest());
+    expect(mockWhere3).toHaveBeenCalledWith(
+      "status",
+      "in",
+      ["published", "closed"],
+    );
+  });
+
+  test("includeDrafts=true widens status filter to include drafts", async () => {
+    mockAssignmentsGet.mockResolvedValue({ docs: [] });
+    await __assignmentsTeacherListHandler(
+      makeRequest({ includeDrafts: true }),
+    );
+    expect(mockWhere3).toHaveBeenCalledWith(
+      "status",
+      "in",
+      ["published", "closed", "draft"],
+    );
+  });
+
+  test("includeDrafts=true returns owned draft assignment", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("d1", { status: "draft" })],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(
+      makeRequest({ includeDrafts: true }),
+    );
+    expect(res.items).toEqual([
+      {
+        assignmentId: "d1",
+        lessonSlug: "lesson_g7_earths-layers",
+        title: "Earth's Layers",
+        classId: "class-a",
+        className: "Class class-a",
+        status: "draft",
+      },
+    ]);
+  });
+
+  test("includeDrafts=true still excludes another teacher's draft", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [
+        assignmentDoc("d2", {
+          status: "draft",
+          teacherId: "other-teacher",
+        }),
+      ],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(
+      makeRequest({ includeDrafts: true }),
+    );
+    expect(res.items).toEqual([]);
+  });
+
+  test("includeDrafts=true still excludes cross-district draft", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [
+        assignmentDoc("d3", {
+          status: "draft",
+          schoolId: "other-school",
+        }),
+      ],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(
+      makeRequest({ includeDrafts: true }),
+    );
+    expect(res.items).toEqual([]);
+  });
+
+  test("includeDrafts=true preserves published and closed items unchanged", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [
+        assignmentDoc("p1"),
+        assignmentDoc("c1", { status: "closed" }),
+        assignmentDoc("d1", { status: "draft" }),
+      ],
+    });
+    mockClassGet.mockImplementation(() =>
+      Promise.resolve(classDoc("class-a")),
+    );
+    const res = await __assignmentsTeacherListHandler(
+      makeRequest({ includeDrafts: true }),
+    );
+    const statuses = res.items.map((i) => i.status).sort();
+    expect(statuses).toEqual(["closed", "draft", "published"]);
+  });
+
+  test("includeDrafts=false is the default and returns no drafts", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("d1", { status: "draft" })],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(
+      makeRequest({ includeDrafts: false }),
+    );
     expect(res.items).toEqual([]);
   });
 });

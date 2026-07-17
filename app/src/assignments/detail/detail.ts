@@ -333,7 +333,32 @@ function renderReady(
 
   header.appendChild(meta);
 
-  if (deps.closeCallable !== undefined || deps.reopenCallable !== undefined) {
+  // Sprint 13F: a draft assignment renders a calm non-interactive
+  // `Draft assignment` label in place of any lifecycle action. Draft
+  // discovery is the persistent behavior introduced by this sprint; no
+  // Close or Reopen affordance is available for a draft because
+  // publication is out of scope. The label renders whether or not
+  // lifecycle seams are wired, so a teacher who reloads into a draft
+  // never sees an empty header region.
+  if (metadata.status === "draft") {
+    const lifecycle = doc.createElement("div");
+    lifecycle.className = "shell-assignment-detail-lifecycle";
+    lifecycle.setAttribute("data-testid", "assignment-detail-lifecycle");
+    const draftLabel = doc.createElement("p");
+    draftLabel.className = "shell-assignment-detail-draft-label";
+    draftLabel.setAttribute(
+      "data-testid",
+      "assignment-detail-draft-label",
+    );
+    draftLabel.setAttribute("role", "status");
+    draftLabel.setAttribute("aria-live", "polite");
+    draftLabel.textContent = "Draft assignment";
+    lifecycle.appendChild(draftLabel);
+    header.appendChild(lifecycle);
+  } else if (
+    deps.closeCallable !== undefined ||
+    deps.reopenCallable !== undefined
+  ) {
     const lifecycle = doc.createElement("div");
     lifecycle.className = "shell-assignment-detail-lifecycle";
     lifecycle.setAttribute("data-testid", "assignment-detail-lifecycle");
@@ -412,6 +437,51 @@ function renderReady(
   }
 
   mount.appendChild(header);
+
+  // Sprint 13F reconciliation: a draft assignment has no recipients, no
+  // sessions, and no attempts, so the Sprint 13A summary card would only
+  // render its own empty / error state. Render a calm informational
+  // panel in its place. Published and closed assignments continue to
+  // compose the certified Sprint 13A `renderAssignmentSummaryCard`
+  // unchanged.
+  if (metadata.status === "draft") {
+    const panel = doc.createElement("section");
+    panel.className =
+      "shell-assignment-detail-summary shell-assignment-detail-draft-summary";
+    panel.setAttribute(
+      "data-testid",
+      "assignment-detail-draft-summary",
+    );
+    panel.setAttribute("role", "status");
+    panel.setAttribute("aria-live", "polite");
+    panel.setAttribute(
+      "aria-labelledby",
+      "assignment-detail-draft-summary-heading",
+    );
+
+    const heading = doc.createElement("h3");
+    heading.id = "assignment-detail-draft-summary-heading";
+    heading.className = "shell-assignment-detail-draft-summary-heading";
+    heading.setAttribute(
+      "data-testid",
+      "assignment-detail-draft-summary-heading",
+    );
+    heading.textContent = "Assignment results";
+    panel.appendChild(heading);
+
+    const body = doc.createElement("p");
+    body.className = "shell-assignment-detail-draft-summary-body";
+    body.setAttribute(
+      "data-testid",
+      "assignment-detail-draft-summary-body",
+    );
+    body.textContent =
+      "Assignment results will appear after this draft is published and students begin submitting work.";
+    panel.appendChild(body);
+
+    mount.appendChild(panel);
+    return;
+  }
 
   const summaryHost = doc.createElement("div");
   summaryHost.className = "shell-assignment-detail-summary";

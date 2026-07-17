@@ -713,11 +713,44 @@ function refreshViewSummaryControl(
   // Rebuild the control so the singular/plural label stays consistent
   // when the count crosses the 1 -> 2 boundary during the same session.
   if (existing !== null) existing.remove();
+
+  // Sprint 13F: when every registered assignment for this lesson is a
+  // draft, the control is labeled `View drafts`. When any published or
+  // closed assignment exists, the Sprint 13B/13C `View summary` /
+  // `View summaries` behavior is preserved unchanged; any co-registered
+  // drafts appear inside the existing selector. Preservation of the
+  // published-only path is the primary intent of the Sprint 13F
+  // architecture rule.
+  const isDraftOnly = assignments.every((a) => a.status === "draft");
   const view = doc.createElement("button");
   view.type = "button";
   view.className = "shell-lesson-view-summary";
   view.setAttribute("data-testid", `lesson-view-summary-${lesson.slug}`);
-  if (assignments.length === 1) {
+  if (isDraftOnly) {
+    view.setAttribute("data-assignment-count", String(assignments.length));
+    view.setAttribute("data-draft-only", "true");
+    view.setAttribute("aria-label", `View drafts for ${lesson.title}`);
+    view.textContent = "View drafts";
+    if (assignments.length === 1) {
+      const only = assignments[0]!;
+      view.setAttribute("data-assignment-id", only.assignmentId);
+      view.addEventListener("click", () => {
+        assignmentDetail.open(only.assignmentId);
+      });
+    } else {
+      view.addEventListener("click", () => {
+        openAssignmentSelection({
+          doc,
+          lesson,
+          assignments: readAssignmentsForLesson(teacherUid, lesson.slug),
+          onSelect: (assignmentId) => {
+            assignmentDetail.open(assignmentId);
+          },
+          returnFocusTo: view,
+        });
+      });
+    }
+  } else if (assignments.length === 1) {
     const only = assignments[0]!;
     view.setAttribute("data-assignment-id", only.assignmentId);
     view.setAttribute("data-assignment-count", "1");

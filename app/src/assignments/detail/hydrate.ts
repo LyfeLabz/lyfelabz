@@ -19,10 +19,16 @@ type CallableRecord = Readonly<Record<string, unknown>>;
 const isNonEmptyString = (v: unknown): v is string =>
   typeof v === "string" && v.length > 0;
 
+// Sprint 13F: draft records are now allowed through the certified
+// enumeration path when the caller opts in through
+// `includeDrafts: true`. The parser accepts every non-archived status
+// so a `draft` item registered through the widened callable is
+// recognized. Older callable responses omit drafts entirely, so the
+// widened parser stays backward compatible.
 const isReturnedStatus = (
   v: unknown,
-): v is Extract<AssignmentStatus, "published" | "closed"> =>
-  v === "published" || v === "closed";
+): v is Extract<AssignmentStatus, "published" | "closed" | "draft"> =>
+  v === "published" || v === "closed" || v === "draft";
 
 export function parseAssignmentsTeacherListItem(
   raw: unknown,
