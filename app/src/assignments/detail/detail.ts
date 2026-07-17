@@ -4,6 +4,7 @@ import type {
   AssignmentDetailMetadata,
   AssignmentDetailMetadataReader,
   AssignmentStatus,
+  AssignmentsCloseCallable,
 } from "./types";
 
 // Sprint 13B Teacher Assignment Detail surface. A pure DOM builder
@@ -26,6 +27,18 @@ export type AssignmentDetailDeps = {
   readonly loadMetadata: AssignmentDetailMetadataReader;
   readonly summaryCallable: AssignmentSummaryCallable;
   readonly onBack?: () => void;
+  // Sprint 13D: optional close-assignment lifecycle seam. When supplied
+  // and the loaded metadata is `published`, the surface renders a
+  // secondary `Close assignment` action that opens a confirmation
+  // dialog and, on confirm, invokes the callable exactly once. On
+  // success the header status transitions to `Closed`, the action is
+  // replaced with a non-interactive `Assignment closed` label, and
+  // `onStatusChange` (when supplied) is invoked with the updated
+  // metadata so the session-scoped registry can be re-registered. When
+  // the seam is not supplied, the surface renders no close action; the
+  // remainder of the surface is unchanged.
+  readonly closeCallable?: AssignmentsCloseCallable;
+  readonly onStatusChange?: (metadata: AssignmentDetailMetadata) => void;
 };
 
 const STATUS_LABEL: Readonly<Record<AssignmentStatus, string>> = Object.freeze({
@@ -38,6 +51,11 @@ type LoadState =
   | { readonly kind: "loading" }
   | { readonly kind: "ready"; readonly metadata: AssignmentDetailMetadata }
   | { readonly kind: "empty" }
+  | { readonly kind: "error" };
+
+type CloseUiState =
+  | { readonly kind: "idle" }
+  | { readonly kind: "pending" }
   | { readonly kind: "error" };
 
 export function renderAssignmentDetail(
@@ -82,6 +100,7 @@ export function renderAssignmentDetail(
 
   let state: LoadState = { kind: "loading" };
   let loadToken = 0;
+  let closeUi: CloseUiState = { kind: "idle" };
 
   const rerender = (): void => {
     body.textContent = "";
@@ -92,7 +111,11 @@ export function renderAssignmentDetail(
         renderLoading(doc, body);
         return;
       case "ready":
-        renderReady(doc, body, s.metadata, deps);
+        renderReady(doc, body, s.metadata, deps, closeUi, {
+          onCloseRequest: () => {
+            openCloseConfirmation(s.metadata);
+          },
+        });
         return;
       case "empty":
         renderEmpty(doc, body);
@@ -102,6 +125,51 @@ export function renderAssignmentDetail(
           void load();
         });
         return;
+    }
+  };
+
+  const openCloseConfirmation = (metadata: AssignmentDetailMetadata): void => {
+    if (deps.closeCallable === undefined) return;
+    if (metadata.status !== "published") return;
+    const confirmController: CloseConfirmController = {
+      onCancel: () => {
+        confirmController.close();
+      },
+      onConfirm: () => {
+        confirmController.close();
+        void performClose(metadata);
+      },
+      close: () => undefined,
+    };
+    confirmController.close = renderCloseConfirmDialog(
+      doc,
+      metadata,
+      confirmController,
+    );
+  };
+
+  const performClose = async (
+    metadata: AssignmentDetailMetadata,
+  ): Promise<void> => {
+    const callable = deps.closeCallable;
+    if (callable === undefined) return;
+    closeUi = { kind: "pending" };
+    rerender();
+    try {
+      const result = await callable({ assignmentId: metadata.assignmentId });
+      if (state.kind !== "ready") return;
+      const nextMetadata = Object.freeze({
+        ...metadata,
+        status: "closed" as AssignmentStatus,
+      });
+      state = { kind: "ready", metadata: nextMetadata };
+      closeUi = { kind: "idle" };
+      rerender();
+      deps.onStatusChange?.(nextMetadata);
+      void result;
+    } catch {
+      closeUi = { kind: "error" };
+      rerender();
     }
   };
 
@@ -155,6 +223,8 @@ function renderReady(
   mount: HTMLElement,
   metadata: AssignmentDetailMetadata,
   deps: AssignmentDetailDeps,
+  closeUi: CloseUiState,
+  handlers: { readonly onCloseRequest: () => void },
 ): void {
   const header = doc.createElement("div");
   header.className = "shell-assignment-detail-header";
@@ -181,6 +251,53 @@ function renderReady(
   );
 
   header.appendChild(meta);
+
+  if (deps.closeCallable !== undefined) {
+    const lifecycle = doc.createElement("div");
+    lifecycle.className = "shell-assignment-detail-lifecycle";
+    lifecycle.setAttribute("data-testid", "assignment-detail-lifecycle");
+    if (metadata.status === "published") {
+      const closeButton = doc.createElement("button");
+      closeButton.type = "button";
+      closeButton.className =
+        "shell-btn shell-assignment-detail-close-action";
+      closeButton.setAttribute(
+        "data-testid",
+        "assignment-detail-close-action",
+      );
+      closeButton.textContent = "Close assignment";
+      if (closeUi.kind === "pending") {
+        closeButton.disabled = true;
+        closeButton.setAttribute("aria-busy", "true");
+      }
+      closeButton.addEventListener("click", () => {
+        handlers.onCloseRequest();
+      });
+      lifecycle.appendChild(closeButton);
+    } else if (metadata.status === "closed") {
+      const closedLabel = doc.createElement("p");
+      closedLabel.className = "shell-assignment-detail-closed-label";
+      closedLabel.setAttribute(
+        "data-testid",
+        "assignment-detail-closed-label",
+      );
+      closedLabel.setAttribute("role", "status");
+      closedLabel.setAttribute("aria-live", "polite");
+      closedLabel.textContent = "Assignment closed";
+      lifecycle.appendChild(closedLabel);
+    }
+    if (closeUi.kind === "error") {
+      const err = doc.createElement("p");
+      err.className = "shell-assignment-detail-close-error";
+      err.setAttribute("data-testid", "assignment-detail-close-error");
+      err.setAttribute("role", "alert");
+      err.textContent =
+        "We could not close this assignment right now. Try again in a moment.";
+      lifecycle.appendChild(err);
+    }
+    header.appendChild(lifecycle);
+  }
+
   mount.appendChild(header);
 
   const summaryHost = doc.createElement("div");
@@ -192,6 +309,104 @@ function renderReady(
     callable: deps.summaryCallable,
     assignmentId: metadata.assignmentId,
   });
+}
+
+type CloseConfirmController = {
+  onCancel: () => void;
+  onConfirm: () => void;
+  close: () => void;
+};
+
+function renderCloseConfirmDialog(
+  doc: Document,
+  metadata: AssignmentDetailMetadata,
+  controller: CloseConfirmController,
+): () => void {
+  const overlay = doc.createElement("div");
+  overlay.className = "shell-assign-overlay shell-assignment-close-overlay";
+  overlay.setAttribute("data-testid", "assignment-detail-close-overlay");
+
+  const dialog = doc.createElement("div");
+  dialog.className = "shell-assign-dialog shell-assignment-close-dialog";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "assignment-detail-close-title");
+  dialog.setAttribute(
+    "aria-describedby",
+    "assignment-detail-close-description",
+  );
+  dialog.setAttribute("data-testid", "assignment-detail-close-dialog");
+  dialog.setAttribute("data-assignment-id", metadata.assignmentId);
+
+  const title = doc.createElement("h3");
+  title.id = "assignment-detail-close-title";
+  title.className = "shell-assign-title";
+  title.setAttribute("data-testid", "assignment-detail-close-title");
+  title.textContent = "Close this assignment?";
+  dialog.appendChild(title);
+
+  const description = doc.createElement("p");
+  description.id = "assignment-detail-close-description";
+  description.className = "shell-assign-body";
+  description.setAttribute(
+    "data-testid",
+    "assignment-detail-close-description",
+  );
+  description.textContent =
+    "Students will no longer be able to submit new work. Existing submissions and summaries will remain available.";
+  dialog.appendChild(description);
+
+  const footer = doc.createElement("div");
+  footer.className = "shell-assign-footer";
+  dialog.appendChild(footer);
+
+  const cancel = doc.createElement("button");
+  cancel.type = "button";
+  cancel.className = "shell-assign-cancel";
+  cancel.setAttribute("data-testid", "assignment-detail-close-cancel");
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", () => {
+    controller.onCancel();
+  });
+  footer.appendChild(cancel);
+
+  const confirm = doc.createElement("button");
+  confirm.type = "button";
+  confirm.className = "shell-assign-confirm";
+  confirm.setAttribute("data-testid", "assignment-detail-close-confirm");
+  confirm.textContent = "Close assignment";
+  confirm.addEventListener("click", () => {
+    controller.onConfirm();
+  });
+  footer.appendChild(confirm);
+
+  overlay.appendChild(dialog);
+  doc.body.appendChild(overlay);
+
+  const onKey = (ev: KeyboardEvent): void => {
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      controller.onCancel();
+    }
+  };
+  doc.addEventListener("keydown", onKey);
+  overlay.addEventListener("click", (ev) => {
+    if (ev.target === overlay) controller.onCancel();
+  });
+
+  try {
+    cancel.focus({ preventScroll: true });
+  } catch {
+    // ignored
+  }
+
+  let closed = false;
+  return () => {
+    if (closed) return;
+    closed = true;
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    doc.removeEventListener("keydown", onKey);
+  };
 }
 
 function appendMetaPair(

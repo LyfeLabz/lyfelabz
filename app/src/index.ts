@@ -26,6 +26,8 @@ import { createAssignmentDetailMetadataReader } from "./assignments/detail/wire"
 import { renderAssignmentDetail } from "./assignments/detail/detail";
 import { hydrateAssignmentDetailRegistry } from "./assignments/detail/hydrate";
 import { createAssignmentsTeacherListCallable } from "./assignments/detail/hydrate-wire";
+import { createAssignmentsCloseCallable } from "./assignments/detail/close-wire";
+import type { AssignmentsCloseCallable } from "./assignments/detail/types";
 
 // Client entry point. Waits for the Canonical Session Bootstrap to
 // resolve, then hands the resulting immutable Session to the router.
@@ -58,6 +60,12 @@ async function run(): Promise<void> {
   // consumed by the reusable Assignment Summary card. Rebound per
   // active-teacher session so cross-session state cannot leak.
   let assignmentSummary: AssignmentSummaryCallable | null = null;
+  // Sprint 13D: certified `assignmentsClose` callable seam consumed by
+  // the Assignment Detail surface. Rebound per active-teacher session so
+  // cross-session state cannot leak. Null before an active-teacher
+  // session resolves; the detail surface renders no close action when
+  // null.
+  let assignmentClose: AssignmentsCloseCallable | null = null;
   // Sprint 13B: session-scoped registry of teacher-owned assignment
   // metadata (title, status, class name). Populated by the certified
   // lifecycle path; consumed by the Assignment Detail metadata reader.
@@ -76,6 +84,15 @@ async function run(): Promise<void> {
       summaryCallable: assignmentSummary,
       onBack: () => {
         void rerun();
+      },
+      // Sprint 13D: wire the certified close callable and register the
+      // updated metadata into the session-scoped registry so a later
+      // navigation to Curriculum reflects the new `closed` status
+      // through the existing Sprint 13C selection interface without a
+      // page reload.
+      closeCallable: assignmentClose ?? undefined,
+      onStatusChange: (metadata) => {
+        assignmentDetailRegistry.register(metadata);
       },
     });
   };
@@ -134,6 +151,7 @@ async function run(): Promise<void> {
       });
       assignments = createAssignmentsCallables(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
+      assignmentClose = createAssignmentsCloseCallable(functions);
       // Sprint 13C: hydrate the session-scoped assignment-detail registry
       // from the certified `assignmentsTeacherList` retrieval path. The
       // hydration runs once per active-teacher session and is calm on
@@ -151,6 +169,7 @@ async function run(): Promise<void> {
       integrations = null;
       assignments = null;
       assignmentSummary = null;
+      assignmentClose = null;
       assignmentDetailRegistry.clear();
     }
     dispatch(session, table, mount, window.history);
