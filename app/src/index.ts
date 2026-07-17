@@ -19,6 +19,8 @@ import type {
   AssignmentsCallables,
   IntegrationsDeps,
 } from "./settings/integrations/types";
+import { createAssignmentSummaryCallable } from "./assignments/summary/wire";
+import type { AssignmentSummaryCallable } from "./assignments/summary/types";
 
 // Client entry point. Waits for the Canonical Session Bootstrap to
 // resolve, then hands the resulting immutable Session to the router.
@@ -47,6 +49,11 @@ async function run(): Promise<void> {
   let currentRunToken = 0;
   let integrations: IntegrationsDeps | null = null;
   let assignments: AssignmentsCallables | null = null;
+  // Sprint 13A: certified `assessmentAssignmentSummary` callable seam
+  // consumed by the reusable Assignment Summary card. Rebound per
+  // active-teacher session so cross-session state cannot leak.
+  let assignmentSummary: AssignmentSummaryCallable | null = null;
+  void assignmentSummary;
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
     renderLoadingSurface(mount);
@@ -79,9 +86,11 @@ async function run(): Promise<void> {
         db,
       });
       assignments = createAssignmentsCallables(functions);
+      assignmentSummary = createAssignmentSummaryCallable(functions);
     } else {
       integrations = null;
       assignments = null;
+      assignmentSummary = null;
     }
     dispatch(session, table, mount, window.history);
   };

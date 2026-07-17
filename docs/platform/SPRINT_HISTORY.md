@@ -3106,3 +3106,60 @@ Migrate `assessmentAssignmentSummary` from the current-active-enrollment populat
 ### Certification
 
 Sprint 12E Slice 2C is CERTIFIED. Sprint 12E Slice 1 is recertified as CERTIFIED under the additive Sprint 12E Slice 2C recertification section of its completion report.
+
+---
+
+## Sprint 13A: Teacher Assignment Summary UI Foundation
+
+**Dates:** 2026-07-17
+**Status:** Implementation complete; conditionally certified pending repository-wide validation.
+**Detailed report:** SPRINT_13A_COMPLETION_REPORT.md
+
+### Objective
+
+Expose the certified `assessmentAssignmentSummary` callable inside the authenticated teacher client as a reusable presentation-layer foundation. No backend behavior is added, altered, or reinterpreted; the card renders exactly the ten aggregate fields returned by the callable and preserves the aggregate-only confidentiality boundary certified by Sprint 12E.
+
+### Deliverables
+
+- Reusable `renderAssignmentSummaryCard(mount, deps)` component that renders loading, success (nine metrics), empty, and error states inside a single container without layout shift.
+- Client-side callable wire `createAssignmentSummaryCallable(functions)` that is the sole `firebase/functions` importer for this feature and validates the response strictly against the ten allowlisted aggregate fields.
+- Per-session wiring in `app/src/index.ts` scoped to the `activeTeacher` branch of the bootstrap rerun.
+- Full targeted UI test coverage (18 tests): loading, success, empty, error, retry, confidentiality, request-behavior, accessibility, and posture invariants.
+
+### Files created
+
+- `app/src/assignments/summary/types.ts`.
+- `app/src/assignments/summary/wire.ts`.
+- `app/src/assignments/summary/card.ts`.
+- `app/src/assignments/summary/card.test.ts`.
+- `docs/platform/SPRINT_13A_COMPLETION_REPORT.md`.
+
+### Files modified
+
+- `app/src/index.ts` (additive per-session `AssignmentSummaryCallable` wiring; certified integrations, assignments-lifecycle, and route-table wiring unchanged).
+- `docs/platform/SPRINT_HISTORY.md` (this Sprint 13A entry).
+
+### Validation results
+
+Sprint 13A implementation validation:
+
+- Targeted Sprint 13A UI tests: 18 of 18 passed.
+- Cloud Functions regression: 38 suites, 861 of 861 tests passed.
+- Lint: passed.
+- Typecheck: passed.
+- Production build: passed.
+- Backend files unchanged. Firestore Rules unchanged. Indexes unchanged. LMS integration unchanged. Callable contracts unchanged. Schema unchanged.
+- Zero em dashes across the Sprint 13A completion report and this Sprint 13A entry.
+- No deployment.
+- No commit.
+
+Repository baseline validation:
+
+- Full app test suite: 275 tests passed, 1 test failed.
+- Failing test, exactly as observed: `curriculum/curriculumManifest.test.ts`.
+- The failure reproduces outside Sprint 13A, is unrelated to any Sprint 13A files, and Sprint 13A did not modify curriculum manifests, curriculum generation, or build tooling.
+- Application validation is therefore blocked only by this pre-existing curriculum manifest test failure.
+
+### Certification
+
+Sprint 13A is CONDITIONALLY CERTIFIED. Implementation completed, targeted validation passed, and backend regression passed. Final certification remains conditional pending repository-wide validation, specifically resolution or formal acceptance of the pre-existing `curriculum/curriculumManifest.test.ts` failure.
