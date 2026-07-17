@@ -1363,3 +1363,658 @@ describe("renderAssignmentDetail - draft state (Sprint 13F)", () => {
     expect(summary.calls).toEqual(["assign-1"]);
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 13G: Draft editing foundation
+// -----------------------------------------------------------------------------
+
+import type {
+  AssignmentsUpdateDraftCallable,
+  AssignmentsUpdateDraftInput,
+  AssignmentsUpdateDraftResult,
+} from "./types";
+
+const resolvingUpdate = (
+  result?: Partial<AssignmentsUpdateDraftResult>,
+): {
+  readonly callable: AssignmentsUpdateDraftCallable;
+  readonly calls: Array<AssignmentsUpdateDraftInput>;
+} => {
+  const calls: Array<AssignmentsUpdateDraftInput> = [];
+  const callable: AssignmentsUpdateDraftCallable = (input) => {
+    calls.push(input);
+    return Promise.resolve(
+      Object.freeze({
+        assignmentId: input.assignmentId,
+        alreadyUpdated: false,
+        ...(result ?? {}),
+      }),
+    );
+  };
+  return { callable, calls };
+};
+
+const rejectingUpdate = (): {
+  readonly callable: AssignmentsUpdateDraftCallable;
+  readonly calls: Array<AssignmentsUpdateDraftInput>;
+} => {
+  const calls: Array<AssignmentsUpdateDraftInput> = [];
+  const callable: AssignmentsUpdateDraftCallable = (input) => {
+    calls.push(input);
+    return Promise.reject(new Error("update failed"));
+  };
+  return { callable, calls };
+};
+
+describe("renderAssignmentDetail - draft editing (Sprint 13G)", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  test("draft assignment renders the Edit draft action when the update callable is wired", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    const editButton = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-edit-action]",
+    );
+    expect(editButton).not.toBeNull();
+    expect(editButton?.textContent).toBe("Edit draft");
+    expect(update.calls).toEqual([]);
+  });
+
+  test("draft assignment omits the Edit draft action when the update callable is not wired", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-edit-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-label]"),
+    ).not.toBeNull();
+  });
+
+  test("published assignment never exposes the Edit draft action", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-edit-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-editor]"),
+    ).toBeNull();
+  });
+
+  test("closed assignment never exposes the Edit draft action", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-edit-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-editor]"),
+    ).toBeNull();
+  });
+
+  test("clicking Edit draft opens the inline editor prefilled with the current title", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    const editButton = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-edit-action]",
+    );
+    editButton?.click();
+    const form = mount.querySelector<HTMLFormElement>(
+      "[data-testid=assignment-detail-editor]",
+    );
+    expect(form).not.toBeNull();
+    const input = mount.querySelector<HTMLInputElement>(
+      "[data-testid=assignment-detail-editor-title]",
+    );
+    expect(input?.value).toBe("Original Title");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-label]"),
+    ).toBeNull();
+    expect(update.calls).toEqual([]);
+  });
+
+  test("Cancel closes the editor and never invokes the callable", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const input = mount.querySelector<HTMLInputElement>(
+      "[data-testid=assignment-detail-editor-title]",
+    ) as HTMLInputElement;
+    input.value = "Modified before cancel";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-cancel]",
+      )
+      ?.click();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-editor]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-label]"),
+    ).not.toBeNull();
+    const title = mount.querySelector(
+      "[data-testid=assignment-detail-title]",
+    );
+    expect(title?.textContent).toBe("Original Title");
+    expect(update.calls).toEqual([]);
+  });
+
+  test("Save invokes the update callable exactly once and updates the header title on success", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    const statusChanges: Array<AssignmentDetailMetadata> = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+      onStatusChange: (m) => {
+        statusChanges.push(m);
+      },
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const input = mount.querySelector<HTMLInputElement>(
+      "[data-testid=assignment-detail-editor-title]",
+    ) as HTMLInputElement;
+    input.value = "Renamed Draft";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-save]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(update.calls).toEqual([
+      { assignmentId: "assign-draft", title: "Renamed Draft" },
+    ]);
+    const title = mount.querySelector(
+      "[data-testid=assignment-detail-title]",
+    );
+    expect(title?.textContent).toBe("Renamed Draft");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-editor]"),
+    ).toBeNull();
+    expect(statusChanges.length).toBe(1);
+    expect(statusChanges[0]?.title).toBe("Renamed Draft");
+    expect(statusChanges[0]?.status).toBe("draft");
+    expect(statusChanges[0]?.assignmentId).toBe("assign-draft");
+  });
+
+  test("Save with an empty title blocks the callable and surfaces the validation message", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const input = mount.querySelector<HTMLInputElement>(
+      "[data-testid=assignment-detail-editor-title]",
+    ) as HTMLInputElement;
+    input.value = "   ";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-save]",
+      )
+      ?.click();
+    await flush();
+    expect(update.calls).toEqual([]);
+    const err = mount.querySelector(
+      "[data-testid=assignment-detail-editor-title-error]",
+    );
+    expect(err).not.toBeNull();
+    expect(err?.textContent).toBe("Enter a title before saving.");
+    const inputAfter = mount.querySelector<HTMLInputElement>(
+      "[data-testid=assignment-detail-editor-title]",
+    );
+    expect(inputAfter?.getAttribute("aria-invalid")).toBe("true");
+    const title = mount.querySelector(
+      "[data-testid=assignment-detail-title]",
+    );
+    expect(title?.textContent).toBe("Original Title");
+  });
+
+  test("callable failure preserves the header and renders a generic error message", async () => {
+    const mount = mkMount();
+    const update = rejectingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const input = mount.querySelector<HTMLInputElement>(
+      "[data-testid=assignment-detail-editor-title]",
+    ) as HTMLInputElement;
+    input.value = "Renamed Draft";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-save]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(update.calls.length).toBe(1);
+    const banner = mount.querySelector(
+      "[data-testid=assignment-detail-editor-save-error]",
+    );
+    expect(banner).not.toBeNull();
+    expect(banner?.textContent).toBe(
+      "We could not save this draft right now. Try again in a moment.",
+    );
+    const title = mount.querySelector(
+      "[data-testid=assignment-detail-title]",
+    );
+    expect(title?.textContent).toBe("Original Title");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-editor]"),
+    ).not.toBeNull();
+  });
+
+  test("Save with an unchanged title still invokes the callable with only the assignmentId and updates onStatusChange registry", async () => {
+    // Idempotent editing round-trip. The callable is invoked so a
+    // registry consumer that mirrors the metadata (Sprint 13B / 13C /
+    // 13F) receives the fresh copy; the header title is unchanged.
+    const mount = mkMount();
+    const update = resolvingUpdate({ alreadyUpdated: true });
+    const statusChanges: Array<AssignmentDetailMetadata> = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+      onStatusChange: (m) => {
+        statusChanges.push(m);
+      },
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    // Save without editing.
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-save]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(update.calls).toEqual([{ assignmentId: "assign-draft" }]);
+    expect(statusChanges[0]?.title).toBe("Original Title");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-editor]"),
+    ).toBeNull();
+  });
+
+  test("editor never exposes ownership, class, submission, attempt, session, or firebase vocabulary", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const editor = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-editor]",
+    ) as HTMLElement;
+    const text = editor.textContent ?? "";
+    for (const forbidden of [
+      "teacherId",
+      "schoolId",
+      "districtId",
+      "recipient",
+      "attempt",
+      "session",
+      "submission",
+      "firestore",
+      "firebase",
+      "callable",
+    ]) {
+      expect(text.toLowerCase()).not.toContain(forbidden.toLowerCase());
+    }
+  });
+
+  // Sprint 13G scope completion tests: instructions round-trip.
+  test("editor exposes the instructions textarea prefilled with the current instructions", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+          instructions: "Existing instructions.",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const textarea = mount.querySelector<HTMLTextAreaElement>(
+      "[data-testid=assignment-detail-editor-instructions]",
+    );
+    expect(textarea).not.toBeNull();
+    expect(textarea?.tagName).toBe("TEXTAREA");
+    expect(textarea?.value).toBe("Existing instructions.");
+  });
+
+  test("editor exposes an empty instructions textarea when the metadata has no instructions", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const textarea = mount.querySelector<HTMLTextAreaElement>(
+      "[data-testid=assignment-detail-editor-instructions]",
+    );
+    expect(textarea?.value).toBe("");
+  });
+
+  test("Save sends instructions when the trimmed edit differs from the current value", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    const statusChanges: Array<AssignmentDetailMetadata> = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+      onStatusChange: (m) => {
+        statusChanges.push(m);
+      },
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const textarea = mount.querySelector<HTMLTextAreaElement>(
+      "[data-testid=assignment-detail-editor-instructions]",
+    ) as HTMLTextAreaElement;
+    textarea.value = "  Read the introduction.  ";
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-save]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(update.calls).toEqual([
+      {
+        assignmentId: "assign-draft",
+        instructions: "Read the introduction.",
+      },
+    ]);
+    expect(statusChanges[0]?.instructions).toBe("Read the introduction.");
+  });
+
+  test("Save omits instructions when unchanged", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+          instructions: "Existing instructions.",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const input = mount.querySelector<HTMLInputElement>(
+      "[data-testid=assignment-detail-editor-title]",
+    ) as HTMLInputElement;
+    input.value = "Renamed Draft";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-save]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(update.calls).toEqual([
+      { assignmentId: "assign-draft", title: "Renamed Draft" },
+    ]);
+  });
+
+  test("Cancel discards edited instructions and the callable is not invoked", async () => {
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+          instructions: "Existing instructions.",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const textarea = mount.querySelector<HTMLTextAreaElement>(
+      "[data-testid=assignment-detail-editor-instructions]",
+    ) as HTMLTextAreaElement;
+    textarea.value = "Different instructions.";
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-cancel]",
+      )
+      ?.click();
+    await flush();
+    expect(update.calls).toEqual([]);
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const reopened = mount.querySelector<HTMLTextAreaElement>(
+      "[data-testid=assignment-detail-editor-instructions]",
+    );
+    expect(reopened?.value).toBe("Existing instructions.");
+  });
+
+  test("whitespace-only instructions edit is not sent to the callable", async () => {
+    // The callable rejects an empty-string `instructions` per its
+    // canonical contract; the client treats a whitespace-only edit as
+    // no change and never sends the field. Clearing instructions is
+    // not supported until the callable admits a canonical clear
+    // sentinel.
+    const mount = mkMount();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({
+          assignmentId: "assign-draft",
+          status: "draft",
+          title: "Original Title",
+          instructions: "Existing instructions.",
+        }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    const textarea = mount.querySelector<HTMLTextAreaElement>(
+      "[data-testid=assignment-detail-editor-instructions]",
+    ) as HTMLTextAreaElement;
+    textarea.value = "   ";
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-editor-save]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(update.calls).toEqual([{ assignmentId: "assign-draft" }]);
+  });
+});

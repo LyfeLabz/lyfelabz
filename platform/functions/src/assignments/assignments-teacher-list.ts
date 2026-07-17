@@ -51,6 +51,13 @@ export type AssignmentsTeacherListItem = {
   readonly classId: string;
   readonly className: string;
   readonly status: Exclude<AssignmentStatus, "archived">;
+  // Sprint 13G scope completion: additive optional projection of the
+  // canonical `instructions` field per Data Model §3.6. Absent when the
+  // stored record has never carried instructions; present when it does.
+  // The addition is backward compatible: pre-Sprint-13G clients ignore
+  // the field, and the Sprint 13C hydrate parser continues to accept
+  // items without it.
+  readonly instructions?: string;
 };
 
 // Sprint 13F: the request payload gains a single optional boolean field
@@ -200,14 +207,29 @@ async function assignmentsTeacherListHandler(
       typeof record.title === "string" && record.title.length > 0
         ? record.title
         : record.lessonSlug;
-    items.push({
+    const item: {
+      assignmentId: string;
+      lessonSlug: string;
+      title: string;
+      classId: string;
+      className: string;
+      status: Exclude<AssignmentStatus, "archived">;
+      instructions?: string;
+    } = {
       assignmentId,
       lessonSlug: record.lessonSlug,
       title,
       classId: record.classId,
       className,
       status: record.status,
-    });
+    };
+    if (
+      typeof record.instructions === "string" &&
+      record.instructions.length > 0
+    ) {
+      item.instructions = record.instructions;
+    }
+    items.push(item);
   }
 
   // Deterministic ordering: by (classId, assignmentId) so identical results

@@ -6,6 +6,7 @@ import type {
   AssignmentStatus,
   AssignmentsCloseCallable,
   AssignmentsReopenCallable,
+  AssignmentsUpdateDraftCallable,
 } from "./types";
 
 // Sprint 13B Teacher Assignment Detail surface. A pure DOM builder
@@ -53,6 +54,18 @@ export type AssignmentDetailDeps = {
   // action; the Sprint 13D `Assignment closed` label continues to
   // render.
   readonly reopenCallable?: AssignmentsReopenCallable;
+  // Sprint 13G: optional draft-editing seam. When supplied and the loaded
+  // metadata is `draft`, the surface renders an `Edit draft` action that
+  // opens a lightweight inline editor. Saving invokes the callable
+  // exactly once with the changed fields and, on success, updates the
+  // header immediately and fires `onStatusChange` so the session-scoped
+  // registry re-registers the updated metadata. Cancel closes the editor
+  // without invoking the callable. Only draft-editable fields are ever
+  // sent through this seam; ownership, class, status, submissions,
+  // attempts, sessions, and summaries are never exposed. When the seam
+  // is not supplied, the surface renders no edit action and the
+  // Sprint 13F draft label remains unchanged.
+  readonly updateDraftCallable?: AssignmentsUpdateDraftCallable;
   readonly onStatusChange?: (metadata: AssignmentDetailMetadata) => void;
 };
 
@@ -77,6 +90,35 @@ type ReopenUiState =
   | { readonly kind: "idle" }
   | { readonly kind: "pending" }
   | { readonly kind: "error" };
+
+// Sprint 13G: inline draft-editor state. `closed` collapses back to the
+// static Draft header; `open` renders the form with the current draft
+// state; `pending` disables the form while the callable is in flight;
+// `error` surfaces a calm, generic teacher-facing message on failure
+// and leaves the form open so the teacher can adjust and retry.
+type EditUiState =
+  | { readonly kind: "closed" }
+  | {
+      readonly kind: "open";
+      readonly draftTitle: string;
+      readonly draftInstructions: string;
+      readonly validation: EditValidation;
+    }
+  | {
+      readonly kind: "pending";
+      readonly draftTitle: string;
+      readonly draftInstructions: string;
+    }
+  | {
+      readonly kind: "error";
+      readonly draftTitle: string;
+      readonly draftInstructions: string;
+      readonly validation: EditValidation;
+    };
+
+type EditValidation =
+  | { readonly kind: "ok" }
+  | { readonly kind: "titleRequired" };
 
 export function renderAssignmentDetail(
   mount: HTMLElement,
@@ -122,6 +164,7 @@ export function renderAssignmentDetail(
   let loadToken = 0;
   let closeUi: CloseUiState = { kind: "idle" };
   let reopenUi: ReopenUiState = { kind: "idle" };
+  let editUi: EditUiState = { kind: "closed" };
 
   const rerender = (): void => {
     body.textContent = "";
@@ -132,12 +175,27 @@ export function renderAssignmentDetail(
         renderLoading(doc, body);
         return;
       case "ready":
-        renderReady(doc, body, s.metadata, deps, closeUi, reopenUi, {
+        renderReady(doc, body, s.metadata, deps, closeUi, reopenUi, editUi, {
           onCloseRequest: () => {
             openCloseConfirmation(s.metadata);
           },
           onReopenRequest: () => {
             openReopenConfirmation(s.metadata);
+          },
+          onEditRequest: () => {
+            openEditor(s.metadata);
+          },
+          onEditTitleInput: (value) => {
+            updateEditTitle(value);
+          },
+          onEditInstructionsInput: (value) => {
+            updateEditInstructions(value);
+          },
+          onEditSave: () => {
+            void performEditSave(s.metadata);
+          },
+          onEditCancel: () => {
+            closeEditor();
           },
         });
         return;
@@ -250,6 +308,123 @@ export function renderAssignmentDetail(
     }
   };
 
+  const openEditor = (metadata: AssignmentDetailMetadata): void => {
+    if (deps.updateDraftCallable === undefined) return;
+    if (metadata.status !== "draft") return;
+    editUi = {
+      kind: "open",
+      draftTitle: metadata.title,
+      draftInstructions: metadata.instructions ?? "",
+      validation: { kind: "ok" },
+    };
+    rerender();
+  };
+
+  const closeEditor = (): void => {
+    editUi = { kind: "closed" };
+    rerender();
+  };
+
+  const updateEditTitle = (value: string): void => {
+    if (editUi.kind === "open" || editUi.kind === "error") {
+      const validation: EditValidation =
+        value.trim().length === 0
+          ? { kind: "titleRequired" }
+          : { kind: "ok" };
+      editUi = {
+        kind: editUi.kind,
+        draftTitle: value,
+        draftInstructions: editUi.draftInstructions,
+        validation,
+      };
+    }
+  };
+
+  const updateEditInstructions = (value: string): void => {
+    if (editUi.kind === "open" || editUi.kind === "error") {
+      editUi = {
+        kind: editUi.kind,
+        draftTitle: editUi.draftTitle,
+        draftInstructions: value,
+        validation: editUi.validation,
+      };
+    }
+  };
+
+  const performEditSave = async (
+    metadata: AssignmentDetailMetadata,
+  ): Promise<void> => {
+    const callable = deps.updateDraftCallable;
+    if (callable === undefined) return;
+    if (editUi.kind !== "open" && editUi.kind !== "error") return;
+    const trimmedTitle = editUi.draftTitle.trim();
+    const trimmedInstructions = editUi.draftInstructions.trim();
+    if (trimmedTitle.length === 0) {
+      editUi = {
+        kind: "open",
+        draftTitle: editUi.draftTitle,
+        draftInstructions: editUi.draftInstructions,
+        validation: { kind: "titleRequired" },
+      };
+      rerender();
+      return;
+    }
+    editUi = {
+      kind: "pending",
+      draftTitle: editUi.draftTitle,
+      draftInstructions: editUi.draftInstructions,
+    };
+    rerender();
+    try {
+      const payload: {
+        assignmentId: string;
+        title?: string;
+        instructions?: string;
+      } = { assignmentId: metadata.assignmentId };
+      if (trimmedTitle !== metadata.title) payload.title = trimmedTitle;
+      // Sprint 13G scope completion: instructions are only sent when the
+      // trimmed edit differs from the current stored value. The callable
+      // rejects the empty string (its contract requires non-empty when
+      // supplied), so clearing instructions through the editor is not
+      // supported until the callable admits a canonical clear sentinel.
+      const currentInstructions = metadata.instructions ?? "";
+      if (
+        trimmedInstructions.length > 0 &&
+        trimmedInstructions !== currentInstructions
+      ) {
+        payload.instructions = trimmedInstructions;
+      }
+      const result = await callable(payload);
+      if (state.kind !== "ready") return;
+      const nextMetadata = Object.freeze({
+        ...metadata,
+        title: trimmedTitle,
+        ...(trimmedInstructions.length > 0
+          ? { instructions: trimmedInstructions }
+          : {}),
+      });
+      state = { kind: "ready", metadata: nextMetadata };
+      editUi = { kind: "closed" };
+      rerender();
+      deps.onStatusChange?.(nextMetadata);
+      void result;
+    } catch {
+      // editUi was set to `pending` before the callable; on failure we
+      // preserve the teacher-entered values verbatim.
+      const preservedTitle =
+        editUi.kind === "pending" ? editUi.draftTitle : trimmedTitle;
+      const preservedInstructions =
+        editUi.kind === "pending" ? editUi.draftInstructions : "";
+      editUi = {
+        kind: "error",
+        draftTitle: preservedTitle,
+        draftInstructions: preservedInstructions,
+        validation: { kind: "ok" },
+      };
+      rerender();
+    }
+  };
+
   const load = async (): Promise<void> => {
     const token = ++loadToken;
     state = { kind: "loading" };
@@ -302,9 +477,15 @@ function renderReady(
   deps: AssignmentDetailDeps,
   closeUi: CloseUiState,
   reopenUi: ReopenUiState,
+  editUi: EditUiState,
   handlers: {
     readonly onCloseRequest: () => void;
     readonly onReopenRequest: () => void;
+    readonly onEditRequest: () => void;
+    readonly onEditTitleInput: (value: string) => void;
+    readonly onEditInstructionsInput: (value: string) => void;
+    readonly onEditSave: () => void;
+    readonly onEditCancel: () => void;
   },
 ): void {
   const header = doc.createElement("div");
@@ -344,16 +525,37 @@ function renderReady(
     const lifecycle = doc.createElement("div");
     lifecycle.className = "shell-assignment-detail-lifecycle";
     lifecycle.setAttribute("data-testid", "assignment-detail-lifecycle");
-    const draftLabel = doc.createElement("p");
-    draftLabel.className = "shell-assignment-detail-draft-label";
-    draftLabel.setAttribute(
-      "data-testid",
-      "assignment-detail-draft-label",
-    );
-    draftLabel.setAttribute("role", "status");
-    draftLabel.setAttribute("aria-live", "polite");
-    draftLabel.textContent = "Draft assignment";
-    lifecycle.appendChild(draftLabel);
+
+    if (editUi.kind === "closed") {
+      const draftLabel = doc.createElement("p");
+      draftLabel.className = "shell-assignment-detail-draft-label";
+      draftLabel.setAttribute(
+        "data-testid",
+        "assignment-detail-draft-label",
+      );
+      draftLabel.setAttribute("role", "status");
+      draftLabel.setAttribute("aria-live", "polite");
+      draftLabel.textContent = "Draft assignment";
+      lifecycle.appendChild(draftLabel);
+
+      if (deps.updateDraftCallable !== undefined) {
+        const editButton = doc.createElement("button");
+        editButton.type = "button";
+        editButton.className = "shell-btn shell-assignment-detail-edit-action";
+        editButton.setAttribute(
+          "data-testid",
+          "assignment-detail-edit-action",
+        );
+        editButton.textContent = "Edit draft";
+        editButton.addEventListener("click", () => {
+          handlers.onEditRequest();
+        });
+        lifecycle.appendChild(editButton);
+      }
+    } else {
+      renderDraftEditor(doc, lifecycle, editUi, handlers);
+    }
+
     header.appendChild(lifecycle);
   } else if (
     deps.closeCallable !== undefined ||
@@ -714,6 +916,174 @@ function appendMetaPair(
   cell.appendChild(val);
 
   parent.appendChild(cell);
+}
+
+function renderDraftEditor(
+  doc: Document,
+  parent: HTMLElement,
+  editUi: EditUiState,
+  handlers: {
+    readonly onEditTitleInput: (value: string) => void;
+    readonly onEditInstructionsInput: (value: string) => void;
+    readonly onEditSave: () => void;
+    readonly onEditCancel: () => void;
+  },
+): void {
+  const draftTitle =
+    editUi.kind === "open" || editUi.kind === "pending" || editUi.kind === "error"
+      ? editUi.draftTitle
+      : "";
+  const draftInstructions =
+    editUi.kind === "open" || editUi.kind === "pending" || editUi.kind === "error"
+      ? editUi.draftInstructions
+      : "";
+  const validation: EditValidation =
+    editUi.kind === "open" || editUi.kind === "error"
+      ? editUi.validation
+      : { kind: "ok" };
+  const pending = editUi.kind === "pending";
+
+  const form = doc.createElement("form");
+  form.className = "shell-assignment-detail-editor";
+  form.setAttribute("data-testid", "assignment-detail-editor");
+  form.setAttribute("aria-label", "Edit draft assignment");
+  form.setAttribute("novalidate", "novalidate");
+  form.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    handlers.onEditSave();
+  });
+
+  const field = doc.createElement("div");
+  field.className = "shell-assignment-detail-editor-field";
+
+  const label = doc.createElement("label");
+  label.className = "shell-assignment-detail-editor-label";
+  label.setAttribute("for", "assignment-detail-editor-title");
+  label.textContent = "Assignment title";
+  field.appendChild(label);
+
+  const input = doc.createElement("input");
+  input.type = "text";
+  input.id = "assignment-detail-editor-title";
+  input.className = "shell-assignment-detail-editor-input";
+  input.setAttribute("data-testid", "assignment-detail-editor-title");
+  input.value = draftTitle;
+  input.maxLength = 200;
+  input.required = true;
+  input.autocomplete = "off";
+  if (pending) {
+    input.disabled = true;
+  }
+  if (validation.kind === "titleRequired") {
+    input.setAttribute("aria-invalid", "true");
+    input.setAttribute(
+      "aria-describedby",
+      "assignment-detail-editor-title-error",
+    );
+  }
+  input.addEventListener("input", (ev) => {
+    const value = (ev.target as HTMLInputElement).value;
+    handlers.onEditTitleInput(value);
+  });
+  field.appendChild(input);
+
+  if (validation.kind === "titleRequired") {
+    const err = doc.createElement("p");
+    err.id = "assignment-detail-editor-title-error";
+    err.className = "shell-assignment-detail-editor-error";
+    err.setAttribute(
+      "data-testid",
+      "assignment-detail-editor-title-error",
+    );
+    err.setAttribute("role", "alert");
+    err.textContent = "Enter a title before saving.";
+    field.appendChild(err);
+  }
+
+  form.appendChild(field);
+
+  const instructionsField = doc.createElement("div");
+  instructionsField.className = "shell-assignment-detail-editor-field";
+
+  const instructionsLabel = doc.createElement("label");
+  instructionsLabel.className = "shell-assignment-detail-editor-label";
+  instructionsLabel.setAttribute(
+    "for",
+    "assignment-detail-editor-instructions",
+  );
+  instructionsLabel.textContent = "Assignment instructions";
+  instructionsField.appendChild(instructionsLabel);
+
+  const instructionsInput = doc.createElement("textarea");
+  instructionsInput.id = "assignment-detail-editor-instructions";
+  instructionsInput.className =
+    "shell-assignment-detail-editor-input shell-assignment-detail-editor-instructions";
+  instructionsInput.setAttribute(
+    "data-testid",
+    "assignment-detail-editor-instructions",
+  );
+  instructionsInput.value = draftInstructions;
+  instructionsInput.maxLength = 4000;
+  instructionsInput.rows = 4;
+  instructionsInput.autocomplete = "off";
+  if (pending) {
+    instructionsInput.disabled = true;
+  }
+  instructionsInput.addEventListener("input", (ev) => {
+    const value = (ev.target as HTMLTextAreaElement).value;
+    handlers.onEditInstructionsInput(value);
+  });
+  instructionsField.appendChild(instructionsInput);
+
+  form.appendChild(instructionsField);
+
+  const actions = doc.createElement("div");
+  actions.className = "shell-assignment-detail-editor-actions";
+
+  const cancel = doc.createElement("button");
+  cancel.type = "button";
+  cancel.className = "shell-btn shell-assignment-detail-editor-cancel";
+  cancel.setAttribute("data-testid", "assignment-detail-editor-cancel");
+  cancel.textContent = "Cancel";
+  if (pending) cancel.disabled = true;
+  cancel.addEventListener("click", () => {
+    handlers.onEditCancel();
+  });
+  actions.appendChild(cancel);
+
+  const save = doc.createElement("button");
+  save.type = "submit";
+  save.className = "shell-btn shell-assignment-detail-editor-save";
+  save.setAttribute("data-testid", "assignment-detail-editor-save");
+  save.textContent = "Save";
+  if (pending) {
+    save.disabled = true;
+    save.setAttribute("aria-busy", "true");
+  }
+  actions.appendChild(save);
+
+  form.appendChild(actions);
+
+  if (editUi.kind === "error") {
+    const errBanner = doc.createElement("p");
+    errBanner.className = "shell-assignment-detail-editor-save-error";
+    errBanner.setAttribute(
+      "data-testid",
+      "assignment-detail-editor-save-error",
+    );
+    errBanner.setAttribute("role", "alert");
+    errBanner.textContent =
+      "We could not save this draft right now. Try again in a moment.";
+    form.appendChild(errBanner);
+  }
+
+  parent.appendChild(form);
+
+  try {
+    input.focus({ preventScroll: true });
+  } catch {
+    // ignored
+  }
 }
 
 function renderEmpty(doc: Document, mount: HTMLElement): void {

@@ -240,6 +240,42 @@ describe("assignmentsTeacherList - response filtering", () => {
     const res = await __assignmentsTeacherListHandler(makeRequest());
     expect(res.items).toEqual([]);
   });
+
+  test("Sprint 13G: projects instructions when the record carries them", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [
+        assignmentDoc("a-with-instructions", {
+          instructions: "Read the intro before answering.",
+        }),
+      ],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toHaveLength(1);
+    expect(res.items[0]).toMatchObject({
+      instructions: "Read the intro before answering.",
+    });
+  });
+
+  test("Sprint 13G: omits instructions when the record has no instructions", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a-no-instructions")],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toHaveLength(1);
+    expect(Object.keys(res.items[0])).not.toContain("instructions");
+  });
+
+  test("Sprint 13G: omits instructions when the record carries an empty string", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a-blank-instructions", { instructions: "" })],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toHaveLength(1);
+    expect(Object.keys(res.items[0])).not.toContain("instructions");
+  });
 });
 
 describe("assignmentsTeacherList - Sprint 13F draft enumeration", () => {

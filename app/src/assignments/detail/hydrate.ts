@@ -45,14 +45,29 @@ export function parseAssignmentsTeacherListItem(
   ) {
     return null;
   }
-  return Object.freeze({
+  const parsed: {
+    assignmentId: string;
+    title: string;
+    className: string;
+    status: Extract<AssignmentStatus, "published" | "closed" | "draft">;
+    lessonSlug: string;
+    classId: string;
+    instructions?: string;
+  } = {
     assignmentId: item.assignmentId,
     title: item.title,
     className: item.className,
     status: item.status,
     lessonSlug: item.lessonSlug,
     classId: item.classId,
-  });
+  };
+  // Sprint 13G scope completion: additive, backward-compatible parse of
+  // the optional `instructions` projection. Pre-Sprint-13G callable
+  // deployments omit the field; the parser accepts that silently.
+  if (typeof item.instructions === "string" && item.instructions.length > 0) {
+    parsed.instructions = item.instructions;
+  }
+  return Object.freeze(parsed);
 }
 
 export type AssignmentsTeacherListCallable = () => Promise<

@@ -119,6 +119,47 @@ describe("parseAssignmentsTeacherListItem - Sprint 13F draft support", () => {
   });
 });
 
+describe("parseAssignmentsTeacherListItem - Sprint 13G scope completion", () => {
+  test("parses instructions when present", () => {
+    const parsed = parseAssignmentsTeacherListItem({
+      assignmentId: "d1",
+      lessonSlug: "earths-layers",
+      title: "Earth's Layers",
+      classId: "c1",
+      className: "6A",
+      status: "draft",
+      instructions: "Read the intro.",
+    });
+    expect(parsed?.instructions).toBe("Read the intro.");
+  });
+
+  test("omits instructions when the projection does not carry the field", () => {
+    const parsed = parseAssignmentsTeacherListItem({
+      assignmentId: "d1",
+      lessonSlug: "earths-layers",
+      title: "Earth's Layers",
+      classId: "c1",
+      className: "6A",
+      status: "draft",
+    });
+    expect(parsed).not.toBeNull();
+    expect(parsed?.instructions).toBeUndefined();
+  });
+
+  test("omits instructions when the projection carries an empty string", () => {
+    const parsed = parseAssignmentsTeacherListItem({
+      assignmentId: "d1",
+      lessonSlug: "earths-layers",
+      title: "Earth's Layers",
+      classId: "c1",
+      className: "6A",
+      status: "draft",
+      instructions: "",
+    });
+    expect(parsed?.instructions).toBeUndefined();
+  });
+});
+
 describe("hydrateAssignmentDetailRegistry - Sprint 13F drafts", () => {
   test("registers a draft item so Detail can look it up after reload", async () => {
     const registry = createAssignmentDetailRegistry();

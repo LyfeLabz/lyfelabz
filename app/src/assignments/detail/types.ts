@@ -29,6 +29,16 @@ export type AssignmentDetailMetadata = {
   // selection UI without leaking student, recipient, attempt, or session
   // identifiers.
   readonly classId?: string;
+  // Sprint 13G scope completion: optional teacher-authored instructions for
+  // the assignment. Absent when the draft has never been given
+  // instructions, or when the value was not returned by the Sprint 13C
+  // teacher-list projection (backward compatible). The field is
+  // draft-editable through the certified `assignmentsUpdateDraft`
+  // callable and is intentionally the only additional editable metadata
+  // surfaced in Sprint 13G; availability windows and lesson-revision
+  // references remain unsupported by the client until a canonical
+  // client-side selector and date/time control convention exist.
+  readonly instructions?: string;
 };
 
 // Sprint 13D: injected close-callable seam. The Assignment Detail
@@ -64,6 +74,28 @@ export type AssignmentsReopenResult = {
 export type AssignmentsReopenCallable = (input: {
   readonly assignmentId: string;
 }) => Promise<AssignmentsReopenResult>;
+
+// Sprint 13G: injected update-draft callable seam. The Assignment Detail
+// surface never imports from firebase/*; the entry point wires the real
+// `assignmentsUpdateDraft` callable and tests inject an in-memory fake.
+// The callable resolves on the canonical
+// `{ assignmentId, alreadyUpdated }` response and rejects on any
+// failure. UI failure messaging never reveals Firestore, callable names,
+// stack traces, or document paths.
+export type AssignmentsUpdateDraftInput = {
+  readonly assignmentId: string;
+  readonly title?: string;
+  readonly instructions?: string;
+};
+
+export type AssignmentsUpdateDraftResult = {
+  readonly assignmentId: string;
+  readonly alreadyUpdated: boolean;
+};
+
+export type AssignmentsUpdateDraftCallable = (
+  input: AssignmentsUpdateDraftInput,
+) => Promise<AssignmentsUpdateDraftResult>;
 
 // Injected reader seam. The detail surface never imports from
 // firebase/* directly; the entry point wires the real reader and tests

@@ -295,6 +295,75 @@ describe("assignmentsUpdateDraft", () => {
     ).rejects.toMatchObject({ code: "assignments.invalidWindowClosesAt" });
   });
 
+  it("rejects an update against a closed assignment", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(
+      existingAssignmentSnapshot({ status: "closed" }),
+    );
+    await expect(
+      __assignmentsUpdateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.invalidStatus" });
+    expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("rejects an update against an archived assignment", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(
+      existingAssignmentSnapshot({ status: "archived" }),
+    );
+    await expect(
+      __assignmentsUpdateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.invalidStatus" });
+    expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("ignores immutable fields injected on the payload and only writes the whitelisted metadata", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
+    mockAssignmentUpdate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+    await __assignmentsUpdateDraftHandler(
+      makeRequest({
+        data: {
+          assignmentId: ASSIGNMENT_ID,
+          title: "New Title",
+          teacherId: "someone-else",
+          schoolId: "school-b",
+          districtId: "district-2",
+          classId: "class-xyz",
+          status: "published",
+          createdAt: "2026-07-17T00:00:00.000Z",
+          recipients: ["student-1"],
+          attempts: 99,
+        },
+      }),
+    );
+
+    expect(mockAssignmentUpdate).toHaveBeenCalledTimes(1);
+    expect(mockAssignmentUpdate).toHaveBeenCalledWith({ title: "New Title" });
+    const writePayload = mockAssignmentUpdate.mock.calls[0]![0] as Record<
+      string,
+      unknown
+    >;
+    for (const field of [
+      "teacherId",
+      "schoolId",
+      "districtId",
+      "classId",
+      "status",
+      "createdAt",
+      "recipients",
+      "attempts",
+    ]) {
+      expect(writePayload).not.toHaveProperty(field);
+    }
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: { changedFields: ["title"] },
+      }),
+    );
+  });
+
   it("orders side effects: update, then audit", async () => {
     const calls: string[] = [];
     mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
