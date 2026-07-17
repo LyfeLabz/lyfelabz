@@ -5,12 +5,20 @@ import {
   PlatformError,
   assignmentDocRef,
   assignmentPublishDocRef,
+  assignmentRecipientCreationDocRef,
+  createFirestoreBatch,
   log,
   requireDistrictContext,
   writeAuditEvent,
   type AssignmentPublishWrite,
   type AssignmentRecord,
 } from "../shared";
+
+import {
+  buildRecipientCreationWrite,
+  loadInitialRecipientPopulation,
+  type RecipientOwnershipContext,
+} from "./assignment-recipients";
 
 // Client-supplied request payload for assignmentsPublish. Only the target
 // assignment identifier is carried. Ownership fields are never carried on
@@ -106,9 +114,44 @@ function safeLog(fn: () => void): void {
 //
 // Every side effect flows through the canonical shared helpers:
 //   - record read via `assignmentDocRef(...).get()`               (typed ref)
-//   - narrow publish write via `assignmentPublishDocRef(...).update(...)`
-//                                                                 (typed ref)
+//   - enrollment population read via `enrollmentsCollectionRef(...)`
+//                                                                 (§7 helper)
+//   - atomic status transition and recipient snapshot via one
+//     `createFirestoreBatch()` commit; the publish write uses
+//     `assignmentPublishDocRef(...)` and each recipient write uses
+//     `assignmentRecipientCreationDocRef(...)`
 //   - audit event via `writeAuditEvent({...})`                    (§5 helper)
+//
+// First-publication detection: the assignment record's current `status`
+// field is the sole first-publication signal. `draft` -> `published`
+// advances the lifecycle field and writes the initial recipient snapshot.
+// `published` is treated as an already-published no-op with no recipient
+// re-snapshot. Every other current status is rejected with
+// `assignments.invalidTransition` per Data Model §3.6, which forbids
+// resurrecting a `closed` or `archived` assignment through the publish
+// path.
+//
+// Initial recipient snapshot (PDR-029h, PDR-029l, Sprint 12E-A
+// Reconciliation Notice on Cloud Function Charter):
+//   - Population is loaded from `enrollments` filtered by the assignment's
+//     frozen `classId` and defense-in-depth-filtered against the
+//     assignment's frozen `schoolId` and `status === "active"`.
+//   - The assignment's `districtId` is not stored on the assignment record;
+//     it is derived from the authenticated caller's district context. The
+//     caller's `schoolId` has already been checked against the assignment's
+//     `schoolId`, and Sprint 10A F1 guarantees that a teacher's district
+//     context matches the district that owns their school, so the derived
+//     `districtId` is the assignment's authoritative district.
+//   - Each recipient document is written with `source: "classPublication"`,
+//     `status: "assigned"`, and `assignedBy` set to the publishing
+//     teacher's uid. `assignedAt` is stamped by the server via
+//     `FieldValue.serverTimestamp()`.
+//   - An empty population publishes successfully and creates zero
+//     recipients.
+//   - Recipient writes and the status write commit together in one atomic
+//     batch. If the batch fails, publication does not partially succeed.
+//   - Retrying the callable on an already-published assignment is
+//     idempotent: no recipient re-snapshot, no second audit event.
 //
 // Idempotency: an already-`published` record returns
 // `alreadyPublished: true` with no second write and no second audit
@@ -153,8 +196,37 @@ async function assignmentsPublishHandler(
     );
   }
 
-  const write: AssignmentPublishWrite = { status: "published" };
-  await assignmentPublishDocRef(input.assignmentId).update(write);
+  if (!isNonEmptyString(existing.classId)) {
+    throw new PlatformError(
+      "assignments.invalidState",
+      "Assignment record is missing its class reference.",
+    );
+  }
+
+  const population = await loadInitialRecipientPopulation(
+    existing.classId,
+    existing.schoolId,
+  );
+
+  const context: RecipientOwnershipContext = {
+    assignmentId: input.assignmentId,
+    classId: existing.classId,
+    teacherId: existing.teacherId,
+    schoolId: existing.schoolId,
+    districtId: actor.districtId,
+    assignedBy: actor.uid,
+  };
+
+  const batch = createFirestoreBatch();
+  const publishWrite: AssignmentPublishWrite = { status: "published" };
+  batch.update(assignmentPublishDocRef(input.assignmentId), publishWrite);
+  for (const studentId of population) {
+    batch.set(
+      assignmentRecipientCreationDocRef(input.assignmentId, studentId),
+      buildRecipientCreationWrite(context, studentId, "classPublication"),
+    );
+  }
+  await batch.commit();
 
   await writeAuditEvent({
     actorUserId: actor.uid,
@@ -168,6 +240,7 @@ async function assignmentsPublishHandler(
       classId: existing.classId,
       lessonSlug: existing.lessonSlug,
       lessonVersion: existing.lessonVersion,
+      recipientCount: population.length,
     },
   });
 
@@ -175,6 +248,7 @@ async function assignmentsPublishHandler(
     log.info("assignments.published", {
       actorUserId: actor.uid,
       assignmentId: input.assignmentId,
+      recipientCount: population.length,
     }),
   );
 

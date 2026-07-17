@@ -50,6 +50,9 @@ export {
   assignmentDraftUpdateDocRef,
   assignmentLmsPublicationDocRef,
   assignmentPublishDocRef,
+  assignmentRecipientCreationDocRef,
+  assignmentRecipientDocRef,
+  assignmentRecipientsCollectionRef,
   assignmentsCollectionRef,
   auditEventsCollectionRef,
   classArchiveDocRef,
@@ -87,6 +90,7 @@ export {
   userRecordDocRef,
 } from "./firestore/typed-ref";
 export { runFirestoreTransaction } from "./firestore/transaction";
+export { createFirestoreBatch } from "./firestore/batch";
 export { log, type LogPayload } from "./logging/logger";
 export {
   ASSIGNMENTS_COLLECTION,
@@ -100,6 +104,13 @@ export {
   type AssignmentRecord,
   type AssignmentStatus,
 } from "./types/assignment";
+export {
+  ASSIGNMENT_RECIPIENTS_SUBCOLLECTION,
+  type AssignmentRecipientCreationWrite,
+  type AssignmentRecipientRecord,
+  type AssignmentRecipientSource,
+  type AssignmentRecipientStatus,
+} from "./types/assignment-recipient";
 export {
   AUDIT_EVENTS_COLLECTION,
   type ActorRole,

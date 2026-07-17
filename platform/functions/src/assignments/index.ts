@@ -21,6 +21,11 @@ export {
   type AssignmentsPublishResponse,
 } from "./assignments-publish";
 export {
+  assignmentsRecipientAdd,
+  type AssignmentsRecipientAddRequest,
+  type AssignmentsRecipientAddResponse,
+} from "./assignments-recipient-add";
+export {
   assignmentsUpdateDraft,
   type AssignmentsUpdateDraftRequest,
   type AssignmentsUpdateDraftResponse,

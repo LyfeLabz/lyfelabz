@@ -2963,3 +2963,55 @@ Sprint 12E Slice 1 remains CONDITIONALLY CERTIFIED. The representative-attempt p
 - No certified backend behavior changed.
 - No code, Rules, application, schema, index, dependency, or configuration files were modified.
 - Sprint 12E Slice 1 remains conditionally certified pending the Sprint 12E Slice 2 remediation sequence.
+
+## Sprint 12E Slice 2A: Frozen Assignment Recipient Foundation
+
+Implementation slice that introduces the canonical assignment-recipient persistence model ratified in PDR-029 and Sprint 12E-A.
+
+### Deliverables
+
+- New canonical subcollection at `assignments/{assignmentId}/recipients/{studentId}` with the recipient document identifier equal to the canonical `studentId`.
+- New shared type `AssignmentRecipientRecord` and companion write shape; new typed refs `assignmentRecipientsCollectionRef`, `assignmentRecipientDocRef`, and `assignmentRecipientCreationDocRef`.
+- Extended `assignmentsPublish` to write the initial recipient snapshot atomically with the `draft` to `published` status transition through a single Firestore batch commit. Empty classes publish successfully with zero recipients. Retried and republished flows remain idempotent.
+- New callable `assignmentsRecipientAdd` for the explicit teacher-mediated late addition of one recipient to an already-published assignment. Requires an active class enrollment for the same student. Existing recipients are never overwritten.
+- New canonical audit action `assignments.recipientAdded`. The existing `assignments.published` payload additively carries `recipientCount`.
+- New Firestore Rules block denying every direct client read and write on the recipients subcollection. Server-authoritative writes only.
+- New shared helper `createFirestoreBatch` alongside the existing `runFirestoreTransaction` for atomic multi-document writes.
+
+### Files created
+
+- `platform/functions/src/shared/types/assignment-recipient.ts`.
+- `platform/functions/src/shared/firestore/batch.ts`.
+- `platform/functions/src/assignments/assignment-recipients.ts`.
+- `platform/functions/src/assignments/assignment-recipients.test.ts`.
+- `platform/functions/src/assignments/assignments-recipient-add.ts`.
+- `platform/functions/src/assignments/assignments-recipient-add.test.ts`.
+- `platform/firebase/tests/assignment-recipients.rules.test.ts`.
+- `docs/platform/SPRINT_12E_SLICE_2A_COMPLETION_REPORT.md`.
+
+### Files modified
+
+- `platform/functions/src/shared/types/audit-event.ts` (new audit action).
+- `platform/functions/src/shared/firestore/typed-ref.ts` (recipient typed refs).
+- `platform/functions/src/shared/index.ts` (new re-exports).
+- `platform/functions/src/assignments/assignments-publish.ts` (initial snapshot integration).
+- `platform/functions/src/assignments/assignments-publish.test.ts` (new snapshot, empty-class, deduplication, exclusion, and batch-failure tests).
+- `platform/functions/src/assignments/index.ts` (new callable export).
+- `platform/functions/src/index.ts` (new callable export at the entrypoint).
+- `platform/firebase/firestore.rules` (recipients subcollection rules block).
+
+### Validation results
+
+- Cloud Functions typecheck: passed.
+- Cloud Functions lint: passed.
+- Cloud Functions build: passed.
+- Cloud Functions test suite: 38 suites, 816 tests, all passed.
+- Firestore Rules test suite (under emulator): 15 suites, 187 tests, all passed.
+- Only Sprint 12E Slice 2A files changed; no session, finalization, summary, UI, schema, dependency, configuration, or index files were modified.
+- Zero em dashes across every created or modified documentation file.
+- No deployment.
+- No commit.
+
+### Certification
+
+Sprint 12E Slice 2A is CERTIFIED. Sprint 12E Slice 1 remains CONDITIONALLY CERTIFIED and is unblocked to move into the Sprint 12E Slice 2B and Sprint 12E Slice 2C remediation sequence.

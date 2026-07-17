@@ -13,6 +13,7 @@ export {
   assignmentsClose,
   assignmentsCreateDraft,
   assignmentsPublish,
+  assignmentsRecipientAdd,
   assignmentsUpdateDraft,
 } from "./assignments";
 export { authOnUserCreate } from "./auth";

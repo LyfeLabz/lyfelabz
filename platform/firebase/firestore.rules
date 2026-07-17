@@ -171,6 +171,39 @@ service cloud.firestore {
         && resource.data.teacherId == request.auth.uid;
       allow list: if isSignedIn()
         && resource.data.teacherId == request.auth.uid;
+
+      // ---------- assignments/{assignmentId}/recipients/{studentId} ----------
+      //
+      // Sprint 12E Slice 2A (PDR-029h, Sprint 12E-A Reconciliation Notice
+      // on the Firestore Data Model and Cloud Function Charter).
+      //
+      // Canonical frozen assignment-recipient membership record. Document
+      // identifier equals the canonical `studentId` so exactly one
+      // recipient exists per (assignmentId, studentId) pair.
+      //
+      // Reads:
+      //   - Every direct client read is denied. The recipient collection is
+      //     the historical population authority; it is not the surface
+      //     rendered to teachers or students. Teacher aggregate metrics
+      //     flow through `assessmentAssignmentSummary`; per-student
+      //     recipient status is exposed only through certified callables
+      //     that project bounded fields. Neither a teacher nor a student
+      //     is authorized to list or get a recipient document directly,
+      //     which prevents cross-class, cross-school, cross-district
+      //     enumeration and student cross-recipient discovery.
+      //
+      // Writes:
+      //   - Every direct client write is denied and denied explicitly
+      //     rather than through the terminal deny alone, to document the
+      //     PDR-029h append-only recipient invariant at the surface with
+      //     the strongest immutability requirement. `assignmentsPublish`
+      //     (initial snapshot) and `assignmentsRecipientAdd` (manual late
+      //     addition) are the sole writers and both run through the Admin
+      //     SDK from the Cloud Function trust boundary.
+      match /recipients/{studentId} {
+        allow read: if false;
+        allow create, update, delete: if false;
+      }
     }
 
     // ---------- submissions/{submissionId} ----------

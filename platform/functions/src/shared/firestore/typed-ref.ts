@@ -10,6 +10,11 @@ import {
   type AssignmentPublishWrite,
   type AssignmentRecord,
 } from "../types/assignment";
+import {
+  ASSIGNMENT_RECIPIENTS_SUBCOLLECTION,
+  type AssignmentRecipientCreationWrite,
+  type AssignmentRecipientRecord,
+} from "../types/assignment-recipient";
 import { AUDIT_EVENTS_COLLECTION, type AuditEventWrite } from "../types/audit-event";
 import {
   CLASSES_COLLECTION,
@@ -321,6 +326,58 @@ export function assignmentArchiveDocRef(
   return getAdminFirestore()
     .collection(ASSIGNMENTS_COLLECTION)
     .doc(assignmentId) as DocumentReference<AssignmentArchiveWrite>;
+}
+
+// Collection-level typed reference for the assignment-recipient
+// subcollection at `assignments/{assignmentId}/recipients`. Reads return a
+// CollectionReference<AssignmentRecipientRecord> aligned with the canonical
+// PDR-029h read shape. The subcollection lives inside the assignment
+// ownership boundary; the recipient document identifier is the canonical
+// `studentId` so exactly one recipient exists per (assignmentId, studentId)
+// pair by construction.
+export function assignmentRecipientsCollectionRef(
+  assignmentId: string,
+): CollectionReference<AssignmentRecipientRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId)
+    .collection(ASSIGNMENT_RECIPIENTS_SUBCOLLECTION) as CollectionReference<AssignmentRecipientRecord>;
+}
+
+// Read typed reference for
+// `assignments/{assignmentId}/recipients/{studentId}`. Reads return a
+// DocumentSnapshot<AssignmentRecipientRecord> aligned with the canonical
+// PDR-029h read shape. Callers that need to perform the creation write use
+// the narrow write reference below so that FieldValue-safe write shapes are
+// preserved at the write boundary.
+export function assignmentRecipientDocRef(
+  assignmentId: string,
+  studentId: string,
+): DocumentReference<AssignmentRecipientRecord> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId)
+    .collection(ASSIGNMENT_RECIPIENTS_SUBCOLLECTION)
+    .doc(studentId) as DocumentReference<AssignmentRecipientRecord>;
+}
+
+// Creation-write typed reference for
+// `assignments/{assignmentId}/recipients/{studentId}`. The initial-snapshot
+// path inside `assignmentsPublish` and the late-recipient callable
+// `assignmentsRecipientAdd` both use this reference to `.set()` (or add to
+// a batch) a canonical `AssignmentRecipientCreationWrite` payload so that
+// `FieldValue.serverTimestamp()` can be used at the write boundary while
+// the read-side reference remains typed as `AssignmentRecipientRecord`.
+export function assignmentRecipientCreationDocRef(
+  assignmentId: string,
+  studentId: string,
+): DocumentReference<AssignmentRecipientCreationWrite> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId)
+    .collection(ASSIGNMENT_RECIPIENTS_SUBCOLLECTION)
+    .doc(studentId) as DocumentReference<AssignmentRecipientCreationWrite>;
 }
 
 // LMS-publication-ref write reference for assignments/{assignmentId}. The
