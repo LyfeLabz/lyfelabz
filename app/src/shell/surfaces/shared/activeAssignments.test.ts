@@ -276,6 +276,101 @@ describe("renderActiveAssignmentsSection", () => {
     expect(calls).toEqual([]);
   });
 
+  test("Sprint 16 Slice 5: toggling Show closed on and off does not re-issue summary calls for already-cached cards", async () => {
+    const mount = mkMount();
+    const items: AssignmentDetailMetadata[] = [
+      meta({ assignmentId: "p1" }),
+      meta({ assignmentId: "c1", status: "closed", title: "Old", classId: "c1" }),
+    ];
+    const calls: string[] = [];
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => items,
+      open: () => undefined,
+      summaryCallable: async ({ assignmentId }) => {
+        calls.push(assignmentId);
+        return {
+          assignmentId,
+          classId: "c1",
+          totalStudents: 5,
+          completedStudents: 1,
+          inProgressStudents: 1,
+          notStartedStudents: 3,
+          completionPercentage: 20,
+          averagePercentage: null,
+          highestPercentage: null,
+          lowestPercentage: null,
+          perfectScoreStudents: 0,
+        };
+      },
+    });
+    await flush();
+    await flush();
+    // Initial render fetches only visible cards (published). Closed cards
+    // stay off-screen until the toggle is engaged.
+    expect(calls.slice().sort()).toEqual(["p1"]);
+    const toggle = mount.querySelector<HTMLInputElement>(
+      "[data-testid=active-assignments-show-closed]",
+    );
+    toggle!.checked = true;
+    toggle!.dispatchEvent(new Event("change"));
+    await flush();
+    await flush();
+    // Turning the toggle on fetches the newly revealed closed card exactly
+    // once; the already-cached published card is not re-fetched.
+    expect(calls.slice().sort()).toEqual(["c1", "p1"]);
+    calls.length = 0;
+    // Turning the toggle off hides the closed card but must not evict the
+    // cached snapshot. Turning it back on renders from cache without any
+    // additional network work.
+    toggle!.checked = false;
+    toggle!.dispatchEvent(new Event("change"));
+    await flush();
+    await flush();
+    toggle!.checked = true;
+    toggle!.dispatchEvent(new Event("change"));
+    await flush();
+    await flush();
+    expect(calls).toEqual([]);
+  });
+
+  test("Sprint 16 Slice 5: an untargeted refresh preserves cached summaries for cards still in the registry", async () => {
+    const mount = mkMount();
+    const registry: AssignmentDetailMetadata[] = [
+      meta({ assignmentId: "p1" }),
+      meta({ assignmentId: "p2", title: "Waves", classId: "c2" }),
+    ];
+    const calls: string[] = [];
+    const controller = renderActiveAssignmentsSection(mount, {
+      listRegistry: () => registry,
+      open: () => undefined,
+      summaryCallable: async ({ assignmentId }) => {
+        calls.push(assignmentId);
+        return {
+          assignmentId,
+          classId: assignmentId === "p2" ? "c2" : "c1",
+          totalStudents: 10,
+          completedStudents: 0,
+          inProgressStudents: 0,
+          notStartedStudents: 10,
+          completionPercentage: 0,
+          averagePercentage: null,
+          highestPercentage: null,
+          lowestPercentage: null,
+          perfectScoreStudents: 0,
+        };
+      },
+    });
+    await flush();
+    await flush();
+    calls.length = 0;
+    // An `onConfirm` after a fresh publish calls `refresh()` with no
+    // argument. Cards already cached must not be re-fetched.
+    controller.refresh();
+    await flush();
+    await flush();
+    expect(calls).toEqual([]);
+  });
+
   test("card renders published date when publishedAt is present", () => {
     const mount = mkMount();
     renderActiveAssignmentsSection(mount, {

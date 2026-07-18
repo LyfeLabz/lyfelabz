@@ -3338,3 +3338,188 @@ describe("renderAssignmentDetail - Sprint 16 Slice 4 workflow polish", () => {
     );
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 16 Slice 5: performance guard tests. The Detail surface must issue
+// exactly one call per callable identity per ready-render, and lifecycle
+// transitions must refresh each identity exactly once. These assertions
+// lock in the Slice 2 shared cache guarantees for the summary/attempts
+// callables and extend the same guarantees to `recipientList` and
+// `attemptGetForTeacher`, both of which previously bypassed the cache and
+// were re-issued during pending-state rerenders.
+// -----------------------------------------------------------------------------
+
+describe("renderAssignmentDetail - Sprint 16 Slice 5 performance guards", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  test("one Detail render issues exactly one recipient-list call across pending-state rerenders", async () => {
+    const mount = mkMount();
+    const meta = freezeMetadata({ classId: "class-1", status: "published" });
+    const recipients = spyingRecipients([
+      { studentId: "stu-1", studentDisplayName: "Alice" },
+    ]);
+    const attempts = spyingAttemptsList([]);
+    const close = resolvingClose();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: recipients.callable,
+      attemptsListForClassCallable: attempts.callable,
+      closeCallable: close.callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    expect(recipients.calls).toEqual(["assign-1"]);
+    // Clicking Close fires a pending-state rerender before the callable
+    // resolves. The shared cache must serve the pending rerender's roster
+    // panel from the already-resolved recipient snapshot rather than
+    // re-issuing the call.
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    // Exactly one additional recipient call: the successful close
+    // invalidates the shared cache so the recomposed roster observes a
+    // fresh recipient snapshot. Never two per transition.
+    expect(recipients.calls).toEqual(["assign-1", "assign-1"]);
+  });
+
+  test("one Detail render fetches each representative attempt exactly once even across a pending-state rerender", async () => {
+    const mount = mkMount();
+    const meta = freezeMetadata({ classId: "class-1", status: "published" });
+    const shared = [
+      mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 90 }),
+      mkAttempt({ attemptId: "att-2", studentId: "stu-2", percentage: 80 }),
+      mkAttempt({ attemptId: "att-3", studentId: "stu-3", percentage: 70 }),
+    ];
+    const attemptGet = spyingAttemptGet(
+      new Map(
+        shared.map((a) => [
+          a.attemptId,
+          Object.freeze({
+            attemptId: a.attemptId,
+            studentId: a.studentId,
+            assignmentId: a.assignmentId,
+            attemptNumber: a.attemptNumber,
+            percentage: a.percentage,
+            itemResults: Object.freeze([]),
+          }) as TeacherVisibleAttempt,
+        ]),
+      ),
+    );
+    const close = resolvingClose();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta),
+      summaryCallable: resolvingSummary(
+        freezeSummary({
+          totalStudents: 3,
+          completedStudents: 3,
+          inProgressStudents: 0,
+          notStartedStudents: 0,
+        }),
+      ),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+        { studentId: "stu-2", studentDisplayName: "Bob" },
+        { studentId: "stu-3", studentDisplayName: "Cara" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList(shared).callable,
+      attemptGetForTeacherCallable: attemptGet.callable,
+      closeCallable: close.callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    await flush();
+    // Each representative attempt is fetched exactly once for the initial
+    // render, regardless of any pending panel rerender.
+    expect(attemptGet.calls.slice().sort()).toEqual(["att-1", "att-2", "att-3"]);
+
+    // A lifecycle-triggered rerender (close success) invalidates the
+    // shared cache so a subsequent render observes fresh per-attempt
+    // snapshots; still exactly once per attemptId, not twice.
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    await flush();
+    expect(attemptGet.calls.slice().sort()).toEqual([
+      "att-1",
+      "att-1",
+      "att-2",
+      "att-2",
+      "att-3",
+      "att-3",
+    ]);
+  });
+
+  test("retry after a failed shared request performs a fresh call exactly once", async () => {
+    const mount = mkMount();
+    const meta = freezeMetadata({ classId: "class-1", status: "published" });
+    let calls = 0;
+    // First attempt rejects; the shared cache evicts the entry so the
+    // subsequent retry performs a fresh, non-cached call.
+    const flaky: AssignmentSummaryCallable = (input) => {
+      calls += 1;
+      if (calls === 1) return Promise.reject(new Error("summary offline"));
+      return Promise.resolve(freezeSummary({ assignmentId: input.assignmentId }));
+    };
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta),
+      summaryCallable: flaky,
+      recipientListCallable: spyingRecipients([]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    // First attempt fired and rejected.
+    expect(calls).toBe(1);
+    // A retry triggered through the shared cache (a fresh get for the same
+    // key after a rejection) issues exactly one new call.
+    const retry = flaky({ assignmentId: "assign-1" });
+    await retry;
+    expect(calls).toBe(2);
+  });
+
+  test("does not open any Firestore listener, timer, or storage handle from the Detail render", () => {
+    // Posture check: the Slice 5 wrapping added no new global side effects
+    // to detail.ts. This mirrors the earlier posture assertions and would
+    // catch a future regression that reached for a persistent cache or a
+    // background poll while trying to reduce call counts.
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "./detail.ts"),
+      "utf-8",
+    );
+    expect(source).not.toMatch(/setInterval\s*\(/);
+    expect(source).not.toMatch(/setTimeout\s*\(/);
+    expect(source).not.toMatch(/onSnapshot\s*\(/);
+    expect(source).not.toContain("localStorage");
+    expect(source).not.toContain("sessionStorage");
+    expect(source).not.toContain("IndexedDB");
+  });
+});

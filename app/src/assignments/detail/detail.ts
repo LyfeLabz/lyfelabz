@@ -260,6 +260,28 @@ export function renderAssignmentDetail(
           detailCache.get(`attempts:${input.classId}`, () =>
             deps.attemptsListForClassCallable!(input),
           );
+  // Sprint 16 Slice 5: extend the shared per-render fetch cache to the
+  // recipient enumeration and per-attempt detail callables. Pending-state
+  // rerenders (for example a lifecycle click that toggles `pending` before
+  // the callable resolves) previously re-issued each of these calls even
+  // when the underlying data had not moved. Routing them through the same
+  // `detailCache` collapses the duplicate reads while still refetching
+  // exactly once after every state transition (metadata reload, close,
+  // reopen, publish) because the cache is replaced at each of those seams.
+  const sharedRecipientListCallable: AssignmentRecipientListCallable | undefined =
+    deps.recipientListCallable === undefined
+      ? undefined
+      : (input) =>
+          detailCache.get(`recipients:${input.assignmentId}`, () =>
+            deps.recipientListCallable!(input),
+          );
+  const sharedAttemptGetCallable: AttemptGetForTeacherCallable | undefined =
+    deps.attemptGetForTeacherCallable === undefined
+      ? undefined
+      : (input) =>
+          detailCache.get(`attemptGet:${input.attemptId}`, () =>
+            deps.attemptGetForTeacherCallable!(input),
+          );
 
   const rerender = (): void => {
     body.textContent = "";
@@ -280,6 +302,8 @@ export function renderAssignmentDetail(
           {
             summaryCallable: sharedSummaryCallable,
             attemptsListForClassCallable: sharedAttemptsListCallable,
+            recipientListCallable: sharedRecipientListCallable,
+            attemptGetForTeacherCallable: sharedAttemptGetCallable,
           },
           closeUi,
           reopenUi,
@@ -650,6 +674,8 @@ function renderLoading(doc: Document, mount: HTMLElement): void {
 type SharedDetailCallables = {
   readonly summaryCallable: AssignmentSummaryCallable;
   readonly attemptsListForClassCallable: AttemptsListForClassCallable | undefined;
+  readonly recipientListCallable: AssignmentRecipientListCallable | undefined;
+  readonly attemptGetForTeacherCallable: AttemptGetForTeacherCallable | undefined;
 };
 
 function renderReady(
@@ -929,7 +955,7 @@ function renderReady(
   // callable seams are absent it is not rendered so tests exercising
   // the pre-Sprint-15 wiring stay green.
   if (
-    deps.recipientListCallable !== undefined &&
+    shared.recipientListCallable !== undefined &&
     shared.attemptsListForClassCallable !== undefined
   ) {
     const rosterHost = doc.createElement("section");
@@ -939,7 +965,7 @@ function renderReady(
     void renderRosterPanel(
       rosterHost,
       metadata,
-      deps.recipientListCallable,
+      shared.recipientListCallable,
       shared.attemptsListForClassCallable,
       shared.summaryCallable,
     );
@@ -950,7 +976,7 @@ function renderReady(
   // known so no per-attempt fetches are issued below the threshold.
   if (
     shared.attemptsListForClassCallable !== undefined &&
-    deps.attemptGetForTeacherCallable !== undefined
+    shared.attemptGetForTeacherCallable !== undefined
   ) {
     const questionHost = doc.createElement("section");
     questionHost.className = "shell-assignment-detail-questions";
@@ -963,7 +989,7 @@ function renderReady(
       questionHost,
       metadata,
       shared.attemptsListForClassCallable,
-      deps.attemptGetForTeacherCallable,
+      shared.attemptGetForTeacherCallable,
     );
   }
 }
