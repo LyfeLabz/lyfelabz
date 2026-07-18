@@ -39,6 +39,12 @@ export type AssignmentDetailMetadata = {
   // references remain unsupported by the client until a canonical
   // client-side selector and date/time control convention exist.
   readonly instructions?: string;
+  // Sprint 15 Slice 2: canonical publication timestamp (epoch ms) projected
+  // by `assignmentsTeacherList`. Absent on draft records and on
+  // pre-Sprint-15 registrations (backward compatible). Consumed by the
+  // Active Assignments dashboard for the deterministic ordering rule in
+  // Sprint 14 §5.3 and for the per-card published date line in §5.2.
+  readonly publishedAt?: number;
 };
 
 // Sprint 13D: injected close-callable seam. The Assignment Detail

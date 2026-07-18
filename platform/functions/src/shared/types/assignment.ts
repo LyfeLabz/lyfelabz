@@ -60,6 +60,12 @@ export type AssignmentRecord = {
   // succeeded for the assignment. The field is a mirror pointer only and
   // does not confer authority on the LMS-side record (PDR-019d).
   readonly lmsPublicationRef?: string;
+  // Sprint 15 Slice 2: additive optional publication timestamp. Written
+  // exactly once by `assignmentsPublish` on the first `draft` ->
+  // `published` transition and preserved across `close` and `reopen`
+  // transitions (both narrow lifecycle writes intentionally exclude
+  // `publishedAt`). Absent on assignments never published (drafts).
+  readonly publishedAt?: Timestamp;
 };
 
 // Write shape for the draft-creation callable (assignmentsCreateDraft).
@@ -111,6 +117,11 @@ export type AssignmentDraftUpdateWrite = {
 // change.
 export type AssignmentPublishWrite = {
   readonly status: "published";
+  // Sprint 15 Slice 2: additive server timestamp stamped on the first
+  // `draft` -> `published` transition. Preserved through subsequent
+  // close/reopen cycles because those writes intentionally exclude this
+  // field. Never rewritten by the idempotent already-published path.
+  readonly publishedAt: FieldValue;
 };
 
 // Write shape for the close callable (assignmentsClose). Conforms to Data

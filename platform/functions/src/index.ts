@@ -15,6 +15,7 @@ export {
   assignmentsPublish,
   assignmentsReopen,
   assignmentsRecipientAdd,
+  assignmentsRecipientList,
   assignmentsTeacherList,
   assignmentsUpdateDraft,
 } from "./assignments";

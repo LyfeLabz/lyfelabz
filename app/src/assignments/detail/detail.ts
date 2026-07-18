@@ -1,5 +1,8 @@
 import { renderAssignmentSummaryCard } from "../summary/card";
-import type { AssignmentSummaryCallable } from "../summary/types";
+import type {
+  AssignmentSummary,
+  AssignmentSummaryCallable,
+} from "../summary/types";
 import type {
   AssignmentDetailMetadata,
   AssignmentDetailMetadataReader,
@@ -9,6 +12,19 @@ import type {
   AssignmentsReopenCallable,
   AssignmentsUpdateDraftCallable,
 } from "./types";
+import type { AssignmentRecipientListCallable } from "./roster-wire";
+import type {
+  AttemptGetForTeacherCallable,
+  AttemptsListForClassCallable,
+  CompletedAttemptSummary,
+  TeacherVisibleAttempt,
+} from "./attempts-wire";
+import { groupRoster } from "./roster";
+import {
+  MIN_QUESTION_SUMMARY_ATTEMPTS,
+  aggregatePerQuestion,
+  type PerQuestionAggregate,
+} from "./question-summary";
 
 // Sprint 13B Teacher Assignment Detail surface. A pure DOM builder
 // that composes the certified Sprint 13A `renderAssignmentSummaryCard`
@@ -83,6 +99,17 @@ export type AssignmentDetailDeps = {
   // unchanged.
   readonly publishCallable?: AssignmentsPublishCallable;
   readonly onStatusChange?: (metadata: AssignmentDetailMetadata) => void;
+  // Sprint 15 Slice 5: certified recipient enumeration + completed
+  // attempts list. When both are supplied, published and closed
+  // assignments render a roster grouped into Submitted, In progress,
+  // and Not started beneath the Assignment Summary card.
+  readonly recipientListCallable?: AssignmentRecipientListCallable;
+  readonly attemptsListForClassCallable?: AttemptsListForClassCallable;
+  // Sprint 15 Slice 6: per-attempt detail seam. When supplied and the
+  // completed-attempt count meets the minimum threshold, the surface
+  // fetches each representative attempt and renders the per-question
+  // factual summary. When absent no per-question panel is rendered.
+  readonly attemptGetForTeacherCallable?: AttemptGetForTeacherCallable;
 };
 
 const STATUS_LABEL: Readonly<Record<AssignmentStatus, string>> = Object.freeze({
@@ -822,6 +849,305 @@ function renderReady(
     callable: deps.summaryCallable,
     assignmentId: metadata.assignmentId,
   });
+
+  // Sprint 15 Slice 5: roster grouping beneath the Summary card. The
+  // panel is composed for published and closed only. When the required
+  // callable seams are absent it is not rendered so tests exercising
+  // the pre-Sprint-15 wiring stay green.
+  if (
+    deps.recipientListCallable !== undefined &&
+    deps.attemptsListForClassCallable !== undefined
+  ) {
+    const rosterHost = doc.createElement("section");
+    rosterHost.className = "shell-assignment-detail-roster";
+    rosterHost.setAttribute("data-testid", "assignment-detail-roster-host");
+    mount.appendChild(rosterHost);
+    void renderRosterPanel(rosterHost, metadata, deps);
+  }
+
+  // Sprint 15 Slice 6: per-question factual summary beneath the roster.
+  // The threshold check happens after the completed-attempt count is
+  // known so no per-attempt fetches are issued below the threshold.
+  if (
+    deps.attemptsListForClassCallable !== undefined &&
+    deps.attemptGetForTeacherCallable !== undefined
+  ) {
+    const questionHost = doc.createElement("section");
+    questionHost.className = "shell-assignment-detail-questions";
+    questionHost.setAttribute(
+      "data-testid",
+      "assignment-detail-questions-host",
+    );
+    mount.appendChild(questionHost);
+    void renderQuestionSummaryPanel(questionHost, metadata, deps);
+  }
+}
+
+async function renderRosterPanel(
+  host: HTMLElement,
+  metadata: AssignmentDetailMetadata,
+  deps: AssignmentDetailDeps,
+): Promise<void> {
+  const doc = host.ownerDocument;
+  host.textContent = "";
+
+  const heading = doc.createElement("h3");
+  heading.className = "shell-assignment-detail-roster-heading";
+  heading.setAttribute("data-testid", "assignment-detail-roster-heading");
+  heading.textContent = "Roster";
+  host.appendChild(heading);
+
+  const loading = doc.createElement("p");
+  loading.className = "shell-assignment-detail-roster-loading";
+  loading.setAttribute("data-testid", "assignment-detail-roster-loading");
+  loading.setAttribute("role", "status");
+  loading.setAttribute("aria-live", "polite");
+  loading.textContent = "Loading roster...";
+  host.appendChild(loading);
+
+  const recipientCallable = deps.recipientListCallable!;
+  const attemptsCallable = deps.attemptsListForClassCallable!;
+  const summaryCallable = deps.summaryCallable;
+
+  let recipients: ReadonlyArray<{
+    readonly studentId: string;
+    readonly studentDisplayName: string;
+  }>;
+  let completed: ReadonlyArray<CompletedAttemptSummary>;
+  let summary: AssignmentSummary;
+  try {
+    const classId = metadata.classId ?? "";
+    if (classId.length === 0) throw new Error("class reference missing");
+    const [rRes, aRes, sRes] = await Promise.all([
+      recipientCallable({ assignmentId: metadata.assignmentId }),
+      attemptsCallable({ classId }),
+      summaryCallable({ assignmentId: metadata.assignmentId }),
+    ]);
+    recipients = rRes.recipients;
+    completed = aRes.attempts.filter(
+      (a) => a.assignmentId === metadata.assignmentId,
+    );
+    summary = sRes;
+  } catch {
+    host.textContent = "";
+    const err = doc.createElement("p");
+    err.className = "shell-assignment-detail-roster-error";
+    err.setAttribute("data-testid", "assignment-detail-roster-error");
+    err.setAttribute("role", "alert");
+    err.textContent = "Roster temporarily unavailable";
+    host.appendChild(heading.cloneNode(true));
+    host.appendChild(err);
+    return;
+  }
+
+  const grouping = groupRoster({
+    recipients,
+    completed: completed.map((c) => ({
+      studentId: c.studentId,
+      percentage: c.percentage,
+      attemptNumber: c.attemptNumber,
+      submittedAt: c.submittedAt,
+    })),
+    inProgressStudentCount: summary.inProgressStudents,
+  });
+
+  loading.remove();
+  appendRosterGroup(doc, host, "submitted", "Submitted", grouping.submitted, true);
+  appendRosterGroup(
+    doc,
+    host,
+    "in-progress",
+    "In progress",
+    grouping.inProgress,
+    false,
+  );
+  appendRosterGroup(
+    doc,
+    host,
+    "not-started",
+    "Not started",
+    grouping.notStarted,
+    false,
+  );
+}
+
+function appendRosterGroup(
+  doc: Document,
+  host: HTMLElement,
+  key: string,
+  label: string,
+  rows: ReadonlyArray<
+    | { readonly studentId: string; readonly studentDisplayName: string }
+    | {
+        readonly studentId: string;
+        readonly studentDisplayName: string;
+        readonly percentage: number;
+      }
+  >,
+  showPercentage: boolean,
+): void {
+  const group = doc.createElement("div");
+  group.className = `shell-assignment-detail-roster-group shell-assignment-detail-roster-${key}`;
+  group.setAttribute("data-testid", `assignment-detail-roster-group-${key}`);
+  const groupHeading = doc.createElement("h4");
+  groupHeading.className = "shell-assignment-detail-roster-group-heading";
+  groupHeading.textContent = `${label} (${rows.length})`;
+  group.appendChild(groupHeading);
+
+  if (rows.length === 0) {
+    const empty = doc.createElement("p");
+    empty.className = "shell-assignment-detail-roster-empty";
+    empty.setAttribute(
+      "data-testid",
+      `assignment-detail-roster-empty-${key}`,
+    );
+    empty.textContent = "No students in this group.";
+    group.appendChild(empty);
+  } else {
+    const list = doc.createElement("ul");
+    list.className = "shell-assignment-detail-roster-list";
+    list.setAttribute("role", "list");
+    for (const row of rows) {
+      const li = doc.createElement("li");
+      li.className = "shell-assignment-detail-roster-row";
+      li.setAttribute(
+        "data-testid",
+        `assignment-detail-roster-row-${row.studentId}`,
+      );
+      const name = doc.createElement("span");
+      name.className = "shell-assignment-detail-roster-name";
+      name.textContent = row.studentDisplayName;
+      li.appendChild(name);
+      if (
+        showPercentage &&
+        "percentage" in row &&
+        typeof row.percentage === "number"
+      ) {
+        const pct = doc.createElement("span");
+        pct.className = "shell-assignment-detail-roster-percentage";
+        pct.textContent = `${Math.round(row.percentage * 10) / 10}%`;
+        li.appendChild(pct);
+      }
+      list.appendChild(li);
+    }
+    group.appendChild(list);
+  }
+
+  host.appendChild(group);
+}
+
+async function renderQuestionSummaryPanel(
+  host: HTMLElement,
+  metadata: AssignmentDetailMetadata,
+  deps: AssignmentDetailDeps,
+): Promise<void> {
+  const doc = host.ownerDocument;
+  host.textContent = "";
+
+  const heading = doc.createElement("h3");
+  heading.className = "shell-assignment-detail-questions-heading";
+  heading.setAttribute("data-testid", "assignment-detail-questions-heading");
+  heading.textContent = "Question results";
+  host.appendChild(heading);
+
+  const attemptsCallable = deps.attemptsListForClassCallable!;
+  const attemptGetCallable = deps.attemptGetForTeacherCallable!;
+
+  let completed: ReadonlyArray<CompletedAttemptSummary>;
+  try {
+    const classId = metadata.classId ?? "";
+    if (classId.length === 0) throw new Error("class reference missing");
+    const list = await attemptsCallable({ classId });
+    completed = list.attempts.filter(
+      (a) => a.assignmentId === metadata.assignmentId,
+    );
+  } catch {
+    return;
+  }
+
+  // Representative attempt per student per PDR-029a: highest percentage,
+  // then most recent submission, then highest attemptNumber.
+  const repByStudent = new Map<string, CompletedAttemptSummary>();
+  for (const attempt of completed) {
+    const existing = repByStudent.get(attempt.studentId);
+    if (existing === undefined) {
+      repByStudent.set(attempt.studentId, attempt);
+      continue;
+    }
+    if (
+      attempt.percentage > existing.percentage ||
+      (attempt.percentage === existing.percentage &&
+        attempt.submittedAt > existing.submittedAt) ||
+      (attempt.percentage === existing.percentage &&
+        attempt.submittedAt === existing.submittedAt &&
+        attempt.attemptNumber > existing.attemptNumber)
+    ) {
+      repByStudent.set(attempt.studentId, attempt);
+    }
+  }
+  const representative = Array.from(repByStudent.values());
+
+  if (representative.length < MIN_QUESTION_SUMMARY_ATTEMPTS) {
+    const deferred = doc.createElement("p");
+    deferred.className = "shell-assignment-detail-questions-deferred";
+    deferred.setAttribute(
+      "data-testid",
+      "assignment-detail-questions-deferred",
+    );
+    deferred.setAttribute("role", "status");
+    deferred.setAttribute("aria-live", "polite");
+    deferred.textContent =
+      "Question-level results will appear after more students submit.";
+    host.appendChild(deferred);
+    return;
+  }
+
+  let detailed: TeacherVisibleAttempt[];
+  try {
+    detailed = await Promise.all(
+      representative.map((r) =>
+        attemptGetCallable({ attemptId: r.attemptId }),
+      ),
+    );
+  } catch {
+    const err = doc.createElement("p");
+    err.className = "shell-assignment-detail-questions-error";
+    err.setAttribute("data-testid", "assignment-detail-questions-error");
+    err.setAttribute("role", "alert");
+    err.textContent = "Question results temporarily unavailable";
+    host.appendChild(err);
+    return;
+  }
+
+  const aggregate: PerQuestionAggregate = aggregatePerQuestion(detailed);
+  const list = doc.createElement("ol");
+  list.className = "shell-assignment-detail-questions-list";
+  list.setAttribute("data-testid", "assignment-detail-questions-list");
+  for (const q of aggregate.questions) {
+    const li = doc.createElement("li");
+    li.className = "shell-assignment-detail-question";
+    li.setAttribute("data-testid", `assignment-detail-question-${q.itemId}`);
+    const prompt = doc.createElement("p");
+    prompt.className = "shell-assignment-detail-question-prompt";
+    prompt.textContent = q.itemId;
+    li.appendChild(prompt);
+    const rate = doc.createElement("p");
+    rate.className = "shell-assignment-detail-question-rate";
+    rate.textContent = `${q.correctPercentage}% correct (${q.correctCount} of ${q.totalResponses})`;
+    li.appendChild(rate);
+    const options = doc.createElement("ul");
+    options.className = "shell-assignment-detail-question-options";
+    for (const opt of q.options) {
+      const oli = doc.createElement("li");
+      oli.className = "shell-assignment-detail-question-option";
+      const marker = opt.optionId === q.correctOptionId ? " (correct)" : "";
+      oli.textContent = `${opt.optionId}: ${opt.chosenPercentage}%${marker}`;
+      options.appendChild(oli);
+    }
+    li.appendChild(options);
+    list.appendChild(li);
+  }
+  host.appendChild(list);
 }
 
 type CloseConfirmController = {

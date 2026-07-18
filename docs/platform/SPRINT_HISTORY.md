@@ -3430,3 +3430,61 @@ Documentation-and-design sprint that turns the certified Sprint 13 teacher assig
 ### Certification
 
 Sprint 14 is COMPLETE as a documentation-and-design sprint. The dashboard and attention-model specification, the Platform Posture overlay on `TEACHER_EXPERIENCE_PHILOSOPHY.md`, and the seven-slice Sprint 15 implementation plan are ready for Sprint 15 execution. No blocker requires resolution before implementation begins. The pre-existing `curriculum/curriculumManifest.test.ts` baseline drift documented in `SPRINT_13_FINAL_CERTIFICATION.md` §11 remains formally accepted for the purpose of proceeding.
+
+## Sprint 15: Teacher Dashboard and Attention Model Implementation (2026-07-18)
+
+Implementation sprint that turned the Sprint 14 dashboard-and-attention-model specification into working code across all seven certified slices. The beta teacher dashboard now appears as an `Active assignments` region rendered at the top of the Curriculum surface, gated on the presence of at least one `published` assignment in the session-scoped `assignmentDetailRegistry`. The four-item Teacher Workspace navigation (Curriculum, Classes, Present Mode, Settings) is preserved. The Sprint 12E Slice 1 aggregate-only confidentiality boundary is preserved. The session-scoped in-memory `assignmentDetailRegistry` remains the single visible catalog and the sole reload-hydration path is the certified `assignmentsTeacherList`. Zero em dashes across every new or modified file.
+
+Slice 1 introduced `app/src/shell/surfaces/shared/activeAssignments.ts` and composed it into `curriculum.ts` above the existing filter and grid rendering. The section is a `role="region"` with `aria-label="Active assignments"`; each card is a `role="group"` whose accessible name combines lesson title and class name. Slice 2 added an additive optional `publishedAt` field to `AssignmentRecord`, extended `AssignmentPublishWrite` with `publishedAt: FieldValue`, wrote a server timestamp exactly once on the initial `draft` -> `published` transition inside the existing atomic publish batch, and projected the field as an epoch-ms number (or `null` for drafts) through `assignmentsTeacherList`. Slice 3 wired the certified `assessmentAssignmentSummary` seam through `SurfaceDeps` -> `mountTeacherShell` -> workspace -> Curriculum, and each active assignment card fetches its counts once per session mount, caches on a per-assignment `Map`, renders `${submitted} submitted / ${started} started / ${total} total` on success, `Progress temporarily unavailable` on failure, and `Loading progress...` while in flight. Slice 4 added the single `Show closed` toggle beneath the section title, session-only, defaulting off. Slice 5 introduced the sole new callable `assignmentsRecipientList` at `platform/functions/src/assignments/assignments-recipient-list.ts` (authorized under PDR-029o, aggregate-only projection of the frozen recipient population; display names resolved through the canonical roster display-name resolver; one info-level `assignments.recipientList` observability log line per call), a client wire at `app/src/assignments/detail/roster-wire.ts`, a pure `groupRoster` helper at `app/src/assignments/detail/roster.ts` (representative-attempt selection per PDR-029a; arithmetic in-progress split against the summary `inProgressStudents` count), and a roster panel composed beneath the Assignment Summary card on published and closed. Slice 6 added a pure `aggregatePerQuestion` helper at `app/src/assignments/detail/question-summary.ts` (silent below the `MIN_QUESTION_SUMMARY_ATTEMPTS = 3` threshold; no per-attempt fetch is issued below the threshold; questions rendered in the canonical order of the first attempt; per-option chosen-percentage distribution) and composed the panel beneath the roster grouping. Slice 7 exercised the full loading, empty, and error branches on both the dashboard and the Assignment Detail additions, ran lint, typecheck, build, and the full application and Cloud Functions test suites, and reconciled `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` Appendix A (new `assignmentsRecipientList` entry; `assignmentsPublish` and `assignmentsTeacherList` entries updated for the additive `publishedAt` field) and `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` (new §35 Sprint 15 Reconciliations recording the recipient-enumeration authorization posture, the client-side roster grouping composition against certified reads, and the client-side per-question factual summary aggregator).
+
+### Files created
+
+- `app/src/shell/surfaces/shared/activeAssignments.ts` (dashboard section renderer).
+- `app/src/shell/surfaces/shared/activeAssignments.test.ts` (dashboard tests: absence, single card, ordering, opener wiring, a11y attributes, Show closed toggle, progress line loading/success/error, published date rendering).
+- `app/src/assignments/detail/roster.ts` (pure roster grouping helper).
+- `app/src/assignments/detail/roster.test.ts` (roster grouping tests).
+- `app/src/assignments/detail/roster-wire.ts` (client wire for `assignmentsRecipientList`).
+- `app/src/assignments/detail/attempts-wire.ts` (client wires for `assessmentAttemptsListForClass` and `assessmentAttemptGetForTeacher`).
+- `app/src/assignments/detail/question-summary.ts` (pure per-question aggregator).
+- `app/src/assignments/detail/question-summary.test.ts` (aggregator tests: canonical order preservation, correct-percentage computation, option distribution).
+- `platform/functions/src/assignments/assignments-recipient-list.ts` (new callable).
+- `platform/functions/src/assignments/assignments-recipient-list.test.ts` (authorization, projection, defense-in-depth filtering, empty roster, no attempt/session/score/answer leakage).
+- `docs/platform/SPRINT_15_COMPLETION_REPORT.md` (Sprint 15 completion report).
+
+### Files modified
+
+- `app/src/shell/surfaces/curriculum.ts` (mounts the Active Assignments section above the intro; refreshes on assign confirmation and lifecycle completion; new `assignmentSummary` dep).
+- `app/src/shell/shell.ts` (new `assignmentSummary` dep forwarded to workspace).
+- `app/src/shell/surfaces/workspace.ts` (new `assignmentSummary` dep forwarded to Curriculum).
+- `app/src/router/surfaces/index.ts` (new `assignmentSummary` getter on `SurfaceDeps`; wired into `makeActiveTeacherSurface`).
+- `app/src/index.ts` (wires `assignmentRecipientList`, `attemptsListForClass`, `attemptGetForTeacher` callables into Assignment Detail; passes `assignmentSummary` getter to the route table).
+- `app/src/assignments/detail/types.ts` (adds optional `publishedAt?: number` to `AssignmentDetailMetadata`).
+- `app/src/assignments/detail/hydrate.ts` (parses the additive `publishedAt` projection).
+- `app/src/assignments/detail/detail.ts` (composes the roster grouping and the per-question factual summary beneath the Assignment Summary card on published and closed; both are behind their respective callable-seam guards so tests exercising the pre-Sprint-15 wiring stay green).
+- `platform/functions/src/shared/types/assignment.ts` (adds optional `publishedAt` to `AssignmentRecord`; extends `AssignmentPublishWrite` with the required `publishedAt: FieldValue`).
+- `platform/functions/src/assignments/assignments-publish.ts` (stamps `publishedAt: FieldValue.serverTimestamp()` on the initial `draft` -> `published` transition).
+- `platform/functions/src/assignments/assignments-publish.test.ts` (expectation updated to include the new `publishedAt` sentinel on the batch update).
+- `platform/functions/src/assignments/assignments-teacher-list.ts` (projects `publishedAt` as epoch-ms number for `published` and `closed`, and as `null` for `draft`).
+- `platform/functions/src/assignments/assignments-teacher-list.test.ts` (existing assertions updated for the additive projection; new tests cover the epoch-ms projection for published and the `null` projection for draft).
+- `platform/functions/src/assignments/index.ts` and `platform/functions/src/index.ts` (export the new callable).
+- `docs/platform/LYFELABZ_CLOUD_FUNCTION_CHARTER.md` (Appendix A: new `assignmentsRecipientList` entry; `assignmentsPublish` and `assignmentsTeacherList` entries reconciled for Sprint 15).
+- `docs/platform/ASSESSMENT_IMPLEMENTATION_CONTRACT.md` (new §35 Sprint 15 Reconciliations; change log entry).
+- `docs/platform/SPRINT_HISTORY.md` (this Sprint 15 entry).
+
+### Validation results
+
+- `npm run typecheck` in `app/`: pass (zero errors).
+- `npm run typecheck` in `platform/functions/`: pass (zero errors).
+- `npm run lint` in `app/`: pass (zero errors).
+- `npm run lint` in `platform/functions/`: pass (zero errors).
+- `npm run build` in `app/`: pass (esbuild bundle produced).
+- `npm run build` in `platform/functions/`: pass (tsc emitted).
+- `npm test` in `app/`: 439 of 440 tests pass; the sole remaining failure is the pre-existing `curriculum/curriculumManifest.test.ts` baseline drift documented in `SPRINT_13_FINAL_CERTIFICATION.md` §11.
+- `npm test` in `platform/functions/`: 907 of 907 tests pass.
+- Terminology check against the Sprint 14 specification: pass (no `at risk`, no `needs attention`, no engagement score, no ranking, no AI recommendation, no notification, no cross-assignment trend copy across new or modified surfaces).
+- Em dash check across every new or modified file (production, tests, and documentation): pass (zero em dashes).
+- No deployment. No commit.
+
+### Certification
+
+Sprint 15 is COMPLETE against the Sprint 14 specification. Every slice defined in `SPRINT_15_IMPLEMENTATION_PLAN.md` has shipped: the dashboard scaffold, the additive `publishedAt` projection, per-card progress counts, the `Show closed` toggle, the new `assignmentsRecipientList` callable and Assignment Detail roster grouping, the per-question factual summary panel above the minimum-attempt threshold, and the loading, empty, error, accessibility, and documentation-reconciliation pass. The four-item Teacher Workspace navigation, the session-scoped in-memory `assignmentDetailRegistry`, and the Sprint 12E Slice 1 aggregate-only confidentiality boundary are preserved. The pre-existing `curriculum/curriculumManifest.test.ts` baseline drift remains formally accepted as documented in `SPRINT_13_FINAL_CERTIFICATION.md` §11. No blocker remains before Sprint 16 planning may commence.

@@ -1,4 +1,5 @@
 import { type CallableRequest } from "firebase-functions/v2/https";
+import { FieldValue } from "firebase-admin/firestore";
 
 import {
   platformCallable,
@@ -218,7 +219,15 @@ async function assignmentsPublishHandler(
   };
 
   const batch = createFirestoreBatch();
-  const publishWrite: AssignmentPublishWrite = { status: "published" };
+  const publishWrite: AssignmentPublishWrite = {
+    status: "published",
+    // Sprint 15 Slice 2: stamp the first-publication timestamp so the
+    // teacher dashboard can render a factual published date without a
+    // second callable. Written exactly once (only on the draft ->
+    // published transition; the idempotent already-published branch
+    // above returns without writing).
+    publishedAt: FieldValue.serverTimestamp(),
+  };
   batch.update(assignmentPublishDocRef(input.assignmentId), publishWrite);
   for (const studentId of population) {
     batch.set(

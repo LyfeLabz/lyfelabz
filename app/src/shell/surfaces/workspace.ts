@@ -13,6 +13,7 @@ import { renderClassesSurface } from "./classes";
 import { renderPresentModeSurface } from "./presentMode";
 import { renderSettingsSurface } from "./settings";
 import type { SnapshotPreview } from "./snapshot";
+import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
 
 // Typed contract for a Teacher Workspace surface.
 //
@@ -56,6 +57,9 @@ export type WorkspaceDeps = {
   // surface register published assignment metadata and open the
   // certified Assignment Detail surface via the entry-point opener.
   readonly assignmentDetail?: CurriculumAssignmentDetailSeam | null;
+  // Sprint 15: certified summary callable consumed by the Curriculum
+  // Active Assignments dashboard for per-card progress counts.
+  readonly assignmentSummary?: AssignmentSummaryCallable | null;
 };
 
 export type WorkspaceSurface = {
@@ -85,6 +89,7 @@ export const WORKSPACE_SURFACES: Readonly<
         integrations: deps.integrations ?? null,
         assignments: deps.assignments ?? null,
         assignmentDetail: deps.assignmentDetail ?? null,
+        assignmentSummary: deps.assignmentSummary ?? null,
       }),
   }),
   classes: Object.freeze({

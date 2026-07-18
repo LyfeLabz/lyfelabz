@@ -58,6 +58,12 @@ export type AssignmentsTeacherListItem = {
   // the field, and the Sprint 13C hydrate parser continues to accept
   // items without it.
   readonly instructions?: string;
+  // Sprint 15 Slice 2: additive optional projection of the canonical
+  // `publishedAt` field per Data Model §3.6. Present as an epoch-ms
+  // number for `published` and `closed` records; `null` for `draft`
+  // records. Pre-Sprint-15 clients ignore the field and continue to
+  // hydrate the registry without it.
+  readonly publishedAt?: number | null;
 };
 
 // Sprint 13F: the request payload gains a single optional boolean field
@@ -215,6 +221,7 @@ async function assignmentsTeacherListHandler(
       className: string;
       status: Exclude<AssignmentStatus, "archived">;
       instructions?: string;
+      publishedAt?: number | null;
     } = {
       assignmentId,
       lessonSlug: record.lessonSlug,
@@ -228,6 +235,20 @@ async function assignmentsTeacherListHandler(
       record.instructions.length > 0
     ) {
       item.instructions = record.instructions;
+    }
+    // Sprint 15 Slice 2: publishedAt projected as epoch-ms number for
+    // records that have ever been published (published + closed);
+    // projected as `null` on drafts so the client can distinguish
+    // "never published" from "field temporarily unavailable".
+    if (record.status === "draft") {
+      item.publishedAt = null;
+    } else {
+      const ts = record.publishedAt;
+      if (ts && typeof (ts as { toMillis?: () => number }).toMillis === "function") {
+        item.publishedAt = (ts as { toMillis: () => number }).toMillis();
+      } else {
+        item.publishedAt = null;
+      }
     }
     items.push(item);
   }

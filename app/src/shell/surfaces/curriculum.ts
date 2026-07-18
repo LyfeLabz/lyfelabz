@@ -22,6 +22,11 @@ import {
   compareAssignmentsForSelection,
   isValidForSelection,
 } from "../../assignments/detail/grouping";
+import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
+import {
+  renderActiveAssignmentsSection,
+  type ActiveAssignmentsController,
+} from "./shared/activeAssignments";
 
 // Sprint 13B remediation: narrow visible entry-point seam so an
 // authenticated teacher can reach the certified Assignment Detail
@@ -83,6 +88,13 @@ export type CurriculumSurfaceDeps = {
   // invokes `open(assignmentId)`. When absent-or-null the card renders
   // unchanged; no affordance is added and no metadata is registered.
   readonly assignmentDetail?: CurriculumAssignmentDetailSeam | null;
+  // Sprint 15: certified `assessmentAssignmentSummary` callable seam
+  // consumed by the Active Assignments dashboard for per-card progress
+  // counts. When absent-or-null the dashboard renders without the
+  // progress line; the aggregate-only confidentiality boundary is
+  // preserved either way (no student, attempt, or answer data is named
+  // by the dashboard).
+  readonly assignmentSummary?: AssignmentSummaryCallable | null;
 };
 
 const DEFAULT_LIST_CLASSES: ListClasses = () =>
@@ -364,6 +376,21 @@ export function renderCurriculumSurface(
     // ignored
   }
 
+  // Sprint 15: Active Assignments dashboard section. Rendered only when
+  // the signed-in teacher has one or more `published` assignments in the
+  // session-scoped registry (Sprint 14 §5.1). Reads exclusively from the
+  // already-hydrated registry; introduces no new enumeration path.
+  let activeAssignmentsController: ActiveAssignmentsController | null = null;
+  if (assignmentDetail !== null && typeof assignmentDetail.list === "function") {
+    activeAssignmentsController = renderActiveAssignmentsSection(mount, {
+      listRegistry: () => assignmentDetail.list?.() ?? [],
+      open: (id) => {
+        assignmentDetail.open(id);
+      },
+      summaryCallable: deps.assignmentSummary ?? null,
+    });
+  }
+
   const intro = doc.createElement("p");
   intro.className = "shell-status shell-curriculum-intro";
   intro.setAttribute("data-testid", "curriculum-intro");
@@ -504,10 +531,12 @@ export function renderCurriculumSurface(
       onConfirm: (summary) => {
         refreshAssignControl(card, lesson);
         refreshViewSummaryControl(card, lesson, session.uid, assignmentDetail);
+        activeAssignmentsController?.refresh();
         showSuccess(successBanner, summary);
       },
       onLifecycleComplete: () => {
         refreshViewSummaryControl(card, lesson, session.uid, assignmentDetail);
+        activeAssignmentsController?.refresh();
       },
     });
   };

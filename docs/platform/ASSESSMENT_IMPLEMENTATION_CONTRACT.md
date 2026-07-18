@@ -784,9 +784,25 @@ The Sprint 13A `assessmentAssignmentSummary` callable continues to refuse non-`p
 
 The certified §33.1 transition table is unchanged. `assignmentsPublish` continues to be the sole lifecycle-mutating callable authorized to advance an assignment from `draft` to `published`. Draft discoverability is a teacher-facing read affordance and MUST NOT be interpreted as a lifecycle transition, a publish substitute, or a mechanism for exposing an assignment to any student surface. Movement into `archived` remains owned by `assignmentsArchive`; the terminal state is not reachable through Sprint 13F draft discovery.
 
+## 35. Sprint 15 Reconciliations (Teacher Dashboard Recipient Enumeration)
+
+### 35.1 Recipient enumeration is authorized for the owning teacher and is not aggregate analytics
+
+The Sprint 15 `assignmentsRecipientList` callable returns the frozen recipient population of one owned assignment under PDR-029o. It is authorized for the owning teacher and is not an aggregate analytics surface. The aggregate-only confidentiality boundary certified by Sprint 12E Slice 1 for `assessmentAssignmentSummary` is unchanged; `assignmentsRecipientList` does not project attempt, session, submission, score, answer, item-result, or rollup fields under any mode.
+
+### 35.2 Roster grouping is a client-side composition against certified reads
+
+The Assignment Detail roster grouping (`Submitted`, `In progress`, `Not started`) is composed client-side from the recipient set (`assignmentsRecipientList`), the certified completed-attempt list (`assessmentAttemptsListForClass` filtered by `assignmentId`), and the certified `assessmentAssignmentSummary` counts. Group counts match the summary counts exactly. Session presence is derived from the summary `inProgressStudents` count and roster arithmetic; per-student session identification is intentionally deferred and does not block the Sprint 15 dashboard.
+
+### 35.3 Per-question factual summary reuses existing per-attempt reads
+
+The Sprint 15 per-question factual summary panel is aggregated client-side from `assessmentAttemptGetForTeacher` fetches over each representative completed attempt (highest percentage per student per PDR-029a). No new persistent rollup is introduced. The panel is silent below the Sprint 15 minimum-attempt threshold (`>= 3`) and no per-attempt fetch is issued below the threshold. A persistent `assignmentRollups` / `attemptRollups` materialization remains deferred per PDR-029n and `LYFELABZ_SUBMISSION_ROLLUP_STRATEGY.md`.
+
 ## Change Log
 
 - 2026-07-12 - Initial issuance under Sprint 10A step F-2. Ratified by PDR-026.
 - 2026-07-16 - Sprint 11E reconciliation. Added §32 recording audit-write ordering, attempt-count derivation, response-purity guarantees, and session-ordinal deferral against the certified implementation. No behavioral requirement is added; §32 clarifies existing sections against the deployed pattern.
 - 2026-07-17 - Sprint 13E reconciliation. Added §33 recording the canonical assignment close and reopen lifecycle semantics against the certified Sprint 13D `assignmentsClose` and Sprint 13E `assignmentsReopen` implementations. No pipeline behavior is added; §33 narrows §17 by naming the transitions, authorization gate, idempotency, invalid-transition rejection, frozen-recipient preservation, session/attempt/summary preservation, and audit vocabulary the assessment surface relies on.
 - 2026-07-17 - Sprint 13F reconciliation. Added §34 recording that the Sprint 13F extension of `assignmentsTeacherList` with `includeDrafts` is teacher-visible only, creates no recipient/session/attempt/summary state, never affects summaries, and does not replace `assignmentsPublish` as the transition that exposes an assignment to students. No pipeline behavior is added; §34 narrows §17 and §21 against the certified Sprint 13F implementation.
+
+- 2026-07-18 - Sprint 15 reconciliation. Added §35 recording the Sprint 15 `assignmentsRecipientList` callable (authorized for the owning teacher under PDR-029o; not aggregate analytics), the client-side roster grouping composition against certified reads, and the client-side per-question factual summary aggregator (silent below the `>= 3` minimum-attempt threshold; no persistent rollup introduced). No pipeline behavior is added; §35 narrows §17, §18, and §20 against the certified Sprint 15 implementation.

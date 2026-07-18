@@ -5,6 +5,7 @@ import type {
   IntegrationsDeps,
 } from "../../settings/integrations/types";
 import type { CurriculumAssignmentDetailSeam } from "../../shell/surfaces/curriculum";
+import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
 import { mountTeacherShell } from "../../shell/shell";
 import {
   clear,
@@ -57,6 +58,13 @@ export type SurfaceDeps = {
     | CurriculumAssignmentDetailSeam
     | null
     | (() => CurriculumAssignmentDetailSeam | null);
+  // Sprint 15: certified `assessmentAssignmentSummary` seam consumed by
+  // the Active Assignments dashboard for per-card progress counts.
+  // Always supplied through a getter so per-session state can rebind
+  // across reruns without rebuilding the route table; the callable
+  // itself is a function, so the getter-form is required to keep the
+  // type check unambiguous.
+  readonly assignmentSummary?: () => AssignmentSummaryCallable | null;
 };
 
 // -----------------------------------------------------------------------------
@@ -339,6 +347,10 @@ export const makeActiveTeacherSurface =
       typeof deps.assignmentDetail === "function"
         ? deps.assignmentDetail()
         : (deps.assignmentDetail ?? null);
+    const assignmentSummary =
+      deps.assignmentSummary !== undefined
+        ? deps.assignmentSummary()
+        : null;
     mountTeacherShell(session, mount, {
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
@@ -346,6 +358,7 @@ export const makeActiveTeacherSurface =
       integrations,
       assignments,
       assignmentDetail,
+      assignmentSummary,
     });
   };
 

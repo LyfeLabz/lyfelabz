@@ -10,6 +10,7 @@ import { renderFooter } from "./footer";
 import { mountWorkspaceOutlet } from "./surfaces/workspace";
 import type { SnapshotPreview } from "./surfaces/snapshot";
 import type { CurriculumAssignmentDetailSeam } from "./surfaces/curriculum";
+import type { AssignmentSummaryCallable } from "../assignments/summary/types";
 
 // Top-level teacher-workspace shell mount.
 //
@@ -48,6 +49,9 @@ export type ShellDeps = {
   // surface register published assignment metadata and open the
   // certified Assignment Detail surface.
   readonly assignmentDetail?: CurriculumAssignmentDetailSeam | null;
+  // Sprint 15: certified summary callable consumed by the Active
+  // Assignments dashboard for per-card progress counts.
+  readonly assignmentSummary?: AssignmentSummaryCallable | null;
 };
 
 export function mountTeacherShell(
@@ -78,6 +82,7 @@ export function mountTeacherShell(
     integrations: deps.integrations ?? null,
     assignments: deps.assignments ?? null,
     assignmentDetail: deps.assignmentDetail ?? null,
+    assignmentSummary: deps.assignmentSummary ?? null,
   };
 
   const renderNav = (): void => {

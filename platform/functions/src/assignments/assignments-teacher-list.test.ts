@@ -157,6 +157,7 @@ describe("assignmentsTeacherList - response filtering", () => {
         classId: "class-a",
         className: "Class class-a",
         status: "published",
+        publishedAt: null,
       },
     ]);
   });
@@ -257,6 +258,30 @@ describe("assignmentsTeacherList - response filtering", () => {
     });
   });
 
+  test("Sprint 15: projects publishedAt as epoch ms for published records", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [
+        assignmentDoc("a-published", {
+          publishedAt: { toMillis: () => 1_700_000_000_000 },
+        }),
+      ],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items[0]).toMatchObject({ publishedAt: 1_700_000_000_000 });
+  });
+
+  test("Sprint 15: projects publishedAt as null for draft records", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("d-null", { status: "draft" })],
+    });
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+    const res = await __assignmentsTeacherListHandler(
+      makeRequest({ includeDrafts: true }),
+    );
+    expect(res.items[0]).toMatchObject({ publishedAt: null });
+  });
+
   test("Sprint 13G: omits instructions when the record has no instructions", async () => {
     mockAssignmentsGet.mockResolvedValue({
       docs: [assignmentDoc("a-no-instructions")],
@@ -317,6 +342,7 @@ describe("assignmentsTeacherList - Sprint 13F draft enumeration", () => {
         classId: "class-a",
         className: "Class class-a",
         status: "draft",
+        publishedAt: null,
       },
     ]);
   });

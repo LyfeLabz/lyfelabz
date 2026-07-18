@@ -30,6 +30,16 @@ import { createAssignmentsCloseCallable } from "./assignments/detail/close-wire"
 import { createAssignmentsReopenCallable } from "./assignments/detail/reopen-wire";
 import { createAssignmentsUpdateDraftCallable } from "./assignments/detail/update-wire";
 import { createAssignmentsPublishCallable } from "./assignments/detail/publish-wire";
+import {
+  createAssignmentRecipientListCallable,
+  type AssignmentRecipientListCallable,
+} from "./assignments/detail/roster-wire";
+import {
+  createAttemptGetForTeacherCallable,
+  createAttemptsListForClassCallable,
+  type AttemptGetForTeacherCallable,
+  type AttemptsListForClassCallable,
+} from "./assignments/detail/attempts-wire";
 import type {
   AssignmentsCloseCallable,
   AssignmentsPublishCallable,
@@ -92,6 +102,15 @@ async function run(): Promise<void> {
   // before an active-teacher session resolves; the detail surface renders
   // no publish action when null.
   let assignmentPublish: AssignmentsPublishCallable | null = null;
+  // Sprint 15 Slice 5: certified recipient enumeration + completed
+  // attempts list consumed by the Assignment Detail roster grouping.
+  let assignmentRecipientList: AssignmentRecipientListCallable | null = null;
+  let attemptsListForClass: AttemptsListForClassCallable | null = null;
+  // Sprint 15 Slice 6: certified per-attempt detail seam consumed by
+  // the per-question factual summary panel above the minimum-attempt
+  // threshold. Absent below the threshold; the panel never issues a
+  // fetch in that case.
+  let attemptGetForTeacher: AttemptGetForTeacherCallable | null = null;
   // Sprint 13B: session-scoped registry of teacher-owned assignment
   // metadata (title, status, class name). Populated by the certified
   // lifecycle path; consumed by the Assignment Detail metadata reader.
@@ -139,6 +158,9 @@ async function run(): Promise<void> {
       // drafts` becomes `View summary` / `View summaries`) without a
       // page reload.
       publishCallable: assignmentPublish ?? undefined,
+      recipientListCallable: assignmentRecipientList ?? undefined,
+      attemptsListForClassCallable: attemptsListForClass ?? undefined,
+      attemptGetForTeacherCallable: attemptGetForTeacher ?? undefined,
       onStatusChange: (metadata) => {
         assignmentDetailRegistry.register(metadata);
       },
@@ -203,6 +225,9 @@ async function run(): Promise<void> {
       assignmentReopen = createAssignmentsReopenCallable(functions);
       assignmentUpdateDraft = createAssignmentsUpdateDraftCallable(functions);
       assignmentPublish = createAssignmentsPublishCallable(functions);
+      assignmentRecipientList = createAssignmentRecipientListCallable(functions);
+      attemptsListForClass = createAttemptsListForClassCallable(functions);
+      attemptGetForTeacher = createAttemptGetForTeacherCallable(functions);
       // Sprint 13C: hydrate the session-scoped assignment-detail registry
       // from the certified `assignmentsTeacherList` retrieval path. The
       // hydration runs once per active-teacher session and is calm on
@@ -224,6 +249,9 @@ async function run(): Promise<void> {
       assignmentReopen = null;
       assignmentUpdateDraft = null;
       assignmentPublish = null;
+      assignmentRecipientList = null;
+      attemptsListForClass = null;
+      attemptGetForTeacher = null;
       assignmentDetailRegistry.clear();
     }
     dispatch(session, table, mount, window.history);
@@ -298,6 +326,7 @@ async function run(): Promise<void> {
     integrations: () => integrations,
     assignments: () => assignments,
     assignmentDetail: () => assignmentDetailSeam,
+    assignmentSummary: () => assignmentSummary,
   });
 
   await rerun();

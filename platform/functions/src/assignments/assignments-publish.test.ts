@@ -190,6 +190,7 @@ describe("assignmentsPublish", () => {
       expect(mockCreateFirestoreBatch).toHaveBeenCalledTimes(1);
       expect(mockBatchUpdate).toHaveBeenCalledWith(mockPublishRefSentinel, {
         status: "published",
+        publishedAt: SERVER_TIMESTAMP_SENTINEL,
       });
       expect(mockBatchSet).toHaveBeenCalledTimes(3);
       for (const studentId of ["student-1", "student-2", "student-3"]) {

@@ -53,6 +53,7 @@ export function parseAssignmentsTeacherListItem(
     lessonSlug: string;
     classId: string;
     instructions?: string;
+    publishedAt?: number;
   } = {
     assignmentId: item.assignmentId,
     title: item.title,
@@ -66,6 +67,12 @@ export function parseAssignmentsTeacherListItem(
   // deployments omit the field; the parser accepts that silently.
   if (typeof item.instructions === "string" && item.instructions.length > 0) {
     parsed.instructions = item.instructions;
+  }
+  // Sprint 15 Slice 2: additive, backward-compatible parse of the
+  // optional `publishedAt` projection. Absent for drafts and for
+  // pre-Sprint-15 callable deployments; accepted silently in both cases.
+  if (typeof item.publishedAt === "number" && Number.isFinite(item.publishedAt)) {
+    parsed.publishedAt = item.publishedAt;
   }
   return Object.freeze(parsed);
 }
