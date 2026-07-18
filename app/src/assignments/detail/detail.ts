@@ -203,8 +203,11 @@ export function renderAssignmentDetail(
     back.type = "button";
     back.className = "shell-assignment-detail-back";
     back.setAttribute("data-testid", "assignment-detail-back");
-    back.setAttribute("aria-label", "Back to previous workspace");
-    back.textContent = "Back";
+    // Sprint 16 Slice 4: the Back control always returns to Curriculum
+    // (the lighter re-mount path from Slice 1). Visible label and the
+    // accessible name agree.
+    back.setAttribute("aria-label", "Back to Curriculum");
+    back.textContent = "Back to Curriculum";
     back.addEventListener("click", () => {
       deps.onBack?.();
     });
@@ -238,6 +241,14 @@ export function renderAssignmentDetail(
     detailCache = createDetailFetchCache();
   };
 
+  // Sprint 16 Slice 4: focus the assignment title on the first successful
+  // `ready` render (and again after a retry that recovers from an error)
+  // so a keyboard-only teacher lands inside the surface rather than on
+  // Back. Internal panel hydration (roster, question summary, lifecycle
+  // rerenders) must not steal focus repeatedly, so a single load-scoped
+  // guard latches once the title has been focused for the current load.
+  let readyTitleFocused = false;
+
   const sharedSummaryCallable: AssignmentSummaryCallable = (input) =>
     detailCache.get(`summary:${input.assignmentId}`, () =>
       deps.summaryCallable(input),
@@ -258,7 +269,9 @@ export function renderAssignmentDetail(
       case "loading":
         renderLoading(doc, body);
         return;
-      case "ready":
+      case "ready": {
+        const shouldFocusTitle = !readyTitleFocused;
+        readyTitleFocused = true;
         renderReady(
           doc,
           body,
@@ -272,6 +285,7 @@ export function renderAssignmentDetail(
           reopenUi,
           editUi,
           publishUi,
+          shouldFocusTitle,
           {
             onCloseRequest: () => {
               openCloseConfirmation(s.metadata);
@@ -300,6 +314,7 @@ export function renderAssignmentDetail(
           },
         );
         return;
+      }
       case "empty":
         renderEmpty(doc, body);
         return;
@@ -587,6 +602,9 @@ export function renderAssignmentDetail(
     const token = ++loadToken;
     state = { kind: "loading" };
     refreshDetailCache();
+    // A load pass (initial mount or a retry after error) is the only
+    // point where we intentionally move focus into the surface.
+    readyTitleFocused = false;
     rerender();
     try {
       const metadata = await deps.loadMetadata({
@@ -644,6 +662,7 @@ function renderReady(
   reopenUi: ReopenUiState,
   editUi: EditUiState,
   publishUi: PublishUiState,
+  focusTitle: boolean,
   handlers: {
     readonly onCloseRequest: () => void;
     readonly onReopenRequest: () => void;
@@ -662,6 +681,7 @@ function renderReady(
   const title = doc.createElement("h3");
   title.className = "shell-assignment-detail-title";
   title.setAttribute("data-testid", "assignment-detail-title");
+  title.tabIndex = -1;
   title.textContent = metadata.title;
   header.appendChild(title);
 
@@ -841,6 +861,14 @@ function renderReady(
 
   mount.appendChild(header);
 
+  if (focusTitle) {
+    try {
+      title.focus({ preventScroll: true });
+    } catch {
+      // ignored
+    }
+  }
+
   // Sprint 13F reconciliation: a draft assignment has no recipients, no
   // sessions, and no attempts, so the Sprint 13A summary card would only
   // render its own empty / error state. Render a calm informational
@@ -995,6 +1023,25 @@ async function renderRosterPanel(
     return;
   }
 
+  loading.remove();
+
+  // Sprint 16 Slice 4: a published assignment with zero recipients is
+  // a calm empty state, not three empty group headers. The `Roster`
+  // heading remains as the stable section landmark.
+  if (recipients.length === 0) {
+    const empty = doc.createElement("p");
+    empty.className = "shell-assignment-detail-roster-empty-recipients";
+    empty.setAttribute(
+      "data-testid",
+      "assignment-detail-roster-empty-recipients",
+    );
+    empty.setAttribute("role", "status");
+    empty.setAttribute("aria-live", "polite");
+    empty.textContent = "No students are assigned yet.";
+    host.appendChild(empty);
+    return;
+  }
+
   const grouping = groupRoster({
     recipients,
     completed: completed.map((c) => ({
@@ -1006,7 +1053,6 @@ async function renderRosterPanel(
     inProgressStudentCount: summary.inProgressStudents,
   });
 
-  loading.remove();
   // Sprint 16 Slice 3: every group header count is anchored to the
   // authoritative `assessmentAssignmentSummary` snapshot. The rendered
   // list within each group may still be shorter (recipient enumeration
@@ -1143,6 +1189,17 @@ async function renderQuestionSummaryPanel(
   heading.textContent = "Question results";
   host.appendChild(heading);
 
+  // Sprint 16 Slice 4: an accessible loading acknowledgement while the
+  // shared attempts-list fetch resolves. Mirrors the roster loading
+  // pattern so both sub-panels announce consistently.
+  const loading = doc.createElement("p");
+  loading.className = "shell-assignment-detail-questions-loading";
+  loading.setAttribute("data-testid", "assignment-detail-questions-loading");
+  loading.setAttribute("role", "status");
+  loading.setAttribute("aria-live", "polite");
+  loading.textContent = "Loading question results...";
+  host.appendChild(loading);
+
   let completed: ReadonlyArray<CompletedAttemptSummary>;
   try {
     const classId = metadata.classId ?? "";
@@ -1152,8 +1209,10 @@ async function renderQuestionSummaryPanel(
       (a) => a.assignmentId === metadata.assignmentId,
     );
   } catch {
+    loading.remove();
     return;
   }
+  loading.remove();
 
   // Representative attempt per student per PDR-029a: highest percentage,
   // then most recent submission, then highest attemptNumber.

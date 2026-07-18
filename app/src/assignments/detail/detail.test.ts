@@ -236,7 +236,10 @@ describe("renderAssignmentDetail - navigation", () => {
       "[data-testid=assignment-detail-back]",
     );
     expect(back).not.toBeNull();
-    expect(back?.getAttribute("aria-label")).toBe("Back to previous workspace");
+    // Sprint 16 Slice 4: the Back control identifies Curriculum as its
+    // destination in both the visible label and the accessible name.
+    expect(back?.getAttribute("aria-label")).toBe("Back to Curriculum");
+    expect(back?.textContent).toBe("Back to Curriculum");
     back?.click();
     expect(clicked).toBe(1);
   });
@@ -3093,5 +3096,245 @@ describe("renderAssignmentDetail - Sprint 16 Slice 3 progress consistency", () =
     const started = summary.inProgressStudents + summary.completedStudents;
     const dashboardLine = `${summary.completedStudents} submitted / ${started} started / ${summary.totalStudents} total`;
     expect(dashboardLine).toBe("12 submitted / 18 started / 24 total");
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Sprint 16 Slice 4: Teacher workflow polish. Focus on mount, Back label,
+// question-panel loading, and the calm zero-recipient empty state.
+// -----------------------------------------------------------------------------
+
+describe("renderAssignmentDetail - Sprint 16 Slice 4 workflow polish", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  test("focuses the assignment title on the first successful ready render", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata()),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      onBack: () => undefined,
+    });
+    await flush();
+    await flush();
+    const title = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-title]",
+    );
+    expect(title).not.toBeNull();
+    expect(title?.getAttribute("tabindex")).toBe("-1");
+    expect(document.activeElement).toBe(title);
+  });
+
+  test("internal panel hydration does not steal focus back to the title", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+      onBack: () => undefined,
+    });
+    await flush();
+    await flush();
+    const title = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-title]",
+    );
+    expect(document.activeElement).toBe(title);
+    const backBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-back]",
+    );
+    backBtn?.focus();
+    expect(document.activeElement).toBe(backBtn);
+    // Let the roster / question-summary panels resolve and rerender.
+    await flush();
+    await flush();
+    await flush();
+    expect(document.activeElement).toBe(backBtn);
+  });
+
+  test("Back control identifies Curriculum as the destination in label and accessible name", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata()),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      onBack: () => undefined,
+    });
+    await flush();
+    const back = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-back]",
+    );
+    expect(back?.textContent).toBe("Back to Curriculum");
+    expect(back?.getAttribute("aria-label")).toBe("Back to Curriculum");
+  });
+
+  test("published assignment with zero recipients renders the calm empty note", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(
+        freezeSummary({
+          totalStudents: 0,
+          completedStudents: 0,
+          inProgressStudents: 0,
+          notStartedStudents: 0,
+        }),
+      ),
+      recipientListCallable: spyingRecipients([]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    const empty = mount.querySelector(
+      "[data-testid=assignment-detail-roster-empty-recipients]",
+    );
+    expect(empty).not.toBeNull();
+    expect(empty?.textContent).toBe("No students are assigned yet.");
+    expect(empty?.getAttribute("role")).toBe("status");
+    // No group headers render when there are no recipients.
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-roster-group-submitted]",
+      ),
+    ).toBeNull();
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-roster-group-in-progress]",
+      ),
+    ).toBeNull();
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-roster-group-not-started]",
+      ),
+    ).toBeNull();
+    // The Roster heading remains as a stable section landmark.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-heading]"),
+    ).not.toBeNull();
+  });
+
+  test("question summary panel announces loading through role=status while attempts resolve", async () => {
+    const mount = mkMount();
+    let releaseAttempts!: (
+      value: {
+        readonly classId: string;
+        readonly attempts: ReadonlyArray<CompletedAttemptSummary>;
+      },
+    ) => void;
+    const pendingAttempts: AttemptsListForClassCallable = ({ classId }) =>
+      new Promise((resolve) => {
+        releaseAttempts = (value) => resolve(value);
+        void classId;
+      });
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: pendingAttempts,
+      attemptGetForTeacherCallable: spyingAttemptGet(new Map()).callable,
+    });
+    await flush();
+    await flush();
+    const loading = mount.querySelector(
+      "[data-testid=assignment-detail-questions-loading]",
+    );
+    expect(loading).not.toBeNull();
+    expect(loading?.textContent).toBe("Loading question results...");
+    expect(loading?.getAttribute("role")).toBe("status");
+    expect(loading?.getAttribute("aria-live")).toBe("polite");
+    releaseAttempts({ classId: "class-1", attempts: [] });
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-questions-loading]"),
+    ).toBeNull();
+  });
+
+  test("retry after an error focuses the title once the ready render replaces the error state", async () => {
+    const mount = mkMount();
+    let call = 0;
+    const reader: AssignmentDetailMetadataReader = () => {
+      call += 1;
+      if (call === 1) return Promise.reject(new Error("first load fails"));
+      return Promise.resolve(freezeMetadata());
+    };
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: reader,
+      summaryCallable: resolvingSummary(freezeSummary()),
+      onBack: () => undefined,
+    });
+    await flush();
+    await flush();
+    const retry = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-retry]",
+    );
+    expect(retry).not.toBeNull();
+    retry?.click();
+    await flush();
+    await flush();
+    const title = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-title]",
+    );
+    expect(document.activeElement).toBe(title);
+  });
+
+  test("lifecycle rerender does not repeatedly refocus the title if focus is elsewhere", async () => {
+    const mount = mkMount();
+    const close = resolvingClose();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      closeCallable: close.callable,
+      onBack: () => undefined,
+    });
+    await flush();
+    await flush();
+    const title = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-title]",
+    );
+    expect(document.activeElement).toBe(title);
+    const backBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-back]",
+    );
+    backBtn?.focus();
+    expect(document.activeElement).toBe(backBtn);
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    // After the successful close the header rerenders through the same
+    // `ready` branch, but the load-scoped focus latch prevents a second
+    // focus transfer that would surprise the teacher.
+    expect(document.activeElement).not.toBe(
+      mount.querySelector("[data-testid=assignment-detail-title]"),
+    );
   });
 });

@@ -9,6 +9,7 @@ import {
 import { dispatch } from "./router/router";
 import { createRouteTable } from "./router/routes";
 import { renderLoadingSurface } from "./router/surfaces";
+import { createCurriculumScrollGuard } from "./shell/curriculumScrollGuard";
 import { bootstrapSession } from "./session/bootstrap";
 import type { Session } from "./session/types";
 import { createBrowserLaunchPresentMode } from "./presentMode/launchContext";
@@ -138,6 +139,20 @@ async function run(): Promise<void> {
   // mount reads the fresh registry as today.
   let activeAssignmentsInvalidator: ((assignmentId: string) => void) | null =
     null;
+  // Sprint 16 Slice 4: session-scoped Curriculum scroll guard. The
+  // guard captures the current Curriculum scroll offset when the
+  // teacher opens Assignment Detail and restores it (clamped to the
+  // current document height) on the return trip through the Detail
+  // Back control. It is invalidated by every bootstrap transition
+  // (sign-out, teacher swap, full `rerun`) so a stale offset can never
+  // restore against an unrelated surface.
+  const curriculumScrollGuard = createCurriculumScrollGuard({
+    getMaxScrollY: () =>
+      document.documentElement.scrollHeight - window.innerHeight,
+    scrollTo: (y) => {
+      window.scrollTo(0, y);
+    },
+  });
   const remountCurriculum = (): void => {
     const session = lastActiveTeacher;
     if (session === null) {
@@ -146,9 +161,24 @@ async function run(): Promise<void> {
     }
     activeAssignmentsInvalidator = null;
     dispatch(session, table, mount, window.history);
+    const doRestore = (): void => {
+      curriculumScrollGuard.restore(session.uid);
+    };
+    if (typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(doRestore);
+    } else {
+      doRestore();
+    }
   };
   const openAssignmentDetail = (assignmentId: string): void => {
     if (assignmentSummary === null) return;
+    // Sprint 16 Slice 4: snapshot the current Curriculum scroll offset
+    // so the return trip through the lighter Back path can restore the
+    // teacher near their prior position. Scoped to the active teacher
+    // uid so a sign-out or teacher swap invalidates the snapshot.
+    if (lastActiveTeacher !== null) {
+      curriculumScrollGuard.capture(lastActiveTeacher.uid, window.scrollY);
+    }
     // Clear the Curriculum-owned invalidator before we replace the mount
     // so a lifecycle change fired during this Detail surface's lifetime
     // cannot invoke a stale handler bound to a detached section.
@@ -312,6 +342,11 @@ async function run(): Promise<void> {
       lastActiveTeacher = null;
     }
     activeAssignmentsInvalidator = null;
+    // Sprint 16 Slice 4: any bootstrap transition (sign-out, teacher
+    // swap, or a full auth-driven `rerun`) invalidates the pending
+    // Curriculum scroll snapshot so no offset can restore against an
+    // unrelated surface or teacher context.
+    curriculumScrollGuard.invalidate();
     dispatch(session, table, mount, window.history);
   };
 
