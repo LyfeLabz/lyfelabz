@@ -292,7 +292,18 @@ export function renderAssignmentDetail(
         renderLoading(doc, body);
         return;
       case "ready": {
-        const shouldFocusTitle = !readyTitleFocused;
+        // Sprint 16 Slice 6: recover focus if the previously active control
+        // was removed by the rerender (a confirm dialog whose overlay was
+        // just torn down, or a lifecycle button that no longer exists in
+        // the new status). Without this recovery, `document.activeElement`
+        // stays on `body` and keyboard users lose their place. The initial
+        // load-scoped focus latch continues to guard against repeated
+        // focus transfers during ordinary sub-panel rerenders where the
+        // active control still exists elsewhere in the surface.
+        const shouldFocusTitle =
+          !readyTitleFocused ||
+          doc.activeElement === null ||
+          doc.activeElement === doc.body;
         readyTitleFocused = true;
         renderReady(
           doc,
@@ -1004,7 +1015,13 @@ async function renderRosterPanel(
   const doc = host.ownerDocument;
   host.textContent = "";
 
+  // Sprint 16 Slice 6: the roster section takes its accessible name from
+  // the persistent Roster heading so the landmark survives loading, empty,
+  // and error branches without leaning on a hand-composed aria-label.
+  const headingId = "assignment-detail-roster-heading";
+  host.setAttribute("aria-labelledby", headingId);
   const heading = doc.createElement("h3");
+  heading.id = headingId;
   heading.className = "shell-assignment-detail-roster-heading";
   heading.setAttribute("data-testid", "assignment-detail-roster-heading");
   heading.textContent = "Roster";
@@ -1038,13 +1055,15 @@ async function renderRosterPanel(
     );
     summary = sRes;
   } catch {
-    host.textContent = "";
+    // Sprint 16 Slice 6: keep the persistent `Roster` heading in place so
+    // the section landmark stays announced across the loading -> error
+    // transition. Only the loading paragraph is replaced.
+    loading.remove();
     const err = doc.createElement("p");
     err.className = "shell-assignment-detail-roster-error";
     err.setAttribute("data-testid", "assignment-detail-roster-error");
     err.setAttribute("role", "alert");
     err.textContent = "Roster temporarily unavailable";
-    host.appendChild(heading.cloneNode(true));
     host.appendChild(err);
     return;
   }
@@ -1153,8 +1172,19 @@ function appendRosterGroup(
   const group = doc.createElement("div");
   group.className = `shell-assignment-detail-roster-group shell-assignment-detail-roster-${key}`;
   group.setAttribute("data-testid", `assignment-detail-roster-group-${key}`);
+  // Sprint 16 Slice 6: expose the wrapping div as a labeled group so the
+  // heading names the roster group programmatically. The count is part of
+  // the heading text, so it is announced as part of the group name.
+  const groupHeadingId = `assignment-detail-roster-group-heading-${key}`;
+  group.setAttribute("role", "group");
+  group.setAttribute("aria-labelledby", groupHeadingId);
   const groupHeading = doc.createElement("h4");
+  groupHeading.id = groupHeadingId;
   groupHeading.className = "shell-assignment-detail-roster-group-heading";
+  groupHeading.setAttribute(
+    "data-testid",
+    `assignment-detail-roster-group-heading-${key}`,
+  );
   groupHeading.textContent = `${label} (${headerCount})`;
   group.appendChild(groupHeading);
 
@@ -1209,7 +1239,13 @@ async function renderQuestionSummaryPanel(
   const doc = host.ownerDocument;
   host.textContent = "";
 
+  // Sprint 16 Slice 6: the question-summary section takes its accessible
+  // name from the persistent Question results heading so the landmark
+  // survives loading, deferred, and error branches.
+  const headingId = "assignment-detail-questions-heading";
+  host.setAttribute("aria-labelledby", headingId);
   const heading = doc.createElement("h3");
+  heading.id = headingId;
   heading.className = "shell-assignment-detail-questions-heading";
   heading.setAttribute("data-testid", "assignment-detail-questions-heading");
   heading.textContent = "Question results";

@@ -3330,12 +3330,18 @@ describe("renderAssignmentDetail - Sprint 16 Slice 4 workflow polish", () => {
       ?.click();
     await flush();
     await flush();
-    // After the successful close the header rerenders through the same
-    // `ready` branch, but the load-scoped focus latch prevents a second
-    // focus transfer that would surprise the teacher.
-    expect(document.activeElement).not.toBe(
-      mount.querySelector("[data-testid=assignment-detail-title]"),
+    // Sprint 16 Slice 6 reconciliation: the confirm dialog moved focus to
+    // its Cancel button on open and removed both buttons on Confirm, so
+    // pre-Slice-6 code left `document.activeElement` orphaned on `body`.
+    // Slice 6 requires that a lifecycle action which removes the active
+    // control move focus to the closest logical surviving target; here
+    // that is the assignment title. The load-scoped focus latch continues
+    // to guard against refocus during ordinary sub-panel rerenders where
+    // the focused control still exists in the surface.
+    const titleEl = mount.querySelector(
+      "[data-testid=assignment-detail-title]",
     );
+    expect(document.activeElement).toBe(titleEl);
   });
 });
 
@@ -3521,5 +3527,213 @@ describe("renderAssignmentDetail - Sprint 16 Slice 5 performance guards", () => 
     expect(source).not.toContain("localStorage");
     expect(source).not.toContain("sessionStorage");
     expect(source).not.toContain("IndexedDB");
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Sprint 16 Slice 6: Accessibility review. Landmark structure, persistent
+// section headings across state transitions, group semantics, and duplicate-id
+// guards for the teacher workflow surfaces introduced across Sprints 13-16.
+// -----------------------------------------------------------------------------
+
+describe("renderAssignmentDetail - Sprint 16 Slice 6 accessibility", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  test("published Detail render exposes a labeled Roster region with role=group subsections", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    const rosterHost = mount.querySelector(
+      "[data-testid=assignment-detail-roster-host]",
+    );
+    const rosterHeading = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-roster-heading]",
+    );
+    expect(rosterHeading).not.toBeNull();
+    expect(rosterHeading?.id).toBe("assignment-detail-roster-heading");
+    expect(rosterHost?.getAttribute("aria-labelledby")).toBe(
+      rosterHeading!.id,
+    );
+    for (const key of ["submitted", "in-progress", "not-started"] as const) {
+      const group = mount.querySelector<HTMLElement>(
+        `[data-testid=assignment-detail-roster-group-${key}]`,
+      );
+      const groupHeading = mount.querySelector<HTMLElement>(
+        `[data-testid=assignment-detail-roster-group-heading-${key}]`,
+      );
+      expect(group).not.toBeNull();
+      expect(groupHeading).not.toBeNull();
+      expect(group?.getAttribute("role")).toBe("group");
+      expect(group?.getAttribute("aria-labelledby")).toBe(groupHeading!.id);
+    }
+  });
+
+  test("Roster heading persists through a roster fetch failure so the section landmark survives", async () => {
+    const mount = mkMount();
+    const failingRecipients: AssignmentRecipientListCallable = () =>
+      Promise.reject(new Error("recipients offline"));
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: failingRecipients,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    const heading = mount.querySelector(
+      "[data-testid=assignment-detail-roster-heading]",
+    );
+    expect(heading).not.toBeNull();
+    expect(heading?.textContent).toBe("Roster");
+    const err = mount.querySelector(
+      "[data-testid=assignment-detail-roster-error]",
+    );
+    expect(err).not.toBeNull();
+    expect(err?.getAttribute("role")).toBe("alert");
+    // Exactly one Roster heading remains (the persistent one; not a clone
+    // appended alongside the original).
+    expect(
+      mount.querySelectorAll(
+        "[data-testid=assignment-detail-roster-heading]",
+      ).length,
+    ).toBe(1);
+  });
+
+  test("Question results heading persists across loading, deferred, and result branches", async () => {
+    const mount = mkMount();
+    const shared = [
+      mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 90 }),
+    ];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList(shared).callable,
+      attemptGetForTeacherCallable: spyingAttemptGet(new Map()).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    const questionHost = mount.querySelector(
+      "[data-testid=assignment-detail-questions-host]",
+    );
+    const heading = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-questions-heading]",
+    );
+    expect(heading).not.toBeNull();
+    expect(heading?.id).toBe("assignment-detail-questions-heading");
+    expect(questionHost?.getAttribute("aria-labelledby")).toBe(heading!.id);
+    // Below-threshold branch renders the deferred note under the same
+    // persistent heading, not in place of it.
+    const deferred = mount.querySelector(
+      "[data-testid=assignment-detail-questions-deferred]",
+    );
+    expect(deferred).not.toBeNull();
+    expect(deferred?.getAttribute("role")).toBe("status");
+  });
+
+  test("published Detail render introduces no duplicate id or empty aria-label anywhere in the surface", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    const idElements = Array.from(
+      mount.querySelectorAll<HTMLElement>("[id]"),
+    );
+    const ids = idElements.map((el) => el.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    // Every id-refs target resolves to exactly one element.
+    for (const el of Array.from(
+      mount.querySelectorAll<HTMLElement>("[aria-labelledby]"),
+    )) {
+      const ref = el.getAttribute("aria-labelledby")!;
+      expect(mount.querySelectorAll(`#${ref}`).length).toBe(1);
+    }
+    for (const el of Array.from(
+      mount.querySelectorAll<HTMLElement>("[aria-label]"),
+    )) {
+      expect(el.getAttribute("aria-label")?.trim().length ?? 0).toBeGreaterThan(
+        0,
+      );
+    }
+  });
+
+  test("lifecycle transition preserves the labeled Roster region and does not orphan focus", async () => {
+    const mount = mkMount();
+    const close = resolvingClose();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "published" }),
+      ),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+      closeCallable: close.callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    // After the close resolves the Roster heading is still present and
+    // labels its host section, so screen-reader users keep the landmark.
+    const heading = mount.querySelector(
+      "[data-testid=assignment-detail-roster-heading]",
+    );
+    const host = mount.querySelector(
+      "[data-testid=assignment-detail-roster-host]",
+    );
+    expect(heading).not.toBeNull();
+    expect(host?.getAttribute("aria-labelledby")).toBe(heading!.id);
+    // Focus is not lost on the document body.
+    expect(document.activeElement).not.toBe(document.body);
   });
 });

@@ -122,7 +122,92 @@ describe("renderActiveAssignmentsSection", () => {
       "[data-testid=active-assignment-card-p1]",
     );
     expect(card?.getAttribute("role")).toBe("group");
-    expect(card?.getAttribute("aria-label")).toContain("Earth's Layers");
+    // Sprint 16 Slice 6: the card's accessible name is delegated to the
+    // visible title through aria-labelledby, not hand-composed aria-label.
+    const titleId = card?.getAttribute("aria-labelledby");
+    expect(titleId).toBe("active-assignment-title-p1");
+    const title = mount.querySelector(`#${titleId}`);
+    expect(title?.textContent).toBe("Earth's Layers");
+    expect(card?.getAttribute("aria-label")).toBeNull();
+  });
+
+  test("Sprint 16 Slice 6: Open button accessible name includes the assignment title", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [
+        meta({ assignmentId: "p1", title: "Wave Behavior", className: "6A" }),
+        meta({ assignmentId: "p2", title: "Digital Signals", className: "6A" }),
+      ],
+      open: () => undefined,
+    });
+    const open1 = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=active-assignment-open-p1]",
+    );
+    const open2 = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=active-assignment-open-p2]",
+    );
+    // Same visible label, distinct accessible names so screen-reader users
+    // can distinguish two Open buttons on the same class.
+    expect(open1?.textContent).toBe("Open assignment");
+    expect(open2?.textContent).toBe("Open assignment");
+    expect(open1?.getAttribute("aria-label")).toBe(
+      "Open assignment Wave Behavior for 6A",
+    );
+    expect(open2?.getAttribute("aria-label")).toBe(
+      "Open assignment Digital Signals for 6A",
+    );
+  });
+
+  test("Sprint 16 Slice 6: Show closed exposes checked state and removes closed cards from the accessibility tree when off", () => {
+    const mount = mkMount();
+    const items: AssignmentDetailMetadata[] = [
+      meta({ assignmentId: "p1" }),
+      meta({ assignmentId: "c1", status: "closed", title: "Old" }),
+    ];
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => items,
+      open: () => undefined,
+    });
+    const toggle = mount.querySelector<HTMLInputElement>(
+      "[data-testid=active-assignments-show-closed]",
+    );
+    // Native checkbox exposes checked state programmatically.
+    expect(toggle?.type).toBe("checkbox");
+    expect(toggle?.checked).toBe(false);
+    // Closed card is absent from the DOM (not just visually hidden) while
+    // the toggle is off, so it cannot be reached by assistive technology.
+    expect(
+      mount.querySelector("[data-testid=active-assignment-card-c1]"),
+    ).toBeNull();
+    toggle!.checked = true;
+    toggle!.dispatchEvent(new Event("change"));
+    expect(
+      mount.querySelector("[data-testid=active-assignment-card-c1]"),
+    ).not.toBeNull();
+    // Accessible name remains stable across the toggle.
+    expect(toggle?.getAttribute("aria-label")).toBe("Show closed assignments");
+  });
+
+  test("Sprint 16 Slice 6: card title ids and card aria-labelledby refs are unique across the rendered section", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [
+        meta({ assignmentId: "p1" }),
+        meta({ assignmentId: "p2", title: "Waves" }),
+        meta({ assignmentId: "p3", title: "Signals" }),
+      ],
+      open: () => undefined,
+    });
+    const ids = Array.from(
+      mount.querySelectorAll<HTMLElement>(
+        "[data-testid^=active-assignment-title-]",
+      ),
+    ).map((el) => el.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const id of ids) {
+      // Every card's aria-labelledby target exists exactly once.
+      expect(mount.querySelectorAll(`#${id}`).length).toBe(1);
+    }
   });
 
   test("Show closed toggle appears only when closed records exist, and toggles their visibility", () => {

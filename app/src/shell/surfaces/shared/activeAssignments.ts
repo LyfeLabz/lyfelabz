@@ -244,10 +244,11 @@ function renderCard(
   const card = doc.createElement("article");
   card.className = "shell-active-assignment-card";
   card.setAttribute("role", "group");
-  card.setAttribute(
-    "aria-label",
-    `${meta.title}, ${meta.className}`,
-  );
+  // Sprint 16 Slice 6: point at the visible title so the card's accessible
+  // name reads exactly what the teacher sees rather than a hand-composed
+  // aria-label that could drift from the copy.
+  const titleId = `active-assignment-title-${meta.assignmentId}`;
+  card.setAttribute("aria-labelledby", titleId);
   card.setAttribute(
     "data-testid",
     `active-assignment-card-${meta.assignmentId}`,
@@ -256,6 +257,7 @@ function renderCard(
   card.setAttribute("data-status", meta.status);
 
   const title = doc.createElement("h3");
+  title.id = titleId;
   title.className = "shell-active-assignment-title";
   title.setAttribute(
     "data-testid",
@@ -326,7 +328,13 @@ function renderCard(
     "data-testid",
     `active-assignment-open-${meta.assignmentId}`,
   );
-  openBtn.setAttribute("aria-label", `Open assignment for ${meta.className}`);
+  // Sprint 16 Slice 6: multiple Open buttons render on the same dashboard,
+  // so the accessible name pairs the visible verb with the assignment title
+  // and class so screen-reader users can distinguish them.
+  openBtn.setAttribute(
+    "aria-label",
+    `Open assignment ${meta.title} for ${meta.className}`,
+  );
   openBtn.textContent = "Open assignment";
   openBtn.addEventListener("click", () => {
     open(meta.assignmentId);
