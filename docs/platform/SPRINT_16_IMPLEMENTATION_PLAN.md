@@ -181,7 +181,7 @@ Slices land in numerical order. A later slice may be paused without regressing a
    - `In progress` group count is `summary.inProgressStudents`.
    - `Not started` group count is `summary.notStartedStudents`.
    - Total header count and Summary card counts remain unchanged (they already read from summary).
-2. When `|recipients| != summary.totalStudents`, the surface renders the summary total in the group headers but reveals the discrepancy as a calm inline note beneath the roster: `Roster and summary temporarily unaligned. Reopen this assignment to refresh.` Note is `role="status"` and `aria-live="polite"`. No red flag. No blocker.
+2. When `|recipients| != summary.totalStudents`, the surface renders the summary total in the group headers but reveals the discrepancy as a calm inline note beneath the roster: `Roster and summary are temporarily out of sync. The latest details will appear after refresh.` Note is `role="status"` and `aria-live="polite"`. No red flag. No blocker.
 3. Dashboard card progress line remains `${completedStudents} submitted / ${completedStudents + inProgressStudents} started / ${totalStudents} total`, all three sourced from the same `AssignmentSummary` snapshot. No change to the copy.
 4. Every group header displays `Label (count)` where `count` is the summary-derived count above. The rendered list within a group may be shorter than the count when recipient enumeration lags summary; the roster shows every enumerated recipient row and the discrepancy note handles the difference.
 
@@ -202,7 +202,7 @@ Slices land in numerical order. A later slice may be paused without regressing a
 - Discrepancy note renders only when `|recipients| != summary.totalStudents` and never blocks the roster list.
 - No count on the dashboard card ever disagrees with the Summary card when both are rendered against the same in-flight summary snapshot in the same session.
 
-**Acceptance criteria.** Every count on Curriculum, Assignment Summary, and Assignment Detail traces to exactly one summary snapshot per render; the discrepancy note is calm, informative, and never carries a call-to-action beyond `Reopen this assignment to refresh.`
+**Acceptance criteria.** Every count on Curriculum, Assignment Summary, and Assignment Detail traces to exactly one summary snapshot per render; the discrepancy note is calm, informative, and never carries a call-to-action.
 
 ---
 

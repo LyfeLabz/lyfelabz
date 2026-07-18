@@ -21,6 +21,11 @@ import type {
 } from "./attempts-wire";
 import { groupRoster } from "./roster";
 import {
+  DISCREPANCY_NOTE_COPY,
+  reconcileCounts,
+  shouldDisplayDiscrepancyNote,
+} from "./reconciliation";
+import {
   MIN_QUESTION_SUMMARY_ATTEMPTS,
   aggregatePerQuestion,
   type PerQuestionAggregate,
@@ -1002,12 +1007,27 @@ async function renderRosterPanel(
   });
 
   loading.remove();
-  appendRosterGroup(doc, host, "submitted", "Submitted", grouping.submitted, true);
+  // Sprint 16 Slice 3: every group header count is anchored to the
+  // authoritative `assessmentAssignmentSummary` snapshot. The rendered
+  // list within each group may still be shorter (recipient enumeration
+  // can lag summary during normal operation); the reconciliation note
+  // beneath the roster surfaces that gap calmly rather than silently
+  // relabeling either dataset.
+  appendRosterGroup(
+    doc,
+    host,
+    "submitted",
+    "Submitted",
+    summary.completedStudents,
+    grouping.submitted,
+    true,
+  );
   appendRosterGroup(
     doc,
     host,
     "in-progress",
     "In progress",
+    summary.inProgressStudents,
     grouping.inProgress,
     false,
   );
@@ -1016,9 +1036,30 @@ async function renderRosterPanel(
     host,
     "not-started",
     "Not started",
+    summary.notStartedStudents,
     grouping.notStarted,
     false,
   );
+
+  const reconciliation = reconcileCounts({
+    summary,
+    recipientsCount: recipients.length,
+    submittedCount: grouping.submitted.length,
+    inProgressCount: grouping.inProgress.length,
+  });
+  if (shouldDisplayDiscrepancyNote(reconciliation)) {
+    const note = doc.createElement("p");
+    note.className = "shell-assignment-detail-roster-discrepancy";
+    note.setAttribute(
+      "data-testid",
+      "assignment-detail-roster-discrepancy",
+    );
+    note.setAttribute("data-discrepancy-kind", reconciliation.kind);
+    note.setAttribute("role", "status");
+    note.setAttribute("aria-live", "polite");
+    note.textContent = DISCREPANCY_NOTE_COPY;
+    host.appendChild(note);
+  }
 }
 
 function appendRosterGroup(
@@ -1026,6 +1067,7 @@ function appendRosterGroup(
   host: HTMLElement,
   key: string,
   label: string,
+  headerCount: number,
   rows: ReadonlyArray<
     | { readonly studentId: string; readonly studentDisplayName: string }
     | {
@@ -1041,7 +1083,7 @@ function appendRosterGroup(
   group.setAttribute("data-testid", `assignment-detail-roster-group-${key}`);
   const groupHeading = doc.createElement("h4");
   groupHeading.className = "shell-assignment-detail-roster-group-heading";
-  groupHeading.textContent = `${label} (${rows.length})`;
+  groupHeading.textContent = `${label} (${headerCount})`;
   group.appendChild(groupHeading);
 
   if (rows.length === 0) {
