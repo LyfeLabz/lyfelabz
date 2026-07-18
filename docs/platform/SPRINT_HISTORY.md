@@ -3379,3 +3379,27 @@ Smallest bounded slice on top of Sprint 13G draft editing. Adds a `Publish assig
 
 Sprint 13H is CONDITIONALLY CERTIFIED. Implementation is complete, targeted backend publish tests pass (17 / 17), targeted publish-wire tests pass (4 / 4), targeted Assignment Detail tests pass (69 / 69, up from 58), full Cloud Functions regression passes (896 / 896 across 40 suites), lint / typecheck / build pass, and only the pre-existing `curriculum/curriculumManifest.test.ts` baseline failure remains outstanding in the full application suite (414 / 415). Final certification is conditional pending resolution or formal acceptance of that baseline failure. No deployment. No commit.
 
+## Sprint 13 Final Reconciliation and Certification (2026-07-17)
+
+Reconciliation-only sprint that treats Sprint 13A through Sprint 13H as one integrated teacher assignment lifecycle feature (Draft, Published, Closed, Reopen, plus persistent rediscovery of every non-archived state). Reviewed all eight Sprint 13 completion reports, `SPRINT_HISTORY.md` Sprint 13 entries, `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` (including §33 Sprint 13E reconciliation and §34 Sprint 13F reconciliation), `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` Appendix A assignments entries, every backend callable under `platform/functions/src/assignments/` and its tests, every client module under `app/src/assignments/summary/` and `app/src/assignments/detail/`, `app/src/shell/surfaces/curriculum.ts`, and `app/src/index.ts`. Verified end-to-end that the certified aggregate-only Sprint 12E Slice 1 confidentiality boundary is preserved, the four-item Sprint 6C Teacher Workspace navigation is unchanged, every lifecycle transition (create, edit, publish, view summary, close, reopen, reload rediscovery, back-to-Curriculum) is exercised by the certified callables, and no invalid transition path is reachable from any Sprint 13 client surface. Confirmed the same authorization gate (`requireDistrictContext`, `role === "teacher"`, owning-teacher and same-school ownership, server-derived district boundary, no client identity trust) is applied by every lifecycle callable. Confirmed the session-scoped in-memory `assignmentDetailRegistry` is the single visible catalog and every mutation path re-registers through `onStatusChange`. Produced a canonical Sprint 13 callable inventory covering `assignmentsCreateDraft`, `assignmentsUpdateDraft`, `assignmentsPublish`, `assignmentsClose`, `assignmentsReopen`, `assignmentsArchive`, `assignmentsTeacherList` (Sprint 13C plus 13F `includeDrafts` plus 13G additive `instructions` projection), `assignmentsRecipientAdd`, and the read-only `assessmentAssignmentSummary`; confirmed no duplicate responsibilities. No implementation defect surfaced. No Firestore Rules, indexes, schema, LMS, Google Classroom, notification, browser persistence, realtime listener, or polling change was introduced. No implementation change, deployment, or commit occurred. Zero em dashes across the certification document and this entry.
+
+### Files created
+
+- `docs/platform/SPRINT_13_FINAL_CERTIFICATION.md`.
+
+### Files modified
+
+- `docs/platform/SPRINT_HISTORY.md` (this Sprint 13 final certification entry; no historical entry was modified).
+
+### Validation
+
+- Targeted assignment client tests: 134 / 134 pass across 8 suites.
+- Full application suite: 414 / 415 pass across 16 suites. Sole remaining failure is the pre-existing `curriculum/curriculumManifest.test.ts` baseline drift (accepted).
+- Full Cloud Functions suite: 896 / 896 pass across 40 suites.
+- Lint, typecheck, and build clean for both `app` and `platform/functions`.
+- Firestore Rules not exercised; no Rules file was modified.
+- Git diff inspection confirmed only reconciliation documents changed. The seven pre-existing modified HTML lesson files are unrelated to Sprint 13 and were not touched by this reconciliation.
+
+### Certification
+
+Sprint 13 is CONDITIONALLY CERTIFIED as one integrated teacher assignment lifecycle feature. Lifecycle is complete, transitions are internally consistent, authorization is consistent, registry synchronization is consistent, and documentation is reconciled. Final certification remains conditional pending resolution or formal acceptance of the pre-existing `curriculum/curriculumManifest.test.ts` baseline failure. Sprint 14 may begin. No deployment. No commit.
