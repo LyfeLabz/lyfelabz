@@ -10,6 +10,7 @@ import { dispatch } from "./router/router";
 import { createRouteTable } from "./router/routes";
 import { renderLoadingSurface } from "./router/surfaces";
 import { bootstrapSession } from "./session/bootstrap";
+import type { Session } from "./session/types";
 import { createBrowserLaunchPresentMode } from "./presentMode/launchContext";
 import {
   createAssignmentsCallables,
@@ -117,8 +118,41 @@ async function run(): Promise<void> {
   // Rebuilt per active-teacher session so cross-session state cannot
   // leak.
   const assignmentDetailRegistry = createAssignmentDetailRegistry();
+  // Sprint 16 Slice 1: hoisted references used by the lighter Back path
+  // from Assignment Detail. `lastActiveTeacher` records the most-recent
+  // successful active-teacher session (set at the end of `rerun` on the
+  // activeTeacher branch, cleared on any other branch); `remountCurriculum`
+  // re-renders the Curriculum surface against the already-hydrated
+  // registry and callable set without repeating auth, Functions,
+  // integrations, or `assignmentsTeacherList` hydration. When an
+  // active-teacher session is unavailable, the Back handler falls back to
+  // the full `rerun()` path.
+  let lastActiveTeacher: Extract<Session, { kind: "activeTeacher" }> | null =
+    null;
+  // Sprint 16 Slice 1: per-assignment invalidator installed by the
+  // Curriculum surface on mount and cleared before Assignment Detail
+  // mounts, so a lifecycle change routed through `onStatusChange` while
+  // Curriculum is the active surface refreshes the affected dashboard
+  // card. When Curriculum is not mounted, the invalidator is null and
+  // `onStatusChange` only re-registers the registry; the next Curriculum
+  // mount reads the fresh registry as today.
+  let activeAssignmentsInvalidator: ((assignmentId: string) => void) | null =
+    null;
+  const remountCurriculum = (): void => {
+    const session = lastActiveTeacher;
+    if (session === null) {
+      void rerun();
+      return;
+    }
+    activeAssignmentsInvalidator = null;
+    dispatch(session, table, mount, window.history);
+  };
   const openAssignmentDetail = (assignmentId: string): void => {
     if (assignmentSummary === null) return;
+    // Clear the Curriculum-owned invalidator before we replace the mount
+    // so a lifecycle change fired during this Detail surface's lifetime
+    // cannot invoke a stale handler bound to a detached section.
+    activeAssignmentsInvalidator = null;
     const target = findMount();
     target.textContent = "";
     renderAssignmentDetail(target, {
@@ -128,7 +162,12 @@ async function run(): Promise<void> {
       ),
       summaryCallable: assignmentSummary,
       onBack: () => {
-        void rerun();
+        // Sprint 16 Slice 1: happy-path Back re-renders Curriculum
+        // against the already-hydrated registry and callable set instead
+        // of running a full session bootstrap. Falls back to the full
+        // `rerun()` path only when the active-teacher session is
+        // unavailable (for example after sign-out).
+        remountCurriculum();
       },
       // Sprint 13D: wire the certified close callable and register the
       // updated metadata into the session-scoped registry so a later
@@ -163,6 +202,12 @@ async function run(): Promise<void> {
       attemptGetForTeacherCallable: attemptGetForTeacher ?? undefined,
       onStatusChange: (metadata) => {
         assignmentDetailRegistry.register(metadata);
+        // Sprint 16 Slice 1: when Curriculum owns the mount, refresh the
+        // affected dashboard card. The invalidator is null while any
+        // non-Curriculum surface (including Assignment Detail) is
+        // mounted, so this side effect is quiet until Curriculum
+        // remounts and re-installs its handler.
+        activeAssignmentsInvalidator?.(metadata.assignmentId);
       },
     });
   };
@@ -187,6 +232,16 @@ async function run(): Promise<void> {
     // status, lessonSlug, classId); never student, recipient, attempt,
     // or session identifiers.
     list: () => assignmentDetailRegistry.list(),
+    // Sprint 16 Slice 1: Curriculum installs a per-assignment
+    // invalidator on mount and clears it on unmount. The entry point
+    // holds the mutable slot so a lifecycle status change routed
+    // through `onStatusChange` can refresh the affected dashboard card
+    // without teaching the detail surface about the dashboard.
+    setActiveAssignmentsInvalidator: (
+      invalidator: ((assignmentId: string) => void) | null,
+    ) => {
+      activeAssignmentsInvalidator = invalidator;
+    },
   });
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
@@ -241,6 +296,7 @@ async function run(): Promise<void> {
         teacherList,
       );
       if (runToken !== currentRunToken) return;
+      lastActiveTeacher = session;
     } else {
       integrations = null;
       assignments = null;
@@ -253,7 +309,9 @@ async function run(): Promise<void> {
       attemptsListForClass = null;
       attemptGetForTeacher = null;
       assignmentDetailRegistry.clear();
+      lastActiveTeacher = null;
     }
+    activeAssignmentsInvalidator = null;
     dispatch(session, table, mount, window.history);
   };
 

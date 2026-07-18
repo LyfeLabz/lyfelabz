@@ -42,6 +42,14 @@ export type CurriculumAssignmentDetailSeam = {
   // the per-lesson mapping after a full page reload. When absent the
   // surface behaves exactly as Sprint 13B (session-only affordance).
   readonly list?: () => ReadonlyArray<AssignmentDetailMetadata>;
+  // Sprint 16 Slice 1: stable per-tab seam allowing the Curriculum
+  // surface to install (or clear) an invalidator that the entry point
+  // invokes on every lifecycle registration. Absent-or-null keeps the
+  // Sprint 15 behavior: `onStatusChange` only re-registers the registry
+  // and the next Curriculum mount reads the fresh registry as today.
+  readonly setActiveAssignmentsInvalidator?: (
+    invalidator: ((assignmentId: string) => void) | null,
+  ) => void;
 };
 
 // Curriculum surface. The teacher curriculum landing page introduced by
@@ -389,6 +397,18 @@ export function renderCurriculumSurface(
       },
       summaryCallable: deps.assignmentSummary ?? null,
     });
+    // Sprint 16 Slice 1: install the per-assignment invalidator so a
+    // lifecycle status change routed through `onStatusChange` while
+    // Curriculum is the mounted surface evicts that card's progress
+    // cache and re-fetches on the next render. The seam is cleared when
+    // Curriculum unmounts (the entry point calls the setter with null
+    // before mounting Assignment Detail) so a stale invalidator cannot
+    // fire against a detached section.
+    if (typeof assignmentDetail.setActiveAssignmentsInvalidator === "function") {
+      assignmentDetail.setActiveAssignmentsInvalidator((assignmentId) => {
+        activeAssignmentsController?.refresh({ assignmentIds: [assignmentId] });
+      });
+    }
   }
 
   const intro = doc.createElement("p");
@@ -534,9 +554,11 @@ export function renderCurriculumSurface(
         activeAssignmentsController?.refresh();
         showSuccess(successBanner, summary);
       },
-      onLifecycleComplete: () => {
+      onLifecycleComplete: (assignmentIds) => {
         refreshViewSummaryControl(card, lesson, session.uid, assignmentDetail);
-        activeAssignmentsController?.refresh();
+        activeAssignmentsController?.refresh(
+          assignmentIds.length > 0 ? { assignmentIds } : undefined,
+        );
       },
     });
   };
@@ -953,7 +975,9 @@ type OpenDialogInput = {
   readonly assignments: AssignmentsCallables | null;
   readonly assignmentDetail: CurriculumAssignmentDetailSeam | null;
   readonly onConfirm: (summary: string) => void;
-  readonly onLifecycleComplete?: () => void;
+  readonly onLifecycleComplete?: (
+    assignmentIds: ReadonlyArray<string>,
+  ) => void;
 };
 
 async function openDialog(input: OpenDialogInput): Promise<void> {
@@ -1505,6 +1529,7 @@ function mintNonce(): string {
 
 type PerClassOutcome = {
   readonly classId: string;
+  readonly assignmentId: string;
   readonly lyfelabzAssigned: boolean;
   readonly lmsRequested: boolean;
   readonly lmsSucceeded: boolean;
@@ -1534,7 +1559,9 @@ async function runAssignmentLifecycle(input: {
   readonly integrations: IntegrationsDeps | null;
   readonly assignmentDetail: CurriculumAssignmentDetailSeam | null;
   readonly onConfirm: (summary: string) => void;
-  readonly onLifecycleComplete?: () => void;
+  readonly onLifecycleComplete?: (
+    assignmentIds: ReadonlyArray<string>,
+  ) => void;
 }): Promise<void> {
   const {
     lesson,
@@ -1577,6 +1604,7 @@ async function runAssignmentLifecycle(input: {
       } catch {
         return {
           classId: row.classId,
+          assignmentId,
           lyfelabzAssigned: false,
           lmsRequested: wantsLms,
           lmsSucceeded: false,
@@ -1591,6 +1619,7 @@ async function runAssignmentLifecycle(input: {
       } catch {
         return {
           classId: row.classId,
+          assignmentId,
           lyfelabzAssigned: false,
           lmsRequested: wantsLms,
           lmsSucceeded: false,
@@ -1622,6 +1651,7 @@ async function runAssignmentLifecycle(input: {
       if (!wantsLms || row.link === null || integrations === null) {
         return {
           classId: row.classId,
+          assignmentId,
           lyfelabzAssigned: true,
           lmsRequested: false,
           lmsSucceeded: false,
@@ -1638,6 +1668,7 @@ async function runAssignmentLifecycle(input: {
         });
         return {
           classId: row.classId,
+          assignmentId,
           lyfelabzAssigned: true,
           lmsRequested: true,
           lmsSucceeded: outcome.status === "succeeded",
@@ -1645,6 +1676,7 @@ async function runAssignmentLifecycle(input: {
       } catch {
         return {
           classId: row.classId,
+          assignmentId,
           lyfelabzAssigned: true,
           lmsRequested: true,
           lmsSucceeded: false,
@@ -1654,7 +1686,10 @@ async function runAssignmentLifecycle(input: {
   );
 
   onConfirm(summarizeOutcomes(lesson, outcomes));
-  onLifecycleComplete?.();
+  const publishedIds = outcomes
+    .filter((o) => o.lyfelabzAssigned)
+    .map((o) => o.assignmentId);
+  onLifecycleComplete?.(publishedIds);
 }
 
 function summarizeOutcomes(

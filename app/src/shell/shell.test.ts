@@ -3490,3 +3490,263 @@ describe("Curriculum - Sprint 13F draft discovery", () => {
     expect(view?.hasAttribute("data-draft-only")).toBe(false);
   });
 });
+
+describe("Sprint 16 Slice 1: dashboard refresh completeness", () => {
+  const teacher = teacherSession();
+
+  type Registered = {
+    assignmentId: string;
+    title: string;
+    className: string;
+    status: "draft" | "published" | "closed";
+    lessonSlug?: string;
+    classId?: string;
+    publishedAt?: number;
+  };
+
+  type Summary = {
+    assignmentId: string;
+    classId: string;
+    totalStudents: number;
+    completedStudents: number;
+    inProgressStudents: number;
+    notStartedStudents: number;
+    completionPercentage: number;
+    averagePercentage: number | null;
+    highestPercentage: number | null;
+    lowestPercentage: number | null;
+    perfectScoreStudents: number;
+  };
+
+  const summary = (id: string, over: Partial<Summary> = {}): Summary => ({
+    assignmentId: id,
+    classId: "c1",
+    totalStudents: 10,
+    completedStudents: 0,
+    inProgressStudents: 0,
+    notStartedStudents: 10,
+    completionPercentage: 0,
+    averagePercentage: null,
+    highestPercentage: null,
+    lowestPercentage: null,
+    perfectScoreStudents: 0,
+    ...over,
+  });
+
+  const makeHydratedSeam = (initial: ReadonlyArray<Registered>) => {
+    const store = new Map<string, Registered>();
+    for (const m of initial) store.set(m.assignmentId, { ...m });
+    const opened: string[] = [];
+    let installed: ((assignmentId: string) => void) | null = null;
+    return {
+      opened,
+      getInvalidator: (): ((id: string) => void) | null => installed,
+      seam: {
+        register: (m: Registered) => {
+          store.set(m.assignmentId, { ...m });
+        },
+        open: (id: string) => {
+          opened.push(id);
+        },
+        list: () => Array.from(store.values()),
+        setActiveAssignmentsInvalidator: (
+          fn: ((id: string) => void) | null,
+        ) => {
+          installed = fn;
+        },
+      },
+    };
+  };
+
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+  });
+
+  test("Curriculum installs the per-assignment invalidator on mount via the seam setter", () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "p1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: emptyListClasses,
+      assignmentDetail: detail.seam,
+    });
+    expect(typeof detail.getInvalidator()).toBe("function");
+  });
+
+  test("invalidator refresh only re-fetches the targeted assignment", async () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "p1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "p2",
+        title: "Waves",
+        className: "6B Physical",
+        status: "published",
+        lessonSlug: "nature-of-waves",
+        classId: "c2",
+      },
+    ]);
+    const calls: string[] = [];
+    const summaryCallable = async (input: { assignmentId: string }) => {
+      calls.push(input.assignmentId);
+      return summary(input.assignmentId);
+    };
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: emptyListClasses,
+      assignmentDetail: detail.seam,
+      assignmentSummary: summaryCallable,
+    });
+    await flush();
+    await flush();
+    expect(calls.sort()).toEqual(["p1", "p2"]);
+    calls.length = 0;
+
+    // Simulate an `onStatusChange` firing for exactly one card.
+    detail.getInvalidator()?.("p1");
+    await flush();
+    await flush();
+    expect(calls).toEqual(["p1"]);
+  });
+
+  test("invalidator is a no-op for an assignmentId that was never cached", async () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "p1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ]);
+    const calls: string[] = [];
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: emptyListClasses,
+      assignmentDetail: detail.seam,
+      assignmentSummary: async ({ assignmentId }) => {
+        calls.push(assignmentId);
+        return summary(assignmentId);
+      },
+    });
+    await flush();
+    await flush();
+    calls.length = 0;
+    detail.getInvalidator()?.("does-not-exist");
+    await flush();
+    await flush();
+    expect(calls).toEqual([]);
+  });
+
+  test("a single invalidator invocation triggers exactly one summary refresh (no duplicate refresh)", async () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "p1",
+        title: "Earth's Layers",
+        className: "6A Life Science",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ]);
+    const calls: string[] = [];
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: emptyListClasses,
+      assignmentDetail: detail.seam,
+      assignmentSummary: async ({ assignmentId }) => {
+        calls.push(assignmentId);
+        return summary(assignmentId);
+      },
+    });
+    await flush();
+    await flush();
+    calls.length = 0;
+    detail.getInvalidator()?.("p1");
+    await flush();
+    await flush();
+    expect(calls).toEqual(["p1"]);
+  });
+
+  test("Show closed and published-date ordering are preserved after an invalidator-driven refresh", async () => {
+    const detail = makeHydratedSeam([
+      {
+        assignmentId: "old",
+        title: "Waves",
+        className: "6B",
+        status: "published",
+        lessonSlug: "nature-of-waves",
+        classId: "c2",
+        publishedAt: 1000,
+      },
+      {
+        assignmentId: "new",
+        title: "Earth's Layers",
+        className: "6A",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+        publishedAt: 2000,
+      },
+      {
+        assignmentId: "closed1",
+        title: "Cells",
+        className: "6A",
+        status: "closed",
+        lessonSlug: "cell-types",
+        classId: "c1",
+        publishedAt: 500,
+      },
+    ]);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: emptyListClasses,
+      assignmentDetail: detail.seam,
+      assignmentSummary: async ({ assignmentId }) => summary(assignmentId),
+    });
+    await flush();
+    await flush();
+
+    // Show closed toggle is present but off; closed card hidden.
+    const toggle = mount.querySelector<HTMLInputElement>(
+      "[data-testid=active-assignments-show-closed]",
+    );
+    expect(toggle).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=active-assignment-card-closed1]"),
+    ).toBeNull();
+
+    // Trigger an invalidator refresh; ordering must remain new-then-old.
+    detail.getInvalidator()?.("new");
+    await flush();
+    await flush();
+    const cards = Array.from(
+      mount.querySelectorAll<HTMLElement>(
+        "[data-testid^=active-assignment-card-]",
+      ),
+    ).map((c) => c.getAttribute("data-assignment-id"));
+    expect(cards).toEqual(["new", "old"]);
+
+    // Toggle Show closed and confirm the closed card appears.
+    toggle!.checked = true;
+    toggle!.dispatchEvent(new Event("change"));
+    expect(
+      mount.querySelector("[data-testid=active-assignment-card-closed1]"),
+    ).not.toBeNull();
+  });
+});

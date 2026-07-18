@@ -74,8 +74,18 @@ export function compareCards(
   return 0;
 }
 
+export type ActiveAssignmentsRefreshInvalidate = {
+  readonly assignmentIds?: ReadonlyArray<string>;
+};
+
 export type ActiveAssignmentsController = {
-  readonly refresh: () => void;
+  // Sprint 16 Slice 1: `refresh` accepts an optional invalidate hint. When
+  // `assignmentIds` is supplied, exactly those entries are evicted from
+  // `progressCache` before the render pass, forcing a re-fetch of the
+  // specified cards on the next render. When absent, the existing
+  // prune-only behavior is preserved: entries no longer in the registry
+  // are removed and entries still present retain their cached counts.
+  readonly refresh: (invalidate?: ActiveAssignmentsRefreshInvalidate) => void;
 };
 
 export function renderActiveAssignmentsSection(
@@ -205,7 +215,7 @@ export function renderActiveAssignmentsSection(
   render();
 
   return {
-    refresh: () => {
+    refresh: (invalidate) => {
       // Invalidate summary cache for entries that have moved out of the
       // registry between renders; entries still present preserve their
       // cached counts to avoid duplicate calls.
@@ -214,6 +224,11 @@ export function renderActiveAssignmentsSection(
       );
       for (const id of Array.from(progressCache.keys())) {
         if (!current.has(id)) progressCache.delete(id);
+      }
+      if (invalidate && invalidate.assignmentIds) {
+        for (const id of invalidate.assignmentIds) {
+          progressCache.delete(id);
+        }
       }
       render();
     },

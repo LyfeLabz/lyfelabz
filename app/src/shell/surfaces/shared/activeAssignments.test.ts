@@ -198,6 +198,84 @@ describe("renderActiveAssignmentsSection", () => {
     expect(progress?.textContent).toBe("Progress temporarily unavailable");
   });
 
+  test("Sprint 16 Slice 1: refresh({ assignmentIds }) evicts only the specified card and re-fetches on the next render", async () => {
+    const mount = mkMount();
+    const registry: AssignmentDetailMetadata[] = [
+      meta({ assignmentId: "p1" }),
+      meta({ assignmentId: "p2", title: "Waves", classId: "c2" }),
+    ];
+    const calls: string[] = [];
+    const summary = (assignmentId: string) => ({
+      assignmentId,
+      classId: assignmentId === "p2" ? "c2" : "c1",
+      totalStudents: 10,
+      completedStudents: 1,
+      inProgressStudents: 2,
+      notStartedStudents: 7,
+      completionPercentage: 10,
+      averagePercentage: null,
+      highestPercentage: null,
+      lowestPercentage: null,
+      perfectScoreStudents: 0,
+    });
+    const controller = renderActiveAssignmentsSection(mount, {
+      listRegistry: () => registry,
+      open: () => undefined,
+      summaryCallable: async ({ assignmentId }) => {
+        calls.push(assignmentId);
+        return summary(assignmentId);
+      },
+    });
+    await flush();
+    await flush();
+    expect(calls.sort()).toEqual(["p1", "p2"]);
+    calls.length = 0;
+
+    // Untargeted refresh preserves cache for entries still present.
+    controller.refresh();
+    await flush();
+    await flush();
+    expect(calls).toEqual([]);
+
+    // Targeted refresh evicts exactly the specified id.
+    controller.refresh({ assignmentIds: ["p1"] });
+    await flush();
+    await flush();
+    expect(calls).toEqual(["p1"]);
+  });
+
+  test("Sprint 16 Slice 1: refresh with an empty assignmentIds list is a no-op beyond re-render", async () => {
+    const mount = mkMount();
+    const calls: string[] = [];
+    const controller = renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+      summaryCallable: async ({ assignmentId }) => {
+        calls.push(assignmentId);
+        return {
+          assignmentId,
+          classId: "c1",
+          totalStudents: 0,
+          completedStudents: 0,
+          inProgressStudents: 0,
+          notStartedStudents: 0,
+          completionPercentage: 0,
+          averagePercentage: null,
+          highestPercentage: null,
+          lowestPercentage: null,
+          perfectScoreStudents: 0,
+        };
+      },
+    });
+    await flush();
+    await flush();
+    calls.length = 0;
+    controller.refresh({ assignmentIds: [] });
+    await flush();
+    await flush();
+    expect(calls).toEqual([]);
+  });
+
   test("card renders published date when publishedAt is present", () => {
     const mount = mkMount();
     renderActiveAssignmentsSection(mount, {
