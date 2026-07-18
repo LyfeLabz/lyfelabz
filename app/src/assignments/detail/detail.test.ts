@@ -2390,3 +2390,325 @@ describe("renderAssignmentDetail - publish lifecycle (Sprint 13H)", () => {
     ).not.toBeNull();
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 16 Slice 2: Assignment Detail per-render fetch cache. Multiple
+// sub-panels on one Detail render share one in-flight or resolved
+// request per (callable, key) pair. Lifecycle-triggered rerenders
+// invalidate the cache so no sub-panel observes a stale snapshot.
+// -----------------------------------------------------------------------------
+
+import type { AssignmentRecipientListCallable } from "./roster-wire";
+import type {
+  AttemptGetForTeacherCallable,
+  AttemptsListForClassCallable,
+  CompletedAttemptSummary,
+  TeacherVisibleAttempt,
+} from "./attempts-wire";
+
+const spyingRecipients = (
+  recipients: ReadonlyArray<{
+    readonly studentId: string;
+    readonly studentDisplayName: string;
+  }>,
+): {
+  readonly callable: AssignmentRecipientListCallable;
+  readonly calls: Array<string>;
+} => {
+  const calls: Array<string> = [];
+  const callable: AssignmentRecipientListCallable = ({ assignmentId }) => {
+    calls.push(assignmentId);
+    return Promise.resolve({ assignmentId, recipients });
+  };
+  return { callable, calls };
+};
+
+const spyingAttemptsList = (
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+): {
+  readonly callable: AttemptsListForClassCallable;
+  readonly calls: Array<string>;
+} => {
+  const calls: Array<string> = [];
+  const callable: AttemptsListForClassCallable = ({ classId }) => {
+    calls.push(classId);
+    return Promise.resolve({ classId, attempts });
+  };
+  return { callable, calls };
+};
+
+const spyingAttemptGet = (
+  byId: ReadonlyMap<string, TeacherVisibleAttempt>,
+): {
+  readonly callable: AttemptGetForTeacherCallable;
+  readonly calls: Array<string>;
+} => {
+  const calls: Array<string> = [];
+  const callable: AttemptGetForTeacherCallable = ({ attemptId }) => {
+    calls.push(attemptId);
+    const record = byId.get(attemptId);
+    if (record === undefined) {
+      return Promise.reject(new Error("missing"));
+    }
+    return Promise.resolve(record);
+  };
+  return { callable, calls };
+};
+
+const mkAttempt = (
+  overrides: Partial<CompletedAttemptSummary>,
+): CompletedAttemptSummary =>
+  Object.freeze({
+    attemptId: overrides.attemptId ?? "att-1",
+    studentId: overrides.studentId ?? "stu-1",
+    studentDisplayName: overrides.studentDisplayName ?? "Student One",
+    assignmentId: overrides.assignmentId ?? "assign-1",
+    attemptNumber: overrides.attemptNumber ?? 1,
+    score: overrides.score ?? 5,
+    maxScore: overrides.maxScore ?? 10,
+    percentage: overrides.percentage ?? 50,
+    submittedAt: overrides.submittedAt ?? 1000,
+  });
+
+describe("renderAssignmentDetail - Sprint 16 Slice 2 shared fetch cache", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  test("one Detail render issues exactly one summary call across summary card and roster panel", async () => {
+    const mount = mkMount();
+    const meta = freezeMetadata({ classId: "class-1" });
+    const summary = spyingSummary(freezeSummary());
+    const recipients = spyingRecipients([
+      { studentId: "stu-1", studentDisplayName: "Alice" },
+      { studentId: "stu-2", studentDisplayName: "Bob" },
+    ]);
+    const attempts = spyingAttemptsList([]);
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta),
+      summaryCallable: summary.callable,
+      recipientListCallable: recipients.callable,
+      attemptsListForClassCallable: attempts.callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    expect(summary.calls).toEqual(["assign-1"]);
+  });
+
+  test("one Detail render issues exactly one attempts-list call across roster and question panels", async () => {
+    const mount = mkMount();
+    const meta = freezeMetadata({ classId: "class-1" });
+    const recipients = spyingRecipients([
+      { studentId: "stu-1", studentDisplayName: "Alice" },
+    ]);
+    const attempts = spyingAttemptsList([]);
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: recipients.callable,
+      attemptsListForClassCallable: attempts.callable,
+      attemptGetForTeacherCallable: spyingAttemptGet(new Map()).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    expect(attempts.calls).toEqual(["class-1"]);
+  });
+
+  test("concurrent consumers of the same shared attempts list observe the same resolved snapshot", async () => {
+    const mount = mkMount();
+    const meta = freezeMetadata({ classId: "class-1" });
+    const shared = [
+      mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 90 }),
+      mkAttempt({ attemptId: "att-2", studentId: "stu-2", percentage: 80 }),
+      mkAttempt({ attemptId: "att-3", studentId: "stu-3", percentage: 70 }),
+    ];
+    const attempts = spyingAttemptsList(shared);
+    const recipients = spyingRecipients([
+      { studentId: "stu-1", studentDisplayName: "Alice" },
+      { studentId: "stu-2", studentDisplayName: "Bob" },
+      { studentId: "stu-3", studentDisplayName: "Cara" },
+    ]);
+    const attemptGet = spyingAttemptGet(
+      new Map(
+        shared.map((a) => [
+          a.attemptId,
+          Object.freeze({
+            attemptId: a.attemptId,
+            studentId: a.studentId,
+            assignmentId: a.assignmentId,
+            attemptNumber: a.attemptNumber,
+            percentage: a.percentage,
+            itemResults: Object.freeze([]),
+          }) as TeacherVisibleAttempt,
+        ]),
+      ),
+    );
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      recipientListCallable: recipients.callable,
+      attemptsListForClassCallable: attempts.callable,
+      attemptGetForTeacherCallable: attemptGet.callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    await flush();
+    expect(attempts.calls.length).toBe(1);
+    // Roster derives Submitted from the same attempts snapshot the
+    // question panel used to select representative attempts.
+    const submittedGroup = mount.querySelector(
+      "[data-testid=assignment-detail-roster-group-submitted]",
+    );
+    expect(submittedGroup).not.toBeNull();
+    expect(submittedGroup?.textContent ?? "").toContain("Submitted (3)");
+  });
+
+  test("second independent Detail render performs its own fresh fetch cycle", async () => {
+    const firstMount = mkMount();
+    const attempts = spyingAttemptsList([]);
+    const summary = spyingSummary(freezeSummary());
+    const recipients = spyingRecipients([]);
+    renderAssignmentDetail(firstMount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: summary.callable,
+      recipientListCallable: recipients.callable,
+      attemptsListForClassCallable: attempts.callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    firstMount.remove();
+
+    const secondMount = mkMount();
+    renderAssignmentDetail(secondMount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: summary.callable,
+      recipientListCallable: recipients.callable,
+      attemptsListForClassCallable: attempts.callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    expect(summary.calls).toEqual(["assign-1", "assign-1"]);
+    expect(attempts.calls).toEqual(["class-1", "class-1"]);
+  });
+
+  test("rendering a different assignment does not reuse the previous cache", async () => {
+    const mountA = mkMount();
+    const summary = spyingSummary(freezeSummary());
+    renderAssignmentDetail(mountA, {
+      assignmentId: "assign-A",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ assignmentId: "assign-A", classId: "class-A" }),
+      ),
+      summaryCallable: summary.callable,
+      recipientListCallable: spyingRecipients([]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    mountA.remove();
+
+    const mountB = mkMount();
+    renderAssignmentDetail(mountB, {
+      assignmentId: "assign-B",
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ assignmentId: "assign-B", classId: "class-B" }),
+      ),
+      summaryCallable: summary.callable,
+      recipientListCallable: spyingRecipients([]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    expect(summary.calls).toEqual(["assign-A", "assign-B"]);
+  });
+
+  test("lifecycle-triggered rerender refreshes the cache and refetches", async () => {
+    const mount = mkMount();
+    const meta = freezeMetadata({ status: "published", classId: "class-1" });
+    const summary = spyingSummary(freezeSummary());
+    const recipients = spyingRecipients([
+      { studentId: "stu-1", studentDisplayName: "Alice" },
+    ]);
+    const attempts = spyingAttemptsList([]);
+    const close = resolvingClose();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta),
+      summaryCallable: summary.callable,
+      recipientListCallable: recipients.callable,
+      attemptsListForClassCallable: attempts.callable,
+      closeCallable: close.callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    expect(summary.calls).toEqual(["assign-1"]);
+    expect(attempts.calls).toEqual(["class-1"]);
+
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    // After the successful close the cache is invalidated; the recomposed
+    // sub-surfaces observe fresh callable responses. One additional call
+    // per callable identity, not two.
+    expect(summary.calls).toEqual(["assign-1", "assign-1"]);
+    expect(attempts.calls).toEqual(["class-1", "class-1"]);
+  });
+
+  test("rejected shared attempts request does not produce an unhandled rejection", async () => {
+    const unhandled: Array<unknown> = [];
+    const listener = (ev: PromiseRejectionEvent): void => {
+      unhandled.push(ev.reason);
+    };
+    // jsdom emits `unhandledrejection` on window when a rejection has no
+    // handler by the end of the current microtask queue.
+    window.addEventListener("unhandledrejection", listener);
+    try {
+      const mount = mkMount();
+      const meta = freezeMetadata({ classId: "class-1" });
+      const failing: AttemptsListForClassCallable = () =>
+        Promise.reject(new Error("attempts failed"));
+      renderAssignmentDetail(mount, {
+        assignmentId: "assign-1",
+        loadMetadata: resolvingMeta(meta),
+        summaryCallable: resolvingSummary(freezeSummary()),
+        recipientListCallable: spyingRecipients([]).callable,
+        attemptsListForClassCallable: failing,
+        attemptGetForTeacherCallable: spyingAttemptGet(new Map()).callable,
+      });
+      await flush();
+      await flush();
+      await flush();
+      await flush();
+      expect(unhandled.length).toBe(0);
+      // The roster error branch surfaced the shared failure.
+      expect(
+        mount.querySelector("[data-testid=assignment-detail-roster-error]"),
+      ).not.toBeNull();
+    } finally {
+      window.removeEventListener("unhandledrejection", listener);
+    }
+  });
+});

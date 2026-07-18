@@ -25,6 +25,7 @@ import {
   aggregatePerQuestion,
   type PerQuestionAggregate,
 } from "./question-summary";
+import { createDetailFetchCache, type DetailFetchCache } from "./fetch-cache";
 
 // Sprint 13B Teacher Assignment Detail surface. A pure DOM builder
 // that composes the certified Sprint 13A `renderAssignmentSummaryCard`
@@ -219,6 +220,31 @@ export function renderAssignmentDetail(
   let editUi: EditUiState = { kind: "closed" };
   let publishUi: PublishUiState = { kind: "idle" };
 
+  // Sprint 16 Slice 2: one shared per-render fetch cache backs all
+  // Detail sub-panels so `assessmentAssignmentSummary` and
+  // `assessmentAttemptsListForClass` each resolve to exactly one
+  // in-flight request per identity for the lifetime of the current
+  // ready render. The cache is replaced (and its entries dropped) on
+  // every metadata load and on every successful lifecycle transition
+  // so no sub-panel ever observes a snapshot older than the current
+  // `state.kind === "ready"` transition.
+  let detailCache: DetailFetchCache = createDetailFetchCache();
+  const refreshDetailCache = (): void => {
+    detailCache = createDetailFetchCache();
+  };
+
+  const sharedSummaryCallable: AssignmentSummaryCallable = (input) =>
+    detailCache.get(`summary:${input.assignmentId}`, () =>
+      deps.summaryCallable(input),
+    );
+  const sharedAttemptsListCallable: AttemptsListForClassCallable | undefined =
+    deps.attemptsListForClassCallable === undefined
+      ? undefined
+      : (input) =>
+          detailCache.get(`attempts:${input.classId}`, () =>
+            deps.attemptsListForClassCallable!(input),
+          );
+
   const rerender = (): void => {
     body.textContent = "";
     if (!mount.isConnected) return;
@@ -233,6 +259,10 @@ export function renderAssignmentDetail(
           body,
           s.metadata,
           deps,
+          {
+            summaryCallable: sharedSummaryCallable,
+            attemptsListForClassCallable: sharedAttemptsListCallable,
+          },
           closeUi,
           reopenUi,
           editUi,
@@ -337,6 +367,7 @@ export function renderAssignmentDetail(
       // lifecycle actions never render at the same time, so the close
       // error UI would otherwise be attached to a Published header.
       closeUi = { kind: "idle" };
+      refreshDetailCache();
       rerender();
       deps.onStatusChange?.(nextMetadata);
       void result;
@@ -365,6 +396,7 @@ export function renderAssignmentDetail(
       // Symmetric to performReopen: clear any stale reopen error so the
       // Closed header never carries a Reopen error banner.
       reopenUi = { kind: "idle" };
+      refreshDetailCache();
       rerender();
       deps.onStatusChange?.(nextMetadata);
       void result;
@@ -418,6 +450,7 @@ export function renderAssignmentDetail(
       // publish error banner.
       closeUi = { kind: "idle" };
       reopenUi = { kind: "idle" };
+      refreshDetailCache();
       rerender();
       deps.onStatusChange?.(nextMetadata);
       void result;
@@ -524,6 +557,7 @@ export function renderAssignmentDetail(
       });
       state = { kind: "ready", metadata: nextMetadata };
       editUi = { kind: "closed" };
+      refreshDetailCache();
       rerender();
       deps.onStatusChange?.(nextMetadata);
       void result;
@@ -547,6 +581,7 @@ export function renderAssignmentDetail(
   const load = async (): Promise<void> => {
     const token = ++loadToken;
     state = { kind: "loading" };
+    refreshDetailCache();
     rerender();
     try {
       const metadata = await deps.loadMetadata({
@@ -589,11 +624,17 @@ function renderLoading(doc: Document, mount: HTMLElement): void {
   mount.appendChild(wrap);
 }
 
+type SharedDetailCallables = {
+  readonly summaryCallable: AssignmentSummaryCallable;
+  readonly attemptsListForClassCallable: AttemptsListForClassCallable | undefined;
+};
+
 function renderReady(
   doc: Document,
   mount: HTMLElement,
   metadata: AssignmentDetailMetadata,
   deps: AssignmentDetailDeps,
+  shared: SharedDetailCallables,
   closeUi: CloseUiState,
   reopenUi: ReopenUiState,
   editUi: EditUiState,
@@ -846,7 +887,7 @@ function renderReady(
   mount.appendChild(summaryHost);
 
   renderAssignmentSummaryCard(summaryHost, {
-    callable: deps.summaryCallable,
+    callable: shared.summaryCallable,
     assignmentId: metadata.assignmentId,
   });
 
@@ -856,20 +897,26 @@ function renderReady(
   // the pre-Sprint-15 wiring stay green.
   if (
     deps.recipientListCallable !== undefined &&
-    deps.attemptsListForClassCallable !== undefined
+    shared.attemptsListForClassCallable !== undefined
   ) {
     const rosterHost = doc.createElement("section");
     rosterHost.className = "shell-assignment-detail-roster";
     rosterHost.setAttribute("data-testid", "assignment-detail-roster-host");
     mount.appendChild(rosterHost);
-    void renderRosterPanel(rosterHost, metadata, deps);
+    void renderRosterPanel(
+      rosterHost,
+      metadata,
+      deps.recipientListCallable,
+      shared.attemptsListForClassCallable,
+      shared.summaryCallable,
+    );
   }
 
   // Sprint 15 Slice 6: per-question factual summary beneath the roster.
   // The threshold check happens after the completed-attempt count is
   // known so no per-attempt fetches are issued below the threshold.
   if (
-    deps.attemptsListForClassCallable !== undefined &&
+    shared.attemptsListForClassCallable !== undefined &&
     deps.attemptGetForTeacherCallable !== undefined
   ) {
     const questionHost = doc.createElement("section");
@@ -879,14 +926,21 @@ function renderReady(
       "assignment-detail-questions-host",
     );
     mount.appendChild(questionHost);
-    void renderQuestionSummaryPanel(questionHost, metadata, deps);
+    void renderQuestionSummaryPanel(
+      questionHost,
+      metadata,
+      shared.attemptsListForClassCallable,
+      deps.attemptGetForTeacherCallable,
+    );
   }
 }
 
 async function renderRosterPanel(
   host: HTMLElement,
   metadata: AssignmentDetailMetadata,
-  deps: AssignmentDetailDeps,
+  recipientCallable: AssignmentRecipientListCallable,
+  attemptsCallable: AttemptsListForClassCallable,
+  summaryCallable: AssignmentSummaryCallable,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -904,10 +958,6 @@ async function renderRosterPanel(
   loading.setAttribute("aria-live", "polite");
   loading.textContent = "Loading roster...";
   host.appendChild(loading);
-
-  const recipientCallable = deps.recipientListCallable!;
-  const attemptsCallable = deps.attemptsListForClassCallable!;
-  const summaryCallable = deps.summaryCallable;
 
   let recipients: ReadonlyArray<{
     readonly studentId: string;
@@ -1039,7 +1089,8 @@ function appendRosterGroup(
 async function renderQuestionSummaryPanel(
   host: HTMLElement,
   metadata: AssignmentDetailMetadata,
-  deps: AssignmentDetailDeps,
+  attemptsCallable: AttemptsListForClassCallable,
+  attemptGetCallable: AttemptGetForTeacherCallable,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -1049,9 +1100,6 @@ async function renderQuestionSummaryPanel(
   heading.setAttribute("data-testid", "assignment-detail-questions-heading");
   heading.textContent = "Question results";
   host.appendChild(heading);
-
-  const attemptsCallable = deps.attemptsListForClassCallable!;
-  const attemptGetCallable = deps.attemptGetForTeacherCallable!;
 
   let completed: ReadonlyArray<CompletedAttemptSummary>;
   try {
