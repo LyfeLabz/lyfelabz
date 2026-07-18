@@ -285,3 +285,48 @@ This document does not:
 ---
 
 *End of philosophy document. This document defines what the teacher experience is. It does not define implementation. Every principle here will be exercised by future sprint specifications that defer to the certified architecture.*
+
+---
+
+## 7. Platform Posture
+
+Introduced under Sprint 14. Canonical. Operational rules that govern every teacher-facing surface built on top of the certified Sprint 13 assignment lifecycle.
+
+### 7.1 Instrument, not agent
+
+LyfeLabz is a classroom instrument, not an instructional agent. It preserves, organizes, presents, and reports student learning. It does not recommend, diagnose, predict, persuade, rank, or make instructional decisions for teachers.
+
+### 7.2 Preserve, organize, present, report
+
+The four verbs that define every teacher-facing surface:
+
+- **Preserve.** Store the student's work faithfully (frozen recipient population under PDR-029, immutable attempts, canonical audit events).
+- **Organize.** Group facts so a teacher can find them quickly (registry by lesson, roster grouped by progress state, assignment cards ordered deterministically).
+- **Present.** Render facts calmly and literally (aggregate counts, factual per-question rates, canonical status labels).
+- **Report.** Return factual summaries when asked (Assignment Summary, Assignment Detail, dashboard cards).
+
+Nothing on any teacher surface exists outside these four verbs.
+
+### 7.3 Teacher owns interpretation and decisions
+
+LyfeLabz makes student thinking visible. The teacher decides what it means. LyfeLabz never labels a student as at risk, on track, disengaged, improving, or needing help. Every displayed value is a fact traceable to stored assignment, session, attempt, or submission data.
+
+### 7.4 Show facts, not inferred judgments
+
+The default renders factual counts, factual percentages, and canonical status labels. When a value would require inference, LyfeLabz stays silent rather than showing an uncertain signal. The absence of a signal is itself information: it means LyfeLabz has nothing factual to say.
+
+### 7.5 Silence rather than uncertain or unnecessary signals
+
+Teacher-facing LyfeLabz is calm, terse, predictable, literal, easy to understand, and free of unnecessary alerts, badges, gamification, and configuration. There are no notifications of any kind: no email, no push, no in-app, no marketing, no engagement, no reminder. A surface with nothing factual to say renders nothing.
+
+### 7.6 No LMS scope creep
+
+Google Classroom (where in use) remains responsible for rosters and institutional class membership, due dates, announcements, gradebook workflows, and general classroom communication. LyfeLabz remains responsible for lesson assignment, assignment lifecycle state, student submission visibility, quiz results, Show Your Thinking responses, and clear instructional evidence. LyfeLabz never replicates a gradebook, a messaging system, an attendance tracker, or an administrator performance dashboard. LyfeLabz never adds a parent portal, an AI recommendation surface, or a predictive analytics surface as part of the beta.
+
+### 7.7 Operational reading
+
+This section is normative. Where a future sprint proposes a teacher-facing feature that violates §7.1 through §7.6, the section controls unless a repository-level decision (a new PDR or a formal amendment to this section) overrides it. Sprint 14 introduces this section; Sprint 14 does not modify any other principle in this document, does not reopen any Sprint 9C, 9D, or 6C decision, and does not introduce a fifth navigation item to the Teacher Workspace.
+
+### 7.8 Sprint 14 Reconciliation Notice
+
+Every principle in §§1 through 6 remains in force. §7 is an operational overlay that makes the design constraints explicit for the beta teacher platform built on the certified Sprint 13 lifecycle. Where §3.1 ("Simplicity over feature density") and §3.2 ("Curriculum as the primary landing experience") describe the philosophy, §7 describes the operational rules that Sprint 15 and beyond must observe.

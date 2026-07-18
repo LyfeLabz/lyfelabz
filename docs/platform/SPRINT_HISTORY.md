@@ -3403,3 +3403,30 @@ Reconciliation-only sprint that treats Sprint 13A through Sprint 13H as one inte
 ### Certification
 
 Sprint 13 is CONDITIONALLY CERTIFIED as one integrated teacher assignment lifecycle feature. Lifecycle is complete, transitions are internally consistent, authorization is consistent, registry synchronization is consistent, and documentation is reconciled. Final certification remains conditional pending resolution or formal acceptance of the pre-existing `curriculum/curriculumManifest.test.ts` baseline failure. Sprint 14 may begin. No deployment. No commit.
+
+## Sprint 14: Teacher Dashboard and Attention Model Design (2026-07-18)
+
+Documentation-and-design sprint that turns the certified Sprint 13 teacher assignment lifecycle into an implementation-ready beta teacher dashboard plan. No production code was modified. The Sprint 14 work reconciled the certified lifecycle against `TEACHER_EXPERIENCE_PHILOSOPHY.md` (§3.1 simplicity, §3.2 Curriculum as landing) and the Sprint 9D pilot Teacher Workspace scope, and produced three canonical outcomes: (a) a concise Platform Posture section appended to `TEACHER_EXPERIENCE_PHILOSOPHY.md` as §7 (instrument-not-agent; preserve, organize, present, report; teacher owns interpretation; show facts not judgments; silence over uncertain signals; no LMS scope creep), (b) `SPRINT_14_DASHBOARD_AND_ATTENTION_MODEL_SPECIFICATION.md` defining an `Active assignments` section rendered at the top of the Curriculum surface (no fifth navigation item), a per-card content set (lesson title, class name, `${submitted} submitted / ${started} started / ${total} total` progress line, published date, `Open assignment` affordance), a deterministic ordering (`publishedAt` descending, `className` ascending, `title` ascending, `assignmentId` ascending), a single `Show closed` toggle, a three-state student progress model (`notStarted`, `inProgress`, `completed`) derived mechanically from `assessmentAssignmentSummary`, and a data-derivation table mapping every displayed value to `assignmentsTeacherList`, `assessmentAssignmentSummary`, `assessmentAttemptsListForClass`, `assessmentAttemptGetForTeacher`, and one narrowly bounded new callable `assignmentsRecipientList` for frozen recipient enumeration authorized under PDR-029o, and (c) `SPRINT_15_IMPLEMENTATION_PLAN.md` decomposing the work into seven independently testable slices (dashboard scaffold; additive `publishedAt` projection; per-card counts; `Show closed` toggle; recipient-list callable plus Assignment Detail roster grouping; per-question factual summary above a minimum-attempt threshold; states, accessibility, and documentation reconciliation). The Sprint 14 specification also fixes an explicit beta non-goals list (gradebook, messaging, notifications, attendance, ranking, engagement scoring, predictive analytics, AI recommendations, administrator performance dashboards, parent portal, cross-assignment trend analysis, automated grouping, suggested interventions) to prevent silent scope drift during Sprint 15 implementation. The four-item Teacher Workspace navigation (Curriculum, Classes, Present Mode, Settings) is preserved. The Sprint 12E Slice 1 aggregate-only confidentiality boundary is preserved. The session-scoped in-memory `assignmentDetailRegistry` remains the single visible catalog. No callable, Firestore Rules, index, schema, LMS, Google Classroom, notification, browser persistence, realtime listener, or polling change was introduced. Zero em dashes across every modified document.
+
+### Files created
+
+- `docs/platform/SPRINT_14_DASHBOARD_AND_ATTENTION_MODEL_SPECIFICATION.md` (canonical Sprint 14 specification).
+- `docs/platform/SPRINT_14_COMPLETION_REPORT.md` (Sprint 14 completion report).
+- `docs/platform/SPRINT_15_IMPLEMENTATION_PLAN.md` (seven-slice Sprint 15 plan).
+
+### Files modified
+
+- `docs/platform/TEACHER_EXPERIENCE_PHILOSOPHY.md` (appended §7 Platform Posture and Sprint 14 Reconciliation Notice; §§1 through 6 unchanged).
+- `docs/platform/SPRINT_HISTORY.md` (this Sprint 14 entry).
+
+### Validation results
+
+- Repository inspection confirmed the certified Sprint 13 callable inventory (`assignmentsCreateDraft`, `assignmentsUpdateDraft`, `assignmentsPublish`, `assignmentsClose`, `assignmentsReopen`, `assignmentsArchive`, `assignmentsTeacherList`, `assignmentsRecipientAdd`, `assessmentAssignmentSummary`) and the additive teacher-visible retrieval callables (`assessmentAttemptsListForClass`, `assessmentAttemptGetForTeacher`) are sufficient for every dashboard and Assignment Detail value defined in Sprint 14 §4.4 except the frozen recipient enumeration, for which Sprint 15 introduces one narrowly bounded new callable.
+- Terminology check against the certified Sprint 13 lifecycle: pass.
+- Em dash check across the three new documents and the appended `TEACHER_EXPERIENCE_PHILOSOPHY.md` §7 section: pass (zero em dashes).
+- Repository-relative link check: every referenced document exists in `docs/platform/`.
+- No production code changed. No test was run because no test-covered surface was modified. No deployment. No commit.
+
+### Certification
+
+Sprint 14 is COMPLETE as a documentation-and-design sprint. The dashboard and attention-model specification, the Platform Posture overlay on `TEACHER_EXPERIENCE_PHILOSOPHY.md`, and the seven-slice Sprint 15 implementation plan are ready for Sprint 15 execution. No blocker requires resolution before implementation begins. The pre-existing `curriculum/curriculumManifest.test.ts` baseline drift documented in `SPRINT_13_FINAL_CERTIFICATION.md` §11 remains formally accepted for the purpose of proceeding.
