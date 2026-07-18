@@ -3488,3 +3488,58 @@ Slice 1 introduced `app/src/shell/surfaces/shared/activeAssignments.ts` and comp
 ### Certification
 
 Sprint 15 is COMPLETE against the Sprint 14 specification. Every slice defined in `SPRINT_15_IMPLEMENTATION_PLAN.md` has shipped: the dashboard scaffold, the additive `publishedAt` projection, per-card progress counts, the `Show closed` toggle, the new `assignmentsRecipientList` callable and Assignment Detail roster grouping, the per-question factual summary panel above the minimum-attempt threshold, and the loading, empty, error, accessibility, and documentation-reconciliation pass. The four-item Teacher Workspace navigation, the session-scoped in-memory `assignmentDetailRegistry`, and the Sprint 12E Slice 1 aggregate-only confidentiality boundary are preserved. The pre-existing `curriculum/curriculumManifest.test.ts` baseline drift remains formally accepted as documented in `SPRINT_13_FINAL_CERTIFICATION.md` §11. No blocker remains before Sprint 16 planning may commence.
+
+
+## Sprint 16: Teacher Monitoring Workflow Hardening (2026-07-18)
+
+Implementation-and-hardening sprint that turned the Sprint 15 beta teacher monitoring workflow into a reliable, efficient, accessible, and internally consistent integrated experience across the complete monitoring path (`Curriculum -> Active assignment -> Assignment Detail -> Assignment Summary -> back to Curriculum`). Client-only. Zero new callable, Firestore field, custom claim, Rules relaxation, composite index, schema change, LMS side effect, Google Classroom side effect, notification, browser persistence (`localStorage`, `sessionStorage`, `IndexedDB`), realtime listener, or polling was introduced. The four-item Teacher Workspace navigation, the session-scoped `assignmentDetailRegistry`, the reload-hydration path through `assignmentsTeacherList`, and the Sprint 12E Slice 1 aggregate-only confidentiality boundary are preserved. Zero em dashes across every new or modified file.
+
+Seven slices, each independently landable and independently testable:
+
+- Slice 1 (Dashboard refresh completeness) added `ActiveAssignmentsController.refresh({ assignmentIds })` targeted invalidation, the stable per-tab `activeAssignmentsInvalidator(assignmentId)` seam installed by Curriculum on mount, and the lighter `remountCurriculum()` Back path that re-invokes the Curriculum surface renderer against the already-hydrated registry (a full `rerun()` continues to run on authentication transitions).
+- Slice 2 (Assignment Detail refresh consistency) introduced `DetailFetchCache` and rewired the Assignment Summary card (`preloadedSummary`), the roster panel, and the question-summary panel to share exactly one call per `(callable, keyString)` pair per `state.kind === "ready"` render; cache invalidation happens on every state transition and every lifecycle-action success (`performClose`, `performReopen`, `performPublish`).
+- Slice 3 (Progress consistency audit) anchored every Assignment Detail roster group-header count to `assessmentAssignmentSummary` (`Submitted (completedStudents)`, `In progress (inProgressStudents)`, `Not started (notStartedStudents)`) and rendered exactly the approved calm synchronization note (`role="status"` / `aria-live="polite"`) when the enumerated recipient set disagreed with `summary.totalStudents` or the summary counts disagreed with themselves; no red flag, no blocker, no reconciliation write.
+- Slice 4 (Teacher workflow polish) focused the Assignment Detail title once on the first successful ready render, relabeled the Back control to `Back to Curriculum`, added the calm `No students are assigned yet.` empty note for the zero-recipient published branch, announced Question Summary loading through `role="status"`, and added the teacher-scoped, session-scoped, safely clamped `curriculumScrollGuard` to preserve Curriculum scroll position across the `Open assignment -> Back` round trip.
+- Slice 5 (Performance review) verified through integration tests that a Detail render for a published assignment issues exactly one `assessmentAssignmentSummary`, one `assessmentAttemptsListForClass`, and one `assignmentsRecipientList` call per unique identity, that per-representative-attempt `assessmentAttemptGetForTeacher` reads are shared across pending-state rerenders, that lifecycle-triggered rerenders invalidate and refetch exactly once per callable identity, and that Back navigation on the happy path invokes zero `bootstrapSession` calls and zero `assignmentsTeacherList` calls.
+- Slice 6 (Accessibility review) exposed each Active Assignments card as a stable `role="group"` with `aria-labelledby` pointing at the card title id, made the Assignment Detail `Roster` and `Question results` headings persistent across loading / error / deferred branches, wrapped each roster group in a labeled region with `aria-labelledby` on its `<h4>` (count included in the accessible name), and asserted no duplicate ids, empty accessible labels, positive `tabindex` values, or click-only non-interactive controls were introduced.
+- Slice 7 (End-to-end validation and documentation reconciliation, this entry) added one high-value integrated regression test (`Sprint 16 Slice 7: integrated teacher monitoring workflow` in `app/src/shell/shell.test.ts`) covering publish -> Detail counts refresh on close -> Show closed reveals -> reopen restores Published, appended §36 (Sprint 16 Reconciliations) to `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`, wrote `docs/platform/SPRINT_16_COMPLETION_REPORT.md`, and appended this Sprint 16 entry. `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` Appendix A was unchanged (no callable delta this sprint).
+
+### Files created
+
+- `app/src/assignments/detail/fetch-cache.ts` and `fetch-cache.test.ts` (Slice 2).
+- `app/src/assignments/detail/reconciliation.ts` and `reconciliation.test.ts` (Slice 3).
+- `app/src/shell/curriculumScrollGuard.ts` and `curriculumScrollGuard.test.ts` (Slice 4).
+- `docs/platform/SPRINT_16_IMPLEMENTATION_PLAN.md` (planning document; committed by Slice 1).
+- `docs/platform/SPRINT_16_COMPLETION_REPORT.md` (Slice 7).
+
+### Files modified
+
+- `app/src/index.ts` (Slice 1 lighter Back; Slice 4 scroll guard integration).
+- `app/src/shell/surfaces/curriculum.ts` (Slice 1 invalidator seam install).
+- `app/src/shell/surfaces/shared/activeAssignments.ts` (Slice 1 targeted refresh; Slice 6 `aria-labelledby`).
+- `app/src/shell/surfaces/shared/activeAssignments.test.ts` (Slice 1 + Slice 6 tests).
+- `app/src/shell/shell.ts`, `app/src/shell/surfaces/workspace.ts`, `app/src/router/surfaces/index.ts` (Slice 1 seam plumbing).
+- `app/src/shell/shell.test.ts` (Slice 1 dashboard integration tests; Slice 7 integrated regression test).
+- `app/src/assignments/detail/detail.ts` (Slices 2, 3, 4, 5, 6).
+- `app/src/assignments/detail/detail.test.ts` (Slices 2 through 6 tests, appended).
+- `app/src/assignments/detail/attempts-wire.ts`, `hydrate.ts`, `roster-wire.ts`, `roster.ts`, `roster.test.ts`, `question-summary.ts`, `question-summary.test.ts`, `types.ts` (fetch-cache and reconciliation integration).
+- `docs/platform/ASSESSMENT_IMPLEMENTATION_CONTRACT.md` (Slice 7: new §36 Sprint 16 Reconciliations and Change Log entry).
+- `docs/platform/SPRINT_HISTORY.md` (this Sprint 16 entry).
+
+No backend file was modified by any Sprint 16 slice.
+
+### Validation results
+
+- `npm run typecheck` in `app/`: pass (zero errors).
+- `npm run lint` in `app/`: pass (zero errors).
+- `npm run build` in `app/`: pass.
+- `npm test` in `app/`: 507 of 508 pass across 22 suites. The sole remaining failure is the pre-existing `curriculum/curriculumManifest.test.ts` baseline drift documented in `SPRINT_13_FINAL_CERTIFICATION.md` §11.
+- Cloud Functions suite: not re-run this sprint because no backend file was modified across any Sprint 16 slice. The Sprint 15 certified baseline (907 / 907 pass across 40 suites) remains authoritative per `SPRINT_15_COMPLETION_REPORT.md` §7.
+- Terminology sweep against Sprint 14 §7 Beta Non-Goals: pass (no `at risk`, no `needs attention`, no engagement score, no ranking, no AI recommendation, no notification, no cross-assignment trend copy).
+- Em dash sweep across every Sprint 16 file (production, tests, documentation): pass (zero em dashes).
+- Forbidden-API sweep across the Assignment Detail surface and the Active Assignments section: pass (no `onSnapshot`, `setInterval`, refresh-driven `setTimeout`, `localStorage`, `sessionStorage`, or `IndexedDB` introduced).
+- No deployment. No commit was performed by Slice 7.
+
+### Certification
+
+Sprint 16 is CONDITIONALLY CERTIFIED as one integrated teacher monitoring workflow hardening deliverable against `SPRINT_16_IMPLEMENTATION_PLAN.md`. Every slice defined in the plan has shipped, is exercised by at least one automated test, and preserves the Sprint 12E Slice 1 aggregate-only confidentiality boundary, the four-item Teacher Workspace navigation, the session-scoped `assignmentDetailRegistry`, and the reload-hydration path through `assignmentsTeacherList`. Refresh, caching, count consistency, navigation, focus, performance, and accessibility are all verified. Final certification remains conditional on the pre-existing `curriculum/curriculumManifest.test.ts` baseline failure formally accepted in `SPRINT_13_FINAL_CERTIFICATION.md` §11; that failure remains the sole outstanding suite failure and was not worsened by any Sprint 16 slice. No backend code changed in Sprint 16. No deployment occurred. No commit was performed by this final slice.

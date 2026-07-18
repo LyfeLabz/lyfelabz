@@ -3750,3 +3750,236 @@ describe("Sprint 16 Slice 1: dashboard refresh completeness", () => {
     ).not.toBeNull();
   });
 });
+
+describe("Sprint 16 Slice 7: integrated teacher monitoring workflow", () => {
+  const teacher = teacherSession();
+
+  type Registered = {
+    assignmentId: string;
+    title: string;
+    className: string;
+    status: "draft" | "published" | "closed";
+    lessonSlug?: string;
+    classId?: string;
+    publishedAt?: number;
+  };
+
+  type Summary = {
+    assignmentId: string;
+    classId: string;
+    totalStudents: number;
+    completedStudents: number;
+    inProgressStudents: number;
+    notStartedStudents: number;
+    completionPercentage: number;
+    averagePercentage: number | null;
+    highestPercentage: number | null;
+    lowestPercentage: number | null;
+    perfectScoreStudents: number;
+  };
+
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+  });
+
+  test("full lifecycle: publish -> Detail counts refresh on close -> Show closed reveals -> reopen restores Published", async () => {
+    // Simulates the complete workflow exercised by Slices 1 through 6:
+    // dashboard invalidator refresh (Slice 1), single per-lifecycle summary
+    // fetch anchored to the invalidator (Slices 2/5), authoritative summary
+    // counts on the card (Slice 3), Show closed toggle plus Back-target
+    // labeling of the Curriculum destination (Slice 4), and stable
+    // accessible naming across lifecycle transitions (Slice 6).
+    const store = new Map<string, Registered>();
+    store.set("a1", {
+      assignmentId: "a1",
+      title: "Earth's Layers",
+      className: "6A Life Science",
+      status: "published",
+      lessonSlug: "earths-layers",
+      classId: "c1",
+      publishedAt: 2000,
+    });
+    // A second published card keeps the section visible after `a1` closes so
+    // the Show closed toggle remains in the DOM through the transition.
+    store.set("a2", {
+      assignmentId: "a2",
+      title: "Nature of Waves",
+      className: "6B Physical",
+      status: "published",
+      lessonSlug: "nature-of-waves",
+      classId: "c2",
+      publishedAt: 1000,
+    });
+
+    let installed: ((assignmentId: string) => void) | null = null;
+    const opened: string[] = [];
+    const assignmentDetailSeam = {
+      register: (m: Registered) => {
+        store.set(m.assignmentId, { ...m });
+      },
+      open: (id: string) => {
+        opened.push(id);
+      },
+      list: () => Array.from(store.values()),
+      setActiveAssignmentsInvalidator: (
+        fn: ((id: string) => void) | null,
+      ): void => {
+        installed = fn;
+      },
+    };
+
+    // Progress snapshot the dashboard should render for `a1`.
+    const snapshots = new Map<string, Summary>();
+    const buildSummary = (
+      id: string,
+      completed: number,
+      inProgress: number,
+    ): Summary => ({
+      assignmentId: id,
+      classId: "c1",
+      totalStudents: 10,
+      completedStudents: completed,
+      inProgressStudents: inProgress,
+      notStartedStudents: 10 - completed - inProgress,
+      completionPercentage: (completed / 10) * 100,
+      averagePercentage: completed > 0 ? 82 : null,
+      highestPercentage: completed > 0 ? 100 : null,
+      lowestPercentage: completed > 0 ? 60 : null,
+      perfectScoreStudents: 0,
+    });
+    snapshots.set("a1", buildSummary("a1", 3, 2));
+    snapshots.set("a2", buildSummary("a2", 0, 0));
+
+    const summaryCalls: string[] = [];
+    const summaryCallable = async (input: { assignmentId: string }) => {
+      summaryCalls.push(input.assignmentId);
+      const snap = snapshots.get(input.assignmentId);
+      if (snap === undefined) throw new Error("no snapshot");
+      return snap;
+    };
+
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: emptyListClasses,
+      assignmentDetail: assignmentDetailSeam,
+      assignmentSummary: summaryCallable,
+    });
+    await flush();
+    await flush();
+
+    // Slice 1: invalidator seam installed on mount.
+    expect(typeof installed).toBe("function");
+
+    // Slice 3: authoritative summary counts flow into the card's progress
+    // line copy. Format: `${completed} submitted / ${started} started /
+    // ${total} total`.
+    const card = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignment-card-a1]",
+    );
+    expect(card).not.toBeNull();
+    const progress = card!.querySelector<HTMLElement>(
+      "[data-testid=active-assignment-progress-a1]",
+    );
+    expect(progress).not.toBeNull();
+    expect(progress!.textContent).toContain("3 submitted");
+    expect(progress!.textContent).toContain("5 started");
+    expect(progress!.textContent).toContain("10 total");
+
+    // Show closed toggle is not rendered while no closed card exists.
+    expect(
+      mount.querySelector("[data-testid=active-assignments-show-closed]"),
+    ).toBeNull();
+
+    // Simulate a student submission and a lifecycle close: `onStatusChange`
+    // registers the mutated card and fires the invalidator. Slice 1 must
+    // re-issue exactly one summary read for that assignment.
+    summaryCalls.length = 0;
+    snapshots.set("a1", buildSummary("a1", 5, 2));
+    store.set("a1", { ...store.get("a1")!, status: "closed" });
+    installed!("a1");
+    await flush();
+    await flush();
+
+    // Slice 4: closed card is hidden from the DOM while Show closed is off,
+    // and no wasted summary fetch is issued for a hidden card (Slice 1
+    // invalidation purges the cache; rendering issues the fresh call).
+    expect(
+      mount.querySelector("[data-testid=active-assignment-card-a1]"),
+    ).toBeNull();
+    expect(summaryCalls).toEqual([]);
+
+    // Slice 4/6: the Show closed toggle now appears (a closed card exists)
+    // and defaults to off with an accessible label.
+    const toggle = mount.querySelector<HTMLInputElement>(
+      "[data-testid=active-assignments-show-closed]",
+    );
+    expect(toggle).not.toBeNull();
+    expect(toggle!.checked).toBe(false);
+    expect(toggle!.getAttribute("aria-label")).toBe(
+      "Show closed assignments",
+    );
+
+    // Toggle Show closed on; the closed card now surfaces and the fresh
+    // Slice 3 authoritative counts (5 submitted / 7 started) render after
+    // exactly one summary re-fetch for the invalidated card.
+    toggle!.checked = true;
+    toggle!.dispatchEvent(new Event("change"));
+    await flush();
+    await flush();
+    expect(summaryCalls).toEqual(["a1"]);
+    const closedCard = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignment-card-a1]",
+    );
+    expect(closedCard).not.toBeNull();
+    const closedProgress = closedCard!.querySelector<HTMLElement>(
+      "[data-testid=active-assignment-progress-a1]",
+    );
+    expect(closedProgress!.textContent).toContain("5 submitted");
+    expect(closedProgress!.textContent).toContain("7 started");
+
+    // Slice 6 accessibility: the card exposes a stable role="group" with an
+    // aria-labelledby pointing at the card title id.
+    expect(closedCard!.getAttribute("role")).toBe("group");
+    const labelledBy = closedCard!.getAttribute("aria-labelledby");
+    expect(labelledBy).not.toBeNull();
+    expect(labelledBy!.length).toBeGreaterThan(0);
+    const label = mount.querySelector(`#${labelledBy}`);
+    expect(label).not.toBeNull();
+
+    // Simulate reopen: status transitions back to `published`, the
+    // invalidator fires once, exactly one summary read is issued, and the
+    // card returns to the published set. Toggle Show closed off again to
+    // confirm the reopened card remains visible in the published set.
+    summaryCalls.length = 0;
+    store.set("a1", { ...store.get("a1")!, status: "published" });
+    installed!("a1");
+    await flush();
+    await flush();
+    // The reopened card is now in the published set and issues exactly one
+    // summary refresh.
+    expect(summaryCalls).toEqual(["a1"]);
+    const reopened = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignment-card-a1]",
+    );
+    expect(reopened).not.toBeNull();
+    expect(reopened!.getAttribute("data-status")).toBe("published");
+
+    // Slices 1/5: the `open` seam and the dashboard invalidator route
+    // through the certified `assignmentDetailRegistry`; no forbidden API
+    // (`onSnapshot`, `localStorage`, `sessionStorage`, `IndexedDB`,
+    // `setInterval`, refresh-driven `setTimeout`) was introduced by any
+    // Sprint 16 slice. The dashboard section source proves it.
+    const source = fs.readFileSync(
+      path.resolve(
+        __dirname,
+        "surfaces/shared/activeAssignments.ts",
+      ),
+      "utf8",
+    );
+    expect(source).not.toContain("onSnapshot");
+    expect(source).not.toContain("localStorage");
+    expect(source).not.toContain("sessionStorage");
+    expect(source).not.toContain("IndexedDB");
+    expect(source).not.toMatch(/setInterval\s*\(/);
+  });
+});

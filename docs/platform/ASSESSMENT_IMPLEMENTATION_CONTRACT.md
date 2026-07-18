@@ -798,6 +798,22 @@ The Assignment Detail roster grouping (`Submitted`, `In progress`, `Not started`
 
 The Sprint 15 per-question factual summary panel is aggregated client-side from `assessmentAttemptGetForTeacher` fetches over each representative completed attempt (highest percentage per student per PDR-029a). No new persistent rollup is introduced. The panel is silent below the Sprint 15 minimum-attempt threshold (`>= 3`) and no per-attempt fetch is issued below the threshold. A persistent `assignmentRollups` / `attemptRollups` materialization remains deferred per PDR-029n and `LYFELABZ_SUBMISSION_ROLLUP_STRATEGY.md`.
 
+## 36. Sprint 16 Reconciliations (Teacher Monitoring Workflow Hardening)
+
+Sprint 16 introduced no new callable, no new Firestore field, no new custom claim, no Firestore Rules relaxation, no composite index, and no schema change. Every behavior recorded here is client-side hardening of the Sprint 15 teacher monitoring workflow against the same certified read set.
+
+### 36.1 Shared per-render fetch cache on the Assignment Detail surface
+
+One Assignment Detail render issues at most one call per `(callable, keyString)` pair across the Assignment Summary card, the Roster panel, and the per-question factual summary panel. The shared cache is scoped to the current `state.kind === "ready"` render and is invalidated on every state transition and on every lifecycle-action success (`assignmentsClose`, `assignmentsReopen`, `assignmentsPublish`). A rejected shared request is evicted so a subsequent retry issues a fresh call rather than replaying the previous failure. The cache holds only Promise references, is not persisted across renders, and does not introduce a new callable contract.
+
+### 36.2 Summary-anchored group counts on the Assignment Detail roster
+
+Every group header count on the Assignment Detail roster is anchored to the corresponding `assessmentAssignmentSummary` field: `Submitted (summary.completedStudents)`, `In progress (summary.inProgressStudents)`, and `Not started (summary.notStartedStudents)`. The rendered roster list is the client-side composition against `assignmentsRecipientList` and `assessmentAttemptsListForClass` established in §35.2; when the enumerated recipient set disagrees with `summary.totalStudents` or the summary count arithmetic disagrees with itself, the surface renders a calm, factual synchronization note using `role="status"` and `aria-live="polite"` and continues to render the summary-derived counts. No red flag, no blocker, no reconciliation write, and no new callable is introduced.
+
+### 36.3 Teacher-facing refresh is targeted and read-only
+
+Teacher lifecycle mutations (`assignmentsPublish`, `assignmentsClose`, `assignmentsReopen`, `assignmentsUpdateDraft`) invalidate the affected dashboard card's per-assignment progress cache and re-issue exactly one `assessmentAssignmentSummary` read for that assignment when the card is rendered. No polling, no realtime listener, no timer-driven refresh, no push, and no browser persistence (`localStorage`, `sessionStorage`, `IndexedDB`) is introduced. A full authoritative registry re-hydration through `assignmentsTeacherList` remains available as a fallback after any authentication transition.
+
 ## Change Log
 
 - 2026-07-12 - Initial issuance under Sprint 10A step F-2. Ratified by PDR-026.
@@ -806,3 +822,4 @@ The Sprint 15 per-question factual summary panel is aggregated client-side from 
 - 2026-07-17 - Sprint 13F reconciliation. Added §34 recording that the Sprint 13F extension of `assignmentsTeacherList` with `includeDrafts` is teacher-visible only, creates no recipient/session/attempt/summary state, never affects summaries, and does not replace `assignmentsPublish` as the transition that exposes an assignment to students. No pipeline behavior is added; §34 narrows §17 and §21 against the certified Sprint 13F implementation.
 
 - 2026-07-18 - Sprint 15 reconciliation. Added §35 recording the Sprint 15 `assignmentsRecipientList` callable (authorized for the owning teacher under PDR-029o; not aggregate analytics), the client-side roster grouping composition against certified reads, and the client-side per-question factual summary aggregator (silent below the `>= 3` minimum-attempt threshold; no persistent rollup introduced). No pipeline behavior is added; §35 narrows §17, §18, and §20 against the certified Sprint 15 implementation.
+- 2026-07-18 - Sprint 16 reconciliation. Added §36 recording the client-side per-render fetch deduplication on Assignment Detail, the summary-anchored group counts with a calm synchronization note on disagreement, and the targeted read-only teacher-facing refresh path. No new callable, Firestore field, custom claim, Rules relaxation, composite index, or schema change was introduced; §36 narrows §35 against the certified Sprint 16 client hardening.
