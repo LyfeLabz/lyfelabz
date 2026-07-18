@@ -29,8 +29,10 @@ import { createAssignmentsTeacherListCallable } from "./assignments/detail/hydra
 import { createAssignmentsCloseCallable } from "./assignments/detail/close-wire";
 import { createAssignmentsReopenCallable } from "./assignments/detail/reopen-wire";
 import { createAssignmentsUpdateDraftCallable } from "./assignments/detail/update-wire";
+import { createAssignmentsPublishCallable } from "./assignments/detail/publish-wire";
 import type {
   AssignmentsCloseCallable,
+  AssignmentsPublishCallable,
   AssignmentsReopenCallable,
   AssignmentsUpdateDraftCallable,
 } from "./assignments/detail/types";
@@ -84,6 +86,12 @@ async function run(): Promise<void> {
   // before an active-teacher session resolves; the detail surface renders
   // no edit action when null.
   let assignmentUpdateDraft: AssignmentsUpdateDraftCallable | null = null;
+  // Sprint 13H: certified `assignmentsPublish` callable seam consumed by
+  // the Assignment Detail surface's Draft publication action. Rebound per
+  // active-teacher session so cross-session state cannot leak. Null
+  // before an active-teacher session resolves; the detail surface renders
+  // no publish action when null.
+  let assignmentPublish: AssignmentsPublishCallable | null = null;
   // Sprint 13B: session-scoped registry of teacher-owned assignment
   // metadata (title, status, class name). Populated by the certified
   // lifecycle path; consumed by the Assignment Detail metadata reader.
@@ -123,6 +131,14 @@ async function run(): Promise<void> {
       // draft title through the Sprint 13C/13F selection interface
       // without a page reload.
       updateDraftCallable: assignmentUpdateDraft ?? undefined,
+      // Sprint 13H: draft-publication wire. The certified publish
+      // callable advances a draft to `published`. On success the updated
+      // metadata is re-registered into the session-scoped registry so a
+      // later navigation to Curriculum reflects the new `published`
+      // status through the Sprint 13C/13F selection interface (`View
+      // drafts` becomes `View summary` / `View summaries`) without a
+      // page reload.
+      publishCallable: assignmentPublish ?? undefined,
       onStatusChange: (metadata) => {
         assignmentDetailRegistry.register(metadata);
       },
@@ -186,6 +202,7 @@ async function run(): Promise<void> {
       assignmentClose = createAssignmentsCloseCallable(functions);
       assignmentReopen = createAssignmentsReopenCallable(functions);
       assignmentUpdateDraft = createAssignmentsUpdateDraftCallable(functions);
+      assignmentPublish = createAssignmentsPublishCallable(functions);
       // Sprint 13C: hydrate the session-scoped assignment-detail registry
       // from the certified `assignmentsTeacherList` retrieval path. The
       // hydration runs once per active-teacher session and is calm on
@@ -206,6 +223,7 @@ async function run(): Promise<void> {
       assignmentClose = null;
       assignmentReopen = null;
       assignmentUpdateDraft = null;
+      assignmentPublish = null;
       assignmentDetailRegistry.clear();
     }
     dispatch(session, table, mount, window.history);

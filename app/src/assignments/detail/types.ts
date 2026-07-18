@@ -97,6 +97,23 @@ export type AssignmentsUpdateDraftCallable = (
   input: AssignmentsUpdateDraftInput,
 ) => Promise<AssignmentsUpdateDraftResult>;
 
+// Sprint 13H: injected publish-callable seam. The Assignment Detail
+// surface never imports from firebase/*; the entry point wires the real
+// `assignmentsPublish` callable and tests inject an in-memory fake. The
+// callable resolves on the canonical
+// `{ assignmentId, status: "published", alreadyPublished }` response and
+// rejects on any failure. UI failure messaging never reveals Firestore,
+// callable names, stack traces, or document paths.
+export type AssignmentsPublishResult = {
+  readonly assignmentId: string;
+  readonly status: "published";
+  readonly alreadyPublished: boolean;
+};
+
+export type AssignmentsPublishCallable = (input: {
+  readonly assignmentId: string;
+}) => Promise<AssignmentsPublishResult>;
+
 // Injected reader seam. The detail surface never imports from
 // firebase/* directly; the entry point wires the real reader and tests
 // inject an in-memory fake. Mirrors the AssignmentSummaryCallable seam

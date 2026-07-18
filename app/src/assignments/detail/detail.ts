@@ -5,6 +5,7 @@ import type {
   AssignmentDetailMetadataReader,
   AssignmentStatus,
   AssignmentsCloseCallable,
+  AssignmentsPublishCallable,
   AssignmentsReopenCallable,
   AssignmentsUpdateDraftCallable,
 } from "./types";
@@ -66,6 +67,21 @@ export type AssignmentDetailDeps = {
   // is not supplied, the surface renders no edit action and the
   // Sprint 13F draft label remains unchanged.
   readonly updateDraftCallable?: AssignmentsUpdateDraftCallable;
+  // Sprint 13H: optional draft-publication seam. When supplied and the
+  // loaded metadata is `draft`, the surface renders a `Publish
+  // assignment` action alongside the Sprint 13G `Edit draft` action.
+  // Activating the action opens a confirmation dialog and, on confirm,
+  // invokes the callable exactly once. On success the header status
+  // transitions to `Published`, the Draft-only lifecycle controls
+  // (`Edit draft`, `Publish assignment`, and the Draft-only summary
+  // panel) are removed, the Sprint 13A Assignment Summary card is
+  // composed, and `onStatusChange` (when supplied) fires with the
+  // updated metadata so the session-scoped registry re-registers.
+  // Published, closed, and archived assignments never render the
+  // publish action. When the seam is not supplied, the surface renders
+  // no publish action; the Sprint 13G / 13F draft affordances remain
+  // unchanged.
+  readonly publishCallable?: AssignmentsPublishCallable;
   readonly onStatusChange?: (metadata: AssignmentDetailMetadata) => void;
 };
 
@@ -87,6 +103,15 @@ type CloseUiState =
   | { readonly kind: "error" };
 
 type ReopenUiState =
+  | { readonly kind: "idle" }
+  | { readonly kind: "pending" }
+  | { readonly kind: "error" };
+
+// Sprint 13H: publish UI state. `idle` renders the Publish action;
+// `pending` disables it while the callable is in flight; `error`
+// surfaces a calm, generic teacher-facing message on failure and leaves
+// the draft header in place so the teacher can retry.
+type PublishUiState =
   | { readonly kind: "idle" }
   | { readonly kind: "pending" }
   | { readonly kind: "error" };
@@ -165,6 +190,7 @@ export function renderAssignmentDetail(
   let closeUi: CloseUiState = { kind: "idle" };
   let reopenUi: ReopenUiState = { kind: "idle" };
   let editUi: EditUiState = { kind: "closed" };
+  let publishUi: PublishUiState = { kind: "idle" };
 
   const rerender = (): void => {
     body.textContent = "";
@@ -175,29 +201,42 @@ export function renderAssignmentDetail(
         renderLoading(doc, body);
         return;
       case "ready":
-        renderReady(doc, body, s.metadata, deps, closeUi, reopenUi, editUi, {
-          onCloseRequest: () => {
-            openCloseConfirmation(s.metadata);
+        renderReady(
+          doc,
+          body,
+          s.metadata,
+          deps,
+          closeUi,
+          reopenUi,
+          editUi,
+          publishUi,
+          {
+            onCloseRequest: () => {
+              openCloseConfirmation(s.metadata);
+            },
+            onReopenRequest: () => {
+              openReopenConfirmation(s.metadata);
+            },
+            onEditRequest: () => {
+              openEditor(s.metadata);
+            },
+            onEditTitleInput: (value) => {
+              updateEditTitle(value);
+            },
+            onEditInstructionsInput: (value) => {
+              updateEditInstructions(value);
+            },
+            onEditSave: () => {
+              void performEditSave(s.metadata);
+            },
+            onEditCancel: () => {
+              closeEditor();
+            },
+            onPublishRequest: () => {
+              openPublishConfirmation(s.metadata);
+            },
           },
-          onReopenRequest: () => {
-            openReopenConfirmation(s.metadata);
-          },
-          onEditRequest: () => {
-            openEditor(s.metadata);
-          },
-          onEditTitleInput: (value) => {
-            updateEditTitle(value);
-          },
-          onEditInstructionsInput: (value) => {
-            updateEditInstructions(value);
-          },
-          onEditSave: () => {
-            void performEditSave(s.metadata);
-          },
-          onEditCancel: () => {
-            closeEditor();
-          },
-        });
+        );
         return;
       case "empty":
         renderEmpty(doc, body);
@@ -304,6 +343,59 @@ export function renderAssignmentDetail(
       void result;
     } catch {
       closeUi = { kind: "error" };
+      rerender();
+    }
+  };
+
+  const openPublishConfirmation = (
+    metadata: AssignmentDetailMetadata,
+  ): void => {
+    if (deps.publishCallable === undefined) return;
+    if (metadata.status !== "draft") return;
+    if (editUi.kind !== "closed") return;
+    const confirmController: PublishConfirmController = {
+      onCancel: () => {
+        confirmController.close();
+      },
+      onConfirm: () => {
+        confirmController.close();
+        void performPublish(metadata);
+      },
+      close: () => undefined,
+    };
+    confirmController.close = renderPublishConfirmDialog(
+      doc,
+      metadata,
+      confirmController,
+    );
+  };
+
+  const performPublish = async (
+    metadata: AssignmentDetailMetadata,
+  ): Promise<void> => {
+    const callable = deps.publishCallable;
+    if (callable === undefined) return;
+    publishUi = { kind: "pending" };
+    rerender();
+    try {
+      const result = await callable({ assignmentId: metadata.assignmentId });
+      if (state.kind !== "ready") return;
+      const nextMetadata = Object.freeze({
+        ...metadata,
+        status: "published" as AssignmentStatus,
+      });
+      state = { kind: "ready", metadata: nextMetadata };
+      publishUi = { kind: "idle" };
+      // Symmetric to performClose / performReopen: clear any stale
+      // lifecycle-error UI so the Published header never carries a
+      // publish error banner.
+      closeUi = { kind: "idle" };
+      reopenUi = { kind: "idle" };
+      rerender();
+      deps.onStatusChange?.(nextMetadata);
+      void result;
+    } catch {
+      publishUi = { kind: "error" };
       rerender();
     }
   };
@@ -478,6 +570,7 @@ function renderReady(
   closeUi: CloseUiState,
   reopenUi: ReopenUiState,
   editUi: EditUiState,
+  publishUi: PublishUiState,
   handlers: {
     readonly onCloseRequest: () => void;
     readonly onReopenRequest: () => void;
@@ -486,6 +579,7 @@ function renderReady(
     readonly onEditInstructionsInput: (value: string) => void;
     readonly onEditSave: () => void;
     readonly onEditCancel: () => void;
+    readonly onPublishRequest: () => void;
   },
 ): void {
   const header = doc.createElement("div");
@@ -551,6 +645,40 @@ function renderReady(
           handlers.onEditRequest();
         });
         lifecycle.appendChild(editButton);
+      }
+
+      // Sprint 13H: Publish action renders alongside Edit draft when the
+      // publish callable is wired. Published, closed, and archived
+      // assignments never reach this branch (only `draft` does), so the
+      // button is never exposed outside the Draft lifecycle.
+      if (deps.publishCallable !== undefined) {
+        const publishButton = doc.createElement("button");
+        publishButton.type = "button";
+        publishButton.className =
+          "shell-btn shell-assignment-detail-publish-action";
+        publishButton.setAttribute(
+          "data-testid",
+          "assignment-detail-publish-action",
+        );
+        publishButton.textContent = "Publish assignment";
+        if (publishUi.kind === "pending") {
+          publishButton.disabled = true;
+          publishButton.setAttribute("aria-busy", "true");
+        }
+        publishButton.addEventListener("click", () => {
+          handlers.onPublishRequest();
+        });
+        lifecycle.appendChild(publishButton);
+      }
+
+      if (publishUi.kind === "error") {
+        const err = doc.createElement("p");
+        err.className = "shell-assignment-detail-publish-error";
+        err.setAttribute("data-testid", "assignment-detail-publish-error");
+        err.setAttribute("role", "alert");
+        err.textContent =
+          "We could not publish this assignment right now. Try again in a moment.";
+        lifecycle.appendChild(err);
       }
     } else {
       renderDraftEditor(doc, lifecycle, editUi, handlers);
@@ -858,6 +986,104 @@ function renderReopenConfirmDialog(
   confirm.className = "shell-assign-confirm";
   confirm.setAttribute("data-testid", "assignment-detail-reopen-confirm");
   confirm.textContent = "Reopen assignment";
+  confirm.addEventListener("click", () => {
+    controller.onConfirm();
+  });
+  footer.appendChild(confirm);
+
+  overlay.appendChild(dialog);
+  doc.body.appendChild(overlay);
+
+  const onKey = (ev: KeyboardEvent): void => {
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      controller.onCancel();
+    }
+  };
+  doc.addEventListener("keydown", onKey);
+  overlay.addEventListener("click", (ev) => {
+    if (ev.target === overlay) controller.onCancel();
+  });
+
+  try {
+    cancel.focus({ preventScroll: true });
+  } catch {
+    // ignored
+  }
+
+  let closed = false;
+  return () => {
+    if (closed) return;
+    closed = true;
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    doc.removeEventListener("keydown", onKey);
+  };
+}
+
+type PublishConfirmController = {
+  onCancel: () => void;
+  onConfirm: () => void;
+  close: () => void;
+};
+
+function renderPublishConfirmDialog(
+  doc: Document,
+  metadata: AssignmentDetailMetadata,
+  controller: PublishConfirmController,
+): () => void {
+  const overlay = doc.createElement("div");
+  overlay.className = "shell-assign-overlay shell-assignment-publish-overlay";
+  overlay.setAttribute("data-testid", "assignment-detail-publish-overlay");
+
+  const dialog = doc.createElement("div");
+  dialog.className = "shell-assign-dialog shell-assignment-publish-dialog";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "assignment-detail-publish-title");
+  dialog.setAttribute(
+    "aria-describedby",
+    "assignment-detail-publish-description",
+  );
+  dialog.setAttribute("data-testid", "assignment-detail-publish-dialog");
+  dialog.setAttribute("data-assignment-id", metadata.assignmentId);
+
+  const title = doc.createElement("h3");
+  title.id = "assignment-detail-publish-title";
+  title.className = "shell-assign-title";
+  title.setAttribute("data-testid", "assignment-detail-publish-title");
+  title.textContent = "Publish this assignment?";
+  dialog.appendChild(title);
+
+  const description = doc.createElement("p");
+  description.id = "assignment-detail-publish-description";
+  description.className = "shell-assign-body";
+  description.setAttribute(
+    "data-testid",
+    "assignment-detail-publish-description",
+  );
+  description.textContent =
+    "Students in the frozen recipient list will be able to begin submitting work.";
+  dialog.appendChild(description);
+
+  const footer = doc.createElement("div");
+  footer.className = "shell-assign-footer";
+  dialog.appendChild(footer);
+
+  const cancel = doc.createElement("button");
+  cancel.type = "button";
+  cancel.className = "shell-assign-cancel";
+  cancel.setAttribute("data-testid", "assignment-detail-publish-cancel");
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", () => {
+    controller.onCancel();
+  });
+  footer.appendChild(cancel);
+
+  const confirm = doc.createElement("button");
+  confirm.type = "button";
+  confirm.className = "shell-assign-confirm";
+  confirm.setAttribute("data-testid", "assignment-detail-publish-confirm");
+  confirm.textContent = "Publish assignment";
   confirm.addEventListener("click", () => {
     controller.onConfirm();
   });

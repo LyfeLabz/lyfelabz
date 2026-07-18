@@ -2018,3 +2018,375 @@ describe("renderAssignmentDetail - draft editing (Sprint 13G)", () => {
     expect(update.calls).toEqual([{ assignmentId: "assign-draft" }]);
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 13H: Draft publication workflow
+// -----------------------------------------------------------------------------
+
+import type {
+  AssignmentsPublishCallable,
+  AssignmentsPublishResult,
+} from "./types";
+
+const resolvingPublish = (
+  result?: Partial<AssignmentsPublishResult>,
+): {
+  readonly callable: AssignmentsPublishCallable;
+  readonly calls: Array<string>;
+} => {
+  const calls: Array<string> = [];
+  const callable: AssignmentsPublishCallable = ({ assignmentId }) => {
+    calls.push(assignmentId);
+    return Promise.resolve(
+      Object.freeze({
+        assignmentId,
+        status: "published" as const,
+        alreadyPublished: false,
+        ...(result ?? {}),
+      }),
+    );
+  };
+  return { callable, calls };
+};
+
+const rejectingPublish = (): {
+  readonly callable: AssignmentsPublishCallable;
+  readonly calls: Array<string>;
+} => {
+  const calls: Array<string> = [];
+  const callable: AssignmentsPublishCallable = ({ assignmentId }) => {
+    calls.push(assignmentId);
+    return Promise.reject(new Error("publish failed"));
+  };
+  return { callable, calls };
+};
+
+describe("renderAssignmentDetail - publish lifecycle (Sprint 13H)", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  test("draft assignment shows the Publish assignment action when the publish callable is wired", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+      publishCallable: publish.callable,
+    });
+    await flush();
+    const action = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-publish-action]",
+    );
+    expect(action).not.toBeNull();
+    expect(action?.textContent).toBe("Publish assignment");
+    // Edit draft still renders alongside Publish.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-edit-action]"),
+    ).not.toBeNull();
+    expect(publish.calls).toEqual([]);
+  });
+
+  test("published assignment never exposes the Publish assignment action", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      publishCallable: publish.callable,
+    });
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).toBeNull();
+  });
+
+  test("closed assignment never exposes the Publish assignment action", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      publishCallable: publish.callable,
+    });
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).toBeNull();
+  });
+
+  test("draft renders no publish action when the publish callable is not wired", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+    });
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-label]"),
+    ).not.toBeNull();
+  });
+
+  test("clicking Publish assignment opens the confirmation dialog", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      publishCallable: publish.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-publish-action]",
+      )
+      ?.click();
+    const dialog = document.querySelector(
+      "[data-testid=assignment-detail-publish-dialog]",
+    );
+    expect(dialog).not.toBeNull();
+    expect(dialog?.getAttribute("role")).toBe("dialog");
+    expect(dialog?.getAttribute("aria-modal")).toBe("true");
+    expect(
+      document.querySelector(
+        "[data-testid=assignment-detail-publish-title]",
+      )?.textContent,
+    ).toBe("Publish this assignment?");
+    expect(
+      document.querySelector(
+        "[data-testid=assignment-detail-publish-description]",
+      )?.textContent,
+    ).toBe(
+      "Students in the frozen recipient list will be able to begin submitting work.",
+    );
+    expect(publish.calls).toEqual([]);
+  });
+
+  test("Cancel leaves the draft unchanged and never invokes the callable", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      publishCallable: publish.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-publish-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-publish-cancel]",
+      )
+      ?.click();
+    await flush();
+    expect(
+      document.querySelector(
+        "[data-testid=assignment-detail-publish-dialog]",
+      ),
+    ).toBeNull();
+    expect(publish.calls).toEqual([]);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-status-value]")
+        ?.textContent,
+    ).toBe("Draft");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).not.toBeNull();
+  });
+
+  test("Confirm invokes the callable exactly once and updates the header to Published", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    const update = resolvingUpdate();
+    const statusChanges: Array<AssignmentDetailMetadata> = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+      publishCallable: publish.callable,
+      onStatusChange: (m) => {
+        statusChanges.push(m);
+      },
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-publish-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-publish-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(publish.calls).toEqual(["assign-1"]);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-status-value]")
+        ?.textContent,
+    ).toBe("Published");
+    // Draft-only affordances are removed on success.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-edit-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-label]"),
+    ).toBeNull();
+    // Sprint 13A summary composition is restored (draft-only informational
+    // panel is gone; summary host is present).
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-draft-summary]",
+      ),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-summary-host]"),
+    ).not.toBeNull();
+    expect(statusChanges).toHaveLength(1);
+    expect(statusChanges[0]?.status).toBe("published");
+    expect(statusChanges[0]?.assignmentId).toBe("assign-1");
+  });
+
+  test("Failure preserves the Draft state and renders a generic error message", async () => {
+    const mount = mkMount();
+    const publish = rejectingPublish();
+    const update = resolvingUpdate();
+    const statusChanges: Array<AssignmentDetailMetadata> = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+      publishCallable: publish.callable,
+      onStatusChange: (m) => {
+        statusChanges.push(m);
+      },
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-publish-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-publish-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(publish.calls).toEqual(["assign-1"]);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-status-value]")
+        ?.textContent,
+    ).toBe("Draft");
+    // Draft-only affordances remain intact so the teacher can retry.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-edit-action]"),
+    ).not.toBeNull();
+    // Editor was closed and stays closed.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-editor]"),
+    ).toBeNull();
+    const err = mount.querySelector(
+      "[data-testid=assignment-detail-publish-error]",
+    );
+    expect(err).not.toBeNull();
+    expect(err?.getAttribute("role")).toBe("alert");
+    expect(err?.textContent).not.toMatch(
+      /firestore|callable|assignments\.|stack/i,
+    );
+    expect(statusChanges).toHaveLength(0);
+  });
+
+  test("Published workflow is unchanged when publishCallable is wired for a published assignment", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    const close = resolvingClose();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      publishCallable: publish.callable,
+      closeCallable: close.callable,
+    });
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-close-action]"),
+    ).not.toBeNull();
+  });
+
+  test("Closed workflow is unchanged when publishCallable is wired for a closed assignment", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    const reopen = resolvingReopen();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      publishCallable: publish.callable,
+      reopenCallable: reopen.callable,
+    });
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).not.toBeNull();
+  });
+
+  test("Publish action is hidden while the inline editor is open", async () => {
+    const mount = mkMount();
+    const publish = resolvingPublish();
+    const update = resolvingUpdate();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-draft",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      updateDraftCallable: update.callable,
+      publishCallable: publish.callable,
+    });
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-edit-action]",
+      )
+      ?.click();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-publish-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-editor]"),
+    ).not.toBeNull();
+  });
+});
