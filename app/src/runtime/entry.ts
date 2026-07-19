@@ -71,13 +71,13 @@ type LessonQuizGlobal = {
   ): Promise<LessonFinalizeResult>;
 };
 
-// Same configuration the authenticated app shell (app/src/firebase.ts)
-// uses. Production replacement is a build-time concern per Slice 6.
-const EMULATOR_CONFIG = {
-  apiKey: "emulator-placeholder-api-key",
-  authDomain: "localhost",
-  projectId: "lyfelabz-platform",
-} as const;
+import { getFirebaseClientConfig, isEmulatorHost as detectEmulatorHost } from "../firebase-config";
+
+// Sprint 17 Slice 6: the runtime consumes the same shared client config
+// module as the authenticated app shell (app/src/firebase.ts). Emulator
+// hosts continue to receive the emulator-friendly placeholder; production
+// hosts receive the injected certified project configuration. Neither
+// the API key nor any other secret is embedded in this bundle.
 
 type RuntimeGlobal = {
   version: string;
@@ -194,8 +194,7 @@ function detectAssignmentId(win: Window): string | null {
 }
 
 function isEmulatorHost(win: Window): boolean {
-  const host = win.location.hostname;
-  return host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
+  return detectEmulatorHost(win);
 }
 
 function waitForUser(auth: ReturnType<typeof getAuth>): Promise<User | null> {
@@ -410,7 +409,7 @@ async function bootstrap(win: Window): Promise<void> {
   installInertRuntime(runtimeWin, true);
 
   const existingApp = getApps()[0];
-  const app = existingApp ?? initializeApp(EMULATOR_CONFIG);
+  const app = existingApp ?? initializeApp(getFirebaseClientConfig(win));
   const auth = getAuth(app);
   const functions = getFunctions(app);
 

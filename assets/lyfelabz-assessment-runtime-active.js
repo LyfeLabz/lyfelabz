@@ -8018,17 +8018,45 @@
     };
   }
 
+  // src/firebase-config.ts
+  var PROJECT_ID = "lyfelabz-platform";
+  var EMULATOR_CONFIG = {
+    apiKey: "emulator-placeholder-api-key",
+    authDomain: "localhost",
+    projectId: PROJECT_ID
+  };
+  var PRODUCTION_FALLBACK = {
+    apiKey: "unconfigured",
+    authDomain: `${PROJECT_ID}.firebaseapp.com`,
+    projectId: PROJECT_ID
+  };
+  function isEmulatorHost(win = typeof window === "undefined" ? void 0 : window) {
+    if (!win) return false;
+    const host = win.location.hostname;
+    return host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
+  }
+  function getFirebaseClientConfig(win = typeof window === "undefined" ? void 0 : window) {
+    if (!win || isEmulatorHost(win)) return EMULATOR_CONFIG;
+    const injected = win.__lyfelabzFirebaseConfig;
+    if (injected && typeof injected === "object") {
+      return {
+        apiKey: typeof injected.apiKey === "string" && injected.apiKey.length > 0 ? injected.apiKey : PRODUCTION_FALLBACK.apiKey,
+        authDomain: typeof injected.authDomain === "string" && injected.authDomain.length > 0 ? injected.authDomain : PRODUCTION_FALLBACK.authDomain,
+        projectId: typeof injected.projectId === "string" && injected.projectId.length > 0 ? injected.projectId : PRODUCTION_FALLBACK.projectId,
+        appId: typeof injected.appId === "string" ? injected.appId : void 0,
+        messagingSenderId: typeof injected.messagingSenderId === "string" ? injected.messagingSenderId : void 0,
+        storageBucket: typeof injected.storageBucket === "string" ? injected.storageBucket : void 0
+      };
+    }
+    return PRODUCTION_FALLBACK;
+  }
+
   // src/runtime/entry.ts
   var VERSION = "17.5.0";
   var NAMESPACE = "lyfelabz";
   var RUNTIME_KEY = "assessmentRuntime";
   var LESSON_QUIZ_KEY = "lessonQuiz";
   var OPTION_LETTERS = ["A", "B", "C", "D"];
-  var EMULATOR_CONFIG = {
-    apiKey: "emulator-placeholder-api-key",
-    authDomain: "localhost",
-    projectId: "lyfelabz-platform"
-  };
   function mapIndexSelectionsToResponses(indexSelections) {
     if (!indexSelections || typeof indexSelections.length !== "number") return [];
     const out = [];
@@ -8103,9 +8131,8 @@
     }
     return null;
   }
-  function isEmulatorHost(win) {
-    const host = win.location.hostname;
-    return host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
+  function isEmulatorHost2(win) {
+    return isEmulatorHost(win);
   }
   function waitForUser(auth) {
     return new Promise((resolve, reject) => {
@@ -8300,10 +8327,10 @@
     }
     installInertRuntime(runtimeWin, true);
     const existingApp = getApps()[0];
-    const app = existingApp ?? initializeApp(EMULATOR_CONFIG);
+    const app = existingApp ?? initializeApp(getFirebaseClientConfig(win));
     const auth = getAuth(app);
     const functions = getFunctions(app);
-    if (isEmulatorHost(win)) {
+    if (isEmulatorHost2(win)) {
       try {
         connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
       } catch {
