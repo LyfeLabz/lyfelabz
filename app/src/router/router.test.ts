@@ -95,10 +95,33 @@ describe("dispatch — renders the correct surface into the mount", () => {
       hist,
     );
     expect(mount.querySelector("h1")?.textContent).toBe(
-      "Sign in to your teacher account.",
+      "Sign in to LyfeLabz.",
     );
     expect(mount.querySelector("[data-testid=sign-out]")).toBeNull();
     expect(hist.calls[0].url).toBe("/app/signin");
+  });
+
+  test("renders the active student landing surface with sign-out and return-to-lessons", () => {
+    const mount = mkMount();
+    const hist = fakeHistory();
+    dispatch(
+      freeze<Session>({
+        kind: "activeStudent",
+        uid: "u1",
+        schoolId: "s1",
+        displayName: "Ben",
+      }),
+      createSignOutOnlyRouteTable(noop),
+      mount,
+      hist,
+    );
+    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ben.");
+    expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
+    // Opaque identifiers must never render on the student surface.
+    expect(mount.textContent).not.toContain("s1");
+    expect(mount.textContent).not.toContain("u1");
+    expect(hist.calls[0].url).toBe("/app/student");
   });
 
   test("renders the provisioned surface with a sign-out control", () => {

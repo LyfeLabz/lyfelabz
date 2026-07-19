@@ -58,7 +58,7 @@ describe("signed-out surface", () => {
     const mount = mkMount();
     table.unauthenticated(freeze<Session>({ kind: "unauthenticated" }), mount);
     expect(mount.querySelector("h1")?.textContent).toBe(
-      "Sign in to your teacher account.",
+      "Sign in to LyfeLabz.",
     );
     expect(mount.querySelector("[data-testid=google-signin]")).not.toBeNull();
     expect(mount.querySelector<HTMLAnchorElement>("[data-testid=return-link]")?.getAttribute("href")).toBe(
@@ -292,6 +292,65 @@ describe("active teacher surface (Step 5 shell)", () => {
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
     // Opaque schoolId is never rendered in the shell (spec §7.2).
     expect(mount.textContent).not.toContain("s1");
+  });
+});
+
+describe("active student surface (Slice 3 landing)", () => {
+  test("welcomes the verified active student by displayName and preserves sign-out plus return-to-lessons", () => {
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(
+      freeze<Session>({
+        kind: "activeStudent",
+        uid: "u1",
+        schoolId: "s1",
+        displayName: "Ben",
+      }),
+      mount,
+    );
+    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ben.");
+    expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
+    expect(mount.querySelector<HTMLAnchorElement>("[data-testid=return-link]")?.getAttribute("href")).toBe("/");
+    // Slice 3 must not begin Slice 4 UI: no assignment list or launcher
+    // control lands on the surface yet.
+    expect(mount.querySelector("[data-testid=assignments-list]")).toBeNull();
+    // Opaque identifiers must never leak into the rendered surface.
+    expect(mount.textContent).not.toContain("s1");
+    expect(mount.textContent).not.toContain("u1");
+    // Slice 3 must not render the teacher shell for a student.
+    expect(mount.textContent).not.toContain("LyfeLabz Teacher Platform");
+  });
+
+  test("refuses to render for any session kind other than activeStudent (no fallback to student for unknown state)", () => {
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    // Direct invocation with a non-student session (defensive: dispatch
+    // would never route here, but the surface must not render either).
+    table.activeStudent(
+      freeze<Session>({ kind: "unauthenticated" }),
+      mount,
+    );
+    expect(mount.querySelector("h1")).toBeNull();
+    expect(mount.querySelector("[data-testid=sign-out]")).toBeNull();
+  });
+
+  test("sign-out on the student landing surface calls onSignOut exactly once", () => {
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(
+      freeze<Session>({
+        kind: "activeStudent",
+        uid: "u1",
+        schoolId: "s1",
+        displayName: "Ben",
+      }),
+      mount,
+    );
+    mount.querySelector<HTMLButtonElement>("[data-testid=sign-out]")?.click();
+    expect(spies.signOut).toHaveBeenCalledTimes(1);
   });
 });
 

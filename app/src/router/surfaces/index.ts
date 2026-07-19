@@ -75,10 +75,10 @@ export const makeSignedOutSurface =
   (deps: SurfaceDeps): RouteSurface =>
   (_session, mount) => {
     renderHeader(mount);
-    renderHeadline(mount, "Sign in to your teacher account.");
+    renderHeadline(mount, "Sign in to LyfeLabz.");
     renderParagraph(
       mount,
-      "Teachers sign in with a Google account to reach the LyfeLabz teacher platform. Students should continue using the public lessons and do not need to sign in.",
+      "Teachers sign in to reach the LyfeLabz teacher platform. Students sign in to reach the assignments their teacher has published. Everyone else can keep browsing the public lessons without signing in.",
     );
     const btn = renderPrimaryButton(
       mount,
@@ -366,12 +366,22 @@ export const makeActiveTeacherSurface =
 // Active student stub
 // -----------------------------------------------------------------------------
 
+// Sprint 17 Slice 3: authenticated student landing surface. The full
+// assignment list belongs to Slice 4; this surface establishes the
+// routing target for a verified active student and reflects the
+// identity resolved by the Canonical Session Bootstrap. It never
+// prompts for credentials, never reads role/schoolId/districtId from
+// the browser, and never issues a callable.
 export const makeActiveStudentSurface =
   (deps: SurfaceDeps): RouteSurface =>
-  (_session, mount) => {
+  (session, mount) => {
+    if (session.kind !== "activeStudent") return;
     renderHeader(mount);
-    renderHeadline(mount, "You are signed in as a student.");
-    renderParagraph(mount, "Return to lessons to keep learning.");
+    renderHeadline(mount, `Welcome, ${session.displayName}.`);
+    renderParagraph(
+      mount,
+      "You are signed in to LyfeLabz. Assignments your teacher has published will appear here.",
+    );
     renderReturnLink(mount);
     renderSignOut(mount, deps.onSignOut);
   };
