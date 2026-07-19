@@ -312,13 +312,10 @@ describe("active student surface (Slice 3 landing)", () => {
     expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ben.");
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
     expect(mount.querySelector<HTMLAnchorElement>("[data-testid=return-link]")?.getAttribute("href")).toBe("/");
-    // Slice 3 must not begin Slice 4 UI: no assignment list or launcher
-    // control lands on the surface yet.
-    expect(mount.querySelector("[data-testid=assignments-list]")).toBeNull();
     // Opaque identifiers must never leak into the rendered surface.
     expect(mount.textContent).not.toContain("s1");
     expect(mount.textContent).not.toContain("u1");
-    // Slice 3 must not render the teacher shell for a student.
+    // Slice 4 must not render the teacher shell for a student.
     expect(mount.textContent).not.toContain("LyfeLabz Teacher Platform");
   });
 
@@ -351,6 +348,237 @@ describe("active student surface (Slice 3 landing)", () => {
     );
     mount.querySelector<HTMLButtonElement>("[data-testid=sign-out]")?.click();
     expect(spies.signOut).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("active student surface (Slice 4 assignment discovery)", () => {
+  const studentSession = () =>
+    freeze<Session>({
+      kind: "activeStudent",
+      uid: "u1",
+      schoolId: "s1",
+      displayName: "Ben",
+    });
+
+  const okItem = (over: Record<string, unknown> = {}) =>
+    ({
+      assignmentId: "assign-1",
+      lessonSlug: "what-is-life",
+      title: "What is life?",
+      status: "published" as const,
+      publishedAt: 1_700_000_000_000,
+      ...over,
+    }) as const;
+
+  test("renders the loading indicator while the callable is in flight", () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => () => new Promise(() => undefined),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    expect(mount.querySelector("[data-testid=loading-indicator]")).not.toBeNull();
+    // Header, welcome, return link, and sign-out remain present through
+    // every state so the calm-software conventions never disappear.
+    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ben.");
+    expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
+  });
+
+  test("populated state calls the callable with no arguments and renders one item per assignment", async () => {
+    const callable = jest.fn(() =>
+      Promise.resolve({
+        items: Object.freeze([okItem(), okItem({ assignmentId: "assign-2", lessonSlug: "cell-types", title: "Cell Types" })]) as ReadonlyArray<ReturnType<typeof okItem>>,
+      }),
+    );
+    const { deps } = makeDeps({ studentAssignmentsList: () => callable });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(callable).toHaveBeenCalledTimes(1);
+    expect(callable).toHaveBeenCalledWith();
+    const items = mount.querySelectorAll("[data-testid=assignments-item]");
+    expect(items).toHaveLength(2);
+    const titles = Array.from(
+      mount.querySelectorAll("[data-testid=assignments-item-title]"),
+    ).map((el) => el.textContent);
+    expect(titles).toEqual(["What is life?", "Cell Types"]);
+    const launches = Array.from(
+      mount.querySelectorAll<HTMLButtonElement>(
+        "[data-testid=assignments-launch]",
+      ),
+    );
+    expect(launches[0].getAttribute("data-assignment-launch-url")).toBe(
+      "/lesson_what-is-life.html?assignment=assign-1",
+    );
+    expect(launches[1].getAttribute("data-assignment-launch-url")).toBe(
+      "/lesson_cell-types.html?assignment=assign-2",
+    );
+  });
+
+  test("empty state renders when the callable returns no items", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => () =>
+        Promise.resolve({ items: Object.freeze([]) as ReadonlyArray<never> }),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=assignments-empty]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=assignments-list]")).toBeNull();
+  });
+
+  test("error state renders a recoverable banner and a retry that re-invokes the callable", async () => {
+    let call = 0;
+    const callable = jest.fn(() => {
+      call += 1;
+      return call === 1
+        ? Promise.reject(new Error("boom"))
+        : Promise.resolve({ items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>> });
+    });
+    const { deps } = makeDeps({ studentAssignmentsList: () => callable });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=assignments-error]")).not.toBeNull();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=assignments-retry]")
+      ?.click();
+    await flush();
+    expect(callable).toHaveBeenCalledTimes(2);
+    expect(mount.querySelector("[data-testid=assignments-list]")).not.toBeNull();
+  });
+
+  test("malformed items are dropped and the surface never renders a launch button without a valid URL", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => () =>
+        Promise.resolve({
+          items: Object.freeze([
+            okItem(),
+            { ...okItem({ assignmentId: "assign-2" }), lessonSlug: "" },
+          ]) as ReadonlyArray<ReturnType<typeof okItem>>,
+        }),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const items = mount.querySelectorAll("[data-testid=assignments-item]");
+    expect(items).toHaveLength(1);
+    const launches = mount.querySelectorAll<HTMLButtonElement>(
+      "[data-testid=assignments-launch]",
+    );
+    expect(launches).toHaveLength(1);
+    expect(launches[0].getAttribute("data-assignment-launch-url")).toBe(
+      "/lesson_what-is-life.html?assignment=assign-1",
+    );
+  });
+
+  test("clicking a launch button invokes onLaunchAssignment with the canonical URL and never begins a session", async () => {
+    const onLaunchAssignment = jest.fn();
+    const callable = jest.fn(() =>
+      Promise.resolve({
+        items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>>,
+      }),
+    );
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => callable,
+      onLaunchAssignment,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=assignments-launch]")
+      ?.click();
+    expect(onLaunchAssignment).toHaveBeenCalledTimes(1);
+    expect(onLaunchAssignment).toHaveBeenCalledWith(
+      "/lesson_what-is-life.html?assignment=assign-1",
+    );
+    // The callable is invoked exactly once (the initial discovery
+    // fetch). No attempt-retrieval, session-begin, autosave, or
+    // finalize call is issued by the launcher; Slice 5 owns those.
+    expect(callable).toHaveBeenCalledTimes(1);
+  });
+
+  test("launch URL exposes no identity beyond the assignmentId", async () => {
+    const callable = jest.fn(() =>
+      Promise.resolve({
+        items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>>,
+      }),
+    );
+    const { deps } = makeDeps({ studentAssignmentsList: () => callable });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const url =
+      mount
+        .querySelector<HTMLButtonElement>("[data-testid=assignments-launch]")
+        ?.getAttribute("data-assignment-launch-url") ?? "";
+    for (const forbidden of [
+      "u1",
+      "s1",
+      "uid=",
+      "schoolId=",
+      "districtId=",
+      "teacherId=",
+      "classId=",
+      "recipient=",
+      "session=",
+      "token=",
+      "score=",
+    ]) {
+      expect(url).not.toContain(forbidden);
+    }
+  });
+
+  test("titles are inserted via textContent so HTML from the callable cannot render", async () => {
+    const callable = () =>
+      Promise.resolve({
+        items: Object.freeze([
+          okItem({ title: "<img src=x onerror=alert(1)>" }),
+        ]) as ReadonlyArray<ReturnType<typeof okItem>>,
+      });
+    const { deps } = makeDeps({ studentAssignmentsList: () => callable });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const title = mount.querySelector(
+      "[data-testid=assignments-item-title]",
+    );
+    expect(title?.textContent).toBe("<img src=x onerror=alert(1)>");
+    expect(title?.querySelector("img")).toBeNull();
+  });
+
+  test("missing callable seam falls back to the empty state and does not throw", () => {
+    // No studentAssignmentsList override; the default deps omit the
+    // seam entirely (matches the entry-point behavior before the
+    // active-student branch of `rerun` has resolved).
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    expect(() => table.activeStudent(studentSession(), mount)).not.toThrow();
+    expect(mount.querySelector("[data-testid=assignments-empty]")).not.toBeNull();
+  });
+
+  test("does not render the teacher shell for a student", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => () =>
+        Promise.resolve({
+          items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>>,
+        }),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.textContent).not.toContain("LyfeLabz Teacher Platform");
   });
 });
 

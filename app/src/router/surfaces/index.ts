@@ -6,6 +6,11 @@ import type {
 } from "../../settings/integrations/types";
 import type { CurriculumAssignmentDetailSeam } from "../../shell/surfaces/curriculum";
 import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
+import type {
+  AssignmentsListForStudentCallable,
+  AssignmentsListForStudentItem,
+} from "../../assignments/studentList/types";
+import { buildAssignmentLaunchUrl } from "../../assignments/studentList/launch";
 import { mountTeacherShell } from "../../shell/shell";
 import {
   clear,
@@ -65,6 +70,20 @@ export type SurfaceDeps = {
   // itself is a function, so the getter-form is required to keep the
   // type check unambiguous.
   readonly assignmentSummary?: () => AssignmentSummaryCallable | null;
+  // Sprint 17 Slice 4: certified `assignmentsListForStudent` callable
+  // seam consumed by the activeStudent surface. Always supplied through
+  // a getter so per-session state can rebind across reruns without
+  // rebuilding the route table; the callable itself is a function, so
+  // the getter form is required to keep the type check unambiguous.
+  readonly studentAssignmentsList?: () =>
+    | AssignmentsListForStudentCallable
+    | null;
+  // Sprint 17 Slice 4: launch a lesson from the activeStudent surface.
+  // Injected so tests can assert the exact URL without stubbing
+  // window.location. The entry point wires window.location.assign; the
+  // launcher URL is composed inside the surface from the certified item
+  // fields so identifier leakage cannot be introduced at the wire.
+  readonly onLaunchAssignment?: (url: string) => void;
 };
 
 // -----------------------------------------------------------------------------
@@ -366,12 +385,16 @@ export const makeActiveTeacherSurface =
 // Active student stub
 // -----------------------------------------------------------------------------
 
-// Sprint 17 Slice 3: authenticated student landing surface. The full
-// assignment list belongs to Slice 4; this surface establishes the
-// routing target for a verified active student and reflects the
-// identity resolved by the Canonical Session Bootstrap. It never
-// prompts for credentials, never reads role/schoolId/districtId from
-// the browser, and never issues a callable.
+// Sprint 17 Slice 4: authenticated student landing surface. Consumes the
+// certified `assignmentsListForStudent` callable and presents the
+// student's published assignments with a launch control. The surface
+// never prompts for credentials, never reads role/schoolId/districtId
+// from the browser, never issues a Firestore read, and never begins an
+// assessment session (session lifecycle is Slice 5 - the runtime).
+//
+// Four states are supported: loading, populated, empty, and recoverable
+// error. Each state preserves the calm-software conventions (welcome,
+// return-to-lessons, sign-out).
 export const makeActiveStudentSurface =
   (deps: SurfaceDeps): RouteSurface =>
   (session, mount) => {
@@ -382,9 +405,129 @@ export const makeActiveStudentSurface =
       mount,
       "You are signed in to LyfeLabz. Assignments your teacher has published will appear here.",
     );
+
+    const listRegion = mount.ownerDocument.createElement("div");
+    listRegion.setAttribute("data-testid", "assignments-region");
+    mount.appendChild(listRegion);
+
     renderReturnLink(mount);
     renderSignOut(mount, deps.onSignOut);
+
+    const callable =
+      typeof deps.studentAssignmentsList === "function"
+        ? deps.studentAssignmentsList()
+        : null;
+    const launch = deps.onLaunchAssignment;
+
+    const load = (): void => {
+      clear(listRegion);
+      if (callable === null) {
+        // The callable seam is unavailable (for example the entry point
+        // has not yet wired it, or the session transition raced the
+        // route table). Fall back to a calm empty state; do not prompt
+        // for retry against a missing dependency.
+        renderAssignmentsEmpty(listRegion);
+        return;
+      }
+      renderLoadingIndicator(listRegion, "Loading your assignments");
+      callable().then(
+        (response) => {
+          clear(listRegion);
+          const items = filterLaunchableItems(response.items);
+          if (items.length === 0) {
+            renderAssignmentsEmpty(listRegion);
+            return;
+          }
+          renderAssignmentsList(listRegion, items, launch);
+        },
+        () => {
+          clear(listRegion);
+          renderAssignmentsError(listRegion, load);
+        },
+      );
+    };
+
+    load();
   };
+
+function filterLaunchableItems(
+  items: ReadonlyArray<AssignmentsListForStudentItem>,
+): ReadonlyArray<AssignmentsListForStudentItem> {
+  // Belt-and-suspenders: wire.ts already discards malformed items, but
+  // the launcher URL builder is the last gate before an identifier is
+  // encoded into a URL. Any item that cannot produce a valid launch URL
+  // is dropped here so no button can render without a working target.
+  const out: AssignmentsListForStudentItem[] = [];
+  for (const item of items) {
+    if (buildAssignmentLaunchUrl(item) !== null) out.push(item);
+  }
+  return out;
+}
+
+function renderAssignmentsEmpty(mount: HTMLElement): void {
+  const p = mount.ownerDocument.createElement("p");
+  p.setAttribute("data-testid", "assignments-empty");
+  p.textContent =
+    "No assignments are open for you right now. Check back after your teacher publishes one.";
+  mount.appendChild(p);
+}
+
+function renderAssignmentsError(
+  mount: HTMLElement,
+  onRetry: () => void,
+): void {
+  const banner = renderErrorBanner(
+    mount,
+    "We could not load your assignments. Check your connection and try again.",
+  );
+  banner.setAttribute("data-testid", "assignments-error");
+  const retry = renderPrimaryButton(
+    mount,
+    "Try again",
+    () => {
+      onRetry();
+    },
+    "assignments-retry",
+  );
+  retry.setAttribute("aria-label", "Try again");
+}
+
+function renderAssignmentsList(
+  mount: HTMLElement,
+  items: ReadonlyArray<AssignmentsListForStudentItem>,
+  launch: ((url: string) => void) | undefined,
+): void {
+  const doc = mount.ownerDocument;
+  const list = doc.createElement("ul");
+  list.setAttribute("data-testid", "assignments-list");
+  list.className = "shell-list";
+  for (const item of items) {
+    const url = buildAssignmentLaunchUrl(item);
+    if (url === null) continue;
+    const li = doc.createElement("li");
+    li.setAttribute("data-testid", "assignments-item");
+
+    const heading = doc.createElement("h2");
+    heading.setAttribute("data-testid", "assignments-item-title");
+    // Titles are user-authored content routed through Element.textContent
+    // (never innerHTML). No launch URL is constructed from the title.
+    heading.textContent = item.title;
+    li.appendChild(heading);
+
+    const btn = doc.createElement("button");
+    btn.type = "button";
+    btn.setAttribute("data-testid", "assignments-launch");
+    btn.setAttribute("data-assignment-launch-url", url);
+    btn.textContent = "Open assignment";
+    btn.addEventListener("click", () => {
+      if (launch) launch(url);
+    });
+    li.appendChild(btn);
+
+    list.appendChild(li);
+  }
+  mount.appendChild(list);
+}
 
 // -----------------------------------------------------------------------------
 // Active administrator stub

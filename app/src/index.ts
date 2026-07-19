@@ -23,6 +23,8 @@ import type {
 } from "./settings/integrations/types";
 import { createAssignmentSummaryCallable } from "./assignments/summary/wire";
 import type { AssignmentSummaryCallable } from "./assignments/summary/types";
+import { createAssignmentsListForStudentCallable } from "./assignments/studentList/wire";
+import type { AssignmentsListForStudentCallable } from "./assignments/studentList/types";
 import { createAssignmentDetailRegistry } from "./assignments/detail/registry";
 import { createAssignmentDetailMetadataReader } from "./assignments/detail/wire";
 import { renderAssignmentDetail } from "./assignments/detail/detail";
@@ -80,6 +82,12 @@ async function run(): Promise<void> {
   // consumed by the reusable Assignment Summary card. Rebound per
   // active-teacher session so cross-session state cannot leak.
   let assignmentSummary: AssignmentSummaryCallable | null = null;
+  // Sprint 17 Slice 4: certified `assignmentsListForStudent` callable
+  // seam consumed by the activeStudent surface. Rebound per
+  // active-student session so cross-session state cannot leak. Null on
+  // any non-student session so the teacher shell never inherits a
+  // student-scoped callable.
+  let studentAssignmentsList: AssignmentsListForStudentCallable | null = null;
   // Sprint 13D: certified `assignmentsClose` callable seam consumed by
   // the Assignment Detail surface. Rebound per active-teacher session so
   // cross-session state cannot leak. Null before an active-teacher
@@ -327,6 +335,43 @@ async function run(): Promise<void> {
       );
       if (runToken !== currentRunToken) return;
       lastActiveTeacher = session;
+      studentAssignmentsList = null;
+    } else if (session.kind === "activeStudent") {
+      // Sprint 17 Slice 4: certified student-scoped callable seam. This
+      // branch never touches the teacher-only callables, never hydrates
+      // the teacher assignment-detail registry, and never runs a
+      // teacher-shell code path. Firebase Functions is initialized here
+      // exactly the same way the teacher branch initializes it so the
+      // emulator override behaves identically in local development.
+      const { getFunctions, connectFunctionsEmulator } = await import(
+        "firebase/functions"
+      );
+      const functions = getFunctions();
+      if (
+        typeof window !== "undefined" &&
+        (window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1")
+      ) {
+        try {
+          connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        } catch {
+          // already connected
+        }
+      }
+      studentAssignmentsList =
+        createAssignmentsListForStudentCallable(functions);
+      integrations = null;
+      assignments = null;
+      assignmentSummary = null;
+      assignmentClose = null;
+      assignmentReopen = null;
+      assignmentUpdateDraft = null;
+      assignmentPublish = null;
+      assignmentRecipientList = null;
+      attemptsListForClass = null;
+      attemptGetForTeacher = null;
+      assignmentDetailRegistry.clear();
+      lastActiveTeacher = null;
     } else {
       integrations = null;
       assignments = null;
@@ -340,6 +385,7 @@ async function run(): Promise<void> {
       attemptGetForTeacher = null;
       assignmentDetailRegistry.clear();
       lastActiveTeacher = null;
+      studentAssignmentsList = null;
     }
     activeAssignmentsInvalidator = null;
     // Sprint 16 Slice 4: any bootstrap transition (sign-out, teacher
@@ -420,6 +466,13 @@ async function run(): Promise<void> {
     assignments: () => assignments,
     assignmentDetail: () => assignmentDetailSeam,
     assignmentSummary: () => assignmentSummary,
+    studentAssignmentsList: () => studentAssignmentsList,
+    onLaunchAssignment: (url: string) => {
+      // Navigate the current tab to the canonical lesson URL with the
+      // assignment query parameter. The runtime detects assignment
+      // context on lesson load (Slice 5); this launcher only navigates.
+      window.location.assign(url);
+    },
   });
 
   await rerun();
