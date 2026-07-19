@@ -53,6 +53,7 @@ export {
   assignmentReopenDocRef,
   assignmentRecipientCreationDocRef,
   assignmentRecipientDocRef,
+  assignmentRecipientsCollectionGroupRef,
   assignmentRecipientsCollectionRef,
   assignmentsCollectionRef,
   auditEventsCollectionRef,

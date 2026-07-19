@@ -12,6 +12,7 @@ export {
   assignmentsArchive,
   assignmentsClose,
   assignmentsCreateDraft,
+  assignmentsListForStudent,
   assignmentsPublish,
   assignmentsReopen,
   assignmentsRecipientAdd,

@@ -16,6 +16,12 @@ export {
   type AssignmentsCreateDraftResponse,
 } from "./assignments-create-draft";
 export {
+  assignmentsListForStudent,
+  type AssignmentsListForStudentItem,
+  type AssignmentsListForStudentRequest,
+  type AssignmentsListForStudentResponse,
+} from "./assignments-list-for-student";
+export {
   assignmentsPublish,
   type AssignmentsPublishRequest,
   type AssignmentsPublishResponse,

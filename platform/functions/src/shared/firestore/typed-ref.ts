@@ -1,4 +1,4 @@
-import type { CollectionReference, DocumentReference } from "firebase-admin/firestore";
+import type { CollectionReference, DocumentReference, Query } from "firebase-admin/firestore";
 
 import {
   ASSIGNMENTS_COLLECTION,
@@ -339,6 +339,21 @@ export function assignmentArchiveDocRef(
   return getAdminFirestore()
     .collection(ASSIGNMENTS_COLLECTION)
     .doc(assignmentId) as DocumentReference<AssignmentArchiveWrite>;
+}
+
+// Collection-group typed reference across every
+// `assignments/{assignmentId}/recipients` subcollection. Sprint 17 Slice 2
+// (`assignmentsListForStudent`) is the sole reader. The recipient record
+// carries a frozen ownership snapshot (studentId, districtId, schoolId,
+// teacherId, classId, assignmentId, status) per PDR-029h, so the query is
+// scoped on `studentId` and every returned document is then defense-in-
+// depth-checked against the caller's verified district context before the
+// parent assignment is loaded. A single-field collection-group index on
+// `recipients.studentId` is declared in `firestore.indexes.json`; no
+// composite index is introduced.
+export function assignmentRecipientsCollectionGroupRef(): Query<AssignmentRecipientRecord> {
+  return getAdminFirestore()
+    .collectionGroup(ASSIGNMENT_RECIPIENTS_SUBCOLLECTION) as unknown as Query<AssignmentRecipientRecord>;
 }
 
 // Collection-level typed reference for the assignment-recipient
