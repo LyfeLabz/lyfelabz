@@ -312,7 +312,7 @@ describe("Curriculum surface composition (Sprint 6D)", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacherSession());
     const cards = mount.querySelectorAll(".shell-lesson-card");
-    expect(cards.length).toBe(47);
+    expect(cards.length).toBe(49);
   });
 
   test("each lesson card renders title, grade, topic, preview link, and activation toggle", () => {

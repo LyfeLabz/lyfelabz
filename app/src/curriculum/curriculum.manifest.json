@@ -4,13 +4,13 @@
   "generatedBy": "app/scripts/build-curriculum-manifest.cjs",
   "canonicalSource": "index.html",
   "canonicalSourceRelativeToApp": "../index.html",
-  "canonicalSourceSha256": "24516caecd0ef220cd922651b4be9bd95c36926b4df92b4ed93331f696c29525",
+  "canonicalSourceSha256": "c03b8746cdd2030af01396f7c4b37244d5ab798259a087226b1803c167805b3f",
   "doNotEditByHand": "This file is generated from the root canonical index.html. Do not edit by hand. Regenerate with `npm run curriculum:build` inside app/.",
   "totals": {
-    "unitCount": 48,
+    "unitCount": 50,
     "gatedUnitCount": 1,
     "resourceCountsByType": {
-      "lesson": 48,
+      "lesson": 50,
       "simulation": 3,
       "investigation": 4,
       "extension": 5,
@@ -21,14 +21,14 @@
       "disease": 0
     },
     "unitsByGrade": {
-      "6": 22,
+      "6": 24,
       "7": 26
     },
     "unitsByTopic": {
       "life-science": 12,
       "earth-space": 15,
       "physical-science": 11,
-      "tech-engineering": 9,
+      "tech-engineering": 11,
       "behavioral-science": 1
     },
     "unitsByTopicAndGrade": {
@@ -38,7 +38,7 @@
       "earth-space/7": 8,
       "physical-science/6": 7,
       "physical-science/7": 4,
-      "tech-engineering/6": 2,
+      "tech-engineering/6": 4,
       "tech-engineering/7": 7,
       "behavioral-science/6": 1
     }
@@ -926,13 +926,51 @@
           "inGroupOrder": 1
         },
         {
+          "slug": "choosing-materials",
+          "title": "Choosing Materials",
+          "description": "Why isn't a bicycle made entirely from one material? Discover how engineers match material properties to the demands of the problem they are solving.",
+          "grade": "6",
+          "topic": "tech-engineering",
+          "gated": false,
+          "displayOrder": 40,
+          "resources": [
+            {
+              "type": "lesson",
+              "href": "/lesson_choosing-materials.html",
+              "filename": "lesson_choosing-materials.html",
+              "label": "Lesson",
+              "displayOrder": 0
+            }
+          ],
+          "inGroupOrder": 2
+        },
+        {
+          "slug": "designing-to-scale",
+          "title": "Designing to Scale",
+          "description": "A great idea is only useful if someone else can build it. Learn how engineers use scale drawings to communicate a design so anyone can follow it exactly.",
+          "grade": "6",
+          "topic": "tech-engineering",
+          "gated": false,
+          "displayOrder": 41,
+          "resources": [
+            {
+              "type": "lesson",
+              "href": "/lesson_designing-to-scale.html",
+              "filename": "lesson_designing-to-scale.html",
+              "label": "Lesson",
+              "displayOrder": 0
+            }
+          ],
+          "inGroupOrder": 3
+        },
+        {
           "slug": "design-tradeoffs",
           "title": "Design Tradeoffs",
           "description": "Why can't engineers make something faster, cheaper, and stronger all at once? Discover how every design balances competing goals, and how engineers decide what matters most.",
           "grade": "7",
           "topic": "tech-engineering",
           "gated": false,
-          "displayOrder": 40,
+          "displayOrder": 42,
           "resources": [
             {
               "type": "lesson",
@@ -951,7 +989,7 @@
           "grade": "7",
           "topic": "tech-engineering",
           "gated": false,
-          "displayOrder": 41,
+          "displayOrder": 43,
           "resources": [
             {
               "type": "lesson",
@@ -970,7 +1008,7 @@
           "grade": "7",
           "topic": "tech-engineering",
           "gated": false,
-          "displayOrder": 42,
+          "displayOrder": 44,
           "resources": [
             {
               "type": "lesson",
@@ -989,7 +1027,7 @@
           "grade": "7",
           "topic": "tech-engineering",
           "gated": false,
-          "displayOrder": 43,
+          "displayOrder": 45,
           "resources": [
             {
               "type": "lesson",
@@ -1008,7 +1046,7 @@
           "grade": "7",
           "topic": "tech-engineering",
           "gated": false,
-          "displayOrder": 44,
+          "displayOrder": 46,
           "resources": [
             {
               "type": "lesson",
@@ -1027,7 +1065,7 @@
           "grade": "7",
           "topic": "tech-engineering",
           "gated": false,
-          "displayOrder": 45,
+          "displayOrder": 47,
           "resources": [
             {
               "type": "lesson",
@@ -1046,7 +1084,7 @@
           "grade": "7",
           "topic": "tech-engineering",
           "gated": false,
-          "displayOrder": 46,
+          "displayOrder": 48,
           "resources": [
             {
               "type": "lesson",
@@ -1073,7 +1111,7 @@
           "grade": "6",
           "topic": "behavioral-science",
           "gated": true,
-          "displayOrder": 47,
+          "displayOrder": 49,
           "resources": [
             {
               "type": "lesson",

@@ -106,7 +106,7 @@ describe("Canonical curriculum manifest (Sprint 6D.0)", () => {
     for (const l of lessons) {
       expect(l.href.startsWith("/lesson_")).toBe(true);
     }
-    expect(lessons.length).toBe(47);
+    expect(lessons.length).toBe(49);
   });
 
   test("orphan units are reported only for gated topic groups", () => {
