@@ -5,6 +5,7 @@
   "description": "LyfeLabz authenticated client bundle for /app/**. Sprint 3 Canonical Session Bootstrap and router.",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --format=esm --target=es2022 --outfile=dist/bundle.js",
+    "build:runtime": "esbuild src/runtime/entry.ts --bundle --format=iife --target=es2020 --outfile=../assets/lyfelabz-assessment-runtime-active.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --ext .ts src",
     "test": "jest",

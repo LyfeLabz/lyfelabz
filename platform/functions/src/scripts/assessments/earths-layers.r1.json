@@ -1,0 +1,149 @@
+{
+  "activityId": "earths-layers",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-17-slice-5a",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "How many main layers is Earth divided into?",
+      "options": [
+        { "optionId": "A", "text": "Two" },
+        { "optionId": "B", "text": "Three" },
+        { "optionId": "C", "text": "Four" },
+        { "optionId": "D", "text": "Six" }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Earth is divided into four main layers: the crust, the mantle, the outer core, and the inner core."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "While Earth was molten, heavy metals like iron and nickel sank to the center. What is this sorting process called?",
+      "options": [
+        { "optionId": "A", "text": "Convection" },
+        { "optionId": "B", "text": "Differentiation" },
+        { "optionId": "C", "text": "Transmission" },
+        { "optionId": "D", "text": "Erosion" }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Differentiation is the process in which a molten Earth separated into layers by density. Heavy metals sank to form the core, while lighter materials rose to form the mantle and crust."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Why did the densest materials end up at Earth's center?",
+      "options": [
+        { "optionId": "A", "text": "Dense materials are pulled by the magnetic field" },
+        { "optionId": "B", "text": "Dense materials sink below less dense materials" },
+        { "optionId": "C", "text": "Dense materials are always the hottest" },
+        { "optionId": "D", "text": "Dense materials float to the top" }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Density decides the order. When materials could move freely in the molten Earth, the densest materials sank deepest and the least dense rose to the surface."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes the crust?",
+      "options": [
+        { "optionId": "A", "text": "It is the thickest and most dense layer" },
+        { "optionId": "B", "text": "It is a thin, brittle layer and the least dense" },
+        { "optionId": "C", "text": "It is a liquid layer made of iron and nickel" },
+        { "optionId": "D", "text": "It is the layer that creates Earth's magnetic field" }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The crust is the thin, brittle outer layer, only 4 to 25 miles thick. It is the least dense layer and is the one we live on."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A geologist compares a sample of oceanic crust to a sample of continental crust. Which is true?",
+      "options": [
+        { "optionId": "A", "text": "Oceanic crust is thicker and less dense" },
+        { "optionId": "B", "text": "Oceanic crust is thinner, younger, and more dense" },
+        { "optionId": "C", "text": "Continental crust is thinner and made of basalt" },
+        { "optionId": "D", "text": "Both types of crust are exactly the same" }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Oceanic crust is made of basalt, averages about 4 miles thick, and is younger and more dense. Continental crust is made of granite, averages about 25 miles thick, and is older and less dense."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "The mantle is solid rock, yet it slowly flows. Why does this matter for the surface?",
+      "options": [
+        { "optionId": "A", "text": "The flowing mantle moves the plates above it" },
+        { "optionId": "B", "text": "The flowing mantle turns the crust into liquid" },
+        { "optionId": "C", "text": "The flowing mantle stops earthquakes from happening" },
+        { "optionId": "D", "text": "The flowing mantle has no effect on the surface" }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The mantle flows slowly because of temperature differences. The movement of the mantle creates the movement of Earth's plates, which is what changes the surface."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Which layer flows like soft plastic and is responsible for convection currents?",
+      "options": [
+        { "optionId": "A", "text": "The lithosphere" },
+        { "optionId": "B", "text": "The asthenosphere" },
+        { "optionId": "C", "text": "The inner core" },
+        { "optionId": "D", "text": "The oceanic crust" }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The asthenosphere is the region of the upper mantle that flows, a quality called plastic behavior. It is responsible for convection currents."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "What drives the convection currents inside Earth's mantle?",
+      "options": [
+        { "optionId": "A", "text": "Energy and heat from Earth's interior" },
+        { "optionId": "B", "text": "The pull of the Moon's gravity" },
+        { "optionId": "C", "text": "Wind blowing across the surface" },
+        { "optionId": "D", "text": "The spinning of the inner core only" }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Energy from Earth's interior heats the rock. Hot rock rises, cools, and sinks in a loop called a convection current, which cycles the mantle and moves the crust."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Plates usually slide smoothly, but sometimes they get stuck and pressure builds. When the pressure is suddenly released, what happens?",
+      "options": [
+        { "optionId": "A", "text": "Earth's magnetic field reverses" },
+        { "optionId": "B", "text": "The energy is released as an earthquake in the crust" },
+        { "optionId": "C", "text": "The inner core melts" },
+        { "optionId": "D", "text": "A new continent instantly forms" }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "When stuck plates finally slip, the built-up pressure is released as energy that shakes the crust. That shaking is an earthquake."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which statement best explains how Earth's internal structure causes changes at the surface?",
+      "options": [
+        { "optionId": "A", "text": "Surface changes happen only because of weather, not the interior" },
+        { "optionId": "B", "text": "Heat drives convection in the mantle, which moves plates and produces earthquakes and volcanoes" },
+        { "optionId": "C", "text": "The crust moves on its own with no connection to deeper layers" },
+        { "optionId": "D", "text": "Earthquakes and volcanoes are caused by the magnetic field" }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Heat deep inside Earth drives convection currents in the mantle. That flow moves the plates, and the shifting plates produce earthquakes and volcanoes at the surface. Internal structure and energy explain surface change."
+    }
+  ]
+}

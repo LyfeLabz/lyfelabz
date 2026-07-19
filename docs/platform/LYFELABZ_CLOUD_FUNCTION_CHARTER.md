@@ -405,6 +405,9 @@ A single function that handles submissions, publications, and roster changes is 
 **Hidden dependencies on client behavior.**
 A function that only works because the client happens to send fields in a particular order, or happens to call two endpoints in a particular sequence, is fragile. Server correctness must not depend on client discipline.
 
+**Exposing administrative content deployment as a callable.**
+Publishing assessment revisions and answer keys is an administrative operation performed by trusted operators through repository-local tooling that invokes the certified `deployAssessmentRevision` implementation directly. Students never deploy assessments. Teachers never deploy assessments. Browsers never deploy assessments. The three assessment-content collections (`assessments/*`, `assessmentRevisions/*`, `assessmentAnswerKeys/*`) are refused for every client role including `platformAdministrator` at the Firestore Rules layer; the deployment path is out-of-band by design. Any proposal to wrap `deployAssessmentRevision` in an HTTPS callable, an admin panel action, or a browser-triggered workflow is rejected. Assessment content lifecycle is governed by trusted release tooling, not by an in-app authorization gate; a compromised admin session must not be able to publish an answer key. This constraint survives every future sprint. See Sprint 17 Slice 5A for the reference tooling shape (a repository-local Node CLI invoking the certified deployment implementation with emulator-safe defaults and an explicit production opt-in).
+
 ---
 
 ## 10. Readiness Assessment

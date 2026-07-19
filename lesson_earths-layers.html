@@ -2098,6 +2098,10 @@ function elSelectAnswer(qi, chosenIndex) {
   document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
   elUpdateProgress();
   elRefreshSubmitState();
+  // Sprint 17 Slice 5. The shared lessonQuiz adapter is inert in
+  // standalone practice mode and only forwards to the certified
+  // backend when the page was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(elQuizState.selected);
 }
 
 function elUpdateProgress() {
@@ -2123,7 +2127,8 @@ function elSubmitQuiz() {
   if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
   var elThinkGate = document.getElementById('el-thinking');
   if (elThinkGate && !elThinkGate.value.trim()) return;
-  if (elQuizMode === 'classroom') {
+  var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  if (!elAssigned && elQuizMode === 'classroom') {
     var info = elValidateStudentInfo();
     if (!info.valid) {
       document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2172,6 +2177,24 @@ function elSubmitQuiz() {
       var more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (elAssigned) {
+    // Assignment context. The certified backend re-scores from the
+    // paired answer key. Local scoring above is preserved so student-
+    // facing feedback is unchanged. Duplicate clicks are guarded by
+    // elQuizState.submitted; finalize itself is idempotent on the
+    // runtime side via a per-runtime idempotency key.
+    var elFinalStatus = document.getElementById('el-submit-status');
+    elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    window.lyfelabz.lessonQuiz.finalize(elQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        elFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + r.message + '</div>';
+      }
+    });
+    return;
   }
 
   if (elQuizMode === 'practice') {

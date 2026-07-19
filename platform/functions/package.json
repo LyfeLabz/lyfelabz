@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint --ext .ts src",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "deploy:assessment": "node lib/scripts/deploy-assessment.js"
   },
   "dependencies": {
     "firebase-admin": "^12.2.0",
