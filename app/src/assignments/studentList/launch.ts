@@ -1,4 +1,5 @@
 import type { AssignmentsListForStudentItem } from "./types";
+import { LESSON_LAUNCH_OVERRIDES } from "./launchOverrides";
 
 // Sprint 17 Slice 4: assignment launcher URL builder.
 //
@@ -44,5 +45,10 @@ export function buildAssignmentLaunchUrl(
   // encodeURIComponent covers every reserved URL character including
   // `&`, `?`, `#`, `=`, and `/`; the assignmentId is treated as opaque.
   const encoded = encodeURIComponent(assignmentId);
-  return `/lesson_${lessonSlug}.html?assignment=${encoded}`;
+  // Sprint 18: consult the narrow slug-keyed override table. If the
+  // pilot lesson has a v2 artifact, use its `/app/lessons/...` path;
+  // otherwise emit the v1 URL byte-for-byte identical to Sprint 17.
+  const override = LESSON_LAUNCH_OVERRIDES[lessonSlug];
+  const basePath = override ? override.path : `/lesson_${lessonSlug}.html`;
+  return `${basePath}?assignment=${encoded}`;
 }

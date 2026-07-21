@@ -72,4 +72,19 @@ describe("buildAssignmentLaunchUrl", () => {
     const url = buildAssignmentLaunchUrl(mkItem());
     expect(url).toMatch(/^\/lesson_/);
   });
+
+  // Sprint 18: Earth's Layers pilot uses the generated v2 artifact.
+  test("Earth's Layers pilot resolves to the v2 artifact path", () => {
+    const url = buildAssignmentLaunchUrl(
+      mkItem({ lessonSlug: "earths-layers", assignmentId: "asg-42" }),
+    );
+    expect(url).toBe("/app/lessons/lesson_earths-layers.html?assignment=asg-42");
+  });
+
+  test("non-piloted lessons still resolve to the v1 root-level path", () => {
+    const url = buildAssignmentLaunchUrl(
+      mkItem({ lessonSlug: "cell-types", assignmentId: "asg-7" }),
+    );
+    expect(url).toBe("/lesson_cell-types.html?assignment=asg-7");
+  });
 });

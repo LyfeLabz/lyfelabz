@@ -10,7 +10,10 @@
     "lint": "eslint --ext .ts src",
     "test": "jest",
     "curriculum:build": "node scripts/build-curriculum-manifest.cjs",
-    "curriculum:verify": "node scripts/build-curriculum-manifest.cjs --check"
+    "curriculum:verify": "node scripts/build-curriculum-manifest.cjs --check",
+    "lessons:build": "node scripts/build-lessons.cjs",
+    "lessons:verify": "node scripts/build-lessons.cjs --check",
+    "verify": "npm run curriculum:verify && npm run lessons:verify && npm run typecheck && npm run lint && npm run test"
   },
   "dependencies": {
     "firebase": "^10.12.2"

@@ -11,6 +11,16 @@ architecture is defined by educational function, not identical implementation.
 
 Baseline date: 2026-07-07
 
+Sprint 18 addendum (2026-07-19): Earth's Layers is now a generated
+lesson. Its canonical instructional source lives at
+`lesson-sources/lesson_earths-layers.html`; the public v1 artifact at
+`lesson_earths-layers.html` and the authenticated v2 artifact at
+`app/lessons/lesson_earths-layers.html` are byte-generated from that
+source and are prohibited from direct edit. Canonical instructional
+architecture guarantees continue to hold because canonical architecture
+is defined by educational function, not identical implementation. All
+50 core lessons remain canonical.
+
 ---
 
 ## 1. Total lessons

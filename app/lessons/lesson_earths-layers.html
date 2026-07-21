@@ -2,8 +2,8 @@
 <!--
 GENERATED FILE. DO NOT EDIT DIRECTLY.
 Canonical source: lesson-sources/lesson_earths-layers.html
-Build target: v1
-Regenerate: npm --prefix app run lessons:build -- --only=earths-layers --target=v1
+Build target: v2
+Regenerate: npm --prefix app run lessons:build -- --only=earths-layers --target=v2
 -->
 <html lang="en">
 <head>
@@ -493,47 +493,6 @@ Regenerate: npm --prefix app run lessons:build -- --only=earths-layers --target=
 
   /* ── QUIZ ── */
   .quiz-section { background: var(--dark2); }
-  .quiz-mode-toggle {
-    display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem;
-    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
-    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
-    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
-  }
-  .mode-btn {
-    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
-    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
-    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55); background: transparent;
-  }
-  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
-  .mode-btn.active {
-    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
-    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
-    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-    text-shadow: 0 0 12px rgba(159,184,204,0.6);
-  }
-  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
-  .mode-hint span { display: none; }
-  .mode-hint span.visible { display: inline; }
-  .student-info-box {
-    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent2);
-  }
-  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
-  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
-  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
-  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
-  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
-  .info-field input, .info-field select {
-    width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
-    border: 1.5px solid var(--border); border-radius: 10px; color: var(--text);
-    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
-    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
-  }
-  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
-  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
-  .info-field select option { background: #161e28; color: var(--text); }
-  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
-  .info-error.show { display: block; }
   .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
   .quiz-progress { display: flex; align-items: center; gap: 1rem; }
   .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
@@ -718,7 +677,6 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
   .footer-links a,
   .predict-btn,
   .qr-actions button,
-  .mode-btn,
   .qr-check,
   .qr-retry {
     min-height: 44px;
@@ -1595,48 +1553,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <h2 class="section-title">Check Your Understanding</h2>
     <p class="section-desc">Ten questions covering everything you explored, from differentiation to convection currents. Answer every question, then submit.</p>
 
-    <!-- Mode Toggle -->
-    <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
-    </div>
-    <div class="mode-hint">
-      <span id="hint-practice"  class="visible">Your score will not be sent</span>
-      <span id="hint-classroom">Your score will be sent to your teacher</span>
-    </div>
 
-    <!-- Student Info Box (Classroom Mode only) -->
-    <div class="student-info-box" id="student-info-box" style="display:none;">
-      <div class="student-info-title">Before You Begin</div>
-      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
-      <div class="info-fields">
-        <div class="info-field">
-          <label for="el-student-name">Student Name</label>
-          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="el-err-name">Please enter your name.</div>
-        </div>
-        <div class="info-field">
-          <label for="el-teacher-select">Teacher</label>
-          <select id="el-teacher-select">
-            <option value="">- Select -</option>
-            <option value="mr-kankel">Mr. Kankel</option>
-            <option value="mr-rovner">Mr. Rovner</option>
-          </select>
-          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
-        </div>
-        <div class="info-field">
-          <label for="el-block-select">Class Block</label>
-          <select id="el-block-select">
-            <option value="">- Select -</option>
-            <option value="A">A Block</option><option value="B">B Block</option>
-            <option value="C">C Block</option><option value="D">D Block</option>
-            <option value="E">E Block</option><option value="F">F Block</option>
-            <option value="G">G Block</option>
-          </select>
-          <div class="info-error" id="el-err-block">Please select your block.</div>
-        </div>
-      </div>
-    </div>
 
     <!-- Sticky Progress Bar -->
     <div class="quiz-progress-sticky">
@@ -1938,11 +1855,8 @@ function layerClick(n) {
 
 <!-- ===== QUIZ ===== -->
 <script>
-// ── CENTRALIZED ENDPOINT ──────────────────────────────────────────────
-var EL_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 var elQuizState = { selected: [], submitted: false };
-var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
@@ -2042,33 +1956,7 @@ var elQuizQuestions = [
   }
 ];
 
-function elSetQuizMode(mode) {
-  elQuizMode = mode;
-  var infoBox      = document.getElementById('student-info-box');
-  var btnPractice  = document.getElementById('btn-practice');
-  var btnClassroom = document.getElementById('btn-classroom');
-  var hintPractice  = document.getElementById('hint-practice');
-  var hintClassroom = document.getElementById('hint-classroom');
-  if (mode === 'practice') {
-    infoBox.style.display = 'none';
-    btnPractice.classList.add('active');
-    btnClassroom.classList.remove('active');
-    hintPractice.classList.add('visible');
-    hintClassroom.classList.remove('visible');
-  } else {
-    infoBox.style.display = 'block';
-    btnClassroom.classList.add('active');
-    btnPractice.classList.remove('active');
-    hintClassroom.classList.add('visible');
-    hintPractice.classList.remove('visible');
-  }
-}
 
-(function () {
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
-  else elSetQuizMode('practice');
-})();
 
 function elBuildQuiz() {
   var container = document.getElementById('el-quiz-questions');
@@ -2117,15 +2005,6 @@ function elUpdateProgress() {
   document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
 }
 
-function elValidateStudentInfo() {
-  var name    = document.getElementById('el-student-name').value.trim();
-  var teacher = document.getElementById('el-teacher-select').value;
-  var block   = document.getElementById('el-block-select').value;
-  document.getElementById('el-err-name').classList.toggle('show', !name);
-  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('el-err-block').classList.toggle('show', !block);
-  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
-}
 
 function elSubmitQuiz() {
   if (elQuizState.submitted) return;
@@ -2134,13 +2013,6 @@ function elSubmitQuiz() {
   var elThinkGate = document.getElementById('el-thinking');
   if (elThinkGate && !elThinkGate.value.trim()) return;
   var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
-  if (!elAssigned && elQuizMode === 'classroom') {
-    var info = elValidateStudentInfo();
-    if (!info.valid) {
-      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-  }
   elQuizState.submitted = true;
   document.getElementById('el-submit-btn').disabled = true;
   // Lock the Show Your Thinking response and surface the model answer so the
@@ -2203,36 +2075,9 @@ function elSubmitQuiz() {
     return;
   }
 
-  if (elQuizMode === 'practice') {
-    document.getElementById('el-submit-status').innerHTML =
-      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
-    return;
-  }
 
-  var info2 = elValidateStudentInfo();
-  var teacherLabel = info2.teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
-  var letters = ['A','B','C','D'];
-  var params = new URLSearchParams({ resourceId: 'lesson_earths-layers', grade: '7', teacher: info2.teacher, studentName: info2.name, block: info2.block });
-  elQuizState.selected.forEach(function (chosenIndex, qi) {
-    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
-  });
-  params.set('score', score);
-  params.set('thinking', thinkingText);
-  fetch(EL_ENDPOINT, { method: 'POST', body: params })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.status === 'success') {
-        document.getElementById('el-submit-status').innerHTML =
-          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
-      } else {
-        document.getElementById('el-submit-status').innerHTML =
-          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
-      }
-    })
-    .catch(function() {
-      document.getElementById('el-submit-status').innerHTML =
-        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
-    });
+  document.getElementById('el-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
 }
 
 function elResetQuiz() {

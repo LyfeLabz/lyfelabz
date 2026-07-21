@@ -1,5 +1,132 @@
 # LYFELABZ CLAUDE.md
 
+# LESSON BUILD ARCHITECTURE
+
+Sprint 18 introduced a deterministic lesson build system. One canonical
+instructional source produces two generated delivery outputs.
+
+Applies today to: Earth's Layers only. Do not extend to other lessons
+without an explicit sprint direction.
+
+## Canonical source
+
+Canonical lesson sources live under `lesson-sources/`. This directory
+is excluded from Firebase Hosting via `hosting.ignore` and is never
+served. It is not a public URL, has no canonical link, and is not
+listed in the sitemap.
+
+Direct edits to canonical sources are the only instructional edits
+that propagate to both v1 and v2. Every instructional change goes
+through the source.
+
+## Generated artifacts
+
+* v1 public artifact: `lesson_<slug>.html` at the repo root. Preserves
+  the current public URL. Retains Practice/Classroom toggle, student
+  info form, teacher/block selectors, legacy Apps Script submission
+  path, and every existing v1 behavior.
+* v2 authenticated artifact: `app/lessons/lesson_<slug>.html`. Contains
+  no legacy classroom architecture. Consumes identity and assignment
+  context only from the authenticated platform and the certified
+  assessment runtime.
+
+Every artifact begins with a `<!-- GENERATED FILE. -->` notice
+immediately after the doctype. Direct edits to generated artifacts are
+prohibited and are caught by `lessons:verify` in CI.
+
+## Marker grammar (context-strict)
+
+HTML top level:
+
+```
+<!-- LYFELABZ:V1-ONLY:BEGIN label -->
+<!-- LYFELABZ:V1-ONLY:END label -->
+```
+
+Inside `<script>` blocks:
+
+```
+/* LYFELABZ:V1-ONLY:BEGIN label */
+/* LYFELABZ:V1-ONLY:END label */
+```
+
+Inside `<style>` blocks: same as `<script>` (block-comment grammar).
+
+Equivalent `V2-ONLY` markers exist. Markers must occupy standalone
+lines with only leading/trailing whitespace. The scanner rejects:
+
+* wrong marker syntax for context
+* nested regions
+* overlapping regions
+* cross-context regions
+* duplicate labels
+* undeclared labels (unknown labels)
+* unbalanced markers
+* mismatched labels
+* mismatched targets
+* markers found inside JS strings, template literals, or regex literals
+* HTML-style comments inside `<script>` or `<style>`
+
+## Declarative lesson config
+
+Every configured lesson lives at
+`app/scripts/lessonBuilder/lessons/<slug>.cjs` and declares its paths,
+required labels, expected contexts, required signatures, prohibited
+signatures, shared signatures, generated notice text, and
+instructional-equivalence exclusions. The builder engine is generic;
+no lesson identity leaks into the engine.
+
+## Build + verify
+
+* `npm --prefix app run lessons:build` builds every configured lesson
+  (both targets) into their committed artifact paths, atomically via a
+  PID-suffixed tmp sibling.
+* `npm --prefix app run lessons:verify` rebuilds every configured
+  lesson in memory and compares to the committed artifact. It writes
+  nothing. Fails fast on any drift.
+* `lessons:verify` is part of the app validation chain
+  (`npm --prefix app run verify`).
+
+## Instructional-equivalence contract
+
+Every build compares a normalized instructional contract between v1
+and v2 outputs. Compared fields: titles, headings, learning goals,
+vocabulary (every glossary-card: order, term, definition,
+aria-expanded, aria-label, role, id, sorted classList), image and
+SVG accessibility, Show Your Thinking, quiz questions, option
+ordering, correct-answer indices, explanations, scoring messages,
+More Learning (every cont-card: order, tag, href, aria-label, name,
+description, category, status, sorted classList), Connections (same
+per-card shape), key interactive IDs, scroll targets and scroll
+destinations (each `.scrollIntoView` call as
+`{function, target, kind}`, with variable-bound receivers resolved
+back to their `getElementById` id or `querySelector` href), runtime
+include, and lesson-quiz call sites.
+
+Lesson-specific minimums (e.g. the Earth's Layers pilot's expected
+vocabulary, Connections, and scroll-target counts) live in the
+lesson's config file under `pilotContractMinimums`, not in the
+generic engine.
+
+Only explicitly declared delivery differences (per
+`equivalenceExclusions` in the lesson config) are excluded from the
+contract.
+
+## Launcher
+
+The Sprint 17 launcher URL contract is `/lesson_<slug>.html?assignment=<id>`.
+Sprint 18 introduced a narrow data-driven override at
+`app/src/assignments/studentList/launchOverrides.ts`. Slugs present in
+the override table launch to the override path (e.g. Earth's Layers
+launches to `/app/lessons/lesson_earths-layers.html`). Every non-listed
+slug launches to the v1 URL byte-for-byte identical to Sprint 17.
+
+Add a slug to the override table only after that lesson's v2 artifact
+has passed the full build, legacy-absence, instructional-equivalence,
+and runtime-integration checks.
+
+---
+
 # PRESERVATION MODE
 
 The repository is in preservation mode.

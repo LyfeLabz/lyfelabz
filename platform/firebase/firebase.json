@@ -14,7 +14,8 @@
       "**/node_modules/**",
       "platform/**",
       "docs/**",
-      "blog/**"
+      "blog/**",
+      "lesson-sources/**"
     ],
     "rewrites": [
       {
