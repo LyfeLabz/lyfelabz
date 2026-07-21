@@ -1,13 +1,22 @@
 import { LESSON_LAUNCH_OVERRIDES } from "./launchOverrides";
 
 describe("LESSON_LAUNCH_OVERRIDES", () => {
-  test("contains exactly the Sprint 18 pilot entry", () => {
-    expect(Object.keys(LESSON_LAUNCH_OVERRIDES).sort()).toEqual(["earths-layers"]);
+  test("contains exactly the v2-migrated slugs", () => {
+    expect(Object.keys(LESSON_LAUNCH_OVERRIDES).sort()).toEqual([
+      "earths-layers",
+      "plate-tectonics",
+    ]);
   });
 
   test("earths-layers routes to the v2 artifact under /app/lessons/", () => {
     expect(LESSON_LAUNCH_OVERRIDES["earths-layers"]).toEqual({
       path: "/app/lessons/lesson_earths-layers.html",
+    });
+  });
+
+  test("plate-tectonics routes to the v2 artifact under /app/lessons/", () => {
+    expect(LESSON_LAUNCH_OVERRIDES["plate-tectonics"]).toEqual({
+      path: "/app/lessons/lesson_plate-tectonics.html",
     });
   });
 
