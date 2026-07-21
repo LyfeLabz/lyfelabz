@@ -23,4 +23,5 @@ export const LESSON_LAUNCH_OVERRIDES: Readonly<
 > = {
   "earths-layers": { path: "/app/lessons/lesson_earths-layers.html" },
   "plate-tectonics": { path: "/app/lessons/lesson_plate-tectonics.html" },
+  "water-cycle": { path: "/app/lessons/lesson_water-cycle.html" },
 };

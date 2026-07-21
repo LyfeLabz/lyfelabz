@@ -5,6 +5,7 @@ describe("LESSON_LAUNCH_OVERRIDES", () => {
     expect(Object.keys(LESSON_LAUNCH_OVERRIDES).sort()).toEqual([
       "earths-layers",
       "plate-tectonics",
+      "water-cycle",
     ]);
   });
 
@@ -17,6 +18,12 @@ describe("LESSON_LAUNCH_OVERRIDES", () => {
   test("plate-tectonics routes to the v2 artifact under /app/lessons/", () => {
     expect(LESSON_LAUNCH_OVERRIDES["plate-tectonics"]).toEqual({
       path: "/app/lessons/lesson_plate-tectonics.html",
+    });
+  });
+
+  test("water-cycle routes to the v2 artifact under /app/lessons/", () => {
+    expect(LESSON_LAUNCH_OVERRIDES["water-cycle"]).toEqual({
+      path: "/app/lessons/lesson_water-cycle.html",
     });
   });
 
