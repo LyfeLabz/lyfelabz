@@ -3,6 +3,7 @@ import { LESSON_LAUNCH_OVERRIDES } from "./launchOverrides";
 describe("LESSON_LAUNCH_OVERRIDES", () => {
   test("contains exactly the v2-migrated slugs", () => {
     expect(Object.keys(LESSON_LAUNCH_OVERRIDES).sort()).toEqual([
+      "earthquakes",
       "earths-layers",
       "plate-tectonics",
       "water-cycle",
@@ -24,6 +25,12 @@ describe("LESSON_LAUNCH_OVERRIDES", () => {
   test("water-cycle routes to the v2 artifact under /app/lessons/", () => {
     expect(LESSON_LAUNCH_OVERRIDES["water-cycle"]).toEqual({
       path: "/app/lessons/lesson_water-cycle.html",
+    });
+  });
+
+  test("earthquakes routes to the v2 artifact under /app/lessons/", () => {
+    expect(LESSON_LAUNCH_OVERRIDES["earthquakes"]).toEqual({
+      path: "/app/lessons/lesson_earthquakes.html",
     });
   });
 
