@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>LyfeLabz | Slow-Motion Ball Run - Day 5</title>
+<meta name="description" content="Day 5 of the LyfeLabz Slow-Motion Ball Run summer engineering challenge.">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<style>
+  html { font-size: 18px; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+  :root {
+    --green: #2ecc71;
+    --blue: #3498db;
+    --teal: #3bc8e8;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --gold: #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --crimson: #ff5470;
+    --crimson-glow: rgba(255,84,112,0.35);
+    --dark: #1a2535;
+    --dark2: #243447;
+    --card: #1e2f42;
+    --card2: #223448;
+    --text: #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+    --border-strong: rgba(52,152,219,0.4);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.65;
+    overflow-x: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  a { color: var(--teal); }
+  :focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-day {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    background: rgba(255,84,112,0.1);
+    border: 1px solid rgba(255,84,112,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+  }
+
+  main { max-width: 780px; margin: 0 auto; padding: 0 1.1rem; }
+  section { margin: 2.4rem 0; }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    color: var(--gold); margin-bottom: 0.5rem; line-height: 1.15;
+  }
+  .section-lead { color: var(--text-muted); font-size: 0.98rem; margin-bottom: 1rem; }
+
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #2a1a2f 55%, #0f2535 100%);
+    padding: 3rem 1.2rem 2.6rem;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 40%, rgba(255,84,112,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse at 75% 60%, rgba(59,200,232,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+  .hero-eyebrow {
+    font-size: clamp(1.4rem, 2.3vw, 2rem);
+    color: var(--gold);
+    font-weight: 900;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    line-height: 1.2;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0.25rem;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.1; margin-bottom: 0.6rem; color: #fff;
+  }
+  .hero .day-label {
+    color: var(--gold);
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.1rem, 2.6vw, 1.4rem);
+    margin-bottom: 0.9rem;
+  }
+  .hero .objective {
+    font-size: 1rem; color: var(--text);
+    max-width: 680px; margin: 0 auto 1.6rem;
+    font-weight: 600;
+  }
+  .cta {
+    display: inline-block; background: var(--crimson);
+    color: #fff; padding: 0.85rem 1.9rem; border-radius: 99px;
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 0.95rem; letter-spacing: 0.08em;
+    text-transform: uppercase; text-decoration: none;
+    border: none; cursor: pointer;
+    box-shadow: 0 8px 24px var(--crimson-glow);
+    transition: transform 0.15s, box-shadow 0.15s;
+    min-height: 44px;
+  }
+  .cta:hover, .cta:focus-visible { transform: translateY(-2px); box-shadow: 0 12px 32px var(--crimson-glow); }
+  .cta.ghost {
+    background: transparent; color: var(--gold);
+    border: 1px solid rgba(245,200,66,0.5); box-shadow: none;
+  }
+  .cta.ghost:hover { transform: none; box-shadow: none; background: rgba(245,200,66,0.06); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.2rem;
+  }
+  .card + .card { margin-top: 0.9rem; }
+  .card h3 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--teal); font-size: 1.1rem;
+    margin-bottom: 0.6rem; line-height: 1.2;
+  }
+  .card p { color: var(--text); font-size: 0.98rem; }
+  .card ul { padding-left: 1.1rem; }
+  .card ul li { color: var(--text); margin: 0.35rem 0; font-size: 0.96rem; }
+  .card.target h3 { color: var(--gold); }
+
+  .three-up { display: grid; grid-template-columns: 1fr; gap: 0.9rem; }
+  @media (min-width: 720px) {
+    .three-up {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-auto-rows: 1fr; align-items: stretch;
+    }
+    .three-up > .card + .card { margin-top: 0; }
+    .three-up > .reveal-card { height: 100%; }
+  }
+
+  .reveal-card { display: flex; flex-direction: column; }
+  @media (min-width: 720px) { .reveal-card { height: 100%; } }
+  .reveal-card .reveal-prompt { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.9rem; }
+  .reveal-card .reveal-body { margin-bottom: 0.9rem; }
+  .reveal-card .reveal-body[hidden] { display: none; }
+  .reveal-btn {
+    background: transparent; color: var(--gold);
+    border: 1px solid rgba(245,200,66,0.5);
+    border-radius: 99px; padding: 0.6rem 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800; font-size: 0.82rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; min-height: 44px;
+    align-self: flex-start; margin-top: auto;
+    transition: background 0.15s;
+  }
+  .reveal-btn:hover, .reveal-btn:focus-visible { background: rgba(245,200,66,0.08); }
+  .reveal-btn[aria-expanded="true"] {
+    background: rgba(46,204,113,0.12);
+    border-color: rgba(46,204,113,0.55);
+    color: var(--green); cursor: default;
+  }
+
+  .vocab-review {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+  @media (min-width: 620px) { .vocab-review { grid-template-columns: 1fr 1fr; } }
+  .vr-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+  }
+  .vr-card .vr-term { color: var(--gold); font-weight: 900; font-size: 0.95rem; margin-bottom: 0.25rem; }
+  .vr-card .vr-def { color: var(--text-muted); font-size: 0.92rem; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+  @media (min-width: 620px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .field.full { grid-column: 1 / -1; }
+  .field label {
+    font-size: 0.78rem; color: var(--text-muted); font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .field input, .field select, .field textarea {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.98rem; color: var(--text);
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.65rem 0.8rem;
+    width: 100%; min-height: 44px;
+  }
+  .field textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+  .field .hint { color: var(--text-muted); font-size: 0.8rem; }
+
+  .quiz-list { display: flex; flex-direction: column; gap: 1rem; }
+  .quiz-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+  }
+  .quiz-item .qnum { font-size: 0.75rem; color: var(--text-muted); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .quiz-item .qstem { color: var(--text); font-weight: 700; margin-bottom: 0.6rem; font-size: 0.98rem; }
+  .quiz-choices { display: flex; flex-direction: column; gap: 0.35rem; }
+  .quiz-choice {
+    display: flex; align-items: flex-start; gap: 0.7rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    min-height: 44px;
+    font-size: 0.94rem;
+  }
+  .quiz-choice input { accent-color: var(--gold); width: 18px; height: 18px; margin-top: 0.15rem; flex-shrink: 0; }
+  .quiz-choice:hover { border-color: var(--border-strong); }
+  .quiz-choice.selected { border-color: rgba(245,200,66,0.55); background: rgba(245,200,66,0.06); }
+  .quiz-item.scored .quiz-choice.correct { border-color: rgba(46,204,113,0.6); background: rgba(46,204,113,0.10); }
+  .quiz-item.scored .quiz-choice.wrong-selected { border-color: rgba(255,84,112,0.6); background: rgba(255,84,112,0.10); }
+  .quiz-item.scored .quiz-choice::before {
+    content: attr(data-mark);
+    font-weight: 900;
+    color: var(--text-muted);
+    min-width: 1.1em;
+  }
+  .quiz-item.scored .quiz-choice.correct::before { color: var(--green); content: '✓'; }
+  .quiz-item.scored .quiz-choice.wrong-selected::before { color: var(--crimson); content: '✗'; }
+  .quiz-item .qfeedback {
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: none;
+  }
+  .quiz-item.scored .qfeedback { display: block; }
+  .quiz-item.scored .qfeedback.correct { color: var(--green); }
+  .quiz-item.scored .qfeedback.wrong { color: var(--gold); }
+
+  .quiz-controls {
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+    justify-content: center; align-items: center;
+    margin-top: 1rem;
+  }
+  .quiz-score {
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.25);
+    color: var(--text);
+    padding: 0.6rem 1rem;
+    border-radius: 99px;
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+  .quiz-score strong { color: var(--gold); }
+
+  .check-list { display: flex; flex-direction: column; gap: 0.4rem; }
+  .check-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text); font-size: 0.93rem;
+  }
+  .check-row .dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--dark); font-weight: 900; font-size: 0.75rem;
+    background: transparent;
+  }
+  .check-row.done .dot { background: var(--green); border-color: var(--green); color: #fff; }
+  .check-row.done .dot::before { content: '\2713'; }
+
+  .submit-row {
+    display: flex; flex-wrap: wrap; gap: 0.7rem;
+    align-items: center; justify-content: center;
+    margin-top: 1rem;
+  }
+  #submitStatus {
+    font-size: 0.9rem; color: var(--text-muted);
+    text-align: center; margin-top: 0.7rem; min-height: 1.2rem;
+  }
+  #submitStatus.ok { color: var(--green); }
+  #submitStatus.warn { color: var(--gold); }
+
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(10,15,25,0.78);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 1000; padding: 1rem;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    max-width: 480px; width: 100%;
+    padding: 1.4rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--gold); margin-bottom: 0.6rem; }
+  .modal p { color: var(--text); font-size: 0.95rem; margin-bottom: 0.7rem; }
+  .modal dl { margin: 0.6rem 0 1rem; font-size: 0.9rem; }
+  .modal dt { color: var(--text-muted); font-weight: 800; margin-top: 0.4rem; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .modal dd { color: var(--text); margin-left: 0; }
+  .modal-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-end; margin-top: 0.8rem; }
+
+  .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+  .lead {
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.25);
+    color: var(--text-muted);
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .story-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem 1.2rem;
+  }
+
+  .reset-row { display: flex; justify-content: center; margin-top: 2.5rem; }
+  .link-btn {
+    background: transparent; border: none; color: var(--text-muted);
+    font-size: 0.82rem; text-decoration: underline; cursor: pointer;
+    font-family: 'Nunito', sans-serif; padding: 0.4rem 0.6rem;
+  }
+  .link-btn:hover { color: var(--gold); }
+
+  /* ===== CHALLENGE NAV ===== */
+  .challenge-nav { margin: 3rem 0 2rem; }
+  .challenge-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .challenge-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.9rem 1.1rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  a.challenge-nav-item:hover,
+  a.challenge-nav-item:focus-visible {
+    border-color: rgba(245,200,66,0.55);
+    background: rgba(245,200,66,0.06);
+  }
+  a.challenge-nav-item:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  .challenge-nav-item.current { cursor: default; }
+  .challenge-nav-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.9rem;
+    color: var(--gold);
+    min-width: 4.4rem;
+    letter-spacing: 0.02em;
+  }
+  .challenge-nav-item .nav-day { min-width: 4.4rem; justify-content: center; }
+  .challenge-nav-label {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  @media (max-width: 480px) {
+    .challenge-nav-item { padding: 0.8rem 0.9rem; gap: 0.7rem; }
+    .challenge-nav-num,
+    .challenge-nav-item .nav-day { min-width: 3.7rem; font-size: 0.82rem; }
+    .challenge-nav-label { font-size: 0.95rem; }
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: #070f17;
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  footer .footer-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    margin-bottom: 0.35rem;
+  }
+  footer .footer-tagline {
+    font-size: 0.83rem;
+    color: rgba(240,228,200,0.6);
+    margin-bottom: 0.6rem;
+  }
+  footer .footer-links {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+  }
+  footer .footer-links a {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.4);
+    background: rgba(245,200,66,0.08);
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover { border-color: rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why {
+    color: #3bc8e8;
+    border-color: rgba(59,200,232,0.7);
+    background: rgba(59,200,232,0.12);
+  }
+  footer .footer-links a.nav-why:hover {
+    background: rgba(59,200,232,0.22);
+    border-color: rgba(59,200,232,0.95);
+  }
+  footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
+
+  @media (max-width: 600px) {
+    nav { padding: 0.85rem 1.2rem; }
+  }
+  @media (max-width: 480px) {
+    main { padding: 0 0.85rem; }
+    .hero { padding: 2.3rem 1rem 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <span class="nav-day">Day 5</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Slow-Motion Ball Run</div>
+    <h1>Day 5</h1>
+    <div class="day-label">Communicate and Reflect</div>
+    <p class="objective">Today you complete the challenge. You will tell the engineering story, take a short knowledge check, and submit your final record.</p>
+  </div>
+</div>
+
+<main>
+
+  <section id="intro" aria-labelledby="intro-title">
+    <h2 id="intro-title" class="section-title">Today's work</h2>
+    <p class="section-lead">Engineers communicate how their designs changed over time. Strong explanations include decisions, evidence, revisions, and trade-offs. The goal is not to pretend the first design was perfect. The goal is to show how testing improved your thinking.</p>
+    <div class="lead">
+      <strong style="color: var(--gold);">Tell the whole story.</strong> Include what worked, what did not, what you changed, and what the evidence showed.
+    </div>
+  </section>
+
+  <section id="target" aria-labelledby="target-title">
+    <h2 id="target-title" class="section-title">Learning target</h2>
+    <div class="card target">
+      <h3>I can explain my engineering process and use evidence to evaluate my final design.</h3>
+      <p>By the end of today you should be able to summarize your full week of engineering work and show what you learned.</p>
+    </div>
+  </section>
+
+  <section id="success" aria-labelledby="success-title">
+    <h2 id="success-title" class="section-title">Success criteria</h2>
+    <p class="section-lead">Check these off as you go. Today counts as complete when every step is done.</p>
+    <div class="check-list" id="successList"></div>
+  </section>
+
+  <section id="vocab" aria-labelledby="vocab-title">
+    <h2 id="vocab-title" class="section-title">Vocabulary review</h2>
+    <p class="section-lead">A quick reminder of the key words from this week.</p>
+    <div class="vocab-review" id="vocabReview"></div>
+  </section>
+
+  <section id="team" aria-labelledby="team-title">
+    <h2 id="team-title" class="section-title">Your team</h2>
+    <p class="section-lead">Fill this in with your team. It goes on your final report.</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field">
+          <label for="fStudent">Your name</label>
+          <input type="text" id="fStudent" maxlength="80" autocomplete="off" data-save="student">
+        </div>
+        <div class="field">
+          <label for="fTeam">Team name</label>
+          <input type="text" id="fTeam" maxlength="80" autocomplete="off" data-save="team">
+        </div>
+        <div class="field">
+          <label for="fClass">Grade</label>
+          <select id="fClass" data-save="classBlock">
+            <option value="">Choose your grade</option>
+            <option value="Grade 5">Grade 5</option>
+            <option value="Grade 6">Grade 6</option>
+            <option value="Grade 7">Grade 7</option>
+            <option value="Grade 8">Grade 8</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="story" aria-labelledby="story-title">
+    <h2 id="story-title" class="section-title">Engineering story</h2>
+    <p class="section-lead">Complete each part in a sentence or two. Together they tell the story of your week.</p>
+    <div class="story-block">
+      <div class="form-grid">
+        <div class="field full">
+          <label for="fStoryIdea">Your first plan and the problem it hit</label>
+          <textarea id="fStoryIdea" maxlength="500" data-save="storyOriginalIdea" placeholder="What did you plan on Day 1 or 2, and what did testing reveal was the biggest problem?"></textarea>
+        </div>
+        <div class="field full">
+          <label for="fStoryChange">Your biggest revision and what testing showed after</label>
+          <textarea id="fStoryChange" maxlength="500" data-save="storyBiggestChange" placeholder="Which revision helped most, and what did the next trials show?"></textarea>
+        </div>
+        <div class="field full">
+          <label for="fStoryHow">How your final design works, its best result, and one trade-off</label>
+          <textarea id="fStoryHow" maxlength="500" data-save="storyHowItWorks" placeholder="Path of the ball, your strongest trial result, and one thing you gave up."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="final-design" aria-labelledby="final-design-title">
+    <h2 id="final-design-title" class="section-title">Final design summary</h2>
+    <p class="section-lead">Give the key facts about your finished design.</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field">
+          <label for="fFinalName">Final design name</label>
+          <input type="text" id="fFinalName" maxlength="80" data-save="finalDesignName" placeholder="Give your design a name.">
+        </div>
+        <div class="field">
+          <label for="fFinalConsistency">Consistency rating</label>
+          <select id="fFinalConsistency" data-save="finalConsistency">
+            <option value="">Choose one</option>
+            <option value="mostly">Mostly consistent</option>
+            <option value="somewhat">Somewhat consistent</option>
+            <option value="inconsistent">Inconsistent</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="fFinalDesc">Short description and most important feature</label>
+          <textarea id="fFinalDesc" maxlength="500" data-save="finalDesignDescription" placeholder="A short summary of what it looks like and the part that matters most."></textarea>
+        </div>
+        <div class="field full">
+          <label for="fFinalBest">Best performance result</label>
+          <textarea id="fFinalBest" maxlength="500" data-save="finalBestResult" placeholder="What was the best trial from Day 4?"></textarea>
+        </div>
+        <div class="field full">
+          <label for="fFinalMet">Did the final design meet the challenge goal?</label>
+          <select id="fFinalMet" data-save="finalMetGoal">
+            <option value="">Choose one</option>
+            <option value="yes">Yes</option>
+            <option value="mostly">Mostly</option>
+            <option value="no">Not yet</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="fFinalImprove">One improvement you would make with more time</label>
+          <textarea id="fFinalImprove" maxlength="500" data-save="finalWouldImprove" placeholder="What is the next thing you would try?"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="quiz" aria-labelledby="quiz-title">
+    <h2 id="quiz-title" class="section-title">Knowledge check</h2>
+    <p class="section-lead">Answer every question, then press Score Quiz to check your work. Scoring will not submit your report.</p>
+    <div class="quiz-list" id="quizList"></div>
+    <div class="quiz-controls">
+      <button class="cta ghost" type="button" id="quizScoreBtn">Score Quiz</button>
+      <span class="quiz-score" id="quizScoreDisplay" hidden></span>
+    </div>
+  </section>
+
+  <section id="growth" aria-labelledby="growth-title">
+    <h2 id="growth-title" class="section-title">Engineering growth</h2>
+    <p class="section-lead">A short reflection on what you learned this week.</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field full">
+          <label for="fGrowthSkill">Which engineering skill grew most, and what was the hardest part?</label>
+          <textarea id="fGrowthSkill" maxlength="500" data-save="growthSkill" placeholder="Testing, revising, teamwork, or planning, plus the toughest day or step."></textarea>
+        </div>
+        <div class="field full">
+          <label for="fGrowthProud">What are you most proud of, and what would you do differently next time?</label>
+          <textarea id="fGrowthProud" maxlength="500" data-save="growthProud" placeholder="One thing that made you proud, and one thing you would change."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="team-reflect" aria-labelledby="team-reflect-title">
+    <h2 id="team-reflect-title" class="section-title">Team reflection</h2>
+    <p class="section-lead">Say something kind and useful about your team.</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field full">
+          <label for="fTeamDecide">How did your team make decisions and share the work?</label>
+          <textarea id="fTeamDecide" maxlength="500" data-save="teamDecisions" placeholder="How you decided (voting, discussion) and what people did."></textarea>
+        </div>
+        <div class="field full">
+          <label for="fTeamHelped">What worked well as a team, and what would improve teamwork next time?</label>
+          <textarea id="fTeamHelped" maxlength="500" data-save="teamHelped" placeholder="One thing that helped, and one specific idea for a future team."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="finish" aria-labelledby="finish-title">
+    <h2 id="finish-title" class="section-title">Final completion</h2>
+    <p class="section-lead">This updates as you finish each part of Day 5.</p>
+    <div class="check-list" id="progressList"></div>
+
+    <div class="submit-row">
+      <button class="cta" type="button" id="submitBtn">Submit Final Record</button>
+    </div>
+    <div id="submitStatus" role="status" aria-live="polite"></div>
+  </section>
+
+  <section id="afterward" aria-labelledby="afterward-title">
+    <h2 id="afterward-title" class="section-title">Before you go</h2>
+    <p class="section-lead">Three quick cards to close out the week.</p>
+    <div class="three-up">
+      <div class="card reveal-card">
+        <h3 style="color: var(--gold);">What You Practiced</h3>
+        <p class="reveal-prompt">A summary of the engineering habits you built.</p>
+        <div class="reveal-body" id="tomorrowBody" role="region" aria-labelledby="tomorrowBtn" hidden>
+          <p>Building, testing, comparing, revising, optimizing, and communicating. Those are the moves engineers use every day.</p>
+        </div>
+        <button type="button" class="reveal-btn" id="tomorrowBtn"
+                aria-expanded="false" aria-controls="tomorrowBody"
+                data-reveal="tomorrow">Reveal Summary</button>
+      </div>
+      <div class="card reveal-card">
+        <h3 style="color: var(--teal);">Think Like an Engineer</h3>
+        <p class="reveal-prompt">A short reminder for future challenges.</p>
+        <div class="reveal-body" id="tipBody" role="region" aria-labelledby="tipBtn" hidden>
+          <p>Good engineers use evidence and learn from designs that do not work at first. A design that fails is not a failure. It is data.</p>
+        </div>
+        <button type="button" class="reveal-btn" id="tipBtn"
+                aria-expanded="false" aria-controls="tipBody"
+                data-reveal="tip">Reveal Reminder</button>
+      </div>
+      <div class="card reveal-card">
+        <h3 style="color: var(--crimson);">Try It Again</h3>
+        <p class="reveal-prompt">A challenge for another day.</p>
+        <div class="reveal-body" id="realBody" role="region" aria-labelledby="realBtn" hidden>
+          <p>How would your design change with different materials, a longer path, or a different ball? The next version is always waiting.</p>
+        </div>
+        <button type="button" class="reveal-btn" id="realBtn"
+                aria-expanded="false" aria-controls="realBody"
+                data-reveal="real">Reveal Challenge</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="reset-row">
+    <button class="link-btn" type="button" id="resetBtn">Reset Day 5</button>
+  </div>
+
+  <section class="challenge-nav" aria-labelledby="challenge-nav-title">
+    <h2 id="challenge-nav-title" class="section-title">Continue the Engineering Challenge</h2>
+    <ul class="challenge-nav-list">
+      <li>
+        <a class="challenge-nav-item" href="challenge_ball-run_day1.html">
+          <span class="challenge-nav-num">Day 1</span>
+          <span class="challenge-nav-label">Understand the Challenge</span>
+        </a>
+      </li>
+      <li>
+        <a class="challenge-nav-item" href="challenge_ball-run_day2.html">
+          <span class="challenge-nav-num">Day 2</span>
+          <span class="challenge-nav-label">Build and Test</span>
+        </a>
+      </li>
+      <li>
+        <a class="challenge-nav-item" href="challenge_ball-run_day3.html">
+          <span class="challenge-nav-num">Day 3</span>
+          <span class="challenge-nav-label">Analyze and Improve</span>
+        </a>
+      </li>
+      <li>
+        <a class="challenge-nav-item" href="challenge_ball-run_day4.html">
+          <span class="challenge-nav-num">Day 4</span>
+          <span class="challenge-nav-label">Optimize the Design</span>
+        </a>
+      </li>
+      <li>
+        <span class="challenge-nav-item current" aria-current="page">
+          <span class="nav-day">Day 5</span>
+          <span class="challenge-nav-label">Communicate and Reflect</span>
+        </span>
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-logo">LYFELABZ&trade;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<div class="modal-backdrop" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal">
+    <h3 id="confirmTitle">Submit final record?</h3>
+    <p>Please confirm your final record. A PDF report will be created for you to download and give to your teacher.</p>
+    <dl id="confirmSummary"></dl>
+    <div class="modal-actions">
+      <button class="cta ghost" type="button" id="confirmCancel">Cancel</button>
+      <button class="cta" type="button" id="confirmSubmit">Confirm and Submit</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+  <div class="modal">
+    <h3 id="resultTitle">PDF Ready</h3>
+    <p id="resultMsg">Your PDF was not sent to your teacher.</p>
+    <div class="modal-actions">
+      <button class="cta ghost" type="button" id="resultClose">Close</button>
+      <button class="cta ghost" type="button" id="resultRetry" hidden>Try Again</button>
+      <button class="cta" type="button" id="resultDownload">Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="resetModal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+  <div class="modal">
+    <h3 id="resetTitle" style="color: var(--crimson);">Reset Day 5?</h3>
+    <p>This clears every Day 5 answer, your team info, your engineering story, and your knowledge check on this page. You cannot undo it. Days 1 through 4 will not be affected.</p>
+    <div class="modal-actions">
+      <button class="cta ghost" type="button" id="resetCancel">Cancel</button>
+      <button class="cta" type="button" id="resetConfirm" style="background: var(--crimson);">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'lyfelabz_ball_run_day5_v1';
+  var SCHEMA_VERSION = 1;
+  var CHALLENGE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzRNyJ-5s_-m4a90MsUyagpdDebCzcqDCtwQicSoHMCothfL1-IjTdxzVIN43prEnys9A/exec';
+  var CHALLENGE_ID = 'ball-run_day5';
+  var CHALLENGE_RESOURCE_ID = 'challenge_ball-run_day5';
+  var CHALLENGE_SERIES = 'ball-run';
+  var CHALLENGE_DAY = 5;
+  var CHALLENGE_TEACHER_KEY = 'mr-brown';
+
+  var IS_LOCAL_DEV = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  var endpointOverride = null;
+  if (IS_LOCAL_DEV) {
+    try {
+      var qp = new URLSearchParams(location.search).get('endpoint');
+      if (qp && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(qp)) {
+        endpointOverride = qp;
+      }
+    } catch (e) {}
+  }
+  var ACTIVE_CHALLENGE_ENDPOINT = endpointOverride || CHALLENGE_ENDPOINT;
+
+  var VOCAB_REVIEW = [
+    { term: 'Prototype',  def: 'The first version of a design that you build so you can test it.' },
+    { term: 'Evidence',   def: 'What you saw or measured that shows what really happened.' },
+    { term: 'Variable',   def: 'Something you can change in a test.' },
+    { term: 'Constraint', def: 'A rule or limit that your design must follow.' },
+    { term: 'Optimize',   def: 'To make a design work better while still following the rules of the challenge.' }
+  ];
+
+  var QUIZ = [
+    {
+      id: 'q1',
+      stem: 'What is a prototype?',
+      choices: [
+        'A finished product ready to sell.',
+        'An early version of a design you build in order to test it.',
+        'A plan you write down but never build.',
+        'A drawing without any measurements.'
+      ],
+      correct: 1,
+      explain: 'A prototype is an early version you build so you can test how the design works.'
+    },
+    {
+      id: 'q2',
+      stem: 'Why do engineers test their prototypes?',
+      choices: [
+        'To prove the first idea was correct.',
+        'To find out what actually happens and use that evidence to improve the design.',
+        'Because the rules say they have to.',
+        'To decide whether the challenge is worth doing.'
+      ],
+      correct: 1,
+      explain: 'Testing produces evidence engineers use to decide what to keep and what to change.'
+    },
+    {
+      id: 'q3',
+      stem: 'What is evidence in an engineering test?',
+      choices: [
+        'A guess based on how the design looks.',
+        'What another team says about your work.',
+        'What you saw or measured during a trial.',
+        'A prediction you made before the test.'
+      ],
+      correct: 2,
+      explain: 'Evidence is what you actually saw or measured during a trial.'
+    },
+    {
+      id: 'q4',
+      stem: 'What is a variable in an engineering test?',
+      choices: [
+        'A tool used to measure time.',
+        'Something you can change, like ramp height or surface.',
+        'A part of the design that must stay the same.',
+        'Another word for a rule.'
+      ],
+      correct: 1,
+      explain: 'A variable is something you can change during a test.'
+    },
+    {
+      id: 'q5',
+      stem: 'Why do engineers usually change one variable at a time?',
+      choices: [
+        'It is faster than changing many things.',
+        'The rules do not allow more than one change.',
+        'So they can tell which change actually caused the result.',
+        'Because changing many things always makes designs worse.'
+      ],
+      correct: 2,
+      explain: 'Changing one variable at a time makes it possible to know which change did the work.'
+    },
+    {
+      id: 'q6',
+      stem: 'What is a constraint in a challenge?',
+      choices: [
+        'A goal for what success looks like.',
+        'A rule or limit your design must follow.',
+        'A prediction about what will happen.',
+        'A step you can skip if it is hard.'
+      ],
+      correct: 1,
+      explain: 'A constraint is a rule or limit that the design must follow.'
+    },
+    {
+      id: 'q7',
+      stem: 'What are criteria in an engineering challenge?',
+      choices: [
+        'The rules that limit your materials.',
+        'The parts of the design you cannot change.',
+        'The things that describe what success looks like.',
+        'The number of trials you must run.'
+      ],
+      correct: 2,
+      explain: 'Criteria describe what a successful design should do.'
+    },
+    {
+      id: 'q8',
+      stem: 'What does it mean to optimize a design?',
+      choices: [
+        'To make it as complicated as possible.',
+        'To make it work better while still following the rules of the challenge.',
+        'To copy another team’s idea and change one thing.',
+        'To finish the design as fast as possible.'
+      ],
+      correct: 1,
+      explain: 'Optimize means to improve the design while staying inside the constraints.'
+    },
+    {
+      id: 'q9',
+      stem: 'A design that works nearly every time is called...',
+      choices: [
+        'Efficient.',
+        'Reliable.',
+        'Optimized.',
+        'Lucky.'
+      ],
+      correct: 1,
+      explain: 'Reliability describes how often a design works the way you expect.'
+    },
+    {
+      id: 'q10',
+      stem: 'What is a trade-off in engineering?',
+      choices: [
+        'Trading materials with another team.',
+        'When making one thing better makes something else harder.',
+        'A rule about how long a test can take.',
+        'A change that only affects the ball.'
+      ],
+      correct: 1,
+      explain: 'A trade-off is when improving one thing costs something else.'
+    }
+  ];
+
+  var SUCCESS_CRITERIA = [
+    'Summarized your original idea and problem.',
+    'Explained a major revision and its result.',
+    'Explained the final design and trade-off.',
+    'Completed the knowledge check.',
+    'Reflected on your growth.',
+    'Ready to submit the final record.'
+  ];
+
+  var defaultState = {
+    v: SCHEMA_VERSION,
+    student: '',
+    team: '',
+    classBlock: '',
+    block: '',
+    storyOriginalIdea: '',
+    storyBiggestChange: '',
+    storyHowItWorks: '',
+    finalDesignName: '',
+    finalDesignDescription: '',
+    finalBestResult: '',
+    finalConsistency: '',
+    finalMetGoal: '',
+    finalWouldImprove: '',
+    quizAnswers: {},
+    quizScored: false,
+    quizScore: 0,
+    growthSkill: '',
+    growthProud: '',
+    teamDecisions: '',
+    teamHelped: '',
+    tomorrowRevealed: false,
+    tipRevealed: false,
+    realRevealed: false,
+    submission: {
+      workComplete: false,
+      pdfGenerated: false,
+      teacherSubmissionStatus: 'not-attempted',
+      confirmedAt: null,
+      lastAttemptAt: null
+    }
+  };
+  var state = deepClone(defaultState);
+
+  function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return;
+      if (parsed.v !== SCHEMA_VERSION) parsed = migrate(parsed);
+      Object.keys(defaultState).forEach(function (k) {
+        if (parsed[k] !== undefined) state[k] = parsed[k];
+      });
+      state.tomorrowRevealed = state.tomorrowRevealed === true;
+      state.tipRevealed = state.tipRevealed === true;
+      state.realRevealed = state.realRevealed === true;
+      state.quizScored = state.quizScored === true;
+      if (typeof state.quizAnswers !== 'object' || state.quizAnswers === null) state.quizAnswers = {};
+      QUIZ.forEach(function (q) {
+        var v = state.quizAnswers[q.id];
+        if (typeof v !== 'number' || v < 0 || v >= q.choices.length) delete state.quizAnswers[q.id];
+      });
+      if (typeof state.quizScore !== 'number' || state.quizScore < 0 || state.quizScore > QUIZ.length) state.quizScore = 0;
+      if (typeof state.submission !== 'object' || state.submission === null) {
+        state.submission = deepClone(defaultState.submission);
+      } else {
+        var s = state.submission;
+        var valid = { 'not-attempted': 1, 'download-only': 1, 'failed': 1, 'confirmed': 1 };
+        if (!valid[s.teacherSubmissionStatus]) s.teacherSubmissionStatus = 'not-attempted';
+        if (typeof s.workComplete !== 'boolean') s.workComplete = false;
+        if (typeof s.pdfGenerated !== 'boolean') s.pdfGenerated = false;
+        if (typeof s.confirmedAt !== 'string') s.confirmedAt = null;
+        if (typeof s.lastAttemptAt !== 'string') s.lastAttemptAt = null;
+        if (s.teacherSubmissionStatus !== 'confirmed') s.confirmedAt = null;
+        if (s.teacherSubmissionStatus === 'confirmed') {
+          var iso = s.confirmedAt;
+          var isIso = typeof iso === 'string' && !isNaN(Date.parse(iso));
+          if (!isIso) { s.teacherSubmissionStatus = 'download-only'; s.confirmedAt = null; }
+        }
+      }
+    } catch (e) {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e2) {}
+    }
+  }
+
+  function migrate(parsed) { parsed.v = SCHEMA_VERSION; return parsed; }
+
+  var saveTimer = null;
+  function scheduleSave() {
+    if (saveTimer) return;
+    saveTimer = setTimeout(function () {
+      saveTimer = null;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }, 300);
+  }
+
+  function applyUrlPrefill() {
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var map = { student: 'student', team: 'team', class: 'classBlock', block: 'block' };
+      Object.keys(map).forEach(function (key) {
+        var v = p.get(key);
+        if (v && !state[map[key]]) state[map[key]] = v.slice(0, 100);
+      });
+    } catch (e) {}
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function renderVocabReview() {
+    var host = document.getElementById('vocabReview');
+    host.innerHTML = '';
+    VOCAB_REVIEW.forEach(function (v) {
+      var card = document.createElement('div');
+      card.className = 'vr-card';
+      card.innerHTML =
+        '<div class="vr-term">' + esc(v.term) + '</div>' +
+        '<div class="vr-def">' + esc(v.def) + '</div>';
+      host.appendChild(card);
+    });
+  }
+
+  function renderQuiz() {
+    var host = document.getElementById('quizList');
+    host.innerHTML = '';
+    QUIZ.forEach(function (q, qi) {
+      var item = document.createElement('div');
+      item.className = 'quiz-item' + (state.quizScored ? ' scored' : '');
+      item.setAttribute('data-qid', q.id);
+      var choicesHtml = '';
+      q.choices.forEach(function (choice, ci) {
+        var selected = state.quizAnswers[q.id] === ci;
+        var isCorrect = ci === q.correct;
+        var wrongSelected = state.quizScored && selected && !isCorrect;
+        var classes = 'quiz-choice';
+        if (selected) classes += ' selected';
+        if (state.quizScored && isCorrect) classes += ' correct';
+        if (wrongSelected) classes += ' wrong-selected';
+        choicesHtml +=
+          '<label class="' + classes + '" for="' + q.id + '_' + ci + '">' +
+            '<input type="radio" name="' + q.id + '" id="' + q.id + '_' + ci + '" value="' + ci + '"' +
+              (selected ? ' checked' : '') +
+              (state.quizScored ? ' disabled' : '') + '>' +
+            '<span>' + esc(choice) + '</span>' +
+          '</label>';
+      });
+      var feedbackClass = '';
+      var feedbackText = '';
+      if (state.quizScored) {
+        var picked = state.quizAnswers[q.id];
+        var right = (picked === q.correct);
+        feedbackClass = right ? 'correct' : 'wrong';
+        feedbackText = (right ? 'Correct. ' : 'Not quite. ') + q.explain;
+      }
+      item.innerHTML =
+        '<div class="qnum">Question ' + (qi + 1) + ' of ' + QUIZ.length + '</div>' +
+        '<div class="qstem">' + esc(q.stem) + '</div>' +
+        '<div class="quiz-choices" role="radiogroup" aria-label="' + esc(q.stem) + '">' + choicesHtml + '</div>' +
+        '<div class="qfeedback ' + feedbackClass + '">' + esc(feedbackText) + '</div>';
+      host.appendChild(item);
+      item.querySelectorAll('input[type="radio"]').forEach(function (input) {
+        input.addEventListener('change', function () {
+          if (state.quizScored) return;
+          var idx = parseInt(input.value, 10);
+          if (!isNaN(idx)) {
+            state.quizAnswers[q.id] = idx;
+            scheduleSave();
+            renderQuiz();
+            updateProgress();
+          }
+        });
+      });
+    });
+    renderQuizScoreDisplay();
+    updateScoreButton();
+  }
+
+  function renderQuizScoreDisplay() {
+    var display = document.getElementById('quizScoreDisplay');
+    if (!display) return;
+    if (state.quizScored) {
+      display.hidden = false;
+      display.innerHTML = 'Score: <strong>' + state.quizScore + ' / ' + QUIZ.length + '</strong>';
+    } else {
+      display.hidden = true;
+      display.textContent = '';
+    }
+  }
+
+  function updateScoreButton() {
+    var btn = document.getElementById('quizScoreBtn');
+    if (!btn) return;
+    var allAnswered = QUIZ.every(function (q) { return typeof state.quizAnswers[q.id] === 'number'; });
+    if (state.quizScored) {
+      btn.disabled = true;
+      btn.textContent = 'Quiz Scored';
+    } else {
+      btn.disabled = !allAnswered;
+      btn.textContent = allAnswered ? 'Score Quiz' : 'Answer every question';
+    }
+  }
+
+  function scoreQuiz() {
+    if (state.quizScored) return;
+    var allAnswered = QUIZ.every(function (q) { return typeof state.quizAnswers[q.id] === 'number'; });
+    if (!allAnswered) return;
+    var correct = 0;
+    QUIZ.forEach(function (q) { if (state.quizAnswers[q.id] === q.correct) correct += 1; });
+    state.quizScore = correct;
+    state.quizScored = true;
+    scheduleSave();
+    renderQuiz();
+    updateProgress();
+  }
+
+  function renderSuccessCriteria() {
+    var host = document.getElementById('successList');
+    host.innerHTML = '';
+    var doneFlags = successDoneFlags();
+    SUCCESS_CRITERIA.forEach(function (label, i) {
+      var row = document.createElement('div');
+      row.className = 'check-row' + (doneFlags[i] ? ' done' : '');
+      row.innerHTML = '<span class="dot" aria-hidden="true"></span><span>' + esc(label) + '</span>';
+      host.appendChild(row);
+    });
+  }
+  function successDoneFlags() {
+    return [
+      (state.storyOriginalIdea || '').trim().length >= 10,
+      (state.storyBiggestChange || '').trim().length >= 10,
+      (state.storyHowItWorks || '').trim().length >= 10,
+      state.quizScored === true,
+      isGrowthDone(),
+      isFinalSummaryDone() && isTeamReflectionDone()
+    ];
+  }
+
+  function bindFormFields() {
+    document.querySelectorAll('[data-save]').forEach(function (el) {
+      var key = el.getAttribute('data-save');
+      if (state[key] != null) el.value = state[key];
+      el.addEventListener('input', function () {
+        state[key] = el.value;
+        scheduleSave();
+        updateProgress();
+      });
+      el.addEventListener('change', function () {
+        state[key] = el.value;
+        scheduleSave();
+        updateProgress();
+      });
+    });
+  }
+
+  var REVEAL_LABELS = {
+    tomorrow: { closed: 'Reveal Summary',   open: 'Summary Revealed' },
+    tip:      { closed: 'Reveal Reminder',  open: 'Reminder Revealed' },
+    real:     { closed: 'Reveal Challenge', open: 'Challenge Revealed' }
+  };
+
+  function paintRevealCards() {
+    Object.keys(REVEAL_LABELS).forEach(function (key) {
+      var btn = document.getElementById(key + 'Btn');
+      var body = document.getElementById(key + 'Body');
+      if (!btn || !body) return;
+      var revealed = state[key + 'Revealed'] === true;
+      var labels = REVEAL_LABELS[key];
+      btn.setAttribute('aria-expanded', revealed ? 'true' : 'false');
+      btn.textContent = revealed ? labels.open : labels.closed;
+      if (revealed) { btn.setAttribute('disabled', 'true'); body.removeAttribute('hidden'); }
+      else { btn.removeAttribute('disabled'); body.setAttribute('hidden', ''); }
+    });
+  }
+
+  function revealSection(key) {
+    var stateKey = key + 'Revealed';
+    if (state[stateKey] === true) return;
+    state[stateKey] = true;
+    scheduleSave();
+    paintRevealCards();
+  }
+
+  function bindRevealCards() {
+    document.querySelectorAll('[data-reveal]').forEach(function (btn) {
+      var key = btn.getAttribute('data-reveal');
+      btn.addEventListener('click', function () { revealSection(key); });
+    });
+    paintRevealCards();
+  }
+
+  function isTeamInfoDone() {
+    return (state.student || '').trim().length > 0 &&
+           (state.team || '').trim().length > 0 &&
+           (state.classBlock || '').trim().length > 0;
+  }
+  function isStoryDone() {
+    return (state.storyOriginalIdea || '').trim().length >= 10 &&
+           (state.storyBiggestChange || '').trim().length >= 10 &&
+           (state.storyHowItWorks || '').trim().length >= 10;
+  }
+  function isFinalSummaryDone() {
+    return (state.finalDesignName || '').trim().length > 0 &&
+           (state.finalDesignDescription || '').trim().length >= 10 &&
+           (state.finalBestResult || '').trim().length >= 5 &&
+           (state.finalConsistency || '').length > 0 &&
+           (state.finalMetGoal || '').length > 0 &&
+           (state.finalWouldImprove || '').trim().length >= 5;
+  }
+  function isQuizComplete() {
+    var allAnswered = QUIZ.every(function (q) { return typeof state.quizAnswers[q.id] === 'number'; });
+    return allAnswered && state.quizScored === true;
+  }
+  function isGrowthDone() {
+    return (state.growthSkill || '').trim().length >= 10 &&
+           (state.growthProud || '').trim().length >= 10;
+  }
+  function isTeamReflectionDone() {
+    return (state.teamDecisions || '').trim().length >= 10 &&
+           (state.teamHelped || '').trim().length >= 10;
+  }
+
+  var STEPS = [
+    { key: 'team',      label: 'Entered your name, team, and class',    done: isTeamInfoDone },
+    { key: 'story',     label: 'Completed the engineering story',       done: isStoryDone },
+    { key: 'final',     label: 'Filled in the final design summary',    done: isFinalSummaryDone },
+    { key: 'quiz',      label: 'Answered and scored the knowledge check', done: isQuizComplete },
+    { key: 'growth',    label: 'Wrote your engineering growth reflection', done: isGrowthDone },
+    { key: 'teamref',   label: 'Wrote your team reflection',            done: isTeamReflectionDone }
+  ];
+
+  function updateProgress() {
+    var host = document.getElementById('progressList');
+    if (host) {
+      host.innerHTML = '';
+      STEPS.forEach(function (s) {
+        var done = !!s.done();
+        var row = document.createElement('div');
+        row.className = 'check-row' + (done ? ' done' : '');
+        row.innerHTML = '<span class="dot" aria-hidden="true"></span><span>' + esc(s.label) + '</span>';
+        host.appendChild(row);
+      });
+    }
+    renderSuccessCriteria();
+    updateScoreButton();
+  }
+
+  var confirmModal = document.getElementById('confirmModal');
+  var resultModal = document.getElementById('resultModal');
+  var resetModal = document.getElementById('resetModal');
+  var lastFocused = null;
+
+  function openModal(m) {
+    lastFocused = document.activeElement;
+    m.classList.add('show');
+    var focusable = m.querySelectorAll('button, [href], input, textarea, select');
+    if (focusable.length) focusable[0].focus();
+    document.addEventListener('keydown', trapKey);
+    m._focusables = focusable;
+  }
+  function closeModal(m) {
+    m.classList.remove('show');
+    document.removeEventListener('keydown', trapKey);
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+  }
+  function trapKey(e) {
+    if (e.key === 'Escape') {
+      var open = document.querySelector('.modal-backdrop.show');
+      if (open) closeModal(open);
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    var open = document.querySelector('.modal-backdrop.show');
+    if (!open) return;
+    var f = open.querySelectorAll('button, [href], input, textarea, select');
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+    else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+  }
+
+  function firstMissingField() {
+    if (!(state.student || '').trim()) return 'fStudent';
+    if (!(state.team || '').trim()) return 'fTeam';
+    if (!(state.classBlock || '').trim()) return 'fClass';
+    if (!isStoryDone()) return 'fStoryIdea';
+    if (!isFinalSummaryDone()) return 'fFinalName';
+    if (!isQuizComplete()) return 'quiz';
+    if (!isGrowthDone()) return 'fGrowthSkill';
+    if (!isTeamReflectionDone()) return 'fTeamDecide';
+    return null;
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', function () {
+    var missing = firstMissingField();
+    if (missing) {
+      var el = document.getElementById(missing);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof el.focus === 'function') { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } }
+      }
+      var status = document.getElementById('submitStatus');
+      status.className = 'warn';
+      status.textContent = 'Please finish the highlighted section before submitting.';
+      return;
+    }
+    state.submission.workComplete = true;
+    scheduleSave();
+    if (state.submission.teacherSubmissionStatus === 'confirmed') {
+      renderResultModal();
+      openModal(resultModal);
+      return;
+    }
+    var dl = document.getElementById('confirmSummary');
+    dl.innerHTML =
+      '<dt>Student</dt><dd>' + esc(state.student) + '</dd>' +
+      '<dt>Team</dt><dd>' + esc(state.team) + '</dd>' +
+      '<dt>Grade</dt><dd>' + esc(state.classBlock) + '</dd>' +
+      '<dt>Knowledge check</dt><dd>' + state.quizScore + ' of ' + QUIZ.length + '</dd>' +
+      '<dt>Report</dt><dd>Slow-Motion Ball Run - Day 5 (Final)</dd>';
+    openModal(confirmModal);
+  });
+  document.getElementById('confirmCancel').addEventListener('click', function () { closeModal(confirmModal); });
+  document.getElementById('confirmSubmit').addEventListener('click', function () {
+    closeModal(confirmModal);
+    doSubmit();
+  });
+  document.getElementById('resultClose').addEventListener('click', function () { closeModal(resultModal); });
+  document.getElementById('resultDownload').addEventListener('click', function () { generateAndDownloadPdf(); });
+  document.getElementById('resultRetry').addEventListener('click', function () {
+    closeModal(resultModal);
+    doSubmit();
+  });
+
+  document.getElementById('quizScoreBtn').addEventListener('click', function () { scoreQuiz(); });
+
+  function performFullReset() {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    state = deepClone(defaultState);
+    document.querySelectorAll('.modal-backdrop.show').forEach(function (m) { closeModal(m); });
+    document.querySelectorAll('[data-save]').forEach(function (el) { el.value = ''; });
+    renderQuiz();
+    paintRevealCards();
+    updateProgress();
+    var status = document.getElementById('submitStatus');
+    if (status) { status.className = ''; status.textContent = ''; }
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', function () { openModal(resetModal); });
+  document.getElementById('resetCancel').addEventListener('click', function () { closeModal(resetModal); });
+  document.getElementById('resetConfirm').addEventListener('click', function () {
+    performFullReset();
+    var status = document.getElementById('submitStatus');
+    if (status) { status.className = ''; status.textContent = 'Day 5 cleared. You can start over any time.'; }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  function endpointConfigured() {
+    return !!ACTIVE_CHALLENGE_ENDPOINT && /^https?:\/\//i.test(ACTIVE_CHALLENGE_ENDPOINT);
+  }
+
+  function renderResultModal() {
+    var title = document.getElementById('resultTitle');
+    var msg = document.getElementById('resultMsg');
+    var retry = document.getElementById('resultRetry');
+    var s = state.submission.teacherSubmissionStatus;
+    if (s === 'confirmed') {
+      title.textContent = 'Challenge Complete';
+      title.style.color = 'var(--green)';
+      msg.textContent = 'Your final engineering record was sent successfully.';
+      retry.hidden = true;
+    } else {
+      title.textContent = 'PDF Ready';
+      title.style.color = '';
+      msg.textContent = 'Your final PDF is ready, but it was not sent to your teacher. Download it and give it to your teacher.';
+      retry.hidden = !endpointConfigured();
+    }
+  }
+
+  function doSubmit() {
+    var status = document.getElementById('submitStatus');
+    status.className = '';
+    status.textContent = 'Preparing your final report...';
+
+    var pdfArtifact = null;
+    try { pdfArtifact = buildPdfArtifact(); } catch (e) { pdfArtifact = null; }
+    var pdfBlob = pdfArtifact ? pdfArtifact.blob : null;
+    state.submission.pdfGenerated = !!pdfBlob;
+    state.submission.lastAttemptAt = new Date().toISOString();
+
+    sendSubmission(pdfArtifact).then(function (res) {
+      if (res && res.ok === true) {
+        state.submission.teacherSubmissionStatus = 'confirmed';
+        state.submission.confirmedAt = new Date().toISOString();
+        status.className = 'ok';
+        status.textContent = 'Challenge Complete. Your final record was sent to your teacher.';
+      } else if (res && res.reason === 'placeholder') {
+        state.submission.teacherSubmissionStatus = 'download-only';
+        status.className = 'warn';
+        status.textContent = 'PDF ready. It was not sent to your teacher. Download it and give it to your teacher.';
+      } else {
+        state.submission.teacherSubmissionStatus = 'failed';
+        status.className = 'warn';
+        status.textContent = 'PDF ready. It was not sent to your teacher. Download it and give it to your teacher.';
+      }
+      scheduleSave();
+      if (pdfBlob) triggerDownload(pdfBlob);
+      renderResultModal();
+      openModal(resultModal);
+    });
+  }
+
+  function buildAnswersJson() {
+    var quizExport = {};
+    QUIZ.forEach(function (q) {
+      if (typeof state.quizAnswers[q.id] === 'number') quizExport[q.id] = state.quizAnswers[q.id];
+    });
+    var out = {
+      day: 5,
+      engineeringStory: {
+        originalIdeaAndProblem: state.storyOriginalIdea || '',
+        biggestChangeAndResult: state.storyBiggestChange || '',
+        howItWorksAndTradeoff:  state.storyHowItWorks || ''
+      },
+      finalDesignSummary: {
+        name:              state.finalDesignName || '',
+        description:       state.finalDesignDescription || '',
+        bestResult:        state.finalBestResult || '',
+        consistencyRating: state.finalConsistency || '',
+        metGoal:           state.finalMetGoal || '',
+        wouldImprove:      state.finalWouldImprove || ''
+      },
+      quizAnswers: quizExport,
+      quizScore:  state.quizScored ? state.quizScore : null,
+      quizScored: !!state.quizScored,
+      quizTotal:  QUIZ.length,
+      growthReflection: {
+        skillAndHardest: state.growthSkill || '',
+        proudAndNext:    state.growthProud || ''
+      },
+      teamReflection: {
+        decisionsAndContributions: state.teamDecisions || '',
+        helpedAndImprove:          state.teamHelped || ''
+      }
+    };
+    return JSON.stringify(out);
+  }
+
+  function logSubmissionDiag(diag) {
+    try { console.log('[BallRunDay5] submission diagnostic', diag); } catch (e) {}
+  }
+
+  function sendSubmission(pdfArtifact) {
+    var diag = {
+      endpoint: ACTIVE_CHALLENGE_ENDPOINT,
+      isLocalDev: IS_LOCAL_DEV,
+      overrideActive: ACTIVE_CHALLENGE_ENDPOINT !== CHALLENGE_ENDPOINT,
+      fetchAttempted: false,
+      status: null, statusText: null, httpOk: null,
+      contentType: null, rawBody: null, parsed: null,
+      parseError: null, thrown: null, outcome: null
+    };
+    if (!endpointConfigured()) {
+      diag.outcome = 'placeholder';
+      logSubmissionDiag(diag);
+      return Promise.resolve({ ok: false, reason: 'placeholder' });
+    }
+    if (!pdfArtifact || !pdfArtifact.base64) {
+      diag.outcome = 'pdf-missing';
+      logSubmissionDiag(diag);
+      return Promise.resolve({ ok: false, reason: 'pdf' });
+    }
+    var payload = {
+      resourceId:  CHALLENGE_RESOURCE_ID,
+      series:      CHALLENGE_SERIES,
+      day:         CHALLENGE_DAY,
+      studentName: state.student,
+      team:        state.team,
+      classBlock:  state.classBlock,
+      teacher:     CHALLENGE_TEACHER_KEY,
+      prediction:  '',
+      answersJson: buildAnswersJson(),
+      submittedAt: new Date().toISOString(),
+      pdfBase64:   pdfArtifact.base64,
+      pdfFilename: pdfArtifact.filename
+    };
+    diag.fetchAttempted = true;
+    return fetch(ACTIVE_CHALLENGE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) {
+        diag.status = r ? r.status : null;
+        diag.statusText = r ? r.statusText : null;
+        diag.httpOk = r ? r.ok : null;
+        try { diag.contentType = r && r.headers ? r.headers.get('content-type') : null; } catch (e) {}
+        return r.text().then(function (txt) {
+          diag.rawBody = typeof txt === 'string' ? txt.slice(0, 1000) : null;
+          var parsed = null;
+          try { parsed = JSON.parse(txt); } catch (pe) { diag.parseError = pe && pe.message ? pe.message : String(pe); }
+          diag.parsed = parsed;
+          if (!r.ok) { diag.outcome = 'http'; logSubmissionDiag(diag); return { ok: false, reason: 'http' }; }
+          if (parsed && parsed.ok === true) { diag.outcome = 'ok'; logSubmissionDiag(diag); return { ok: true, data: parsed }; }
+          if (parsed) { diag.outcome = 'server'; logSubmissionDiag(diag); return { ok: false, reason: 'server', data: parsed }; }
+          diag.outcome = 'malformed'; logSubmissionDiag(diag);
+          return { ok: false, reason: 'malformed' };
+        }, function (te) {
+          diag.thrown = { name: te && te.name, message: te && te.message };
+          diag.outcome = 'body-read';
+          logSubmissionDiag(diag);
+          return { ok: false, reason: 'malformed' };
+        });
+      })
+      .catch(function (err) {
+        diag.thrown = { name: err && err.name, message: err && err.message };
+        diag.outcome = 'network';
+        logSubmissionDiag(diag);
+        return { ok: false, reason: 'network' };
+      });
+  }
+
+  function slug(s) {
+    return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'anon';
+  }
+  function pdfFilename() {
+    return 'ball-run_day5_' + slug(state.team) + '_' + slug(state.student) + '.pdf';
+  }
+  function triggerDownload(blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = pdfFilename();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+  function generateAndDownloadPdf() {
+    try {
+      var artifact = buildPdfArtifact();
+      if (artifact && artifact.blob) triggerDownload(artifact.blob);
+    } catch (e) {
+      var status = document.getElementById('submitStatus');
+      status.className = 'warn';
+      status.textContent = 'PDF library is still loading. Please try again in a moment.';
+    }
+  }
+
+  function buildPdfArtifact() {
+    var doc = buildPdfDoc();
+    if (!doc) return null;
+    var blob = doc.output('blob');
+    var dataUri = doc.output('datauristring');
+    var base64 = dataUri.indexOf(',') !== -1 ? dataUri.split(',').pop() : '';
+    return { blob: blob, base64: base64, filename: pdfFilename() };
+  }
+
+  function consistencyLabel(v) {
+    if (v === 'mostly') return 'Mostly consistent';
+    if (v === 'somewhat') return 'Somewhat consistent';
+    if (v === 'inconsistent') return 'Inconsistent';
+    return '';
+  }
+  function metGoalLabel(v) {
+    if (v === 'yes') return 'Yes';
+    if (v === 'mostly') return 'Mostly';
+    if (v === 'no') return 'Not yet';
+    return '';
+  }
+
+  function buildPdfDoc() {
+    if (!window.jspdf) throw new Error('jspdf not loaded');
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
+    var PW = 215.9, PH = 279.4, ML = 16, MR = 16, CW = PW - ML - MR;
+    var C = {
+      dark: [26, 37, 53], navy: [30, 47, 66],
+      teal: [59, 200, 232], tealDk: [14, 126, 158],
+      gold: [245, 200, 66], crimson: [255, 84, 112],
+      white: [255, 255, 255], text: [40, 55, 75], muted: [122, 143, 166],
+      line: [210, 220, 230], soft: [244, 248, 252]
+    };
+    function f(c) { doc.setFillColor(c[0], c[1], c[2]); }
+    function s(c) { doc.setDrawColor(c[0], c[1], c[2]); }
+    function t(c) { doc.setTextColor(c[0], c[1], c[2]); }
+    function bold(sz) { doc.setFont('helvetica', 'bold'); doc.setFontSize(sz); }
+    function normal(sz) { doc.setFont('helvetica', 'normal'); doc.setFontSize(sz); }
+
+    var pageNum = 1;
+    function drawFooter() {
+      var y2 = PH - 10;
+      normal(8); t(C.muted);
+      doc.text('LyfeLabz - Slow-Motion Ball Run - Day 5', ML, y2);
+      doc.text('Page ' + pageNum, PW - MR, y2, { align: 'right' });
+    }
+    function newPage() { drawFooter(); doc.addPage(); pageNum += 1; y = 20; }
+
+    f(C.dark); doc.rect(0, 0, PW, 46, 'F');
+    f(C.teal); doc.rect(0, 0, PW, 2, 'F');
+    bold(20); t(C.gold); doc.text('LyfeLabz', ML, 20);
+    bold(11); t(C.white); doc.text('SUMMER ENGINEERING CHALLENGE', ML, 28);
+    bold(15); t(C.white); doc.text('Slow-Motion Ball Run', ML, 38);
+    bold(11); t(C.crimson); doc.text('Day 5: Final Record', PW - MR, 20, { align: 'right' });
+    normal(9); t(C.muted);
+    var dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    doc.text(dateStr, PW - MR, 28, { align: 'right' });
+
+    var y = 58;
+    f(C.soft); doc.rect(ML, y, CW, 26, 'F');
+    s(C.line); doc.setLineWidth(0.2); doc.rect(ML, y, CW, 26, 'S');
+    normal(9); t(C.muted);
+    doc.text('STUDENT', ML + 4, y + 7);
+    doc.text('TEAM', ML + 4 + CW / 3, y + 7);
+    doc.text('GRADE', ML + 4 + (CW / 3) * 2, y + 7);
+    bold(11); t(C.text);
+    doc.text(clip(state.student || '-', 26), ML + 4, y + 14);
+    doc.text(clip(state.team || '-', 26), ML + 4 + CW / 3, y + 14);
+    doc.text(clip(state.classBlock || '-', 22), ML + 4 + (CW / 3) * 2, y + 14);
+    y += 34;
+
+    function heading(txt, color) {
+      if (y > PH - 40) newPage();
+      bold(12); t(color || C.tealDk);
+      doc.text(txt, ML, y);
+      s(color || C.teal); doc.setLineWidth(0.4);
+      doc.line(ML, y + 2, ML + CW, y + 2);
+      y += 8;
+    }
+    function paragraph(txt) {
+      normal(10.5); t(C.text);
+      var lines = doc.splitTextToSize(txt, CW);
+      lines.forEach(function (ln) {
+        if (y > PH - 20) newPage();
+        doc.text(ln, ML, y);
+        y += 5.4;
+      });
+      y += 2;
+    }
+    function bullets(items) {
+      normal(10.5); t(C.text);
+      items.forEach(function (it) {
+        var lines = doc.splitTextToSize(it, CW - 6);
+        lines.forEach(function (ln, li) {
+          if (y > PH - 20) newPage();
+          if (li === 0) { t(C.crimson); doc.text('•', ML, y); t(C.text); }
+          doc.text(ln, ML + 5, y);
+          y += 5.4;
+        });
+      });
+      y += 2;
+    }
+    function labeledBlock(label, body) {
+      bold(9.5); t(C.tealDk);
+      if (y > PH - 24) newPage();
+      doc.text(label, ML, y);
+      y += 5;
+      paragraph(body && body.trim() ? body : '(not entered)');
+    }
+    function clip(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+
+    heading('Learning Target');
+    paragraph('I can explain my engineering process and use evidence to evaluate my final design.');
+
+    heading('Engineering Story');
+    labeledBlock('ORIGINAL IDEA AND FIRST PROBLEM', state.storyOriginalIdea);
+    labeledBlock('BIGGEST CHANGE AND WHAT TESTING SHOWED', state.storyBiggestChange);
+    labeledBlock('HOW IT WORKS, BEST RESULT, TRADE-OFF', state.storyHowItWorks);
+
+    heading('Final Design Summary');
+    labeledBlock('DESIGN NAME', state.finalDesignName || '(not entered)');
+    labeledBlock('DESCRIPTION AND KEY FEATURE', state.finalDesignDescription);
+    labeledBlock('BEST PERFORMANCE RESULT', state.finalBestResult);
+    labeledBlock('CONSISTENCY', consistencyLabel(state.finalConsistency) || '(not chosen)');
+    labeledBlock('MET THE CHALLENGE GOAL', metGoalLabel(state.finalMetGoal) || '(not chosen)');
+    labeledBlock('ONE IMPROVEMENT WITH MORE TIME', state.finalWouldImprove);
+
+    heading('Knowledge Check');
+    if (state.quizScored) {
+      paragraph('Score: ' + state.quizScore + ' of ' + QUIZ.length + '.');
+    } else {
+      paragraph('Not yet scored.');
+    }
+    QUIZ.forEach(function (q, qi) {
+      if (y > PH - 26) newPage();
+      bold(10); t(C.text);
+      var stem = 'Q' + (qi + 1) + '. ' + q.stem;
+      var stemLines = doc.splitTextToSize(stem, CW);
+      stemLines.forEach(function (ln) {
+        if (y > PH - 20) newPage();
+        doc.text(ln, ML, y);
+        y += 5.4;
+      });
+      normal(10); t(C.muted);
+      var picked = state.quizAnswers[q.id];
+      var pickedTxt = (typeof picked === 'number') ? q.choices[picked] : '(no answer)';
+      var pickedLines = doc.splitTextToSize('Your answer: ' + pickedTxt, CW);
+      pickedLines.forEach(function (ln) {
+        if (y > PH - 20) newPage();
+        doc.text(ln, ML, y);
+        y += 5.0;
+      });
+      y += 2;
+    });
+
+    heading('Engineering Growth');
+    labeledBlock('SKILL THAT GREW MOST AND HARDEST PART', state.growthSkill);
+    labeledBlock('MOST PROUD OF AND WOULD DO DIFFERENTLY', state.growthProud);
+
+    heading('Team Reflection');
+    labeledBlock('DECISIONS AND CONTRIBUTIONS', state.teamDecisions);
+    labeledBlock('WHAT HELPED AND WOULD IMPROVE', state.teamHelped);
+
+    heading('Day 5 Completion');
+    var completionLines = STEPS.map(function (st) {
+      var mark = st.done() ? '✓' : ' ';
+      return '[' + mark + ']  ' + st.label;
+    });
+    bullets(completionLines);
+
+    drawFooter();
+    return doc;
+  }
+
+  if (IS_LOCAL_DEV) {
+    try {
+      var testParams = new URLSearchParams(location.search);
+      if (testParams.get('resetTestState') === '1') {
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        state = deepClone(defaultState);
+        testParams.delete('resetTestState');
+        var newQuery = testParams.toString();
+        var newUrl = location.pathname + (newQuery ? '?' + newQuery : '') + location.hash;
+        history.replaceState(null, '', newUrl);
+        try { console.log('[BallRunDay5] Local test state cleared'); } catch (e) {}
+      }
+    } catch (e) {}
+  }
+  loadState();
+  applyUrlPrefill();
+  renderVocabReview();
+  renderQuiz();
+  bindFormFields();
+  bindRevealCards();
+  updateProgress();
+  scheduleSave();
+
+  window.addEventListener('beforeunload', function () {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  });
+
+})();
+</script>
+
+</body>
+</html>

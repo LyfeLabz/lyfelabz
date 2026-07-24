@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>LyfeLabz | Slow-Motion Ball Run - Day 1</title>
+<meta name="description" content="Day 1 of the LyfeLabz Slow-Motion Ball Run summer engineering challenge.">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<style>
+  html { font-size: 18px; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+  :root {
+    --green: #2ecc71;
+    --blue: #3498db;
+    --teal: #3bc8e8;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --gold: #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --crimson: #ff5470;
+    --crimson-glow: rgba(255,84,112,0.35);
+    --dark: #1a2535;
+    --dark2: #243447;
+    --card: #1e2f42;
+    --card2: #223448;
+    --text: #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+    --border-strong: rgba(52,152,219,0.4);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.65;
+    overflow-x: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  a { color: var(--teal); }
+  :focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-day {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    background: rgba(255,84,112,0.1);
+    border: 1px solid rgba(255,84,112,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+  }
+
+  /* ===== SECTIONS ===== */
+  main { max-width: 780px; margin: 0 auto; padding: 0 1.1rem; }
+  section { margin: 2.4rem 0; }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+    line-height: 1.15;
+  }
+  .section-lead { color: var(--text-muted); font-size: 0.98rem; margin-bottom: 1rem; }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #2a1a2f 55%, #0f2535 100%);
+    padding: 3rem 1.2rem 2.6rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 40%, rgba(255,84,112,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse at 75% 60%, rgba(59,200,232,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+  .hero-eyebrow {
+    font-size: clamp(1.4rem, 2.3vw, 2rem);
+    color: var(--gold);
+    font-weight: 900;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    line-height: 1.2;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0.25rem;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.1;
+    margin-bottom: 0.6rem;
+    color: #fff;
+  }
+  .hero .day-label {
+    color: var(--gold);
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.1rem, 2.6vw, 1.4rem);
+    margin-bottom: 0.9rem;
+  }
+  .hero .objective {
+    font-size: 1rem;
+    color: var(--text);
+    max-width: 520px;
+    margin: 0 auto 1.6rem;
+    font-weight: 600;
+  }
+  .cta {
+    display: inline-block;
+    background: var(--crimson);
+    color: #fff;
+    padding: 0.85rem 1.9rem;
+    border-radius: 99px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 24px var(--crimson-glow);
+    transition: transform 0.15s, box-shadow 0.15s;
+    min-height: 44px;
+  }
+  .cta:hover, .cta:focus-visible { transform: translateY(-2px); box-shadow: 0 12px 32px var(--crimson-glow); }
+  .cta.ghost {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid rgba(245,200,66,0.5);
+    box-shadow: none;
+  }
+  .cta.ghost:hover { transform: none; box-shadow: none; background: rgba(245,200,66,0.06); }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.2rem;
+  }
+  .card + .card { margin-top: 0.9rem; }
+  .card h3 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--teal);
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+    line-height: 1.2;
+  }
+  .card p { color: var(--text); font-size: 0.98rem; }
+  .card ul { padding-left: 1.1rem; }
+  .card ul li { color: var(--text); margin: 0.35rem 0; font-size: 0.96rem; }
+  .card.criteria h3 { color: var(--teal); }
+  .card.constraint h3 { color: var(--orange); }
+  .card.mission h3 { color: var(--crimson); }
+
+  .two-up { display: grid; grid-template-columns: 1fr; gap: 0.9rem; }
+  @media (min-width: 720px) {
+    .two-up {
+      grid-template-columns: 1fr 1fr;
+      grid-auto-rows: 1fr;
+      align-items: stretch;
+    }
+    .two-up > .card + .card { margin-top: 0; }
+    .two-up > .reveal-card { height: 100%; }
+  }
+
+  /* ===== REVEAL CARDS ===== */
+  .reveal-card {
+    display: flex;
+    flex-direction: column;
+  }
+  @media (min-width: 720px) {
+    .reveal-card { height: 100%; }
+  }
+  .reveal-card .reveal-prompt {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 0.9rem;
+  }
+  .reveal-card .reveal-body { margin-bottom: 0.9rem; }
+  .reveal-card .reveal-body[hidden] { display: none; }
+  .reveal-btn {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid rgba(245,200,66,0.5);
+    border-radius: 99px;
+    padding: 0.6rem 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    min-height: 44px;
+    align-self: flex-start;
+    margin-top: auto;
+    transition: background 0.15s;
+  }
+  .reveal-btn:hover, .reveal-btn:focus-visible { background: rgba(245,200,66,0.08); }
+  .reveal-btn[aria-expanded="true"] {
+    background: rgba(46,204,113,0.12);
+    border-color: rgba(46,204,113,0.55);
+    color: var(--green);
+    cursor: default;
+  }
+
+  /* ===== VIDEO ===== */
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .video-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .video-fallback {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+    text-align: center;
+  }
+  .video-fallback a {
+    color: var(--gold);
+    text-decoration: underline;
+  }
+  .video-fallback a:hover,
+  .video-fallback a:focus {
+    color: var(--text);
+  }
+  .video-ack-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.9rem;
+  }
+  #videoAckBtn.is-done {
+    background: #2e7d4f;
+    color: #fff;
+    cursor: default;
+    box-shadow: none;
+    opacity: 1;
+  }
+  #videoAckBtn.is-done:hover,
+  #videoAckBtn.is-done:focus-visible {
+    transform: none;
+    box-shadow: none;
+  }
+  #videoAckBtn[disabled] { pointer-events: none; }
+
+  /* ===== VOCAB ===== */
+  .vocab-list { display: flex; flex-direction: column; gap: 0.55rem; }
+  .vocab-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .vocab-btn {
+    width: 100%;
+    background: transparent;
+    color: var(--text);
+    border: none;
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .vocab-btn:hover { background: rgba(59,200,232,0.05); }
+  .vocab-btn .term { color: var(--gold); }
+  .vocab-btn .chevron { color: var(--teal); font-size: 1rem; }
+  .vocab-body {
+    padding: 0 1rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    display: none;
+  }
+  .vocab-card[aria-expanded="true"] .vocab-body { display: block; }
+  .vocab-card[aria-expanded="true"] .vocab-btn .chevron { transform: rotate(0deg); content: '▴'; }
+
+  /* ===== QUESTIONS ===== */
+  .q-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.15rem 1.1rem;
+    margin-bottom: 0.9rem;
+  }
+  .q-num {
+    font-size: 0.72rem;
+    color: var(--teal);
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+  .q-stem {
+    color: var(--text);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+  .q-choices { display: flex; flex-direction: column; gap: 0.45rem; }
+  .q-choice {
+    text-align: left;
+    background: var(--card2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    min-height: 44px;
+    line-height: 1.4;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .q-choice:hover { background: rgba(59,200,232,0.08); border-color: var(--border-strong); }
+  .q-choice.correct {
+    background: rgba(46,204,113,0.12);
+    border-color: rgba(46,204,113,0.6);
+    color: var(--text);
+  }
+  .q-choice.wrong {
+    background: rgba(231,76,60,0.10);
+    border-color: rgba(231,76,60,0.55);
+  }
+  .q-choice[disabled] { cursor: default; }
+  .q-feedback {
+    margin-top: 0.75rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    display: none;
+  }
+  .q-feedback.show { display: block; }
+  .q-feedback.ok {
+    background: rgba(46,204,113,0.10);
+    border: 1px solid rgba(46,204,113,0.45);
+    color: var(--text);
+  }
+  .q-feedback.no {
+    background: rgba(245,200,66,0.10);
+    border: 1px solid rgba(245,200,66,0.45);
+    color: var(--text);
+  }
+
+  /* ===== FORM ===== */
+  .form-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+  @media (min-width: 620px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .field.full { grid-column: 1 / -1; }
+  .field label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .field input, .field select, .field textarea {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.98rem;
+    color: var(--text);
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.65rem 0.8rem;
+    width: 100%;
+    min-height: 44px;
+  }
+  .field textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+  .field .hint { color: var(--text-muted); font-size: 0.8rem; }
+
+  /* ===== CHECKLIST ===== */
+  .check-list { display: flex; flex-direction: column; gap: 0.4rem; }
+  .check-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.93rem;
+  }
+  .check-row .dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--dark);
+    font-weight: 900;
+    font-size: 0.75rem;
+    background: transparent;
+  }
+  .check-row.done .dot {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .check-row.done .dot::before { content: '\2713'; }
+  .check-row.done { color: var(--text); }
+
+  /* ===== SUBMIT ROW ===== */
+  .submit-row {
+    display: flex; flex-wrap: wrap; gap: 0.7rem;
+    align-items: center; justify-content: center;
+    margin-top: 1rem;
+  }
+  #submitStatus {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 0.7rem;
+    min-height: 1.2rem;
+  }
+  #submitStatus.ok { color: var(--green); }
+  #submitStatus.warn { color: var(--gold); }
+
+  /* ===== MODAL ===== */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(10,15,25,0.78);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    max-width: 480px;
+    width: 100%;
+    padding: 1.4rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    color: var(--gold);
+    margin-bottom: 0.6rem;
+  }
+  .modal p { color: var(--text); font-size: 0.95rem; margin-bottom: 0.7rem; }
+  .modal dl { margin: 0.6rem 0 1rem; font-size: 0.9rem; }
+  .modal dt { color: var(--text-muted); font-weight: 800; margin-top: 0.4rem; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .modal dd { color: var(--text); margin-left: 0; }
+  .modal-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-end; margin-top: 0.8rem; }
+
+  .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+  /* small helpers */
+  .lead {
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.25);
+    color: var(--text-muted);
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+  .reset-row { display: flex; justify-content: center; margin-top: 2.5rem; }
+  .link-btn {
+    background: transparent; border: none; color: var(--text-muted);
+    font-size: 0.82rem; text-decoration: underline; cursor: pointer;
+    font-family: 'Nunito', sans-serif; padding: 0.4rem 0.6rem;
+  }
+  .link-btn:hover { color: var(--gold); }
+
+  /* ===== CHALLENGE NAV ===== */
+  .challenge-nav { margin: 3rem 0 2rem; }
+  .challenge-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .challenge-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.9rem 1.1rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  a.challenge-nav-item:hover,
+  a.challenge-nav-item:focus-visible {
+    border-color: rgba(245,200,66,0.55);
+    background: rgba(245,200,66,0.06);
+  }
+  a.challenge-nav-item:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  .challenge-nav-item.current { cursor: default; }
+  .challenge-nav-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.9rem;
+    color: var(--gold);
+    min-width: 4.4rem;
+    letter-spacing: 0.02em;
+  }
+  .challenge-nav-item .nav-day { min-width: 4.4rem; justify-content: center; }
+  .challenge-nav-label {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  @media (max-width: 480px) {
+    .challenge-nav-item { padding: 0.8rem 0.9rem; gap: 0.7rem; }
+    .challenge-nav-num,
+    .challenge-nav-item .nav-day { min-width: 3.7rem; font-size: 0.82rem; }
+    .challenge-nav-label { font-size: 0.95rem; }
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: #070f17;
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  footer .footer-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    margin-bottom: 0.35rem;
+  }
+  footer .footer-tagline {
+    font-size: 0.83rem;
+    color: rgba(240,228,200,0.6);
+    margin-bottom: 0.6rem;
+  }
+  footer .footer-links {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+  }
+  footer .footer-links a {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.4);
+    background: rgba(245,200,66,0.08);
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover { border-color: rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why {
+    color: #3bc8e8;
+    border-color: rgba(59,200,232,0.7);
+    background: rgba(59,200,232,0.12);
+  }
+  footer .footer-links a.nav-why:hover {
+    background: rgba(59,200,232,0.22);
+    border-color: rgba(59,200,232,0.95);
+  }
+  footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
+
+  @media (max-width: 600px) {
+    nav { padding: 0.85rem 1.2rem; }
+  }
+  @media (max-width: 480px) {
+    main { padding: 0 0.85rem; }
+    .hero { padding: 2.3rem 1rem 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <span class="nav-day">Day 1</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Slow-Motion Ball Run</div>
+    <h1>Day 1</h1>
+    <div class="day-label">Understand the Challenge</div>
+    <p class="objective">Today you will learn the challenge, understand the rules, and make your first prediction.</p>
+  </div>
+</div>
+
+<main>
+
+  <section id="watch" aria-labelledby="watch-title">
+    <h2 id="watch-title" class="section-title">Watch the Design Challenge</h2>
+    <p class="section-lead">Watch this short video before beginning today's engineering challenge.</p>
+    <div class="video-wrapper">
+      <iframe
+        src="https://www.youtube.com/embed/VW16rdv2LJs"
+        title="Science Buddies: Slow Motion Ball Run"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+    <p class="video-fallback">Having trouble viewing the video? <a href="https://www.youtube.com/watch?v=VW16rdv2LJs" target="_blank" rel="noopener noreferrer">Open it on YouTube</a>.</p>
+    <div class="video-ack-row">
+      <button class="cta" type="button" id="videoAckBtn">I Watched the Video</button>
+    </div>
+  </section>
+
+  <section id="mission" aria-labelledby="mission-title">
+    <h2 id="mission-title" class="section-title">The mission</h2>
+    <div class="card mission">
+      <h3>Slow is the goal</h3>
+      <p>You and your team will design a ball run made of paper and tape. The goal is to keep the ball moving for as long as possible before it reaches the finish. Speed is the trap. A slow, steady run wins.</p>
+    </div>
+  </section>
+
+  <section id="rules" aria-labelledby="rules-title">
+    <h2 id="rules-title" class="section-title">Criteria and constraints</h2>
+    <p class="section-lead">Criteria are what success looks like. Constraints are the rules you must follow.</p>
+    <div class="two-up">
+      <div class="card criteria reveal-card">
+        <h3>Criteria</h3>
+        <p class="reveal-prompt">Read what success looks like for this challenge.</p>
+        <div class="reveal-body" id="criteriaBody" role="region" aria-labelledby="criteriaBtn" hidden>
+          <ul>
+            <li>The ball travels for as long as possible.</li>
+            <li>The ball reaches the finish without help.</li>
+            <li>Your design works reliably across many trials.</li>
+            <li>The structure stands on its own.</li>
+          </ul>
+        </div>
+        <button type="button" class="reveal-btn" id="criteriaBtn"
+                aria-expanded="false" aria-controls="criteriaBody"
+                data-reveal="criteria">Reveal Criteria</button>
+      </div>
+      <div class="card constraint reveal-card">
+        <h3>Constraints</h3>
+        <p class="reveal-prompt">Read the rules your team must follow while you build.</p>
+        <div class="reveal-body" id="constraintsBody" role="region" aria-labelledby="constraintsBtn" hidden>
+          <ul>
+            <li>Build with the approved paper and tape only.</li>
+            <li>Every team starts with the same materials.</li>
+            <li>Do not touch the ball or the structure during a run.</li>
+            <li>A ball stuck for 10 seconds counts as unsuccessful.</li>
+          </ul>
+        </div>
+        <button type="button" class="reveal-btn" id="constraintsBtn"
+                aria-expanded="false" aria-controls="constraintsBody"
+                data-reveal="constraints">Reveal Constraints</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="vocab" aria-labelledby="vocab-title">
+    <h2 id="vocab-title" class="section-title">Words to know</h2>
+    <p class="section-lead">Choose a card to see what each word means.</p>
+    <div class="vocab-list" id="vocabList"></div>
+  </section>
+
+  <section id="check" aria-labelledby="check-title">
+    <h2 id="check-title" class="section-title">Check your understanding</h2>
+    <p class="section-lead">Three quick questions. Choose an answer to see feedback.</p>
+    <div id="questions"></div>
+  </section>
+
+  <section id="team" aria-labelledby="team-title">
+    <h2 id="team-title" class="section-title">Your team and prediction</h2>
+    <p class="section-lead">Fill this in with your team. It goes on your Day 1 report.</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field">
+          <label for="fStudent">Your name</label>
+          <input type="text" id="fStudent" maxlength="80" autocomplete="off" data-save="student">
+        </div>
+        <div class="field">
+          <label for="fTeam">Team name</label>
+          <input type="text" id="fTeam" maxlength="80" autocomplete="off" data-save="team">
+        </div>
+        <div class="field">
+          <label for="fClass">Grade</label>
+          <select id="fClass" data-save="classBlock">
+            <option value="">Choose your grade</option>
+            <option value="Grade 5">Grade 5</option>
+            <option value="Grade 6">Grade 6</option>
+            <option value="Grade 7">Grade 7</option>
+            <option value="Grade 8">Grade 8</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="fPrediction">Your prediction</label>
+          <textarea id="fPrediction" maxlength="500" data-save="prediction" placeholder="Name one design feature you think could slow the ball down, and briefly explain why."></textarea>
+          <div class="hint">A few sentences is plenty.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="finish" aria-labelledby="finish-title">
+    <h2 id="finish-title" class="section-title">Day 1 completion</h2>
+    <p class="section-lead">This updates as you finish each part.</p>
+    <div class="check-list" id="progressList"></div>
+
+    <div class="submit-row">
+      <button class="cta" type="button" id="submitBtn">Submit Day 1</button>
+    </div>
+    <div id="submitStatus" role="status" aria-live="polite"></div>
+  </section>
+
+  <div class="reset-row">
+    <button class="link-btn" type="button" id="resetBtn">Reset Day 1</button>
+  </div>
+
+  <section class="challenge-nav" aria-labelledby="challenge-nav-title">
+    <h2 id="challenge-nav-title" class="section-title">Continue the Engineering Challenge</h2>
+    <ul class="challenge-nav-list">
+      <li>
+        <span class="challenge-nav-item current" aria-current="page">
+          <span class="nav-day">Day 1</span>
+          <span class="challenge-nav-label">Understand the Challenge</span>
+        </span>
+      </li>
+      <li>
+        <a class="challenge-nav-item" href="challenge_ball-run_day2.html">
+          <span class="challenge-nav-num">Day 2</span>
+          <span class="challenge-nav-label">Build and Test</span>
+        </a>
+      </li>
+      <li>
+        <a class="challenge-nav-item" href="challenge_ball-run_day3.html">
+          <span class="challenge-nav-num">Day 3</span>
+          <span class="challenge-nav-label">Analyze and Improve</span>
+        </a>
+      </li>
+      <li>
+        <a class="challenge-nav-item" href="challenge_ball-run_day4.html">
+          <span class="challenge-nav-num">Day 4</span>
+          <span class="challenge-nav-label">Optimize the Design</span>
+        </a>
+      </li>
+      <li>
+        <a class="challenge-nav-item" href="challenge_ball-run_day5.html">
+          <span class="challenge-nav-num">Day 5</span>
+          <span class="challenge-nav-label">Communicate and Reflect</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-logo">LYFELABZ&trade;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<div class="modal-backdrop" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal">
+    <h3 id="confirmTitle">Submit Day 1?</h3>
+    <p>Please confirm your Day 1. A PDF report will be created for you to download and give to your teacher.</p>
+    <dl id="confirmSummary"></dl>
+    <div class="modal-actions">
+      <button class="cta ghost" type="button" id="confirmCancel">Cancel</button>
+      <button class="cta" type="button" id="confirmSubmit">Confirm and Submit</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+  <div class="modal">
+    <h3 id="resultTitle">PDF Ready</h3>
+    <p id="resultMsg">Your PDF was not sent to your teacher.</p>
+    <div class="modal-actions">
+      <button class="cta ghost" type="button" id="resultClose">Close</button>
+      <button class="cta ghost" type="button" id="resultRetry" hidden>Try Again</button>
+      <button class="cta" type="button" id="resultDownload">Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="resetModal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+  <div class="modal">
+    <h3 id="resetTitle" style="color: var(--crimson);">Reset Day 1?</h3>
+    <p>This clears every answer, your team info, and your prediction on this page. You cannot undo it.</p>
+    <div class="modal-actions">
+      <button class="cta ghost" type="button" id="resetCancel">Cancel</button>
+      <button class="cta" type="button" id="resetConfirm" style="background: var(--crimson);">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'lyfelabz_ball_run_day1_v1';
+  var SCHEMA_VERSION = 1;
+  var CHALLENGE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzRNyJ-5s_-m4a90MsUyagpdDebCzcqDCtwQicSoHMCothfL1-IjTdxzVIN43prEnys9A/exec';
+  var CHALLENGE_ID = 'ball-run_day1';
+  var CHALLENGE_RESOURCE_ID = 'challenge_ball-run_day1';
+  var CHALLENGE_SERIES = 'ball-run';
+  var CHALLENGE_DAY = 1;
+  var CHALLENGE_TEACHER_KEY = 'mr-brown';
+
+  /* LOCAL-DEVELOPMENT-ONLY test seam. Never active on production hosts. */
+  var IS_LOCAL_DEV = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  var endpointOverride = null;
+  if (IS_LOCAL_DEV) {
+    try {
+      var qp = new URLSearchParams(location.search).get('endpoint');
+      if (qp && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(qp)) {
+        endpointOverride = qp;
+      }
+    } catch (e) {}
+  }
+  var ACTIVE_CHALLENGE_ENDPOINT = endpointOverride || CHALLENGE_ENDPOINT;
+
+  var VOCAB = [
+    { term: 'Prototype', def: 'A first version of a design that you can build and test.' },
+    { term: 'Criteria',  def: 'The things a design must do to count as a success.' },
+    { term: 'Constraint',def: 'A rule or limit that your design must follow.' },
+    { term: 'Iteration', def: 'A planned change to your design based on what you learned.' },
+    { term: 'Evidence',  def: 'Something you saw or measured that shows what really happened.' }
+  ];
+
+  var QUESTIONS = [
+    {
+      id: 'q1',
+      stem: 'What is the goal of the Slow-Motion Ball Run?',
+      choices: [
+        'Make the ball reach the finish as fast as possible.',
+        'Keep the ball moving for as long as possible before it reaches the finish.',
+        'Build the tallest ball run in the room.',
+        'Use the most tape.'
+      ],
+      correct: 1,
+      why: 'The goal is a slow, steady run. You want to keep the ball moving for as long as you can before it finishes.'
+    },
+    {
+      id: 'q2',
+      stem: 'Your teacher says: "You may only use paper and tape." Is this a criterion or a constraint?',
+      choices: [
+        'A criterion, because it tells you what success looks like.',
+        'A constraint, because it is a rule that limits your materials.',
+        'Both a criterion and a constraint.',
+        'Neither. It is just a suggestion.'
+      ],
+      correct: 1,
+      why: 'A constraint is a rule that limits your choices. Materials rules are constraints.'
+    },
+    {
+      id: 'q3',
+      stem: 'Why do engineers use evidence when they change a design?',
+      choices: [
+        'Because evidence proves the design is finished.',
+        'Because guessing feels faster than testing.',
+        'Because evidence shows what actually happened, so the next change is a real improvement.',
+        'Because teachers always ask for it.'
+      ],
+      correct: 2,
+      why: 'Evidence shows what really happened. That way your next change is based on what you saw, not on a guess.'
+    }
+  ];
+
+  var defaultState = {
+    v: SCHEMA_VERSION,
+    student: '',
+    team: '',
+    classBlock: '',
+    block: '',
+    prediction: '',
+    videoAcknowledged: false,
+    criteriaRevealed: false,
+    constraintsRevealed: false,
+    answers: {},
+    submission: {
+      workComplete: false,
+      pdfGenerated: false,
+      teacherSubmissionStatus: 'not-attempted',
+      confirmedAt: null,
+      lastAttemptAt: null
+    }
+  };
+  var state = deepClone(defaultState);
+
+  function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return;
+      if (parsed.v !== SCHEMA_VERSION) {
+        parsed = migrate(parsed);
+      }
+      Object.keys(defaultState).forEach(function (k) {
+        if (parsed[k] !== undefined) state[k] = parsed[k];
+      });
+      state.criteriaRevealed = state.criteriaRevealed === true;
+      state.constraintsRevealed = state.constraintsRevealed === true;
+      state.videoAcknowledged = state.videoAcknowledged === true;
+      if (typeof state.answers !== 'object' || state.answers === null) state.answers = {};
+      if (typeof state.submission !== 'object' || state.submission === null) {
+        state.submission = deepClone(defaultState.submission);
+      } else {
+        var s = state.submission;
+        var valid = { 'not-attempted': 1, 'download-only': 1, 'failed': 1, 'confirmed': 1 };
+        if (!valid[s.teacherSubmissionStatus]) s.teacherSubmissionStatus = 'not-attempted';
+        if (typeof s.workComplete !== 'boolean') s.workComplete = false;
+        if (typeof s.pdfGenerated !== 'boolean') s.pdfGenerated = false;
+        if (typeof s.confirmedAt !== 'string') s.confirmedAt = null;
+        if (typeof s.lastAttemptAt !== 'string') s.lastAttemptAt = null;
+        if (s.teacherSubmissionStatus !== 'confirmed') s.confirmedAt = null;
+        /* LocalStorage restores the student UI only. It is NOT teacher-side proof
+           of receipt. A 'confirmed' UI state requires a valid ISO confirmedAt or
+           it is demoted to 'download-only'. */
+        if (s.teacherSubmissionStatus === 'confirmed') {
+          var iso = s.confirmedAt;
+          var isIso = typeof iso === 'string' && !isNaN(Date.parse(iso));
+          if (!isIso) {
+            s.teacherSubmissionStatus = 'download-only';
+            s.confirmedAt = null;
+          }
+        }
+      }
+    } catch (e) {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e2) {}
+    }
+  }
+
+  function migrate(parsed) {
+    parsed.v = SCHEMA_VERSION;
+    return parsed;
+  }
+
+  var saveTimer = null;
+  function scheduleSave() {
+    if (saveTimer) return;
+    saveTimer = setTimeout(function () {
+      saveTimer = null;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }, 300);
+  }
+
+  function applyUrlPrefill() {
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var map = { student: 'student', team: 'team', class: 'classBlock', block: 'block' };
+      Object.keys(map).forEach(function (key) {
+        var v = p.get(key);
+        if (v && !state[map[key]]) {
+          state[map[key]] = v.slice(0, 100);
+        }
+      });
+    } catch (e) {}
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* ---------- VOCAB ---------- */
+  function renderVocab() {
+    var host = document.getElementById('vocabList');
+    host.innerHTML = '';
+    VOCAB.forEach(function (v, i) {
+      var card = document.createElement('div');
+      card.className = 'vocab-card';
+      card.setAttribute('aria-expanded', 'false');
+      var btnId = 'vb' + i;
+      var bodyId = 'vd' + i;
+      card.innerHTML =
+        '<button class="vocab-btn" id="' + btnId + '" aria-controls="' + bodyId + '" aria-expanded="false">' +
+          '<span><span class="term">' + esc(v.term) + '</span></span>' +
+          '<span class="chevron" aria-hidden="true">▾</span>' +
+        '</button>' +
+        '<div class="vocab-body" id="' + bodyId + '" role="region" aria-labelledby="' + btnId + '">' + esc(v.def) + '</div>';
+      var btn = card.querySelector('button');
+      btn.addEventListener('click', function () {
+        var open = card.getAttribute('aria-expanded') === 'true';
+        document.querySelectorAll('.vocab-card').forEach(function (c) {
+          c.setAttribute('aria-expanded', 'false');
+          var b = c.querySelector('.vocab-btn');
+          if (b) b.setAttribute('aria-expanded', 'false');
+          var ch = c.querySelector('.chevron');
+          if (ch) ch.textContent = '▾';
+        });
+        if (!open) {
+          card.setAttribute('aria-expanded', 'true');
+          btn.setAttribute('aria-expanded', 'true');
+          card.querySelector('.chevron').textContent = '▴';
+        }
+      });
+      host.appendChild(card);
+    });
+  }
+
+  /* ---------- QUESTIONS ---------- */
+  function renderQuestions() {
+    var host = document.getElementById('questions');
+    host.innerHTML = '';
+    QUESTIONS.forEach(function (q, qi) {
+      var block = document.createElement('div');
+      block.className = 'q-block';
+      block.id = 'block_' + q.id;
+      var letters = ['A', 'B', 'C', 'D'];
+      var choicesHtml = q.choices.map(function (c, ci) {
+        return '<button class="q-choice" type="button" data-qi="' + qi + '" data-ci="' + ci + '">' +
+          '<strong style="color:var(--teal);margin-right:0.5rem;">' + letters[ci] + '</strong>' + esc(c) +
+          '</button>';
+      }).join('');
+      block.innerHTML =
+        '<div class="q-num">Question ' + (qi + 1) + ' of ' + QUESTIONS.length + '</div>' +
+        '<div class="q-stem">' + esc(q.stem) + '</div>' +
+        '<div class="q-choices" role="radiogroup" aria-label="Question ' + (qi + 1) + ' choices">' + choicesHtml + '</div>' +
+        '<div class="q-feedback" id="fb_' + q.id + '" role="status" aria-live="polite"></div>';
+      host.appendChild(block);
+
+      block.querySelectorAll('.q-choice').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var ci = parseInt(btn.getAttribute('data-ci'), 10);
+          handleAnswer(qi, ci);
+        });
+      });
+    });
+    restoreAnswers();
+  }
+
+  function handleAnswer(qi, ci) {
+    var q = QUESTIONS[qi];
+    var correct = ci === q.correct;
+    state.answers[q.id] = { choice: ci, correct: correct, at: new Date().toISOString() };
+    scheduleSave();
+    paintQuestion(qi);
+    updateProgress();
+  }
+
+  function paintQuestion(qi) {
+    var q = QUESTIONS[qi];
+    var block = document.getElementById('block_' + q.id);
+    if (!block) return;
+    var ans = state.answers[q.id];
+    var fb = block.querySelector('.q-feedback');
+    var choices = block.querySelectorAll('.q-choice');
+    choices.forEach(function (c) {
+      c.classList.remove('correct', 'wrong');
+      c.removeAttribute('disabled');
+      c.removeAttribute('aria-pressed');
+    });
+    fb.classList.remove('show', 'ok', 'no');
+    if (!ans) return;
+    var chosen = choices[ans.choice];
+    if (ans.correct) {
+      if (chosen) chosen.classList.add('correct');
+      choices.forEach(function (c) { c.setAttribute('disabled', 'true'); });
+      fb.classList.add('show', 'ok');
+      fb.textContent = 'Correct. ' + q.why;
+    } else {
+      if (chosen) chosen.classList.add('wrong');
+      fb.classList.add('show', 'no');
+      fb.textContent = 'Not quite. ' + q.why;
+    }
+  }
+
+  function restoreAnswers() {
+    QUESTIONS.forEach(function (_, qi) { paintQuestion(qi); });
+  }
+
+  /* ---------- FORM BINDING ---------- */
+  function bindFormFields() {
+    document.querySelectorAll('[data-save]').forEach(function (el) {
+      var key = el.getAttribute('data-save');
+      if (state[key] != null) el.value = state[key];
+      el.addEventListener('input', function () {
+        state[key] = el.value;
+        scheduleSave();
+        updateProgress();
+      });
+    });
+  }
+
+  /* ---------- REVEAL CARDS ---------- */
+  var REVEAL_LABELS = {
+    criteria:    { closed: 'Reveal Criteria',    open: 'Criteria Revealed' },
+    constraints: { closed: 'Reveal Constraints', open: 'Constraints Revealed' }
+  };
+
+  function paintRevealCards() {
+    Object.keys(REVEAL_LABELS).forEach(function (key) {
+      var btn = document.getElementById(key + 'Btn');
+      var body = document.getElementById(key + 'Body');
+      if (!btn || !body) return;
+      var revealed = state[key + 'Revealed'] === true;
+      var labels = REVEAL_LABELS[key];
+      btn.setAttribute('aria-expanded', revealed ? 'true' : 'false');
+      btn.textContent = revealed ? labels.open : labels.closed;
+      if (revealed) {
+        btn.setAttribute('disabled', 'true');
+        body.removeAttribute('hidden');
+      } else {
+        btn.removeAttribute('disabled');
+        body.setAttribute('hidden', '');
+      }
+    });
+  }
+
+  function revealSection(key) {
+    var stateKey = key + 'Revealed';
+    if (state[stateKey] === true) return;
+    state[stateKey] = true;
+    scheduleSave();
+    paintRevealCards();
+    updateProgress();
+  }
+
+  function bindRevealCards() {
+    document.querySelectorAll('[data-reveal]').forEach(function (btn) {
+      var key = btn.getAttribute('data-reveal');
+      btn.addEventListener('click', function () { revealSection(key); });
+    });
+    paintRevealCards();
+  }
+
+  /* ---------- PROGRESS ---------- */
+  function isVideoStepDone() {
+    return state.videoAcknowledged === true;
+  }
+  function paintVideoAck() {
+    var btn = document.getElementById('videoAckBtn');
+    if (!btn) return;
+    if (state.videoAcknowledged === true) {
+      btn.textContent = 'Video Watched';
+      btn.classList.add('is-done');
+      btn.setAttribute('disabled', 'disabled');
+      btn.setAttribute('aria-disabled', 'true');
+    } else {
+      btn.textContent = 'I Watched the Video';
+      btn.classList.remove('is-done');
+      btn.removeAttribute('disabled');
+      btn.removeAttribute('aria-disabled');
+    }
+  }
+  function isQuestionsDone() {
+    return QUESTIONS.every(function (q) {
+      return state.answers[q.id] && state.answers[q.id].correct;
+    });
+  }
+  function isTeamInfoDone() {
+    return (state.student || '').trim().length > 0 &&
+           (state.team || '').trim().length > 0 &&
+           (state.classBlock || '').trim().length > 0;
+  }
+  function isPredictionDone() {
+    return (state.prediction || '').trim().length >= 10;
+  }
+  var STEPS = [
+    { key: 'watch',   label: 'Watched or reviewed the introduction', done: isVideoStepDone },
+    { key: 'rules',   label: 'Learned the criteria and constraints', done: function () { return state.criteriaRevealed === true && state.constraintsRevealed === true; } },
+    { key: 'qs',      label: 'Answered the three check questions',   done: isQuestionsDone },
+    { key: 'team',    label: 'Entered your name, team, and class',   done: isTeamInfoDone },
+    { key: 'predict', label: 'Wrote your prediction',                done: isPredictionDone }
+  ];
+
+  function updateProgress() {
+    var host = document.getElementById('progressList');
+    host.innerHTML = '';
+    STEPS.forEach(function (s) {
+      var done = !!s.done();
+      var row = document.createElement('div');
+      row.className = 'check-row' + (done ? ' done' : '');
+      row.innerHTML = '<span class="dot" aria-hidden="true"></span><span>' + esc(s.label) + '</span>';
+      host.appendChild(row);
+    });
+  }
+
+  /* ---------- SUBMIT ---------- */
+  var confirmModal = document.getElementById('confirmModal');
+  var resultModal = document.getElementById('resultModal');
+  var resetModal = document.getElementById('resetModal');
+  var lastFocused = null;
+
+  function openModal(m) {
+    lastFocused = document.activeElement;
+    m.classList.add('show');
+    var focusable = m.querySelectorAll('button, [href], input, textarea, select');
+    if (focusable.length) focusable[0].focus();
+    document.addEventListener('keydown', trapKey);
+    m._focusables = focusable;
+  }
+  function closeModal(m) {
+    m.classList.remove('show');
+    document.removeEventListener('keydown', trapKey);
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+  }
+  function trapKey(e) {
+    if (e.key === 'Escape') {
+      var open = document.querySelector('.modal-backdrop.show');
+      if (open) closeModal(open);
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    var open = document.querySelector('.modal-backdrop.show');
+    if (!open) return;
+    var f = open.querySelectorAll('button, [href], input, textarea, select');
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+    else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+  }
+
+  function firstMissingField() {
+    if (!(state.student || '').trim()) return 'fStudent';
+    if (!(state.team || '').trim()) return 'fTeam';
+    if (!(state.classBlock || '').trim()) return 'fClass';
+    if (!isPredictionDone()) return 'fPrediction';
+    for (var i = 0; i < QUESTIONS.length; i++) {
+      var a = state.answers[QUESTIONS[i].id];
+      if (!a || !a.correct) return 'block_' + QUESTIONS[i].id;
+    }
+    return null;
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', function () {
+    var missing = firstMissingField();
+    if (missing) {
+      var el = document.getElementById(missing);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof el.focus === 'function') { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } }
+      }
+      var status = document.getElementById('submitStatus');
+      status.className = 'warn';
+      status.textContent = 'Please finish the highlighted section before submitting.';
+      return;
+    }
+    state.submission.workComplete = true;
+    scheduleSave();
+    if (state.submission.teacherSubmissionStatus === 'confirmed') {
+      renderResultModal();
+      openModal(resultModal);
+      return;
+    }
+    var dl = document.getElementById('confirmSummary');
+    dl.innerHTML =
+      '<dt>Student</dt><dd>' + esc(state.student) + '</dd>' +
+      '<dt>Team</dt><dd>' + esc(state.team) + '</dd>' +
+      '<dt>Grade</dt><dd>' + esc(state.classBlock) + '</dd>' +
+      '<dt>Report</dt><dd>Slow-Motion Ball Run - Day 1</dd>';
+    openModal(confirmModal);
+  });
+  document.getElementById('confirmCancel').addEventListener('click', function () { closeModal(confirmModal); });
+  document.getElementById('confirmSubmit').addEventListener('click', function () {
+    closeModal(confirmModal);
+    doSubmit();
+  });
+  document.getElementById('resultClose').addEventListener('click', function () { closeModal(resultModal); });
+  document.getElementById('resultDownload').addEventListener('click', function () {
+    generateAndDownloadPdf();
+  });
+  document.getElementById('resultRetry').addEventListener('click', function () {
+    closeModal(resultModal);
+    doSubmit();
+  });
+
+  function performFullReset() {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    state = deepClone(defaultState);
+    document.querySelectorAll('.modal-backdrop.show').forEach(function (m) { closeModal(m); });
+    document.querySelectorAll('[data-save]').forEach(function (el) { el.value = ''; });
+    renderQuestions();
+    paintRevealCards();
+    paintVideoAck();
+    updateProgress();
+    var status = document.getElementById('submitStatus');
+    if (status) { status.className = ''; status.textContent = ''; }
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', function () { openModal(resetModal); });
+  document.getElementById('resetCancel').addEventListener('click', function () { closeModal(resetModal); });
+  document.getElementById('resetConfirm').addEventListener('click', function () {
+    performFullReset();
+    var status = document.getElementById('submitStatus');
+    if (status) {
+      status.className = '';
+      status.textContent = 'Day 1 cleared. You can start over any time.';
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('videoAckBtn').addEventListener('click', function () {
+    if (state.videoAcknowledged === true) return;
+    state.videoAcknowledged = true;
+    scheduleSave();
+    paintVideoAck();
+    updateProgress();
+  });
+
+  function endpointConfigured() {
+    return !!ACTIVE_CHALLENGE_ENDPOINT && /^https?:\/\//i.test(ACTIVE_CHALLENGE_ENDPOINT);
+  }
+
+  function renderResultModal() {
+    var title = document.getElementById('resultTitle');
+    var msg = document.getElementById('resultMsg');
+    var retry = document.getElementById('resultRetry');
+    var s = state.submission.teacherSubmissionStatus;
+    if (s === 'confirmed') {
+      title.textContent = 'Day 1 Submitted';
+      title.style.color = 'var(--green)';
+      msg.textContent = 'Your teacher received your Day 1 work.';
+      retry.hidden = true;
+    } else {
+      title.textContent = 'PDF Ready';
+      title.style.color = '';
+      msg.textContent = 'Your Day 1 PDF is ready, but it was not sent to your teacher. Download it and give it to your teacher.';
+      retry.hidden = !endpointConfigured();
+    }
+  }
+
+  function doSubmit() {
+    var status = document.getElementById('submitStatus');
+    status.className = '';
+    status.textContent = 'Preparing your Day 1 report...';
+
+    var pdfArtifact = null;
+    try { pdfArtifact = buildPdfArtifact(); } catch (e) { pdfArtifact = null; }
+    var pdfBlob = pdfArtifact ? pdfArtifact.blob : null;
+    state.submission.pdfGenerated = !!pdfBlob;
+    state.submission.lastAttemptAt = new Date().toISOString();
+
+    sendSubmission(pdfArtifact).then(function (res) {
+      if (res && res.ok === true) {
+        state.submission.teacherSubmissionStatus = 'confirmed';
+        state.submission.confirmedAt = new Date().toISOString();
+        status.className = 'ok';
+        status.textContent = 'Day 1 submitted. Your teacher received your work.';
+      } else if (res && res.reason === 'placeholder') {
+        state.submission.teacherSubmissionStatus = 'download-only';
+        status.className = 'warn';
+        status.textContent = 'PDF ready. It was not sent to your teacher. Download it and give it to your teacher.';
+      } else {
+        state.submission.teacherSubmissionStatus = 'failed';
+        status.className = 'warn';
+        status.textContent = 'PDF ready. It was not sent to your teacher. Download it and give it to your teacher.';
+      }
+      scheduleSave();
+      if (pdfBlob) triggerDownload(pdfBlob);
+      renderResultModal();
+      openModal(resultModal);
+    });
+  }
+
+  function buildAnswersJson() {
+    var out = {};
+    QUESTIONS.forEach(function (q, qi) {
+      var a = state.answers[q.id];
+      out['q' + (qi + 1)] = a ? { choice: a.choice, correct: !!a.correct } : null;
+    });
+    return JSON.stringify(out);
+  }
+
+  /* Diagnostic logger. Emits only NON-sensitive fields (endpoint URL, HTTP
+     status, Apps Script response body, error name/message). Never logs the
+     teacher email, PDF base64, prediction, student name, or any payload
+     content. Safe to leave on in all environments. */
+  function logSubmissionDiag(diag) {
+    try { console.log('[BallRunDay1] submission diagnostic', diag); } catch (e) {}
+  }
+
+  function sendSubmission(pdfArtifact) {
+    var diag = {
+      endpoint: ACTIVE_CHALLENGE_ENDPOINT,
+      isLocalDev: IS_LOCAL_DEV,
+      overrideActive: ACTIVE_CHALLENGE_ENDPOINT !== CHALLENGE_ENDPOINT,
+      fetchAttempted: false,
+      status: null,
+      statusText: null,
+      httpOk: null,
+      contentType: null,
+      rawBody: null,
+      parsed: null,
+      parseError: null,
+      thrown: null,
+      outcome: null
+    };
+    if (!endpointConfigured()) {
+      diag.outcome = 'placeholder';
+      logSubmissionDiag(diag);
+      return Promise.resolve({ ok: false, reason: 'placeholder' });
+    }
+    if (!pdfArtifact || !pdfArtifact.base64) {
+      diag.outcome = 'pdf-missing';
+      logSubmissionDiag(diag);
+      return Promise.resolve({ ok: false, reason: 'pdf' });
+    }
+    var payload = {
+      resourceId:  CHALLENGE_RESOURCE_ID,
+      series:      CHALLENGE_SERIES,
+      day:         CHALLENGE_DAY,
+      studentName: state.student,
+      team:        state.team,
+      classBlock:  state.classBlock,
+      teacher:     CHALLENGE_TEACHER_KEY,
+      prediction:  state.prediction,
+      answersJson: buildAnswersJson(),
+      submittedAt: new Date().toISOString(),
+      pdfBase64:   pdfArtifact.base64,
+      pdfFilename: pdfArtifact.filename
+    };
+    diag.fetchAttempted = true;
+    /* text/plain avoids the CORS preflight that Apps Script Web Apps do not
+       handle. The server reads e.postData.contents and JSON.parses it. */
+    return fetch(ACTIVE_CHALLENGE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) {
+        diag.status = r ? r.status : null;
+        diag.statusText = r ? r.statusText : null;
+        diag.httpOk = r ? r.ok : null;
+        try { diag.contentType = r && r.headers ? r.headers.get('content-type') : null; } catch (e) {}
+        return r.text().then(function (txt) {
+          diag.rawBody = typeof txt === 'string' ? txt.slice(0, 1000) : null;
+          var parsed = null;
+          try { parsed = JSON.parse(txt); } catch (pe) { diag.parseError = pe && pe.message ? pe.message : String(pe); }
+          diag.parsed = parsed;
+          if (!r.ok) {
+            diag.outcome = 'http';
+            logSubmissionDiag(diag);
+            return { ok: false, reason: 'http' };
+          }
+          if (parsed && parsed.ok === true) {
+            diag.outcome = 'ok';
+            logSubmissionDiag(diag);
+            return { ok: true, data: parsed };
+          }
+          if (parsed) {
+            diag.outcome = 'server';
+            logSubmissionDiag(diag);
+            return { ok: false, reason: 'server', data: parsed };
+          }
+          diag.outcome = 'malformed';
+          logSubmissionDiag(diag);
+          return { ok: false, reason: 'malformed' };
+        }, function (te) {
+          diag.thrown = { name: te && te.name, message: te && te.message };
+          diag.outcome = 'body-read';
+          logSubmissionDiag(diag);
+          return { ok: false, reason: 'malformed' };
+        });
+      })
+      .catch(function (err) {
+        diag.thrown = { name: err && err.name, message: err && err.message };
+        diag.outcome = 'network';
+        logSubmissionDiag(diag);
+        return { ok: false, reason: 'network' };
+      });
+  }
+
+  /* ---------- PDF ---------- */
+  function slug(s) {
+    return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'anon';
+  }
+  function pdfFilename() {
+    return 'ball-run_day1_' + slug(state.team) + '_' + slug(state.student) + '.pdf';
+  }
+  function triggerDownload(blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = pdfFilename();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+  function generateAndDownloadPdf() {
+    try {
+      var artifact = buildPdfArtifact();
+      if (artifact && artifact.blob) triggerDownload(artifact.blob);
+    } catch (e) {
+      var status = document.getElementById('submitStatus');
+      status.className = 'warn';
+      status.textContent = 'PDF library is still loading. Please try again in a moment.';
+    }
+  }
+
+  function buildPdfArtifact() {
+    var doc = buildPdfDoc();
+    if (!doc) return null;
+    var blob = doc.output('blob');
+    var dataUri = doc.output('datauristring');
+    var base64 = dataUri.indexOf(',') !== -1 ? dataUri.split(',').pop() : '';
+    return { blob: blob, base64: base64, filename: pdfFilename() };
+  }
+
+  function buildPdfDoc() {
+    if (!window.jspdf) throw new Error('jspdf not loaded');
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
+    var PW = 215.9, PH = 279.4, ML = 16, MR = 16, CW = PW - ML - MR;
+    var C = {
+      dark: [26, 37, 53], navy: [30, 47, 66],
+      teal: [59, 200, 232], tealDk: [14, 126, 158],
+      gold: [245, 200, 66], crimson: [255, 84, 112],
+      white: [255, 255, 255], text: [40, 55, 75], muted: [122, 143, 166],
+      line: [210, 220, 230], soft: [244, 248, 252]
+    };
+    function f(c) { doc.setFillColor(c[0], c[1], c[2]); }
+    function s(c) { doc.setDrawColor(c[0], c[1], c[2]); }
+    function t(c) { doc.setTextColor(c[0], c[1], c[2]); }
+    function bold(sz) { doc.setFont('helvetica', 'bold'); doc.setFontSize(sz); }
+    function normal(sz) { doc.setFont('helvetica', 'normal'); doc.setFontSize(sz); }
+    function italic(sz) { doc.setFont('helvetica', 'italic'); doc.setFontSize(sz); }
+
+    var pageNum = 1;
+    function drawFooter() {
+      var y = PH - 10;
+      normal(8); t(C.muted);
+      doc.text('LyfeLabz - Slow-Motion Ball Run - Day 1', ML, y);
+      doc.text('Page ' + pageNum, PW - MR, y, { align: 'right' });
+    }
+    function newPage() {
+      drawFooter();
+      doc.addPage();
+      pageNum += 1;
+      y = 20;
+    }
+
+    // COVER
+    f(C.dark); doc.rect(0, 0, PW, 46, 'F');
+    f(C.teal); doc.rect(0, 0, PW, 2, 'F');
+    bold(20); t(C.gold); doc.text('LyfeLabz', ML, 20);
+    bold(11); t(C.white); doc.text('SUMMER ENGINEERING CHALLENGE', ML, 28);
+    bold(15); t(C.white); doc.text('Slow-Motion Ball Run', ML, 38);
+    bold(11); t(C.crimson); doc.text('Day 1: Understand the Challenge', PW - MR, 20, { align: 'right' });
+    normal(9); t(C.muted);
+    var dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    doc.text(dateStr, PW - MR, 28, { align: 'right' });
+
+    var y = 58;
+    // Info card
+    f(C.soft); doc.rect(ML, y, CW, 26, 'F');
+    s(C.line); doc.setLineWidth(0.2); doc.rect(ML, y, CW, 26, 'S');
+    normal(9); t(C.muted);
+    doc.text('STUDENT', ML + 4, y + 7);
+    doc.text('TEAM', ML + 4 + CW / 3, y + 7);
+    doc.text('GRADE', ML + 4 + (CW / 3) * 2, y + 7);
+    bold(11); t(C.text);
+    doc.text(clip(state.student || '-', 26), ML + 4, y + 14);
+    doc.text(clip(state.team || '-', 26), ML + 4 + CW / 3, y + 14);
+    doc.text(clip(state.classBlock || '-', 22), ML + 4 + (CW / 3) * 2, y + 14);
+    y += 34;
+
+    function heading(txt, color) {
+      if (y > PH - 40) newPage();
+      bold(12); t(color || C.tealDk);
+      doc.text(txt, ML, y);
+      s(color || C.teal); doc.setLineWidth(0.4);
+      doc.line(ML, y + 2, ML + CW, y + 2);
+      y += 8;
+    }
+    function paragraph(txt) {
+      normal(10.5); t(C.text);
+      var lines = doc.splitTextToSize(txt, CW);
+      lines.forEach(function (ln) {
+        if (y > PH - 20) newPage();
+        doc.text(ln, ML, y);
+        y += 5.4;
+      });
+      y += 2;
+    }
+    function bullets(items) {
+      normal(10.5); t(C.text);
+      items.forEach(function (it) {
+        var lines = doc.splitTextToSize(it, CW - 6);
+        lines.forEach(function (ln, li) {
+          if (y > PH - 20) newPage();
+          if (li === 0) { t(C.crimson); doc.text('•', ML, y); t(C.text); }
+          doc.text(ln, ML + 5, y);
+          y += 5.4;
+        });
+      });
+      y += 2;
+    }
+    function clip(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+
+    heading('Mission');
+    paragraph('Design a paper-and-tape ball run that keeps the ball moving for as long as possible before it reaches the finish. Slow is the goal.');
+
+    heading('Criteria');
+    bullets([
+      'The ball travels for as long as possible.',
+      'The ball reaches the finish without help.',
+      'The design works reliably across many trials.',
+      'The structure stands on its own.'
+    ]);
+
+    heading('Constraints');
+    bullets([
+      'Build with the approved paper and tape only.',
+      'Every team starts with the same materials.',
+      'Do not touch the ball or the structure during a run.',
+      'A ball stuck for 10 seconds counts as unsuccessful.'
+    ]);
+
+    heading('Check Your Understanding');
+    QUESTIONS.forEach(function (q, qi) {
+      var a = state.answers[q.id];
+      if (y > PH - 34) newPage();
+      bold(10.5); t(C.text);
+      var stemLines = doc.splitTextToSize('Q' + (qi + 1) + '. ' + q.stem, CW);
+      stemLines.forEach(function (ln) {
+        if (y > PH - 20) newPage();
+        doc.text(ln, ML, y); y += 5.4;
+      });
+      normal(10); t(a && a.correct ? [46, 140, 90] : C.muted);
+      var chosen = a ? String.fromCharCode(65 + a.choice) + '. ' + q.choices[a.choice] : 'Not answered';
+      var mark = a ? (a.correct ? '[Correct]' : '[Not correct]') : '[Missing]';
+      var line = 'Answer: ' + chosen + '  ' + mark;
+      var alines = doc.splitTextToSize(line, CW);
+      alines.forEach(function (ln) {
+        if (y > PH - 20) newPage();
+        doc.text(ln, ML, y); y += 5;
+      });
+      y += 2;
+    });
+
+    heading('Your Prediction');
+    paragraph(state.prediction || '(not entered)');
+
+    heading('Day 1 Completion');
+    var completionLines = STEPS.map(function (st) {
+      var mark = st.done() ? '✓' : ' ';
+      return '[' + mark + ']  ' + st.label;
+    });
+    bullets(completionLines);
+
+    drawFooter();
+    return doc;
+  }
+
+  /* ---------- INIT ---------- */
+  if (IS_LOCAL_DEV) {
+    try {
+      var testParams = new URLSearchParams(location.search);
+      if (testParams.get('resetTestState') === '1') {
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        state = deepClone(defaultState);
+        testParams.delete('resetTestState');
+        var newQuery = testParams.toString();
+        var newUrl = location.pathname + (newQuery ? '?' + newQuery : '') + location.hash;
+        history.replaceState(null, '', newUrl);
+        try { console.log('[BallRunDay1] Local test state cleared'); } catch (e) {}
+      }
+    } catch (e) {}
+  }
+  loadState();
+  applyUrlPrefill();
+  renderVocab();
+  renderQuestions();
+  bindFormFields();
+  bindRevealCards();
+  paintVideoAck();
+  updateProgress();
+  scheduleSave();
+
+  window.addEventListener('beforeunload', function () {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  });
+
+})();
+</script>
+
+</body>
+</html>
