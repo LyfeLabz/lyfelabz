@@ -8019,7 +8019,7 @@
   }
 
   // src/firebase-config.ts
-  var PROJECT_ID = "lyfelabz-platform";
+  var PROJECT_ID = "lyfelabz-prod";
   var EMULATOR_CONFIG = {
     apiKey: "emulator-placeholder-api-key",
     authDomain: "localhost",

@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import {
+  _resetActiveAssignmentsSessionStateForTest,
   compareCards,
   isRenderableCard,
   renderActiveAssignmentsSection,
@@ -58,6 +59,9 @@ describe("compareCards ordering", () => {
 });
 
 describe("renderActiveAssignmentsSection", () => {
+  beforeEach(() => {
+    _resetActiveAssignmentsSessionStateForTest();
+  });
   test("section is absent when no published assignments are registered", () => {
     const mount = mkMount();
     renderActiveAssignmentsSection(mount, {
@@ -87,7 +91,7 @@ describe("renderActiveAssignmentsSection", () => {
     const heading = mount.querySelector(
       "[data-testid=active-assignments-title]",
     );
-    expect(heading?.textContent).toBe("Active assignments");
+    expect(heading?.textContent).toBe("Active Assignments (2)");
   });
 
   test("Open assignment button invokes opener with the correct assignmentId", () => {
@@ -468,5 +472,271 @@ describe("renderActiveAssignmentsSection", () => {
       "[data-testid=active-assignment-date-p1]",
     );
     expect(date?.textContent).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+describe("Sprint 20: Active Assignments accordion", () => {
+  beforeEach(() => {
+    _resetActiveAssignmentsSessionStateForTest();
+  });
+
+  const summaryFor = (id: string, completed: number, total: number) => ({
+    assignmentId: id,
+    classId: "c1",
+    totalStudents: total,
+    completedStudents: completed,
+    inProgressStudents: 0,
+    notStartedStudents: total - completed,
+    completionPercentage: total === 0 ? 0 : (completed / total) * 100,
+    averagePercentage: null,
+    highestPercentage: null,
+    lowestPercentage: null,
+    perfectScoreStudents: 0,
+  });
+
+  test("zero active assignments hides the entire section", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [],
+      open: () => undefined,
+    });
+    const section = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignments-section]",
+    );
+    expect(section?.hidden).toBe(true);
+    expect(
+      mount.querySelector("[data-testid=active-assignments-accordion-toggle]"),
+    ).toBeNull();
+  });
+
+  test("one active assignment shows count 1 in the accordion header", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+    });
+    const heading = mount.querySelector(
+      "[data-testid=active-assignments-title]",
+    );
+    expect(heading?.textContent).toBe("Active Assignments (1)");
+  });
+
+  test("multiple active assignments show correct count and one summary per assignment", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [
+        meta({ assignmentId: "p1", title: "Earth's Layers", className: "Beta" }),
+        meta({ assignmentId: "p2", title: "Waves", className: "6A" }),
+        meta({ assignmentId: "p3", title: "Signals", className: "6B" }),
+      ],
+      open: () => undefined,
+    });
+    expect(
+      mount.querySelector("[data-testid=active-assignments-title]")?.textContent,
+    ).toBe("Active Assignments (3)");
+    const summaries = mount.querySelectorAll(
+      "[data-testid^=active-assignment-summary-]",
+    );
+    expect(summaries.length).toBe(3);
+  });
+
+  test("default state is collapsed: expanded panel is hidden, summaries are visible", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+    });
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=active-assignments-accordion-toggle]",
+    );
+    expect(btn?.getAttribute("aria-expanded")).toBe("false");
+    const summaries = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignments-summaries]",
+    );
+    const expanded = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignments-expanded]",
+    );
+    expect(summaries?.hidden).toBe(false);
+    expect(expanded?.hidden).toBe(true);
+  });
+
+  test("collapsed summary line reads 'title • class • X/Y submissions'", async () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [
+        meta({
+          assignmentId: "p1",
+          title: "Earth's Layers",
+          className: "Beta",
+        }),
+      ],
+      open: () => undefined,
+      summaryCallable: async ({ assignmentId }) =>
+        summaryFor(assignmentId, 10, 22),
+    });
+    await flush();
+    await flush();
+    const summary = mount.querySelector(
+      "[data-testid=active-assignment-summary-p1]",
+    );
+    expect(summary?.textContent).toBe(
+      "Earth's Layers • Beta • 10/22 submissions",
+    );
+  });
+
+  test("collapsed summary falls back to 'Submission count unavailable' on error", async () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [
+        meta({ assignmentId: "p1", title: "Waves", className: "6A" }),
+      ],
+      open: () => undefined,
+      summaryCallable: () => Promise.reject(new Error("boom")),
+    });
+    await flush();
+    await flush();
+    const summary = mount.querySelector(
+      "[data-testid=active-assignment-summary-p1]",
+    );
+    expect(summary?.textContent).toBe(
+      "Waves • 6A • Submission count unavailable",
+    );
+  });
+
+  test("clicking the header reveals the existing assignment card and hides summaries", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+    });
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=active-assignments-accordion-toggle]",
+    );
+    btn!.click();
+    expect(btn?.getAttribute("aria-expanded")).toBe("true");
+    const expanded = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignments-expanded]",
+    );
+    const summaries = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignments-summaries]",
+    );
+    expect(expanded?.hidden).toBe(false);
+    expect(summaries?.hidden).toBe(true);
+    expect(
+      expanded?.querySelector("[data-testid=active-assignment-card-p1]"),
+    ).not.toBeNull();
+  });
+
+  test("clicking the header a second time collapses it again", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+    });
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=active-assignments-accordion-toggle]",
+    );
+    btn!.click();
+    btn!.click();
+    expect(btn?.getAttribute("aria-expanded")).toBe("false");
+    expect(
+      mount.querySelector<HTMLElement>(
+        "[data-testid=active-assignments-expanded]",
+      )?.hidden,
+    ).toBe(true);
+    expect(
+      mount.querySelector<HTMLElement>(
+        "[data-testid=active-assignments-summaries]",
+      )?.hidden,
+    ).toBe(false);
+  });
+
+  test("Open assignment button in the expanded card still works", () => {
+    const mount = mkMount();
+    const opened: string[] = [];
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: (id) => {
+        opened.push(id);
+      },
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=active-assignments-accordion-toggle]",
+      )!
+      .click();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=active-assignment-open-p1]",
+      )!
+      .click();
+    expect(opened).toEqual(["p1"]);
+  });
+
+  test("keyboard: pressing Space on the header toggles expanded state", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+    });
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=active-assignments-accordion-toggle]",
+    );
+    // Native <button> semantics: Space and Enter fire a click. Assert the
+    // element is a real button so the browser gives us that behavior for
+    // free, then dispatch the click that Space/Enter would produce.
+    expect(btn?.tagName).toBe("BUTTON");
+    expect(btn?.type).toBe("button");
+    btn!.click();
+    expect(btn?.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  test("accessibility: header exposes aria-expanded and aria-controls targeting the expanded panel", () => {
+    const mount = mkMount();
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+    });
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=active-assignments-accordion-toggle]",
+    );
+    const controlsId = btn?.getAttribute("aria-controls");
+    expect(controlsId).toBeTruthy();
+    expect(btn?.getAttribute("aria-expanded")).toBe("false");
+    const panel = mount.querySelector(`#${controlsId}`);
+    expect(panel).not.toBeNull();
+    expect(
+      panel?.getAttribute("data-testid"),
+    ).toBe("active-assignments-expanded");
+  });
+
+  test("expanded state persists across re-renders (simulating workspace tab navigation)", () => {
+    const mount1 = mkMount();
+    renderActiveAssignmentsSection(mount1, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+    });
+    mount1
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=active-assignments-accordion-toggle]",
+      )!
+      .click();
+    // Navigate away by discarding the mount, then re-render into a fresh
+    // mount as the shell would when the teacher returns to Curriculum.
+    mount1.remove();
+    const mount2 = mkMount();
+    renderActiveAssignmentsSection(mount2, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: () => undefined,
+    });
+    const btn = mount2.querySelector<HTMLButtonElement>(
+      "[data-testid=active-assignments-accordion-toggle]",
+    );
+    expect(btn?.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      mount2.querySelector<HTMLElement>(
+        "[data-testid=active-assignments-expanded]",
+      )?.hidden,
+    ).toBe(false);
   });
 });

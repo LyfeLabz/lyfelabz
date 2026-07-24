@@ -42,8 +42,8 @@ describe("isEmulatorHost", () => {
   it("returns false for every other host", () => {
     for (const host of [
       "lyfelabz.com",
-      "lyfelabz-platform.web.app",
-      "lyfelabz-platform.firebaseapp.com",
+      "lyfelabz-prod.web.app",
+      "lyfelabz-prod.firebaseapp.com",
       "staging.lyfelabz.com",
       "example.test",
       "127.0.0.2",
@@ -83,7 +83,7 @@ describe("getFirebaseClientConfig", () => {
     const injected = {
       apiKey: "prod-key",
       authDomain: "auth.lyfelabz.com",
-      projectId: "lyfelabz-platform",
+      projectId: "lyfelabz-prod",
       appId: "1:app",
       messagingSenderId: "sender",
       storageBucket: "bucket",

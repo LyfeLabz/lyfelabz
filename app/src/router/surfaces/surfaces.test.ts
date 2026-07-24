@@ -22,6 +22,11 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     refresh: jest.Mock<Promise<void>>;
     requestVerification: jest.Mock<Promise<void>>;
     listClasses: jest.Mock<Promise<ReadonlyArray<never>>, [string]>;
+    studentOnboarding: jest.Mock<
+      Promise<void>,
+      [{ displayName: string; joinCode: string }]
+    >;
+    googleDisplayName: jest.Mock<string | null, []>;
   };
 } {
   const signOut = jest.fn();
@@ -34,18 +39,33 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
   const listClasses = jest.fn<Promise<ReadonlyArray<never>>, [string]>(
     () => Promise.resolve(Object.freeze([])),
   );
+  const studentOnboarding = jest.fn<
+    Promise<void>,
+    [{ displayName: string; joinCode: string }]
+  >(() => Promise.resolve());
+  const googleDisplayName = jest.fn<string | null, []>(() => null);
   const deps: SurfaceDeps = {
     onSignOut: signOut,
     onSignIn: signIn,
     onRefreshSession: refresh,
     onRequestVerification: requestVerification,
+    onStudentOnboarding: studentOnboarding,
+    getGoogleDisplayName: googleDisplayName,
     listClasses,
     onLaunchPresentMode: () => undefined,
     ...overrides,
   };
   return {
     deps,
-    spies: { signOut, signIn, refresh, requestVerification, listClasses },
+    spies: {
+      signOut,
+      signIn,
+      refresh,
+      requestVerification,
+      listClasses,
+      studentOnboarding,
+      googleDisplayName,
+    },
   };
 }
 
@@ -107,13 +127,17 @@ describe("provisioned surface", () => {
       mount,
     );
     expect(mount.querySelector("h1")?.textContent).toBe(
-      "Welcome to the LyfeLabz teacher platform.",
+      "Welcome to LyfeLabz.",
     );
     expect(mount.querySelector("[data-testid=display-name]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=school-id]")).not.toBeNull();
     expect(
       mount.querySelector("[data-testid=request-verification]"),
     ).not.toBeNull();
+    // Student branch is co-present so a new user can pick their path.
+    expect(mount.querySelector("[data-testid=student-section]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=join-code]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=join-class]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
   });
 
@@ -188,6 +212,218 @@ describe("provisioned surface", () => {
     expect(
       mount.querySelector("[data-testid=error-banner]")?.textContent,
     ).toContain("not eligible");
+  });
+});
+
+describe("provisioned surface - student branch", () => {
+  const provSession = (): Session =>
+    freeze<Session>({ kind: "provisioned", uid: "u1" });
+
+  test("prefills the student name from the Google display name when available", () => {
+    const { deps } = makeDeps({
+      getGoogleDisplayName: () => "Grace Hopper",
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    const nameInput = mount.querySelector<HTMLInputElement>(
+      "[data-testid=student-display-name]",
+    );
+    expect(nameInput?.value).toBe("Grace Hopper");
+  });
+
+  test("blocks submission until name and join code are non-empty", async () => {
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=join-class]")
+      ?.click();
+    await flush();
+    expect(spies.studentOnboarding).not.toHaveBeenCalled();
+    expect(
+      mount.querySelector(
+        "[data-testid=student-error-host] [data-testid=error-banner]",
+      ),
+    ).not.toBeNull();
+  });
+
+  test("rejects a malformed join code without invoking the callable and moves focus to the code field", async () => {
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    const nameInput = mount.querySelector<HTMLInputElement>(
+      "[data-testid=student-display-name]",
+    );
+    const codeInput = mount.querySelector<HTMLInputElement>(
+      "[data-testid=join-code]",
+    );
+    nameInput!.value = "Ada";
+    codeInput!.value = "not-hex!";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=join-class]")
+      ?.click();
+    await flush();
+    expect(spies.studentOnboarding).not.toHaveBeenCalled();
+    expect(
+      mount.querySelector(
+        "[data-testid=student-error-host] [data-testid=error-banner]",
+      )?.textContent,
+    ).toContain("eight characters");
+    expect(document.activeElement).toBe(codeInput);
+  });
+
+  test("on successful onboarding + join, calls the onboarding callable exactly once with a normalized code and schedules a refresh", async () => {
+    jest.useFakeTimers();
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    (
+      mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement
+    ).value = "Ada";
+    (mount.querySelector("[data-testid=join-code]") as HTMLInputElement).value =
+      "abcd1234";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=join-class]")
+      ?.click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(spies.studentOnboarding).toHaveBeenCalledTimes(1);
+    expect(spies.studentOnboarding).toHaveBeenCalledWith({
+      displayName: "Ada",
+      joinCode: "ABCD1234",
+    });
+    jest.advanceTimersByTime(700);
+    await Promise.resolve();
+    expect(spies.refresh).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
+  });
+
+  test("prevents duplicate submission while pending", async () => {
+    let resolveFirst: () => void = () => undefined;
+    const pending = new Promise<void>((r) => {
+      resolveFirst = r;
+    });
+    const { deps, spies } = makeDeps({
+      onStudentOnboarding: jest.fn(() => pending),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    (
+      mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement
+    ).value = "Ada";
+    (mount.querySelector("[data-testid=join-code]") as HTMLInputElement).value =
+      "abcd1234";
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=join-class]",
+    )!;
+    btn.click();
+    await Promise.resolve();
+    expect(btn.disabled).toBe(true);
+    btn.click();
+    btn.click();
+    await Promise.resolve();
+    expect((deps.onStudentOnboarding as jest.Mock).mock.calls.length).toBe(1);
+    resolveFirst();
+    await Promise.resolve();
+    // Reference spies to satisfy the linter without changing behaviour.
+    void spies;
+  });
+
+  test("renders an invalid-join-code error with calm copy and refocuses the code field", async () => {
+    const err = Object.assign(new Error("bad code"), {
+      code: "functions/not-found",
+      details: { code: "enrollments.joinCodeNotFound" },
+    });
+    const { deps } = makeDeps({
+      onStudentOnboarding: () => Promise.reject(err),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    const nameInput = mount.querySelector<HTMLInputElement>(
+      "[data-testid=student-display-name]",
+    );
+    const codeInput = mount.querySelector<HTMLInputElement>(
+      "[data-testid=join-code]",
+    );
+    nameInput!.value = "Ada";
+    codeInput!.value = "abcd1234";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=join-class]")
+      ?.click();
+    await flush();
+    await flush();
+    const banner = mount.querySelector(
+      "[data-testid=student-error-host] [data-testid=error-banner]",
+    );
+    expect(banner?.textContent).toContain("could not find a class");
+    expect(banner?.textContent).not.toContain("functions/");
+    expect(document.activeElement).toBe(codeInput);
+    // Retained typed values so the user does not have to re-enter their name.
+    expect(nameInput!.value).toBe("Ada");
+    expect(codeInput!.value).toBe("abcd1234");
+  });
+
+  test("renders an onboarding failure (invalid display name) with calm copy and returns focus to the name field", async () => {
+    const err = Object.assign(new Error("nope"), {
+      code: "functions/invalid-argument",
+      details: { code: "students.invalidDisplayName" },
+    });
+    const { deps, spies } = makeDeps({
+      onStudentOnboarding: () => Promise.reject(err),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    const nameInput = mount.querySelector<HTMLInputElement>(
+      "[data-testid=student-display-name]",
+    );
+    (nameInput as HTMLInputElement).value = "Ada";
+    (mount.querySelector("[data-testid=join-code]") as HTMLInputElement).value =
+      "abcd1234";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=join-class]")
+      ?.click();
+    await flush();
+    await flush();
+    const banner = mount.querySelector(
+      "[data-testid=student-error-host] [data-testid=error-banner]",
+    );
+    expect(banner?.textContent).toContain("Enter your name");
+    expect(document.activeElement).toBe(nameInput);
+    expect(spies.refresh).not.toHaveBeenCalled();
+  });
+
+  test("does not leak raw Firebase error codes for generic unavailability", async () => {
+    const err = Object.assign(new Error("boom"), {
+      code: "functions/unavailable",
+    });
+    const { deps } = makeDeps({
+      onStudentOnboarding: () => Promise.reject(err),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    (
+      mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement
+    ).value = "Ada";
+    (mount.querySelector("[data-testid=join-code]") as HTMLInputElement).value =
+      "abcd1234";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=join-class]")
+      ?.click();
+    await flush();
+    await flush();
+    const banner = mount.querySelector(
+      "[data-testid=student-error-host] [data-testid=error-banner]",
+    );
+    expect(banner?.textContent).not.toContain("functions/");
+    expect(banner?.textContent).toContain("could not reach");
   });
 });
 

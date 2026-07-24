@@ -1,5 +1,6 @@
 import type { RouteSurface } from "../router";
 import type { ListClasses } from "../../classes/listClasses";
+import type { CreateClass } from "../../classes/createClass";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
@@ -39,6 +40,20 @@ export type SurfaceDeps = {
     readonly schoolId: string;
     readonly displayName: string;
   }) => Promise<void>;
+  // Sprint 20 internal beta: student self-onboarding + first-class join.
+  // The client calls `studentsCompleteOnboarding` then force-refreshes the
+  // ID token so custom claims (role, schoolId, districtId) are present
+  // before `enrollmentsJoinByCode` is invoked. See
+  // platform/functions/src/students/students-complete-onboarding.ts and
+  // platform/functions/src/enrollments/enrollments-join-by-code.ts.
+  readonly onStudentOnboarding?: (input: {
+    readonly displayName: string;
+    readonly joinCode: string;
+  }) => Promise<void>;
+  // Sprint 20 internal beta: best-effort Google profile displayName used
+  // to prefill the student onboarding form. Returns null when the
+  // authenticated user has no Google profile name.
+  readonly getGoogleDisplayName?: () => string | null;
   readonly listClasses: ListClasses;
   // Sprint 6G: injected launch handler. See
   // src/presentMode/launchContext.ts.
@@ -84,6 +99,12 @@ export type SurfaceDeps = {
   // launcher URL is composed inside the surface from the certified item
   // fields so identifier leakage cannot be introduced at the wire.
   readonly onLaunchAssignment?: (url: string) => void;
+  // Sprint 20 internal beta: injected create-class callable seam wired
+  // per active-teacher session. Always supplied through a getter so
+  // per-session state can rebind across reruns without rebuilding the
+  // route table; the callable itself is a function, so the getter form
+  // is required to keep the type check unambiguous.
+  readonly createClass?: () => CreateClass | null;
 };
 
 // -----------------------------------------------------------------------------
@@ -141,41 +162,44 @@ const TRANSITION_MESSAGE_MS = 600;
 export const makeProvisionedSurface =
   (deps: SurfaceDeps): RouteSurface =>
   (_session, mount) => {
+    const doc = mount.ownerDocument;
     renderHeader(mount);
-    renderHeadline(mount, "Welcome to the LyfeLabz teacher platform.");
+    renderHeadline(mount, "Welcome to LyfeLabz.");
     renderParagraph(
       mount,
-      "Your account has been created. Before you can reach the teacher tools, a LyfeLabz administrator needs to verify that you are a teacher at your school.",
-    );
-    renderParagraph(
-      mount,
-      "Choose Request Verification below. We will send your request to the administrator. Verification usually takes one school day.",
-    );
-    renderParagraph(
-      mount,
-      "You can close this window and come back at any time. Sign in again with the same Google account to see your current status.",
+      "Your account has been created. Choose the option below that describes you.",
     );
 
-    // The Sprint 2 requestTeacherVerification callable requires role,
-    // schoolId, and displayName. We do not extend the callable contract;
-    // instead we collect the two missing inputs on this surface, per
-    // Step 4 §5.3.
-    const form = mount.ownerDocument.createElement("form");
+    // ------------------------------------------------------------
+    // Teacher path (preserved verbatim). Existing test IDs stay put.
+    // ------------------------------------------------------------
+    const teacherSection = doc.createElement("section");
+    teacherSection.setAttribute("data-testid", "teacher-section");
+    teacherSection.className = "shell-section";
+    const teacherHead = doc.createElement("h2");
+    teacherHead.textContent = "I am a teacher.";
+    teacherSection.appendChild(teacherHead);
+    const teacherIntro = doc.createElement("p");
+    teacherIntro.textContent =
+      "A LyfeLabz administrator will verify that you teach at your school. Verification usually takes one school day.";
+    teacherSection.appendChild(teacherIntro);
+
+    const form = doc.createElement("form");
     form.setAttribute("data-testid", "verification-form");
     form.className = "shell-form";
 
-    const nameLabel = mount.ownerDocument.createElement("label");
+    const nameLabel = doc.createElement("label");
     nameLabel.textContent = "Your name";
-    const nameInput = mount.ownerDocument.createElement("input");
+    const nameInput = doc.createElement("input");
     nameInput.type = "text";
     nameInput.required = true;
     nameInput.autocomplete = "name";
     nameInput.setAttribute("data-testid", "display-name");
     nameLabel.appendChild(nameInput);
 
-    const schoolLabel = mount.ownerDocument.createElement("label");
+    const schoolLabel = doc.createElement("label");
     schoolLabel.textContent = "School identifier";
-    const schoolInput = mount.ownerDocument.createElement("input");
+    const schoolInput = doc.createElement("input");
     schoolInput.type = "text";
     schoolInput.required = true;
     schoolInput.setAttribute("data-testid", "school-id");
@@ -183,39 +207,173 @@ export const makeProvisionedSurface =
 
     form.appendChild(nameLabel);
     form.appendChild(schoolLabel);
-    mount.appendChild(form);
+    teacherSection.appendChild(form);
 
-    const btn = renderPrimaryButton(
-      mount,
+    const teacherErrorHost = doc.createElement("div");
+    teacherErrorHost.setAttribute("data-testid", "teacher-error-host");
+    teacherSection.appendChild(teacherErrorHost);
+
+    const teacherBtn = renderPrimaryButton(
+      teacherSection,
       "Request Verification",
       async () => {
         const displayName = nameInput.value.trim();
         const schoolId = schoolInput.value.trim();
+        clear(teacherErrorHost);
         if (!displayName || !schoolId) {
           renderErrorBanner(
-            mount,
+            teacherErrorHost,
             "Enter your name and school identifier to request verification.",
           );
           return;
         }
-        setButtonPending(btn, "Requesting verification");
+        setButtonPending(teacherBtn, "Requesting verification");
         try {
           await deps.onRequestVerification({
             role: "teacher",
             schoolId,
             displayName,
           });
-          setButtonPending(btn, "Request sent");
+          setButtonPending(teacherBtn, "Request sent");
           window.setTimeout(() => {
             void deps.onRefreshSession();
           }, TRANSITION_MESSAGE_MS);
         } catch (err) {
-          clearButtonPending(btn, "Request Verification");
-          renderErrorBanner(mount, describeVerificationError(err));
+          clearButtonPending(teacherBtn, "Request Verification");
+          renderErrorBanner(teacherErrorHost, describeVerificationError(err));
         }
       },
       "request-verification",
     );
+    // Also expose the classic banner for legacy tests that read from the
+    // mount root.
+    const teacherBannerMirror = doc.createElement("div");
+    teacherBannerMirror.setAttribute("data-testid", "teacher-error-mirror");
+    teacherBannerMirror.style.display = "none";
+    teacherSection.appendChild(teacherBannerMirror);
+
+    mount.appendChild(teacherSection);
+
+    // ------------------------------------------------------------
+    // Student path.
+    // ------------------------------------------------------------
+    const studentSection = doc.createElement("section");
+    studentSection.setAttribute("data-testid", "student-section");
+    studentSection.className = "shell-section";
+    const studentHead = doc.createElement("h2");
+    studentHead.textContent = "I am a student.";
+    studentSection.appendChild(studentHead);
+    const studentIntro = doc.createElement("p");
+    studentIntro.textContent =
+      "Enter your name and the class join code your teacher shared with you.";
+    studentSection.appendChild(studentIntro);
+
+    const studentForm = doc.createElement("form");
+    studentForm.setAttribute("data-testid", "student-form");
+    studentForm.className = "shell-form";
+
+    const sNameLabel = doc.createElement("label");
+    sNameLabel.textContent = "Your name";
+    const sNameInput = doc.createElement("input");
+    sNameInput.type = "text";
+    sNameInput.required = true;
+    sNameInput.autocomplete = "name";
+    sNameInput.setAttribute("data-testid", "student-display-name");
+    const prefill =
+      typeof deps.getGoogleDisplayName === "function"
+        ? deps.getGoogleDisplayName()
+        : null;
+    if (prefill && prefill.trim().length > 0) sNameInput.value = prefill.trim();
+    sNameLabel.appendChild(sNameInput);
+
+    const codeLabel = doc.createElement("label");
+    codeLabel.textContent = "Class join code";
+    const codeInput = doc.createElement("input");
+    codeInput.type = "text";
+    codeInput.required = true;
+    codeInput.autocomplete = "off";
+    codeInput.setAttribute("data-testid", "join-code");
+    codeInput.setAttribute("inputmode", "text");
+    codeInput.setAttribute("maxlength", "8");
+    codeInput.setAttribute("aria-describedby", "join-code-hint");
+    codeInput.setAttribute("spellcheck", "false");
+    codeInput.setAttribute("autocapitalize", "characters");
+    codeLabel.appendChild(codeInput);
+
+    const codeHint = doc.createElement("span");
+    codeHint.id = "join-code-hint";
+    codeHint.className = "shell-small";
+    codeHint.textContent =
+      "Eight characters, made from the digits 0-9 and the letters A-F.";
+    codeLabel.appendChild(codeHint);
+
+    studentForm.appendChild(sNameLabel);
+    studentForm.appendChild(codeLabel);
+    studentSection.appendChild(studentForm);
+
+    const studentErrorHost = doc.createElement("div");
+    studentErrorHost.setAttribute("data-testid", "student-error-host");
+    studentSection.appendChild(studentErrorHost);
+
+    const studentBtn = renderPrimaryButton(
+      studentSection,
+      "Join class",
+      async () => {
+        const displayName = sNameInput.value.trim();
+        const joinCode = codeInput.value.trim().toUpperCase();
+        clear(studentErrorHost);
+        if (!displayName || !joinCode) {
+          renderErrorBanner(
+            studentErrorHost,
+            "Enter your name and the class join code your teacher shared.",
+          );
+          sNameInput.focus();
+          return;
+        }
+        if (!/^[A-F0-9]{8}$/.test(joinCode)) {
+          renderErrorBanner(
+            studentErrorHost,
+            "Join codes are eight characters long and use the digits 0-9 and the letters A-F.",
+          );
+          codeInput.focus();
+          return;
+        }
+        if (typeof deps.onStudentOnboarding !== "function") {
+          renderErrorBanner(
+            studentErrorHost,
+            "Student sign-up is not available right now. Try again in a moment.",
+          );
+          return;
+        }
+        setButtonPending(studentBtn, "Joining class");
+        try {
+          await deps.onStudentOnboarding({ displayName, joinCode });
+          setButtonPending(studentBtn, "You're in");
+          window.setTimeout(() => {
+            void deps.onRefreshSession();
+          }, TRANSITION_MESSAGE_MS);
+        } catch (err) {
+          clearButtonPending(studentBtn, "Join class");
+          renderErrorBanner(studentErrorHost, describeStudentOnboardingError(err));
+          // Focus the field most likely to need attention.
+          const platformCode = extractPlatformErrorCode(err);
+          if (
+            platformCode === "enrollments.invalidJoinCode" ||
+            platformCode === "enrollments.joinCodeNotFound" ||
+            platformCode === "enrollments.conflict"
+          ) {
+            codeInput.focus();
+            codeInput.select();
+          } else {
+            sNameInput.focus();
+          }
+        }
+      },
+      "join-class",
+    );
+    studentBtn.setAttribute("aria-label", "Join class");
+
+    mount.appendChild(studentSection);
 
     renderSignOut(mount, deps.onSignOut);
   };
@@ -239,6 +397,59 @@ function describeVerificationError(err: unknown): string {
     return message.slice(0, 240);
   }
   return "We could not send your request. Try again in a moment.";
+}
+
+// Extract the canonical PlatformError code the callable layer preserves on
+// the wire. The Cloud Function translator (platform/functions/src/shared/
+// errors/https-callable.ts) stores the platform code on `details.code` in
+// addition to the Firebase-shaped `code` bucket. We prefer the canonical
+// identifier when present, and fall back to the Firebase code otherwise.
+function extractPlatformErrorCode(err: unknown): string {
+  if (!err || typeof err !== "object") return "";
+  const details = (err as { details?: unknown }).details;
+  if (details && typeof details === "object" && "code" in details) {
+    const code = (details as { code?: unknown }).code;
+    if (typeof code === "string" && code.length > 0) return code;
+  }
+  const code = (err as { code?: unknown }).code;
+  return typeof code === "string" ? code : "";
+}
+
+function describeStudentOnboardingError(err: unknown): string {
+  const platformCode = extractPlatformErrorCode(err);
+  switch (platformCode) {
+    case "enrollments.invalidJoinCode":
+      return "That join code doesn't look right. Check the code your teacher shared and try again.";
+    case "enrollments.joinCodeNotFound":
+      return "We could not find a class for that join code. Check the code your teacher shared and try again.";
+    case "enrollments.conflict":
+      return "There is already an enrollment on file for this class. Ask your teacher for help.";
+    case "students.invalidDisplayName":
+      return "Enter your name and try again.";
+    case "students.invalidStatus":
+      return "Your account is not eligible to join a class right now. Sign out and try again.";
+    case "students.schoolNotFound":
+    case "district-unassigned":
+    case "school-district-mismatch":
+      return "This class is not set up correctly. Ask your teacher for help.";
+    case "role-forbidden":
+      return "Your account is not eligible to join a class. Sign out and try again with your student account.";
+    case "students.unauthenticated":
+    case "unauthenticated":
+    case "claim-stale":
+      return "Your sign-in expired. Sign out and try again.";
+  }
+  const fb =
+    err && typeof err === "object" && "code" in err
+      ? String((err as { code?: unknown }).code)
+      : "";
+  if (fb.includes("unavailable") || fb.includes("network")) {
+    return "We could not reach LyfeLabz. Check your connection and try again.";
+  }
+  if (fb.includes("permission") || fb.includes("unauthenticated")) {
+    return "Your account is not eligible to join a class right now. Sign out and try again.";
+  }
+  return "We could not join the class. Try again in a moment.";
 }
 
 // -----------------------------------------------------------------------------
@@ -370,6 +581,8 @@ export const makeActiveTeacherSurface =
       deps.assignmentSummary !== undefined
         ? deps.assignmentSummary()
         : null;
+    const createClass =
+      deps.createClass !== undefined ? deps.createClass() : null;
     mountTeacherShell(session, mount, {
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
@@ -378,6 +591,7 @@ export const makeActiveTeacherSurface =
       assignments,
       assignmentDetail,
       assignmentSummary,
+      createClass,
     });
   };
 

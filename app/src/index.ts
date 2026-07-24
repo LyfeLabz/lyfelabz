@@ -1,5 +1,9 @@
 import { createFirestoreListClasses } from "./classes/listClasses";
 import {
+  createFirebaseCreateClass,
+  type CreateClass,
+} from "./classes/createClass";
+import {
   createAuthInput,
   createFirestoreInput,
   getFirebaseAuth,
@@ -121,6 +125,11 @@ async function run(): Promise<void> {
   // threshold. Absent below the threshold; the panel never issues a
   // fetch in that case.
   let attemptGetForTeacher: AttemptGetForTeacherCallable | null = null;
+  // Sprint 20 internal beta: certified `classesCreate` callable seam
+  // consumed by the Classes surface. Rebound per active-teacher
+  // session so cross-session state cannot leak. Null on any non-teacher
+  // session so the Classes surface renders read-only.
+  let createClass: CreateClass | null = null;
   // Sprint 13B: session-scoped registry of teacher-owned assignment
   // metadata (title, status, class name). Populated by the certified
   // lifecycle path; consumed by the Assignment Detail metadata reader.
@@ -321,6 +330,7 @@ async function run(): Promise<void> {
       assignmentRecipientList = createAssignmentRecipientListCallable(functions);
       attemptsListForClass = createAttemptsListForClassCallable(functions);
       attemptGetForTeacher = createAttemptGetForTeacherCallable(functions);
+      createClass = createFirebaseCreateClass(functions);
       // Sprint 13C: hydrate the session-scoped assignment-detail registry
       // from the certified `assignmentsTeacherList` retrieval path. The
       // hydration runs once per active-teacher session and is calm on
@@ -370,6 +380,7 @@ async function run(): Promise<void> {
       assignmentRecipientList = null;
       attemptsListForClass = null;
       attemptGetForTeacher = null;
+      createClass = null;
       assignmentDetailRegistry.clear();
       lastActiveTeacher = null;
     } else {
@@ -383,6 +394,7 @@ async function run(): Promise<void> {
       assignmentRecipientList = null;
       attemptsListForClass = null;
       attemptGetForTeacher = null;
+      createClass = null;
       assignmentDetailRegistry.clear();
       lastActiveTeacher = null;
       studentAssignmentsList = null;
@@ -455,11 +467,65 @@ async function run(): Promise<void> {
     await callable(input);
   };
 
+  // Sprint 20 internal beta: canonical school id for the beta cohort.
+  // The class join code alone does not carry a schoolId, but the beta is
+  // scoped to a single school. Mirrors platform/functions/src/scripts/
+  // bootstrap-beta-teacher.ts (BETA_SCHOOL_ID). When the beta expands to
+  // multiple schools this constant will be replaced by a school selector
+  // or a join-code-scoped resolution callable.
+  const BETA_SCHOOL_ID = "school-beta";
+
+  const onStudentOnboarding = async (input: {
+    displayName: string;
+    joinCode: string;
+  }): Promise<void> => {
+    const { getFunctions, httpsCallable, connectFunctionsEmulator } =
+      await import("firebase/functions");
+    const functions = getFunctions();
+    if (
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1")
+    ) {
+      try {
+        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+      } catch {
+        // already connected
+      }
+    }
+    const complete = httpsCallable(functions, "studentsCompleteOnboarding");
+    await complete({
+      role: "student",
+      schoolId: BETA_SCHOOL_ID,
+      displayName: input.displayName,
+    });
+    // Force an ID token refresh so the newly issued custom claims
+    // (role: "student", schoolId, districtId) are present before the
+    // enrollment callable runs. Without this, requireDistrictContext in
+    // enrollmentsJoinByCode would reject the call as claim-stale.
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await currentUser.getIdToken(true);
+    }
+    const join = httpsCallable(functions, "enrollmentsJoinByCode");
+    await join({ joinCode: input.joinCode });
+  };
+
+  const getGoogleDisplayName = (): string | null => {
+    const u = auth.currentUser;
+    if (!u) return null;
+    return typeof u.displayName === "string" && u.displayName.length > 0
+      ? u.displayName
+      : null;
+  };
+
   const table = createRouteTable({
     onSignOut,
     onSignIn,
     onRefreshSession,
     onRequestVerification,
+    onStudentOnboarding,
+    getGoogleDisplayName,
     listClasses,
     onLaunchPresentMode,
     integrations: () => integrations,
@@ -467,6 +533,7 @@ async function run(): Promise<void> {
     assignmentDetail: () => assignmentDetailSeam,
     assignmentSummary: () => assignmentSummary,
     studentAssignmentsList: () => studentAssignmentsList,
+    createClass: () => createClass,
     onLaunchAssignment: (url: string) => {
       // Navigate the current tab to the canonical lesson URL with the
       // assignment query parameter. The runtime detects assignment

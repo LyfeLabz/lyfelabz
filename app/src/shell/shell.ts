@@ -1,5 +1,6 @@
 import type { Session } from "../session/types";
 import type { ListClasses } from "../classes/listClasses";
+import type { CreateClass } from "../classes/createClass";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
@@ -52,6 +53,8 @@ export type ShellDeps = {
   // Sprint 15: certified summary callable consumed by the Active
   // Assignments dashboard for per-card progress counts.
   readonly assignmentSummary?: AssignmentSummaryCallable | null;
+  // Sprint 20 internal beta: injected create-class callable seam.
+  readonly createClass?: CreateClass | null;
 };
 
 export function mountTeacherShell(
@@ -83,6 +86,7 @@ export function mountTeacherShell(
     assignments: deps.assignments ?? null,
     assignmentDetail: deps.assignmentDetail ?? null,
     assignmentSummary: deps.assignmentSummary ?? null,
+    createClass: deps.createClass ?? null,
   };
 
   const renderNav = (): void => {

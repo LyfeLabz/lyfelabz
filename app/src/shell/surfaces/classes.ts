@@ -1,6 +1,7 @@
 import type { Session } from "../../session/types";
 import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
+import type { CreateClass, CreateClassResult } from "../../classes/createClass";
 import {
   renderSnapshotSurface,
   type SnapshotPreview,
@@ -35,6 +36,12 @@ export type ClassWorkspaceTab = "snapshot" | "roster";
 export type ClassesSurfaceDeps = {
   readonly listClasses: ListClasses;
   readonly snapshotPreview?: SnapshotPreview | null;
+  // Sprint 20 internal beta: injected create-class callable seam. When
+  // null the surface renders read-only (legacy Sprint 6B behavior).
+  // When present, the class list exposes a Create Class control that
+  // invokes the certified `classesCreate` callable and reveals the
+  // server-generated join code.
+  readonly createClass?: CreateClass | null;
 };
 
 const STATUS_LABEL: Readonly<Record<ClassSummary["status"], string>> =
@@ -43,16 +50,38 @@ const STATUS_LABEL: Readonly<Record<ClassSummary["status"], string>> =
     archived: "Archived",
   });
 
+type CreateFormState = {
+  readonly title: string;
+  readonly grade: string;
+  readonly block: string;
+  readonly submitting: boolean;
+  readonly error: string | null;
+};
+
 type ClassesState =
   | { readonly kind: "loading" }
   | { readonly kind: "error" }
-  | { readonly kind: "list"; readonly classes: ReadonlyArray<ClassSummary> }
+  | {
+      readonly kind: "list";
+      readonly classes: ReadonlyArray<ClassSummary>;
+      readonly form: CreateFormState | null;
+      readonly lastCreated: CreateClassResult | null;
+    }
   | {
       readonly kind: "workspace";
       readonly classes: ReadonlyArray<ClassSummary>;
       readonly selectedId: string;
       readonly tab: ClassWorkspaceTab;
     };
+
+const emptyForm = (): CreateFormState =>
+  Object.freeze({
+    title: "",
+    grade: "7",
+    block: "A",
+    submitting: false,
+    error: null,
+  });
 
 export function renderClassesSurface(
   mount: HTMLElement,
@@ -61,6 +90,7 @@ export function renderClassesSurface(
 ): void {
   const doc = mount.ownerDocument;
   const preview = deps.snapshotPreview ?? null;
+  const createClass = deps.createClass ?? null;
 
   let state: ClassesState = { kind: "loading" };
 
@@ -76,13 +106,31 @@ export function renderClassesSurface(
         renderErrorState(doc, mount);
         return;
       case "list":
-        renderListState(doc, mount, s.classes, onOpenClass);
+        renderListState(
+          doc,
+          mount,
+          s.classes,
+          onOpenClass,
+          createClass !== null,
+          s.form,
+          s.lastCreated,
+          onStartCreate,
+          onCancelCreate,
+          onFormChange,
+          onSubmitCreate,
+          onDismissLastCreated,
+        );
         return;
       case "workspace": {
         const summary = s.classes.find((c) => c.id === s.selectedId);
         if (!summary) {
-          state = { kind: "list", classes: s.classes };
-          renderListState(doc, mount, s.classes, onOpenClass);
+          state = {
+            kind: "list",
+            classes: s.classes,
+            form: null,
+            lastCreated: null,
+          };
+          rerender();
           return;
         }
         renderClassWorkspaceState(
@@ -110,6 +158,145 @@ export function renderClassesSurface(
     rerender();
   };
 
+  const onStartCreate = (): void => {
+    if (state.kind !== "list") return;
+    state = {
+      kind: "list",
+      classes: state.classes,
+      form: emptyForm(),
+      lastCreated: null,
+    };
+    rerender();
+  };
+
+  const onCancelCreate = (): void => {
+    if (state.kind !== "list") return;
+    state = {
+      kind: "list",
+      classes: state.classes,
+      form: null,
+      lastCreated: state.lastCreated,
+    };
+    rerender();
+  };
+
+  const onFormChange = (patch: Partial<CreateFormState>): void => {
+    if (state.kind !== "list" || state.form === null) return;
+    state = {
+      kind: "list",
+      classes: state.classes,
+      form: Object.freeze({ ...state.form, ...patch }),
+      lastCreated: state.lastCreated,
+    };
+    // No rerender. The input/select DOM already reflects the user's
+    // keystroke or selection; rebuilding the surface here would replace
+    // the active control, steal focus back to the Classes headline, and
+    // scroll the page. Rerenders happen on submit, cancel, validation
+    // error, and async responses, all of which read from state.form.
+  };
+
+  const onDismissLastCreated = (): void => {
+    if (state.kind !== "list") return;
+    state = {
+      kind: "list",
+      classes: state.classes,
+      form: state.form,
+      lastCreated: null,
+    };
+    rerender();
+  };
+
+  const onSubmitCreate = (): void => {
+    if (state.kind !== "list" || state.form === null) return;
+    if (createClass === null) return;
+    const form = state.form;
+    const title = form.title.trim();
+    const grade = form.grade.trim();
+    const block = form.block.trim().toUpperCase();
+    if (title.length === 0) {
+      state = {
+        kind: "list",
+        classes: state.classes,
+        form: Object.freeze({ ...form, error: "Enter a class name." }),
+        lastCreated: state.lastCreated,
+      };
+      rerender();
+      return;
+    }
+    if (!/^[A-Za-z0-9]{1,8}$/.test(grade)) {
+      state = {
+        kind: "list",
+        classes: state.classes,
+        form: Object.freeze({
+          ...form,
+          error: "Grade must be a short alphanumeric token (for example 7).",
+        }),
+        lastCreated: state.lastCreated,
+      };
+      rerender();
+      return;
+    }
+    if (!/^[A-G]$/.test(block)) {
+      state = {
+        kind: "list",
+        classes: state.classes,
+        form: Object.freeze({
+          ...form,
+          error: "Block must be a single letter A through G.",
+        }),
+        lastCreated: state.lastCreated,
+      };
+      rerender();
+      return;
+    }
+    state = {
+      kind: "list",
+      classes: state.classes,
+      form: Object.freeze({ ...form, submitting: true, error: null }),
+      lastCreated: state.lastCreated,
+    };
+    rerender();
+    void createClass({ title, grade, block })
+      .then((result) => {
+        if (!mount.isConnected) return;
+        void deps
+          .listClasses(session.uid)
+          .then((classes) => {
+            if (!mount.isConnected) return;
+            state = {
+              kind: "list",
+              classes,
+              form: null,
+              lastCreated: result,
+            };
+            rerender();
+          })
+          .catch(() => {
+            if (!mount.isConnected) return;
+            state = {
+              kind: "list",
+              classes:
+                state.kind === "list" ? state.classes : ([] as ReadonlyArray<ClassSummary>),
+              form: null,
+              lastCreated: result,
+            };
+            rerender();
+          });
+      })
+      .catch((err: unknown) => {
+        if (!mount.isConnected) return;
+        if (state.kind !== "list") return;
+        const message = describeCreateError(err);
+        state = {
+          kind: "list",
+          classes: state.classes,
+          form: Object.freeze({ ...form, submitting: false, error: message }),
+          lastCreated: state.lastCreated,
+        };
+        rerender();
+      });
+  };
+
   const onSelectTab = (tab: ClassWorkspaceTab): void => {
     if (state.kind !== "workspace") return;
     if (state.tab === tab) return;
@@ -124,7 +311,12 @@ export function renderClassesSurface(
 
   const onBackToList = (): void => {
     if (state.kind !== "workspace") return;
-    state = { kind: "list", classes: state.classes };
+    state = {
+      kind: "list",
+      classes: state.classes,
+      form: null,
+      lastCreated: null,
+    };
     rerender();
   };
 
@@ -134,7 +326,7 @@ export function renderClassesSurface(
     .listClasses(session.uid)
     .then((classes) => {
       if (!mount.isConnected) return;
-      state = { kind: "list", classes };
+      state = { kind: "list", classes, form: null, lastCreated: null };
       rerender();
     })
     .catch(() => {
@@ -142,6 +334,28 @@ export function renderClassesSurface(
       state = { kind: "error" };
       rerender();
     });
+}
+
+function describeCreateError(err: unknown): string {
+  const code =
+    err && typeof err === "object" && "code" in err
+      ? String((err as { code?: unknown }).code)
+      : "";
+  const message =
+    err && typeof err === "object" && "message" in err
+      ? String((err as { message?: unknown }).message)
+      : "";
+  if (code.includes("permission") || code.includes("forbidden")) {
+    return "Your account is not permitted to create classes yet.";
+  }
+  if (code.includes("unauthenticated")) {
+    return "Your session has expired. Reload the page and sign in again.";
+  }
+  if (code.includes("unavailable") || code.includes("network")) {
+    return "We could not reach LyfeLabz. Check your connection and try again.";
+  }
+  if (message) return message.slice(0, 240);
+  return "We could not create the class. Try again in a moment.";
 }
 
 function renderLoading(doc: Document, mount: HTMLElement): void {
@@ -189,6 +403,14 @@ function renderListState(
   mount: HTMLElement,
   classes: ReadonlyArray<ClassSummary>,
   onOpen: (classId: string) => void,
+  canCreate: boolean,
+  form: CreateFormState | null,
+  lastCreated: CreateClassResult | null,
+  onStartCreate: () => void,
+  onCancelCreate: () => void,
+  onFormChange: (patch: Partial<CreateFormState>) => void,
+  onSubmitCreate: () => void,
+  onDismissLastCreated: () => void,
 ): void {
   appendHeadline(doc, mount, "Classes");
 
@@ -198,6 +420,23 @@ function renderListState(
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
   mount.appendChild(status);
+
+  if (canCreate) {
+    mount.appendChild(
+      renderCreateControls(
+        doc,
+        form,
+        onStartCreate,
+        onCancelCreate,
+        onFormChange,
+        onSubmitCreate,
+      ),
+    );
+  }
+
+  if (lastCreated !== null) {
+    mount.appendChild(renderJoinCodePanel(doc, lastCreated, onDismissLastCreated));
+  }
 
   const region = doc.createElement("div");
   region.className = "shell-classes-region";
@@ -209,8 +448,9 @@ function renderListState(
     const empty = doc.createElement("p");
     empty.className = "shell-classes-empty";
     empty.setAttribute("data-testid", "classes-empty");
-    empty.textContent =
-      "Classrooms you own will appear here once they are created.";
+    empty.textContent = canCreate
+      ? "Choose Create Class to add your first classroom."
+      : "Classrooms you own will appear here once they are created.";
     region.appendChild(empty);
     return;
   }
@@ -233,6 +473,172 @@ function renderListState(
     list.appendChild(renderClassCard(doc, summary, onOpen));
   }
   region.appendChild(list);
+}
+
+function renderCreateControls(
+  doc: Document,
+  form: CreateFormState | null,
+  onStartCreate: () => void,
+  onCancelCreate: () => void,
+  onFormChange: (patch: Partial<CreateFormState>) => void,
+  onSubmitCreate: () => void,
+): HTMLElement {
+  const wrapper = doc.createElement("div");
+  wrapper.className = "shell-classes-create";
+  wrapper.setAttribute("data-testid", "classes-create");
+
+  if (form === null) {
+    const btn = doc.createElement("button");
+    btn.type = "button";
+    btn.className = "shell-classes-create-open";
+    btn.setAttribute("data-testid", "classes-create-open");
+    btn.textContent = "Create class";
+    btn.addEventListener("click", () => onStartCreate());
+    wrapper.appendChild(btn);
+    return wrapper;
+  }
+
+  const formEl = doc.createElement("form");
+  formEl.className = "shell-form shell-classes-create-form";
+  formEl.setAttribute("data-testid", "classes-create-form");
+  formEl.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    onSubmitCreate();
+  });
+
+  const heading = doc.createElement("h3");
+  heading.className = "shell-classes-create-heading";
+  heading.textContent = "Create a class";
+  formEl.appendChild(heading);
+
+  const titleLabel = doc.createElement("label");
+  titleLabel.textContent = "Class name";
+  const titleInput = doc.createElement("input");
+  titleInput.type = "text";
+  titleInput.required = true;
+  titleInput.value = form.title;
+  titleInput.setAttribute("data-testid", "classes-create-title");
+  titleInput.disabled = form.submitting;
+  titleInput.addEventListener("input", () => {
+    onFormChange({ title: titleInput.value });
+  });
+  titleLabel.appendChild(titleInput);
+  formEl.appendChild(titleLabel);
+
+  const gradeLabel = doc.createElement("label");
+  gradeLabel.textContent = "Grade";
+  const gradeSelect = doc.createElement("select");
+  gradeSelect.setAttribute("data-testid", "classes-create-grade");
+  gradeSelect.disabled = form.submitting;
+  for (const g of ["6", "7", "8"]) {
+    const opt = doc.createElement("option");
+    opt.value = g;
+    opt.textContent = g;
+    if (g === form.grade) opt.selected = true;
+    gradeSelect.appendChild(opt);
+  }
+  gradeSelect.addEventListener("change", () => {
+    onFormChange({ grade: gradeSelect.value });
+  });
+  gradeLabel.appendChild(gradeSelect);
+  formEl.appendChild(gradeLabel);
+
+  const blockLabel = doc.createElement("label");
+  blockLabel.textContent = "Block";
+  const blockSelect = doc.createElement("select");
+  blockSelect.setAttribute("data-testid", "classes-create-block");
+  blockSelect.disabled = form.submitting;
+  for (const b of ["A", "B", "C", "D", "E", "F", "G"]) {
+    const opt = doc.createElement("option");
+    opt.value = b;
+    opt.textContent = b;
+    if (b === form.block) opt.selected = true;
+    blockSelect.appendChild(opt);
+  }
+  blockSelect.addEventListener("change", () => {
+    onFormChange({ block: blockSelect.value });
+  });
+  blockLabel.appendChild(blockSelect);
+  formEl.appendChild(blockLabel);
+
+  if (form.error !== null) {
+    const err = doc.createElement("p");
+    err.setAttribute("role", "alert");
+    err.setAttribute("data-testid", "classes-create-error");
+    err.className = "shell-classes-create-error";
+    err.textContent = form.error;
+    formEl.appendChild(err);
+  }
+
+  const actions = doc.createElement("div");
+  actions.className = "shell-classes-create-actions";
+
+  const submit = doc.createElement("button");
+  submit.type = "submit";
+  submit.setAttribute("data-testid", "classes-create-submit");
+  submit.textContent = form.submitting ? "Creating" : "Create class";
+  submit.disabled = form.submitting;
+  if (form.submitting) submit.setAttribute("aria-busy", "true");
+  actions.appendChild(submit);
+
+  const cancel = doc.createElement("button");
+  cancel.type = "button";
+  cancel.className = "shell-classes-create-cancel";
+  cancel.setAttribute("data-testid", "classes-create-cancel");
+  cancel.textContent = "Cancel";
+  cancel.disabled = form.submitting;
+  cancel.addEventListener("click", () => onCancelCreate());
+  actions.appendChild(cancel);
+
+  formEl.appendChild(actions);
+  wrapper.appendChild(formEl);
+  return wrapper;
+}
+
+function renderJoinCodePanel(
+  doc: Document,
+  result: CreateClassResult,
+  onDismiss: () => void,
+): HTMLElement {
+  const panel = doc.createElement("div");
+  panel.className = "shell-classes-joincode";
+  panel.setAttribute("data-testid", "classes-joincode-panel");
+  panel.setAttribute("role", "status");
+  panel.setAttribute("aria-live", "polite");
+
+  const heading = doc.createElement("h3");
+  heading.className = "shell-classes-joincode-heading";
+  heading.textContent = result.alreadyCreated
+    ? "Class already exists"
+    : "Class created";
+  panel.appendChild(heading);
+
+  const label = doc.createElement("p");
+  label.className = "shell-classes-joincode-label";
+  label.textContent = "Student join code";
+  panel.appendChild(label);
+
+  const code = doc.createElement("p");
+  code.className = "shell-classes-joincode-value";
+  code.setAttribute("data-testid", "classes-joincode-value");
+  code.textContent = result.joinCode;
+  panel.appendChild(code);
+
+  const hint = doc.createElement("p");
+  hint.className = "shell-classes-joincode-hint";
+  hint.textContent =
+    "Share this code with your students so they can join this class. The code stays on the class card.";
+  panel.appendChild(hint);
+
+  const dismiss = doc.createElement("button");
+  dismiss.type = "button";
+  dismiss.className = "shell-classes-joincode-dismiss";
+  dismiss.setAttribute("data-testid", "classes-joincode-dismiss");
+  dismiss.textContent = "Dismiss";
+  dismiss.addEventListener("click", () => onDismiss());
+  panel.appendChild(dismiss);
+
+  return panel;
 }
 
 function renderClassCard(
@@ -263,8 +669,26 @@ function renderClassCard(
     const grade = doc.createElement("p");
     grade.className = "shell-class-grade";
     grade.setAttribute("data-testid", `class-grade-${summary.id}`);
-    grade.textContent = `Grade ${summary.grade}`;
+    grade.textContent =
+      summary.block && summary.block.length > 0
+        ? `Grade ${summary.grade} - Block ${summary.block}`
+        : `Grade ${summary.grade}`;
     card.appendChild(grade);
+  }
+
+  if (summary.joinCode && summary.joinCode.length > 0) {
+    const code = doc.createElement("p");
+    code.className = "shell-class-joincode";
+    code.setAttribute("data-testid", `class-joincode-${summary.id}`);
+    const label = doc.createElement("span");
+    label.className = "shell-class-joincode-label";
+    label.textContent = "Join code: ";
+    const value = doc.createElement("span");
+    value.className = "shell-class-joincode-value";
+    value.textContent = summary.joinCode;
+    code.appendChild(label);
+    code.appendChild(value);
+    card.appendChild(code);
   }
 
   const statusPill = doc.createElement("span");

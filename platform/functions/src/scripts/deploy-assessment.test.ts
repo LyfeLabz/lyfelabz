@@ -146,7 +146,7 @@ describe("configureEmulatorEnv", () => {
       applied[k] = v;
     });
     expect(applied.FIRESTORE_EMULATOR_HOST).toBe("127.0.0.1:8080");
-    expect(applied.GCLOUD_PROJECT).toBe("lyfelabz-platform");
+    expect(applied.GCLOUD_PROJECT).toBe("lyfelabz-prod");
   });
 
   it("does not overwrite an existing emulator host", () => {

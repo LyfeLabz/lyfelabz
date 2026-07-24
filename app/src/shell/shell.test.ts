@@ -291,6 +291,14 @@ describe("Footer", () => {
 });
 
 describe("Curriculum surface composition (Sprint 6D)", () => {
+  beforeEach(() => {
+    // Sprint 20: Curriculum filter state now persists across mounts within
+    // a signed-in session (fix for the tab-navigation reset bug). The unit
+    // tests below assume a clean bucket per case, so drop the module-scoped
+    // state between tests.
+    _resetCurriculumSessionStateForTest();
+  });
+
   test("renders welcome, curriculum intro, filter controls, lesson grid, and return link", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacherSession());
@@ -298,7 +306,7 @@ describe("Curriculum surface composition (Sprint 6D)", () => {
       .toBe("Welcome, Ada Lovelace.");
     expect(mount.querySelector("[data-testid=curriculum-intro]")?.textContent)
       .toBe(
-        "Activate the LyfeLabz lessons your students can access. Preview any lesson at any time.",
+        "Activate the LyfeLabz lessons your students can access.",
       );
     expect(mount.querySelector("[data-testid=curriculum-filters]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=curriculum-grid]")).not.toBeNull();
@@ -315,7 +323,7 @@ describe("Curriculum surface composition (Sprint 6D)", () => {
     expect(cards.length).toBe(49);
   });
 
-  test("each lesson card renders title, grade, topic, preview link, and activation toggle", () => {
+  test("each lesson card renders title, grade, topic, and activation toggle", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacherSession());
     const card = mount.querySelector<HTMLElement>(
@@ -334,18 +342,17 @@ describe("Curriculum surface composition (Sprint 6D)", () => {
       mount.querySelector("[data-testid=lesson-topic-earths-layers]")?.textContent,
     ).toBe("Earth & Space");
     expect(
-      mount
-        .querySelector<HTMLAnchorElement>(
-          "[data-testid=lesson-preview-earths-layers]",
-        )
-        ?.getAttribute("href"),
-    ).toBe("/lesson_earths-layers.html");
+      mount.querySelector("[data-testid=lesson-preview-earths-layers]"),
+    ).toBeNull();
     const toggle = mount.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-toggle-earths-layers]",
     );
     expect(toggle).not.toBeNull();
     expect(toggle?.getAttribute("aria-pressed")).toBe("true");
-    expect(toggle?.textContent).toBe("Active");
+    // Active is the default state and no longer renders a visible "Active" badge.
+    // The toggle remains in the DOM (activation code path preserved) but is hidden.
+    expect(toggle?.hidden).toBe(true);
+    expect(toggle?.textContent).toBe("");
   });
 
   test("lessons default to active state", () => {
@@ -371,11 +378,13 @@ describe("Curriculum surface composition (Sprint 6D)", () => {
     toggle?.click();
     expect(toggle?.getAttribute("aria-pressed")).toBe("false");
     expect(toggle?.textContent).toBe("Inactive");
+    expect(toggle?.hidden).toBe(false);
     expect(card?.getAttribute("data-lesson-active")).toBe("false");
     expect(card?.classList.contains("shell-lesson-card-inactive")).toBe(true);
     toggle?.click();
     expect(toggle?.getAttribute("aria-pressed")).toBe("true");
-    expect(toggle?.textContent).toBe("Active");
+    expect(toggle?.textContent).toBe("");
+    expect(toggle?.hidden).toBe(true);
     expect(card?.getAttribute("data-lesson-active")).toBe("true");
     expect(card?.classList.contains("shell-lesson-card-inactive")).toBe(false);
   });
@@ -3981,5 +3990,105 @@ describe("Sprint 16 Slice 7: integrated teacher monitoring workflow", () => {
     expect(source).not.toContain("sessionStorage");
     expect(source).not.toContain("IndexedDB");
     expect(source).not.toMatch(/setInterval\s*\(/);
+  });
+});
+
+describe("Assign dialog CSS ships with the shell host page", () => {
+  // Regression guard for the production defect where clicking Assign
+  // appeared to do nothing because `app/index.html` shipped no CSS for
+  // the modal overlay classes the Curriculum surface builds. Without
+  // fixed positioning, backdrop, and z-index the overlay renders as an
+  // unpositioned block at the end of <body> and is invisible above the
+  // fold. This test reads the deployed shell page and asserts the
+  // canonical modal contract is present.
+  const shellHtml = fs.readFileSync(
+    path.resolve(__dirname, "../../index.html"),
+    "utf8",
+  );
+
+  test("overlay is fixed-positioned with a backdrop and z-index", () => {
+    const overlayMatch = shellHtml.match(
+      /\.shell-assign-overlay\s*\{([^}]+)\}/,
+    );
+    expect(overlayMatch).not.toBeNull();
+    const body = overlayMatch![1];
+    expect(body).toMatch(/position\s*:\s*fixed/);
+    expect(body).toMatch(/z-index\s*:/);
+    // A backdrop must exist so the overlay is visibly distinguished from
+    // the surface behind it. Either an opaque or translucent background
+    // satisfies the contract.
+    expect(body).toMatch(/background\s*:/);
+  });
+
+  test("dialog card has bounded width and elevation", () => {
+    const dialogMatch = shellHtml.match(
+      /\.shell-assign-dialog\s*\{([^}]+)\}/,
+    );
+    expect(dialogMatch).not.toBeNull();
+    const body = dialogMatch![1];
+    expect(body).toMatch(/max-width\s*:/);
+    expect(body).toMatch(/background\s*:/);
+  });
+
+  test("every class name the Curriculum surface renders has a style rule", () => {
+    // These are the classes the Curriculum surface's Assign flow and its
+    // View-summaries selector attach to elements it inserts into the
+    // document. Every one must have at least a declaration block in the
+    // shell page so nothing renders as an unstyled inline block.
+    const required = [
+      "shell-lesson-assign",
+      "shell-lesson-view-summary",
+      "shell-assign-overlay",
+      "shell-assign-dialog",
+      "shell-assign-title",
+      "shell-assign-body",
+      "shell-assign-footer",
+      "shell-assign-cancel",
+      "shell-assign-confirm",
+      "shell-assign-rows",
+      "shell-assign-row",
+      "shell-assign-field",
+      "shell-summary-select-choice",
+    ];
+    for (const cls of required) {
+      const re = new RegExp(`\\.${cls}\\s*[\\{,]`);
+      expect(shellHtml).toMatch(re);
+    }
+  });
+
+  test("clicking Assign appends the overlay to the document body", async () => {
+    // Behavioral parity check: the overlay must land on document.body so
+    // the fixed-position rules take effect. The Curriculum surface uses
+    // `doc.body.appendChild(overlay)`; the test proves that contract is
+    // still honored end-to-end from a real click.
+    const twoClasses: ReadonlyArray<ClassSummary> = freeze([
+      freeze({
+        id: "c1",
+        title: "6A Life Science",
+        grade: "6",
+        status: "active",
+      }),
+    ] as ClassSummary[]);
+    const listOne: ListClasses = () => Promise.resolve(twoClasses);
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession(), { listClasses: listOne });
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-assign-earths-layers]",
+    );
+    expect(btn).not.toBeNull();
+    btn!.click();
+    await flush();
+    const overlay = document.querySelector<HTMLElement>(
+      "[data-testid=assign-overlay]",
+    );
+    expect(overlay).not.toBeNull();
+    expect(overlay!.parentElement).toBe(document.body);
+    // Dialog is inside the overlay, not attached elsewhere.
+    const dialog = overlay!.querySelector("[data-testid=assign-dialog]");
+    expect(dialog).not.toBeNull();
   });
 });

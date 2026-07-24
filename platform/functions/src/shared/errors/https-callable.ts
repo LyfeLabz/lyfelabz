@@ -1,3 +1,4 @@
+import { logger } from "firebase-functions";
 import {
   HttpsError,
   onCall,
@@ -118,11 +119,31 @@ export function mapPlatformCodeToHttpsCode(code: string): FunctionsErrorCode {
   return "failed-precondition";
 }
 
+// Diagnostic context passed by `platformCallable` so an unhandled throwable
+// can be attributed to a specific callable in the server logs. The wrapper
+// derives `callableName` from the handler function's `name`; every other
+// caller may omit the context.
+export type TranslateThrownContext = {
+  readonly callableName?: string;
+};
+
 // Translate any thrown value into a Firebase-visible error. `PlatformError`
 // is remapped as documented above; a native `HttpsError` passes through
 // unchanged; every other value is coerced to `internal` so the runtime's
 // default serializer does not leak stack traces.
-export function translateThrown(err: unknown): HttpsError {
+//
+// Diagnostic logging: an unhandled throwable (anything that is neither a
+// `PlatformError` nor an `HttpsError`) is emitted exactly once as a
+// structured `callable.unhandled` error event via the Firebase Functions
+// logger before it is coerced to the generic client-facing internal
+// error. Only safe diagnostic fields are captured: error name, message,
+// stack, cause, and the callable name when the wrapper supplies it.
+// Firebase ID tokens, authorization headers, secrets, request payloads,
+// and student/teacher personal information are never logged here.
+export function translateThrown(
+  err: unknown,
+  context?: TranslateThrownContext,
+): HttpsError {
   if (err instanceof HttpsError) return err;
   if (err instanceof PlatformError) {
     return new HttpsError(
@@ -131,6 +152,31 @@ export function translateThrown(err: unknown): HttpsError {
       { code: err.code },
     );
   }
+
+  const payload: Record<string, unknown> = {};
+  if (context?.callableName) payload.callableName = context.callableName;
+  if (err instanceof Error) {
+    payload.name = err.name;
+    payload.message = err.message;
+    if (typeof err.stack === "string") payload.stack = err.stack;
+    const cause = (err as { cause?: unknown }).cause;
+    if (cause !== undefined) {
+      if (cause instanceof Error) {
+        payload.cause = {
+          name: cause.name,
+          message: cause.message,
+          stack: cause.stack,
+        };
+      } else {
+        payload.cause = String(cause);
+      }
+    }
+  } else {
+    payload.name = "NonError";
+    payload.message = typeof err === "string" ? err : String(err);
+  }
+  logger.error("callable.unhandled", payload);
+
   return new HttpsError("internal", "An unexpected error occurred.");
 }
 
@@ -160,11 +206,12 @@ export function platformCallable<T = unknown, R = unknown>(
   const options =
     typeof optionsOrHandler === "function" ? undefined : optionsOrHandler;
 
+  const callableName = handler.name || undefined;
   const wrapped = async (request: CallableRequest<T>): Promise<R> => {
     try {
       return await handler(request);
     } catch (err) {
-      throw translateThrown(err);
+      throw translateThrown(err, { callableName });
     }
   };
 

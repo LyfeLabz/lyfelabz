@@ -45,7 +45,7 @@ export type FirebaseClientConfig = {
 
 // Certified project id shared by emulator and production. See
 // platform/firebase/.firebaserc.
-export const PROJECT_ID = "lyfelabz-platform";
+export const PROJECT_ID = "lyfelabz-prod";
 
 // Emulator-friendly config. The Firebase Auth emulator does not validate
 // the API key, so a placeholder is safe. authDomain is "localhost" so

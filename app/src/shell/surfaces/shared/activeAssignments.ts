@@ -11,6 +11,13 @@ import type { AssignmentSummary, AssignmentSummaryCallable } from "../../../assi
 // callable. Slice 4 adds the Show closed toggle. Every value traces to
 // stored assignment / session / attempt data per Sprint 14 §4.4.
 //
+// Sprint 20 UX refinement: the section is presented as a compact
+// accordion. Default state shows a summary line per assignment; the
+// expanded state reveals the existing assignment card(s) unchanged.
+// Expanded/collapsed state persists during teacher workspace navigation
+// within the current authenticated session via a module-scoped flag; a
+// full page refresh resets to the default collapsed state.
+//
 // This module is firebase-free. All I/O is injected. It reads from the
 // session-scoped assignment-detail registry that Curriculum already
 // hydrates.
@@ -34,6 +41,19 @@ const STATUS_LABEL: Readonly<Record<AssignmentStatus, string>> = Object.freeze({
   published: "Published",
   closed: "Closed",
 });
+
+// Sprint 20: session-lifetime expanded/collapsed state. Persists across
+// re-mounts of the Curriculum surface (teacher tab navigation) but not
+// across a hard browser refresh. Kept in-module rather than in Web
+// Storage so this file remains storage-free (see the Sprint 16 posture
+// invariant guarded by shell.test.ts).
+let sessionExpanded = false;
+
+// Test-only reset for the module-scoped accordion state. Not called by
+// runtime code.
+export function _resetActiveAssignmentsSessionStateForTest(): void {
+  sessionExpanded = false;
+}
 
 const isNonEmptyString = (v: unknown): v is string =>
   typeof v === "string" && v.length > 0;
@@ -111,18 +131,27 @@ export function renderActiveAssignmentsSection(
   // lifetime; not persisted.
   const progressCache = new Map<string, ProgressCacheEntry>();
 
+  const EXPANDED_PANEL_ID = "active-assignments-expanded-panel";
+
   const refreshCard = (assignmentId: string): void => {
     const cardEl = section.querySelector<HTMLElement>(
       `[data-testid=active-assignment-card-${assignmentId}]`,
     );
-    if (cardEl === null) return;
-    const progress = progressCache.get(assignmentId) ?? { kind: "pending" };
     const meta = deps
       .listRegistry()
       .find((m) => m.assignmentId === assignmentId);
     if (meta === undefined) return;
-    const replacement = renderCard(doc, meta, deps.open, progress);
-    cardEl.replaceWith(replacement);
+    const progress = progressCache.get(assignmentId) ?? { kind: "pending" };
+    if (cardEl !== null) {
+      const replacement = renderCard(doc, meta, deps.open, progress);
+      cardEl.replaceWith(replacement);
+    }
+    const summaryEl = section.querySelector<HTMLElement>(
+      `[data-testid=active-assignment-summary-${assignmentId}]`,
+    );
+    if (summaryEl !== null) {
+      summaryEl.textContent = formatSummaryLine(meta, progress);
+    }
   };
 
   const ensureProgress = (assignmentId: string): void => {
@@ -141,6 +170,16 @@ export function renderActiveAssignmentsSection(
       });
   };
 
+  const applyExpandedState = (
+    headerBtn: HTMLButtonElement,
+    summariesEl: HTMLElement,
+    expandedEl: HTMLElement,
+  ): void => {
+    headerBtn.setAttribute("aria-expanded", sessionExpanded ? "true" : "false");
+    summariesEl.hidden = sessionExpanded;
+    expandedEl.hidden = !sessionExpanded;
+  };
+
   const render = (): void => {
     section.textContent = "";
 
@@ -155,17 +194,46 @@ export function renderActiveAssignmentsSection(
     published.sort(compareCards);
     closed.sort(compareCards);
 
+    const visibleCount =
+      published.length + (showClosed ? closed.length : 0);
+
     if (published.length === 0 && !(showClosed && closed.length > 0)) {
       section.hidden = true;
       return;
     }
     section.hidden = false;
 
-    const heading = doc.createElement("h2");
+    const headerBtn = doc.createElement("button");
+    headerBtn.type = "button";
+    headerBtn.className = "shell-active-assignments-toggle-btn";
+    headerBtn.setAttribute(
+      "data-testid",
+      "active-assignments-accordion-toggle",
+    );
+    headerBtn.setAttribute("aria-controls", EXPANDED_PANEL_ID);
+    const heading = doc.createElement("span");
     heading.className = "shell-active-assignments-title";
     heading.setAttribute("data-testid", "active-assignments-title");
-    heading.textContent = "Active assignments";
-    section.appendChild(heading);
+    heading.textContent = `Active Assignments (${visibleCount})`;
+    headerBtn.appendChild(heading);
+    section.appendChild(headerBtn);
+
+    const summariesEl = doc.createElement("div");
+    summariesEl.className = "shell-active-assignments-summaries";
+    summariesEl.setAttribute(
+      "data-testid",
+      "active-assignments-summaries",
+    );
+    section.appendChild(summariesEl);
+
+    const expandedEl = doc.createElement("div");
+    expandedEl.className = "shell-active-assignments-expanded";
+    expandedEl.id = EXPANDED_PANEL_ID;
+    expandedEl.setAttribute(
+      "data-testid",
+      "active-assignments-expanded",
+    );
+    section.appendChild(expandedEl);
 
     // Slice 4: Show closed toggle. Rendered when at least one closed
     // assignment exists so the control is not offered when there is
@@ -188,28 +256,40 @@ export function renderActiveAssignmentsSection(
       toggleLabel.className = "shell-active-assignments-toggle-label";
       toggleLabel.textContent = "Show closed";
       toggleWrap.appendChild(toggleLabel);
-      section.appendChild(toggleWrap);
+      expandedEl.appendChild(toggleWrap);
     }
 
     const list = doc.createElement("div");
     list.className = "shell-active-assignments-list";
     list.setAttribute("data-testid", "active-assignments-list");
     list.setAttribute("role", "list");
-    section.appendChild(list);
+    expandedEl.appendChild(list);
 
-    for (const meta of published) {
+    const renderRow = (meta: AssignmentDetailMetadata): void => {
       const progress = progressCache.get(meta.assignmentId) ?? { kind: "pending" };
+      const summaryLine = doc.createElement("p");
+      summaryLine.className = "shell-active-assignment-summary";
+      summaryLine.setAttribute(
+        "data-testid",
+        `active-assignment-summary-${meta.assignmentId}`,
+      );
+      summaryLine.textContent = formatSummaryLine(meta, progress);
+      summariesEl.appendChild(summaryLine);
       list.appendChild(renderCard(doc, meta, deps.open, progress));
       ensureProgress(meta.assignmentId);
-    }
+    };
+
+    for (const meta of published) renderRow(meta);
     if (showClosed) {
-      for (const meta of closed) {
-        const progress =
-          progressCache.get(meta.assignmentId) ?? { kind: "pending" };
-        list.appendChild(renderCard(doc, meta, deps.open, progress));
-        ensureProgress(meta.assignmentId);
-      }
+      for (const meta of closed) renderRow(meta);
     }
+
+    headerBtn.addEventListener("click", () => {
+      sessionExpanded = !sessionExpanded;
+      applyExpandedState(headerBtn, summariesEl, expandedEl);
+    });
+
+    applyExpandedState(headerBtn, summariesEl, expandedEl);
   };
 
   render();
@@ -233,6 +313,21 @@ export function renderActiveAssignmentsSection(
       render();
     },
   };
+}
+
+function formatSummaryLine(
+  meta: AssignmentDetailMetadata,
+  progress: ProgressCacheEntry,
+): string {
+  const base = `${meta.title} • ${meta.className}`;
+  if (progress.kind === "ready") {
+    const s = progress.summary;
+    return `${base} • ${s.completedStudents}/${s.totalStudents} submissions`;
+  }
+  if (progress.kind === "error") {
+    return `${base} • Submission count unavailable`;
+  }
+  return `${base} • Loading submissions...`;
 }
 
 function renderCard(

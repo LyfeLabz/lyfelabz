@@ -5,6 +5,7 @@
 // wire in `details.code`, (b) the coarse Firebase code maps correctly,
 // and (c) native HttpsError values are passed through unchanged.
 
+import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
 
 import { PlatformError } from "./platform-error";
@@ -130,9 +131,86 @@ describe("translateThrown", () => {
   });
 
   it("coerces an unknown throwable into an internal error without leaking details", () => {
-    const translated = translateThrown(new Error("boom"));
-    expect(translated).toBeInstanceOf(HttpsError);
+    const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => undefined);
+    try {
+      const translated = translateThrown(new Error("boom"));
+      expect(translated).toBeInstanceOf(HttpsError);
+      expect(translated.code).toBe("internal");
+      expect(translated.message).not.toContain("boom");
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+});
+
+describe("translateThrown diagnostic logging", () => {
+  let errorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    errorSpy = jest.spyOn(logger, "error").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    errorSpy.mockRestore();
+  });
+
+  it("logs a raw Error exactly once as callable.unhandled with message and stack", () => {
+    const raw = new Error("underlying boom");
+    const translated = translateThrown(raw, { callableName: "classesCreateHandler" });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const [event, payload] = errorSpy.mock.calls[0] as [string, Record<string, unknown>];
+    expect(event).toBe("callable.unhandled");
+    expect(payload.callableName).toBe("classesCreateHandler");
+    expect(payload.name).toBe("Error");
+    expect(payload.message).toBe("underlying boom");
+    expect(typeof payload.stack).toBe("string");
+    expect(String(payload.stack)).toContain("underlying boom");
+
     expect(translated.code).toBe("internal");
-    expect(translated.message).not.toContain("boom");
+    expect(translated.message).toBe("An unexpected error occurred.");
+  });
+
+  it("logs an Error cause when present", () => {
+    const inner = new Error("root cause");
+    const outer = new Error("wrapper");
+    (outer as { cause?: unknown }).cause = inner;
+
+    translateThrown(outer);
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const [, payload] = errorSpy.mock.calls[0] as [string, Record<string, unknown>];
+    const cause = payload.cause as { name: string; message: string; stack?: string };
+    expect(cause.name).toBe("Error");
+    expect(cause.message).toBe("root cause");
+    expect(typeof cause.stack).toBe("string");
+  });
+
+  it("logs a non-Error throwable as NonError without leaking to client", () => {
+    const translated = translateThrown("string boom");
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const [, payload] = errorSpy.mock.calls[0] as [string, Record<string, unknown>];
+    expect(payload.name).toBe("NonError");
+    expect(payload.message).toBe("string boom");
+    expect(translated.code).toBe("internal");
+    expect(translated.message).toBe("An unexpected error occurred.");
+  });
+
+  it("does not log when a PlatformError is translated", () => {
+    const translated = translateThrown(
+      new PlatformError("assignment-window-closed", "Window closed."),
+    );
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(translated.code).toBe("failed-precondition");
+    expect(translated.message).toBe("Window closed.");
+    expect(translated.details).toEqual({ code: "assignment-window-closed" });
+  });
+
+  it("does not log when an existing HttpsError passes through", () => {
+    const original = new HttpsError("permission-denied", "no.");
+    const translated = translateThrown(original);
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(translated).toBe(original);
   });
 });

@@ -51,8 +51,12 @@ const throwingDb = (): BootstrapFirestoreInput => ({
   },
 });
 
-const onlineEnv: BootstrapEnv = { isOnline: () => true };
-const offlineEnv: BootstrapEnv = { isOnline: () => false };
+// Stubbed delay so the userRecordMissing bounded retry does not add
+// real wall-clock time to the suite. Retries still execute; they are
+// just resolved synchronously on the microtask queue.
+const zeroDelay = (): Promise<void> => Promise.resolve();
+const onlineEnv: BootstrapEnv = { isOnline: () => true, delay: zeroDelay };
+const offlineEnv: BootstrapEnv = { isOnline: () => false, delay: zeroDelay };
 
 describe("bootstrapSession — unauthenticated", () => {
   test("resolves to unauthenticated when onAuthStateChanged returns null", async () => {
@@ -286,11 +290,63 @@ describe("bootstrapSession — reserved lifecycle states", () => {
 });
 
 describe("bootstrapSession — error kinds", () => {
-  test("error(userRecordMissing) when snapshot does not exist", async () => {
+  test("error(userRecordMissing) when snapshot does not exist after bounded retries", async () => {
     const user = makeUser("u1", () => ({}));
-    const db = makeDb({}); // no doc for u1
+    let calls = 0;
+    const db: BootstrapFirestoreInput = {
+      getUser: async () => {
+        calls++;
+        return { exists: false, data: () => undefined };
+      },
+    };
     const session = await bootstrapSession(makeAuth(user), db, onlineEnv);
     expect(session).toEqual({ kind: "error", reason: "userRecordMissing" });
+    // At least one retry attempted (initial read + >= 1 retry).
+    expect(calls).toBeGreaterThanOrEqual(2);
+  });
+
+  test("recovers from authOnUserCreate race: missing on first read, present on retry", async () => {
+    // Regression for lyfelabz-prod: a brand-new Google sign-in reads
+    // users/{uid} before the async authOnUserCreate trigger has landed
+    // the provisioned record. The bounded retry gives the trigger a
+    // calm window to complete before we surface a permanent
+    // missing-record error.
+    const user = makeUser("u1", () => ({}), "new@example.com");
+    let calls = 0;
+    const db: BootstrapFirestoreInput = {
+      getUser: async () => {
+        calls++;
+        if (calls < 3) {
+          return { exists: false, data: () => undefined };
+        }
+        return {
+          exists: true,
+          data: () => ({ status: "provisioned", email: "new@example.com" }),
+        };
+      },
+    };
+    const session = await bootstrapSession(makeAuth(user), db, onlineEnv);
+    expect(session).toEqual({
+      kind: "provisioned",
+      uid: "u1",
+      email: "new@example.com",
+    });
+    expect(calls).toBe(3);
+  });
+
+  test("bounded retry does not exceed the configured attempt count", async () => {
+    const user = makeUser("u1", () => ({}));
+    let calls = 0;
+    const db: BootstrapFirestoreInput = {
+      getUser: async () => {
+        calls++;
+        return { exists: false, data: () => undefined };
+      },
+    };
+    const session = await bootstrapSession(makeAuth(user), db, onlineEnv);
+    expect(session).toEqual({ kind: "error", reason: "userRecordMissing" });
+    // 1 initial read + 6 retries = 7 total. Never unbounded.
+    expect(calls).toBeLessThanOrEqual(7);
   });
 
   test("error(userRecordUnreadable) when the read rejects", async () => {

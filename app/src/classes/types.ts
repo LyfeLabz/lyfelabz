@@ -17,4 +17,10 @@ export type ClassSummary = {
   readonly title: string;
   readonly grade: string;
   readonly status: ClassStatus;
+  // Sprint 20 internal beta: the server-generated student join code is
+  // written at creation and preserved on idempotent replay. The class
+  // card surfaces it so teachers can rediscover the code after a page
+  // reload or a sign-out/sign-in cycle without a second callable.
+  readonly joinCode?: string;
+  readonly block?: string;
 };

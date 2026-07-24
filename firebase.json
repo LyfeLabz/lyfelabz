@@ -1,0 +1,47 @@
+{
+  "firestore": {
+    "rules": "platform/firebase/firestore.rules",
+    "indexes": "platform/firebase/firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "platform/firebase/storage.rules"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "**/node_modules/**",
+      "platform/**",
+      "docs/**",
+      "blog/**",
+      "lesson-sources/**",
+      "mission-control/**",
+      "wonderbox/**",
+      "**/*.md",
+      "**/*.map",
+      "Leaderboard_GScript.js",
+      "LyfeLabz_GScript.js",
+      "LyfeLabz_GScript_v2.js",
+      "LyfeLabz_GScript_v2_test.js"
+    ],
+    "rewrites": [
+      {
+        "source": "/app/**",
+        "destination": "/app/index.html"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "source": "platform/functions",
+      "codebase": "default",
+      "runtime": "nodejs20",
+      "ignore": ["node_modules", ".git", "*.log"],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}

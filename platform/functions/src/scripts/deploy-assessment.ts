@@ -13,7 +13,7 @@
  *   - Default `--target` is `emulator`. A production run requires BOTH
  *     `--target=production` AND `--i-know=production`.
  *   - Emulator mode sets `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080` and
- *     `GCLOUD_PROJECT=lyfelabz-platform` if unset so a `firebase-admin`
+ *     `GCLOUD_PROJECT=lyfelabz-prod` if unset so a `firebase-admin`
  *     initializeApp() call binds to the local emulator; production mode
  *     refuses to run if `FIRESTORE_EMULATOR_HOST` is set (would otherwise
  *     silently overwrite emulator data while claiming to have deployed to
@@ -126,7 +126,7 @@ export function configureEmulatorEnv(env: NodeJS.ProcessEnv, setEnv: (k: string,
     setEnv("FIRESTORE_EMULATOR_HOST", "127.0.0.1:8080");
   }
   if (!env.GCLOUD_PROJECT && !env.GOOGLE_CLOUD_PROJECT) {
-    setEnv("GCLOUD_PROJECT", "lyfelabz-platform");
+    setEnv("GCLOUD_PROJECT", "lyfelabz-prod");
   }
 }
 

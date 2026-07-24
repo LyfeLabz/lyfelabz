@@ -29,7 +29,22 @@ const defaultEnv: BootstrapEnv = {
     if (typeof navigator.onLine !== "boolean") return true;
     return navigator.onLine;
   },
+  delay: (ms) =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    }),
 };
+
+// Bounded polling for the users/{uid} document after first sign-in. The
+// `authOnUserCreate` trigger provisions the record asynchronously and
+// typically completes in ~1-1.5 s (observed in lyfelabz-prod). The client
+// reaches the getUser read within a few hundred milliseconds of Auth
+// resolving, so a naive read races the trigger and returns
+// `userRecordMissing` for a brand-new Google account. Polling gives the
+// trigger a calm, bounded window to land before we surface a permanent
+// missing-record error. Total wait ≤ 3 s (7 attempts × 500 ms).
+const MISSING_RECORD_MAX_ATTEMPTS = 7;
+const MISSING_RECORD_DELAY_MS = 500;
 
 // The Canonical Session Bootstrap.
 //
@@ -77,7 +92,19 @@ export async function bootstrapSession(
   }
 
   if (!snapshot.exists) {
-    return errorSession("userRecordMissing");
+    const delay = env.delay ?? defaultEnv.delay!;
+    for (let attempt = 1; attempt < MISSING_RECORD_MAX_ATTEMPTS; attempt++) {
+      await delay(MISSING_RECORD_DELAY_MS);
+      try {
+        snapshot = await db.getUser(uid);
+      } catch {
+        return errorSession("userRecordUnreadable");
+      }
+      if (snapshot.exists) break;
+    }
+    if (!snapshot.exists) {
+      return errorSession("userRecordMissing");
+    }
   }
 
   const record = validateUserRecord(snapshot.data());

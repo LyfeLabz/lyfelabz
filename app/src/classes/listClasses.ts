@@ -41,7 +41,16 @@ const toSummary = (
   const grade = data.grade;
   const status = data.status;
   if (!isString(title) || !isString(grade) || !isStatus(status)) return null;
-  return Object.freeze({ id, title, grade, status });
+  const joinCode = isString(data.joinCode) ? data.joinCode : undefined;
+  const block = isString(data.block) ? data.block : undefined;
+  return Object.freeze({
+    id,
+    title,
+    grade,
+    status,
+    ...(joinCode !== undefined ? { joinCode } : {}),
+    ...(block !== undefined ? { block } : {}),
+  });
 };
 
 export function createFirestoreListClasses(db: Firestore): ListClasses {

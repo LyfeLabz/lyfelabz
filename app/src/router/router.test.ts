@@ -134,7 +134,7 @@ describe("dispatch — renders the correct surface into the mount", () => {
       hist,
     );
     expect(mount.querySelector("h1")?.textContent).toBe(
-      "Welcome to the LyfeLabz teacher platform.",
+      "Welcome to LyfeLabz.",
     );
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
     expect(hist.calls[0].url).toBe("/app/onboarding");

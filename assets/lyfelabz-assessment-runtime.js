@@ -38,6 +38,17 @@
 (function () {
   'use strict';
 
+  if (typeof window !== 'undefined' && !window.__lyfelabzFirebaseConfig) {
+    window.__lyfelabzFirebaseConfig = {
+      apiKey: 'AIzaSyDIQrzMKo3CfSzTgVON3PtvxW2jFrDECzc',
+      authDomain: 'lyfelabz-prod.firebaseapp.com',
+      projectId: 'lyfelabz-prod',
+      appId: '1:182791689935:web:047a9e33cc45b9567809ba',
+      messagingSenderId: '182791689935',
+      storageBucket: 'lyfelabz-prod.firebasestorage.app'
+    };
+  }
+
   var VERSION = '17.5.0';
   var NAMESPACE = 'lyfelabz';
   var RUNTIME_KEY = 'assessmentRuntime';

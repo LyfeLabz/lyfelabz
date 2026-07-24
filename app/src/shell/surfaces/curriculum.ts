@@ -261,11 +261,102 @@ function todayIsoDate(doc: Document): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function isAssigned(slug: string): boolean {
-  const a = sessionAssignments.get(slug);
-  if (!a) return false;
-  for (const row of a.rows.values()) if (row.enabled) return true;
+// The visible "✓ Assigned" badge must reflect an authoritative signal
+// that at least one `published` LyfeLabz assignment exists for this
+// lesson. The badge must never light up optimistically on the strength
+// of the in-dialog form state alone, because a subsequent
+// `assignmentsCreateDraft` / `assignmentsPublish` failure would leave a
+// "✓ Assigned" card with no persisted record on the server. The badge
+// is therefore driven by `sessionPersistedSlugs`, which is written
+// exclusively from:
+//   (a) surface-mount hydration of the persisted assignment registry
+//       (rediscovery after a full page reload),
+//   (b) `runAssignmentLifecycle` after at least one row has reached the
+//       `published` state, and
+//   (c) the certified UI-only harness path (no callable seam wired),
+//       which is the sprint-sanctioned lightweight success mode.
+// `sessionAssignments` remains the in-dialog row-config prefill and is
+// intentionally NOT read here.
+let sessionPersistedSlugs: {
+  readonly uid: string;
+  readonly slugs: Set<string>;
+} | null = null;
+
+// Sprint 20 teacher-workspace state persistence. Curriculum grade/topic
+// filter selections must survive Curriculum -> Classes -> Curriculum
+// navigation without a full page reload. The shell tears down the
+// Curriculum surface on tab switch, so filter state cannot live in the
+// per-render `state` object alone. UID-scoped so a same-tab teacher
+// swap (sign-out/sign-in as a different teacher) starts with fresh
+// defaults; matches the existing pattern used by
+// `sessionAssignmentsByLesson` and `sessionPersistedSlugs`. No Firestore
+// persistence, no cross-device sync, no per-user database field.
+let sessionFilters: {
+  readonly uid: string;
+  grade: GradeFilter;
+  topic: TopicFilter;
+} | null = null;
+
+function isValidGradeFilter(v: string): v is GradeFilter {
+  for (const g of GRADE_FILTERS) if (g.key === v) return true;
   return false;
+}
+
+function isValidTopicFilter(v: string): v is TopicFilter {
+  for (const t of TOPIC_FILTERS) if (t.key === v) return true;
+  return false;
+}
+
+function readSessionFilters(uid: string): {
+  grade: GradeFilter;
+  topic: TopicFilter;
+} {
+  if (sessionFilters === null || sessionFilters.uid !== uid) {
+    return { grade: "all", topic: "all" };
+  }
+  // Defensive validation: if a previously stored value is no longer a
+  // valid filter key (e.g. TOPIC_FILTERS was pruned in a later release
+  // while a same-session bucket still held the old value), fall back to
+  // the safe default rather than propagating a stale key into the UI.
+  const grade: GradeFilter = isValidGradeFilter(sessionFilters.grade)
+    ? sessionFilters.grade
+    : "all";
+  const topic: TopicFilter = isValidTopicFilter(sessionFilters.topic)
+    ? sessionFilters.topic
+    : "all";
+  return { grade, topic };
+}
+
+function writeSessionFilters(
+  uid: string,
+  grade: GradeFilter,
+  topic: TopicFilter,
+): void {
+  sessionFilters = { uid, grade, topic };
+}
+
+function ensurePersistedSlugsBucket(uid: string): Set<string> {
+  if (sessionPersistedSlugs === null || sessionPersistedSlugs.uid !== uid) {
+    sessionPersistedSlugs = { uid, slugs: new Set() };
+  }
+  return sessionPersistedSlugs.slugs;
+}
+
+function markPersisted(uid: string, slug: string): void {
+  ensurePersistedSlugsBucket(uid).add(slug);
+}
+
+function unmarkPersisted(uid: string, slug: string): void {
+  if (sessionPersistedSlugs === null || sessionPersistedSlugs.uid !== uid) {
+    return;
+  }
+  sessionPersistedSlugs.slugs.delete(slug);
+}
+
+function isAssigned(slug: string): boolean {
+  const bucket = sessionPersistedSlugs;
+  if (bucket === null) return false;
+  return bucket.slugs.has(slug);
 }
 
 function ensureClasses(
@@ -362,6 +453,13 @@ export function renderCurriculumSurface(
     try {
       for (const entry of assignmentDetail.list()) {
         registerAssignmentMetadata(session.uid, entry);
+        // Rediscover the Assigned badge for lessons whose persisted
+        // assignments were reloaded from the registry. Only entries
+        // that reached `published` status are ever registered by the
+        // lifecycle path, so this is a truthful signal.
+        if (typeof entry.lessonSlug === "string" && entry.lessonSlug.length > 0) {
+          markPersisted(session.uid, entry.lessonSlug);
+        }
       }
     } catch {
       // Calm degradation. A registry-list failure never blocks Curriculum
@@ -415,18 +513,20 @@ export function renderCurriculumSurface(
   intro.className = "shell-status shell-curriculum-intro";
   intro.setAttribute("data-testid", "curriculum-intro");
   intro.textContent =
-    "Activate the LyfeLabz lessons your students can access. Preview any lesson at any time.";
+    "Activate the LyfeLabz lessons your students can access.";
   mount.appendChild(intro);
 
+  const restored = readSessionFilters(session.uid);
   const state: {
     grade: GradeFilter;
     topic: TopicFilter;
     activation: Map<string, boolean>;
   } = {
-    grade: "all",
-    topic: "all",
+    grade: restored.grade,
+    topic: restored.topic,
     activation: new Map(LESSONS.map((l) => [l.slug, true])),
   };
+  writeSessionFilters(session.uid, state.grade, state.topic);
 
   const controls = doc.createElement("div");
   controls.className = "shell-curriculum-controls";
@@ -520,6 +620,7 @@ export function renderCurriculumSurface(
       (key) => key === state.grade,
       (key) => {
         state.grade = key as GradeFilter;
+        writeSessionFilters(session.uid, state.grade, state.topic);
         renderControls();
         applyFilters();
       },
@@ -531,6 +632,7 @@ export function renderCurriculumSurface(
       (key) => key === state.topic,
       (key) => {
         state.topic = key as TopicFilter;
+        writeSessionFilters(session.uid, state.grade, state.topic);
         renderControls();
         applyFilters();
       },
@@ -555,6 +657,11 @@ export function renderCurriculumSurface(
         showSuccess(successBanner, summary);
       },
       onLifecycleComplete: (assignmentIds) => {
+        // Re-derive the Assign badge from the persisted-assignment
+        // registry so the card only shows "✓ Assigned" after at least
+        // one class successfully published, and reverts to "Assign"
+        // when every class failed.
+        refreshAssignControl(card, lesson);
         refreshViewSummaryControl(card, lesson, session.uid, assignmentDetail);
         activeAssignmentsController?.refresh(
           assignmentIds.length > 0 ? { assignmentIds } : undefined,
@@ -656,23 +763,22 @@ function renderLessonCard(
   topicPill.setAttribute("data-testid", `lesson-topic-${lesson.slug}`);
   topicPill.textContent = TOPIC_LABEL[lesson.topic];
   header.appendChild(topicPill);
+
   card.appendChild(header);
+
+  const titleRow = doc.createElement("div");
+  titleRow.className = "shell-lesson-title-row";
 
   const title = doc.createElement("h3");
   title.className = "shell-lesson-title";
   title.setAttribute("data-testid", `lesson-title-${lesson.slug}`);
   title.textContent = lesson.title;
-  card.appendChild(title);
+  titleRow.appendChild(title);
+
+  card.appendChild(titleRow);
 
   const actions = doc.createElement("div");
   actions.className = "shell-lesson-actions";
-
-  const preview = doc.createElement("a");
-  preview.className = "shell-lesson-preview";
-  preview.setAttribute("data-testid", `lesson-preview-${lesson.slug}`);
-  preview.href = lesson.href;
-  preview.textContent = "Preview";
-  actions.appendChild(preview);
 
   const toggle = doc.createElement("button");
   toggle.type = "button";
@@ -687,7 +793,8 @@ function renderLessonCard(
         ? `Deactivate ${lesson.title} for students`
         : `Activate ${lesson.title} for students`,
     );
-    toggle.textContent = active ? "Active" : "Inactive";
+    toggle.textContent = active ? "" : "Inactive";
+    toggle.hidden = active;
     toggle.classList.toggle("shell-lesson-toggle-active", active);
     toggle.classList.toggle("shell-lesson-toggle-inactive", !active);
   };
@@ -1186,6 +1293,9 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     }
     if (enabledCount === 0) {
       sessionAssignments.delete(lesson.slug);
+      // Deselecting every row is an explicit "remove" intent. Drop the
+      // Assigned badge state so the card returns to "Assign".
+      unmarkPersisted(session.uid, lesson.slug);
     } else {
       sessionAssignments.set(lesson.slug, stored);
     }
@@ -1208,6 +1318,9 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     // it to; this preserves the Sprint 8D.1 rule that LMS publication
     // never runs before a successful LyfeLabz publication.
     if (assignments === null) {
+      // Sprint-sanctioned UI-only harness: no callable to fail, so the
+      // Assigned badge lights up synchronously with the summary.
+      markPersisted(session.uid, lesson.slug);
       close();
       const summary =
         enabledCount === 1
@@ -1685,10 +1798,20 @@ async function runAssignmentLifecycle(input: {
     }),
   );
 
-  onConfirm(summarizeOutcomes(lesson, outcomes));
   const publishedIds = outcomes
     .filter((o) => o.lyfelabzAssigned)
     .map((o) => o.assignmentId);
+  // The Assigned badge is authoritative iff at least one class reached
+  // `published`. On a total-failure lifecycle we drop any optimistic
+  // Assigned state so the card cannot false-succeed. On any partial or
+  // full success we mark the slug persisted; subsequent refresh calls
+  // will read isAssigned() and flip the card to "✓ Assigned".
+  if (publishedIds.length > 0) {
+    markPersisted(teacherUid, lesson.slug);
+  } else {
+    unmarkPersisted(teacherUid, lesson.slug);
+  }
+  onConfirm(summarizeOutcomes(lesson, outcomes));
   onLifecycleComplete?.(publishedIds);
 }
 
@@ -1752,4 +1875,6 @@ export function _resetCurriculumSessionStateForTest(): void {
   sessionPreferences.topic = "";
   sessionPreferences.lmsTopicId = "";
   sessionAssignmentsByLesson = null;
+  sessionPersistedSlugs = null;
+  sessionFilters = null;
 }

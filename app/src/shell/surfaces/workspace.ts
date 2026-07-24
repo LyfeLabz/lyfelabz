@@ -1,5 +1,6 @@
 import type { Session } from "../../session/types";
 import type { ListClasses } from "../../classes/listClasses";
+import type { CreateClass } from "../../classes/createClass";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
@@ -60,6 +61,10 @@ export type WorkspaceDeps = {
   // Sprint 15: certified summary callable consumed by the Curriculum
   // Active Assignments dashboard for per-card progress counts.
   readonly assignmentSummary?: AssignmentSummaryCallable | null;
+  // Sprint 20 internal beta: injected create-class callable seam.
+  // Wired at the entry point; null in unit tests that do not exercise
+  // creation. See src/classes/createClass.ts.
+  readonly createClass?: CreateClass | null;
 };
 
 export type WorkspaceSurface = {
@@ -102,6 +107,7 @@ export const WORKSPACE_SURFACES: Readonly<
       renderClassesSurface(mount, session, {
         listClasses: deps.listClasses,
         snapshotPreview: deps.snapshotPreview ?? null,
+        createClass: deps.createClass ?? null,
       }),
   }),
   "present-mode": Object.freeze({

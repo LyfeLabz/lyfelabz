@@ -101,4 +101,7 @@ export interface BootstrapFirestoreInput {
 
 export interface BootstrapEnv {
   readonly isOnline: () => boolean;
+  // Optional test seam for the userRecordMissing bounded retry. Real
+  // implementations use setTimeout; tests inject a synchronous stub.
+  readonly delay?: (ms: number) => Promise<void>;
 }
