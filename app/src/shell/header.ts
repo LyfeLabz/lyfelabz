@@ -26,7 +26,11 @@ export function renderHeader(
   const brand = doc.createElement("h1");
   brand.className = "shell-brand";
   brand.setAttribute("data-testid", "shell-brand");
-  brand.textContent = "LyfeLabz Teacher Platform";
+  // Sprint 20 (Visual Identity Refinement): the canonical LYFELABZ
+  // wordmark replaces the plain product-name text. The gold Orbitron
+  // treatment is defined in the shell canonical stylesheet and reused
+  // from the public LyfeLabz experience; no new logo is introduced.
+  brand.textContent = "LYFELABZ";
   header.appendChild(brand);
 
   const identity = doc.createElement("div");

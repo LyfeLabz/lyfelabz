@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LyfeLabz Platform</title>
+<!-- Sprint 20 (Visual Identity Refinement): load Orbitron so the
+     Teacher Workspace can reuse the canonical LYFELABZ wordmark
+     typography already used across the public LyfeLabz experience.
+     No new font families are introduced elsewhere in the shell. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   html, body { margin: 0; padding: 0; height: 100%; }
   body {
@@ -39,15 +46,18 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.5rem 1.25rem;
-    height: 56px;
+    /* Vertical padding mirrors the canonical public homepage nav
+       (index.html .nav = padding: 0.85rem 2.5rem @ html font-size:18px,
+       i.e. 15.3px block padding). No fixed height so header thickness
+       is driven by wordmark line-box + padding, exactly like the
+       public site. Horizontal padding preserves the workspace
+       chrome's tighter left/right rhythm. */
+    padding: 15.3px 1.25rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     background: #fff;
     box-sizing: border-box;
   }
   .shell-brand {
-    font-size: 1.05rem;
-    font-weight: 600;
     margin: 0;
     flex: 0 0 auto;
   }
@@ -478,8 +488,10 @@
     .shell-placeholder-grid { grid-template-columns: 1fr; }
   }
   @media (max-width: 480px) {
-    .shell-header { height: 48px; padding: 0.35rem 0.75rem; gap: 0.5rem; }
-    .shell-brand { font-size: 0.95rem; }
+    /* Compact horizontal chrome on phones. Vertical padding + wordmark
+       size are preserved at canonical values so the brand mark reads
+       identically to the public homepage across every viewport. */
+    .shell-header { padding: 15.3px 0.75rem; gap: 0.5rem; }
     .shell-header-identity { display: none; }
   }
   @media (pointer: coarse) {
@@ -1522,6 +1534,353 @@
   }
   @media (pointer: coarse) {
     .shell-active-assignments-toggle-btn { min-height: 44px; }
+  }
+
+  /* ------------------------------------------------------------------
+     Sprint 20: Teacher Visual Identity Refinement, Pass 3
+     (Shell Branding & Chrome Palette).
+     Purely visual layer on top of Pass 1 + Pass 2. Introduces no new
+     components, class names, copy, DOM, workflow, routing, or
+     interaction. The Curriculum four-column grid, lesson-card layout,
+     responsive breakpoints, and accessibility contracts are untouched.
+
+     Palette intent (per sprint brief):
+       - move away from the previous stark white/black header
+       - introduce a softer slate blue-gray application chrome,
+         inspired by the public site's body background but calmer
+       - reuse the canonical gold LYFELABZ wordmark (Orbitron 900,
+         #f5c842) from the public LyfeLabz experience rather than
+         inventing a new logo
+       - preserve the warm gray workspace canvas
+       - preserve white content surfaces
+       - preserve LyfeLabz green primary actions
+       - preserve muted teal navigation accents
+       - preserve topic pill colors
+     ------------------------------------------------------------------ */
+  :root {
+    /* Chrome (application header) palette. Deep slate blue-gray sits
+       between the public site's #1a2535 body and the teacher warm-gray
+       canvas: unmistakably part of the LyfeLabz family, calmer than
+       the marketing surface, focused enough for daily planning. */
+    --tw-chrome:              #2b3a4f;
+    --tw-chrome-ink:          #f2f4f8;
+    --tw-chrome-ink-muted:    #adb7c4;
+    --tw-chrome-edge:         rgba(255, 255, 255, 0.14);
+    --tw-chrome-edge-strong:  rgba(255, 255, 255, 0.28);
+    --tw-chrome-shadow:       0 1px 0 rgba(10, 18, 30, 0.35);
+
+    /* Canonical gold wordmark tokens. Variable names + values mirror
+       the public homepage :root exactly (index.html --gold /
+       --gold-glow), so the LYFELABZ wordmark is a single canonical
+       brand definition shared across the public experience and the
+       authenticated Teacher Workspace. Do not fork these into a
+       teacher-specific variant. */
+    --gold:                   #f5c842;
+    --gold-glow:              rgba(245, 200, 66, 0.35);
+
+    /* Subtle in-sidebar "Workspace" section label + a slightly
+       stronger divider beneath it, so it reads as a distinct nav
+       section without competing with the navigation items themselves. */
+    --tw-workspace-label-ink: #6c7683;
+    --tw-workspace-divider:   rgba(28, 39, 51, 0.16);
+  }
+
+  /* Header chrome: slate blue-gray replaces the prior white surface.
+     Height, spacing, layout, and every control keep their footprint. */
+  #app-root:has(> .shell-header) .shell-header {
+    background: var(--tw-chrome);
+    border-bottom: 1px solid var(--tw-chrome-edge);
+    box-shadow: var(--tw-chrome-shadow);
+  }
+
+  /* Canonical LYFELABZ wordmark. Byte-for-byte parity with the public
+     homepage .nav-logo (index.html:82) so the wordmark renders
+     identically across the marketing site and the Teacher Workspace.
+     Font-size is expressed in px (24.3px = 1.35rem @ homepage root
+     font-size:18px) so it does not drift with the app's 16px html
+     scale. Line-height mirrors the public site body (1.6) so the
+     wordmark line-box matches the homepage exactly, and combined with
+     the header's 15.3px block padding it reproduces the homepage nav
+     thickness. */
+  .shell-brand {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24.3px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+    line-height: 1.6;
+  }
+
+  /* Identity, notifications, and sign-out sit on dark chrome now,
+     so their inks lift to the chrome scale for legibility. */
+  .shell-header-identity { color: var(--tw-chrome-ink); }
+  .shell-notifications   { color: var(--tw-chrome-ink-muted); }
+  .shell-signout {
+    color: var(--tw-chrome-ink);
+    border-color: var(--tw-chrome-edge);
+    background: transparent;
+  }
+  .shell-signout:hover,
+  .shell-signout:focus-visible {
+    border-color: var(--tw-chrome-edge-strong);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--tw-chrome-ink);
+  }
+  .shell-signout:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245, 200, 66, 0.35);
+  }
+
+  /* Sidebar "Workspace" section label. The nav-brand button keeps its
+     testid + role for every certified navigation test; only its visual
+     treatment changes: quiet uppercase micro-label, calmer ink, and a
+     slightly stronger divider beneath so it reads as a distinct
+     section heading rather than a second brand mark. */
+  .shell-nav-brand {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tw-workspace-label-ink);
+    padding-top: 0.85rem;
+    padding-bottom: 0.55rem;
+    margin-bottom: 0.65rem;
+    border-bottom: 1px solid var(--tw-workspace-divider);
+    cursor: pointer;
+  }
+  .shell-nav-brand:hover,
+  .shell-nav-brand:focus-visible { color: var(--tw-ink-soft); }
+  .shell-nav-brand.shell-nav-active {
+    color: var(--tw-workspace-label-ink);
+    background: transparent;
+  }
+
+  /* Footer sits on the warm canvas already; a matching hairline color
+     keeps the divider language consistent with the strengthened
+     Workspace divider above. */
+  .shell-footer { border-top-color: var(--tw-hairline); }
+</style>
+<style id="auth-canonical">
+  /* ------------------------------------------------------------------
+     Sprint 21: Shared authentication experience.
+     Polishes the arrival page for every non-authenticated-shell route
+     surface (signed-out, provisioned, pending, error, active-student
+     landing, admin stub, suspended, archived). Introduces no new
+     components, DOM, workflow, routing, or authentication logic; only
+     visual treatment layered onto existing selectors. The canonical
+     LYFELABZ wordmark is reused verbatim from the public homepage
+     :root tokens declared above (--gold, --gold-glow) so the sign-in
+     page reads as the bridge between the public site and the
+     authenticated application. Scoped by `body:not(:has(...))` so the
+     authenticated Teacher Workspace chrome is untouched.
+     ------------------------------------------------------------------ */
+  body:not(:has(#app-root > .shell-header)) {
+    background:
+      radial-gradient(1200px 700px at 15% -10%, rgba(26, 95, 111, 0.10), transparent 60%),
+      radial-gradient(1000px 600px at 105% 110%, rgba(245, 200, 66, 0.08), transparent 60%),
+      var(--tw-page);
+    color: var(--tw-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body:not(:has(#app-root > .shell-header)) #app-root {
+    max-width: 32rem;
+    width: min(32rem, 100%);
+    padding: 2.25rem 2rem 2rem;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow:
+      0 1px 2px rgba(28, 39, 51, 0.05),
+      0 12px 40px rgba(20, 32, 44, 0.10);
+    text-align: center;
+    box-sizing: border-box;
+    margin: 1.5rem;
+  }
+  /* Canonical LYFELABZ wordmark. Reuses the public homepage nav-logo
+     typography and glow so brand identity is a single definition
+     shared across marketing and app. */
+  body:not(:has(#app-root > .shell-header)) p.auth-brand {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.65rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.10em;
+    text-shadow: 0 0 18px var(--gold-glow);
+    margin: 0 0 1.5rem 0;
+    line-height: 1;
+    user-select: none;
+  }
+  body:not(:has(#app-root > .shell-header)) h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+    margin: 0 0 0.65rem 0;
+  }
+  body:not(:has(#app-root > .shell-header)) h1:focus-visible {
+    outline: 2px solid var(--tw-nav-edge);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+  body:not(:has(#app-root > .shell-header)) p {
+    color: var(--tw-ink-muted);
+    margin: 0 0 1rem 0;
+    line-height: 1.55;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=google-signin],
+  body:not(:has(#app-root > .shell-header)) [data-testid=request-verification],
+  body:not(:has(#app-root > .shell-header)) [data-testid=join-class],
+  body:not(:has(#app-root > .shell-header)) [data-testid=check-status],
+  body:not(:has(#app-root > .shell-header)) [data-testid=retry],
+  body:not(:has(#app-root > .shell-header)) [data-testid=refresh],
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-retry] {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.7rem 1.4rem;
+    background: var(--tw-primary);
+    color: #fff;
+    border: 1px solid var(--tw-primary);
+    border-radius: var(--tw-radius-control);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 12rem;
+    box-shadow: 0 1px 2px rgba(23, 90, 49, 0.22);
+    transition: background 0.15s ease, border-color 0.15s ease,
+                box-shadow 0.15s ease;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=google-signin]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=google-signin]:focus-visible:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=request-verification]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=request-verification]:focus-visible:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=join-class]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=join-class]:focus-visible:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=check-status]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=check-status]:focus-visible:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=retry]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=retry]:focus-visible:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=refresh]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=refresh]:focus-visible:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-retry]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-retry]:focus-visible:not(:disabled) {
+    background: var(--tw-primary-strong);
+    border-color: var(--tw-primary-strong);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(31, 107, 61, 0.28);
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=return-link] {
+    display: block;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--tw-nav-edge);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=return-link]:hover,
+  body:not(:has(#app-root > .shell-header)) [data-testid=return-link]:focus-visible {
+    border-bottom-color: var(--tw-nav-edge);
+    outline: none;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=sign-out] {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    color: var(--tw-ink-muted);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+    font: inherit;
+    cursor: pointer;
+    min-height: 40px;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=sign-out]:hover,
+  body:not(:has(#app-root > .shell-header)) [data-testid=sign-out]:focus-visible {
+    border-color: var(--tw-nav-edge);
+    color: var(--tw-ink);
+    outline: none;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=error-banner] {
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    color: var(--tw-callout-error-ink);
+    border-radius: var(--tw-radius-control);
+    padding: 0.6rem 0.85rem;
+    margin: 0.75rem 0 0;
+    text-align: left;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=loading-indicator] {
+    color: var(--tw-ink-muted);
+  }
+  /* Provisioned / student onboarding forms centered inside the card. */
+  body:not(:has(#app-root > .shell-header)) .shell-section {
+    text-align: left;
+    margin: 1.25rem 0 0;
+    padding: 1rem 1.1rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+  }
+  body:not(:has(#app-root > .shell-header)) .shell-section h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0 0 0.35rem 0;
+  }
+  body:not(:has(#app-root > .shell-header)) .shell-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0.5rem 0 0.25rem;
+  }
+  body:not(:has(#app-root > .shell-header)) .shell-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: var(--tw-ink-soft);
+  }
+  body:not(:has(#app-root > .shell-header)) .shell-form input {
+    font: inherit;
+    padding: 0.5rem 0.6rem;
+    min-height: 40px;
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+    background: var(--tw-surface);
+    color: var(--tw-ink);
+  }
+  body:not(:has(#app-root > .shell-header)) .shell-form input:focus-visible {
+    outline: none;
+    border-color: var(--tw-nav-edge);
+    box-shadow: var(--tw-focus-ring);
+  }
+  body:not(:has(#app-root > .shell-header)) .shell-small {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--tw-ink-muted);
+  }
+  @media (max-width: 480px) {
+    body:not(:has(#app-root > .shell-header)) #app-root {
+      padding: 1.75rem 1.25rem 1.5rem;
+      margin: 1rem;
+      border-radius: 8px;
+    }
+    .auth-brand { font-size: 1.4rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body:not(:has(#app-root > .shell-header)) [data-testid=google-signin],
+    body:not(:has(#app-root > .shell-header)) [data-testid=request-verification],
+    body:not(:has(#app-root > .shell-header)) [data-testid=join-class] {
+      transition: none !important;
+    }
   }
 </style>
 </head>

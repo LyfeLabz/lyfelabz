@@ -12,11 +12,17 @@ export function clear(mount: HTMLElement): void {
   while (mount.firstChild) mount.removeChild(mount.firstChild);
 }
 
-export function renderHeader(mount: HTMLElement, text = "LyfeLabz"): HTMLElement {
+export function renderHeader(mount: HTMLElement, text = "LYFELABZ"): HTMLElement {
+  // Sprint 21: shared authentication surfaces render the canonical
+  // LYFELABZ wordmark (gold Orbitron, mirroring the public homepage
+  // nav-logo). The class name is intentionally distinct from the
+  // authenticated Teacher Workspace `.shell-header` chrome so the
+  // signed-out / provisioned / pending / error / student / admin
+  // surfaces remain centered by the index.html body flex layout.
   const header = doc(mount).createElement("p");
-  header.className = "shell-header";
+  header.className = "auth-brand";
   header.textContent = text;
-  header.setAttribute("aria-hidden", "true");
+  header.setAttribute("aria-label", "LyfeLabz");
   mount.appendChild(header);
   return header;
 }

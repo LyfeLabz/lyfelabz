@@ -186,6 +186,61 @@ describe("translateThrown diagnostic logging", () => {
     expect(typeof cause.stack).toBe("string");
   });
 
+  it("logs a string cause verbatim", () => {
+    const outer = new Error("wrapper");
+    (outer as { cause?: unknown }).cause = "root string cause";
+
+    translateThrown(outer);
+
+    const [, payload] = errorSpy.mock.calls[0] as [string, Record<string, unknown>];
+    expect(payload.cause).toBe("root string cause");
+  });
+
+  it("serializes a plain-object cause as JSON, not [object Object]", () => {
+    const outer = new Error("wrapper");
+    (outer as { cause?: unknown }).cause = { httpStatus: 503, retryable: true };
+
+    translateThrown(outer);
+
+    const [, payload] = errorSpy.mock.calls[0] as [string, Record<string, unknown>];
+    expect(payload.cause).not.toBe("[object Object]");
+    expect(typeof payload.cause).toBe("string");
+    expect(JSON.parse(payload.cause as string)).toEqual({
+      httpStatus: 503,
+      retryable: true,
+    });
+  });
+
+  it("handles a circular-object cause without throwing", () => {
+    const circular: Record<string, unknown> = { a: 1 };
+    circular.self = circular;
+    const outer = new Error("wrapper");
+    (outer as { cause?: unknown }).cause = circular;
+
+    expect(() => translateThrown(outer)).not.toThrow();
+    const [, payload] = errorSpy.mock.calls[0] as [string, Record<string, unknown>];
+    expect(payload.cause).not.toBe("[object Object]");
+    expect(typeof payload.cause).toBe("string");
+  });
+
+  it("does not include cause when it is undefined", () => {
+    const outer = new Error("wrapper");
+    translateThrown(outer);
+
+    const [, payload] = errorSpy.mock.calls[0] as [string, Record<string, unknown>];
+    expect("cause" in payload).toBe(false);
+  });
+
+  it("stringifies a null cause as 'null'", () => {
+    const outer = new Error("wrapper");
+    (outer as { cause?: unknown }).cause = null;
+
+    translateThrown(outer);
+
+    const [, payload] = errorSpy.mock.calls[0] as [string, Record<string, unknown>];
+    expect(payload.cause).toBe("null");
+  });
+
   it("logs a non-Error throwable as NonError without leaking to client", () => {
     const translated = translateThrown("string boom");
 

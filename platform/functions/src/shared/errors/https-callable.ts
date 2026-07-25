@@ -167,8 +167,27 @@ export function translateThrown(
           message: cause.message,
           stack: cause.stack,
         };
-      } else {
+      } else if (typeof cause === "string") {
+        payload.cause = cause;
+      } else if (
+        typeof cause === "number" ||
+        typeof cause === "boolean" ||
+        typeof cause === "bigint" ||
+        cause === null
+      ) {
         payload.cause = String(cause);
+      } else if (typeof cause === "symbol") {
+        payload.cause = cause.toString();
+      } else {
+        // object or function; avoid default '[object Object]' stringification
+        const ctorName =
+          (cause as { constructor?: { name?: string } }).constructor?.name ??
+          "Object";
+        try {
+          payload.cause = JSON.stringify(cause) ?? `[Unserializable ${ctorName}]`;
+        } catch {
+          payload.cause = `[Unserializable ${ctorName}]`;
+        }
       }
     }
   } else {

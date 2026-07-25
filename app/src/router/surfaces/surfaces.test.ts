@@ -520,9 +520,7 @@ describe("active teacher surface (Step 5 shell)", () => {
     );
     // Step 5 replaces the minimal Step 4 surface with the shell. The
     // welcome message is now an h2; product brand is the h1.
-    expect(mount.querySelector("h1")?.textContent).toBe(
-      "LyfeLabz Teacher Platform",
-    );
+    expect(mount.querySelector("h1")?.textContent).toBe("LYFELABZ");
     expect(mount.querySelector("h2")?.textContent).toBe("Welcome, Ada.");
     expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();

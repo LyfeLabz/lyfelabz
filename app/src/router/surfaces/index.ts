@@ -118,7 +118,7 @@ export const makeSignedOutSurface =
     renderHeadline(mount, "Sign in to LyfeLabz.");
     renderParagraph(
       mount,
-      "Teachers sign in to reach the LyfeLabz teacher platform. Students sign in to reach the assignments their teacher has published. Everyone else can keep browsing the public lessons without signing in.",
+      "Teachers and students use the same secure Google sign-in. LyfeLabz will take you to the right place automatically.",
     );
     const btn = renderPrimaryButton(
       mount,

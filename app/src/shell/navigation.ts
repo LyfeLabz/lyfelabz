@@ -72,8 +72,13 @@ function buildNavIcon(doc: Document, surface: WorkspaceSurfaceKey): SVGElement {
 
 export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = Object.freeze([
   Object.freeze({
+    // Sprint 20 (Visual Identity Refinement): the sidebar section
+    // heading is a subtle "Workspace" label rather than a brand mark.
+    // The canonical LYFELABZ wordmark now lives once in the header.
+    // The internal key + testid remain "lyfelabz" so the certified
+    // navigation contract and every routing test are preserved.
     key: "lyfelabz" as const,
-    label: "LYFELABZ",
+    label: "Workspace",
     available: true,
     targetSurface: "curriculum" as const,
     variant: "brand" as const,

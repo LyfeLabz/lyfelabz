@@ -85,11 +85,11 @@ describe("Teacher Workspace Shell - layout regions", () => {
 });
 
 describe("Header composition and identity-display rules", () => {
-  test("renders the LyfeLabz Teacher Platform product mark as h1", () => {
+  test("renders the canonical LYFELABZ wordmark as h1", () => {
     const mount = mkMount();
     renderHeader(mount, teacherSession(), { onSignOut: () => undefined });
     expect(mount.querySelector("h1.shell-brand")?.textContent).toBe(
-      "LyfeLabz Teacher Platform",
+      "LYFELABZ",
     );
   });
 
@@ -156,7 +156,7 @@ describe("Header composition and identity-display rules", () => {
 });
 
 describe("Navigation composition and disabled posture (Sprint 6C)", () => {
-  test("renders items in the specified order: LYFELABZ, Curriculum, Classes, Present Mode, Settings", () => {
+  test("renders items in the specified order: Workspace, Curriculum, Classes, Present Mode, Settings", () => {
     const mount = mkMount();
     renderNavigation(mount);
     const buttons = Array.from(
@@ -171,7 +171,7 @@ describe("Navigation composition and disabled posture (Sprint 6C)", () => {
     ]);
   });
 
-  test("LYFELABZ renders as the brand variant and is not disabled", () => {
+  test("the Workspace section label renders as the brand variant and is not disabled", () => {
     const mount = mkMount();
     renderNavigation(mount);
     const brand = mount.querySelector<HTMLButtonElement>(
@@ -180,7 +180,7 @@ describe("Navigation composition and disabled posture (Sprint 6C)", () => {
     expect(brand?.disabled).toBe(false);
     expect(brand?.getAttribute("data-nav-variant")).toBe("brand");
     expect(brand?.classList.contains("shell-nav-brand")).toBe(true);
-    expect(brand?.textContent).toBe("LYFELABZ");
+    expect(brand?.textContent).toBe("Workspace");
   });
 
   test("LYFELABZ never carries aria-current, even when Curriculum is the active surface", () => {
