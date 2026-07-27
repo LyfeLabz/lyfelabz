@@ -112,14 +112,71 @@
     }
     return out;
   }
-  var lessonQuiz = {
+  // The shim installs a placeholder lessonQuiz. Once the active bundle
+  // loads it replaces window.lyfelabz.lessonQuiz with the certified
+  // helper. If a student clicks Submit before that replacement lands
+  // (slow network, deferred script load), the old behavior resolved to
+  // `null` immediately, which the lesson UI has no branch for and
+  // therefore leaves the student stuck on "Submitting..." indefinitely.
+  //
+  // In assignment context the shim now waits for the active bundle to
+  // install a real helper and then delegates. A bounded timeout produces
+  // a truthful, actionable error result if the active bundle never
+  // loads. In practice mode (no assignment context) autosave/finalize
+  // continue to resolve to `null` so the lesson practice paths stay
+  // byte-for-byte identical.
+  var ACTIVE_WAIT_TIMEOUT_MS = 15000;
+  var ACTIVE_WAIT_STEP_MS = 100;
+  var shimHelper;
+
+  function delegateWhenActive(methodName, callArgs) {
+    return new Promise(function (resolve) {
+      var elapsed = 0;
+      function tick() {
+        var current =
+          (window[NAMESPACE] && window[NAMESPACE][LESSON_QUIZ_KEY]) || null;
+        if (current && current !== shimHelper && typeof current[methodName] === 'function') {
+          try {
+            resolve(current[methodName].apply(current, callArgs));
+          } catch (err) {
+            resolve({
+              ok: false,
+              message: 'Submission service failed to start. Please refresh and try again.',
+              recoverable: false
+            });
+          }
+          return;
+        }
+        elapsed += ACTIVE_WAIT_STEP_MS;
+        if (elapsed >= ACTIVE_WAIT_TIMEOUT_MS) {
+          resolve({
+            ok: false,
+            message: "Your submission service didn't load. Please refresh and try again.",
+            recoverable: true
+          });
+          return;
+        }
+        setTimeout(tick, ACTIVE_WAIT_STEP_MS);
+      }
+      tick();
+    });
+  }
+
+  shimHelper = {
     version: VERSION,
     optionLetters: OPTION_LETTERS.slice(),
     hasAssignmentContext: function () { return hasAssignmentContext; },
     mapIndexSelectionsToResponses: mapIndexSelectionsToResponses,
-    autosave: function () { return Promise.resolve(null); },
-    finalize: function () { return Promise.resolve(null); }
+    autosave: function () {
+      if (!hasAssignmentContext) return Promise.resolve(null);
+      return delegateWhenActive('autosave', arguments);
+    },
+    finalize: function () {
+      if (!hasAssignmentContext) return Promise.resolve(null);
+      return delegateWhenActive('finalize', arguments);
+    }
   };
+  var lessonQuiz = shimHelper;
 
   window[NAMESPACE] = window[NAMESPACE] || {};
   window[NAMESPACE][RUNTIME_KEY] = runtime;

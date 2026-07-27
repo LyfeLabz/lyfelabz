@@ -8074,11 +8074,12 @@
     if (typeof code !== "string") return false;
     return code === "unavailable" || code === "internal" || code === "deadline-exceeded" || code === "resource-exhausted" || code === "cancelled";
   }
-  function installLessonQuiz(win, runtime) {
+  var NOT_READY_MESSAGE = "Your submission service isn't ready yet. Refresh the page and try again.";
+  function installLessonQuiz(win, runtime, hasAssignmentContext) {
     const helper = {
       version: VERSION,
       optionLetters: OPTION_LETTERS,
-      hasAssignmentContext: () => runtime !== null && runtime.hasAssignmentContext,
+      hasAssignmentContext: () => runtime !== null ? runtime.hasAssignmentContext : hasAssignmentContext,
       mapIndexSelectionsToResponses,
       autosave: async (indexSelections) => {
         if (runtime === null || !runtime.hasAssignmentContext) return null;
@@ -8091,7 +8092,15 @@
         }
       },
       finalize: async (indexSelections) => {
-        if (runtime === null || !runtime.hasAssignmentContext) return null;
+        if (runtime === null) {
+          if (!hasAssignmentContext) return null;
+          return {
+            ok: false,
+            message: NOT_READY_MESSAGE,
+            recoverable: true
+          };
+        }
+        if (!runtime.hasAssignmentContext) return null;
         const responses = mapIndexSelectionsToResponses(indexSelections);
         try {
           const result = await runtime.finalize(responses);
@@ -8298,8 +8307,25 @@
     const ns = win[NAMESPACE] ?? {};
     ns[RUNTIME_KEY] = runtime;
     win[NAMESPACE] = ns;
-    installLessonQuiz(win, null);
+    installLessonQuiz(win, null, hasContext);
     return runtime;
+  }
+  function installSignedOutLessonQuiz(win) {
+    const helper = {
+      version: VERSION,
+      optionLetters: OPTION_LETTERS,
+      hasAssignmentContext: () => true,
+      mapIndexSelectionsToResponses,
+      autosave: async () => null,
+      finalize: async () => ({
+        ok: false,
+        message: "You appear to be signed out. Sign in and reopen the assignment to submit your work.",
+        recoverable: false
+      })
+    };
+    const ns = win[NAMESPACE] ?? {};
+    ns[LESSON_QUIZ_KEY] = helper;
+    win[NAMESPACE] = ns;
   }
   function attachRuntimeAdapter(win, runtime) {
     const wrapper = {
@@ -8316,7 +8342,7 @@
     const ns = win[NAMESPACE] ?? {};
     ns[RUNTIME_KEY] = wrapper;
     win[NAMESPACE] = ns;
-    installLessonQuiz(win, runtime);
+    installLessonQuiz(win, runtime, runtime.hasAssignmentContext);
   }
   async function bootstrap(win) {
     const assignmentId = detectAssignmentId(win);
@@ -8342,6 +8368,7 @@
     }
     const user = await waitForUser(auth);
     if (user === null) {
+      installSignedOutLessonQuiz(runtimeWin);
       return;
     }
     const callables = createBackedCallables(functions);

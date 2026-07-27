@@ -1298,11 +1298,15 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <!-- spreading arrows at surface -->
         <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
         <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <!-- convection loops -->
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
+        <!-- convection loops: 3 visibly separated segments per cell (top, outer side, bottom) -->
+        <!-- left cell -->
+        <path d="M292,120 C276,78 240,58 202,70" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
+        <path d="M190,88 C178,122 178,164 190,198" fill="none" stroke="#ffd27a" stroke-width="2.6" opacity="0.85" marker-end="url(#ah2)"/>
+        <path d="M202,216 C240,228 276,208 292,166" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
+        <!-- right cell -->
+        <path d="M308,120 C324,78 360,58 398,70" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
+        <path d="M410,88 C422,122 422,164 410,198" fill="none" stroke="#ffd27a" stroke-width="2.6" opacity="0.85" marker-end="url(#ah2)"/>
+        <path d="M398,216 C360,228 324,208 308,166" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
         <defs>
           <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
           <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
@@ -2065,12 +2069,25 @@ function elSubmitQuiz() {
     // runtime side via a per-runtime idempotency key.
     var elFinalStatus = document.getElementById('el-submit-status');
     elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler. finalize is contracted to resolve
+    // with `{ok:true}` or `{ok:false,message}`; a null resolution or an
+    // unexpected rejection would previously leave the student stuck on
+    // "Submitting..." forever. Handle every path so the UI is always
+    // truthful.
+    var elGenericError = 'Submission did not complete. Please refresh and try again.';
+    function elShowSubmitError(msg) {
+      elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || elGenericError) + '</div>';
+    }
     window.lyfelabz.lessonQuiz.finalize(elQuizState.selected).then(function (r) {
       if (r && r.ok) {
         elFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {
-        elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + r.message + '</div>';
+        elShowSubmitError(r.message);
+      } else {
+        elShowSubmitError(null);
       }
+    }, function () {
+      elShowSubmitError(null);
     });
     return;
   }

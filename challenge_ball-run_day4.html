@@ -594,34 +594,18 @@
           <label for="fStrongest">Which design version are you picking, and which feature did the most work to slow or control the ball?</label>
           <textarea id="fStrongest" maxlength="500" data-save="strongestDesign" placeholder="Name the version (Day 2 build, Day 3 revision, or in between) and the key feature."></textarea>
         </div>
-        <div class="field full">
-          <label for="fStrongestEvidence">What trial evidence shows it was your best?</label>
-          <textarea id="fStrongestEvidence" maxlength="500" data-save="strongestDesignEvidence" placeholder="Point to one specific trial result."></textarea>
-        </div>
       </div>
     </div>
   </section>
 
   <section id="plan" aria-labelledby="plan-title">
     <h2 id="plan-title" class="section-title">Final optimization plan</h2>
-    <p class="section-lead">Choose one final adjustment. Then say which criterion it should improve.</p>
+    <p class="section-lead">Choose one final adjustment based on what your evidence shows.</p>
     <div class="card">
       <div class="form-grid">
         <div class="field full">
           <label for="fFinalAdjust">What is your one final adjustment, and what evidence points to it?</label>
           <textarea id="fFinalAdjust" maxlength="500" data-save="finalAdjustment" placeholder="Name the tweak, then briefly point to evidence that supports it."></textarea>
-        </div>
-        <div class="field full">
-          <label for="fCriterion">Which criterion is it meant to improve?</label>
-          <select id="fCriterion" data-save="selectedCriterion">
-            <option value="">Choose one</option>
-            <option value="slower">Slower motion</option>
-            <option value="control">Greater control</option>
-            <option value="travel">Longer travel</option>
-            <option value="consistency">More consistent performance</option>
-            <option value="safety">Safer or more stable construction</option>
-            <option value="simplicity">Simpler use of materials</option>
-          </select>
         </div>
       </div>
     </div>
@@ -656,53 +640,14 @@
     </div>
   </section>
 
-  <section id="consistency" aria-labelledby="consistency-title">
-    <h2 id="consistency-title" class="section-title">Consistency analysis</h2>
-    <p class="section-lead">A reliable design works nearly every time.</p>
-    <div class="card">
-      <div class="form-grid">
-        <div class="field full">
-          <label for="fConsistencyRating">Were the results...</label>
-          <select id="fConsistencyRating" data-save="consistencyRating">
-            <option value="">Choose one</option>
-            <option value="mostly">Mostly consistent</option>
-            <option value="somewhat">Somewhat consistent</option>
-            <option value="inconsistent">Inconsistent</option>
-          </select>
-        </div>
-        <div class="field full">
-          <label for="fConsistencyEvidence">What did your trials show about consistency, and what caused most of the variation?</label>
-          <textarea id="fConsistencyEvidence" maxlength="500" data-save="consistencyEvidence" placeholder="Point to trials that show the pattern, then name the biggest source of variation."></textarea>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="tradeoff" aria-labelledby="tradeoff-title">
-    <h2 id="tradeoff-title" class="section-title">Trade-off reflection</h2>
-    <p class="section-lead">Nearly every design change has a cost.</p>
-    <div class="card">
-      <div class="form-grid">
-        <div class="field full">
-          <label for="fTradeImproved">What did you gain, what did you give up, and was the trade-off worth it?</label>
-          <textarea id="fTradeImproved" maxlength="500" data-save="tradeImproved" placeholder="One or two sentences. Use evidence from your trials."></textarea>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section id="explain" aria-labelledby="explain-title">
     <h2 id="explain-title" class="section-title">Design explanation</h2>
-    <p class="section-lead">Answer each part clearly. You will use this on Day 5.</p>
+    <p class="section-lead">Answer clearly. You will use this on Day 5.</p>
     <div class="card">
       <div class="form-grid">
         <div class="field full">
-          <label for="fExplainHow">How does your design slow or control the ball? Describe the path and the key features, and use ideas like friction, turns, or ramp angle.</label>
+          <label for="fExplainHow">How does your design slow or control the ball? Describe the path and the features that help.</label>
           <textarea id="fExplainHow" maxlength="500" data-save="explainHow" placeholder="A few sentences. Path, key parts, and why they work."></textarea>
-        </div>
-        <div class="field full">
-          <label for="fExplainEvidence">Which final trial best shows it works?</label>
-          <textarea id="fExplainEvidence" maxlength="500" data-save="explainEvidence" placeholder="Point to one specific trial and its result."></textarea>
         </div>
       </div>
     </div>
@@ -880,15 +825,6 @@
     { term: 'Efficiency',  def: 'Getting good results without wasting materials, time, or effort.' }
   ];
 
-  var CRITERIA_OPTIONS = {
-    slower: 'Slower motion',
-    control: 'Greater control',
-    travel: 'Longer travel',
-    consistency: 'More consistent performance',
-    safety: 'Safer or more stable construction',
-    simplicity: 'Simpler use of materials'
-  };
-
   var CONSTRAINT_ITEMS = [
     { id: 'c1', label: 'Build with the approved paper and tape only.' },
     { id: 'c2', label: 'Every team starts with the same materials.' },
@@ -901,8 +837,6 @@
     'Planned the final adjustment.',
     'Confirmed every constraint is still followed.',
     'Ran the required number of final trials.',
-    'Identified how consistent the results were.',
-    'Explained one trade-off.',
     'Prepared a clear design explanation.'
   ];
 
@@ -915,15 +849,9 @@
     classBlock: '',
     block: '',
     strongestDesign: '',
-    strongestDesignEvidence: '',
     finalAdjustment: '',
-    selectedCriterion: '',
     constraintChecks: { c1: false, c2: false, c3: false, c4: false },
-    consistencyRating: '',
-    consistencyEvidence: '',
-    tradeImproved: '',
     explainHow: '',
-    explainEvidence: '',
     tomorrowRevealed: false,
     tipRevealed: false,
     realRevealed: false,
@@ -1099,8 +1027,6 @@
       isPlanDone(),
       isConstraintsDone(),
       isTrialsDone(),
-      isConsistencyDone(),
-      isTradeoffDone(),
       isExplainDone()
     ];
   }
@@ -1248,12 +1174,10 @@
            (state.classBlock || '').trim().length > 0;
   }
   function isStrongestDone() {
-    return (state.strongestDesign || '').trim().length >= 10 &&
-           (state.strongestDesignEvidence || '').trim().length >= 5;
+    return (state.strongestDesign || '').trim().length >= 10;
   }
   function isPlanDone() {
-    return (state.finalAdjustment || '').trim().length >= 10 &&
-           (state.selectedCriterion || '').length > 0;
+    return (state.finalAdjustment || '').trim().length >= 10;
   }
   function isConstraintsDone() {
     return CONSTRAINT_ITEMS.every(function (c) { return state.constraintChecks[c.id] === true; });
@@ -1267,16 +1191,8 @@
     }, 0);
   }
   function isTrialsDone() { return countCompleteTrials() >= 5; }
-  function isConsistencyDone() {
-    return (state.consistencyRating || '').length > 0 &&
-           (state.consistencyEvidence || '').trim().length >= 10;
-  }
-  function isTradeoffDone() {
-    return (state.tradeImproved || '').trim().length >= 10;
-  }
   function isExplainDone() {
-    return (state.explainHow || '').trim().length >= 10 &&
-           (state.explainEvidence || '').trim().length >= 5;
+    return (state.explainHow || '').trim().length >= 10;
   }
 
   var STEPS = [
@@ -1285,8 +1201,6 @@
     { key: 'plan',        label: 'Planned the final adjustment',           done: isPlanDone },
     { key: 'constraints', label: 'Confirmed every constraint',             done: isConstraintsDone },
     { key: 'trials',      label: 'Ran at least five final trials',         done: isTrialsDone },
-    { key: 'consistency', label: 'Identified how consistent the results were', done: isConsistencyDone },
-    { key: 'tradeoff',    label: 'Explained one trade-off',                done: isTradeoffDone },
     { key: 'explain',     label: 'Prepared a design explanation',          done: isExplainDone }
   ];
 
@@ -1347,8 +1261,6 @@
     if (!isPlanDone()) return 'fFinalAdjust';
     if (!isConstraintsDone()) return 'constraintList';
     if (!isTrialsDone()) return 'trials';
-    if (!isConsistencyDone()) return 'fConsistencyRating';
-    if (!isTradeoffDone()) return 'fTradeImproved';
     if (!isExplainDone()) return 'fExplainHow';
     return null;
   }
@@ -1488,22 +1400,12 @@
     });
   }
 
-  function criterionLabel(v) { return CRITERIA_OPTIONS[v] || ''; }
-  function consistencyLabel(v) {
-    if (v === 'mostly') return 'Mostly consistent';
-    if (v === 'somewhat') return 'Somewhat consistent';
-    if (v === 'inconsistent') return 'Inconsistent';
-    return '';
-  }
-
   function buildAnswersJson() {
     var met = state.trials.filter(function (t) { return t.metGoal === 'yes'; }).length;
     var out = {
       day: 4,
       strongestDesign: state.strongestDesign || '',
-      strongestDesignEvidence: state.strongestDesignEvidence || '',
       finalAdjustment: state.finalAdjustment || '',
-      selectedCriterion: state.selectedCriterion || '',
       constraintChecks: {
         c1: !!state.constraintChecks.c1,
         c2: !!state.constraintChecks.c2,
@@ -1520,18 +1422,10 @@
           observation: t.observation || ''
         };
       }),
-      consistencyAnalysis: {
-        metGoal: met,
-        totalTrials: state.trials.length,
-        rating: state.consistencyRating || '',
-        evidence: state.consistencyEvidence || ''
-      },
-      tradeOffReflection: {
-        summary: state.tradeImproved || ''
-      },
+      trialsMetGoal: met,
+      trialsTotal: state.trials.length,
       designExplanation: {
-        how: state.explainHow || '',
-        evidence: state.explainEvidence || ''
+        how: state.explainHow || ''
       }
     };
     return JSON.stringify(out);
@@ -1742,11 +1636,9 @@
 
     heading('Strongest Design');
     labeledBlock('VERSION AND KEY FEATURE', state.strongestDesign);
-    labeledBlock('EVIDENCE', state.strongestDesignEvidence);
 
     heading('Optimization Plan');
     labeledBlock('FINAL ADJUSTMENT AND EVIDENCE', state.finalAdjustment);
-    labeledBlock('CRITERION IT IMPROVES', criterionLabel(state.selectedCriterion) || '(not chosen)');
 
     heading('Constraint Check');
     var constraintLines = CONSTRAINT_ITEMS.map(function (c) {
@@ -1790,18 +1682,8 @@
     });
     y += 2;
 
-    heading('Consistency Analysis');
-    var met = state.trials.filter(function (t) { return t.metGoal === 'yes'; }).length;
-    labeledBlock('MET GOAL', met + ' of ' + state.trials.length + ' trials');
-    labeledBlock('RATING', consistencyLabel(state.consistencyRating) || '(not chosen)');
-    labeledBlock('EVIDENCE AND LARGEST VARIATION', state.consistencyEvidence);
-
-    heading('Trade-off Reflection');
-    labeledBlock('GAIN, GIVE-UP, AND WORTH IT', state.tradeImproved);
-
     heading('Design Explanation');
     labeledBlock('HOW IT WORKS AND WHY', state.explainHow);
-    labeledBlock('EVIDENCE OF EFFECTIVENESS', state.explainEvidence);
 
     heading('Day 4 Completion');
     var completionLines = STEPS.map(function (st) {

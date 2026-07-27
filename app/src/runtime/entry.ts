@@ -128,14 +128,26 @@ function isRecoverableFirebaseError(err: unknown): boolean {
   );
 }
 
+// Sentinel error surfaced to the lesson UI when the runtime is not yet
+// wired (bootstrap awaiting Firebase Auth, or an authenticated user was
+// never resolved). Returning `null` in this case is a production hazard:
+// the pilot lesson UI awaits either `{ok:true}` or `{ok:false,message}`
+// and has no branch for a null resolution, so a null leaves the student
+// staring at "Submitting..." forever. See app/lessons/lesson_earths-layers.html
+// finalize handler.
+const NOT_READY_MESSAGE =
+  "Your submission service isn't ready yet. Refresh the page and try again.";
+
 function installLessonQuiz(
   win: WindowWithRuntime,
   runtime: AssessmentRuntime | null,
+  hasAssignmentContext: boolean,
 ): void {
   const helper: LessonQuizGlobal = {
     version: VERSION,
     optionLetters: OPTION_LETTERS,
-    hasAssignmentContext: () => runtime !== null && runtime.hasAssignmentContext,
+    hasAssignmentContext: () =>
+      runtime !== null ? runtime.hasAssignmentContext : hasAssignmentContext,
     mapIndexSelectionsToResponses,
     autosave: async (indexSelections) => {
       if (runtime === null || !runtime.hasAssignmentContext) return null;
@@ -151,7 +163,15 @@ function installLessonQuiz(
       }
     },
     finalize: async (indexSelections) => {
-      if (runtime === null || !runtime.hasAssignmentContext) return null;
+      if (runtime === null) {
+        if (!hasAssignmentContext) return null;
+        return {
+          ok: false,
+          message: NOT_READY_MESSAGE,
+          recoverable: true,
+        };
+      }
+      if (!runtime.hasAssignmentContext) return null;
       const responses = mapIndexSelectionsToResponses(indexSelections);
       try {
         const result = await runtime.finalize(responses);
@@ -372,8 +392,27 @@ function installInertRuntime(win: WindowWithRuntime, hasContext: boolean): Runti
   const ns = win[NAMESPACE] ?? {};
   ns[RUNTIME_KEY] = runtime;
   win[NAMESPACE] = ns;
-  installLessonQuiz(win, null);
+  installLessonQuiz(win, null, hasContext);
   return runtime;
+}
+
+function installSignedOutLessonQuiz(win: WindowWithRuntime): void {
+  const helper: LessonQuizGlobal = {
+    version: VERSION,
+    optionLetters: OPTION_LETTERS,
+    hasAssignmentContext: () => true,
+    mapIndexSelectionsToResponses,
+    autosave: async () => null,
+    finalize: async () => ({
+      ok: false,
+      message:
+        "You appear to be signed out. Sign in and reopen the assignment to submit your work.",
+      recoverable: false,
+    }),
+  };
+  const ns = win[NAMESPACE] ?? {};
+  ns[LESSON_QUIZ_KEY] = helper;
+  win[NAMESPACE] = ns;
 }
 
 function attachRuntimeAdapter(
@@ -394,7 +433,7 @@ function attachRuntimeAdapter(
   const ns = win[NAMESPACE] ?? {};
   ns[RUNTIME_KEY] = wrapper;
   win[NAMESPACE] = ns;
-  installLessonQuiz(win, runtime);
+  installLessonQuiz(win, runtime, runtime.hasAssignmentContext);
 }
 
 async function bootstrap(win: Window): Promise<void> {
@@ -431,7 +470,10 @@ async function bootstrap(win: Window): Promise<void> {
     // No authenticated student. Leave the inert stub in place so
     // callers observe a stable API surface; the assignment launcher is
     // responsible for routing unauthenticated visitors through the
-    // certified sign-in flow.
+    // certified sign-in flow. Install a signed-out lessonQuiz helper so
+    // finalize surfaces a truthful, actionable error instead of leaving
+    // the lesson UI stuck on "Submitting...".
+    installSignedOutLessonQuiz(runtimeWin);
     return;
   }
 

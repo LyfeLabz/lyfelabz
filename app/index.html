@@ -1677,11 +1677,18 @@
      authenticated application. Scoped by `body:not(:has(...))` so the
      authenticated Teacher Workspace chrome is untouched.
      ------------------------------------------------------------------ */
+  /* Sprint 21.5 palette refinement: shift the arrival page from a warm
+     beige canvas to a soft blue-gray atmosphere so it reads as the
+     visual bridge between the public homepage (inspiration) and the
+     Teacher Workspace (focused work). Gold is restrained to a faint
+     hint so the LYFELABZ wordmark remains the primary gold accent.
+     Layout, typography, spacing, and card geometry are unchanged. */
   body:not(:has(#app-root > .shell-header)) {
     background:
-      radial-gradient(1200px 700px at 15% -10%, rgba(26, 95, 111, 0.10), transparent 60%),
-      radial-gradient(1000px 600px at 105% 110%, rgba(245, 200, 66, 0.08), transparent 60%),
-      var(--tw-page);
+      radial-gradient(1200px 700px at 15% -10%, rgba(26, 95, 111, 0.08), transparent 60%),
+      radial-gradient(1000px 620px at 105% 110%, rgba(70, 105, 140, 0.09), transparent 62%),
+      radial-gradient(700px 420px at 92% -8%, rgba(245, 200, 66, 0.035), transparent 65%),
+      #eef2f7;
     color: var(--tw-ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -1690,8 +1697,8 @@
     max-width: 32rem;
     width: min(32rem, 100%);
     padding: 2.25rem 2rem 2rem;
-    background: var(--tw-surface);
-    border: 1px solid var(--tw-hairline);
+    background: #fbfcfd;
+    border: 1px solid rgba(28, 39, 51, 0.08);
     border-radius: var(--tw-radius-card);
     box-shadow:
       0 1px 2px rgba(28, 39, 51, 0.05),
@@ -1728,7 +1735,7 @@
     border-radius: 4px;
   }
   body:not(:has(#app-root > .shell-header)) p {
-    color: var(--tw-ink-muted);
+    color: #4d5c6e;
     margin: 0 0 1rem 0;
     line-height: 1.55;
   }
@@ -1777,8 +1784,8 @@
   body:not(:has(#app-root > .shell-header)) [data-testid=return-link] {
     display: block;
     margin-top: 1.5rem;
-    font-size: 0.9rem;
-    color: var(--tw-nav-edge);
+    font-size: 0.88rem;
+    color: #607285;
     text-decoration: none;
     border-bottom: 1px solid transparent;
     width: fit-content;
@@ -1787,7 +1794,8 @@
   }
   body:not(:has(#app-root > .shell-header)) [data-testid=return-link]:hover,
   body:not(:has(#app-root > .shell-header)) [data-testid=return-link]:focus-visible {
-    border-bottom-color: var(--tw-nav-edge);
+    color: var(--tw-nav-edge);
+    border-bottom-color: rgba(26, 95, 111, 0.4);
     outline: none;
   }
   body:not(:has(#app-root > .shell-header)) [data-testid=sign-out] {
