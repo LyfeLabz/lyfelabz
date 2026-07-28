@@ -16,18 +16,17 @@ import {
 
 // Client-supplied request payload for assignmentsUpdateDraft. Only the
 // teacher-editable metadata fields (`title`, `instructions`, `lessonSlug`,
-// `lessonVersion`, `mode`, `windowClosesAt`, `availableAt`) are accepted
-// per Data Model §3.6 and §7.6. Ownership fields, `status`, and
-// `createdAt` are never carried on the request and are never writable
-// through this path. At least one metadata field must be present; a
-// payload with zero updates is rejected with `assignments.invalidRequest`.
-// Timestamps are transported as ISO 8601 strings.
+// `mode`, `windowClosesAt`, `availableAt`) are accepted per Data Model
+// §3.6 and §7.6. Ownership fields, `status`, and `createdAt` are never
+// carried on the request and are never writable through this path. At
+// least one metadata field must be present; a payload with zero updates
+// is rejected with `assignments.invalidRequest`. Timestamps are
+// transported as ISO 8601 strings.
 export type AssignmentsUpdateDraftRequest = {
   readonly assignmentId: string;
   readonly title?: string;
   readonly instructions?: string;
   readonly lessonSlug?: string;
-  readonly lessonVersion?: string;
   readonly mode?: AssignmentMode;
   readonly windowClosesAt?: string;
   readonly availableAt?: string;
@@ -43,7 +42,6 @@ export type AssignmentsUpdateDraftResponse = {
 
 const ASSIGNMENT_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
 const LESSON_SLUG_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,126}[A-Za-z0-9])?$/;
-const LESSON_VERSION_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,62}[A-Za-z0-9])?$/;
 const VALID_MODES: readonly AssignmentMode[] = ["practice", "classroom"];
 const MAX_TITLE = 200;
 const MAX_INSTRUCTIONS = 4000;
@@ -87,7 +85,6 @@ type ValidatedRequest = {
   readonly title?: string;
   readonly instructions?: string;
   readonly lessonSlug?: string;
-  readonly lessonVersion?: string;
   readonly mode?: AssignmentMode;
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
@@ -121,7 +118,6 @@ function validateRequest(data: unknown): ValidatedRequest {
     title?: string;
     instructions?: string;
     lessonSlug?: string;
-    lessonVersion?: string;
     mode?: AssignmentMode;
     windowClosesAt?: Timestamp;
     availableAt?: Timestamp;
@@ -178,23 +174,6 @@ function validateRequest(data: unknown): ValidatedRequest {
     out.lessonSlug = lessonSlug;
   }
 
-  if (payload.lessonVersion !== undefined) {
-    if (!isNonEmptyString(payload.lessonVersion)) {
-      throw new PlatformError(
-        "assignments.invalidLessonVersion",
-        "lessonVersion, when supplied, must be a non-empty string.",
-      );
-    }
-    const lessonVersion = payload.lessonVersion.trim();
-    if (!LESSON_VERSION_PATTERN.test(lessonVersion)) {
-      throw new PlatformError(
-        "assignments.invalidLessonVersion",
-        "lessonVersion must be a short alphanumeric token.",
-      );
-    }
-    out.lessonVersion = lessonVersion;
-  }
-
   if (payload.mode !== undefined) {
     if (
       typeof payload.mode !== "string" ||
@@ -219,7 +198,6 @@ function validateRequest(data: unknown): ValidatedRequest {
     out.title === undefined &&
     out.instructions === undefined &&
     out.lessonSlug === undefined &&
-    out.lessonVersion === undefined &&
     out.mode === undefined &&
     out.windowClosesAt === undefined &&
     out.availableAt === undefined
@@ -271,7 +249,6 @@ function computeDiff(
     title?: string;
     instructions?: string;
     lessonSlug?: string;
-    lessonVersion?: string;
     mode?: AssignmentMode;
     windowClosesAt?: Timestamp;
     availableAt?: Timestamp;
@@ -295,13 +272,6 @@ function computeDiff(
   ) {
     write.lessonSlug = input.lessonSlug;
     changedFields.push("lessonSlug");
-  }
-  if (
-    input.lessonVersion !== undefined &&
-    input.lessonVersion !== existing.lessonVersion
-  ) {
-    write.lessonVersion = input.lessonVersion;
-    changedFields.push("lessonVersion");
   }
   if (input.mode !== undefined && input.mode !== existing.mode) {
     write.mode = input.mode;

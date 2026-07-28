@@ -9,6 +9,7 @@ import {
   assignmentDocRef,
   enrollmentDocRef,
   log,
+  parseAssessmentIdFromRevisionId,
   requireDistrictContext,
   writeAuditEvent,
   type AssessmentSessionCreationWrite,
@@ -190,25 +191,46 @@ export function sessionIdFor(
 }
 
 // Denormalized assessment identifiers per
-// ASSESSMENT_IMPLEMENTATION_CONTRACT.md §12 (`assessment_{activityId}`) and
-// the interim revision-stamping rule for the pre-`assessmentRevisions`
-// window: the referenced assignment's frozen `lessonVersion` is the
-// scorable-content revision the student was scored against. This mirrors
-// the invariant that ownership fields are frozen at session creation (§6)
-// and that revisions are never rewritten thereafter (§9). The pairing to
-// the future `assessmentRevisions/{revisionId}` document remains identity
-// by identifier; the deployment pipeline that lands revisions will honor
-// the same string.
-function deriveActivityId(assignment: AssignmentRecord): string {
-  return assignment.lessonSlug;
-}
+// ASSESSMENT_IMPLEMENTATION_CONTRACT.md §12 (`assessment_{activityId}`).
+// The scorable-content revision is not derived here: the referenced
+// assignment carries a frozen `assessmentRevisionId` stamped at
+// publication by `assignmentsPublish` from the currently deployed
+// revision of the referenced assessment. The identifier grammar is owned
+// by `shared/assessment-identifiers.ts`; the parent `assessmentId` and
+// the deployment-side `activityId` (equal to `lessonSlug` in v1) are
+// derived from the frozen revision identifier, so no site outside the
+// shared helper reconstructs identifier structure.
+type DerivedAssessmentIdentifiers = {
+  readonly activityId: string;
+  readonly assessmentId: string;
+  readonly assessmentRevisionId: string;
+};
 
-function deriveAssessmentId(assignment: AssignmentRecord): string {
-  return `assessment_${assignment.lessonSlug}`;
-}
-
-function deriveAssessmentRevisionId(assignment: AssignmentRecord): string {
-  return `assessment_${assignment.lessonSlug}__r${assignment.lessonVersion}`;
+function deriveAssessmentIdentifiersFromAssignment(
+  assignment: AssignmentRecord,
+): DerivedAssessmentIdentifiers {
+  const assessmentRevisionId = assignment.assessmentRevisionId;
+  if (
+    typeof assessmentRevisionId !== "string" ||
+    assessmentRevisionId.length === 0
+  ) {
+    throw new PlatformError(
+      "assignment-not-published",
+      "Assignment is missing its frozen assessmentRevisionId.",
+    );
+  }
+  const assessmentId = parseAssessmentIdFromRevisionId(assessmentRevisionId);
+  if (assessmentId === undefined) {
+    throw new PlatformError(
+      "assignment-not-published",
+      "Assignment carries a non-canonical assessmentRevisionId.",
+    );
+  }
+  return {
+    activityId: assignment.lessonSlug,
+    assessmentId,
+    assessmentRevisionId,
+  };
 }
 
 function existingMatchesRequest(
@@ -216,6 +238,7 @@ function existingMatchesRequest(
   actor: { uid: string; schoolId: string; districtId: string },
   assignmentId: string,
   assignment: AssignmentRecord,
+  derived: DerivedAssessmentIdentifiers,
 ): boolean {
   if (existing.status !== "live") return false;
   if (existing.studentId !== actor.uid) return false;
@@ -224,9 +247,9 @@ function existingMatchesRequest(
   if (existing.districtId !== actor.districtId) return false;
   if (existing.classId !== assignment.classId) return false;
   if (existing.teacherId !== assignment.teacherId) return false;
-  if (existing.activityId !== deriveActivityId(assignment)) return false;
-  if (existing.assessmentId !== deriveAssessmentId(assignment)) return false;
-  if (existing.assessmentRevisionId !== deriveAssessmentRevisionId(assignment)) {
+  if (existing.activityId !== derived.activityId) return false;
+  if (existing.assessmentId !== derived.assessmentId) return false;
+  if (existing.assessmentRevisionId !== derived.assessmentRevisionId) {
     return false;
   }
   if (existing.sessionOrdinal !== FIRST_SESSION_ORDINAL) return false;
@@ -342,13 +365,22 @@ async function assessmentSessionsBeginHandler(
     );
   }
 
+  const derived = deriveAssessmentIdentifiersFromAssignment(assignment);
+  const { activityId, assessmentId, assessmentRevisionId } = derived;
+
   const sessionId = sessionIdFor(input.assignmentId, actor.uid);
   const existingSnapshot = await assessmentSessionDocRef(sessionId).get();
   if (existingSnapshot.exists) {
     const existing = existingSnapshot.data();
     if (
       existing &&
-      existingMatchesRequest(existing, actor, input.assignmentId, assignment)
+      existingMatchesRequest(
+        existing,
+        actor,
+        input.assignmentId,
+        assignment,
+        derived,
+      )
     ) {
       safeLog(() =>
         log.info("assessmentSessions.beginIdempotent", {
@@ -363,10 +395,6 @@ async function assessmentSessionsBeginHandler(
       "A session for this assignment and student already exists.",
     );
   }
-
-  const activityId = deriveActivityId(assignment);
-  const assessmentId = deriveAssessmentId(assignment);
-  const assessmentRevisionId = deriveAssessmentRevisionId(assignment);
 
   const creation: AssessmentSessionCreationWrite = {
     studentId: actor.uid,

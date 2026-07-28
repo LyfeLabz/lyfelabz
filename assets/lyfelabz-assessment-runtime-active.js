@@ -8075,6 +8075,42 @@
     return code === "unavailable" || code === "internal" || code === "deadline-exceeded" || code === "resource-exhausted" || code === "cancelled";
   }
   var NOT_READY_MESSAGE = "Your submission service isn't ready yet. Refresh the page and try again.";
+  function safeErrorEnvelope(err) {
+    if (err === null || typeof err !== "object") {
+      return { code: void 0, message: typeof err === "string" ? err : void 0 };
+    }
+    const code = err.code;
+    const message = err.message;
+    return {
+      code: typeof code === "string" ? code : void 0,
+      message: typeof message === "string" ? message : void 0
+    };
+  }
+  function recordLastError(win, callable, err) {
+    try {
+      const envelope = safeErrorEnvelope(err);
+      const ns = win[NAMESPACE] ?? {};
+      const runtime = ns[RUNTIME_KEY];
+      if (runtime && runtime.lastError === null) {
+        const entry = {
+          callable,
+          code: envelope.code,
+          message: envelope.message,
+          at: Date.now()
+        };
+        runtime.lastError = entry;
+        try {
+          console.warn("[lyfelabz] assessment callable rejected", {
+            callable,
+            code: envelope.code,
+            message: envelope.message
+          });
+        } catch {
+        }
+      }
+    } catch {
+    }
+  }
   function installLessonQuiz(win, runtime, hasAssignmentContext) {
     const helper = {
       version: VERSION,
@@ -8087,7 +8123,8 @@
         if (responses.length === 0) return null;
         try {
           return await runtime.autosave(responses);
-        } catch {
+        } catch (err) {
+          recordLastError(win, "autosave", err);
           return null;
         }
       },
@@ -8106,6 +8143,7 @@
           const result = await runtime.finalize(responses);
           return { ok: true, result };
         } catch (err) {
+          recordLastError(win, "finalize", err);
           const message = err.message;
           return {
             ok: false,
@@ -8294,6 +8332,7 @@
       version: VERSION,
       mode: hasContext ? "pending" : "inert",
       hasAssignmentContext: hasContext,
+      lastError: null,
       begin: async () => {
       },
       autosave: async () => ({ persisted: false }),
@@ -8334,6 +8373,7 @@
         return runtime.getStatus().mode;
       },
       hasAssignmentContext: runtime.hasAssignmentContext,
+      lastError: null,
       begin: () => runtime.begin(),
       autosave: (responses) => runtime.autosave(responses),
       finalize: (responses) => runtime.finalize(responses),

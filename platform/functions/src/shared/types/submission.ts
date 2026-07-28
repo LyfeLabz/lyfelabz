@@ -30,16 +30,14 @@ export type SubmissionResponse = {
 // Canonical submission record shape per Data Model §3.7.
 //
 // Required fields: assignmentId, studentId, classId, teacherId, schoolId,
-// lessonSlug, lessonVersion, mode, status, startedAt, responses.
+// lessonSlug, mode, status, startedAt, responses.
 // Conditionally required: submittedAt and score are present when status is
 // `finalized` and absent when status is `submitted`.
 // Optional: durationMs, attemptCount.
 //
 // Every denormalized field (classId, teacherId, schoolId, lessonSlug,
-// lessonVersion, mode) is copied from the referenced assignment record at
-// creation and is immutable thereafter per §12.3 and §1.2. Freezing the
-// lesson version on the submission preserves scientific accuracy claims
-// per §12.4 even if the assignment record is theoretically recreated.
+// mode) is copied from the referenced assignment record at creation and is
+// immutable thereafter per §12.3 and §1.2.
 //
 // This type is the single source of truth for reads of
 // submissions/{submissionId}. Write shapes are declared separately so that
@@ -51,7 +49,6 @@ export type SubmissionRecord = {
   readonly teacherId: string;
   readonly schoolId: string;
   readonly lessonSlug: string;
-  readonly lessonVersion: string;
   readonly mode: AssignmentMode;
   readonly status: SubmissionStatus;
   readonly startedAt: Timestamp;
@@ -66,9 +63,9 @@ export type SubmissionRecord = {
 // Model §3.7: every required field is present, `startedAt` is stamped by
 // the server via `FieldValue.serverTimestamp()`, and the initial status is
 // always `submitted`. Ownership fields are server-derived: `studentId` is
-// the caller's uid; `classId`, `teacherId`, `schoolId`, `lessonSlug`,
-// `lessonVersion`, and `mode` are denormalized from the referenced
-// assignment record; no ownership field is client-supplied.
+// the caller's uid; `classId`, `teacherId`, `schoolId`, `lessonSlug`, and
+// `mode` are denormalized from the referenced assignment record; no
+// ownership field is client-supplied.
 export type SubmissionCreationWrite = {
   readonly assignmentId: string;
   readonly studentId: string;
@@ -76,7 +73,6 @@ export type SubmissionCreationWrite = {
   readonly teacherId: string;
   readonly schoolId: string;
   readonly lessonSlug: string;
-  readonly lessonVersion: string;
   readonly mode: AssignmentMode;
   readonly status: "submitted";
   readonly startedAt: FieldValue;
@@ -86,12 +82,11 @@ export type SubmissionCreationWrite = {
 // Write shape for the finalize callable (submissionsFinalize). Advances
 // the `status` field from `submitted` to `finalized` and stamps
 // `submittedAt` via `FieldValue.serverTimestamp()`. Ownership fields,
-// `startedAt`, `assignmentId`, `studentId`, `lessonSlug`, and
-// `lessonVersion` are intentionally absent from the write shape so no
-// finalization can silently reassign ownership, backdate the start
-// moment, or edit the frozen lesson version. `responses` and the
-// analytics fields `score`, `durationMs`, and `attemptCount` may be
-// supplied by the finalizer.
+// `startedAt`, `assignmentId`, `studentId`, and `lessonSlug` are
+// intentionally absent from the write shape so no finalization can
+// silently reassign ownership, backdate the start moment, or edit the
+// frozen lesson identity. `responses` and the analytics fields `score`,
+// `durationMs`, and `attemptCount` may be supplied by the finalizer.
 export type SubmissionFinalizationWrite = {
   readonly status: "finalized";
   readonly submittedAt: FieldValue;

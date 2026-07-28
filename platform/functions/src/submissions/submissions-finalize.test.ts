@@ -101,7 +101,6 @@ function submissionSnapshot(
       teacherId: TEACHER_UID,
       schoolId: overrides.schoolId ?? SCHOOL_ID,
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: overrides.status ?? "submitted",
       startedAt: {} as never,
@@ -186,7 +185,6 @@ describe("submissionsFinalize", () => {
         assignmentId: ASSIGNMENT_ID,
         classId: CLASS_ID,
         lessonSlug: "lesson_g7_earths-layers",
-        lessonVersion: "1",
       },
     });
     expect(result).toEqual({

@@ -1602,14 +1602,6 @@ function fieldInput(
 // Authoritative assignment lifecycle
 // -----------------------------------------------------------------------------
 
-// Canonical LyfeLabz curriculum resources are static per PDR-007 and are
-// not versioned per lesson today; every assignment created by the Assign
-// Experience references the sole "v1" lesson version so the callable
-// contract's required `lessonVersion` field is populated with a stable
-// value. When per-lesson versioning ships, the manifest becomes the
-// authoritative source of this value.
-const DEFAULT_LESSON_VERSION = "v1";
-
 // Deterministic client-side assignmentId for a (teacher, lesson, class,
 // dialog-open) tuple. The server-side callable is idempotent against
 // replays of the same id (assignmentsCreateDraft §4 "Idempotency"), so a
@@ -1710,7 +1702,6 @@ async function runAssignmentLifecycle(input: {
           assignmentId,
           classId: row.classId,
           lessonSlug: lesson.slug,
-          lessonVersion: DEFAULT_LESSON_VERSION,
           mode: "classroom",
           title: lesson.title,
         });

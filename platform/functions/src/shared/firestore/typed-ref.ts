@@ -464,10 +464,10 @@ export function submissionCreationDocRef(
 // submissionsFinalize callable uses this reference to `.update()` a narrow
 // `SubmissionFinalizationWrite` payload that advances the lifecycle field
 // from `submitted` to `finalized` and stamps `submittedAt`. Ownership
-// fields, `startedAt`, `assignmentId`, `studentId`, `lessonSlug`, and
-// `lessonVersion` are absent from the write shape so no finalization can
-// silently reassign ownership, backdate the start moment, or edit the
-// frozen lesson version.
+// fields, `startedAt`, `assignmentId`, `studentId`, and `lessonSlug` are
+// absent from the write shape so no finalization can silently reassign
+// ownership, backdate the start moment, or edit the frozen lesson
+// identity.
 export function submissionFinalizationDocRef(
   submissionId: string,
 ): DocumentReference<SubmissionFinalizationWrite> {

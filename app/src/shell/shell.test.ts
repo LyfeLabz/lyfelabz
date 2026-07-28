@@ -2013,7 +2013,6 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
     assignmentId: string;
     classId: string;
     lessonSlug: string;
-    lessonVersion: string;
     mode: "practice" | "classroom";
     title?: string;
   };
@@ -2542,7 +2541,6 @@ describe("Assign Experience - Sprint 13B remediation", () => {
     assignmentId: string;
     classId: string;
     lessonSlug: string;
-    lessonVersion: string;
     mode: "practice" | "classroom";
     title?: string;
   };
@@ -2847,7 +2845,6 @@ describe("Assign Experience - Sprint 13C multiple-assignment selection", () => {
     assignmentId: string;
     classId: string;
     lessonSlug: string;
-    lessonVersion: string;
     mode: "practice" | "classroom";
     title?: string;
   };

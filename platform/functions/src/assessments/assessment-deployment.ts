@@ -6,9 +6,12 @@ import {
   assessmentAnswerKeyDocRef,
   assessmentDeploymentDocRef,
   assessmentDocRef,
+  assessmentIdForLessonSlug,
   assessmentRevisionDeploymentDocRef,
   assessmentRevisionDocRef,
   log,
+  parseRevisionOrdinalFromRevisionId,
+  revisionIdForOrdinal,
   runFirestoreTransaction,
   ASSESSMENT_SCHEMA_VERSION_V1,
   type AssessmentAnswerKeyDeploymentWrite,
@@ -92,33 +95,26 @@ function assertIntegerAtLeast(
 }
 
 // Deterministic canonical identifiers per
-// ASSESSMENT_IMPLEMENTATION_CONTRACT.md §12.
+// ASSESSMENT_IMPLEMENTATION_CONTRACT.md §12. The identifier grammar is
+// owned by `shared/assessment-identifiers.ts`; the deployment path uses
+// `activityId` as its lesson slug parameter (they are the same string in
+// v1). These re-exports keep the deployment API stable for callers that
+// name `assessmentIdFor` / `revisionIdFor` explicitly.
 export function assessmentIdFor(activityId: string): string {
-  return `assessment_${activityId}`;
+  return assessmentIdForLessonSlug(activityId);
 }
 
 export function revisionIdFor(
   assessmentId: string,
   revisionOrdinal: number,
 ): string {
-  return `${assessmentId}__r${revisionOrdinal}`;
+  return revisionIdForOrdinal(assessmentId, revisionOrdinal);
 }
 
-// Parses the `{assessmentId}__r{ordinal}` suffix into a numeric ordinal.
-// Returns `undefined` if the identifier does not match the canonical
-// construction so the deployment path can refuse advancement against an
-// unparseable currentRevisionId rather than silently accepting a
-// non-monotonic replacement.
 export function parseRevisionOrdinalFromId(
   revisionId: string,
 ): number | undefined {
-  const match = /__r(\d+)$/.exec(revisionId);
-  if (!match) return undefined;
-  const ordinal = Number(match[1]);
-  if (!Number.isFinite(ordinal) || !Number.isInteger(ordinal) || ordinal < 1) {
-    return undefined;
-  }
-  return ordinal;
+  return parseRevisionOrdinalFromRevisionId(revisionId);
 }
 
 // Structural validation per ASSESSMENT_SCORING_CONTRACT.md §4.3 (revision

@@ -22,15 +22,14 @@ import {
 // the same intended draft. Ownership fields (`teacherId`, `schoolId`) are
 // never carried on the request: `teacherId` is the caller's uid and
 // `schoolId` is denormalized from the referenced class record. `classId`,
-// `lessonSlug`, `lessonVersion`, and `mode` are teacher-authored. `title`,
-// `instructions`, `windowClosesAt`, and `availableAt` are optional per Data
-// Model §3.6. Timestamps are transported as ISO 8601 strings and converted
-// to Firestore `Timestamp` at the write boundary.
+// `lessonSlug`, and `mode` are teacher-authored. `title`, `instructions`,
+// `windowClosesAt`, and `availableAt` are optional per Data Model §3.6.
+// Timestamps are transported as ISO 8601 strings and converted to
+// Firestore `Timestamp` at the write boundary.
 export type AssignmentsCreateDraftRequest = {
   readonly assignmentId: string;
   readonly classId: string;
   readonly lessonSlug: string;
-  readonly lessonVersion: string;
   readonly mode: AssignmentMode;
   readonly title?: string;
   readonly instructions?: string;
@@ -51,7 +50,6 @@ export type AssignmentsCreateDraftResponse = {
 const ASSIGNMENT_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
 const CLASS_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
 const LESSON_SLUG_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,126}[A-Za-z0-9])?$/;
-const LESSON_VERSION_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,62}[A-Za-z0-9])?$/;
 const VALID_MODES: readonly AssignmentMode[] = ["practice", "classroom"];
 const MAX_TITLE = 200;
 const MAX_INSTRUCTIONS = 4000;
@@ -94,7 +92,6 @@ type ValidatedRequest = {
   readonly assignmentId: string;
   readonly classId: string;
   readonly lessonSlug: string;
-  readonly lessonVersion: string;
   readonly mode: AssignmentMode;
   readonly title?: string;
   readonly instructions?: string;
@@ -153,20 +150,6 @@ function validateRequest(data: unknown): ValidatedRequest {
     );
   }
 
-  if (!isNonEmptyString(payload.lessonVersion)) {
-    throw new PlatformError(
-      "assignments.invalidLessonVersion",
-      "lessonVersion must be a non-empty string.",
-    );
-  }
-  const lessonVersion = payload.lessonVersion.trim();
-  if (!LESSON_VERSION_PATTERN.test(lessonVersion)) {
-    throw new PlatformError(
-      "assignments.invalidLessonVersion",
-      "lessonVersion must be a short alphanumeric token.",
-    );
-  }
-
   if (
     typeof payload.mode !== "string" ||
     !(VALID_MODES as readonly string[]).includes(payload.mode)
@@ -182,13 +165,12 @@ function validateRequest(data: unknown): ValidatedRequest {
     assignmentId: string;
     classId: string;
     lessonSlug: string;
-    lessonVersion: string;
     mode: AssignmentMode;
     title?: string;
     instructions?: string;
     windowClosesAt?: Timestamp;
     availableAt?: Timestamp;
-  } = { assignmentId, classId, lessonSlug, lessonVersion, mode };
+  } = { assignmentId, classId, lessonSlug, mode };
 
   if (payload.title !== undefined) {
     if (!isNonEmptyString(payload.title)) {
@@ -270,7 +252,6 @@ function existingMatchesRequest(
   if (existing.schoolId !== actor.schoolId) return false;
   if (existing.classId !== input.classId) return false;
   if (existing.lessonSlug !== input.lessonSlug) return false;
-  if (existing.lessonVersion !== input.lessonVersion) return false;
   if (existing.mode !== input.mode) return false;
   if (existing.status !== "draft") return false;
   if ((existing.title ?? undefined) !== (input.title ?? undefined)) return false;
@@ -360,7 +341,6 @@ async function assignmentsCreateDraftHandler(
     teacherId: actor.uid,
     schoolId: actor.schoolId,
     lessonSlug: input.lessonSlug,
-    lessonVersion: input.lessonVersion,
     mode: input.mode,
     status: "draft",
     createdAt: FieldValue.serverTimestamp(),
@@ -389,7 +369,6 @@ async function assignmentsCreateDraftHandler(
     payload: {
       classId: input.classId,
       lessonSlug: input.lessonSlug,
-      lessonVersion: input.lessonVersion,
       mode: input.mode,
     },
   });

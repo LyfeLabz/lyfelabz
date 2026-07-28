@@ -76,7 +76,6 @@ function existingSnapshot(
       teacherId: "teacher-uid",
       schoolId: "school-a",
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: "draft",
       createdAt: {} as never,

@@ -44,8 +44,8 @@ import {
 // required by the `activeStudent` surface (title, publishedAt for ordering)
 // and the assignment launcher (assignmentId, lessonSlug) cross the boundary.
 // Fields present on the persisted record but not required by Sprint 17
-// (instructions, windowClosesAt, availableAt, mode, lessonVersion,
-// lmsPublicationRef) are structurally excluded.
+// (instructions, windowClosesAt, availableAt, mode,
+// assessmentRevisionId, lmsPublicationRef) are structurally excluded.
 export type AssignmentsListForStudentItem = {
   readonly assignmentId: string;
   readonly lessonSlug: string;

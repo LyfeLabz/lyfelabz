@@ -69,7 +69,6 @@ function assignmentDoc(
       teacherId: TEACHER_UID,
       schoolId: SCHOOL_ID,
       lessonSlug: "lesson_x",
-      lessonVersion: "1",
       mode: "classroom",
       status: "published",
       createdAt: {},

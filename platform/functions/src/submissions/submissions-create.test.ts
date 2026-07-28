@@ -91,7 +91,6 @@ function assignmentSnapshot(
     mode?: "practice" | "classroom";
     status?: "draft" | "published" | "closed" | "archived";
     lessonSlug?: string;
-    lessonVersion?: string;
   } = {},
 ) {
   const exists = overrides.exists ?? true;
@@ -103,7 +102,6 @@ function assignmentSnapshot(
       teacherId: overrides.teacherId ?? TEACHER_UID,
       schoolId: overrides.schoolId ?? SCHOOL_ID,
       lessonSlug: overrides.lessonSlug ?? "lesson_g7_earths-layers",
-      lessonVersion: overrides.lessonVersion ?? "1",
       mode: overrides.mode ?? "classroom",
       status: overrides.status ?? "published",
       createdAt: {} as never,
@@ -148,7 +146,6 @@ function existingSubmissionSnapshot(overrides: Record<string, unknown> = {}) {
       teacherId: TEACHER_UID,
       schoolId: SCHOOL_ID,
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: "submitted",
       startedAt: {} as never,
@@ -197,7 +194,6 @@ describe("submissionsCreate", () => {
       teacherId: TEACHER_UID,
       schoolId: SCHOOL_ID,
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: "submitted",
       startedAt: SERVER_TIMESTAMP_SENTINEL,
@@ -214,7 +210,6 @@ describe("submissionsCreate", () => {
         assignmentId: ASSIGNMENT_ID,
         classId: CLASS_ID,
         lessonSlug: "lesson_g7_earths-layers",
-        lessonVersion: "1",
       },
     });
     expect(result).toEqual({
@@ -428,7 +423,7 @@ describe("submissionsCreate", () => {
     mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
     mockSubmissionGet.mockResolvedValueOnce(
-      existingSubmissionSnapshot({ lessonVersion: "2" }),
+      existingSubmissionSnapshot({ lessonSlug: "lesson_other" }),
     );
     await expect(
       __submissionsCreateHandler(makeRequest()),

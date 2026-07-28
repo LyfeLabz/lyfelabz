@@ -571,20 +571,11 @@
 
   <section id="story" aria-labelledby="story-title">
     <h2 id="story-title" class="section-title">Engineering story</h2>
-    <p class="section-lead">Complete each part in a sentence or two. Together they tell the story of your week.</p>
-    <div class="story-block">
+    <div class="card">
       <div class="form-grid">
         <div class="field full">
-          <label for="fStoryIdea">Your first plan and the problem it hit</label>
-          <textarea id="fStoryIdea" maxlength="500" data-save="storyOriginalIdea" placeholder="What did you plan on Day 1 or 2, and what did testing reveal was the biggest problem?"></textarea>
-        </div>
-        <div class="field full">
-          <label for="fStoryChange">Your biggest revision and what testing showed after</label>
-          <textarea id="fStoryChange" maxlength="500" data-save="storyBiggestChange" placeholder="Which revision helped most, and what did the next trials show?"></textarea>
-        </div>
-        <div class="field full">
-          <label for="fStoryHow">How your final design works, its best result, and one trade-off</label>
-          <textarea id="fStoryHow" maxlength="500" data-save="storyHowItWorks" placeholder="Path of the ball, your strongest trial result, and one thing you gave up."></textarea>
+          <label for="fStoryResponse">What did you change during the challenge, and how did those changes improve your design?</label>
+          <textarea id="fStoryResponse" maxlength="1200" data-save="storyResponse"></textarea>
         </div>
       </div>
     </div>
@@ -592,42 +583,11 @@
 
   <section id="final-design" aria-labelledby="final-design-title">
     <h2 id="final-design-title" class="section-title">Final design summary</h2>
-    <p class="section-lead">Give the key facts about your finished design.</p>
     <div class="card">
       <div class="form-grid">
-        <div class="field">
-          <label for="fFinalName">Final design name</label>
-          <input type="text" id="fFinalName" maxlength="80" data-save="finalDesignName" placeholder="Give your design a name.">
-        </div>
-        <div class="field">
-          <label for="fFinalConsistency">Consistency rating</label>
-          <select id="fFinalConsistency" data-save="finalConsistency">
-            <option value="">Choose one</option>
-            <option value="mostly">Mostly consistent</option>
-            <option value="somewhat">Somewhat consistent</option>
-            <option value="inconsistent">Inconsistent</option>
-          </select>
-        </div>
         <div class="field full">
-          <label for="fFinalDesc">Short description and most important feature</label>
-          <textarea id="fFinalDesc" maxlength="500" data-save="finalDesignDescription" placeholder="A short summary of what it looks like and the part that matters most."></textarea>
-        </div>
-        <div class="field full">
-          <label for="fFinalBest">Best performance result</label>
-          <textarea id="fFinalBest" maxlength="500" data-save="finalBestResult" placeholder="What was the best trial from Day 4?"></textarea>
-        </div>
-        <div class="field full">
-          <label for="fFinalMet">Did the final design meet the challenge goal?</label>
-          <select id="fFinalMet" data-save="finalMetGoal">
-            <option value="">Choose one</option>
-            <option value="yes">Yes</option>
-            <option value="mostly">Mostly</option>
-            <option value="no">Not yet</option>
-          </select>
-        </div>
-        <div class="field full">
-          <label for="fFinalImprove">One improvement you would make with more time</label>
-          <textarea id="fFinalImprove" maxlength="500" data-save="finalWouldImprove" placeholder="What is the next thing you would try?"></textarea>
+          <label for="fFinalDesignResponse">Describe how your final design slows or controls the ball.</label>
+          <textarea id="fFinalDesignResponse" maxlength="1200" data-save="finalDesignResponse"></textarea>
         </div>
       </div>
     </div>
@@ -640,40 +600,6 @@
     <div class="quiz-controls">
       <button class="cta ghost" type="button" id="quizScoreBtn">Score Quiz</button>
       <span class="quiz-score" id="quizScoreDisplay" hidden></span>
-    </div>
-  </section>
-
-  <section id="growth" aria-labelledby="growth-title">
-    <h2 id="growth-title" class="section-title">Engineering growth</h2>
-    <p class="section-lead">A short reflection on what you learned this week.</p>
-    <div class="card">
-      <div class="form-grid">
-        <div class="field full">
-          <label for="fGrowthSkill">Which engineering skill grew most, and what was the hardest part?</label>
-          <textarea id="fGrowthSkill" maxlength="500" data-save="growthSkill" placeholder="Testing, revising, teamwork, or planning, plus the toughest day or step."></textarea>
-        </div>
-        <div class="field full">
-          <label for="fGrowthProud">What are you most proud of, and what would you do differently next time?</label>
-          <textarea id="fGrowthProud" maxlength="500" data-save="growthProud" placeholder="One thing that made you proud, and one thing you would change."></textarea>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="team-reflect" aria-labelledby="team-reflect-title">
-    <h2 id="team-reflect-title" class="section-title">Team reflection</h2>
-    <p class="section-lead">Say something kind and useful about your team.</p>
-    <div class="card">
-      <div class="form-grid">
-        <div class="field full">
-          <label for="fTeamDecide">How did your team make decisions and share the work?</label>
-          <textarea id="fTeamDecide" maxlength="500" data-save="teamDecisions" placeholder="How you decided (voting, discussion) and what people did."></textarea>
-        </div>
-        <div class="field full">
-          <label for="fTeamHelped">What worked well as a team, and what would improve teamwork next time?</label>
-          <textarea id="fTeamHelped" maxlength="500" data-save="teamHelped" placeholder="One thing that helped, and one specific idea for a future team."></textarea>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -970,11 +896,9 @@
   ];
 
   var SUCCESS_CRITERIA = [
-    'Summarized your original idea and problem.',
-    'Explained a major revision and its result.',
-    'Explained the final design and trade-off.',
+    'Wrote your engineering story.',
+    'Wrote your final design summary.',
     'Completed the knowledge check.',
-    'Reflected on your growth.',
     'Ready to submit the final record.'
   ];
 
@@ -984,22 +908,11 @@
     team: '',
     classBlock: '',
     block: '',
-    storyOriginalIdea: '',
-    storyBiggestChange: '',
-    storyHowItWorks: '',
-    finalDesignName: '',
-    finalDesignDescription: '',
-    finalBestResult: '',
-    finalConsistency: '',
-    finalMetGoal: '',
-    finalWouldImprove: '',
+    storyResponse: '',
+    finalDesignResponse: '',
     quizAnswers: {},
     quizScored: false,
     quizScore: 0,
-    growthSkill: '',
-    growthProud: '',
-    teamDecisions: '',
-    teamHelped: '',
     tomorrowRevealed: false,
     tipRevealed: false,
     realRevealed: false,
@@ -1204,12 +1117,10 @@
   }
   function successDoneFlags() {
     return [
-      (state.storyOriginalIdea || '').trim().length >= 10,
-      (state.storyBiggestChange || '').trim().length >= 10,
-      (state.storyHowItWorks || '').trim().length >= 10,
+      isStoryDone(),
+      isFinalSummaryDone(),
       state.quizScored === true,
-      isGrowthDone(),
-      isFinalSummaryDone() && isTeamReflectionDone()
+      isStoryDone() && isFinalSummaryDone() && isQuizComplete() && isTeamInfoDone()
     ];
   }
 
@@ -1272,38 +1183,21 @@
            (state.classBlock || '').trim().length > 0;
   }
   function isStoryDone() {
-    return (state.storyOriginalIdea || '').trim().length >= 10 &&
-           (state.storyBiggestChange || '').trim().length >= 10 &&
-           (state.storyHowItWorks || '').trim().length >= 10;
+    return (state.storyResponse || '').trim().length >= 10;
   }
   function isFinalSummaryDone() {
-    return (state.finalDesignName || '').trim().length > 0 &&
-           (state.finalDesignDescription || '').trim().length >= 10 &&
-           (state.finalBestResult || '').trim().length >= 5 &&
-           (state.finalConsistency || '').length > 0 &&
-           (state.finalMetGoal || '').length > 0 &&
-           (state.finalWouldImprove || '').trim().length >= 5;
+    return (state.finalDesignResponse || '').trim().length >= 10;
   }
   function isQuizComplete() {
     var allAnswered = QUIZ.every(function (q) { return typeof state.quizAnswers[q.id] === 'number'; });
     return allAnswered && state.quizScored === true;
   }
-  function isGrowthDone() {
-    return (state.growthSkill || '').trim().length >= 10 &&
-           (state.growthProud || '').trim().length >= 10;
-  }
-  function isTeamReflectionDone() {
-    return (state.teamDecisions || '').trim().length >= 10 &&
-           (state.teamHelped || '').trim().length >= 10;
-  }
 
   var STEPS = [
     { key: 'team',      label: 'Entered your name, team, and class',    done: isTeamInfoDone },
-    { key: 'story',     label: 'Completed the engineering story',       done: isStoryDone },
-    { key: 'final',     label: 'Filled in the final design summary',    done: isFinalSummaryDone },
-    { key: 'quiz',      label: 'Answered and scored the knowledge check', done: isQuizComplete },
-    { key: 'growth',    label: 'Wrote your engineering growth reflection', done: isGrowthDone },
-    { key: 'teamref',   label: 'Wrote your team reflection',            done: isTeamReflectionDone }
+    { key: 'story',     label: 'Wrote your engineering story',          done: isStoryDone },
+    { key: 'final',     label: 'Wrote your final design summary',       done: isFinalSummaryDone },
+    { key: 'quiz',      label: 'Answered and scored the knowledge check', done: isQuizComplete }
   ];
 
   function updateProgress() {
@@ -1360,11 +1254,9 @@
     if (!(state.student || '').trim()) return 'fStudent';
     if (!(state.team || '').trim()) return 'fTeam';
     if (!(state.classBlock || '').trim()) return 'fClass';
-    if (!isStoryDone()) return 'fStoryIdea';
-    if (!isFinalSummaryDone()) return 'fFinalName';
+    if (!isStoryDone()) return 'fStoryResponse';
+    if (!isFinalSummaryDone()) return 'fFinalDesignResponse';
     if (!isQuizComplete()) return 'quiz';
-    if (!isGrowthDone()) return 'fGrowthSkill';
-    if (!isTeamReflectionDone()) return 'fTeamDecide';
     return null;
   }
 
@@ -1495,31 +1387,12 @@
     });
     var out = {
       day: 5,
-      engineeringStory: {
-        originalIdeaAndProblem: state.storyOriginalIdea || '',
-        biggestChangeAndResult: state.storyBiggestChange || '',
-        howItWorksAndTradeoff:  state.storyHowItWorks || ''
-      },
-      finalDesignSummary: {
-        name:              state.finalDesignName || '',
-        description:       state.finalDesignDescription || '',
-        bestResult:        state.finalBestResult || '',
-        consistencyRating: state.finalConsistency || '',
-        metGoal:           state.finalMetGoal || '',
-        wouldImprove:      state.finalWouldImprove || ''
-      },
+      engineeringStory: state.storyResponse || '',
+      finalDesignSummary: state.finalDesignResponse || '',
       quizAnswers: quizExport,
       quizScore:  state.quizScored ? state.quizScore : null,
       quizScored: !!state.quizScored,
-      quizTotal:  QUIZ.length,
-      growthReflection: {
-        skillAndHardest: state.growthSkill || '',
-        proudAndNext:    state.growthProud || ''
-      },
-      teamReflection: {
-        decisionsAndContributions: state.teamDecisions || '',
-        helpedAndImprove:          state.teamHelped || ''
-      }
+      quizTotal:  QUIZ.length
     };
     return JSON.stringify(out);
   }
@@ -1634,19 +1507,6 @@
     return { blob: blob, base64: base64, filename: pdfFilename() };
   }
 
-  function consistencyLabel(v) {
-    if (v === 'mostly') return 'Mostly consistent';
-    if (v === 'somewhat') return 'Somewhat consistent';
-    if (v === 'inconsistent') return 'Inconsistent';
-    return '';
-  }
-  function metGoalLabel(v) {
-    if (v === 'yes') return 'Yes';
-    if (v === 'mostly') return 'Mostly';
-    if (v === 'no') return 'Not yet';
-    return '';
-  }
-
   function buildPdfDoc() {
     if (!window.jspdf) throw new Error('jspdf not loaded');
     var jsPDF = window.jspdf.jsPDF;
@@ -1728,30 +1588,13 @@
       });
       y += 2;
     }
-    function labeledBlock(label, body) {
-      bold(9.5); t(C.tealDk);
-      if (y > PH - 24) newPage();
-      doc.text(label, ML, y);
-      y += 5;
-      paragraph(body && body.trim() ? body : '(not entered)');
-    }
     function clip(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
-    heading('Learning Target');
-    paragraph('I can explain my engineering process and use evidence to evaluate my final design.');
-
     heading('Engineering Story');
-    labeledBlock('ORIGINAL IDEA AND FIRST PROBLEM', state.storyOriginalIdea);
-    labeledBlock('BIGGEST CHANGE AND WHAT TESTING SHOWED', state.storyBiggestChange);
-    labeledBlock('HOW IT WORKS, BEST RESULT, TRADE-OFF', state.storyHowItWorks);
+    paragraph((state.storyResponse && state.storyResponse.trim()) ? state.storyResponse : '(not entered)');
 
     heading('Final Design Summary');
-    labeledBlock('DESIGN NAME', state.finalDesignName || '(not entered)');
-    labeledBlock('DESCRIPTION AND KEY FEATURE', state.finalDesignDescription);
-    labeledBlock('BEST PERFORMANCE RESULT', state.finalBestResult);
-    labeledBlock('CONSISTENCY', consistencyLabel(state.finalConsistency) || '(not chosen)');
-    labeledBlock('MET THE CHALLENGE GOAL', metGoalLabel(state.finalMetGoal) || '(not chosen)');
-    labeledBlock('ONE IMPROVEMENT WITH MORE TIME', state.finalWouldImprove);
+    paragraph((state.finalDesignResponse && state.finalDesignResponse.trim()) ? state.finalDesignResponse : '(not entered)');
 
     heading('Knowledge Check');
     if (state.quizScored) {
@@ -1780,14 +1623,6 @@
       });
       y += 2;
     });
-
-    heading('Engineering Growth');
-    labeledBlock('SKILL THAT GREW MOST AND HARDEST PART', state.growthSkill);
-    labeledBlock('MOST PROUD OF AND WOULD DO DIFFERENTLY', state.growthProud);
-
-    heading('Team Reflection');
-    labeledBlock('DECISIONS AND CONTRIBUTIONS', state.teamDecisions);
-    labeledBlock('WHAT HELPED AND WOULD IMPROVE', state.teamHelped);
 
     heading('Day 5 Completion');
     var completionLines = STEPS.map(function (st) {

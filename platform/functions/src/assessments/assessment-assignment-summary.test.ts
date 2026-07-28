@@ -160,7 +160,6 @@ function seedOwnedAssignment(overrides: Record<string, unknown> = {}) {
     teacherId: TEACHER_UID,
     schoolId: SCHOOL_ID,
     lessonSlug: LESSON_SLUG,
-    lessonVersion: "1.0.0",
     mode: "classroom",
     status: "published",
     createdAt: { toMillis: () => 1_600_000_000_000 },

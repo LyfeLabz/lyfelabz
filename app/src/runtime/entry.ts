@@ -79,10 +79,26 @@ import { getFirebaseClientConfig, isEmulatorHost as detectEmulatorHost } from ".
 // hosts receive the injected certified project configuration. Neither
 // the API key nor any other secret is embedded in this bundle.
 
+// Diagnostic envelope for the first non-recoverable rejection that
+// transitions the orchestrator to `error`. Populated by the lessonQuiz
+// adapter (which is the earliest observer of a swallowed autosave
+// rejection) so a developer inspecting `window.lyfelabz.assessmentRuntime`
+// after a failed submission can read the original Firebase error code
+// and safe message that the orchestrator's generic
+// "assessment runtime is in an error state" would otherwise mask.
+// Contains no student PII, no auth token, no lesson answer state.
+type RuntimeLastError = {
+  readonly callable: "autosave" | "finalize";
+  readonly code: string | undefined;
+  readonly message: string | undefined;
+  readonly at: number;
+};
+
 type RuntimeGlobal = {
   version: string;
   mode: string;
   hasAssignmentContext: boolean;
+  lastError: RuntimeLastError | null;
   begin: () => Promise<void>;
   autosave: (responses: readonly SessionResponse[]) => Promise<{ readonly persisted: boolean }>;
   finalize: (responses: readonly SessionResponse[]) => Promise<FinalizeResult>;
@@ -138,6 +154,70 @@ function isRecoverableFirebaseError(err: unknown): boolean {
 const NOT_READY_MESSAGE =
   "Your submission service isn't ready yet. Refresh the page and try again.";
 
+// Extract a safe {code, message} envelope from an unknown rejection.
+// Firebase FunctionsError carries a stable string `code` (e.g.
+// "functions/internal", "functions/unauthenticated"); other rejections
+// may only carry `message`. Never returns stack traces, request bodies,
+// tokens, or callable-details payloads that could echo student answers.
+function safeErrorEnvelope(err: unknown): {
+  readonly code: string | undefined;
+  readonly message: string | undefined;
+} {
+  if (err === null || typeof err !== "object") {
+    return { code: undefined, message: typeof err === "string" ? err : undefined };
+  }
+  const code = (err as { code?: unknown }).code;
+  const message = (err as { message?: unknown }).message;
+  return {
+    code: typeof code === "string" ? code : undefined,
+    message: typeof message === "string" ? message : undefined,
+  };
+}
+
+// Diagnostic sink for the earliest observable callable rejection. The
+// orchestrator masks the underlying rejection behind a generic
+// "assessment runtime is in an error state" once mode transitions to
+// `error`; this helper captures the original safe envelope one level
+// earlier so a developer can read it off `window.lyfelabz.assessmentRuntime.lastError`
+// after a failed submission, and simultaneously emits a single
+// console.warn so the rejection appears in DevTools even if the student
+// never inspects the runtime object. Idempotent: only the first
+// rejection is recorded (subsequent calls after the runtime is in error
+// mode all surface the same generic guard error and would overwrite the
+// diagnostically useful root event).
+function recordLastError(
+  win: WindowWithRuntime,
+  callable: RuntimeLastError["callable"],
+  err: unknown,
+): void {
+  try {
+    const envelope = safeErrorEnvelope(err);
+    const ns = win[NAMESPACE] ?? {};
+    const runtime = ns[RUNTIME_KEY];
+    if (runtime && runtime.lastError === null) {
+      const entry: RuntimeLastError = {
+        callable,
+        code: envelope.code,
+        message: envelope.message,
+        at: Date.now(),
+      };
+      (runtime as { lastError: RuntimeLastError | null }).lastError = entry;
+      try {
+        // eslint-disable-next-line no-console
+        console.warn("[lyfelabz] assessment callable rejected", {
+          callable,
+          code: envelope.code,
+          message: envelope.message,
+        });
+      } catch {
+        // console access failure is non-fatal.
+      }
+    }
+  } catch {
+    // Diagnostic sink must never itself throw.
+  }
+}
+
 function installLessonQuiz(
   win: WindowWithRuntime,
   runtime: AssessmentRuntime | null,
@@ -155,10 +235,14 @@ function installLessonQuiz(
       if (responses.length === 0) return null;
       try {
         return await runtime.autosave(responses);
-      } catch {
-        // Autosave failure is soft by design (byte-identical coalesce
-        // and later autosaves recover the payload). Do not surface it
-        // to the lesson UX.
+      } catch (err) {
+        // Autosave failure is soft by design for the lesson UX
+        // (byte-identical coalesce, subsequent autosaves recover the
+        // payload), but the underlying Firebase rejection is the first
+        // observable evidence of a callable failure and disappears
+        // forever once the orchestrator masks it behind the generic
+        // error-state guard. Preserve it for diagnostic inspection.
+        recordLastError(win, "autosave", err);
         return null;
       }
     },
@@ -177,6 +261,7 @@ function installLessonQuiz(
         const result = await runtime.finalize(responses);
         return { ok: true, result };
       } catch (err) {
+        recordLastError(win, "finalize", err);
         const message = (err as { message?: unknown }).message;
         return {
           ok: false,
@@ -380,6 +465,7 @@ function installInertRuntime(win: WindowWithRuntime, hasContext: boolean): Runti
     version: VERSION,
     mode: hasContext ? "pending" : "inert",
     hasAssignmentContext: hasContext,
+    lastError: null,
     begin: async () => {},
     autosave: async () => ({ persisted: false }),
     finalize: async () => {
@@ -425,6 +511,7 @@ function attachRuntimeAdapter(
       return runtime.getStatus().mode;
     },
     hasAssignmentContext: runtime.hasAssignmentContext,
+    lastError: null,
     begin: () => runtime.begin(),
     autosave: (responses) => runtime.autosave(responses),
     finalize: (responses) => runtime.finalize(responses),

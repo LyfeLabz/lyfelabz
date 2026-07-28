@@ -239,7 +239,6 @@ function existingMatchesRequest(
   if (existing.classId !== assignment.classId) return false;
   if (existing.teacherId !== assignment.teacherId) return false;
   if (existing.lessonSlug !== assignment.lessonSlug) return false;
-  if (existing.lessonVersion !== assignment.lessonVersion) return false;
   if (existing.mode !== assignment.mode) return false;
   return true;
 }
@@ -260,8 +259,8 @@ function safeLog(fn: () => void): void {
 // (`{ role: "student", schoolId }`) were issued by
 // studentsCompleteOnboarding in Sprint 2. Ownership fields are
 // server-derived: `studentId` is the caller's uid; `classId`, `teacherId`,
-// `schoolId`, `lessonSlug`, `lessonVersion`, and `mode` are denormalized
-// from the referenced assignment record per §12.3; none are client-supplied.
+// `schoolId`, `lessonSlug`, and `mode` are denormalized from the
+// referenced assignment record per §12.3; none are client-supplied.
 //
 // Every side effect flows through the canonical shared helpers:
 //   - assignment read via `assignmentDocRef(...).get()`             (typed ref)
@@ -345,7 +344,6 @@ async function submissionsCreateHandler(
     teacherId: assignment.teacherId,
     schoolId: assignment.schoolId,
     lessonSlug: assignment.lessonSlug,
-    lessonVersion: assignment.lessonVersion,
     mode: assignment.mode,
     status: "submitted",
     startedAt: FieldValue.serverTimestamp(),
@@ -365,7 +363,6 @@ async function submissionsCreateHandler(
       assignmentId: input.assignmentId,
       classId: assignment.classId,
       lessonSlug: assignment.lessonSlug,
-      lessonVersion: assignment.lessonVersion,
     },
   });
 

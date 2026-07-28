@@ -28,6 +28,10 @@ const SHIM_PATH = path.resolve(
   __dirname,
   "../../../assets/lyfelabz-assessment-runtime.js",
 );
+const ACTIVE_BUNDLE_PATH = path.resolve(
+  __dirname,
+  "../../../assets/lyfelabz-assessment-runtime-active.js",
+);
 
 const NAMESPACE = "lyfelabz";
 const LESSON_QUIZ_KEY = "lessonQuiz";
@@ -64,6 +68,78 @@ function runShim(): void {
   // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
   new Function(shimSource).call(window);
 }
+
+// Root-cause regression for the production hang: the shim's placeholder
+// runtime was installed with the same VERSION string as the active
+// bundle. The active bundle's bootstrap gate is:
+//
+//   if (!existing || existing.version !== VERSION) { void bootstrap(...) }
+//
+// So when the shim advertised the same version, the gate short-circuited,
+// the active bundle never bootstrapped, and lessonQuiz.finalize kept
+// returning the shim's terminal-error result forever. The tests below
+// pin the two invariants that keep this from regressing:
+//
+//   1. The shim's VERSION string must never equal the active bundle's
+//      VERSION string.
+//   2. Given the shim has installed its placeholder, the active bundle's
+//      gate expression must evaluate to true (i.e. bootstrap runs).
+//
+// Also pins the shim's self-guard: re-executing the shim after the
+// active bundle has replaced the runtime must not overwrite the real
+// runtime with the placeholder.
+
+function extractVersion(source: string): string {
+  const jsMatch = source.match(/VERSION\s*=\s*["']([^"']+)["']/);
+  if (!jsMatch || !jsMatch[1]) {
+    throw new Error("Could not locate VERSION literal in bundle source");
+  }
+  return jsMatch[1];
+}
+
+describe("shim/active VERSION-collision root-cause regression", () => {
+  const shimVersion = extractVersion(fs.readFileSync(SHIM_PATH, "utf8"));
+  const activeVersion = extractVersion(
+    fs.readFileSync(ACTIVE_BUNDLE_PATH, "utf8"),
+  );
+
+  it("shim VERSION differs from active bundle VERSION (bootstrap gate can fire)", () => {
+    expect(shimVersion).not.toBe(activeVersion);
+  });
+
+  it("active bundle bootstrap gate fires when the shim's placeholder is already installed", () => {
+    resetWindow(true);
+    runShim();
+    const existing = (window as unknown as {
+      lyfelabz: { assessmentRuntime: { version: string } };
+    }).lyfelabz.assessmentRuntime;
+    // This is the exact predicate from entry.ts:498 / active bundle L8386.
+    const gateShouldFire = !existing || existing.version !== activeVersion;
+    expect(gateShouldFire).toBe(true);
+  });
+
+  it("shim self-guard: re-executing the shim after the active runtime is installed does not overwrite it", () => {
+    resetWindow(true);
+    runShim();
+    // Simulate the active bundle replacing the runtime.
+    const realRuntime = {
+      version: activeVersion,
+      mode: "active",
+      hasAssignmentContext: true,
+      begin: () => Promise.resolve(),
+      autosave: () => Promise.resolve({ persisted: true }),
+      finalize: () => Promise.resolve({ ok: true }),
+      getAttempt: () => Promise.resolve(null),
+    };
+    const ns = (window as unknown as {
+      lyfelabz: Record<string, unknown>;
+    }).lyfelabz;
+    ns.assessmentRuntime = realRuntime;
+    // Re-evaluate the shim (e.g. a second <script> tag or a stale cache).
+    runShim();
+    expect(ns.assessmentRuntime).toBe(realRuntime);
+  });
+});
 
 describe("shim lessonQuiz.finalize - regression: production 'Submitting...' hang", () => {
   afterEach(() => {

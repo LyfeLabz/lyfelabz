@@ -10,6 +10,7 @@ import {
   createFirestoreBatch,
   log,
   requireDistrictContext,
+  resolveCurrentAssessmentRevisionId,
   writeAuditEvent,
   type AssignmentPublishWrite,
   type AssignmentRecord,
@@ -203,6 +204,23 @@ async function assignmentsPublishHandler(
       "Assignment record is missing its class reference.",
     );
   }
+  if (!isNonEmptyString(existing.lessonSlug)) {
+    throw new PlatformError(
+      "assignments.invalidState",
+      "Assignment record is missing its lesson slug.",
+    );
+  }
+
+  // Immutable grading contract per ASSESSMENT_SCORING_CONTRACT.md §12.1.
+  // Publication is refused unless the referenced assessment has already
+  // been deployed. The currently deployed `assessmentRevisionId` is
+  // resolved through the shared identifier helper (the sole owner of the
+  // identifier grammar) and stamped once on the draft -> published
+  // transition. Every downstream session and attempt scores against this
+  // exact revision.
+  const assessmentRevisionId = await resolveCurrentAssessmentRevisionId(
+    existing.lessonSlug,
+  );
 
   const population = await loadInitialRecipientPopulation(
     existing.classId,
@@ -227,6 +245,12 @@ async function assignmentsPublishHandler(
     // published transition; the idempotent already-published branch
     // above returns without writing).
     publishedAt: FieldValue.serverTimestamp(),
+    // Immutable grading contract per ASSESSMENT_SCORING_CONTRACT.md
+    // §12.1. Written exactly once on the first draft -> published
+    // transition. Close/reopen transitions intentionally omit this
+    // field; the idempotent already-published branch above returns
+    // without writing.
+    assessmentRevisionId,
   };
   batch.update(assignmentPublishDocRef(input.assignmentId), publishWrite);
   for (const studentId of population) {
@@ -248,7 +272,7 @@ async function assignmentsPublishHandler(
     payload: {
       classId: existing.classId,
       lessonSlug: existing.lessonSlug,
-      lessonVersion: existing.lessonVersion,
+      assessmentRevisionId,
       recipientCount: population.length,
     },
   });

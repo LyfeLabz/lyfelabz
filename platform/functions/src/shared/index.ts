@@ -20,6 +20,13 @@ export {
 } from "./errors/district-errors";
 export { PlatformError } from "./errors/platform-error";
 export {
+  assessmentIdForLessonSlug,
+  revisionIdForOrdinal,
+  parseAssessmentIdFromRevisionId,
+  parseRevisionOrdinalFromRevisionId,
+  resolveCurrentAssessmentRevisionId,
+} from "./assessment-identifiers";
+export {
   mapPlatformCodeToHttpsCode,
   platformCallable,
   translateThrown,

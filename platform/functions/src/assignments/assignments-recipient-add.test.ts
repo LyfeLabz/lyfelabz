@@ -96,7 +96,6 @@ function assignmentSnapshot(overrides: Record<string, unknown> = {}) {
       teacherId: TEACHER_UID,
       schoolId: SCHOOL_ID,
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: "published",
       createdAt: {} as never,

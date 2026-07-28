@@ -54,6 +54,18 @@ jest.mock("../shared", () => {
     assessmentDeploymentDocRef: mockAssessmentDeploymentDocRef,
     assessmentRevisionDeploymentDocRef: mockAssessmentRevisionDeploymentDocRef,
     assessmentAnswerKeyDeploymentDocRef: mockAssessmentAnswerKeyDeploymentDocRef,
+    assessmentIdForLessonSlug: (slug: string) => `assessment_${slug}`,
+    revisionIdForOrdinal: (assessmentId: string, ordinal: number) =>
+      `${assessmentId}__r${String(ordinal)}`,
+    parseRevisionOrdinalFromRevisionId: (revisionId: string) => {
+      const m = /__r(\d+)$/.exec(revisionId);
+      if (!m) return undefined;
+      const ordinal = Number(m[1]);
+      if (!Number.isFinite(ordinal) || !Number.isInteger(ordinal) || ordinal < 1) {
+        return undefined;
+      }
+      return ordinal;
+    },
   };
 });
 

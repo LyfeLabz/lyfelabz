@@ -25,8 +25,10 @@ export type AssignmentMode = "practice" | "classroom";
 
 // Canonical assignment record shape per Data Model §3.6.
 //
-// Required fields: classId, teacherId, schoolId, lessonSlug, lessonVersion,
-// mode, status, createdAt.
+// Required fields: classId, teacherId, schoolId, lessonSlug, mode, status,
+// createdAt.
+// Conditionally required: assessmentRevisionId is stamped on the first
+// draft -> published transition and is present on every non-draft record.
 // Optional fields: title, instructions, windowClosesAt, availableAt.
 //
 // `teacherId` and `schoolId` are denormalized from the referenced class per
@@ -34,8 +36,12 @@ export type AssignmentMode = "practice" | "classroom";
 // query for assignments must resolve ownership on the document itself
 // without a second read. Immutable ownership per §1.2: classId, teacherId,
 // schoolId, and createdAt are set at creation and never change. `lessonSlug`
-// and `lessonVersion` are frozen at creation per §12.4 to protect students
-// from mid-window content changes.
+// is frozen at creation per §12.4 to protect students from mid-window
+// content changes. `assessmentRevisionId` is the immutable grading contract
+// per ASSESSMENT_SCORING_CONTRACT.md §12.1 and is stamped once at
+// publication from the currently deployed revision of the referenced
+// assessment; every downstream session and attempt scores against that
+// exact revision.
 //
 // This type is the single source of truth for reads of
 // assignments/{assignmentId}. Write shapes are declared separately so that
@@ -45,10 +51,10 @@ export type AssignmentRecord = {
   readonly teacherId: string;
   readonly schoolId: string;
   readonly lessonSlug: string;
-  readonly lessonVersion: string;
   readonly mode: AssignmentMode;
   readonly status: AssignmentStatus;
   readonly createdAt: Timestamp;
+  readonly assessmentRevisionId?: string;
   readonly title?: string;
   readonly instructions?: string;
   readonly windowClosesAt?: Timestamp;
@@ -70,19 +76,20 @@ export type AssignmentRecord = {
 
 // Write shape for the draft-creation callable (assignmentsCreateDraft).
 // Conforms to Data Model §3.6: classId, teacherId, schoolId, lessonSlug,
-// lessonVersion, mode, and status are required on creation; createdAt is
-// stamped by the server via `FieldValue.serverTimestamp()`. The initial
-// status is always `draft` at creation per §3.6; other lifecycle values are
-// reached only through `assignmentsPublish`, `assignmentsClose`, or
-// `assignmentsArchive`. `windowClosesAt` and `availableAt` are written as
-// Timestamps if supplied by the caller; the shared writer path preserves
-// them exactly.
+// mode and status are required on creation; createdAt is stamped by the
+// server via `FieldValue.serverTimestamp()`. The initial status is always
+// `draft` at creation per §3.6; other lifecycle values are reached only
+// through `assignmentsPublish`, `assignmentsClose`, or
+// `assignmentsArchive`. `assessmentRevisionId` is not written at draft
+// creation; it is stamped later by `assignmentsPublish` from the currently
+// deployed revision of the referenced assessment.  `windowClosesAt` and
+// `availableAt` are written as Timestamps if supplied by the caller; the
+// shared writer path preserves them exactly.
 export type AssignmentCreationWrite = {
   readonly classId: string;
   readonly teacherId: string;
   readonly schoolId: string;
   readonly lessonSlug: string;
-  readonly lessonVersion: string;
   readonly mode: AssignmentMode;
   readonly status: "draft";
   readonly createdAt: FieldValue;
@@ -94,17 +101,17 @@ export type AssignmentCreationWrite = {
 
 // Write shape for the draft-update callable (assignmentsUpdateDraft).
 // Only the teacher-editable metadata fields (`title`, `instructions`,
-// `lessonSlug`, `lessonVersion`, `mode`, `windowClosesAt`, `availableAt`)
-// are writable through this path per Data Model §3.6 and §7.6. Ownership
-// fields (`classId`, `teacherId`, `schoolId`), `status`, and `createdAt`
-// are intentionally absent so that no draft update can silently reassign
-// ownership or drive the lifecycle field. Every field is optional so a
-// caller may update only the subset that changed.
+// `lessonSlug`, `mode`, `windowClosesAt`, `availableAt`) are writable
+// through this path per Data Model §3.6 and §7.6. Ownership fields
+// (`classId`, `teacherId`, `schoolId`), `status`, `createdAt`, and the
+// grading contract (`assessmentRevisionId`) are intentionally absent so
+// that no draft update can silently reassign ownership or drive the
+// lifecycle field. Every field is optional so a caller may update only the
+// subset that changed.
 export type AssignmentDraftUpdateWrite = {
   readonly title?: string;
   readonly instructions?: string;
   readonly lessonSlug?: string;
-  readonly lessonVersion?: string;
   readonly mode?: AssignmentMode;
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
@@ -122,6 +129,13 @@ export type AssignmentPublishWrite = {
   // close/reopen cycles because those writes intentionally exclude this
   // field. Never rewritten by the idempotent already-published path.
   readonly publishedAt: FieldValue;
+  // Immutable grading contract per ASSESSMENT_SCORING_CONTRACT.md §12.1.
+  // Stamped exactly once at the first `draft` -> `published` transition
+  // from the currently deployed revision of the referenced assessment.
+  // Every downstream session and attempt scores against this exact
+  // revision. Never rewritten by close/reopen cycles or by the idempotent
+  // already-published path.
+  readonly assessmentRevisionId: string;
 };
 
 // Write shape for the close callable (assignmentsClose). Conforms to Data
@@ -152,7 +166,7 @@ export type AssignmentArchiveWrite = {
 // (lmsAssignmentsPublish). Narrow by design: only the additive
 // `lmsPublicationRef` mirror pointer is writable through this path.
 // Ownership fields (classId, teacherId, schoolId), lifecycle field
-// (`status`), lesson fields (`lessonSlug`, `lessonVersion`), timing
+// (`status`), lesson fields (`lessonSlug`), timing
 // fields, and title/instructions are intentionally absent so an LMS
 // publication cannot launder into an ownership reassignment or a
 // content edit per PDR-019d.

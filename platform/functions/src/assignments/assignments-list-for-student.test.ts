@@ -100,7 +100,6 @@ type AssignmentOverrides = Partial<{
   teacherId: string;
   schoolId: string;
   lessonSlug: string;
-  lessonVersion: string;
   mode: string;
   status: string;
   title: string;
@@ -119,7 +118,6 @@ function assignmentSnap(
       teacherId: TEACHER_UID,
       schoolId: SCHOOL_ID,
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: "published",
       createdAt: {},
@@ -448,7 +446,7 @@ describe("assignmentsListForStudent - projection safety", () => {
       "windowClosesAt",
       "availableAt",
       "mode",
-      "lessonVersion",
+      "assessmentRevisionId",
       "lmsPublicationRef",
       "createdAt",
     ]) {

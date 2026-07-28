@@ -168,7 +168,6 @@ export type AssignmentsCreateDraftInput = {
   readonly assignmentId: string;
   readonly classId: string;
   readonly lessonSlug: string;
-  readonly lessonVersion: string;
   readonly mode: "practice" | "classroom";
   readonly title?: string;
   readonly instructions?: string;

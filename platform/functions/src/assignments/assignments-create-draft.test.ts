@@ -63,7 +63,6 @@ const VALID_DATA = {
   assignmentId: "assign-1",
   classId: "class-abc",
   lessonSlug: "lesson_g7_earths-layers",
-  lessonVersion: "1",
   mode: "classroom",
 };
 
@@ -124,7 +123,6 @@ function existingAssignmentSnapshot(
       teacherId: "teacher-uid",
       schoolId: "school-a",
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: "draft",
       createdAt: {} as never,
@@ -167,7 +165,6 @@ describe("assignmentsCreateDraft", () => {
       teacherId: TEACHER_UID,
       schoolId: SCHOOL_ID,
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: "draft",
       createdAt: SERVER_TIMESTAMP_SENTINEL,
@@ -183,7 +180,6 @@ describe("assignmentsCreateDraft", () => {
       payload: {
         classId: "class-abc",
         lessonSlug: "lesson_g7_earths-layers",
-        lessonVersion: "1",
         mode: "classroom",
       },
     });
@@ -327,7 +323,7 @@ describe("assignmentsCreateDraft", () => {
     ).rejects.toMatchObject({ code: "assignments.invalidRequest" });
   });
 
-  it("rejects invalid ids, slugs, versions, and modes", async () => {
+  it("rejects invalid ids, slugs, and modes", async () => {
     await expect(
       __assignmentsCreateDraftHandler(
         makeRequest({ data: { ...VALID_DATA, assignmentId: "bad/id" } }),
@@ -343,11 +339,6 @@ describe("assignmentsCreateDraft", () => {
         makeRequest({ data: { ...VALID_DATA, lessonSlug: "" } }),
       ),
     ).rejects.toMatchObject({ code: "assignments.invalidLessonSlug" });
-    await expect(
-      __assignmentsCreateDraftHandler(
-        makeRequest({ data: { ...VALID_DATA, lessonVersion: "bad version!" } }),
-      ),
-    ).rejects.toMatchObject({ code: "assignments.invalidLessonVersion" });
     await expect(
       __assignmentsCreateDraftHandler(
         makeRequest({ data: { ...VALID_DATA, mode: "graded" } }),

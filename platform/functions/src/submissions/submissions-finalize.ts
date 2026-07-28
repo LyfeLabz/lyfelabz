@@ -356,7 +356,6 @@ async function submissionsFinalizeHandler(
       assignmentId: existing.assignmentId,
       classId: existing.classId,
       lessonSlug: existing.lessonSlug,
-      lessonVersion: existing.lessonVersion,
     },
   });
 

@@ -43,7 +43,6 @@ describe("Firestore Rules: assignments/{assignmentId}/recipients/{studentId}", (
         teacherId: OWNER_TEACHER_UID,
         schoolId: SCHOOL_ID,
         lessonSlug: "lesson_g7_earths-layers",
-        lessonVersion: "1",
         mode: "classroom",
         status: "published",
         createdAt: new Date("2026-08-15T00:00:00Z"),

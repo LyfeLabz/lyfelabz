@@ -49,7 +49,15 @@
     };
   }
 
-  var VERSION = '17.5.0';
+  // The shim advertises a distinct version identifier from the active
+  // bundle. The active bundle's bootstrap gate replaces any runtime whose
+  // version does not match its own compiled VERSION; if the shim shared
+  // that string the gate would treat the inert placeholder as the real
+  // runtime and never bootstrap, leaving lessonQuiz.finalize() resolving
+  // to null and stranding students on "Submitting...". The '-shim'
+  // suffix guarantees the strings never collide across coordinated
+  // releases.
+  var VERSION = '17.5.0-shim';
   var NAMESPACE = 'lyfelabz';
   var RUNTIME_KEY = 'assessmentRuntime';
   var LESSON_QUIZ_KEY = 'lessonQuiz';
@@ -58,8 +66,12 @@
 
   if (typeof window === 'undefined') return;
 
+  // If anything is already installed - a prior shim load, or the active
+  // runtime that replaced the shim - do not overwrite it. The shim only
+  // ever installs an inert placeholder, so replacing a real runtime with
+  // it would regress the page.
   var existing = window[NAMESPACE] && window[NAMESPACE][RUNTIME_KEY];
-  if (existing && existing.version === VERSION) return;
+  if (existing) return;
 
   function detectAssignmentContext() {
     try {

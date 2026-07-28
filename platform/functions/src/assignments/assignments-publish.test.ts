@@ -33,6 +33,7 @@ const mockCreateFirestoreBatch = jest.fn(() => mockBatch);
 
 const mockWriteAuditEvent = jest.fn();
 const mockRequireDistrictContext = jest.fn();
+const mockResolveCurrentAssessmentRevisionId = jest.fn();
 
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
@@ -64,6 +65,7 @@ jest.mock("../shared", () => {
     enrollmentsCollectionRef: mockEnrollmentsCollectionRef,
     createFirestoreBatch: mockCreateFirestoreBatch,
     requireDistrictContext: mockRequireDistrictContext,
+    resolveCurrentAssessmentRevisionId: mockResolveCurrentAssessmentRevisionId,
     writeAuditEvent: mockWriteAuditEvent,
   };
 });
@@ -76,6 +78,8 @@ const SCHOOL_ID = "school-a";
 const DISTRICT_ID = "district-1";
 const ASSIGNMENT_ID = "assign-1";
 const CLASS_ID = "class-abc";
+const LESSON_SLUG = "lesson_g7_earths-layers";
+const ASSESSMENT_REVISION_ID = `assessment_${LESSON_SLUG}__r1`;
 
 const VALID_DISTRICT_CONTEXT = Object.freeze({
   uid: TEACHER_UID,
@@ -110,7 +114,6 @@ function existingSnapshot(
       teacherId: TEACHER_UID,
       schoolId: SCHOOL_ID,
       lessonSlug: "lesson_g7_earths-layers",
-      lessonVersion: "1",
       mode: "classroom",
       status: "draft",
       createdAt: {} as never,
@@ -167,6 +170,10 @@ describe("assignmentsPublish", () => {
     mockWriteAuditEvent.mockReset();
     mockRequireDistrictContext.mockReset();
     mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
+    mockResolveCurrentAssessmentRevisionId.mockReset();
+    mockResolveCurrentAssessmentRevisionId.mockResolvedValue(
+      ASSESSMENT_REVISION_ID,
+    );
     mockLogInfo.mockReset();
     mockLogWarn.mockReset();
     mockLogError.mockReset();
@@ -191,6 +198,7 @@ describe("assignmentsPublish", () => {
       expect(mockBatchUpdate).toHaveBeenCalledWith(mockPublishRefSentinel, {
         status: "published",
         publishedAt: SERVER_TIMESTAMP_SENTINEL,
+        assessmentRevisionId: ASSESSMENT_REVISION_ID,
       });
       expect(mockBatchSet).toHaveBeenCalledTimes(3);
       for (const studentId of ["student-1", "student-2", "student-3"]) {
@@ -225,8 +233,8 @@ describe("assignmentsPublish", () => {
         districtId: DISTRICT_ID,
         payload: {
           classId: CLASS_ID,
-          lessonSlug: "lesson_g7_earths-layers",
-          lessonVersion: "1",
+          lessonSlug: LESSON_SLUG,
+          assessmentRevisionId: ASSESSMENT_REVISION_ID,
           recipientCount: 3,
         },
       });
@@ -315,6 +323,37 @@ describe("assignmentsPublish", () => {
         expect.objectContaining({ studentId: "student-good" }),
         expect.objectContaining({ studentId: "student-good" }),
       );
+    });
+
+    // Permanent regression: an Assignment cannot be published unless a
+    // deployed AssessmentRevision exists per ASSESSMENT_SCORING_CONTRACT.md
+    // §12.1. The publish path resolves the frozen assessmentRevisionId
+    // through the shared identifier helper and refuses when no revision
+    // has been deployed for the referenced lesson. No lifecycle write,
+    // no recipient snapshot, and no audit event escapes the refusal.
+    it("refuses to publish when the referenced assessment has not been deployed", async () => {
+      const { PlatformError: ActualPlatformError } = jest.requireActual(
+        "../shared/errors/platform-error",
+      );
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockResolveCurrentAssessmentRevisionId.mockReset();
+      mockResolveCurrentAssessmentRevisionId.mockRejectedValueOnce(
+        new ActualPlatformError(
+          "assessments.notDeployed",
+          "No deployed assessment exists for lessonSlug.",
+        ),
+      );
+
+      await expect(
+        __assignmentsPublishHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "assessments.notDeployed" });
+
+      expect(mockCreateFirestoreBatch).not.toHaveBeenCalled();
+      expect(mockBatchUpdate).not.toHaveBeenCalled();
+      expect(mockBatchSet).not.toHaveBeenCalled();
+      expect(mockBatchCommit).not.toHaveBeenCalled();
+      expect(mockEnrollmentsGet).not.toHaveBeenCalled();
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
     });
 
     it("propagates a batch commit failure without emitting the audit event", async () => {

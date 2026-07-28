@@ -58,6 +58,14 @@ jest.mock("../shared", () => {
     enrollmentsCollectionRef: jest.fn(),
     requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
+    parseAssessmentIdFromRevisionId: (revisionId: string) => {
+      const m = /__r(\d+)$/.exec(revisionId);
+      if (!m) return undefined;
+      const head = revisionId.slice(0, m.index);
+      if (!head.startsWith("assessment_")) return undefined;
+      if (head.length <= "assessment_".length) return undefined;
+      return head;
+    },
   };
 });
 
@@ -108,7 +116,7 @@ function assignmentSnapshot(overrides: Record<string, unknown> = {}) {
       teacherId: TEACHER_UID,
       schoolId: SCHOOL_ID,
       lessonSlug: LESSON_SLUG,
-      lessonVersion: LESSON_VERSION,
+      assessmentRevisionId: REVISION_ID,
       mode: "classroom",
       status: "published",
       createdAt: {} as never,
