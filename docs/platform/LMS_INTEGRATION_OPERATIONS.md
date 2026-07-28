@@ -503,3 +503,88 @@ Sprint 8D may begin once the items in §13 are signed off and the token store pr
 ---
 
 *End of runbook. This document is the canonical operational companion to `LMS_INTEGRATION_ARCHITECTURE.md`. Every procedure in it implements a commitment already recorded in the certified architecture. Sprint 8D may begin under the conditions in §18.*
+
+---
+
+## Appendix T. Test and Emulator Fixture Injection (Sprint 23A)
+
+> This appendix is TEST-ONLY. Nothing in it is a production
+> operational procedure. Production operations remain governed by
+> sections 1 through 18 above. Nothing in this appendix authorizes a
+> new operational capability, credential, or deployment.
+
+Sprint 23A introduced two Google-package-local seams inside
+`platform/functions/src/lms/providers/google-classroom/`:
+
+- `transport.ts` - `GoogleClassroomTransport` interface and
+  `getGoogleClassroomTransport` / `setGoogleClassroomTransport` /
+  `withGoogleClassroomTransport` / `resetGoogleClassroomTransportForTests`
+- `config.ts` - `GoogleClassroomConfig` type and
+  `getGoogleClassroomConfig` / `setGoogleClassroomConfig` /
+  `withGoogleClassroomConfig` / `resetGoogleClassroomConfigForTests`
+
+Both seams ship an unbound default that throws a stable `PlatformError`
+(`lms.googleClassroomTransportUnbound` /
+`lms.googleClassroomConfigUnbound`) if any production path resolves
+them. In Sprint 23A the production adapter still short-circuits at
+`lms.providerNotYetOperational` before either seam is reached; the
+unbound throws are defense-in-depth so accidental activation is
+caught at test time.
+
+A test-only in-memory fixture transport is provided at
+`platform/functions/src/lms/providers/google-classroom/__fixtures__/fixture-transport.ts`.
+It is located under `__fixtures__/` so its non-production role is
+obvious and it uses entirely fictional identifiers, tokens, courses,
+and student names.
+
+Test wiring pattern (`ts-jest`):
+
+```ts
+import {
+  setGoogleClassroomTransport,
+  resetGoogleClassroomTransportForTests,
+} from "../providers/google-classroom/transport";
+import {
+  setGoogleClassroomConfig,
+  resetGoogleClassroomConfigForTests,
+} from "../providers/google-classroom/config";
+import { createFixtureGoogleClassroomTransport } from "../providers/google-classroom/__fixtures__/fixture-transport";
+
+afterEach(() => {
+  resetGoogleClassroomTransportForTests();
+  resetGoogleClassroomConfigForTests();
+});
+
+it("<test>", async () => {
+  setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
+  setGoogleClassroomConfig({
+    clientId: "fixture-oauth-client-id",
+    clientSecret: "fixture-oauth-client-secret-never-real",
+    redirectUri: "https://fixture.example.invalid/lms-callback",
+  });
+  // ... exercise the code under test.
+});
+```
+
+For scoped injection that guarantees restoration on failure, prefer
+`withGoogleClassroomTransport(fixture, () => ...)` and
+`withGoogleClassroomConfig(config, () => ...)` over paired
+set/reset calls.
+
+**Explicit invariants preserved by this appendix.** The Sprint 23A
+seams do not:
+
+- alter the vendor-neutral `LmsProviderAdapter` interface
+  (`providers/provider.ts`);
+- change any callable's request or response shape;
+- add or rename any Firestore collection;
+- request additional OAuth scopes;
+- persist token material to Firestore, return token material to any
+  client, or emit token material into logs or error messages;
+- affect the production `LmsTokenStore` binding (the in-process default
+  and its production replacement remain a §17 obligation).
+
+The production binding of the transport (a real HTTPS client) and the
+production binding of the config (Secret Manager for the client secret,
+typed parameters for the non-secret values) are Sprint 23B obligations
+and are out of scope for this appendix.
