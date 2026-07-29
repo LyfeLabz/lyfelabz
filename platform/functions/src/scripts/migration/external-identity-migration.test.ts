@@ -15,6 +15,7 @@ const mockResolveActive = jest.fn();
 const mockWriteAuditEvent = jest.fn();
 const mockLogInfo = jest.fn();
 const mockLogError = jest.fn();
+const mockComputeDocId = jest.fn();
 
 jest.mock("../../shared", () => {
   const { PlatformError } = jest.requireActual(
@@ -24,6 +25,10 @@ jest.mock("../../shared", () => {
     PlatformError,
     log: { info: mockLogInfo, warn: jest.fn(), error: mockLogError },
     userDocRef: mockUserDocRef,
+    computeExternalIdentityDocId: (input: {
+      providerId: string;
+      providerAccountId: string;
+    }) => mockComputeDocId(input),
     createOrConfirmExternalIdentity: mockCreateOrConfirm,
     resolveActiveExternalIdentity: mockResolveActive,
     writeAuditEvent: mockWriteAuditEvent,
@@ -62,8 +67,24 @@ beforeEach(() => {
   mockWriteAuditEvent.mockReset();
   mockLogInfo.mockReset();
   mockLogError.mockReset();
+  mockComputeDocId.mockReset();
   mockWriteAuditEvent.mockResolvedValue({ eventId: "evt", record: {} });
   mockResolveActive.mockResolvedValue({ resolved: false });
+  // Deterministic but PII-free surrogate. Real production uses
+  // SHA-256; the surrogate returns a stable 64-hex string per input
+  // that does NOT echo the raw provider account identifier, so
+  // redaction assertions can trust the sample array.
+  mockComputeDocId.mockImplementation(
+    (input: { providerId: string; providerAccountId: string }) => {
+      const seed = `${input.providerId}|${input.providerAccountId}`;
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+      }
+      const hex = hash.toString(16).padStart(8, "0");
+      return hex.repeat(8);
+    },
+  );
 });
 
 describe("assertBackfillSafe", () => {
@@ -198,6 +219,83 @@ describe("runInventory", () => {
     const r = await runInventory();
     expect(r.counts.providerCollision).toBe(1);
     expect(r.counts.eligibleSingleGoogleProvider).toBe(0);
+  });
+
+  it("returns hashed providerCollisionSamples up to the default cap (50)", async () => {
+    seedUserDoc("active");
+    const users = Array.from({ length: 60 }, (_, i) =>
+      userFixture({
+        uid: `u-${i}`,
+        providerData: [{ providerId: "google.com", uid: `pa-${i}` }],
+      }),
+    );
+    mockListUsers.mockResolvedValueOnce({ users, pageToken: undefined });
+    mockResolveActive.mockImplementation(() =>
+      Promise.resolve({ resolved: true, userId: "u-other" }),
+    );
+    const r = await runInventory();
+    expect(r.counts.providerCollision).toBe(60);
+    expect(r.providerCollisionSamples).toHaveLength(50);
+    // Every sample is a 64-hex-character identifier; the raw
+    // provider account ids never leak into the sample array.
+    for (const sample of r.providerCollisionSamples) {
+      expect(sample).toMatch(/^[0-9a-f]{64}$/);
+    }
+    const serialized = JSON.stringify(r.providerCollisionSamples);
+    for (let i = 0; i < 60; i++) {
+      expect(serialized).not.toContain(`pa-${i}`);
+    }
+  });
+
+  it("respects an explicit collisionSampleLimit of 0 (counts still populate)", async () => {
+    seedUserDoc("active");
+    mockListUsers.mockResolvedValueOnce({
+      users: [userFixture({ uid: "u-1" })],
+      pageToken: undefined,
+    });
+    mockResolveActive.mockResolvedValue({ resolved: true, userId: "u-other" });
+    const r = await runInventory({ collisionSampleLimit: 0 });
+    expect(r.counts.providerCollision).toBe(1);
+    expect(r.providerCollisionSamples).toEqual([]);
+  });
+
+  it("rejects a negative or non-integer collisionSampleLimit", async () => {
+    await expect(
+      runInventory({ collisionSampleLimit: -1 }),
+    ).rejects.toBeInstanceOf(PlatformError);
+    await expect(
+      runInventory({ collisionSampleLimit: 1.5 }),
+    ).rejects.toBeInstanceOf(PlatformError);
+  });
+
+  it("is deterministic - two runs against identical input produce identical output", async () => {
+    seedUserDoc("active");
+    const users = [
+      userFixture({ uid: "u-a", providerData: [{ providerId: "google.com", uid: "pa-a" }] }),
+      userFixture({ uid: "u-b", providerData: [{ providerId: "google.com", uid: "pa-b" }] }),
+      userFixture({ uid: "u-c", providerData: [] }),
+    ];
+    mockListUsers.mockResolvedValue({ users, pageToken: undefined });
+    mockResolveActive.mockImplementation(({ providerAccountId }) =>
+      Promise.resolve(
+        providerAccountId === "pa-a"
+          ? { resolved: true, userId: "u-other" }
+          : { resolved: false },
+      ),
+    );
+    const r1 = await runInventory();
+    const r2 = await runInventory();
+    expect(r2).toEqual(r1);
+  });
+
+  it("returns an empty providerCollisionSamples array when there are no collisions", async () => {
+    seedUserDoc("active");
+    mockListUsers.mockResolvedValueOnce({
+      users: [userFixture()],
+      pageToken: undefined,
+    });
+    const r = await runInventory();
+    expect(r.providerCollisionSamples).toEqual([]);
   });
 });
 
@@ -364,6 +462,7 @@ describe("runBackfill", () => {
         "mappingsConfirmed",
         "mappingsCreated",
         "mappingsRestored",
+        "providerCollisionSamples",
         "usersScanned",
       ].sort(),
     );

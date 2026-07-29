@@ -3,6 +3,7 @@ import type { UserRecord } from "firebase-admin/auth";
 
 import {
   PlatformError,
+  computeExternalIdentityDocId,
   createOrConfirmExternalIdentity,
   log,
   resolveActiveExternalIdentity,
@@ -64,6 +65,16 @@ export type BackfillClassification =
 export type ExternalIdentityInventorySummary = {
   readonly usersScanned: number;
   readonly counts: Readonly<Record<BackfillClassification, number>>;
+  // Sprint 23E - bounded list of SHA-256 external-identity document
+  // identifiers observed in the `providerCollision` bucket during this
+  // page. The SHA-256 identifier is one-way and never exposes the raw
+  // provider account identifier, an email, or a UID. Callers cap the
+  // list length via `MigrationServiceOptions.collisionSampleLimit`;
+  // the default cap is 50. When the limit is 0, no samples are
+  // collected. Samples from a given page may overlap with samples
+  // returned on a prior page for the same collision if inventory is
+  // rerun; the caller deduplicates across pages if needed.
+  readonly providerCollisionSamples: readonly string[];
   readonly nextPageToken?: string;
 };
 
@@ -86,6 +97,11 @@ export type MigrationServiceOptions = {
   // makes the entry attributable to the migration service rather
   // than to a specific human user.
   readonly actorUserId?: string;
+  // Sprint 23E - bounded cap on the number of hashed
+  // `externalIdentityId` values collected for the
+  // `providerCollisionSamples` array. Undefined defaults to 50. Zero
+  // disables sample collection entirely (counts still populate).
+  readonly collisionSampleLimit?: number;
 };
 
 export type BackfillOptions = MigrationServiceOptions & {
@@ -193,23 +209,36 @@ async function classifyUser(
   return "eligibleSingleGoogleProvider";
 }
 
+type CollisionProbe =
+  | { readonly collided: false }
+  | { readonly collided: true; readonly externalIdentityId: string };
+
 async function detectExistingMappingCollision(
   user: UserRecord,
-): Promise<boolean> {
+): Promise<CollisionProbe> {
   // Detect a stored active mapping for this user's google.com
   // account that resolves to a DIFFERENT Firebase UID. This is the
   // "provider collision" inventory bucket at the mapping layer
   // (distinct from a malformed-provider-record collision).
   const g = extractSingleGoogleAccount(user);
   if ("kind" in g && (g.kind === "none" || g.kind === "malformed")) {
-    return false;
+    return { collided: false };
   }
+  const providerAccountId = (g as { providerAccountId: string })
+    .providerAccountId;
   const resolution = await resolveActiveExternalIdentity({
     providerId: "google.com",
-    providerAccountId: (g as { providerAccountId: string }).providerAccountId,
+    providerAccountId,
   });
-  if (!resolution.resolved) return false;
-  return resolution.userId !== user.uid;
+  if (!resolution.resolved) return { collided: false };
+  if (resolution.userId === user.uid) return { collided: false };
+  return {
+    collided: true,
+    externalIdentityId: computeExternalIdentityDocId({
+      providerId: "google.com",
+      providerAccountId,
+    }),
+  };
 }
 
 async function iterateAuthUsers(
@@ -257,10 +286,22 @@ export async function runInventory(
 ): Promise<ExternalIdentityInventorySummary> {
   const actorUserId = opts.actorUserId ?? MIGRATION_SERVICE_ACTOR;
   const pageSize = opts.pageSize ?? 250;
+  const collisionSampleLimit =
+    opts.collisionSampleLimit === undefined ? 50 : opts.collisionSampleLimit;
+  if (
+    !Number.isInteger(collisionSampleLimit) ||
+    collisionSampleLimit < 0
+  ) {
+    throw new PlatformError(
+      "identity.invalidRequest",
+      "collisionSampleLimit must be a non-negative integer.",
+    );
+  }
   await emitAttempted(actorUserId);
 
   const counts = newCounts();
   let usersScanned = 0;
+  const collisionSamples: string[] = [];
 
   const nextPageToken = await iterateAuthUsers(
     opts.pageToken,
@@ -273,13 +314,18 @@ export async function runInventory(
       // eligible/multiple, promote to `providerCollision` when the
       // store already has this account bound to a different UID.
       if (
-        (cls === "eligibleSingleGoogleProvider" ||
-          cls === "multipleProvidersOneGoogle" ||
-          cls === "pendingOrProvisionedUser") &&
-        (await detectExistingMappingCollision(user))
+        cls === "eligibleSingleGoogleProvider" ||
+        cls === "multipleProvidersOneGoogle" ||
+        cls === "pendingOrProvisionedUser"
       ) {
-        counts[cls] -= 1;
-        counts.providerCollision += 1;
+        const probe = await detectExistingMappingCollision(user);
+        if (probe.collided) {
+          counts[cls] -= 1;
+          counts.providerCollision += 1;
+          if (collisionSamples.length < collisionSampleLimit) {
+            collisionSamples.push(probe.externalIdentityId);
+          }
+        }
       }
     },
   );
@@ -288,11 +334,13 @@ export async function runInventory(
   log.info("identity.inventoryComplete", {
     usersScanned,
     hasNextPage: Boolean(nextPageToken),
+    providerCollisionSamplesCount: collisionSamples.length,
   });
 
   const result: ExternalIdentityInventorySummary = {
     usersScanned,
     counts,
+    providerCollisionSamples: collisionSamples,
     ...(nextPageToken ? { nextPageToken } : {}),
   };
   return result;
@@ -397,6 +445,11 @@ export async function runBackfill(
   const result: ExternalIdentityBackfillSummary = {
     usersScanned,
     counts,
+    // `runBackfill` does not populate hashed samples because each
+    // collision it observes already emits its own
+    // `identity.collisionDetected` audit event; the audit stream is
+    // the durable record for the emulator write path.
+    providerCollisionSamples: [],
     mappingsCreated,
     mappingsConfirmed,
     mappingsRestored,
