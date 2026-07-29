@@ -371,7 +371,7 @@ body.ls-active .badge-bar.ls-bar { display:flex; }
 /* =========================================================
    MODE TOGGLE
    ========================================================= */
-.mode-toggle-bar { display:flex; align-items:center; justify-content:center; gap:0; margin:0 auto 6px; background:rgba(42,52,71,0.45); border:1.5px solid rgba(180,127,255,0.25); border-radius:14px; padding:0.35rem; width:fit-content; box-shadow:0 0 0 4px rgba(180,127,255,0.04); }
+.quiz-mode-toggle { display:flex; align-items:center; justify-content:center; gap:0; margin:0 auto 6px; background:rgba(42,52,71,0.45); border:1.5px solid rgba(180,127,255,0.25); border-radius:14px; padding:0.35rem; width:fit-content; box-shadow:0 0 0 4px rgba(180,127,255,0.04); }
 .mode-btn { padding:0.65rem 1.8rem; border-radius:10px; border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-size:0.92rem; font-weight:800; letter-spacing:0.04em; transition:all 0.22s; color:rgba(174,184,194,0.55); background:transparent; }
 .mode-btn:hover:not(.active) { color:rgba(174,184,194,0.8); }
 .mode-btn.active { background:linear-gradient(135deg,rgba(180,127,255,0.18) 0%,rgba(180,127,255,0.1) 100%); color:#dde4f5; border:1px solid rgba(180,127,255,0.45); box-shadow:0 0 14px rgba(180,127,255,0.15), 0 2px 10px rgba(0,0,0,0.4); text-shadow:0 0 12px rgba(180,127,255,0.4); }
@@ -876,6 +876,7 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to lesson</a>
@@ -1324,7 +1325,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="section-label">Next Step</div>
   <div class="section-title">Choose Your Mode</div>
   <div class="section-desc">Switch to <strong>Classroom Mode</strong> to unlock the quiz and submit your work.</div>
-  <div class="mode-toggle-bar" style="margin-top:0.35rem;">
+  <div class="quiz-mode-toggle" style="margin-top:0.35rem;">
     <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
     <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
   </div>
@@ -1346,7 +1347,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
   </div>
   <div id="quizSubmitArea" style="display:none !important; text-align:center; margin-top:1rem;">
-    <button class="btn btn-purple" id="quizSubmitBtn" disabled>Submit Quiz</button>
+    <button class="btn btn-purple" id="quizSubmitBtn" disabled>Submit Score</button>
   </div>
   <div id="quizResultBanner" style="display:none;"></div>
   <div class="classroom-panel hidden" id="classroomPanel">
@@ -1370,23 +1371,23 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           </select>
         </div>
         <div>
-          <label class="field-label" for="blockInput">Block</label>
+          <label class="field-label" for="blockInput">Class Block</label>
           <select id="blockInput" class="field-select">
-            <option value="">Select block...</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-            <option value="D">D</option>
-            <option value="E">E</option>
-            <option value="F">F</option>
-            <option value="G">G</option>
+            <option value="">Select your block</option>
+            <option value="A">A Block</option>
+            <option value="B">B Block</option>
+            <option value="C">C Block</option>
+            <option value="D">D Block</option>
+            <option value="E">E Block</option>
+            <option value="F">F Block</option>
+            <option value="G">G Block</option>
           </select>
         </div>
       </div>
     </div>
     <div class="classroom-section">
       <div class="submit-section">
-        <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit Quiz</button>
+        <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit Score</button>
         <p class="submit-helper" id="submitHelperText">Complete and submit the quiz first.</p>
         <div class="submit-success" id="submitSuccess">Your work has been submitted! Great job, scientist.</div>
         <div class="submit-error" id="submitError">Submission failed. Please check your connection and try again.</div>
@@ -1397,6 +1398,49 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
 <!-- TOAST -->
 <div id="toastContainer"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MORE LEARNING
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark, #0b1220); padding: 4rem 0 5rem; scroll-margin-top: 1.6rem; }
+#continue .container { max-width: 1180px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); }
+#continue .section-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; display: block; }
+#continue .section-title { font-family: 'Fredoka One', cursive; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.15; color: #e8f4f8; margin-bottom: 0.9rem; }
+#continue .continue-intro { text-align: left; font-size: 1rem; color: rgba(232,244,248,0.8); line-height: 1.7; max-width: 720px; margin: 0 0 2rem; }
+#continue .continue-intro strong { color: var(--gold); font-weight: 700; }
+#continue .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 340px)); gap: 1.2rem; }
+@media (max-width: 720px) { #continue .continue-grid { grid-template-columns: 1fr; } }
+#continue .cont-card { display: flex; flex-direction: column; gap: 0.55rem; padding: 1.4rem 1.4rem 1.3rem; border-radius: 16px; border: 1px solid rgba(245,200,66,0.28); background: rgba(245,200,66,0.06); text-decoration: none; color: inherit; transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s; }
+#continue .cont-card:hover { transform: translateY(-3px); border-color: rgba(245,200,66,0.55); box-shadow: 0 12px 32px rgba(245,200,66,0.14); }
+#continue .cont-cat { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gold); }
+#continue .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.15rem; line-height: 1.25; color: #e8f4f8; }
+#continue .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.72); line-height: 1.55; }
+</style>
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">You bent space with mass and made an orbit stable. Take that same <strong>gravity plus sideways motion</strong> logic and apply it to the real sky.</p>
+    <div class="continue-grid">
+      <a href="lesson_gravity.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Gravity</div>
+        <div class="cont-desc">Return to the home lesson and revisit why mass warps space, and why every stable orbit is really a fall in disguise.</div>
+      </a>
+      <a href="lesson_earths-place-in-the-universe.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Earth's Place in the Universe</div>
+        <div class="cont-desc">Scale up. Take gravity from the sandbox to the solar system and see the orbits it holds together.</div>
+      </a>
+      <a href="lesson_phases-of-the-moon.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Phases of the Moon</div>
+        <div class="cont-desc">A real orbit you can watch. See how the Moon's stable path around Earth produces the phase pattern in the sky.</div>
+      </a>
+    </div>
+  </div>
+</section>
 
 <!-- FOOTER -->
 <footer>
@@ -1543,6 +1587,7 @@ let bhSurvivalFrames = 0;
 // Phase 4
 let quizAnswers = {};
 let quizSubmitted = false;
+let quizContinueTimer = null;
 
 /* =====================================================================
    INIT
@@ -2558,6 +2603,12 @@ function submitQuiz() {
   document.getElementById('step4').classList.add('done');
   document.getElementById('step4').classList.remove('active');
   toast('Quiz complete! ' + correct + '/' + QUIZ_DATA.length + ' correct.', correct >= 4 ? 'success' : 'info');
+  if (correct === QUIZ_DATA.length) {
+    quizContinueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
   renderSubmitState();
 }
 
@@ -2575,7 +2626,7 @@ function renderSubmitState() {
   const helper = document.getElementById('submitHelperText');
   btn.disabled = !ready;
   btn.className = 'submit-btn ' + (ready ? 'ready' : 'locked');
-  btn.textContent = 'Submit Quiz';
+  btn.textContent = 'Submit Score';
   if (ready)           helper.textContent = 'Everything looks good. Ready to submit!';
   else if (!quizSubmitted) helper.textContent = 'Complete and submit the quiz first.';
   else if (!nameOk)    helper.textContent = 'Enter your student name to submit.';
@@ -2587,7 +2638,7 @@ function initClassroomSubmit() {
   document.getElementById('classroomSubmitBtn').addEventListener('click', async () => {
     const btn = document.getElementById('classroomSubmitBtn'); if (btn.disabled) return;
     const teacher = document.getElementById('teacherSelect').value;
-    btn.disabled = true; btn.className = 'submit-btn locked'; btn.textContent = 'Submitting...';
+    btn.disabled = true; btn.className = 'submit-btn locked'; btn.textContent = 'Submitting…';
     document.getElementById('submitError').style.display = 'none';
     const params = new URLSearchParams({
       resourceId:  'simulation_gravity-wells',
@@ -2607,7 +2658,7 @@ function initClassroomSubmit() {
       document.getElementById('submitSuccess').innerHTML = 'Your work has been submitted! Great job, scientist.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: ' + computeQuizScore() + '</span>';
       document.getElementById('submitSuccess').style.display = 'block';
     } catch(err) {
-      btn.disabled = false; btn.className = 'submit-btn ready'; btn.textContent = 'Submit Quiz';
+      btn.disabled = false; btn.className = 'submit-btn ready'; btn.textContent = 'Submit Score';
       document.getElementById('submitError').textContent = 'Submission failed. Check your connection and try again.';
       document.getElementById('submitError').style.display = 'block';
     }

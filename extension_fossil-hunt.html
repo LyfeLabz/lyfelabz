@@ -417,7 +417,7 @@
 
 
     /* ── Mode Toggle ──────────────────────────────────────────────────── */
-    .mode-toggle-bar {
+    .quiz-mode-toggle {
       display: flex; align-items: center; justify-content: center; gap: 0;
       margin: 20px auto 6px;
       background: rgba(122,143,166,.1); border: 1.5px solid rgba(122,143,166,.35);
@@ -853,6 +853,7 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to lesson</a>
@@ -1055,7 +1056,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div><!-- /.main -->
 
     <!-- Mode Toggle -->
-    <div class="mode-toggle-bar" style="margin-top:22px;">
+    <div class="quiz-mode-toggle" style="margin-top:22px;">
       <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
       <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
     </div>
@@ -1121,21 +1122,21 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
             </select>
           </div>
           <div>
-            <label class="field-label" for="blockInput">Block</label>
+            <label class="field-label" for="blockInput">Class Block</label>
             <select id="blockInput" class="field-select">
-              <option value="">Select block…</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-              <option value="D">D</option>
-              <option value="E">E</option>
-              <option value="F">F</option>
-              <option value="G">G</option>
+              <option value="">Select your block</option>
+              <option value="A">A Block</option>
+              <option value="B">B Block</option>
+              <option value="C">C Block</option>
+              <option value="D">D Block</option>
+              <option value="E">E Block</option>
+              <option value="F">F Block</option>
+              <option value="G">G Block</option>
             </select>
           </div>
         </div>
         <div class="submit-section">
-          <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit to Teacher</button>
+          <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit Score</button>
           <p class="submit-helper" id="submitHelperText">Complete all fossil matches, age ordering, and all 10 quiz questions first.</p>
           <div class="submit-success" id="submitSuccess">Your work has been submitted! Great fossil detective work.</div>
           <div class="submit-error" id="submitError"></div>
@@ -1162,6 +1163,49 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <span class="stem-badge" data-tip="Crosscutting Concept 1: Patterns, students identify repeating fossil patterns across locations as evidence of geological contemporaneity.">CCC1: Patterns</span>
     </div>
   </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MORE LEARNING
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark, #0b1220); padding: 4rem 0 5rem; scroll-margin-top: 1.6rem; }
+#continue .container { max-width: 1180px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); }
+#continue .section-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; display: block; }
+#continue .section-title { font-family: 'Fredoka One', cursive; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.15; color: #e8f4f8; margin-bottom: 0.9rem; }
+#continue .continue-intro { text-align: left; font-size: 1rem; color: rgba(232,244,248,0.8); line-height: 1.7; max-width: 720px; margin: 0 0 2rem; }
+#continue .continue-intro strong { color: var(--gold); font-weight: 700; }
+#continue .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 340px)); gap: 1.2rem; }
+@media (max-width: 720px) { #continue .continue-grid { grid-template-columns: 1fr; } }
+#continue .cont-card { display: flex; flex-direction: column; gap: 0.55rem; padding: 1.4rem 1.4rem 1.3rem; border-radius: 16px; border: 1px solid rgba(245,200,66,0.28); background: rgba(245,200,66,0.06); text-decoration: none; color: inherit; transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s; }
+#continue .cont-card:hover { transform: translateY(-3px); border-color: rgba(245,200,66,0.55); box-shadow: 0 12px 32px rgba(245,200,66,0.14); }
+#continue .cont-cat { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gold); }
+#continue .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.15rem; line-height: 1.25; color: #e8f4f8; }
+#continue .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.72); line-height: 1.55; }
+</style>
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">You used <strong>index fossils</strong> to correlate layers across sites and read the rock record like a timeline. Take that skill back to the framework it belongs to.</p>
+    <div class="continue-grid">
+      <a href="lesson_layers-of-time.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Layers of Time</div>
+        <div class="cont-desc">Return to the home lesson and revisit how geologists read the rock column to reconstruct deep time.</div>
+      </a>
+      <a href="lesson_biological-evolution.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Biological Evolution</div>
+        <div class="cont-desc">Index fossils are snapshots of species that appear, thrive, and vanish. See what the fossil record reveals about how life changes.</div>
+      </a>
+      <a href="lesson_continental-drift.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Continental Drift</div>
+        <div class="cont-desc">Matching fossils on separate continents was one of Wegener's clues. See how the same evidence you used points to moving continents.</div>
+      </a>
+    </div>
+  </div>
+</section>
 
   <!-- FOOTER -->
 <footer>
@@ -1544,6 +1588,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 };
 
     /* ─── STATE ─────────────────────────────────────────────────────── */
+    let quizContinueTimer = null;
     let state = {
       difficulty:     'practice',
       selected:       null,
@@ -2653,10 +2698,17 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         const successEl = document.getElementById('submitSuccess');
         successEl.innerHTML = 'Your work has been submitted!<br><span style="font-size:1.15rem;display:inline-block;margin-top:8px;color:var(--cyan);">Quiz Score: ' + finalQuizScore + '</span><br><span style="font-size:.86rem;display:inline-block;margin-top:6px;color:var(--muted);">Review your quiz below. Green shows correct answers. Red shows answers to fix.</span>';
         successEl.style.display = 'block';
+        const qTotal = QUIZ_DATA[state.difficulty].length;
+        if (finalQuizScore === qTotal + '/' + qTotal) {
+          quizContinueTimer = setTimeout(function () {
+            const more = document.getElementById('continue');
+            if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 1900);
+        }
       } catch(err) {
         btn.disabled    = false;
         btn.className   = 'submit-btn ready';
-        btn.textContent = 'Submit to Teacher';
+        btn.textContent = 'Submit Score';
         document.getElementById('submitError').textContent = 'Submission failed. Check your connection and try again.';
         document.getElementById('submitError').style.display = 'block';
       }

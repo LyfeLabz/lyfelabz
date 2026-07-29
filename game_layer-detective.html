@@ -108,7 +108,7 @@ this page as an investigation.
     .hero p{ margin:12px auto 6px; font-size:clamp(14px,1.8vw,18px); color:var(--muted); max-width:820px; }
 
     /* ── Mode Toggle ─────────────────────────────────────────────── */
-    .mode-toggle-bar{
+    .quiz-mode-toggle{
       display:flex; align-items:center; justify-content:center;
       gap:0; margin:0 auto 6px;
       background:rgba(122,143,166,.1); border:1.5px solid rgba(122,143,166,.35);
@@ -1025,6 +1025,7 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to lesson</a>
@@ -1114,7 +1115,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <!-- Mode Toggle -->
-    <div class="mode-toggle-bar" style="margin-top:18px;">
+    <div class="quiz-mode-toggle" style="margin-top:18px;">
       <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
       <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
     </div>
@@ -1185,23 +1186,23 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
             </select>
           </div>
           <div>
-            <label class="field-label" for="blockInput">Block</label>
+            <label class="field-label" for="blockInput">Class Block</label>
             <select id="blockInput" class="field-select">
-              <option value="">Select block…</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-              <option value="D">D</option>
-              <option value="E">E</option>
-              <option value="F">F</option>
-              <option value="G">G</option>
+              <option value="">Select your block</option>
+              <option value="A">A Block</option>
+              <option value="B">B Block</option>
+              <option value="C">C Block</option>
+              <option value="D">D Block</option>
+              <option value="E">E Block</option>
+              <option value="F">F Block</option>
+              <option value="G">G Block</option>
             </select>
           </div>
         </div>
 
         <div class="submit-section">
           <button class="submit-btn locked" id="classroomSubmitBtn" disabled>
-            Submit to Teacher
+            Submit Score
           </button>
           <p class="submit-helper" id="submitHelperText">Complete all 5 puzzles and all 5 quiz questions first.</p>
           <div class="submit-success" id="submitSuccess">
@@ -1233,6 +1234,49 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <span class="stem-badge" data-tip="Crosscutting Concept 1: Patterns, students identify patterns in rock strata position and feature relationships to determine geologic sequence.">CCC1: Patterns</span>
     </div>
   </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MORE LEARNING
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark, #0b1220); padding: 4rem 0 5rem; scroll-margin-top: 1.6rem; }
+#continue .container { max-width: 1180px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); }
+#continue .section-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; display: block; }
+#continue .section-title { font-family: 'Fredoka One', cursive; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.15; color: #e8f4f8; margin-bottom: 0.9rem; }
+#continue .continue-intro { text-align: left; font-size: 1rem; color: rgba(232,244,248,0.8); line-height: 1.7; max-width: 720px; margin: 0 0 2rem; }
+#continue .continue-intro strong { color: var(--gold); font-weight: 700; }
+#continue .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 340px)); gap: 1.2rem; }
+@media (max-width: 720px) { #continue .continue-grid { grid-template-columns: 1fr; } }
+#continue .cont-card { display: flex; flex-direction: column; gap: 0.55rem; padding: 1.4rem 1.4rem 1.3rem; border-radius: 16px; border: 1px solid rgba(245,200,66,0.28); background: rgba(245,200,66,0.06); text-decoration: none; color: inherit; transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s; }
+#continue .cont-card:hover { transform: translateY(-3px); border-color: rgba(245,200,66,0.55); box-shadow: 0 12px 32px rgba(245,200,66,0.14); }
+#continue .cont-cat { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gold); }
+#continue .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.15rem; line-height: 1.25; color: #e8f4f8; }
+#continue .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.72); line-height: 1.55; }
+</style>
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">You just read a rock column the way a geologist does. Take those <strong>cross-cutting</strong> and <strong>superposition</strong> instincts back to the lessons behind them.</p>
+    <div class="continue-grid">
+      <a href="lesson_layers-of-time.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Layers of Time</div>
+        <div class="cont-desc">Return to the home lesson and revisit how geologists use rock layers to reconstruct the order of Earth's history.</div>
+      </a>
+      <a href="lesson_earths-layers.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Earth's Layers</div>
+        <div class="cont-desc">Zoom out from a single outcrop to the whole planet. See what lies beneath the rock columns you just decoded.</div>
+      </a>
+      <a href="lesson_plate-tectonics.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Plate Tectonics</div>
+        <div class="cont-desc">The folds, faults, and intrusions you sorted come from moving plates. See the mechanism that rearranged the rock.</div>
+      </a>
+    </div>
+  </div>
+</section>
 
   <!-- FOOTER -->
 <footer>
@@ -1627,6 +1671,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     ];
 
     /* ─── STATE ──────────────────────────────────────────────────── */
+    let quizContinueTimer = null;
     const state = {
       currentLevel: 0,
       bestUnlocked: 0,
@@ -1897,7 +1942,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
       refs.classroomSubmitBtn.disabled    = !ready;
       refs.classroomSubmitBtn.className   = 'submit-btn ' + (ready ? 'ready' : 'locked');
-      refs.classroomSubmitBtn.textContent = 'Submit to Teacher';
+      refs.classroomSubmitBtn.textContent = 'Submit Score';
 
       if(ready){
         refs.submitHelperText.textContent = 'Everything looks good. Ready to submit!';
@@ -2386,6 +2431,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     function resetGame(){
       const confirmed = window.confirm('Reset all game progress and return to Level 1?');
       if(!confirmed) return;
+      if (quizContinueTimer) { clearTimeout(quizContinueTimer); quizContinueTimer = null; }
       localStorage.removeItem('lyfelabz-strata-shift-v2');
       state.currentLevel   = 0;
       state.bestUnlocked   = 0;
@@ -2456,10 +2502,16 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         refs.submitHelperText.style.display  = 'none';
         refs.submitSuccess.innerHTML = `Your work has been submitted! Great job, geologic detective.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: ${computeQuizScore()}</span>`;
         refs.submitSuccess.style.display     = 'block';
+        if (computeQuizScore() === quizData.length + '/' + quizData.length) {
+          quizContinueTimer = setTimeout(() => {
+            const more = document.getElementById('continue');
+            if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 1900);
+        }
       } catch(err) {
         refs.classroomSubmitBtn.disabled    = false;
         refs.classroomSubmitBtn.className   = 'submit-btn ready';
-        refs.classroomSubmitBtn.textContent = 'Submit to Teacher';
+        refs.classroomSubmitBtn.textContent = 'Submit Score';
         refs.submitError.textContent        = 'Submission failed. Check your connection and try again.';
         refs.submitError.style.display      = 'block';
       }

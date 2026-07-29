@@ -987,6 +987,7 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
 </head>
 
 <body>
@@ -1411,7 +1412,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
     <div class="cp-student-fields">
       <div>
-        <label class="cp-field-label" for="studentNameInput">Your Name</label>
+        <label class="cp-field-label" for="studentNameInput">Student Name</label>
         <input class="cp-field-input" id="studentNameInput" type="text" placeholder="First Last" autocomplete="off">
       </div>
       <div>
@@ -1423,12 +1424,21 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </select>
       </div>
       <div class="cp-field-full">
-        <label class="cp-field-label" for="blockInput">Period / Block</label>
-        <input class="cp-field-input" id="blockInput" type="text" placeholder="e.g. Period 3" autocomplete="off">
+        <label class="cp-field-label" for="blockInput">Class Block</label>
+        <select class="cp-field-input" id="blockInput">
+          <option value="">Select your block</option>
+          <option value="A">A Block</option>
+          <option value="B">B Block</option>
+          <option value="C">C Block</option>
+          <option value="D">D Block</option>
+          <option value="E">E Block</option>
+          <option value="F">F Block</option>
+          <option value="G">G Block</option>
+        </select>
       </div>
     </div>
     <div class="cp-submit-section">
-      <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit Investigation</button>
+      <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit Score</button>
       <p class="cp-submit-helper" id="submitHelper">Complete the quiz and fill in all fields to submit.</p>
       <div class="cp-submit-success" id="submitSuccess"></div>
       <div class="cp-submit-error"   id="submitError">Something went wrong. Please try again.</div>
@@ -1465,6 +1475,49 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </a>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MORE LEARNING
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark, #0b1220); padding: 4rem 0 5rem; scroll-margin-top: 1.6rem; }
+#continue .container { max-width: 1180px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); }
+#continue .section-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; display: block; }
+#continue .section-title { font-family: 'Fredoka One', cursive; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.15; color: #e8f4f8; margin-bottom: 0.9rem; }
+#continue .continue-intro { text-align: left; font-size: 1rem; color: rgba(232,244,248,0.8); line-height: 1.7; max-width: 720px; margin: 0 0 2rem; }
+#continue .continue-intro strong { color: var(--gold); font-weight: 700; }
+#continue .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 340px)); gap: 1.2rem; }
+@media (max-width: 720px) { #continue .continue-grid { grid-template-columns: 1fr; } }
+#continue .cont-card { display: flex; flex-direction: column; gap: 0.55rem; padding: 1.4rem 1.4rem 1.3rem; border-radius: 16px; border: 1px solid rgba(245,200,66,0.28); background: rgba(245,200,66,0.06); text-decoration: none; color: inherit; transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s; }
+#continue .cont-card:hover { transform: translateY(-3px); border-color: rgba(245,200,66,0.55); box-shadow: 0 12px 32px rgba(245,200,66,0.14); }
+#continue .cont-cat { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gold); }
+#continue .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.15rem; line-height: 1.25; color: #e8f4f8; }
+#continue .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.72); line-height: 1.55; }
+</style>
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">You traced the pathway from cell to organ to organism. Zoom back out and see how <strong>organelles</strong> stage this work inside the cell, and how the <strong>body systems</strong> that receive it stay coordinated.</p>
+    <div class="continue-grid">
+      <a href="lesson_organelles.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Organelles</div>
+        <div class="cont-desc">Meet the ribosomes and endoplasmic reticulum that actually build the proteins you followed through the pathway.</div>
+      </a>
+      <a href="lesson_body-systems.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Body Systems</div>
+        <div class="cont-desc">See how the tissues and organs at the end of the pathway coordinate into full body systems.</div>
+      </a>
+      <a href="lesson_cell-types.html" class="cont-card">
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Cell Types</div>
+        <div class="cont-desc">Different cells make different proteins. Compare specialized cells and the jobs their proteins are shaped to do.</div>
+      </a>
+    </div>
+  </div>
+</section>
 
 <!-- ======================================================
      FOOTER
@@ -1665,7 +1718,7 @@ const quizData = {
   ]
 };
 
-const quizState = { answered: 0, correct: 0 };
+const quizState = { answered: 0, correct: 0, continueTimer: null };
 
 function buildQuiz() {
   const container = document.getElementById('ex-questions');
@@ -1746,6 +1799,13 @@ function showScore() {
   document.getElementById('ex-score').classList.add('show');
   document.getElementById('ex-score').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
+  if (pct === 100) {
+    quizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
   // Mark quiz section done in progress bar
   document.getElementById('prog3').classList.add('done');
 
@@ -1754,6 +1814,7 @@ function showScore() {
 }
 
 function resetQuiz() {
+  if (quizState.continueTimer) { clearTimeout(quizState.continueTimer); quizState.continueTimer = null; }
   buildQuiz();
   if (typeof ppQuizAnswers !== 'undefined') ppQuizAnswers.fill(null);
   document.getElementById('prog3').classList.remove('done');
@@ -1965,7 +2026,7 @@ function renderSubmitState() {
   else if (!quizDone)     helper.textContent = 'Complete all quiz questions to unlock submission.';
   else if (!name.trim())  helper.textContent = 'Enter your name to submit.';
   else if (!teacher)      helper.textContent = 'Select your teacher to submit.';
-  else if (!block.trim()) helper.textContent = 'Enter your period or block to submit.';
+  else if (!block.trim()) helper.textContent = 'Select your class block to submit.';
   else                    helper.textContent = 'Ready to submit. Click when finished.';
 }
 
@@ -2000,7 +2061,7 @@ function submitWork() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.status === 'success') {
-        btn.textContent = '✓ Submitted';
+        btn.textContent = 'Submitted';
         var s = document.getElementById('submitSuccess');
         s.textContent   = 'Submitted! Your work has been sent to ' + teacherLabel + '. Great work.';
         s.style.display = 'block';
@@ -2008,14 +2069,14 @@ function submitWork() {
       } else {
         btn.disabled  = false;
         btn.className = 'submit-btn ready';
-        btn.textContent = 'Submit Investigation';
+        btn.textContent = 'Submit Score';
         document.getElementById('submitError').style.display = 'block';
       }
     })
     .catch(function() {
       btn.disabled  = false;
       btn.className = 'submit-btn ready';
-      btn.textContent = 'Submit Investigation';
+      btn.textContent = 'Submit Score';
       document.getElementById('submitError').style.display = 'block';
     });
 }
