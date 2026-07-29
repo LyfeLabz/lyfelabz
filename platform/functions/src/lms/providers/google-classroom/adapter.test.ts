@@ -1,12 +1,15 @@
-// Sprint 23A boundary test, re-targeted for Sprint 23B activation.
+// Sprint 23A boundary test, re-targeted for Sprint 23B and Sprint 23C
+// activations.
 //
 // Sprint 23A shipped every adapter operation as a stable
 // `lms.providerNotYetOperational` reject. Sprint 23B activated five of
-// those seven operations against the transport + config seams
-// (beginOAuth, completeOAuth, revokeGrant, listTeacherClasses,
-// fetchClass); the remaining two (listClassTopics, publishAssignment)
-// still short-circuit with `lms.providerNotYetOperational` until
-// Sprint 23C authorizes them.
+// those operations against the transport + config seams (beginOAuth,
+// completeOAuth, revokeGrant, listTeacherClasses, fetchClass). Sprint
+// 23C activates the roster-read operation (listClassRoster) under the
+// approved narrow provider-interface expansion; the two remaining
+// deferred operations (listClassTopics, publishAssignment) still
+// short-circuit with `lms.providerNotYetOperational` until their own
+// sprint authorizes them.
 //
 // This file enforces exactly that boundary. It is the single
 // load-bearing check that Sprint 23B did not silently activate a

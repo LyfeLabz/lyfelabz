@@ -41,6 +41,14 @@ export type AuditAction =
   | "lms.ownershipDrift"
   | "lms.assignmentPublished"
   | "lms.publishFailed"
+  // Sprint 23C - Google Classroom roster synchronization. Emitted once
+  // per completed reconciliation of one linked upstream class against
+  // one LyfeLabz class's enrollments. The audit target is the LyfeLabz
+  // `class` and the payload carries only deterministic reconciliation
+  // counts, the provider identifier, and structural roster-shape
+  // signals. Never carries provider account identifiers, Firebase UIDs,
+  // student names, emails, or profile data.
+  | "lms.rosterSynchronized"
   // Sprint 23C-I - Student External Identity Bridge. Every event
   // targets an `externalIdentity` target type whose target ID is the
   // hashed document identifier; the raw provider account identifier

@@ -84,6 +84,11 @@ const VALID_ACTIONS: readonly AuditAction[] = [
   "lms.classImported",
   "lms.classUnlinked",
   "lms.ownershipDrift",
+  "lms.assignmentPublished",
+  "lms.publishFailed",
+  // Sprint 23C - Google Classroom roster synchronization. See
+  // `shared/types/audit-event.ts` for the payload contract.
+  "lms.rosterSynchronized",
   // Sprint 23C-I - Student External Identity Bridge. Kept in lockstep
   // with the `AuditAction` union in shared/types/audit-event.ts; the
   // audit writer refuses any action not present in both lists.

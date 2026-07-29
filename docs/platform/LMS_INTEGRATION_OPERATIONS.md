@@ -571,6 +571,42 @@ Operational notes:
 - User deletion is not implemented in Sprint 23C-I. When a lifecycle sprint introduces Firebase Auth user deletion, the external identity records for the deleted UID should transition to `revoked` (never deleted) so the audit stream retains continuity.
 - Production migration is out of scope. Sprint 23C-I ships only the mapping infrastructure, the reconciliation callable, and the emulator/fixture backfill. Durable multi-instance production rollout follows the same gating as the Sprint 23B token/OAuth-state stores.
 
+---
+
+## 17B. Sprint 23C - Google Classroom Roster Synchronization
+
+Sprint 23C activates roster reading on the vendor-neutral provider boundary and adds a provider-neutral roster synchronization engine plus one callable. The provider interface (`LmsProviderAdapter`) gained one method, `listClassRoster`, and one paired vendor-neutral type, `LmsRosterStudent`, both authorized by the Sprint 23C specification. No other provider-interface changes were made.
+
+Provider surface (Sprint 23C):
+
+- `LmsRosterStudent = { readonly providerAccountId: string }`. The vendor-neutral roster boundary carries only the opaque upstream account identifier. No email, no display name, no photo, no course role, no enrollment status, no school metadata, no Google-shaped response fields.
+- `listClassRoster({ accessToken, lmsClassId })` returns one complete normalized roster. Pagination is entirely an adapter concern; a later-page failure rejects the whole call so the engine never sees a partial roster represented as successful. Duplicate provider account identifiers collapse deterministically to one entry per identifier; the returned array is sorted deterministically.
+
+Callable (Sprint 23C):
+
+- `lmsClassesSyncRoster` accepts only `{ classId }`. The provider identifier, the upstream `lmsClassId`, the connection identifier, and every OAuth credential are derived server-side from the persisted `classes/{classId}`, `lmsClassLinks/{linkId}`, and `lmsConnections/{connectionId}` records. A client can never inject them.
+- Public response contains only deterministic counts: `classId`, `added`, `reactivated`, `unchanged`, `withdrawn`, `unresolved`, `skipped`, `upstreamRosterEmpty`. Never a provider account identifier, a Firebase UID, an email, a display name, an OAuth token, or an external identity document ID.
+- Emits exactly one `lms.rosterSynchronized` audit event per completed reconciliation, targeting the LyfeLabz class. The payload carries the same aggregate counts plus `providerId`; it never carries upstream identity data.
+
+Identity resolution:
+
+- The certified Sprint 23C-I external identity bridge is the ONLY authorized identity path. Every upstream roster member is resolved through `resolveActiveExternalIdentity({ providerId: "google.com", providerAccountId })`. Absent or revoked mappings become `unresolved`; the sync continues processing the rest of the roster. No email lookup, no display-name lookup, no Firebase Auth enumeration, no account creation, no placeholder users, no automatic linking.
+- The LMS provider namespace (`"googleClassroom"`) and the external identity provider namespace (`"google.com"`) are distinct namespaces and must not be conflated.
+
+Enrollment lifecycle:
+
+- Additions use the certified `enrollmentCreationDocRef(id).set({ ... })` write with the deterministic `enrollmentIdFor(classId, studentId)` document ID.
+- Removals use the single authorized exit transition `active -> withdrawn` through the certified narrow `enrollmentStatusChangeDocRef(id).update({ status: "withdrawn", exitedAt })` write. `archived` is reserved for class-archival driven transitions and is not used by roster synchronization.
+- Reactivation is NOT implemented. The certified enrollment lifecycle admits no inactive-to-active transition, so a returning student whose prior deterministic-id enrollment is in a non-active status is classified `skipped`. Teachers may re-enroll such a student through the certified `enrollmentsTeacherAdd` path.
+
+Operational notes:
+
+- Roster synchronization inherits the Sprint 23B in-process token-store limitation. The Sprint 23B production activation blocker is unchanged.
+- The engine performs no writes if the upstream roster retrieval fails. Removals are computed only against a complete successful roster.
+- The engine reads current enrollments through the existing `enrollmentsCollectionRef().where(classId, "==", classId).where(status, "==", "active")` query. Because a linked class refuses join-code enrollment (see `classes-import.ts`), every active enrollment on a linked class was itself sourced from a prior roster sync, so the withdrawal rule cannot accidentally withdraw a join-code student.
+- Deterministic enrollment IDs plus per-document race checks make repeat sync and concurrent invocation safe with no new lock collection, lease document, or lock file.
+- Audit action registry: `lms.rosterSynchronized` is registered in both `shared/types/audit-event.ts` and the runtime validator `shared/audit/write-audit-event.ts` in lockstep with the existing Sprint 23A / 23B / 23C-I action set.
+
 ## 18. Non-Goals
 
 This runbook does not:

@@ -8,13 +8,18 @@ import type { LmsProviderId } from "../../shared";
 // rules) lives inside the core and speaks only in this interface.
 //
 // The interface exposes the operations required by the initial scope
-// (PDR-020c: connection lifecycle, classroom discovery, class import)
-// plus the assignment publication surface authorized by the Sprint 8D
+// (PDR-020c: connection lifecycle, classroom discovery, class import),
+// the assignment publication surface authorized by the Sprint 8D
 // specification as an explicit subsequent-sprint expansion under the
-// PDR-020c "Future Reconsideration" clause. Every other previously
-// excluded capability (roster synchronization, refresh, grade sync, ...)
-// remains absent by design; adding any of them requires its own sprint
-// specification.
+// PDR-020c "Future Reconsideration" clause, and the roster-read
+// operation authorized by the Sprint 23C specification. Roster reading
+// is now part of the certified vendor-neutral provider boundary; the
+// provider-neutral Sprint 23C synchronization engine consumes it to
+// reconcile a linked upstream class with a LyfeLabz class's
+// enrollments. Every other previously excluded capability (grade sync,
+// announcements, materials, coursework mutation beyond publication,
+// ...) remains absent by design; adding any of them requires its own
+// sprint specification.
 
 // -------------------- Connection lifecycle --------------------
 
@@ -52,6 +57,32 @@ export type LmsDiscoveredClass = {
   readonly name: string;
   readonly section?: string;
   readonly ownerUpstreamAccountIdentifier: string;
+};
+
+// -------------------- Roster --------------------
+
+// The minimum roster-member identity the vendor-neutral roster surface
+// exposes. The set is deliberately narrow per the Sprint 23C
+// specification: only the opaque upstream account identifier that the
+// certified external identity bridge maps to a LyfeLabz Firebase UID.
+// No email, no display name, no profile photo, no course role, no
+// enrollment status, no school metadata, and no Google-shaped
+// response fields leak through this boundary. The Sprint 23C
+// synchronization engine consumes this shape without ever holding
+// upstream profile data.
+//
+// `providerAccountId` is the opaque, stable upstream account identifier
+// returned by the LMS roster. It is not a LyfeLabz Firebase UID and it
+// is not an email address; it is the value passed into
+// `resolveActiveExternalIdentity({ providerId: "google.com",
+// providerAccountId })`. For Google Classroom this value is the
+// Classroom student account identifier proven equivalent in Sprint
+// 23C-I to the Firebase Auth `google.com` provider UID. The LMS
+// provider namespace (this file's `LmsProviderId`) and the external
+// identity provider namespace (`ExternalIdentityProviderId`, currently
+// `"google.com"`) are distinct namespaces and must not be conflated.
+export type LmsRosterStudent = {
+  readonly providerAccountId: string;
 };
 
 // -------------------- Assignment publication --------------------
@@ -150,6 +181,21 @@ export interface LmsProviderAdapter {
     readonly accessToken: string;
     readonly lmsClassId: string;
   }): Promise<readonly LmsTopic[]>;
+
+  // List the complete normalized roster for one linked upstream class.
+  // Authorized by the Sprint 23C specification. Pagination is entirely
+  // an adapter concern: this method returns one complete normalized
+  // roster or rejects the operation. Page tokens, iterators,
+  // generators, and any provider-specific response shapes never
+  // escape the adapter. The synchronization engine never receives a
+  // partial roster represented as successful; a later-page failure
+  // after earlier pages succeeded rejects the entire operation.
+  // Duplicate provider account identifiers are collapsed
+  // deterministically to one entry per identifier before returning.
+  listClassRoster(input: {
+    readonly accessToken: string;
+    readonly lmsClassId: string;
+  }): Promise<readonly LmsRosterStudent[]>;
 
   // Publish a LyfeLabz-authored assignment to the upstream class as a
   // pointer to the LyfeLabz surface where the work happens

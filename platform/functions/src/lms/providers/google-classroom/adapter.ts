@@ -6,6 +6,7 @@ import type {
   LmsOAuthGrant,
   LmsProviderAdapter,
   LmsPublishedAssignment,
+  LmsRosterStudent,
   LmsTopic,
 } from "../provider";
 import { getGoogleClassroomConfig } from "./config";
@@ -20,15 +21,16 @@ import {
 // connection lifecycle and course discovery capabilities per PDR-020c
 // and the Sprint 23B specification.
 //
-// Active operations (Sprint 23B):
+// Active operations (Sprint 23B, extended in Sprint 23C):
 //
 //   - beginOAuth
 //   - completeOAuth
 //   - revokeGrant
 //   - listTeacherClasses
 //   - fetchClass
+//   - listClassRoster (Sprint 23C)
 //
-// Deferred operations (Sprint 23C+):
+// Deferred operations:
 //
 //   - listClassTopics
 //   - publishAssignment
@@ -365,6 +367,99 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
     } catch (err) {
       throw translateUpstreamError(err, "fetchClass");
     }
+  },
+
+  async listClassRoster(input): Promise<readonly LmsRosterStudent[]> {
+    let transport;
+    try {
+      transport = getGoogleClassroomTransport();
+    } catch (err) {
+      throw translateUpstreamError(err, "listClassRoster");
+    }
+    // First-occurrence dedup, exact string preservation, and stable
+    // ordering per Sprint 23C specification. The Map is keyed by the
+    // canonical Classroom student account identifier (`profile.id`) so
+    // duplicate roster entries collapse to the first valid occurrence.
+    const collected = new Map<string, LmsRosterStudent>();
+    let pageToken: string | undefined = undefined;
+    // Bounded pagination: Google Classroom courses have realistic
+    // ceilings well below this bound. The defensive bound rejects a
+    // runaway upstream that never stops handing back page tokens.
+    const MAX_PAGES = 50;
+    try {
+      for (let page = 0; page < MAX_PAGES; page += 1) {
+        const response = await transport.listCourseStudents({
+          accessToken: input.accessToken,
+          courseId: input.lmsClassId,
+          ...(pageToken !== undefined ? { pageToken } : {}),
+        });
+        for (const student of response.students ?? []) {
+          if (
+            student === null ||
+            typeof student !== "object" ||
+            student.profile === null ||
+            typeof student.profile !== "object"
+          ) {
+            throw new PlatformError(
+              "lms.upstreamMalformedResponse",
+              "Google Classroom returned a malformed roster entry for listClassRoster.",
+            );
+          }
+          const providerAccountId = student.profile.id;
+          if (
+            typeof providerAccountId !== "string" ||
+            providerAccountId.length === 0 ||
+            providerAccountId.trim().length === 0
+          ) {
+            throw new PlatformError(
+              "lms.upstreamMalformedResponse",
+              "Google Classroom returned a roster entry with a missing or empty identifier for listClassRoster.",
+            );
+          }
+          if (!collected.has(providerAccountId)) {
+            collected.set(providerAccountId, { providerAccountId });
+          }
+        }
+        if (!response.nextPageToken) {
+          // Deterministic stable ordering: sort by the opaque
+          // identifier's byte-exact string value so identical rosters
+          // always produce identical engine planning input.
+          const sorted = Array.from(collected.values()).sort((a, b) =>
+            a.providerAccountId < b.providerAccountId
+              ? -1
+              : a.providerAccountId > b.providerAccountId
+                ? 1
+                : 0,
+          );
+          return sorted;
+        }
+        if (
+          typeof response.nextPageToken !== "string" ||
+          response.nextPageToken.length === 0
+        ) {
+          throw new PlatformError(
+            "lms.upstreamMalformedResponse",
+            "Google Classroom returned a malformed nextPageToken for listClassRoster.",
+          );
+        }
+        if (response.nextPageToken === pageToken) {
+          // Pagination loop guard: upstream must advance the cursor.
+          throw new PlatformError(
+            "lms.upstreamCallFailed",
+            "Google Classroom returned a repeated nextPageToken for listClassRoster.",
+          );
+        }
+        pageToken = response.nextPageToken;
+      }
+    } catch (err) {
+      throw translateUpstreamError(err, "listClassRoster");
+    }
+    // Ran out the maximum-page bound. Reject the entire operation
+    // rather than return a partial roster masquerading as successful.
+    throw new PlatformError(
+      "lms.upstreamCallFailed",
+      "Google Classroom listClassRoster exceeded the maximum-page bound.",
+    );
   },
 
   listClassTopics(): Promise<readonly LmsTopic[]> {
