@@ -188,6 +188,74 @@ The in-process token store used by the Emulator Suite and by unit tests is not a
 
 The runtime binding is a boring adapter: read the client credentials from Secret Manager on cold start, cache them for the lifetime of the function instance, and read or write per-teacher token envelopes on demand. No token material is stored in memory across cold starts. No token material is written to any log line, including error logs.
 
+### 7.4 Sprint 23B activation - OAuth client parameter binding
+
+Sprint 23B activated `beginOAuth`, `completeOAuth`, `revokeGrant`, `listTeacherClasses`, and `fetchClass` in the Google Classroom adapter. The activation binds the OAuth client through Firebase Functions v2 typed parameters:
+
+- `GOOGLE_CLASSROOM_CLIENT_ID` (string parameter, non-secret). The OAuth 2.0 client id from §4.1. Set with `firebase functions:config:set` or via the Firebase console under **Parameters**.
+- `GOOGLE_CLASSROOM_REDIRECT_URI` (string parameter, non-secret). The authorized redirect URI registered in §4.2. Must match the OAuth client's authorized redirect URI list exactly.
+- `GOOGLE_CLASSROOM_CLIENT_SECRET` (Secret Manager secret). The OAuth 2.0 client secret. Populate with `firebase functions:secrets:set GOOGLE_CLASSROOM_CLIENT_SECRET` before first deploy. Rotation follows §8.1.
+
+The secret is attached to the five activated callables through `platformCallable({ secrets: [...] }, handler)` in `platform/functions/src/lms/connections-begin.ts`, `connections-complete.ts`, `connections-disconnect.ts`, `classes-discover.ts`, and `classes-import.ts`. No other Cloud Function can read the secret.
+
+Runtime binding is installed lazily at handler entry via `ensureGoogleClassroomProductionBindings()` in `platform/functions/src/lms/providers/google-classroom/config-firebase.ts`. The installer is idempotent and respects test-injected fixtures, so the Emulator Suite and unit-test paths keep working unchanged.
+
+**Deferred work.** Sprint 23B does NOT replace the in-process `LmsTokenStore` implementation. Tokens still live inside the Cloud Function trust boundary in memory; they never appear in Firestore, in logs, in callable responses, or in a client bundle. A durable, Secret-Manager-backed production token store is deferred to Sprint 23C so the OAuth activation slice can certify without expanding into infrastructure design.
+
+### 7.5 Sprint 23B security completion - OAuth state and PKCE custody
+
+Sprint 23B security completion adds server-side OAuth state validation and PKCE (Authorization Code Flow with PKCE, S256 challenge) to the connection lifecycle. Both are implemented inside the Cloud Function trust boundary; neither surfaces the verifier or the raw state to the client.
+
+**State issuance.** `lmsConnectionsBegin` calls the Google Classroom adapter, which asks the vendor-neutral `LmsOAuthStateStore` (`platform/functions/src/lms/oauth-state/state-store.ts`) to issue a fresh record. The store:
+
+- generates a 32-byte cryptographically secure state value (rendered as 64 lowercase hex characters, 256 bits of entropy);
+- generates a 32-byte cryptographically secure PKCE code_verifier (rendered as 43 base64url characters, no padding);
+- derives the code_challenge as base64url(SHA-256(code_verifier)) with no padding (RFC 7636 §4.2);
+- binds the record to `{teacherId, providerId, redirectUri, codeVerifier, codeChallenge, issuedAtEpochMs, expiresAtEpochMs}`;
+- sets a documented 10-minute TTL (`LMS_OAUTH_STATE_TTL_MS_FOR_TESTS`);
+- returns only `{state, codeChallenge}` to the adapter.
+
+The adapter embeds the state, the code_challenge, and `code_challenge_method=S256` in the Google authorization URL. The verifier never appears in the URL, in a client bundle, or in a callable response. The `lmsConnectionsBegin` handler also calls `revokeForTeacher({teacherId, providerId})` before issuing so a restarted connection flow leaves at most one live pending record per teacher/provider pair.
+
+**State consumption.** `lmsConnectionsComplete` performs a two-step validation:
+
+1. **Teacher pre-check.** The callable peeks the store for the supplied state and rejects if the record is missing, expired, already consumed, bound to a different teacher, bound to a different provider, or bound to a different redirect URI. Every internal reason surfaces to the caller as the single public `lms.invalidOAuthState` code so error granularity cannot enumerate server state.
+2. **Atomic consume.** The Google Classroom adapter calls `store.consume({state, expectedProviderId, expectedRedirectUri})`. The consume is a single atomic step against the in-process record map: it observes the consumed marker, sets it before any await, and only then re-validates expiration, provider, and redirect. A concurrent second consume for the same state observes the consumed marker and rejects; a failed validation still consumes the record so a replay after a failure sees "already consumed" rather than a second chance.
+
+The adapter forwards the returned code_verifier to `transport.exchangeAuthorizationCode` as the `code_verifier` form field alongside `code`, `redirect_uri`, `client_id`, `client_secret`, and `grant_type=authorization_code`. Every activated callable that owns state work continues to trade in the existing stable LMS error contract; the adapter re-raises the store's granular codes into the vendor-neutral upstream error space; the callable coerces them into the public `lms.invalidOAuthState` code.
+
+**Concurrency and replay.** State is single-use and expires ten minutes after issuance. `revokeForTeacher` clears pending records at disconnect and at the start of a restarted begin. Consumed records are retained (not deleted) so a replay attempt observes "already consumed" rather than "not found". A concurrent second consume of the same state is guaranteed to reject (verified by a dedicated unit test that issues one state and races eight simultaneous consumes; exactly one succeeds, seven reject with the "consumed" code).
+
+**Secret handling.** The state store never logs the state value, the verifier, the challenge, an authorization code, an access token, a refresh token, or the OAuth client secret. The adapter never logs those values. The callables never log those values. Every error message the callable surfaces to the client is either the stable LMS error code (upstream authorization failure, transport unbound, provider not registered) or the uniform `lms.invalidOAuthState` code; none of them include state, verifier, or code material.
+
+**Transient-state custody.** Records live inside `InProcessLmsOAuthStateStore`, an in-process `Map` behind the same getter/setter/reset/scoped-inject discipline as `InProcessLmsTokenStore`. Like the token store, the state store is documented in code as adequate ONLY for unit tests, Emulator Suite use, and controlled single-process validation. It is NOT adequate for a durable multi-instance production deploy: a Cloud Function instance restart or a warm request routed to a different instance can invalidate pending state or race between instances that cannot see each other's records.
+
+**Production activation remains blocked.** Google Classroom production activation is blocked pending durable, multi-instance implementations of BOTH the token store (§7.3) AND the OAuth state store, plus completion of the operational provisioning listed in §13. No real teacher connection should be treated as durable at this stage; a real connection completed against the in-process bindings will lose its OAuth state on any instance restart and will lose its token bundle the moment the function instance recycles.
+
+### 7.6 Sprint 23B final integration verification - cross-callable OAuth completion
+
+The Sprint 23B security completion pass introduced `InProcessLmsOAuthStateStore` and the associated PKCE custody. Because that store is a Node module-singleton `Map`, cross-callable OAuth completion (state issued by `lmsConnectionsBegin` and consumed by `lmsConnectionsComplete`) is only viable when both callables execute in the same Node process. Sprint 23B's provisional acceptance required a single narrow verification that the actual exported callables can share pending state under that condition, and an explicit statement of the runtime assumptions that make the sharing work.
+
+**Verification harness.** `platform/functions/src/lms/connections-lifecycle-integration.test.ts` uses the repository's existing callable-integration harness (the mock pattern established by `connections-complete-oauth-state.test.ts`). Only system boundaries the sprint spec permits mocking are mocked: Firestore document handles, the audit-event writer, the structured logger, and the vendor-neutral token store. Everything on the callable-to-adapter path is real: the OAuth state store module singleton, the provider registry, the Google Classroom adapter, the config seam, the transport seam, and the `ensureGoogleClassroomProductionBindings` installer (a no-op under a pre-installed fixture binding). The Google endpoint is replaced by the in-repository `createFixtureGoogleClassroomTransport`; no real Google credential, no Firebase parameter, and no Secret Manager value is touched.
+
+**Exported callable sequence tested.** The suite invokes `__lmsConnectionsBeginHandler` (the exact handler wrapped by `platformCallable` into `lmsConnectionsBegin`) and `__lmsConnectionsCompleteHandler` (the exact handler wrapped into `lmsConnectionsComplete`) through their public request/response contracts. No adapter or state-store method is called directly, in keeping with the sprint direction.
+
+**Cross-callable sharing result.** In one Node process, state issued by the begin handler was consumed successfully by the complete handler; the fixture code exchange ran once, the mocked token store recorded the grant once, the mocked connection-creation write executed once, and the mocked audit-event writer recorded exactly one `lms.connectionCreated` event bound to the fixture teacher UID.
+
+**Replay result.** A second invocation of the complete handler with the same state was rejected with the single public code `lms.invalidOAuthState`, with the connection-doc `exists: false` mock refreshed for the retry so the reject could only originate in the state store's atomic single-use consume. The token store, connection write, and audit-event writer counters remained at one after the replay.
+
+**Sensitive-data result.** In every test, every callable response body, every thrown public error message, every `log.info` / `log.warn` / `log.error` call, every mocked Firestore write payload, and every mocked audit-event payload was serialized to JSON and asserted not to contain the state value (except in the begin response and authorization URL, where it is by design), the PKCE code verifier substring, the fixture authorization code, the fixture access token, the fixture refresh token, or the fixture client secret. All assertions passed.
+
+**Runtime assumptions of the Outcome A result.** The verification proves cross-callable sharing under exactly these conditions:
+
+- both callables execute inside one Node process (in this case one Jest worker, equivalently one warmed Cloud Functions instance);
+- the module-singleton `InProcessLmsOAuthStateStore` map is the same object at both call sites;
+- no instance restart, no cold-start of a second instance, and no cross-instance request routing occurs between begin and complete.
+
+The verification does NOT prove that two independently-warmed Cloud Functions instances share pending OAuth state. In production, Cloud Functions v2 scales a single function to N warm instances and runs separate functions (as `lmsConnectionsBegin` and `lmsConnectionsComplete` are) in independent instance pools. A `begin` handled by instance A followed by a `complete` handled by instance B in production will fail with `lms.invalidOAuthState` because instance B's in-process map cannot see the record instance A minted. This is the exact production blocker recorded in §7.5, and it is preserved unchanged by this verification. The durable multi-instance state store is a Sprint 23C obligation.
+
+**Effect on the production blocker.** None. §7.5's production-activation block stands verbatim. No workaround was introduced; the in-process store was not weakened; no Firestore state store, no Firestore Rules change, no callable contract change, no vendor-neutral provider-interface change, no OAuth scope, no real Google credential, and no deploy accompanied the verification.
+
 ---
 
 ## 8. Token Rotation Strategy

@@ -11,10 +11,54 @@ import {
   type LmsConnectionCreationWrite,
 } from "../shared";
 
+import {
+  getLmsOAuthStateStore,
+  LMS_OAUTH_STATE_ERROR_CODES,
+} from "./oauth-state/state-store";
+import {
+  ensureGoogleClassroomProductionBindings,
+  googleClassroomProductionSecrets,
+} from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter, isRegisteredProvider } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
 import { lmsConnectionIdFor } from "./shared/ids";
 import { getLmsTokenStore } from "./tokens/token-store";
+
+// Single public error code for every server-side OAuth state failure.
+// The store throws granular internal codes (unknown, expired, replayed,
+// mismatched provider, mismatched redirect, teacher mismatch); the
+// callable coerces every one of them into this single code so a caller
+// cannot use error granularity to enumerate server state (Sprint 23B
+// security completion §CONSUME REQUIREMENTS item 10).
+const OAUTH_STATE_PUBLIC_ERROR_CODE = "lms.invalidOAuthState";
+const OAUTH_STATE_PUBLIC_ERROR_MESSAGE =
+  "The OAuth authorization request could not be validated.";
+
+// Internal store error codes that the callable maps onto the single
+// public code. Any other thrown error is re-thrown unchanged so an
+// unrelated failure (e.g. adapter transport unbound) is not silently
+// masked.
+const OAUTH_STATE_INTERNAL_CODES: ReadonlySet<string> = new Set([
+  LMS_OAUTH_STATE_ERROR_CODES.invalidInput,
+  LMS_OAUTH_STATE_ERROR_CODES.notFound,
+  LMS_OAUTH_STATE_ERROR_CODES.expired,
+  LMS_OAUTH_STATE_ERROR_CODES.consumed,
+  LMS_OAUTH_STATE_ERROR_CODES.providerMismatch,
+  LMS_OAUTH_STATE_ERROR_CODES.redirectMismatch,
+]);
+
+function coerceOAuthStateError(err: unknown): unknown {
+  if (
+    err instanceof PlatformError &&
+    OAUTH_STATE_INTERNAL_CODES.has(err.code)
+  ) {
+    return new PlatformError(
+      OAUTH_STATE_PUBLIC_ERROR_CODE,
+      OAUTH_STATE_PUBLIC_ERROR_MESSAGE,
+    );
+  }
+  return err;
+}
 
 // lmsConnectionsComplete
 //
@@ -51,6 +95,7 @@ function safeLog(fn: () => void): void {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsConnectionsCompleteResponse> {
+  ensureGoogleClassroomProductionBindings();
   const actor = assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
@@ -106,8 +151,35 @@ async function handler(
     }
   }
 
+  // Server-side OAuth state pre-check. The state store atomically
+  // consumes the record during `adapter.completeOAuth`; this peek
+  // enforces the teacher binding BEFORE the atomic consume so a
+  // mismatched teacher does not exchange the authorization code.
+  // Every internal validation failure surfaces as the single public
+  // `lms.invalidOAuthState` code (Sprint 23B security completion).
+  const stateStore = getLmsOAuthStateStore();
+  const binding = await stateStore.peek(state);
+  if (
+    !binding ||
+    binding.consumed ||
+    Date.now() >= binding.expiresAtEpochMs ||
+    binding.teacherId !== actor.uid ||
+    binding.providerId !== providerId ||
+    binding.redirectUri !== redirectUri
+  ) {
+    throw new PlatformError(
+      OAUTH_STATE_PUBLIC_ERROR_CODE,
+      OAUTH_STATE_PUBLIC_ERROR_MESSAGE,
+    );
+  }
+
   const adapter = getProviderAdapter(providerId);
-  const grant = await adapter.completeOAuth({ code, state, redirectUri });
+  let grant;
+  try {
+    grant = await adapter.completeOAuth({ code, state, redirectUri });
+  } catch (err) {
+    throw coerceOAuthStateError(err);
+  }
 
   const tokenRef = await getLmsTokenStore().store({
     providerId,
@@ -155,5 +227,8 @@ async function handler(
   return { connectionId, providerId, alreadyConnected: false };
 }
 
-export const lmsConnectionsComplete = platformCallable(handler);
+export const lmsConnectionsComplete = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
+  handler,
+);
 export const __lmsConnectionsCompleteHandler = handler;

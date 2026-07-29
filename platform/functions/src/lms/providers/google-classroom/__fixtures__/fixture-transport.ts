@@ -44,6 +44,8 @@ import type {
   GoogleClassroomTopicListResponse,
   GoogleClassroomTopicResource,
   GoogleClassroomTransport,
+  GoogleClassroomUserProfileMeRequest,
+  GoogleClassroomUserProfileResource,
   GoogleTokenRevokeRequest,
 } from "../transport";
 
@@ -188,6 +190,7 @@ export type GoogleClassroomFixtureCallLog = {
   readonly authorizationCodeExchanges: number;
   readonly accessTokenRefreshes: number;
   readonly tokenRevocations: number;
+  readonly userProfileMeCalls: number;
   readonly courseListCalls: number;
   readonly courseFetchCalls: number;
   readonly studentListCalls: number;
@@ -214,6 +217,7 @@ export function createFixtureGoogleClassroomTransport(
   let authorizationCodeExchanges = 0;
   let accessTokenRefreshes = 0;
   let tokenRevocations = 0;
+  let userProfileMeCalls = 0;
   let courseListCalls = 0;
   let courseFetchCalls = 0;
   let studentListCalls = 0;
@@ -338,6 +342,23 @@ export function createFixtureGoogleClassroomTransport(
       return Promise.resolve();
     },
 
+    async getUserProfileMe(
+      input: GoogleClassroomUserProfileMeRequest,
+    ): Promise<GoogleClassroomUserProfileResource> {
+      userProfileMeCalls += 1;
+      applyFailureMode(failureMode, "getUserProfileMe");
+      requireAccessToken(input.accessToken, "getUserProfileMe");
+      return Promise.resolve({
+        id: FIXTURE_TEACHER_UPSTREAM_ID,
+        emailAddress: "fictional.teacher@fixture.example.invalid",
+        name: {
+          fullName: "Fictional Teacher",
+          givenName: "Fictional",
+          familyName: "Teacher",
+        },
+      });
+    },
+
     async listTeacherCourses(
       input: GoogleClassroomCourseListRequest,
     ): Promise<GoogleClassroomCourseListResponse> {
@@ -429,6 +450,7 @@ export function createFixtureGoogleClassroomTransport(
         authorizationCodeExchanges,
         accessTokenRefreshes,
         tokenRevocations,
+        userProfileMeCalls,
         courseListCalls,
         courseFetchCalls,
         studentListCalls,

@@ -1,15 +1,19 @@
-// Sprint 23A token-safety fixture tests.
+// Token-safety fixture tests. Sprint 23A shipped these as a boundary
+// guard against accidental activation; Sprint 23B rewires them so
+// the same invariants hold across the activation:
 //
-// Sprint 23A specification §6. Proves the Sprint 23A surfaces (adapter,
-// transport seam, config seam, fixture) do not leak token or
-// authorization-code material through any observable channel.
+//   - error messages never carry token or authorization-code material,
+//     even under the activated adapter methods;
+//   - the transport / config unbound sentinels never leak secrets in
+//     their error messages;
+//   - `withGoogleClassroomConfig` restores prior bindings correctly;
+//   - the vendor-neutral LMS core (registry, callables, mirror record)
+//     does not import the Google-package-local seams.
 //
-// Sprint 23A ships no live adapter behavior: every adapter method
-// still rejects at `lms.providerNotYetOperational`, and no callable
-// resolves the transport or config seam. Consequently no Firestore
-// write path or callable response path can carry Google-sourced
-// token material in Sprint 23A. These tests codify that invariant
-// so a future accidental activation is caught by the test suite.
+// The tests demonstrate that even though the adapter now returns
+// real token material back to the calling callable (which hands it to
+// the server-only token store), no token value survives into an
+// observable error message.
 
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -18,6 +22,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 
 import { PlatformError } from "../../../shared";
 import { translateThrown } from "../../../shared/errors/https-callable";
+import { resetLmsOAuthStateStoreForTests } from "../../oauth-state/state-store";
 
 import { googleClassroomAdapter } from "./adapter";
 import {
@@ -60,38 +65,51 @@ function assertNoSecretIn(source: string): void {
   expect(source).not.toContain(FIXTURE_CONFIG.clientSecret);
 }
 
-describe("token-safety invariants (Sprint 23A)", () => {
+describe("token-safety invariants (Sprint 23B)", () => {
   afterEach(() => {
     resetGoogleClassroomTransportForTests();
     resetGoogleClassroomConfigForTests();
+    resetLmsOAuthStateStoreForTests();
   });
 
-  it("adapter beginOAuth rejects with providerNotYetOperational and does not leak fixture tokens", async () => {
+  it("adapter beginOAuth output never carries the client secret in the authorization URL", async () => {
     setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
     setGoogleClassroomConfig(FIXTURE_CONFIG);
-    let observed: unknown;
-    try {
-      await googleClassroomAdapter.beginOAuth({
-        teacherId: "fixture-teacher-id",
-        redirectUri: FIXTURE_CONFIG.redirectUri,
-      });
-    } catch (err) {
-      observed = err;
+    const authorization = await googleClassroomAdapter.beginOAuth({
+      teacherId: "fixture-teacher-id",
+      redirectUri: FIXTURE_CONFIG.redirectUri,
+    });
+    // The authorization URL is destined for the client browser; it
+    // must never carry the OAuth client secret.
+    expect(authorization.authorizationUrl).not.toContain(
+      FIXTURE_CONFIG.clientSecret,
+    );
+    for (const secret of SECRETS_TO_GUARD) {
+      expect(authorization.authorizationUrl).not.toContain(secret);
     }
-    expect(observed).toBeInstanceOf(PlatformError);
-    const platformError = observed as PlatformError;
-    expect(platformError.code).toBe("lms.providerNotYetOperational");
-    assertNoSecretIn(platformError.message);
   });
 
-  it("adapter completeOAuth rejects and does not echo the authorization code, tokens, or client secret", async () => {
-    setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
+  it("adapter completeOAuth error paths never echo the authorization code or client secret", async () => {
     setGoogleClassroomConfig(FIXTURE_CONFIG);
+    // Issue a real state so the code-exchange authorization-failure
+    // path is reached rather than the state-store rejection path;
+    // both paths must observe the no-secrets invariant, but the
+    // authorization-failure path is the one this test asserts.
+    setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
+    const authorization = await googleClassroomAdapter.beginOAuth({
+      teacherId: "fixture-teacher-id",
+      redirectUri: FIXTURE_CONFIG.redirectUri,
+    });
+    setGoogleClassroomTransport(
+      createFixtureGoogleClassroomTransport({
+        failureMode: "authorization-failure",
+      }),
+    );
     let observed: unknown;
     try {
       await googleClassroomAdapter.completeOAuth({
         code: FIXTURE_AUTHORIZATION_CODE,
-        state: "fixture-state",
+        state: authorization.state,
         redirectUri: FIXTURE_CONFIG.redirectUri,
       });
     } catch (err) {
@@ -180,11 +198,13 @@ describe("token-safety invariants (Sprint 23A)", () => {
     );
   });
 
-  it("no core LMS module (adapter, provider, registry, callables) imports the Sprint 23A seams", () => {
-    // Guard: the vendor-neutral core and every LMS callable must not
-    // reach into the Google-package-local seams. If a future edit
-    // wires a callable directly to `./transport` or `./config`, this
-    // test fails, catching an unreviewed activation.
+  it("no core LMS module (adapter, provider, registry) imports the Sprint 23A seams; only callables activated in Sprint 23B may reach for config-firebase", () => {
+    // Guard: the vendor-neutral core (providers/provider.ts,
+    // providers/registry.ts, tokens/token-store.ts) must not reach
+    // into the Google-package-local seams. Sprint 23B introduced a
+    // narrow exception: the activated callables install the
+    // production bindings via `providers/google-classroom/config-firebase`.
+    // No other seam may leak.
     const lmsRoot = path.resolve(__dirname, "../..");
     const files: string[] = [];
     function walk(dir: string): void {
@@ -207,11 +227,28 @@ describe("token-safety invariants (Sprint 23A)", () => {
     }
     walk(lmsRoot);
     expect(files.length).toBeGreaterThan(0);
+    // Match imports whose final path segment is exactly `transport`,
+    // `config`, or `__fixtures__`. The path terminator (quote or
+    // slash) prevents the regex from matching `config-firebase`, which
+    // Sprint 23B explicitly allows.
+    const FORBIDDEN = /providers\/google-classroom\/(transport|config|__fixtures__)["'/]/;
+    // The vendor-neutral core files that must NEVER reach into any
+    // Google-package-local surface (including `config-firebase`).
+    const CORE_NEUTRAL = new Set(
+      [
+        "providers/provider.ts",
+        "providers/registry.ts",
+        "tokens/token-store.ts",
+      ].map((rel) => path.join(lmsRoot, rel)),
+    );
+    const CONFIG_FIREBASE_IMPORT =
+      /providers\/google-classroom\/config-firebase/;
     for (const file of files) {
       const source = fs.readFileSync(file, "utf8");
-      expect(source).not.toMatch(
-        /providers\/google-classroom\/(transport|config|__fixtures__)/,
-      );
+      expect(source).not.toMatch(FORBIDDEN);
+      if (CORE_NEUTRAL.has(file)) {
+        expect(source).not.toMatch(CONFIG_FIREBASE_IMPORT);
+      }
     }
   });
 });

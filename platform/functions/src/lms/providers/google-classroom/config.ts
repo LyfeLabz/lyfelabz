@@ -58,6 +58,14 @@ export function setGoogleClassroomConfig(
   ACTIVE_CONFIG = { resolve: () => config };
 }
 
+// Predicate used by the production installer in `config-firebase.ts` so
+// production activation is idempotent and never overwrites a fixture
+// binding a test installed. Compares identity against the sentinel
+// unbound resolver; any other value is a "bound" binding.
+export function isGoogleClassroomConfigBound(): boolean {
+  return ACTIVE_CONFIG !== UNBOUND_CONFIG;
+}
+
 // Scoped installation helper. Restores the prior binding after `fn`
 // resolves or rejects. Tests use this to guarantee cleanup even when
 // an assertion throws.

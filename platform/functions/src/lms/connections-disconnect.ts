@@ -11,6 +11,11 @@ import {
   type LmsConnectionRevocationWrite,
 } from "../shared";
 
+import { getLmsOAuthStateStore } from "./oauth-state/state-store";
+import {
+  ensureGoogleClassroomProductionBindings,
+  googleClassroomProductionSecrets,
+} from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
 import { getLmsTokenStore } from "./tokens/token-store";
@@ -43,6 +48,7 @@ function safeLog(fn: () => void): void {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsConnectionsDisconnectResponse> {
+  ensureGoogleClassroomProductionBindings();
   const actor = assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
@@ -79,6 +85,24 @@ async function handler(
   }
   if (existing.status === "revoked") {
     return { connectionId, alreadyRevoked: true };
+  }
+
+  // Discard any outstanding OAuth state records for this teacher and
+  // provider so a stale pending authorization cannot be completed
+  // against a revoked connection.
+  try {
+    await getLmsOAuthStateStore().revokeForTeacher({
+      teacherId: actor.uid,
+      providerId: existing.providerId,
+    });
+  } catch (err) {
+    safeLog(() =>
+      log.warn("lms.oauthStateRevokeForTeacherFailed", {
+        actorUserId: actor.uid,
+        connectionId,
+        error: (err as Error)?.message,
+      }),
+    );
   }
 
   // Best-effort upstream revocation. The mirror is still marked `revoked`
@@ -123,5 +147,8 @@ async function handler(
   return { connectionId, alreadyRevoked: false };
 }
 
-export const lmsConnectionsDisconnect = platformCallable(handler);
+export const lmsConnectionsDisconnect = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
+  handler,
+);
 export const __lmsConnectionsDisconnectHandler = handler;

@@ -2,6 +2,10 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {platformCallable, PlatformError, lmsConnectionDocRef } from "../shared";
 
+import {
+  ensureGoogleClassroomProductionBindings,
+  googleClassroomProductionSecrets,
+} from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
 import { getLmsTokenStore } from "./tokens/token-store";
@@ -30,6 +34,7 @@ export type LmsClassesDiscoverResponse = {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsClassesDiscoverResponse> {
+  ensureGoogleClassroomProductionBindings();
   const actor = assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
@@ -86,5 +91,8 @@ async function handler(
   };
 }
 
-export const lmsClassesDiscover = platformCallable(handler);
+export const lmsClassesDiscover = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
+  handler,
+);
 export const __lmsClassesDiscoverHandler = handler;

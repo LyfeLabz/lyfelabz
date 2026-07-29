@@ -16,6 +16,10 @@ import {
   type LmsClassLinkCreationWrite,
 } from "../shared";
 
+import {
+  ensureGoogleClassroomProductionBindings,
+  googleClassroomProductionSecrets,
+} from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
 import { lmsClassLinkIdFor } from "./shared/ids";
@@ -72,6 +76,7 @@ function safeLog(fn: () => void): void {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsClassesImportResponse> {
+  ensureGoogleClassroomProductionBindings();
   const actor = assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
@@ -292,5 +297,8 @@ async function handler(
   return { linkId, classId, lmsClassId, alreadyLinked: false };
 }
 
-export const lmsClassesImport = platformCallable(handler);
+export const lmsClassesImport = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
+  handler,
+);
 export const __lmsClassesImportHandler = handler;

@@ -2,6 +2,11 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {platformCallable, PlatformError } from "../shared";
 
+import { getLmsOAuthStateStore } from "./oauth-state/state-store";
+import {
+  ensureGoogleClassroomProductionBindings,
+  googleClassroomProductionSecrets,
+} from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter, isRegisteredProvider } from "./providers/registry";
 import {
   assertAuthenticatedTeacherForLms,
@@ -34,6 +39,10 @@ export type LmsConnectionsBeginResponse = {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsConnectionsBeginResponse> {
+  // Sprint 23B: idempotent production binding installer. No-op if a
+  // test has already installed a fixture transport / config, so unit
+  // tests keep working unchanged.
+  ensureGoogleClassroomProductionBindings();
   const actor = assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
@@ -58,6 +67,21 @@ async function handler(
       `Provider "${providerId}" is not registered.`,
     );
   }
+  // Discard any outstanding OAuth state records this teacher may have
+  // issued for the same provider in a prior, incomplete `begin` call.
+  // A restarted-connection flow (teacher closes the tab, hits begin
+  // again) leaves at most one live pending record instead of accreting
+  // one per attempt. Best-effort: an in-process store failure here
+  // does not block issuing a fresh record.
+  try {
+    await getLmsOAuthStateStore().revokeForTeacher({
+      teacherId: actor.uid,
+      providerId,
+    });
+  } catch {
+    // Intentional: revocation is a hygiene step, not a lifecycle step.
+  }
+
   const adapter = getProviderAdapter(providerId);
   const { authorizationUrl, state } = await adapter.beginOAuth({
     teacherId: actor.uid,
@@ -66,5 +90,8 @@ async function handler(
   return { authorizationUrl, state };
 }
 
-export const lmsConnectionsBegin = platformCallable(handler);
+export const lmsConnectionsBegin = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
+  handler,
+);
 export const __lmsConnectionsBeginHandler = handler;
