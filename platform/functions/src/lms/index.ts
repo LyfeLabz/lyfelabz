@@ -1,3 +1,17 @@
+import {
+  ensureLmsDurableStorageBindings,
+  isFunctionsRuntime,
+} from "./shared/durable-storage";
+
+// Sprint 23D. Auto-install the durable Firestore-backed OAuth state
+// and token stores when the module is loaded inside a Cloud Functions
+// runtime (production or Firebase Emulator Suite). Unit tests neither
+// import this module directly nor set the runtime env vars, so the
+// in-process defaults remain active under jest.
+if (isFunctionsRuntime()) {
+  ensureLmsDurableStorageBindings();
+}
+
 export { lmsAssignmentsPublish } from "./assignments-publish";
 export { lmsClassesDiscover } from "./classes-discover";
 export { lmsClassesImport } from "./classes-import";

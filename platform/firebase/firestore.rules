@@ -487,6 +487,35 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // ---------- lmsOAuthStates/{state} ----------
+    //
+    // Sprint 23D. Durable OAuth state and PKCE custody. The record
+    // body carries a server-issued state value, the paired PKCE
+    // code_verifier (RFC 7636), and the state binding fields
+    // (teacherId, providerId, redirectUri). None of these fields is
+    // safe to expose to a client; every client operation is denied.
+    // The sole writers are the `lmsConnectionsBegin`,
+    // `lmsConnectionsComplete`, and `lmsConnectionsDisconnect`
+    // callables, all of which run through the Admin SDK and bypass
+    // Rules.
+    match /lmsOAuthStates/{state} {
+      allow read, write: if false;
+    }
+
+    // ---------- lmsTokenBundles/{tokenRef} ----------
+    //
+    // Sprint 23D. Durable OAuth token bundle storage. The record body
+    // carries the raw access token and (when the provider issues one)
+    // the raw refresh token; the document is the operational analogue
+    // of a secret-manager entry and is therefore server-only. The
+    // sole writers and readers are the LMS callables that resolve a
+    // `lmsConnections/{connectionId}.tokenRef` server-side to call
+    // the upstream provider. All access is via the Admin SDK and
+    // bypasses Rules; client access is denied.
+    match /lmsTokenBundles/{tokenRef} {
+      allow read, write: if false;
+    }
+
     // ---------- externalIdentities/{externalIdentityId} ----------
     //
     // Sprint 23C-I - Student External Identity Bridge.
