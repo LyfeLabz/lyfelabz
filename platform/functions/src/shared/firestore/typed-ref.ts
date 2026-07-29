@@ -86,6 +86,13 @@ import {
   type UserProvisioningWrite,
   type UserRecord,
 } from "../types/user";
+import {
+  EXTERNAL_IDENTITIES_COLLECTION,
+  type ExternalIdentityCreationWrite,
+  type ExternalIdentityRecord,
+  type ExternalIdentityRestorationWrite,
+  type ExternalIdentityRevocationWrite,
+} from "../types/external-identity";
 import { getAdminFirestore } from "./admin";
 
 export function userDocRef(uid: string): DocumentReference<UserProvisioningWrite> {
@@ -774,4 +781,80 @@ export function classLmsLinkDocRef(
   return getAdminFirestore()
     .collection(CLASSES_COLLECTION)
     .doc(classId) as DocumentReference<ClassLmsLinkWrite>;
+}
+
+// -------------------- External identity references --------------------
+//
+// Sprint 23C-I. Typed Firestore references for the server-controlled
+// `externalIdentities/{externalIdentityId}` bridge collection. Reads
+// return record-typed snapshots; writes are performed through narrower
+// FieldValue-safe references that never widen the field set beyond the
+// specific transition being executed. The external identity store
+// (`shared/identity/external-identity-store.ts`) is the sole caller of
+// these references from Cloud Function code; migration and
+// reconciliation callables reach the collection only via the store.
+//
+// Client access is denied at the Rules layer; these references exist
+// exclusively inside the Cloud Function trust boundary.
+
+export function externalIdentitiesCollectionRef(): CollectionReference<ExternalIdentityRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(EXTERNAL_IDENTITIES_COLLECTION) as CollectionReference<ExternalIdentityRecord>;
+}
+
+// Read typed reference for externalIdentities/{externalIdentityId}.
+// Reads return a DocumentSnapshot<ExternalIdentityRecord>. The
+// document identifier is a deterministic SHA-256 hash produced by
+// `computeExternalIdentityDocId`; callers MUST derive the identifier
+// through that helper and never pass a raw provider account
+// identifier here.
+export function externalIdentityDocRef(
+  externalIdentityId: string,
+): DocumentReference<ExternalIdentityRecord> {
+  return getAdminFirestore()
+    .collection(EXTERNAL_IDENTITIES_COLLECTION)
+    .doc(externalIdentityId) as DocumentReference<ExternalIdentityRecord>;
+}
+
+// Creation-write typed reference for
+// externalIdentities/{externalIdentityId}. The external identity store
+// uses this reference inside `runFirestoreTransaction` to `.create()` a
+// canonical `ExternalIdentityCreationWrite` payload so that
+// `FieldValue.serverTimestamp()` can be used at the write boundary
+// while the read-side reference remains typed as
+// `ExternalIdentityRecord`.
+export function externalIdentityCreationDocRef(
+  externalIdentityId: string,
+): DocumentReference<ExternalIdentityCreationWrite> {
+  return getAdminFirestore()
+    .collection(EXTERNAL_IDENTITIES_COLLECTION)
+    .doc(externalIdentityId) as DocumentReference<ExternalIdentityCreationWrite>;
+}
+
+// Revocation-write typed reference. The store uses this reference to
+// `.update()` a narrow `ExternalIdentityRevocationWrite` payload that
+// carries only `status` and `updatedAt`. The immutable ownership
+// fields (providerId, providerAccountId, userId) and the creation
+// origin fields (source, createdAt) are absent from the write shape
+// so a revocation cannot silently reassign a mapping, rewrite its
+// origin, or backdate its creation.
+export function externalIdentityRevocationDocRef(
+  externalIdentityId: string,
+): DocumentReference<ExternalIdentityRevocationWrite> {
+  return getAdminFirestore()
+    .collection(EXTERNAL_IDENTITIES_COLLECTION)
+    .doc(externalIdentityId) as DocumentReference<ExternalIdentityRevocationWrite>;
+}
+
+// Restoration-write typed reference. Symmetric to the revocation
+// reference. The store enforces at the transaction layer that the
+// existing record's (providerId, providerAccountId, userId) match the
+// caller's intent before applying this narrow write.
+export function externalIdentityRestorationDocRef(
+  externalIdentityId: string,
+): DocumentReference<ExternalIdentityRestorationWrite> {
+  return getAdminFirestore()
+    .collection(EXTERNAL_IDENTITIES_COLLECTION)
+    .doc(externalIdentityId) as DocumentReference<ExternalIdentityRestorationWrite>;
 }

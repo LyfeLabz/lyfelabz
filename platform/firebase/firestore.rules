@@ -487,6 +487,32 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // ---------- externalIdentities/{externalIdentityId} ----------
+    //
+    // Sprint 23C-I - Student External Identity Bridge.
+    //
+    // Server-only reverse-lookup bridge that associates an upstream
+    // provider identity with an existing Firebase Auth UID. The
+    // record body carries the raw provider account identifier and is
+    // therefore treated as sensitive; every client role is denied
+    // every operation at the Rules layer. The document identifier
+    // itself is a deterministic SHA-256 hash produced by the
+    // `computeExternalIdentityDocId` helper; the raw identifier
+    // never appears in the document path.
+    //
+    // The sole writers are the `authOnUserCreate` trigger, the
+    // authenticated `reconcileMyExternalIdentity` callable, and the
+    // emulator-only administrative migration service. All three
+    // paths run through the Admin SDK and bypass Rules.
+    //
+    // This block uses an explicit `allow read, write: if false;`
+    // pattern (mirroring `assessmentAnswerKeys` and `auditEvents`)
+    // so the server-only intent is documented at the surface with
+    // the strongest confidentiality requirement.
+    match /externalIdentities/{externalIdentityId} {
+      allow read, write: if false;
+    }
+
     // ---------- auditEvents/{eventId} ----------
     //
     // Append-only server-write, server-read per Security Model §11 and

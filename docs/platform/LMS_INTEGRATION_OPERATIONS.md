@@ -554,6 +554,23 @@ Each item is a documented commitment. Delivery is scheduled through the ordinary
 
 ---
 
+## 17A. Sprint 23C-I - Student External Identity Bridge
+
+Sprint 23C-I introduces a server-controlled, server-only external identity bridge at `externalIdentities/{externalIdentityId}` that associates the Firebase Auth `google.com` provider account identifier with the canonical LyfeLabz Firebase UID. The bridge is the resolver a future Sprint 23C roster engine will consume when mapping a Google Classroom `Student.userId` to an existing LyfeLabz user without email or display-name matching. Firebase UID remains the canonical LyfeLabz identity in every downstream surface (users, enrollments, assessments, attempts).
+
+Writers active in Sprint 23C-I:
+
+- `authOnUserCreate` trigger, source `authOnUserCreate`. Fires only on Firebase Auth user creation.
+- `reconcileMyExternalIdentity` callable, source `authReconciliation`. Re-reads the caller's Firebase Auth record via Admin SDK and reconciles the persisted mapping against the currently linked providers. Never trusts a client-supplied provider identifier.
+- Emulator-only administrative migration service (`platform/functions/src/scripts/migration/external-identity-migration.ts`), source `adminMigration`. Not exported from the deployed Cloud Function bundle. Refuses to run unless the caller passes an explicit acknowledgement AND both the Firestore and Firebase Auth emulators are running.
+
+Operational notes:
+
+- Provider link and provider unlink are NOT detected in real time. The bridge updates only on Auth user creation, on the reconciliation callable, or via administrative reconciliation. A student who newly links Google after account creation must invoke reconciliation (or an operator must) for the bridge to reflect the change.
+- The record body carries the raw provider account identifier; the document identifier is a SHA-256 hash so the raw identifier never appears in the document path, audit target ID, or log payload. The collection is denied to every client role at the Rules layer.
+- User deletion is not implemented in Sprint 23C-I. When a lifecycle sprint introduces Firebase Auth user deletion, the external identity records for the deleted UID should transition to `revoked` (never deleted) so the audit stream retains continuity.
+- Production migration is out of scope. Sprint 23C-I ships only the mapping infrastructure, the reconciliation callable, and the emulator/fixture backfill. Durable multi-instance production rollout follows the same gating as the Sprint 23B token/OAuth-state stores.
+
 ## 18. Non-Goals
 
 This runbook does not:

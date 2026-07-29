@@ -40,7 +40,18 @@ export type AuditAction =
   | "lms.classUnlinked"
   | "lms.ownershipDrift"
   | "lms.assignmentPublished"
-  | "lms.publishFailed";
+  | "lms.publishFailed"
+  // Sprint 23C-I - Student External Identity Bridge. Every event
+  // targets an `externalIdentity` target type whose target ID is the
+  // hashed document identifier; the raw provider account identifier
+  // NEVER appears in an audit target ID or an audit payload.
+  | "identity.mappingCreated"
+  | "identity.mappingConfirmed"
+  | "identity.collisionDetected"
+  | "identity.mappingRevoked"
+  | "identity.mappingRestored"
+  | "identity.migrationAttempted"
+  | "identity.migrationCompleted";
 
 // Audit events are indexed by target type and target id per Data Model §3.8.
 // The set is left open as `string` because target types cross domain

@@ -97,6 +97,11 @@ export {
   submissionsCollectionRef,
   userDocRef,
   userRecordDocRef,
+  externalIdentitiesCollectionRef,
+  externalIdentityDocRef,
+  externalIdentityCreationDocRef,
+  externalIdentityRevocationDocRef,
+  externalIdentityRestorationDocRef,
 } from "./firestore/typed-ref";
 export { runFirestoreTransaction } from "./firestore/transaction";
 export { createFirestoreBatch } from "./firestore/batch";
@@ -213,6 +218,43 @@ export {
   type AssessmentAttemptItemResult,
   type AssessmentAttemptRecord,
 } from "./types/attempt";
+export {
+  EXTERNAL_IDENTITIES_COLLECTION,
+  type ExternalIdentityCreationWrite,
+  type ExternalIdentityProviderId,
+  type ExternalIdentityRecord,
+  type ExternalIdentityRestorationWrite,
+  type ExternalIdentityRevocationWrite,
+  type ExternalIdentitySource,
+  type ExternalIdentityStatus,
+} from "./types/external-identity";
+export {
+  assertValidProviderAccountId,
+  assertValidProviderId,
+  computeExternalIdentityDocId,
+  type ExternalIdentityDocIdInput,
+} from "./identity/external-identity-doc-id";
+export {
+  createOrConfirmExternalIdentity,
+  listExternalIdentitiesForUser,
+  reconcileExternalIdentityForUser,
+  resolveActiveExternalIdentity,
+  restoreExternalIdentity,
+  revokeExternalIdentity,
+  type CreateOrConfirmInput,
+  type CreateOrConfirmOutcome,
+  type CreateOrConfirmResult,
+  type ExternalIdentityResolution,
+  type ReconcileForUserInput,
+  type ReconcileForUserPerProviderResult,
+  type ReconcileForUserResult,
+  type RestoreInput,
+  type RestoreOutcome,
+  type RestoreResult,
+  type RevokeInput,
+  type RevokeOutcome,
+  type RevokeResult,
+} from "./identity/external-identity-store";
 export {
   USERS_COLLECTION,
   type ConsentState,

@@ -84,6 +84,16 @@ const VALID_ACTIONS: readonly AuditAction[] = [
   "lms.classImported",
   "lms.classUnlinked",
   "lms.ownershipDrift",
+  // Sprint 23C-I - Student External Identity Bridge. Kept in lockstep
+  // with the `AuditAction` union in shared/types/audit-event.ts; the
+  // audit writer refuses any action not present in both lists.
+  "identity.mappingCreated",
+  "identity.mappingConfirmed",
+  "identity.collisionDetected",
+  "identity.mappingRevoked",
+  "identity.mappingRestored",
+  "identity.migrationAttempted",
+  "identity.migrationCompleted",
 ];
 
 function isNonEmptyString(value: unknown): value is string {

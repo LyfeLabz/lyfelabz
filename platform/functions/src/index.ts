@@ -21,6 +21,7 @@ export {
   assignmentsUpdateDraft,
 } from "./assignments";
 export { authOnUserCreate } from "./auth";
+export { reconcileMyExternalIdentity } from "./identity";
 export {
   classesArchive,
   classesCreate,
