@@ -35,9 +35,9 @@ describe("createIntegrationsDeps redirectUri", () => {
       functions: {} as Functions,
       listClasses: listClassesStub,
       teacherUid: "teacher-1",
-      win: makeWin("https://lyfelabz.com"),
+      win: makeWin("https://app.lyfelabz.com"),
     });
-    expect(deps.redirectUri).toBe("https://lyfelabz.com/app/lms-callback.html");
+    expect(deps.redirectUri).toBe("https://app.lyfelabz.com/app/lms-callback.html");
   });
 
   it("preserves the /app/ segment across arbitrary same-origin hosts", () => {
@@ -57,7 +57,7 @@ describe("createIntegrationsDeps redirectUri", () => {
       functions: {} as Functions,
       listClasses: listClassesStub,
       teacherUid: "teacher-1",
-      win: makeWin("https://lyfelabz.com"),
+      win: makeWin("https://app.lyfelabz.com"),
     });
     expect(deps.redirectUri).not.toMatch(/\/\/[^/]+\/lms-callback\.html$/);
     expect(deps.redirectUri).toMatch(/\/app\/lms-callback\.html$/);

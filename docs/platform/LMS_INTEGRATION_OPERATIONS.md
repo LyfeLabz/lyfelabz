@@ -88,7 +88,7 @@ Authorized redirect URIs are limited to the static browser callback shell served
 
 The following redirect URIs are authorized:
 
-- The production browser callback at `https://lyfelabz.com/app/lms-callback.html`. This is the sole production redirect URI and matches the value emitted by the browser at OAuth begin time.
+- The production browser callback at `https://app.lyfelabz.com/app/lms-callback.html`. This is the sole production redirect URI and matches the value emitted by the browser at OAuth begin time.
 - The staging browser callback at the equivalent `/app/lms-callback.html` path on the staging origin (if a staging origin is present).
 - The Emulator Suite callback at the Emulator Hosting origin (`http://localhost:PORT/app/lms-callback.html`) for the duration of end-to-end validation only. This entry is removed after each certification pass.
 
