@@ -320,9 +320,9 @@ export function createListClassLinks(
 
 // Browser-scoped OAuth handoff. Opens the authorization URL in a popup,
 // listens for the postMessage delivered by the same-origin callback
-// page (public/lms-callback.html), verifies the state, and resolves
-// with { code, state }. Rejects on popup block, cancellation, state
-// mismatch, or upstream error.
+// page (app/lms-callback.html, served at /app/lms-callback.html),
+// verifies the state, and resolves with { code, state }. Rejects on
+// popup block, cancellation, state mismatch, or upstream error.
 export function createBrowserOAuthHandoff(win: Window): OAuthHandoff {
   return ({ authorizationUrl, expectedState }) =>
     new Promise((resolve, reject) => {
@@ -428,7 +428,11 @@ export function createIntegrationsDeps(input: {
   readonly win: Window;
   readonly db?: Firestore;
 }): IntegrationsDeps {
-  const redirectUri = `${input.win.location.origin}/lms-callback.html`;
+  // The callback shell is committed at app/lms-callback.html and served
+  // by Firebase Hosting from the /app/ path. The redirect URI must
+  // therefore include the /app/ segment so the OAuth provider returns
+  // to a resource that actually exists at the production origin.
+  const redirectUri = `${input.win.location.origin}/app/lms-callback.html`;
   return Object.freeze({
     callables: createLmsCallables(input.functions),
     openOAuth: createBrowserOAuthHandoff(input.win),

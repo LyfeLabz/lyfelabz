@@ -84,17 +84,17 @@ The client ID and client secret are the operational credential pair. Both are tr
 
 ### 4.2 Redirect URIs
 
-Authorized redirect URIs are limited to the server-side callback endpoint owned by the Cloud Function Charter. No client-side redirect URI is registered.
+Authorized redirect URIs are limited to the static browser callback shell served from the LyfeLabz Firebase Hosting origin. The shell is `app/lms-callback.html`, committed at that repository path and served under the `/app/` prefix. The Cloud Function that completes the exchange (`lmsConnectionsComplete`) is invoked as a callable from the workspace after the shell posts control back; it is not a redirect target and is never registered as a redirect URI.
 
 The following redirect URIs are authorized:
 
-- The Cloud Function callback in the LyfeLabz production Firebase project, at the canonical function URL for `lmsConnectionsComplete`. The exact URL is recorded in the operational runbook alongside the client entry.
-- The Cloud Function callback in the LyfeLabz staging Firebase project (if a staging project is present), at the equivalent function URL.
-- The Emulator Suite callback used by the Emulator harness (`http://localhost:PORT/...`) for the duration of end-to-end validation only. This entry is removed after each certification pass.
+- The production browser callback at `https://lyfelabz.com/app/lms-callback.html`. This is the sole production redirect URI and matches the value emitted by the browser at OAuth begin time.
+- The staging browser callback at the equivalent `/app/lms-callback.html` path on the staging origin (if a staging origin is present).
+- The Emulator Suite callback at the Emulator Hosting origin (`http://localhost:PORT/app/lms-callback.html`) for the duration of end-to-end validation only. This entry is removed after each certification pass.
 
 No other redirect URI is authorized. Adding a URI requires a documented operational change. Removing a URI is a routine operation and does not require a change record beyond the audit log.
 
-The consent completion flow terminates at a static asset served from the same origin as the callback function. The `app/lms-callback.html` shell is that asset. It carries no Firebase SDK, no OAuth secrets, and no per-teacher payload; it exists to hand control back to the workspace after the server-side exchange completes.
+The consent completion flow terminates at a static asset served from the same origin as the workspace. The `app/lms-callback.html` shell is that asset. It carries no Firebase SDK, no OAuth secrets, and no per-teacher payload; it parses the `code` and `state` from the URL and `postMessage`s them to the opener window, which invokes `lmsConnectionsComplete` as a callable to finish the exchange.
 
 ### 4.3 Client credentials handling
 
