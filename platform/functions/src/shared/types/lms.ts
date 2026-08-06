@@ -84,6 +84,10 @@ export type LmsConnectionRecord = {
   readonly tokenRef: string;
   readonly connectedAt: Timestamp;
   readonly revokedAt?: Timestamp;
+  // Additive optional field (PDR-030d). Set when the connection's scope
+  // set is widened via incremental consent; absent on connections created
+  // before Sprint 25 Phase 2.
+  readonly scopesUpdatedAt?: Timestamp;
 };
 
 export type LmsConnectionCreationWrite = {

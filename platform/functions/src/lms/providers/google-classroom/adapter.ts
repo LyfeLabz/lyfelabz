@@ -222,10 +222,19 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
       );
     }
 
+    const intent = input.intent ?? "initialConnect";
+    const scopeSet =
+      intent === "publication"
+        ? [
+            ...GOOGLE_CLASSROOM_INITIAL_SCOPES,
+            ...GOOGLE_CLASSROOM_PUBLICATION_SCOPES,
+          ]
+        : GOOGLE_CLASSROOM_INITIAL_SCOPES;
     const { state, codeChallenge } = await getLmsOAuthStateStore().issue({
       teacherId: input.teacherId,
       providerId: GOOGLE_CLASSROOM_PROVIDER_ID,
       redirectUri,
+      intent,
     });
     const params = new URLSearchParams({
       client_id: clientId,
@@ -234,7 +243,7 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
       access_type: "offline",
       include_granted_scopes: "true",
       prompt: "consent",
-      scope: GOOGLE_CLASSROOM_INITIAL_SCOPES.join(" "),
+      scope: scopeSet.join(" "),
       state,
       code_challenge: codeChallenge,
       code_challenge_method: "S256",

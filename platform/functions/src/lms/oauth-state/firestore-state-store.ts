@@ -15,6 +15,7 @@ import {
   type LmsOAuthStateBinding,
   type LmsOAuthStateConsumeInput,
   type LmsOAuthStateConsumeResult,
+  type LmsOAuthStateIntent,
   type LmsOAuthStateIssueInput,
   type LmsOAuthStateIssueResult,
   type LmsOAuthStateRevokeForTeacherInput,
@@ -80,6 +81,7 @@ type StoredStateFields = {
   teacherId: string;
   providerId: LmsProviderId;
   redirectUri: string;
+  intent: LmsOAuthStateIntent;
   codeVerifier: string;
   codeChallenge: string;
   issuedAt: Timestamp;
@@ -159,6 +161,7 @@ export class FirestoreLmsOAuthStateStore implements LmsOAuthStateStore {
         teacherId: input.teacherId,
         providerId: input.providerId,
         redirectUri: input.redirectUri,
+        intent: input.intent ?? "initialConnect",
         codeVerifier,
         codeChallenge,
         issuedAt: Timestamp.fromMillis(now),
@@ -191,6 +194,7 @@ export class FirestoreLmsOAuthStateStore implements LmsOAuthStateStore {
       teacherId: data.teacherId,
       providerId: data.providerId,
       redirectUri: data.redirectUri,
+      intent: data.intent,
       issuedAtEpochMs: data.issuedAt.toMillis(),
       expiresAtEpochMs: data.expiresAt.toMillis(),
       consumed: data.consumedAt !== null,
@@ -260,6 +264,15 @@ export class FirestoreLmsOAuthStateStore implements LmsOAuthStateStore {
       throw new PlatformError(
         LMS_OAUTH_STATE_ERROR_CODES.redirectMismatch,
         "OAuth state record redirect URI does not match the expected redirect URI.",
+      );
+    }
+    if (
+      input.expectedIntent !== undefined &&
+      claimed.intent !== input.expectedIntent
+    ) {
+      throw new PlatformError(
+        LMS_OAUTH_STATE_ERROR_CODES.intentMismatch,
+        "OAuth state record intent does not match the expected intent.",
       );
     }
     return {

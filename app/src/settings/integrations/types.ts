@@ -99,6 +99,10 @@ export type IntegrationsCallables = {
   readonly beginConnection: (input: {
     readonly providerId: string;
     readonly redirectUri: string;
+    // Provider-neutral capability selector. "publication" triggers
+    // incremental consent for the coursework scope set (PDR-030c).
+    // Absent values use the initial scope set.
+    readonly capability?: "publication";
   }) => Promise<{ readonly authorizationUrl: string; readonly state: string }>;
   readonly completeConnection: (input: {
     readonly providerId: string;
@@ -108,6 +112,9 @@ export type IntegrationsCallables = {
   }) => Promise<{
     readonly connectionId: string;
     readonly alreadyConnected: boolean;
+    // Provider-neutral consent outcome discriminator (PDR-030d). Absent
+    // on the non-publication idempotent path.
+    readonly consentOutcome?: "created" | "widened" | "alreadyAuthorized";
   }>;
   readonly disconnect: (input: {
     readonly connectionId: string;

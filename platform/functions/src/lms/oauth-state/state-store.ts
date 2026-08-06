@@ -61,10 +61,19 @@ const OAUTH_VERIFIER_BYTES = 32;
 // unused state records alive.
 const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
+// Provider-neutral intent selector for an OAuth authorization flow.
+// "initialConnect" is the ordinary connect/reconnect path. "publication"
+// requests the publication capability scope set via incremental consent.
+export type LmsOAuthStateIntent = "initialConnect" | "publication";
+
 export type LmsOAuthStateIssueInput = {
   readonly teacherId: string;
   readonly providerId: LmsProviderId;
   readonly redirectUri: string;
+  // Defaults to "initialConnect" when absent. Stored in the binding so
+  // lmsConnectionsComplete can decide the create vs. widen path without
+  // inferring intent from the returned scopes alone.
+  readonly intent?: LmsOAuthStateIntent;
 };
 
 export type LmsOAuthStateIssueResult = {
@@ -85,12 +94,18 @@ export type LmsOAuthStateBinding = {
   readonly issuedAtEpochMs: number;
   readonly expiresAtEpochMs: number;
   readonly consumed: boolean;
+  readonly intent: LmsOAuthStateIntent;
 };
 
 export type LmsOAuthStateConsumeInput = {
   readonly state: string;
   readonly expectedProviderId: LmsProviderId;
   readonly expectedRedirectUri: string;
+  // Defense in depth: when provided, consume rejects a state whose stored
+  // intent differs. The callable enforces the primary intent check via peek;
+  // this adds a second layer so a stale or replayed state cannot be consumed
+  // with mismatched intent even if the callable check is bypassed.
+  readonly expectedIntent?: LmsOAuthStateIntent;
 };
 
 export type LmsOAuthStateConsumeResult = {
@@ -150,6 +165,9 @@ export const LMS_OAUTH_STATE_ERROR_CODES = {
   consumed: "lms.oauthStateAlreadyConsumed",
   providerMismatch: "lms.oauthStateProviderMismatch",
   redirectMismatch: "lms.oauthStateRedirectMismatch",
+  // Defense-in-depth: consume rejected because the stored intent differs from
+  // the expected intent. Coerced to lms.invalidOAuthState by the callable.
+  intentMismatch: "lms.oauthStateIntentMismatch",
 } as const;
 
 function base64UrlNoPadding(buffer: Buffer): string {
@@ -193,6 +211,7 @@ type StoredRecord = {
   readonly teacherId: string;
   readonly providerId: LmsProviderId;
   readonly redirectUri: string;
+  readonly intent: LmsOAuthStateIntent;
   readonly codeVerifier: string;
   readonly codeChallenge: string;
   readonly issuedAtEpochMs: number;
@@ -222,6 +241,7 @@ export class InProcessLmsOAuthStateStore implements LmsOAuthStateStore {
       teacherId: input.teacherId,
       providerId: input.providerId,
       redirectUri: input.redirectUri,
+      intent: input.intent ?? "initialConnect",
       codeVerifier,
       codeChallenge,
       issuedAtEpochMs: now,
@@ -243,6 +263,7 @@ export class InProcessLmsOAuthStateStore implements LmsOAuthStateStore {
       teacherId: record.teacherId,
       providerId: record.providerId,
       redirectUri: record.redirectUri,
+      intent: record.intent,
       issuedAtEpochMs: record.issuedAtEpochMs,
       expiresAtEpochMs: record.expiresAtEpochMs,
       consumed: record.consumedAtEpochMs !== null,
@@ -302,6 +323,15 @@ export class InProcessLmsOAuthStateStore implements LmsOAuthStateStore {
       throw new PlatformError(
         LMS_OAUTH_STATE_ERROR_CODES.redirectMismatch,
         "OAuth state record redirect URI does not match the expected redirect URI.",
+      );
+    }
+    if (
+      input.expectedIntent !== undefined &&
+      record.intent !== input.expectedIntent
+    ) {
+      throw new PlatformError(
+        LMS_OAUTH_STATE_ERROR_CODES.intentMismatch,
+        "OAuth state record intent does not match the expected intent.",
       );
     }
     return {

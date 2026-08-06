@@ -1,4 +1,5 @@
 import type { LmsProviderId } from "../../shared";
+import type { LmsOAuthStateIntent } from "../oauth-state/state-store";
 
 // Vendor-neutral LMS provider interface per LMS_INTEGRATION_ARCHITECTURE.md
 // §2 ("vendor-neutral core, vendor-specific edges") and PDR-020f
@@ -132,10 +133,13 @@ export interface LmsProviderAdapter {
   // returned state token is verified by the completion callable. The
   // scope set requested is the minimum required to list a teacher's
   // classes and inspect a class's roster per §5.2 of the architecture and
-  // §10.3.8 of the operational readiness section.
+  // §10.3.8 of the operational readiness section. When `intent` is
+  // "publication", the adapter additionally requests the publication
+  // capability scope set via incremental consent (PDR-030c).
   beginOAuth(input: {
     readonly teacherId: string;
     readonly redirectUri: string;
+    readonly intent?: LmsOAuthStateIntent;
   }): Promise<LmsOAuthAuthorizationRequest>;
 
   // Complete the OAuth grant against the upstream provider. The adapter

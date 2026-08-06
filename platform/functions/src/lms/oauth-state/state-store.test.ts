@@ -85,6 +85,29 @@ describe("InProcessLmsOAuthStateStore", () => {
       expect((result as unknown as Record<string, unknown>).codeVerifier).toBeUndefined();
     });
 
+    it("defaults intent to initialConnect when absent", async () => {
+      const store = new InProcessLmsOAuthStateStore();
+      const { state } = await store.issue({
+        teacherId: FIXTURE_TEACHER_ID,
+        providerId: FIXTURE_PROVIDER,
+        redirectUri: FIXTURE_REDIRECT_URI,
+      });
+      const binding = await store.peek(state);
+      expect(binding?.intent).toBe("initialConnect");
+    });
+
+    it("stores the provided intent when publication is specified", async () => {
+      const store = new InProcessLmsOAuthStateStore();
+      const { state } = await store.issue({
+        teacherId: FIXTURE_TEACHER_ID,
+        providerId: FIXTURE_PROVIDER,
+        redirectUri: FIXTURE_REDIRECT_URI,
+        intent: "publication",
+      });
+      const binding = await store.peek(state);
+      expect(binding?.intent).toBe("publication");
+    });
+
     it("rejects missing teacherId, providerId, or redirectUri", async () => {
       const store = new InProcessLmsOAuthStateStore();
       await expect(
@@ -128,6 +151,23 @@ describe("InProcessLmsOAuthStateStore", () => {
       expect(
         (binding as unknown as Record<string, unknown>).codeVerifier,
       ).toBeUndefined();
+    });
+
+    it("exposes intent on the returned binding", async () => {
+      const store = new InProcessLmsOAuthStateStore();
+      const { state: s1 } = await store.issue({
+        teacherId: FIXTURE_TEACHER_ID,
+        providerId: FIXTURE_PROVIDER,
+        redirectUri: FIXTURE_REDIRECT_URI,
+      });
+      const { state: s2 } = await store.issue({
+        teacherId: FIXTURE_TEACHER_ID,
+        providerId: FIXTURE_PROVIDER,
+        redirectUri: FIXTURE_REDIRECT_URI,
+        intent: "publication",
+      });
+      expect((await store.peek(s1))?.intent).toBe("initialConnect");
+      expect((await store.peek(s2))?.intent).toBe("publication");
     });
 
     it("returns null for a missing or empty state value", async () => {
@@ -303,6 +343,58 @@ describe("InProcessLmsOAuthStateStore", () => {
       } finally {
         Date.now = originalNow;
       }
+    });
+
+    it("rejects with intentMismatch when expectedIntent differs from stored intent", async () => {
+      const store = new InProcessLmsOAuthStateStore();
+      const { state } = await store.issue({
+        teacherId: FIXTURE_TEACHER_ID,
+        providerId: FIXTURE_PROVIDER,
+        redirectUri: FIXTURE_REDIRECT_URI,
+        intent: "initialConnect",
+      });
+      await expect(
+        store.consume({
+          state,
+          expectedProviderId: FIXTURE_PROVIDER,
+          expectedRedirectUri: FIXTURE_REDIRECT_URI,
+          expectedIntent: "publication",
+        }),
+      ).rejects.toMatchObject({ code: LMS_OAUTH_STATE_ERROR_CODES.intentMismatch });
+    });
+
+    it("succeeds when expectedIntent matches the stored intent", async () => {
+      const store = new InProcessLmsOAuthStateStore();
+      const { state } = await store.issue({
+        teacherId: FIXTURE_TEACHER_ID,
+        providerId: FIXTURE_PROVIDER,
+        redirectUri: FIXTURE_REDIRECT_URI,
+        intent: "publication",
+      });
+      const result = await store.consume({
+        state,
+        expectedProviderId: FIXTURE_PROVIDER,
+        expectedRedirectUri: FIXTURE_REDIRECT_URI,
+        expectedIntent: "publication",
+      });
+      expect(result.teacherId).toBe(FIXTURE_TEACHER_ID);
+    });
+
+    it("succeeds when expectedIntent is absent regardless of stored intent", async () => {
+      const store = new InProcessLmsOAuthStateStore();
+      const { state } = await store.issue({
+        teacherId: FIXTURE_TEACHER_ID,
+        providerId: FIXTURE_PROVIDER,
+        redirectUri: FIXTURE_REDIRECT_URI,
+        intent: "publication",
+      });
+      await expect(
+        store.consume({
+          state,
+          expectedProviderId: FIXTURE_PROVIDER,
+          expectedRedirectUri: FIXTURE_REDIRECT_URI,
+        }),
+      ).resolves.toMatchObject({ teacherId: FIXTURE_TEACHER_ID });
     });
 
     it("guarantees exactly one successful concurrent consume for the same state", async () => {

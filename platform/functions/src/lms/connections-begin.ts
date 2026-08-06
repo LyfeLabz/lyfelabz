@@ -29,6 +29,11 @@ import {
 export type LmsConnectionsBeginRequest = {
   readonly providerId: string;
   readonly redirectUri: string;
+  // Provider-neutral capability selector. "publication" triggers
+  // incremental consent for the coursework scope set (PDR-030c). When
+  // absent, the flow requests the initial (readonly) scope set. Any other
+  // value is refused at runtime rather than silently downgraded.
+  readonly capability?: "publication";
 };
 
 export type LmsConnectionsBeginResponse = {
@@ -67,6 +72,22 @@ async function handler(
       `Provider "${providerId}" is not registered.`,
     );
   }
+  // Validate the optional capability selector before deriving intent. The
+  // only recognized value is the provider-neutral "publication" selector
+  // (PDR-030c). An unrecognized value is a client-contract violation and
+  // is refused with a sanitized invalid-argument error rather than
+  // silently downgraded to an initial connection, which would mask a
+  // publication-scope consent request as a readonly connect. The raw
+  // value is never echoed back.
+  if (
+    payload.capability !== undefined &&
+    payload.capability !== "publication"
+  ) {
+    throw new PlatformError(
+      "lms.invalidCapability",
+      'capability, when provided, must be "publication".',
+    );
+  }
   // Discard any outstanding OAuth state records this teacher may have
   // issued for the same provider in a prior, incomplete `begin` call.
   // A restarted-connection flow (teacher closes the tab, hits begin
@@ -82,10 +103,13 @@ async function handler(
     // Intentional: revocation is a hygiene step, not a lifecycle step.
   }
 
+  const intent =
+    payload.capability === "publication" ? "publication" : "initialConnect";
   const adapter = getProviderAdapter(providerId);
   const { authorizationUrl, state } = await adapter.beginOAuth({
     teacherId: actor.uid,
     redirectUri,
+    intent,
   });
   return { authorizationUrl, state };
 }

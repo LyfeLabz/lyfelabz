@@ -55,6 +55,29 @@ describe("FirestoreLmsOAuthStateStore", () => {
       expect(binding?.expiresAtEpochMs).toBeGreaterThan(binding?.issuedAtEpochMs ?? 0);
     });
 
+    it("defaults intent to initialConnect when absent", async () => {
+      const { store } = makeStore();
+      const { state } = await store.issue({
+        teacherId: TEACHER,
+        providerId: PROVIDER,
+        redirectUri: REDIRECT,
+      });
+      const binding = await store.peek(state);
+      expect(binding?.intent).toBe("initialConnect");
+    });
+
+    it("stores and exposes the publication intent via peek", async () => {
+      const { store } = makeStore();
+      const { state } = await store.issue({
+        teacherId: TEACHER,
+        providerId: PROVIDER,
+        redirectUri: REDIRECT,
+        intent: "publication",
+      });
+      const binding = await store.peek(state);
+      expect(binding?.intent).toBe("publication");
+    });
+
     it("issued records for different teachers are independent", async () => {
       const { store } = makeStore();
       const a = await store.issue({
@@ -161,6 +184,43 @@ describe("FirestoreLmsOAuthStateStore", () => {
       ).rejects.toMatchObject({
         code: LMS_OAUTH_STATE_ERROR_CODES.providerMismatch,
       });
+    });
+
+    it("rejects an intent mismatch with lms.oauthStateIntentMismatch", async () => {
+      const { store } = makeStore();
+      const { state } = await store.issue({
+        teacherId: TEACHER,
+        providerId: PROVIDER,
+        redirectUri: REDIRECT,
+        intent: "initialConnect",
+      });
+      await expect(
+        store.consume({
+          state,
+          expectedProviderId: PROVIDER,
+          expectedRedirectUri: REDIRECT,
+          expectedIntent: "publication",
+        }),
+      ).rejects.toMatchObject({
+        code: LMS_OAUTH_STATE_ERROR_CODES.intentMismatch,
+      });
+    });
+
+    it("succeeds when expectedIntent matches the stored intent", async () => {
+      const { store } = makeStore();
+      const { state } = await store.issue({
+        teacherId: TEACHER,
+        providerId: PROVIDER,
+        redirectUri: REDIRECT,
+        intent: "publication",
+      });
+      const result = await store.consume({
+        state,
+        expectedProviderId: PROVIDER,
+        expectedRedirectUri: REDIRECT,
+        expectedIntent: "publication",
+      });
+      expect(result.teacherId).toBe(TEACHER);
     });
 
     it("rejects a mismatched redirectUri with lms.oauthStateRedirectMismatch", async () => {

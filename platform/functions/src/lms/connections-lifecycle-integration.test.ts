@@ -32,7 +32,11 @@ import type { CallableRequest } from "firebase-functions/v2/https";
 
 const mockConnectionGet = jest.fn();
 const mockConnectionSet = jest.fn();
-const mockConnectionDocRef = jest.fn(() => ({ get: mockConnectionGet }));
+const mockConnectionUpdate = jest.fn();
+const mockConnectionDocRef = jest.fn(() => ({
+  get: mockConnectionGet,
+  update: mockConnectionUpdate,
+}));
 const mockConnectionCreationDocRef = jest.fn(() => ({
   set: mockConnectionSet,
 }));
@@ -42,7 +46,11 @@ const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
 const mockWriteAuditEvent = jest.fn();
 
-const mockTokenStore = { store: jest.fn(() => Promise.resolve("tokref-integration-1")) };
+const mockTokenStore = {
+  store: jest.fn(() => Promise.resolve("tokref-integration-1")),
+  resolve: jest.fn(),
+  revoke: jest.fn(() => Promise.resolve()),
+};
 
 jest.mock("firebase-admin/firestore", () => ({
   FieldValue: { serverTimestamp: () => "__ts__" },
@@ -82,6 +90,7 @@ import {
 import {
   createFixtureGoogleClassroomTransport,
   FIXTURE_AUTHORIZATION_CODE,
+  FIXTURE_TEACHER_UPSTREAM_ID,
 } from "./providers/google-classroom/__fixtures__/fixture-transport";
 import {
   resetGoogleClassroomTransportForTests,
@@ -116,15 +125,34 @@ describe("lmsConnectionsBegin -> lmsConnectionsComplete cross-callable integrati
     [
       mockConnectionGet,
       mockConnectionSet,
+      mockConnectionUpdate,
       mockWriteAuditEvent,
       mockLogInfo,
       mockLogWarn,
       mockLogError,
+      mockTokenStore.store,
+      mockTokenStore.resolve,
+      mockTokenStore.revoke,
     ].forEach((m) => m.mockReset());
-    mockTokenStore.store.mockReset();
     mockTokenStore.store.mockResolvedValue("tokref-integration-1");
+    mockTokenStore.resolve.mockResolvedValue({
+      providerId: "googleClassroom",
+      teacherId: TEACHER_UID,
+      accessToken: "existing-access-token",
+      refreshToken: "existing-refresh-token",
+      scopes: [
+        "https://www.googleapis.com/auth/classroom.courses.readonly",
+        "https://www.googleapis.com/auth/classroom.rosters.readonly",
+      ],
+      upstreamAccountIdentifier: FIXTURE_TEACHER_UPSTREAM_ID,
+    });
+    mockTokenStore.revoke.mockResolvedValue(undefined);
+    mockConnectionUpdate.mockResolvedValue(undefined);
     mockConnectionDocRef.mockReset();
-    mockConnectionDocRef.mockImplementation(() => ({ get: mockConnectionGet }));
+    mockConnectionDocRef.mockImplementation(() => ({
+      get: mockConnectionGet,
+      update: mockConnectionUpdate,
+    }));
     mockConnectionCreationDocRef.mockReset();
     mockConnectionCreationDocRef.mockImplementation(() => ({
       set: mockConnectionSet,
@@ -342,6 +370,107 @@ describe("lmsConnectionsBegin -> lmsConnectionsComplete cross-callable integrati
     for (const needle of sensitive) {
       expect(auditSerialized).not.toContain(needle);
     }
+  });
+
+  it("capability='publication' flows to publication scopes in the authorization URL", async () => {
+    const beginResponse = await __lmsConnectionsBeginHandler(
+      makeRequest({
+        providerId: PROVIDER,
+        redirectUri: FIXTURE_CONFIG.redirectUri,
+        capability: "publication",
+      }),
+    );
+    const url = new URL(beginResponse.authorizationUrl);
+    const scope = url.searchParams.get("scope") ?? "";
+    expect(scope).toContain("classroom.courses.readonly");
+    expect(scope).toContain("classroom.coursework.me");
+    expect(scope).toContain("classroom.topics.readonly");
+  });
+
+  it("omitted capability requests only the initial (readonly) scope set", async () => {
+    const beginResponse = await __lmsConnectionsBeginHandler(
+      makeRequest({
+        providerId: PROVIDER,
+        redirectUri: FIXTURE_CONFIG.redirectUri,
+      }),
+    );
+    const url = new URL(beginResponse.authorizationUrl);
+    const scope = url.searchParams.get("scope") ?? "";
+    expect(scope).toContain("classroom.courses.readonly");
+    expect(scope).not.toContain("classroom.coursework.me");
+    expect(scope).not.toContain("classroom.topics.readonly");
+  });
+
+  it("rejects an unrecognized capability value with lms.invalidCapability and issues no state", async () => {
+    await expect(
+      __lmsConnectionsBeginHandler(
+        makeRequest({
+          providerId: PROVIDER,
+          redirectUri: FIXTURE_CONFIG.redirectUri,
+          capability: "grades",
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "lms.invalidCapability" });
+  });
+
+  it("does not echo the raw capability value in the invalid-argument message", async () => {
+    try {
+      await __lmsConnectionsBeginHandler(
+        makeRequest({
+          providerId: PROVIDER,
+          redirectUri: FIXTURE_CONFIG.redirectUri,
+          capability: "classroom.coursework.students",
+        }),
+      );
+      throw new Error("expected lms.invalidCapability");
+    } catch (err) {
+      const message = (err as { message?: string }).message ?? "";
+      expect(message).not.toContain("classroom.coursework.students");
+    }
+  });
+
+  it("takes the widening code path (not new-connection) when capability='publication' and active connection exists", async () => {
+    // Simulate an existing active connection with initial scopes only.
+    mockConnectionGet.mockResolvedValue({
+      exists: true,
+      data: () => ({
+        teacherId: TEACHER_UID,
+        providerId: PROVIDER,
+        status: "active",
+        tokenRef: "tokref-existing",
+        scopes: [
+          "https://www.googleapis.com/auth/classroom.courses.readonly",
+          "https://www.googleapis.com/auth/classroom.rosters.readonly",
+        ],
+      }),
+    });
+
+    const beginResponse = await __lmsConnectionsBeginHandler(
+      makeRequest({
+        providerId: PROVIDER,
+        redirectUri: FIXTURE_CONFIG.redirectUri,
+        capability: "publication",
+      }),
+    );
+    const completeResponse = await __lmsConnectionsCompleteHandler(
+      makeRequest({
+        providerId: PROVIDER,
+        code: FIXTURE_AUTHORIZATION_CODE,
+        state: beginResponse.state,
+        redirectUri: FIXTURE_CONFIG.redirectUri,
+      }),
+    );
+    // The widening path was taken (not the new-connection creation path).
+    // The fixture transport returns only the initial scopes, so the merge
+    // equals the existing scopes and the outcome is alreadyAuthorized.
+    expect(completeResponse.alreadyConnected).toBe(true);
+    expect(completeResponse.consentOutcome).toBe("alreadyAuthorized");
+    // Connection doc was NOT created anew.
+    expect(mockConnectionSet).not.toHaveBeenCalled();
+    // No audit event on the widening path.
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    // Token store creation was NOT called (already authorized path).
+    expect(mockTokenStore.store).not.toHaveBeenCalled();
   });
 
   it("requires no production configuration or Secret Manager access under the fixture binding", async () => {

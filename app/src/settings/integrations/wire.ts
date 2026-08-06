@@ -144,9 +144,17 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
       if (!connectionId) {
         throw new Error("lmsConnectionsComplete returned an unexpected shape.");
       }
+      const rawOutcome = data.consentOutcome;
+      const consentOutcome: "created" | "widened" | "alreadyAuthorized" | undefined =
+        rawOutcome === "created" ||
+        rawOutcome === "widened" ||
+        rawOutcome === "alreadyAuthorized"
+          ? rawOutcome
+          : undefined;
       return {
         connectionId,
         alreadyConnected: data.alreadyConnected === true,
+        ...(consentOutcome !== undefined ? { consentOutcome } : {}),
       };
     },
     disconnect: async (input) => {

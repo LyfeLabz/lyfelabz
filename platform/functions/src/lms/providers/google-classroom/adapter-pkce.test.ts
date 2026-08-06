@@ -7,11 +7,12 @@ import { createHash } from "node:crypto";
 
 import { PlatformError } from "../../../shared";
 import {
+  getLmsOAuthStateStore,
   LMS_OAUTH_STATE_ERROR_CODES,
   resetLmsOAuthStateStoreForTests,
 } from "../../oauth-state/state-store";
 
-import { googleClassroomAdapter } from "./adapter";
+import { googleClassroomAdapter, GOOGLE_CLASSROOM_PUBLICATION_SCOPES } from "./adapter";
 import {
   resetGoogleClassroomConfigForTests,
   setGoogleClassroomConfig,
@@ -182,6 +183,51 @@ describe("Google Classroom adapter - PKCE + server-side state", () => {
       LMS_OAUTH_STATE_ERROR_CODES.notFound,
     );
     expect(capture.last).toBeUndefined();
+  });
+
+  it("beginOAuth without intent requests only the initial scope set", async () => {
+    setGoogleClassroomConfig(FIXTURE_CONFIG);
+    setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
+    const authorization = await googleClassroomAdapter.beginOAuth({
+      teacherId: FIXTURE_TEACHER_ID,
+      redirectUri: FIXTURE_CONFIG.redirectUri,
+    });
+    const url = new URL(authorization.authorizationUrl);
+    const scope = url.searchParams.get("scope") ?? "";
+    for (const pubScope of GOOGLE_CLASSROOM_PUBLICATION_SCOPES) {
+      expect(scope).not.toContain(pubScope);
+    }
+    expect(scope).toContain("classroom.courses.readonly");
+    expect(scope).toContain("classroom.rosters.readonly");
+  });
+
+  it("beginOAuth with publication intent requests both scope sets", async () => {
+    setGoogleClassroomConfig(FIXTURE_CONFIG);
+    setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
+    const authorization = await googleClassroomAdapter.beginOAuth({
+      teacherId: FIXTURE_TEACHER_ID,
+      redirectUri: FIXTURE_CONFIG.redirectUri,
+      intent: "publication",
+    });
+    const url = new URL(authorization.authorizationUrl);
+    const scope = url.searchParams.get("scope") ?? "";
+    expect(scope).toContain("classroom.courses.readonly");
+    expect(scope).toContain("classroom.rosters.readonly");
+    for (const pubScope of GOOGLE_CLASSROOM_PUBLICATION_SCOPES) {
+      expect(scope).toContain(pubScope);
+    }
+  });
+
+  it("beginOAuth with publication intent stores the publication intent in state", async () => {
+    setGoogleClassroomConfig(FIXTURE_CONFIG);
+    setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
+    const authorization = await googleClassroomAdapter.beginOAuth({
+      teacherId: FIXTURE_TEACHER_ID,
+      redirectUri: FIXTURE_CONFIG.redirectUri,
+      intent: "publication",
+    });
+    const binding = await getLmsOAuthStateStore().peek(authorization.state);
+    expect(binding?.intent).toBe("publication");
   });
 
   it("completeOAuth rejects a state issued against a different redirect URI", async () => {

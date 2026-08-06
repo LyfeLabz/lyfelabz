@@ -45,6 +45,7 @@ const OAUTH_STATE_INTERNAL_CODES: ReadonlySet<string> = new Set([
   LMS_OAUTH_STATE_ERROR_CODES.consumed,
   LMS_OAUTH_STATE_ERROR_CODES.providerMismatch,
   LMS_OAUTH_STATE_ERROR_CODES.redirectMismatch,
+  LMS_OAUTH_STATE_ERROR_CODES.intentMismatch,
 ]);
 
 function coerceOAuthStateError(err: unknown): unknown {
@@ -62,14 +63,19 @@ function coerceOAuthStateError(err: unknown): unknown {
 
 // lmsConnectionsComplete
 //
-// Connection lifecycle callable (complete) per PDR-020c. Exchanges the
-// authorization code for tokens through the provider adapter, records
-// the tokens through the server-only token store (PDR-019e,
-// LMS_INTEGRATION_ARCHITECTURE.md §5.3), and creates the canonical
-// `lmsConnections/{connectionId}` document. Idempotent under the Sprint 2
-// helper contract: a replayed completion with the same (teacherId,
-// providerId) pair returns the existing connection without minting a
-// second token.
+// Connection lifecycle callable (complete) per PDR-020c and PDR-030d.
+// Exchanges the authorization code for tokens through the provider
+// adapter, records the tokens through the server-only token store
+// (PDR-019e, LMS_INTEGRATION_ARCHITECTURE.md §5.3), and either:
+//   - creates the canonical `lmsConnections/{connectionId}` document
+//     (new connection, consentOutcome "created"), or
+//   - widens the scope set of an existing active connection when the
+//     state binding carries the "publication" intent (PDR-030c, PDR-030d,
+//     consentOutcome "widened" / "alreadyAuthorized").
+//
+// Idempotent under the Sprint 2 helper contract: a replayed completion
+// with the same (teacherId, providerId) pair and a non-publication
+// intent returns the existing connection without minting a second token.
 
 export type LmsConnectionsCompleteRequest = {
   readonly providerId: string;
@@ -82,6 +88,9 @@ export type LmsConnectionsCompleteResponse = {
   readonly connectionId: string;
   readonly providerId: string;
   readonly alreadyConnected: boolean;
+  // Discriminator added by PDR-030d. Absent on the non-publication
+  // idempotent early-return path (alreadyConnected: true, no intent).
+  readonly consentOutcome?: "created" | "widened" | "alreadyAuthorized";
 };
 
 function safeLog(fn: () => void): void {
@@ -132,33 +141,41 @@ async function handler(
   }
   const connectionId = lmsConnectionIdFor(actor.uid, providerId);
 
-  const existingSnapshot = await lmsConnectionDocRef(connectionId).get();
-  if (existingSnapshot.exists) {
-    const existing = existingSnapshot.data();
-    if (
-      existing &&
-      existing.teacherId === actor.uid &&
-      existing.providerId === providerId &&
-      existing.status === "active"
-    ) {
-      safeLog(() =>
-        log.info("lms.connectionCompleteIdempotent", {
-          actorUserId: actor.uid,
-          connectionId,
-        }),
-      );
-      return { connectionId, providerId, alreadyConnected: true };
-    }
-  }
-
-  // Server-side OAuth state pre-check. The state store atomically
-  // consumes the record during `adapter.completeOAuth`; this peek
-  // enforces the teacher binding BEFORE the atomic consume so a
-  // mismatched teacher does not exchange the authorization code.
-  // Every internal validation failure surfaces as the single public
-  // `lms.invalidOAuthState` code (Sprint 23B security completion).
+  // Peek the OAuth state binding BEFORE the connection early-return
+  // decision so we can determine the intent. The state is NOT consumed
+  // here; consume runs inside adapter.completeOAuth.
   const stateStore = getLmsOAuthStateStore();
   const binding = await stateStore.peek(state);
+
+  // Check for an existing active connection.
+  const existingSnapshot = await lmsConnectionDocRef(connectionId).get();
+  const existingData = existingSnapshot.exists ? existingSnapshot.data() : null;
+  const hasActiveConnection =
+    existingData !== null &&
+    existingData !== undefined &&
+    existingData.teacherId === actor.uid &&
+    existingData.providerId === providerId &&
+    existingData.status === "active";
+
+  // Intent-aware idempotent early return. An active connection with a
+  // non-publication intent is already complete; return without consuming
+  // the OAuth state. A publication intent with an active connection falls
+  // through to the scope-widening path below.
+  if (hasActiveConnection && binding?.intent !== "publication") {
+    safeLog(() =>
+      log.info("lms.connectionCompleteIdempotent", {
+        actorUserId: actor.uid,
+        connectionId,
+      }),
+    );
+    return { connectionId, providerId, alreadyConnected: true };
+  }
+
+  // Server-side OAuth state validation. The binding was peeked above;
+  // validate teacher, provider, redirect, TTL, and non-consumed state
+  // before consuming through the adapter. Every internal validation
+  // failure surfaces as the single public `lms.invalidOAuthState` code
+  // (Sprint 23B security completion §CONSUME REQUIREMENTS item 10).
   if (
     !binding ||
     binding.consumed ||
@@ -173,6 +190,9 @@ async function handler(
     );
   }
 
+  // Exchange the authorization code. This atomically consumes the state
+  // record inside the adapter; a second attempt with the same state will
+  // fail the consume step.
   const adapter = getProviderAdapter(providerId);
   let grant;
   try {
@@ -181,6 +201,115 @@ async function handler(
     throw coerceOAuthStateError(err);
   }
 
+  // Scope-widening path (PDR-030d): active connection + publication intent.
+  //
+  // The existing connection remains authoritative until widening succeeds.
+  // The old token bundle is removed only after the connection document
+  // update commits. The existing connection remains usable if widening
+  // fails at any step before the document update.
+  //
+  // INVARIANT: the upstream Google OAuth grant is NEVER revoked during
+  // widening. Only the local token store entry for the old tokenRef is
+  // cleaned up after the new tokenRef is committed.
+  if (hasActiveConnection && binding.intent === "publication" && existingData) {
+    const oldTokenRef = existingData.tokenRef;
+
+    // Resolve the existing token bundle for identity revalidation and
+    // refresh-token carry-forward.
+    let oldBundle;
+    try {
+      oldBundle = await getLmsTokenStore().resolve(oldTokenRef);
+    } catch {
+      throw new PlatformError(
+        "lms.connectionTokenResolutionFailed",
+        "Could not resolve the existing connection token bundle for scope widening.",
+      );
+    }
+
+    // Identity revalidation: the upstream account on the new grant must
+    // match the account on the existing connection (PDR-030d). A mismatch
+    // refuses the scope widening.
+    if (
+      oldBundle.upstreamAccountIdentifier !== grant.upstreamAccountIdentifier
+    ) {
+      throw new PlatformError(
+        "lms.identityMismatch",
+        "The account used for scope widening does not match the account on the existing connection.",
+      );
+    }
+
+    // Compute the merged scope set as a stable sorted union. Granted
+    // scopes are persisted exactly as approved by the teacher.
+    const mergedScopes = Array.from(
+      new Set([...oldBundle.scopes, ...grant.scopes]),
+    ).sort();
+
+    // Already-authorized path: the new grant adds no scopes the connection
+    // does not already hold. Idempotent return without writing anything.
+    const oldScopesSorted = Array.from(new Set([...oldBundle.scopes])).sort();
+    if (mergedScopes.join(" ") === oldScopesSorted.join(" ")) {
+      return {
+        connectionId,
+        providerId,
+        alreadyConnected: true,
+        consentOutcome: "alreadyAuthorized",
+      };
+    }
+
+    // Compose the new token bundle. Google often omits refresh_token on
+    // incremental re-consent; preserve the old one when absent so the
+    // connection retains offline access.
+    const newBundle = {
+      providerId,
+      teacherId: actor.uid,
+      accessToken: grant.accessToken,
+      refreshToken: grant.refreshToken ?? oldBundle.refreshToken,
+      scopes: mergedScopes,
+      expiresAtEpochMs:
+        grant.expiresInSeconds !== undefined
+          ? Date.now() + grant.expiresInSeconds * 1000
+          : undefined,
+      upstreamAccountIdentifier: grant.upstreamAccountIdentifier,
+    };
+
+    // Store the new bundle before updating the connection document so
+    // the document update is atomic with a valid new tokenRef.
+    const newTokenRef = await getLmsTokenStore().store(newBundle);
+
+    // Commit the scope widening to the connection document. The existing
+    // connection is authoritative until this write succeeds.
+    await lmsConnectionDocRef(connectionId).update({
+      scopes: mergedScopes,
+      tokenRef: newTokenRef,
+      scopesUpdatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // Best-effort cleanup of the old local token bundle. This is a hygiene
+    // step, not a lifecycle step. The old upstream Google grant is NOT
+    // revoked here - only the local token store entry is removed.
+    try {
+      await getLmsTokenStore().revoke(oldTokenRef);
+    } catch {
+      // Intentional: cleanup failure does not fail the widening.
+    }
+
+    safeLog(() =>
+      log.info("lms.connectionScopesWidened", {
+        actorUserId: actor.uid,
+        connectionId,
+        providerId,
+      }),
+    );
+
+    return {
+      connectionId,
+      providerId,
+      alreadyConnected: true,
+      consentOutcome: "widened",
+    };
+  }
+
+  // New connection path: store tokens, create connection document, audit.
   const tokenRef = await getLmsTokenStore().store({
     providerId,
     teacherId: actor.uid,
@@ -224,7 +353,7 @@ async function handler(
     }),
   );
 
-  return { connectionId, providerId, alreadyConnected: false };
+  return { connectionId, providerId, alreadyConnected: false, consentOutcome: "created" };
 }
 
 export const lmsConnectionsComplete = platformCallable(
