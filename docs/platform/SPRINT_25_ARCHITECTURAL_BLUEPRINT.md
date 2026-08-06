@@ -222,9 +222,17 @@ With those extensions in place, the flow is:
 - On grant, the server widens the existing connection's recorded scope
   set. It does not create a second connection. The same
   `connectionId`, `tokenRef`, and account identity are retained.
-- The granted Google identity is revalidated against the LyfeLabz
-  identity using the existing profile-match misconnection mitigation. A
-  mismatch is refused with a plain-language message.
+- The granted Google identity is revalidated against the identity of the
+  existing token bundle before the scope set is widened. The existing
+  token bundle is resolved, its `upstreamAccountIdentifier` is read, and
+  that stored value is compared against the new OAuth grant identity. An
+  identity mismatch refuses the scope widening with a plain-language
+  message. This revalidation is a new implementation that follows the
+  same security principle as the certified import-time profile
+  verification; it is not a reused helper, because no reusable helper for
+  this connection-widening comparison exists in the certified tree. It
+  implements an already-approved architectural requirement (PDR-030d),
+  not a new architectural decision.
 - Tokens never cross the callable boundary. The client observes only
   that consent succeeded and that it may re-issue the publish call once.
 - No silent scope escalation. Consent is requested only at the moment

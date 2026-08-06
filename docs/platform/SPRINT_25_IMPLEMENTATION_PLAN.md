@@ -517,12 +517,14 @@ architecture the blueprint left open):
 - §2.7 insufficient-scope is non-terminal and writes no failure record or
   event.
 
-Still requires ratification before or alongside Phase 1 (not settleable
-by an implementation plan alone):
+Ratification status (updated 2026-08-06):
 
-- PDR-030 must be ratified into `LYFELABZ_PLATFORM_DECISIONS.md` to
-  authorize the coursework scope addition and the incremental-consent
-  posture (blueprint §7, PDR-030b/c/d). Phase 2 depends on it.
+- PDR-030 is RATIFIED into `LYFELABZ_PLATFORM_DECISIONS.md` (inserted
+  after PDR-029, with a Change Log entry), authorizing the coursework
+  scope addition and the incremental-consent posture (blueprint §7,
+  PDR-030b/c/d). Phase 2's scope expansion is now authorized. The
+  standalone `PDR_030_LMS_ASSIGNMENT_PUBLICATION.md` status was updated
+  to point at the ratified canonical record.
 - No canonical document (definition, blueprint, PDR-030, ADR) is changed
   by this plan. The §2.4 and §2.7 control-flow corrections refine the
   definition §7 "reused unchanged" phrasing for `lmsAssignmentsPublish`
@@ -742,15 +744,38 @@ encounters an `lms.insufficientScope` error and cannot succeed.
 
 **Files expected to change.**
 
-- `platform/functions/src/lms/connections-begin.ts`
-- `platform/functions/src/lms/connections-complete.ts`
+- `platform/functions/src/lms/connections-begin.ts` (accept
+  `capability`, thread `intent` into `beginOAuth`)
+- `platform/functions/src/lms/connections-complete.ts` (intent-aware
+  create/widen/refuse; scope merge; token swap)
+- `platform/functions/src/lms/providers/provider.ts` (additive optional
+  `capability`/`intent` on the `beginOAuth` input type; the provider
+  interface is provider-neutral, so the field is a neutral selector)
 - `platform/functions/src/lms/providers/google-classroom/adapter.ts`
+  (scope selection in `beginOAuth`)
+- `platform/functions/src/lms/oauth-state/state-store.ts` (additive
+  `intent` on the issue input, stored record, and `LmsOAuthStateBinding`;
+  optional `expectedIntent` on consume)
+- `platform/functions/src/lms/oauth-state/firestore-state-store.ts`
+  (mirror the additive `intent` field in the durable store)
+- `platform/functions/src/lms/oauth-state/state-store.test.ts` and
+  `firestore-state-store.test.ts` (intent binding coverage)
 - `platform/functions/src/lms/connections-lifecycle-integration.test.ts`
 - `platform/functions/src/lms/connections-complete-oauth-state.test.ts`
 - `app/src/settings/integrations/wire.ts` (add `capability` param to
   `beginConnection`)
-- `app/src/settings/integrations/types.ts` (update `OAuthHandoff` or
-  `IntegrationsCallables` type if `capability` is exposed)
+- `app/src/settings/integrations/types.ts` (add optional `capability` to
+  the `beginConnection` input; optionally surface `consentOutcome` on the
+  complete result type)
+
+The connection record shape (`LmsConnectionRecord` /
+`LmsConnectionCreationWrite` in
+`platform/functions/src/shared/types/lms.ts`) needs at most one additive
+optional field (`scopesUpdatedAt?`); the existing `scopes` and `tokenRef`
+fields already carry the widened set and the swapped reference, so no
+required-field change and no renamed field is introduced. No Firestore
+Rules change: all `lmsConnections` client writes are already denied and
+the widen write is an Admin SDK write that bypasses Rules.
 
 **Major implementation tasks.**
 
@@ -788,11 +813,17 @@ encounters an `lms.insufficientScope` error and cannot succeed.
      caller knows no second connection was created.
 
    The callable must verify the `upstreamAccountIdentifier` from the new
-   grant against the existing connection's stored identifier using the
-   certified profile-match misconnection mitigation before accepting the
-   scope expansion. The existing connection stores `tokenRef` which
-   resolves through the token store to an `upstreamAccountIdentifier`;
-   if the two identifiers do not match, the callable refuses with a
+   grant against the identity of the existing token bundle before
+   accepting the scope expansion. This comparison is new code, not a
+   reused helper: no reusable helper for OAuth connection widening exists
+   in the certified tree. It follows the same security principle as the
+   certified import-time profile verification, and it implements the
+   already-approved PDR-030d requirement rather than introducing a new
+   architectural decision. The existing connection stores `tokenRef`,
+   which must be resolved through the server-only token store to read the
+   existing bundle's `upstreamAccountIdentifier`; that stored identifier
+   is compared against the new OAuth grant identity, and if the two do
+   not match, the callable refuses the scope widening with a
    plain-language error (not `lms.invalidOAuthState`).
 
    The scope-merge update uses an additive Firestore update (field-value
@@ -804,6 +835,169 @@ encounters an `lms.insufficientScope` error and cannot succeed.
    request. The Phase 3 Assign dialog client code will call
    `beginConnection({ providerId, redirectUri, capability: "publication" })`
    to trigger the publication-scope consent path.
+
+**Phase 2 preparation design refinements (2026-08-06, verified against source).**
+
+The four tasks above are correct in outline. The following refinements
+are the precise, source-verified specification Phase 2 implements. They
+do not change any canonical decision; they close gaps the outline left
+implicit. Where a refinement and the outline differ, the refinement
+governs Phase 2 coding.
+
+*R1. Consent-intent request shape (provider-neutral).* The begin request
+gains one optional, provider-neutral field:
+`capability?: "publication"`. No raw Google scope string appears in the
+client-facing `LmsConnectionsBeginRequest`. Absent `capability`, the flow
+is byte-identical to today (readonly scope set). `capability:
+"publication"` is the sole selector the client can send; the adapter, not
+the client, maps it to `GOOGLE_CLASSROOM_PUBLICATION_SCOPES`. The union
+`LmsProviderId` stays closed and no Google concept leaks past the adapter
+(PDR-019h, PDR-030c).
+
+*R2. OAuth state binding additions.* The state store record
+(`InProcessLmsOAuthStateStore` and `FirestoreLmsTokenStore`'s sibling
+`FirestoreLmsOAuthStateStore`) today binds `{ teacherId, providerId,
+redirectUri }` plus the PKCE verifier, a 10-minute TTL, and a single-use
+`consumedAt` marker. Phase 2 adds one additive field to the binding:
+`intent` (provider-neutral; `"initialConnect"` default or
+`"publication"`). `issue()` accepts and persists it; `peek()` and the
+`LmsOAuthStateBinding` type expose it; `consume()` may accept an
+`expectedIntent` for defense in depth. The teacher, provider, redirect,
+TTL, and one-time-use protections already present are retained unchanged.
+The binding does NOT carry a client-supplied connection id: the target
+connection is derived server-side from `lmsConnectionIdFor(actor.uid,
+providerId)`, so the callback never trusts client-supplied connection
+ownership. `intent` is what lets `lmsConnectionsComplete` decide, before
+exchanging the code, whether to take the idempotent short-circuit or the
+scope-widening path (see R4), instead of inferring it only from the
+returned scopes.
+
+*R3. Authorization URL scope selection.* `beginOAuth` selects the scope
+set from `intent`/`capability`: readonly-only for the initial connect
+path; `GOOGLE_CLASSROOM_INITIAL_SCOPES` unioned with
+`GOOGLE_CLASSROOM_PUBLICATION_SCOPES` for publication. `access_type=offline`,
+`include_granted_scopes=true`, and `prompt=consent` are already present;
+`include_granted_scopes=true` is what preserves the previously granted
+readonly scopes so the teacher is not asked to re-grant them. No scope
+beyond the two coursework scopes is ever requested (PDR-030b).
+
+*R4. Completion: create vs. widen vs. refuse.* Today
+`lmsConnectionsComplete` short-circuits to `alreadyConnected: true` for
+any `active` connection BEFORE the state peek and BEFORE the code
+exchange. Phase 2 makes the decision intent-aware. This is an internal
+control-flow adjustment to the existing completed-connection
+short-circuit, not an architectural redesign of the completion callable:
+
+- **First connection** (no existing connection doc): unchanged. Exchange,
+  store token, `.set()` the creation record, emit `lms.connectionCreated`.
+- **Idempotent replay** (existing `active` connection, `intent` is not
+  `publication`, or the peeked state shows no publication intent): return
+  `alreadyConnected: true` as today, with no code exchange.
+- **Scope widening** (existing `active` connection AND publication
+  intent): do NOT short-circuit. Run the state peek (teacher, provider,
+  redirect, intent all enforced), exchange the code, then merge (R5).
+- **Already-authorized** (existing `active` connection already records
+  every publication scope): after exchange, if the merged scope set
+  equals the existing set, the path remains idempotent - no token swap,
+  no write, return `alreadyConnected: true`. In practice the publish path
+  only triggers consent on `lms.insufficientScope`, so this is a
+  defensive branch.
+- **Refuse** (identity mismatch): the new grant's
+  `upstreamAccountIdentifier` is compared against the existing token
+  bundle's identifier, resolved by reading the existing `tokenRef`
+  through the token store (the connection document itself does not store
+  the identifier; the token bundle does). This comparison is a new
+  implementation that follows the same security principle as the
+  certified import-time profile verification; no reusable helper for this
+  connection-widening comparison exists. A mismatch is refused with a
+  distinct plain-language error (NOT coerced to `lms.invalidOAuthState`)
+  and leaves the existing connection untouched (PDR-030d).
+
+*R5. Token replacement, refresh-token handling, and atomic ordering.*
+The token store `store()` mints a fresh opaque `tokenRef` via `.create()`
+(non-overwrite) and exposes no in-place update; there is deliberately no
+publication-specific token store. Widening therefore composes a merged
+bundle and swaps the reference in the exact order below, so a failure at
+any step leaves the old connection fully usable.
+
+Two distinct operations must not be conflated in this section. Local
+token-store cleanup (the token store's own delete/revoke of a superseded
+LyfeLabz token bundle) is a LyfeLabz-storage operation only. Provider
+grant revocation (calling Google's OAuth token-revocation endpoint) is a
+different operation, and Sprint 25 never performs it during a successful
+scope widening: the widened connection keeps using the same underlying
+Google grant, so revoking that grant would break the connection. Every
+use of `revoke()` in this section means the local token-store delete
+operation only, never Google's grant revocation.
+
+1. Resolve the existing bundle from the connection's current `tokenRef`
+   (old access token, old refresh token, old `upstreamAccountIdentifier`,
+   old scopes).
+2. Verify identity (R4 refuse branch) before any write.
+3. Compose the merged bundle: `accessToken` = the fresh grant's;
+   `refreshToken` = the fresh grant's refresh token IF Google returned
+   one, ELSE carry forward the existing refresh token (Google routinely
+   omits `refresh_token` on an incremental re-consent, so the prior
+   refresh token MUST be preserved, never dropped); `scopes` = the
+   set-union of old and newly granted scopes; `expiresAtEpochMs` = the
+   fresh grant's; `upstreamAccountIdentifier` = unchanged.
+4. `store()` the merged bundle, obtaining a new `tokenRef`.
+5. Update the one connection document additively: `scopes` = merged union
+   and `tokenRef` = the new reference (preserving `teacherId`, `schoolId`,
+   `providerId`, `status: "active"`, `connectedAt`). An additive
+   `scopesUpdatedAt` server timestamp MAY be written; no field is renamed
+   or removed (PDR-019g).
+6. Only after the connection update commits, best-effort `revoke()` the
+   old `tokenRef` through the server-only token store. This is a local
+   token-store delete of the superseded LyfeLabz bundle only; it MUST NOT
+   call Google's OAuth grant-revocation endpoint, because the widened
+   connection continues to use the same underlying Google grant. If the
+   local token-store delete fails, the orphaned old bundle is inert (no
+   connection references it) and is logged, not surfaced.
+
+If step 4 or 5 throws, the connection still points at the old, valid
+`tokenRef` and retains its old scope set: the existing connection is not
+destroyed by a failed widen. The teacher can retry consent.
+
+*R6. Duplicate-connection prevention.* The connection document id is
+deterministic: `lmsConnectionIdFor(teacherId, providerId)` = one document
+per (teacher, provider). Completion always targets that same id, so
+widening is an update of the single existing document and a second active
+connection cannot be minted by construction. The connection document
+remains the single source of truth for the connection, and the
+deterministic connection id continues to prevent duplicate active
+connections. No new connection collection and no Google-specific client
+authority flag are introduced.
+
+*R7. Failure matrix (Phase 2 exact outcomes).*
+
+| Failure point | Outcome |
+|---|---|
+| Teacher closes / denies consent | No code returned to the callback; the client maps a cancelled handoff to "consent cancelled". Existing connection unchanged. |
+| State missing / expired / replayed / provider or redirect mismatch | Store throws its granular code; the callable coerces to the single `lms.invalidOAuthState`. No exchange, no write. |
+| State intent mismatch | Same coercion to `lms.invalidOAuthState` (defense in depth). |
+| New grant identity differs from connected identity | Distinct plain-language refusal (R4). Existing connection untouched. |
+| Coursework scopes not actually granted (merged set == existing set) | Already-authorized branch: no write, `alreadyConnected: true`. The subsequent publish re-issue will still see `lms.insufficientScope` and the client surfaces "consent did not add the required scope". |
+| Token exchange fails | `coerceOAuthStateError` path; graceful failure. No write. Existing connection untouched. |
+| Token persistence (`store`) fails | Widen aborts before the connection update. Existing connection and its old `tokenRef` remain valid. |
+| Connection merge (`update`) fails | New bundle is orphaned and inert; connection still points at the old valid `tokenRef`. Logged; existing connection usable. |
+| Existing connection expired / revoked at consent time | A non-`active` connection is not widened; the client is routed to the existing account-level reconnect flow (`reconnectRequired`). |
+| Simultaneous incremental-consent attempts | Each `begin` invalidates the teacher's prior pending OAuth state for the provider (a state-store operation, unrelated to token or grant revocation); `consume` is single-use and atomic, so at most one completion widens. A late second completion sees a consumed state and coerces to `lms.invalidOAuthState`. |
+
+*R8. Client contract (sanitized, for the Phase 3 Assign surface).*
+Completion returns the existing shape `{ connectionId, providerId,
+alreadyConnected }` plus one additive, provider-neutral, token-free
+discriminator so the Assign surface can distinguish outcomes without
+seeing token material: `consentOutcome` in
+`{ "widened", "alreadyAuthorized", "created" }`. The Phase 3 client maps
+outcomes to: consent succeeded and publication may be retried
+(`widened`/`alreadyAuthorized`); reconnect required (a non-`active`
+connection, surfaced as `reconnectRequired`, reusing the existing status
+vocabulary in `app/src/settings/integrations/types.ts`); consent
+cancelled or denied (handoff returned no code); unexpected failure (any
+thrown callable error). No token, Google email, or account id crosses the
+boundary in any branch. Phase 2 provides this server response; the Assign
+dialog that consumes it is Phase 3.
 
 **The insufficient-scope guard (client side, consumed in Phase 3).**
 
@@ -822,13 +1016,40 @@ work.
 - `adapter.beginOAuth`: scope array includes publication scopes when
   capability is `"publication"`.
 - `lmsConnectionsComplete` scope-merge path:
-  - Existing active connection + new grant with publication scopes +
-    matching `upstreamAccountIdentifier` = scopes merged, existing
-    `connectionId` returned, `alreadyConnected: true`.
-  - Mismatched `upstreamAccountIdentifier` = refused.
-  - No existing connection = new connection created as before (unchanged).
-  - Existing active connection with same scopes = early return as today.
-- Integration test: full begin/complete cycle with capability selector.
+  - Existing active connection + publication intent + new grant with
+    publication scopes + matching `upstreamAccountIdentifier` = scopes
+    merged (set-union), existing `connectionId` returned, `tokenRef`
+    swapped to the new bundle, `consentOutcome: "widened"`, no second
+    `lms.connectionCreated` audit event.
+  - New grant omits `refresh_token` = the prior refresh token is carried
+    forward into the merged bundle (never dropped).
+  - New grant includes a replacement `refresh_token` = the replacement is
+    stored.
+  - Mismatched `upstreamAccountIdentifier` = refused with the distinct
+    plain-language error, existing connection and old `tokenRef`
+    unchanged.
+  - `store()` of the merged bundle fails = widen aborts, existing
+    connection still points at the valid old `tokenRef`.
+  - Connection `update()` fails = new bundle orphaned/inert, existing
+    connection usable, no duplicate connection.
+  - No existing connection = new connection created as before (unchanged),
+    `consentOutcome: "created"`.
+  - Existing active connection already carrying every publication scope =
+    already-authorized branch, no token swap, no write,
+    `consentOutcome: "alreadyAuthorized"`.
+  - Non-`active` existing connection = not widened; surfaced as
+    reconnect-required.
+  - Consumed/expired/replayed/mismatched state = coerced to the single
+    `lms.invalidOAuthState`.
+- OAuth state store: `issue` persists `intent`; `peek` and the binding
+  expose it; `consume` enforces `expectedIntent` when supplied; TTL and
+  single-use remain enforced.
+- Duplicate-connection guard: two completions for the same (teacher,
+  provider) target the same deterministic `connectionId`; exactly one
+  active connection exists after either ordering.
+- Integration test: full begin/complete cycle with the capability
+  selector, asserting exactly one connection document with the widened
+  scope set after consent.
 
 **Browser testing requirements.**
 
@@ -853,8 +1074,48 @@ emulator-bound verification is Phase 4.
   when an active connection exists and new scopes are granted. No second
   connection is created.
 - Mismatched `upstreamAccountIdentifier` is refused.
+- The prior refresh token is carried forward when Google omits one.
+- Exactly one connection document exists after widening (no duplicate).
+- No token, Google email, or account id crosses the callable boundary.
 - All new and existing tests pass.
 - `npm --prefix app run verify` passes.
+
+**Phase 2 commit boundaries.** Phase 2 lands as one reviewable server
+commit plus one thin client-wiring commit, in this order:
+
+1. **Commit 2a - OAuth state intent binding.** Additive `intent` on the
+   in-process and Firestore state stores, the binding type, and consume;
+   store tests. No behavior change to existing flows (intent defaults to
+   initial connect). Independently reviewable and green.
+2. **Commit 2b - begin/adapter scope selection.** `capability` on
+   `LmsConnectionsBeginRequest`, the neutral selector on the provider
+   `beginOAuth` input, and the adapter scope-set selection. Existing
+   connect flow byte-identical when `capability` is absent.
+3. **Commit 2c - completion create/widen/refuse + token swap.** The
+   intent-aware branch, identity revalidation, scope-union merge,
+   refresh-token carry-forward, atomic tokenRef swap and old-ref local
+   token-store delete (never a Google grant revocation),
+   additive `consentOutcome`, and the additive `scopesUpdatedAt`. Server
+   and integration tests.
+4. **Commit 2d - client `beginConnection` capability param.** The thin
+   `wire.ts` / `types.ts` extension so Phase 3 can request the publication
+   capability. No visible client behavior until Phase 3.
+
+Commits 2a-2c contain no client-visible change; 2d is inert until Phase 3
+consumes it. Each commit is independently revertable by Functions redeploy
+(2a-2c) or Hosting redeploy (2d).
+
+**Browser certification checkpoint (deferred to Phase 4, exercised here in
+the emulator).** Phase 2 is certified in unit and integration tests plus
+an optional emulator walkthrough; genuine browser consent is a Phase 4
+obligation and MUST NOT be claimed from mocks. The decisive Phase 4
+browser observations for Phase 2's machinery are B6 (first publish
+triggers a genuine incremental consent; previously granted readonly scopes
+are preserved) and the §14 backend checks "connection scope set includes
+the coursework scopes after consent; exactly one connection for the
+teacher and provider; no duplicate." Add to the Phase 4 run an explicit
+observation that a teacher who denies the incremental consent still holds
+her original readonly connection intact and can still assign.
 
 **Rollback safety.**
 
@@ -863,7 +1124,8 @@ retains whatever scopes were granted, which is harmless. Client rollback
 (Hosting redeploy) is not required for Phase 2 because no client-facing
 behavior change is visible until Phase 3.
 
-**Dependencies.** Phase 1 must be merged.
+**Dependencies.** Phase 1 must be merged. PDR-030 must be ratified
+(done 2026-08-06); the coursework scope expansion is authorized.
 
 ---
 
@@ -1186,7 +1448,7 @@ suite green.
 |---|---|---|---|---|
 | 1 | Transport not wired at test time (fixture transport path not exercised for new methods) | Low | Medium | Existing fixture transport pattern covers both methods; follow `listClassRoster` exactly. |
 | 1 | Upstream error shapes for `createCourseWork` not fully mapped | Low | Low | `translateUpstreamError` already handles all known status codes; test explicitly for 403 with coursework-scope signal. |
-| 2 | Profile-match misconnection mitigation adds an unexpected token-store read | Medium | Low | Read the token store to resolve `upstreamAccountIdentifier` at complete time; this is one additional async read, not a blocking concern. |
+| 2 | Widening identity revalidation (new code, not a reused helper) adds an unexpected token-store read | Medium | Low | Resolve the existing token bundle through the token store to read its `upstreamAccountIdentifier` and compare it against the new grant identity at complete time; this is one additional async read, not a blocking concern. |
 | 2 | Scope-merge update in Firestore overwrites other connection fields | Low | High | Use a field-level Firestore update, not a full document set, for the scope merge. |
 | 3 | Topic fetch blocks dialog open if slow | Medium | Medium | Run topic fetch concurrently with dialog rendering; degrade to empty selector on failure. |
 | 3 | `linkId` not available in the Assign dialog at row-augmentation time | Low | Medium | `createListClassLinks` returns `{ linkId, classId, providerId, lmsClassId }` already; match by `classId` to augment the class row. |

@@ -214,8 +214,14 @@ rebuilds any of these instead of reusing it is out of specification.
   second connection. This is an extension of the existing callables, not
   a new callable and not a second connection. See the blueprint §7 and §8.
 - **Reuse** the server-only token store, provider registry, and the
-  Google Classroom adapter shell, including its profile-match
-  misconnection mitigation.
+  Google Classroom adapter shell. The adapter shell already carries the
+  certified import-time profile verification (the imported Classroom
+  owner is checked against the stored token bundle identity). The
+  connection-widening identity revalidation Sprint 25 requires (the
+  existing token bundle identity checked against the new OAuth grant
+  identity) is a new implementation that follows the same security
+  principle; no reusable helper for that comparison exists in the
+  certified tree.
 - **Reuse** the Assign dialog, the per-class row model, and the
   authoritative assignment lifecycle callables (`assignmentsCreateDraft`,
   `assignmentsPublish`) that already create the LyfeLabz assignment

@@ -1,11 +1,14 @@
 # PDR-030: LMS Assignment Publication Consent and Scope
 
-Status: Proposed. Authored as a standalone record so no certified
-document is modified during planning. On ratification this record is
-inserted into `LYFELABZ_PLATFORM_DECISIONS.md` as PDR-030 (the next
-number after PDR-029), following the format of the records already in
-that log. It authorizes the Sprint 25 implementation named in
-`SPRINT_25_DEFINITION.md`.
+Status: RATIFIED 2026-08-06 under Sprint 25 (Phase 2 preparation). The
+canonical, authoritative record now lives in
+`LYFELABZ_PLATFORM_DECISIONS.md` as PDR-030, inserted after PDR-029 and
+recorded in that log's Change Log. This standalone file is retained as
+the original working draft and rationale narrative; where this file and
+the canonical decision log differ, the canonical decision log controls.
+Do not treat this file as proposed-only. It authorizes the Sprint 25
+implementation named in `SPRINT_25_DEFINITION.md`; the coursework scope
+expansion it authorizes is now in force for Sprint 25 Phase 2.
 
 This record extends PDR-019 (LMS Integration Posture) and PDR-020 (LMS
 Phase Re-Sequencing and Initial Scope). It overrides neither. Where this
@@ -160,9 +163,12 @@ workflow.**
   achieving this requires the completion path to merge granted scopes
   into an existing connection when one exists, rather than create a
   duplicate. This is the bounded extension named in PDR-030c.
-- The granted Google identity is revalidated against the LyfeLabz
-  identity using the certified profile-match misconnection mitigation. A
-  mismatch is refused with a plain-language message.
+- The granted Google identity is revalidated against the existing token
+  bundle's identity before the scope set is widened. This revalidation is
+  a new implementation that follows the same security principle as the
+  certified import-time profile verification; no reusable helper for this
+  connection-widening comparison exists in the certified tree. A mismatch
+  refuses the scope widening with a plain-language message.
 
 **PDR-030e. Inherited invariants.**
 
@@ -260,6 +266,6 @@ scrutiny as PDR-019 and PDR-020.
 
 ---
 
-*End of proposed record. On ratification, insert as PDR-030 in
-`LYFELABZ_PLATFORM_DECISIONS.md` and update any index that enumerates the
-decision log.*
+*End of record. Ratified 2026-08-06 and inserted as PDR-030 in
+`LYFELABZ_PLATFORM_DECISIONS.md` (after PDR-029, with a Change Log
+entry). The canonical decision log is authoritative.*
