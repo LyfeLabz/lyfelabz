@@ -1526,11 +1526,18 @@ describe("Settings workspace surface (Sprint 6H)", () => {
     expect(text).not.toContain("placeholder");
   });
 
-  test("does not render form controls or sample settings data", () => {
+  test("renders only the Phase 2B.2 default-grade select; no other form controls or sample settings data", () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher);
     expect(mount.querySelectorAll("input")).toHaveLength(0);
-    expect(mount.querySelectorAll("select")).toHaveLength(0);
+    // Sprint 24B Phase 2B.2 introduced exactly one form control on the
+    // Settings root: the default-grade preference select. Any other
+    // form control on this surface is a regression.
+    const selects = mount.querySelectorAll("select");
+    expect(selects).toHaveLength(1);
+    expect(selects[0]!.getAttribute("data-testid")).toBe(
+      "settings-default-grade-select",
+    );
     expect(mount.querySelectorAll("textarea")).toHaveLength(0);
     expect(mount.querySelectorAll("form")).toHaveLength(0);
     expect(mount.querySelectorAll("button")).toHaveLength(0);

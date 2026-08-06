@@ -64,9 +64,11 @@ export {
   assignmentRecipientsCollectionRef,
   assignmentsCollectionRef,
   auditEventsCollectionRef,
+  classActivationDocRef,
   classArchiveDocRef,
   classCreationDocRef,
   classDocRef,
+  classLmsCreationDocRef,
   classLmsLinkDocRef,
   classMetadataUpdateDocRef,
   classesCollectionRef,
@@ -95,6 +97,8 @@ export {
   submissionDocRef,
   submissionFinalizationDocRef,
   submissionsCollectionRef,
+  teacherPreferencesDocRef,
+  teacherPreferencesUpdateDocRef,
   userDocRef,
   userRecordDocRef,
   externalIdentitiesCollectionRef,
@@ -127,6 +131,7 @@ export {
   type AssignmentRecipientStatus,
 } from "./types/assignment-recipient";
 export {
+  AUDIT_ACTIONS,
   AUDIT_EVENTS_COLLECTION,
   type ActorRole,
   type AuditAction,
@@ -137,13 +142,22 @@ export {
 } from "./types/audit-event";
 export {
   CLASSES_COLLECTION,
+  type ActiveClassRecord,
+  type ArchivedClassRecord,
+  type ClassActivationWrite,
   type ClassArchiveWrite,
   type ClassCreationWrite,
+  type ClassLmsCreationWrite,
   type ClassLmsLinkWrite,
   type ClassMetadataUpdateWrite,
   type ClassRecord,
   type ClassStatus,
+  type NeedsSetupClassRecord,
 } from "./types/class";
+export {
+  assertClassSupports,
+  type ClassOperation,
+} from "./classes";
 export {
   LMS_ASSIGNMENT_PUBLICATIONS_COLLECTION,
   LMS_CLASS_LINKS_COLLECTION,
@@ -255,6 +269,17 @@ export {
   type RevokeOutcome,
   type RevokeResult,
 } from "./identity/external-identity-store";
+export {
+  TEACHER_DEFAULT_GRADE_VALUES,
+  TEACHER_PREFERENCES_DOC_ID,
+  TEACHER_PREFERENCES_SUBCOLLECTION,
+  isTeacherDefaultGrade,
+  type TeacherDefaultGrade,
+  type TeacherPreferencesClearWrite,
+  type TeacherPreferencesDoc,
+  type TeacherPreferencesSetWrite,
+  type TeacherPreferencesUpdateWrite,
+} from "./types/teacher-preferences";
 export {
   USERS_COLLECTION,
   type ConsentState,

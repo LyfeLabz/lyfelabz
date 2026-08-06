@@ -70,10 +70,17 @@ export const STATIC_SNAPSHOT_PREVIEW: SnapshotPreview = Object.freeze({
   ]),
 });
 
+// Snapshot receives every arm of `ClassSummary` and must label every
+// arm safely. `needsSetup` is included so a class the teacher opened
+// mid-setup does not render an `undefined` label; the Phase 2B.4
+// workspace re-routes needsSetup classes to the setup form before this
+// surface is ever reached, but the safe-render is defense in depth.
+// See docs/platform/SPRINT_24B_PHASE_2B_READER_AUDIT.md §5 C8.
 const STATUS_LABEL: Readonly<Record<ClassSummary["status"], string>> =
   Object.freeze({
     active: "Active",
     archived: "Archived",
+    needsSetup: "Setup needed",
   });
 
 export type SnapshotRenderInput = {
@@ -114,7 +121,7 @@ export function renderSnapshotSurface(
   context.className = "shell-snapshot-context";
   context.setAttribute("data-testid", "snapshot-class-context");
 
-  if (input.summary.grade.length > 0) {
+  if (input.summary.status !== "needsSetup" && input.summary.grade.length > 0) {
     const grade = doc.createElement("span");
     grade.className = "shell-snapshot-grade";
     grade.setAttribute("data-testid", "snapshot-class-grade");

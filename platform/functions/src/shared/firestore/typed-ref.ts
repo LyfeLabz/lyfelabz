@@ -19,8 +19,10 @@ import {
 import { AUDIT_EVENTS_COLLECTION, type AuditEventWrite } from "../types/audit-event";
 import {
   CLASSES_COLLECTION,
+  type ClassActivationWrite,
   type ClassArchiveWrite,
   type ClassCreationWrite,
+  type ClassLmsCreationWrite,
   type ClassLmsLinkWrite,
   type ClassMetadataUpdateWrite,
   type ClassRecord,
@@ -87,6 +89,12 @@ import {
   type UserRecord,
 } from "../types/user";
 import {
+  TEACHER_PREFERENCES_DOC_ID,
+  TEACHER_PREFERENCES_SUBCOLLECTION,
+  type TeacherPreferencesDoc,
+  type TeacherPreferencesUpdateWrite,
+} from "../types/teacher-preferences";
+import {
   EXTERNAL_IDENTITIES_COLLECTION,
   type ExternalIdentityCreationWrite,
   type ExternalIdentityRecord,
@@ -110,6 +118,40 @@ export function userRecordDocRef(uid: string): DocumentReference<UserRecord> {
   return getAdminFirestore()
     .collection(USERS_COLLECTION)
     .doc(uid) as DocumentReference<UserRecord>;
+}
+
+// Read typed reference for `users/{uid}/preferences/teacher`. Reads
+// return a DocumentSnapshot<TeacherPreferencesDoc>. Both fields on the
+// record are optional so the reader safely tolerates an absent field
+// or a partially-populated legacy record. The subdoc is the sole
+// preference document written by `teacherPreferencesUpdate` (Sprint 24B
+// Phase 2B.2) and is the sole preference document read by the client
+// preference reader.
+export function teacherPreferencesDocRef(
+  uid: string,
+): DocumentReference<TeacherPreferencesDoc> {
+  return getAdminFirestore()
+    .collection(USERS_COLLECTION)
+    .doc(uid)
+    .collection(TEACHER_PREFERENCES_SUBCOLLECTION)
+    .doc(TEACHER_PREFERENCES_DOC_ID);
+}
+
+// Update-write typed reference for `users/{uid}/preferences/teacher`.
+// The `teacherPreferencesUpdate` callable uses this reference to `.set()`
+// a canonical `TeacherPreferencesUpdateWrite` payload with
+// `{ merge: true }` so `FieldValue.serverTimestamp()` and
+// `FieldValue.delete()` sentinels can be used at the write boundary while
+// the read-side `teacherPreferencesDocRef` remains typed as
+// `TeacherPreferencesDoc`.
+export function teacherPreferencesUpdateDocRef(
+  uid: string,
+): DocumentReference<TeacherPreferencesUpdateWrite> {
+  return getAdminFirestore()
+    .collection(USERS_COLLECTION)
+    .doc(uid)
+    .collection(TEACHER_PREFERENCES_SUBCOLLECTION)
+    .doc(TEACHER_PREFERENCES_DOC_ID) as DocumentReference<TeacherPreferencesUpdateWrite>;
 }
 
 export function schoolDocRef(schoolId: string): DocumentReference<SchoolRecord> {
@@ -177,6 +219,36 @@ export function classMetadataUpdateDocRef(
   return getAdminFirestore()
     .collection(CLASSES_COLLECTION)
     .doc(classId);
+}
+
+// LMS-authored creation-write typed reference for classes/{classId}. The
+// Sprint 24B Phase 2B.3 `classesLmsCreate` callable is the sole writer of
+// this reference. The narrow write shape (`ClassLmsCreationWrite`) omits
+// `grade`, `block`, and `joinCode` so a `needsSetup` document cannot be
+// created with instruction-eligible metadata; those three fields are
+// written atomically by `classesActivate` through `classActivationDocRef`.
+export function classLmsCreationDocRef(
+  classId: string,
+): DocumentReference<ClassLmsCreationWrite> {
+  return getAdminFirestore()
+    .collection(CLASSES_COLLECTION)
+    .doc(classId) as DocumentReference<ClassLmsCreationWrite>;
+}
+
+// Activation-write typed reference for classes/{classId}. The Sprint 24B
+// Phase 2B.3 `classesActivate` callable is the sole writer of this
+// reference. The narrow write shape (`ClassActivationWrite`) carries the
+// atomic `{ status, grade, block, joinCode }` transition applied inside a
+// single Firestore transaction per Phase 2B Spec §5.3 and §8.5. Ownership
+// fields, createdAt, title, and metadata are absent from the write shape
+// so an activation can never launder into an ownership reassignment, a
+// metadata edit, or a re-creation of the class.
+export function classActivationDocRef(
+  classId: string,
+): DocumentReference<ClassActivationWrite> {
+  return getAdminFirestore()
+    .collection(CLASSES_COLLECTION)
+    .doc(classId) as DocumentReference<ClassActivationWrite>;
 }
 
 // Archive-write typed reference for classes/{classId}. The classesArchive

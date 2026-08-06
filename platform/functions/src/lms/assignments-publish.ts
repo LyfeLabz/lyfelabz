@@ -52,6 +52,26 @@ import { getLmsTokenStore } from "./tokens/token-store";
 //     `failed` publication record and a `lms.publishFailed` audit event
 //     but never removes the LyfeLabz assignment or disturbs LyfeLabz-side
 //     state. The teacher may re-attempt.
+//
+// Sprint 25 Phase 1 control-flow corrections (§2.4, §2.7, §2.2, §2.3):
+//
+//   - Completed-attempt guard: if the deterministic publicationId already
+//     has a `succeeded` record, the callable returns that success without
+//     issuing a second upstream POST (§2.2 server-side guard).
+//   - lms.insufficientScope is non-terminal: no failed record and no
+//     lms.publishFailed audit event are written; the client routes to
+//     incremental consent (§2.7, blueprint §11).
+//   - The single try/catch is split into Phase A (upstream call) and
+//     Phase B (persistence and audit of a confirmed success), so:
+//     (a) a later local failure cannot clobber a written succeeded record,
+//     (b) the upstream assignment id is reachable from the orphan log path,
+//     (c) audit failure does not invert a real success into a reported
+//         failure.
+//   - The adapter adds a 30 s AbortController-backed timeout to the
+//     coursework POST (§2.3 Correction 3): the abort signal is threaded
+//     into the transport so the in-flight request is genuinely cancelled,
+//     the timer is always cleared, and a hang surfaces as
+//     lms.upstreamCallFailed. This file does not re-add a timeout.
 
 export type LmsAssignmentsPublishRequest = {
   readonly assignmentId: string;
@@ -235,12 +255,44 @@ async function handler(
     attemptNonce,
   );
 
+  // Completed-attempt guard (§2.2 server-side guard).
+  // Read the deterministic publication record before issuing the upstream
+  // coursework POST. If a record already exists with status `succeeded`,
+  // return that success without a second upstream call and without emitting
+  // a second audit event. An absent or failed record may proceed.
+  const existingPublicationSnapshot = await lmsAssignmentPublicationCreationDocRef(
+    publicationId,
+  ).get();
+  if (existingPublicationSnapshot.exists) {
+    const existing = existingPublicationSnapshot.data();
+    if (existing?.status === "succeeded") {
+      return {
+        publicationId,
+        status: "succeeded",
+        ...(typeof existing.lmsAssignmentId === "string" &&
+        existing.lmsAssignmentId.length > 0
+          ? { lmsAssignmentId: existing.lmsAssignmentId }
+          : {}),
+        ...(typeof existing.lmsAssignmentUrl === "string" &&
+        existing.lmsAssignmentUrl.length > 0
+          ? { lmsAssignmentUrl: existing.lmsAssignmentUrl }
+          : {}),
+      };
+    }
+  }
+
   const title = titleOverride ?? assignment.title ?? assignment.lessonSlug;
   const bundle = await getLmsTokenStore().resolve(connection.tokenRef);
   const adapter = getProviderAdapter(connection.providerId);
 
+  // Phase A: upstream call.
+  // Nothing is durable on the LyfeLabz side yet. On failure here, write
+  // the failed record and emit lms.publishFailed, then return the graceful
+  // failure response. lms.insufficientScope is non-terminal: it writes no
+  // record and emits no audit event (§2.7, blueprint §11).
+  let published: { lmsAssignmentId: string; lmsAssignmentUrl?: string } | undefined;
   try {
-    const published = await adapter.publishAssignment({
+    published = await adapter.publishAssignment({
       accessToken: bundle.accessToken,
       lmsClassId: link.lmsClassId,
       title,
@@ -248,76 +300,27 @@ async function handler(
       lyfelabzAssignmentUrl,
       ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
     });
-
-    const record: LmsAssignmentPublicationCreationWrite = {
-      assignmentId,
-      classId: link.classId,
-      ownerUid: actor.uid,
-      schoolId: actor.schoolId,
-      providerId: connection.providerId,
-      connectionId: link.connectionId,
-      lmsClassId: link.lmsClassId,
-      ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
-      status: "succeeded",
-      lmsAssignmentId: published.lmsAssignmentId,
-      ...(published.lmsAssignmentUrl !== undefined
-        ? { lmsAssignmentUrl: published.lmsAssignmentUrl }
-        : {}),
-      publishedAt: FieldValue.serverTimestamp(),
-    };
-
-    await lmsAssignmentPublicationCreationDocRef(publicationId).set(record);
-    await assignmentLmsPublicationDocRef(assignmentId).update({
-      lmsPublicationRef: publicationId,
-    });
-
-    const action: AuditAction = "lms.assignmentPublished";
-    await writeAuditEvent({
-      actorUserId: actor.uid,
-      actorRole: "teacher",
-      action,
-      targetType: "assignment",
-      targetId: assignmentId,
-      schoolId: actor.schoolId,
-      districtId: actor.districtId,
-      payload: {
-        providerId: connection.providerId,
-        linkId,
-        lmsClassId: link.lmsClassId,
-        lmsAssignmentId: published.lmsAssignmentId,
+  } catch (upstreamErr) {
+    // Insufficient scope is non-terminal. No record is written and no
+    // lms.publishFailed event is emitted. The client routes to incremental
+    // OAuth consent and re-issues the publish call with the same nonce.
+    if (
+      upstreamErr instanceof PlatformError &&
+      upstreamErr.code === "lms.insufficientScope"
+    ) {
+      return {
         publicationId,
-        ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
-      },
-    });
+        status: "failed",
+        errorCode: "lms.insufficientScope",
+        errorMessage: "Publication requires additional OAuth consent.",
+      };
+    }
 
-    safeLog(() =>
-      log.info("lms.assignmentPublished", {
-        actorUserId: actor.uid,
-        assignmentId,
-        publicationId,
-      }),
-    );
-
-    return {
-      publicationId,
-      status: "succeeded",
-      lmsAssignmentId: published.lmsAssignmentId,
-      ...(published.lmsAssignmentUrl !== undefined
-        ? { lmsAssignmentUrl: published.lmsAssignmentUrl }
-        : {}),
-    };
-  } catch (err) {
-    // Failure is a routine event (§8). Record the failure alongside its
-    // audit event and return the graceful `lms.publishFailed` shape to
-    // the client so the confirmation surface in ASSIGN_EXPERIENCE.md §7
-    // can render "Publishing to Google Classroom did not succeed."
-    // without asking the teacher to contact an administrator.
     const errorCode =
-      err instanceof PlatformError ? err.code : "lms.publishFailed";
-    const errorMessage =
-      err instanceof Error
-        ? err.message
-        : "Publication to the LMS did not succeed.";
+      upstreamErr instanceof PlatformError
+        ? upstreamErr.code
+        : "lms.publishFailed";
+    const errorMessage = "Publication to the LMS did not succeed.";
 
     const failureRecord: LmsAssignmentPublicationCreationWrite = {
       assignmentId,
@@ -333,27 +336,38 @@ async function handler(
       errorMessage,
       publishedAt: FieldValue.serverTimestamp(),
     };
-    await lmsAssignmentPublicationCreationDocRef(publicationId).set(
-      failureRecord,
-    );
 
-    const action: AuditAction = "lms.publishFailed";
-    await writeAuditEvent({
-      actorUserId: actor.uid,
-      actorRole: "teacher",
-      action,
-      targetType: "assignment",
-      targetId: assignmentId,
-      schoolId: actor.schoolId,
-      districtId: actor.districtId,
-      payload: {
-        providerId: connection.providerId,
-        linkId,
-        lmsClassId: link.lmsClassId,
-        publicationId,
-        errorCode,
-      },
-    });
+    // Guard each inner write so the graceful response is always returned
+    // even when persistence itself fails.
+    try {
+      await lmsAssignmentPublicationCreationDocRef(publicationId).set(
+        failureRecord,
+      );
+    } catch {
+      // Cannot persist failure record; the graceful response still returns.
+    }
+
+    const failureAction: AuditAction = "lms.publishFailed";
+    try {
+      await writeAuditEvent({
+        actorUserId: actor.uid,
+        actorRole: "teacher",
+        action: failureAction,
+        targetType: "assignment",
+        targetId: assignmentId,
+        schoolId: actor.schoolId,
+        districtId: actor.districtId,
+        payload: {
+          providerId: connection.providerId,
+          linkId,
+          lmsClassId: link.lmsClassId,
+          publicationId,
+          errorCode,
+        },
+      });
+    } catch {
+      // Audit failure is non-blocking.
+    }
 
     safeLog(() =>
       log.warn("lms.publishFailed", {
@@ -371,6 +385,123 @@ async function handler(
       errorMessage,
     };
   }
+
+  // Phase B: persistence and audit of a confirmed upstream success.
+  // `published` is set; the coursework item exists in the upstream LMS.
+  // Do not clobber the succeeded record from here — later local failures
+  // are logged and reported, but they cannot downgrade a real publication
+  // to a reported failure and they cannot re-write the record to `failed`.
+
+  const record: LmsAssignmentPublicationCreationWrite = {
+    assignmentId,
+    classId: link.classId,
+    ownerUid: actor.uid,
+    schoolId: actor.schoolId,
+    providerId: connection.providerId,
+    connectionId: link.connectionId,
+    lmsClassId: link.lmsClassId,
+    ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
+    status: "succeeded",
+    lmsAssignmentId: published.lmsAssignmentId,
+    ...(published.lmsAssignmentUrl !== undefined
+      ? { lmsAssignmentUrl: published.lmsAssignmentUrl }
+      : {}),
+    publishedAt: FieldValue.serverTimestamp(),
+  };
+
+  // Phase B1: write the succeeded publication record.
+  // If this write fails, the upstream coursework item is an orphan: it
+  // exists in Google but has no LyfeLabz record. Log the upstream id at
+  // error severity for manual recovery and return "did not succeed". A
+  // retry may create a second upstream coursework item (accepted residual;
+  // documented in §2.5 and §2.6 of the Sprint 25 implementation plan).
+  try {
+    await lmsAssignmentPublicationCreationDocRef(publicationId).set(record);
+  } catch {
+    safeLog(() =>
+      log.error("lms.publicationRecordFailed", {
+        actorUserId: actor.uid,
+        publicationId,
+        providerId: connection.providerId,
+        linkId,
+        lmsClassId: link.lmsClassId,
+        lmsAssignmentId: published.lmsAssignmentId,
+      }),
+    );
+    return {
+      publicationId,
+      status: "failed",
+      errorCode: "lms.localPersistenceFailed",
+      errorMessage: "Publication to the LMS did not succeed.",
+    };
+  }
+
+  // Phase B2: set the mirror pointer on the LyfeLabz assignment.
+  // The succeeded record is already written. If the mirror update fails,
+  // log the desync but keep the succeeded result — the mirror is a
+  // denormalized convenience and its absence does not invalidate the
+  // publication.
+  try {
+    await assignmentLmsPublicationDocRef(assignmentId).update({
+      lmsPublicationRef: publicationId,
+    });
+  } catch {
+    safeLog(() =>
+      log.error("lms.publicationMirrorFailed", {
+        actorUserId: actor.uid,
+        publicationId,
+      }),
+    );
+  }
+
+  // Phase B3: emit the success audit event.
+  // The succeeded record and mirror are already written. If audit emission
+  // fails, log the gap but keep the succeeded result and do not invert the
+  // publication into a reported failure.
+  const successAction: AuditAction = "lms.assignmentPublished";
+  try {
+    await writeAuditEvent({
+      actorUserId: actor.uid,
+      actorRole: "teacher",
+      action: successAction,
+      targetType: "assignment",
+      targetId: assignmentId,
+      schoolId: actor.schoolId,
+      districtId: actor.districtId,
+      payload: {
+        providerId: connection.providerId,
+        linkId,
+        lmsClassId: link.lmsClassId,
+        lmsAssignmentId: published.lmsAssignmentId,
+        publicationId,
+        ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
+      },
+    });
+  } catch {
+    safeLog(() =>
+      log.error("lms.publicationAuditFailed", {
+        actorUserId: actor.uid,
+        publicationId,
+      }),
+    );
+  }
+
+  safeLog(() =>
+    log.info("lms.assignmentPublished", {
+      actorUserId: actor.uid,
+      assignmentId,
+      publicationId,
+    }),
+  );
+
+  return {
+    publicationId,
+    status: "succeeded",
+    lmsAssignmentId: published.lmsAssignmentId,
+    ...(published.lmsAssignmentUrl !== undefined
+      ? { lmsAssignmentUrl: published.lmsAssignmentUrl }
+      : {}),
+  };
 }
 
 export const lmsAssignmentsPublish = platformCallable(handler);

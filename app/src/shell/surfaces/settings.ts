@@ -1,6 +1,11 @@
 import type { Session } from "../../session/types";
 import type { IntegrationsDeps } from "../../settings/integrations/types";
 import { renderIntegrationsSurface } from "../../settings/integrations/integrations";
+import {
+  TEACHER_DEFAULT_GRADE_VALUES,
+  type TeacherDefaultGrade,
+  type UpdateTeacherDefaultGrade,
+} from "../../teacherPreferences/types";
 
 // Settings workspace surface. Sprint 6H promoted Settings from a
 // placeholder to a real workspace destination. Sprint 8C promotes the
@@ -50,7 +55,7 @@ const FUTURE_CATEGORIES: ReadonlyArray<FutureCategory> = Object.freeze([
     key: "connected-services",
     testId: "settings-category-connected-services",
     title: "Connected Services",
-    body: "Tools you connect to LyfeLabz so they work together with your workflow.",
+    body: "Manage the accounts LyfeLabz is connected to. Class import and class creation now live on your Classes surface.",
     available: true,
   }),
   Object.freeze({
@@ -64,6 +69,12 @@ const FUTURE_CATEGORIES: ReadonlyArray<FutureCategory> = Object.freeze([
 
 export type SettingsDeps = {
   readonly integrations: IntegrationsDeps | null;
+  // Sprint 24B Phase 2B.2: current `defaultGrade` convenience
+  // preference and best-effort update seam. When update is null the
+  // control still renders the current value but does not accept
+  // changes (tests / unwired harnesses).
+  readonly defaultGrade?: TeacherDefaultGrade | null;
+  readonly updateDefaultGrade?: UpdateTeacherDefaultGrade | null;
 };
 
 export function renderSettingsSurface(
@@ -73,6 +84,11 @@ export function renderSettingsSurface(
 ): void {
   void session;
   let subview: "root" | "integrations" = "root";
+  // Phase 2B.2: local mutable copy of the preference so the control
+  // reflects the teacher's most recent choice without a full session
+  // rehydrate. Repaired to `deps.defaultGrade` on every full remount.
+  let currentDefaultGrade: TeacherDefaultGrade | null =
+    deps.defaultGrade ?? null;
 
   const doc = mount.ownerDocument;
   const container = doc.createElement("div");
@@ -92,6 +108,106 @@ export function renderSettingsSurface(
       return;
     }
     drawRoot();
+  };
+
+  const renderDefaultGradeControl = (): HTMLElement => {
+    // Sprint 24B Phase 2B.2 - Default grade for new classes.
+    //
+    // Narrow account-level convenience preference. Not the teacher's
+    // grade, not the account grade, not the Google Classroom grade.
+    // Individual classes may choose a different grade at creation. See
+    // docs/platform/ADR_TEACHER_DEFAULT_CLASS_METADATA.md.
+    const section = doc.createElement("section");
+    section.className = "shell-settings-default-grade";
+    section.setAttribute("data-testid", "settings-default-grade");
+    section.setAttribute("aria-labelledby", "settings-default-grade-heading");
+
+    const heading = doc.createElement("h3");
+    heading.id = "settings-default-grade-heading";
+    heading.className = "shell-settings-default-grade-heading";
+    heading.textContent = "Default grade for new classes";
+    section.appendChild(heading);
+
+    const explainer = doc.createElement("p");
+    explainer.className = "shell-settings-default-grade-body";
+    explainer.setAttribute("data-testid", "settings-default-grade-body");
+    explainer.textContent =
+      "The starting grade for new class setup. You can change the grade for each class you create.";
+    section.appendChild(explainer);
+
+    const canUpdate = deps.updateDefaultGrade !== null &&
+      deps.updateDefaultGrade !== undefined;
+
+    const controlRow = doc.createElement("div");
+    controlRow.className = "shell-settings-default-grade-controls";
+
+    const label = doc.createElement("label");
+    label.className = "shell-settings-default-grade-label";
+    label.textContent = "Grade";
+
+    const select = doc.createElement("select");
+    select.setAttribute("data-testid", "settings-default-grade-select");
+    select.disabled = !canUpdate;
+
+    const none = doc.createElement("option");
+    none.value = "";
+    none.textContent = "No default";
+    if (currentDefaultGrade === null) none.selected = true;
+    select.appendChild(none);
+
+    for (const g of TEACHER_DEFAULT_GRADE_VALUES) {
+      const opt = doc.createElement("option");
+      opt.value = g;
+      opt.textContent = `Grade ${g}`;
+      if (g === currentDefaultGrade) opt.selected = true;
+      select.appendChild(opt);
+    }
+
+    label.appendChild(select);
+    controlRow.appendChild(label);
+
+    const status = doc.createElement("p");
+    status.className = "shell-settings-default-grade-status";
+    status.setAttribute("data-testid", "settings-default-grade-status");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    status.textContent = "";
+    controlRow.appendChild(status);
+
+    section.appendChild(controlRow);
+
+    if (!canUpdate) {
+      return section;
+    }
+
+    select.addEventListener("change", () => {
+      const raw = select.value;
+      const next: TeacherDefaultGrade | null =
+        raw === "6" || raw === "7" || raw === "8" ? raw : null;
+      status.textContent = "Saving";
+      select.disabled = true;
+      const update = deps.updateDefaultGrade;
+      if (!update) return;
+      update(next)
+        .then(() => {
+          currentDefaultGrade = next;
+          status.textContent = next === null ? "Cleared" : "Saved";
+          select.disabled = false;
+        })
+        .catch(() => {
+          status.textContent = "Could not save. Try again.";
+          // Restore select to the last-known value so the display
+          // reflects persisted state, not the failed intent.
+          for (const opt of Array.from(select.options)) {
+            opt.selected =
+              (opt.value === "" && currentDefaultGrade === null) ||
+              opt.value === currentDefaultGrade;
+          }
+          select.disabled = false;
+        });
+    });
+
+    return section;
   };
 
   const drawRoot = (): void => {
@@ -180,6 +296,8 @@ export function renderSettingsSurface(
       list.appendChild(li);
     }
     container.appendChild(list);
+
+    container.appendChild(renderDefaultGradeControl());
 
     const growthNotice = doc.createElement("p");
     growthNotice.className = "shell-settings-growth";

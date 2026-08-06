@@ -8,39 +8,56 @@ export const AUDIT_EVENTS_COLLECTION = "auditEvents";
 // is dotted, past-tense, domain-first per Engineering Standards §7. The
 // helper accepts only these values, so a caller cannot introduce a second
 // naming convention or a typo'd action without a type error. Future sprints
-// extend this union in one place.
-export type AuditAction =
-  | "auth.userProvisioned"
-  | "auth.activationRejected"
-  | "students.activated"
-  | "teachers.verificationRequested"
-  | "teachers.verificationApproved"
-  | "teachers.verificationDenied"
-  | "schools.created"
-  | "classes.created"
-  | "classes.metadataUpdated"
-  | "classes.archived"
-  | "classes.joinCodeRotated"
-  | "enrollments.created"
-  | "enrollments.statusChanged"
-  | "assignments.created"
-  | "assignments.updated"
-  | "assignments.published"
-  | "assignments.closed"
-  | "assignments.reopened"
-  | "assignments.archived"
-  | "assignments.recipientAdded"
-  | "submissions.created"
-  | "submissions.finalized"
-  | "assessment.sessionBegan"
-  | "assessment.attemptFinalized"
-  | "lms.connectionCreated"
-  | "lms.connectionRevoked"
-  | "lms.classImported"
-  | "lms.classUnlinked"
-  | "lms.ownershipDrift"
-  | "lms.assignmentPublished"
-  | "lms.publishFailed"
+// extend this tuple in one place.
+//
+// Single source of truth: this const tuple is the ONE authoritative list of
+// canonical audit actions. The `AuditAction` type is derived from it below,
+// and the runtime validator in `../audit/write-audit-event.ts` imports this
+// tuple directly. There is no second manually maintained list to keep in
+// lockstep, so a new action added here is simultaneously accepted by the
+// type system and by the runtime validator. Sprint 24B Phase 2B.6 removed
+// the previous duplicated allowlist that had drifted from this vocabulary
+// (Certification defect: `classes.activated` was in the type union but not
+// the runtime allowlist, causing every activation to fail its audit write).
+export const AUDIT_ACTIONS = [
+  "auth.userProvisioned",
+  "auth.activationRejected",
+  "students.activated",
+  "teachers.verificationRequested",
+  "teachers.verificationApproved",
+  "teachers.verificationDenied",
+  "schools.created",
+  "classes.created",
+  "classes.metadataUpdated",
+  "classes.archived",
+  "classes.joinCodeRotated",
+  // Sprint 24B Phase 2B.3. Emitted by `classesActivate` on a successful
+  // atomic `needsSetup -> active` transition. The audit target is the
+  // `class`; the payload carries the previous status, the confirmed
+  // grade, and the confirmed block. No new event kind is added for
+  // `classesLmsCreate`; that seam reuses `classes.created` with a
+  // `payload.source = "lms"` marker per Phase 2B Spec §7.1.
+  "classes.activated",
+  "enrollments.created",
+  "enrollments.statusChanged",
+  "assignments.created",
+  "assignments.updated",
+  "assignments.published",
+  "assignments.closed",
+  "assignments.reopened",
+  "assignments.archived",
+  "assignments.recipientAdded",
+  "submissions.created",
+  "submissions.finalized",
+  "assessment.sessionBegan",
+  "assessment.attemptFinalized",
+  "lms.connectionCreated",
+  "lms.connectionRevoked",
+  "lms.classImported",
+  "lms.classUnlinked",
+  "lms.ownershipDrift",
+  "lms.assignmentPublished",
+  "lms.publishFailed",
   // Sprint 23C - Google Classroom roster synchronization. Emitted once
   // per completed reconciliation of one linked upstream class against
   // one LyfeLabz class's enrollments. The audit target is the LyfeLabz
@@ -48,18 +65,21 @@ export type AuditAction =
   // counts, the provider identifier, and structural roster-shape
   // signals. Never carries provider account identifiers, Firebase UIDs,
   // student names, emails, or profile data.
-  | "lms.rosterSynchronized"
+  "lms.rosterSynchronized",
   // Sprint 23C-I - Student External Identity Bridge. Every event
   // targets an `externalIdentity` target type whose target ID is the
   // hashed document identifier; the raw provider account identifier
   // NEVER appears in an audit target ID or an audit payload.
-  | "identity.mappingCreated"
-  | "identity.mappingConfirmed"
-  | "identity.collisionDetected"
-  | "identity.mappingRevoked"
-  | "identity.mappingRestored"
-  | "identity.migrationAttempted"
-  | "identity.migrationCompleted";
+  "identity.mappingCreated",
+  "identity.mappingConfirmed",
+  "identity.collisionDetected",
+  "identity.mappingRevoked",
+  "identity.mappingRestored",
+  "identity.migrationAttempted",
+  "identity.migrationCompleted",
+] as const;
+
+export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
 // Audit events are indexed by target type and target id per Data Model §3.8.
 // The set is left open as `string` because target types cross domain

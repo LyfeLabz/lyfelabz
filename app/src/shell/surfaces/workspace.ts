@@ -1,6 +1,9 @@
 import type { Session } from "../../session/types";
 import type { ListClasses } from "../../classes/listClasses";
 import type { CreateClass } from "../../classes/createClass";
+import type { ActivateClass } from "../../classes/activateClass";
+import type { SyncRoster } from "../../classes/syncRoster";
+import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
@@ -15,6 +18,10 @@ import { renderPresentModeSurface } from "./presentMode";
 import { renderSettingsSurface } from "./settings";
 import type { SnapshotPreview } from "./snapshot";
 import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
+import type {
+  TeacherDefaultGrade,
+  UpdateTeacherDefaultGrade,
+} from "../../teacherPreferences/types";
 
 // Typed contract for a Teacher Workspace surface.
 //
@@ -65,6 +72,29 @@ export type WorkspaceDeps = {
   // Wired at the entry point; null in unit tests that do not exercise
   // creation. See src/classes/createClass.ts.
   readonly createClass?: CreateClass | null;
+  // Sprint 24B Phase 2: injected dependencies for the primary Import
+  // Class from Google Classroom flow on the Classes surface. Null in
+  // tests that do not exercise the flow. Per
+  // SPRINT_24B_ARCHITECTURAL_BLUEPRINT.md §4.2, this seam bundles the
+  // certified callables already wired at the entry point.
+  readonly importFromClassroom?: ImportFromClassroomDeps | null;
+  // Sprint 24B Phase 2B.2: resolved teacher `defaultGrade` preference
+  // (null when no preference or read failure). Consumed by the Classes
+  // surface to prefill Manual Create, and by the Settings surface to
+  // display the current value.
+  readonly defaultGrade?: TeacherDefaultGrade | null;
+  // Sprint 24B Phase 2B.2: best-effort preference-update seam. Consumed
+  // by Classes (post-create) and by Settings (explicit set / clear).
+  readonly updateDefaultGrade?: UpdateTeacherDefaultGrade | null;
+  // Sprint 24B Phase 2B.4: certified `classesActivate` seam consumed
+  // by the imported-class setup form on the Classes surface. Null in
+  // test harnesses that do not exercise activation.
+  readonly activateClass?: ActivateClass | null;
+  // Sprint 24B Phase 2B.8: certified `lmsClassesSyncRoster` seam
+  // consumed by the LMS class workspace for the automatic initial sync
+  // after activation and for the manual "Sync roster" affordance. Null
+  // in test harnesses that do not exercise roster sync.
+  readonly syncRoster?: SyncRoster | null;
 };
 
 export type WorkspaceSurface = {
@@ -108,6 +138,11 @@ export const WORKSPACE_SURFACES: Readonly<
         listClasses: deps.listClasses,
         snapshotPreview: deps.snapshotPreview ?? null,
         createClass: deps.createClass ?? null,
+        importFromClassroom: deps.importFromClassroom ?? null,
+        defaultGrade: deps.defaultGrade ?? null,
+        updateDefaultGrade: deps.updateDefaultGrade ?? null,
+        activateClass: deps.activateClass ?? null,
+        syncRoster: deps.syncRoster ?? null,
       }),
   }),
   "present-mode": Object.freeze({
@@ -130,6 +165,8 @@ export const WORKSPACE_SURFACES: Readonly<
     ) =>
       renderSettingsSurface(mount, session, {
         integrations: deps.integrations ?? null,
+        defaultGrade: deps.defaultGrade ?? null,
+        updateDefaultGrade: deps.updateDefaultGrade ?? null,
       }),
   }),
 });

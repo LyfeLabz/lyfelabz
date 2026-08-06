@@ -2,12 +2,13 @@ import { FieldValue } from "firebase-admin/firestore";
 
 import { PlatformError } from "../errors/platform-error";
 import { auditEventsCollectionRef } from "../firestore/typed-ref";
-import type {
-  ActorRole,
-  AuditAction,
-  AuditEventWrite,
-  AuditPayload,
-  AuditTargetType,
+import {
+  AUDIT_ACTIONS,
+  type ActorRole,
+  type AuditAction,
+  type AuditEventWrite,
+  type AuditPayload,
+  type AuditTargetType,
 } from "../types/audit-event";
 import type { Role } from "../types/user";
 
@@ -56,50 +57,11 @@ const VALID_ROLES: readonly Role[] = [
 // or custom-claims path can accidentally acquire the sentinel.
 const VALID_ACTOR_ROLES: readonly ActorRole[] = [...VALID_ROLES, "system"];
 
-const VALID_ACTIONS: readonly AuditAction[] = [
-  "auth.userProvisioned",
-  "auth.activationRejected",
-  "students.activated",
-  "teachers.verificationRequested",
-  "teachers.verificationApproved",
-  "teachers.verificationDenied",
-  "schools.created",
-  "classes.created",
-  "classes.metadataUpdated",
-  "classes.archived",
-  "classes.joinCodeRotated",
-  "enrollments.created",
-  "enrollments.statusChanged",
-  "assignments.created",
-  "assignments.updated",
-  "assignments.published",
-  "assignments.closed",
-  "assignments.archived",
-  "submissions.created",
-  "submissions.finalized",
-  "assessment.sessionBegan",
-  "assessment.attemptFinalized",
-  "lms.connectionCreated",
-  "lms.connectionRevoked",
-  "lms.classImported",
-  "lms.classUnlinked",
-  "lms.ownershipDrift",
-  "lms.assignmentPublished",
-  "lms.publishFailed",
-  // Sprint 23C - Google Classroom roster synchronization. See
-  // `shared/types/audit-event.ts` for the payload contract.
-  "lms.rosterSynchronized",
-  // Sprint 23C-I - Student External Identity Bridge. Kept in lockstep
-  // with the `AuditAction` union in shared/types/audit-event.ts; the
-  // audit writer refuses any action not present in both lists.
-  "identity.mappingCreated",
-  "identity.mappingConfirmed",
-  "identity.collisionDetected",
-  "identity.mappingRevoked",
-  "identity.mappingRestored",
-  "identity.migrationAttempted",
-  "identity.migrationCompleted",
-];
+// Runtime allowlist for `action`. Sourced directly from the single canonical
+// tuple in `../types/audit-event.ts` so the runtime validator and the
+// `AuditAction` type can never drift. Adding a new action anywhere requires
+// adding it to `AUDIT_ACTIONS`; both the type system and the runtime check
+// pick it up in the same commit.
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -115,7 +77,7 @@ function isValidActorRole(value: unknown): value is ActorRole {
 function isValidAction(value: unknown): value is AuditAction {
   return (
     typeof value === "string" &&
-    (VALID_ACTIONS as readonly string[]).includes(value)
+    (AUDIT_ACTIONS as readonly string[]).includes(value)
   );
 }
 

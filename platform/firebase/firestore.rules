@@ -49,6 +49,30 @@ service cloud.firestore {
       allow update: if isSelf(uid) && affectedKeysAreAllowlisted();
     }
 
+    // ---------- users/{uid}/preferences/teacher ----------
+    //
+    // Sprint 24B Phase 2B.2 - Teacher Preferences.
+    //
+    // Narrow per-teacher preference subdoc storing the optional
+    // `defaultGrade` convenience value. See
+    // docs/platform/SPRINT_24B_PHASE_2B_IMPLEMENTATION_SPECIFICATION.md §9.
+    //
+    // Reads:
+    //   - `get`: self only. The client reader fetches the caller's own
+    //     preference document; every other caller is denied.
+    //
+    // Writes:
+    //   - All client writes denied. The `teacherPreferencesUpdate`
+    //     callable is the sole writer and runs through the Admin SDK
+    //     from the Cloud Function trust boundary, therefore bypassing
+    //     Rules. Direct-client `create`, `update`, and `delete` are
+    //     denied explicitly rather than through the terminal deny alone,
+    //     to document the callable-only writer contract at the surface.
+    match /users/{uid}/preferences/teacher {
+      allow get: if isSelf(uid);
+      allow create, update, delete: if false;
+    }
+
     // ---------- schools/{schoolId} ----------
     //
     // Any authenticated caller may get a school document. The Sprint 2

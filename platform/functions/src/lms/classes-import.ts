@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertClassSupports,
   platformCallable,
   PlatformError,
   classDocRef,
@@ -148,12 +149,12 @@ async function handler(
       "Caller schoolId does not match class schoolId.",
     );
   }
-  if (classRecord.status !== "active") {
-    throw new PlatformError(
-      "lms.classNotActive",
-      "Class is not active; only active classes can be linked.",
-    );
-  }
+  // Shared eligibility gate. `lmsLink` accepts both `active` and
+  // `needsSetup` per Phase 2B Spec §7 (the Phase 2B.3 orchestration
+  // creates the class in `needsSetup` and immediately links it before
+  // the teacher completes activation). `archived` is refused with the
+  // historical `lms.classNotActive` code preserved.
+  assertClassSupports("lmsLink", classRecord);
 
   // A class already carrying an LMS enrollment source cannot be relinked
   // by this callable. If the existing link matches the requested target,

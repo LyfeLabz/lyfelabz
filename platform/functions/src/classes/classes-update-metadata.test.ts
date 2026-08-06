@@ -24,9 +24,13 @@ jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
   );
+  const { assertClassSupports } = jest.requireActual(
+    "../shared/classes/eligibility",
+  );
   return {
     platformCallable: (handler: unknown) => handler,
     PlatformError,
+    assertClassSupports,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     classDocRef: mockClassDocRef,
     classMetadataUpdateDocRef: mockClassMetadataUpdateDocRef,
@@ -257,6 +261,25 @@ describe("classesUpdateMetadata", () => {
     mockClassGet.mockResolvedValueOnce(
       existingSnapshot({ status: "archived" }),
     );
+
+    await expect(
+      __classesUpdateMetadataHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "classes.invalidStatus" });
+    expect(mockClassUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("rejects an update against a needsSetup class with classes.invalidStatus (Phase 2B.1)", async () => {
+    mockClassGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({
+        teacherId: "teacher-uid",
+        schoolId: "school-a",
+        title: "Draft Class",
+        status: "needsSetup",
+        createdAt: {} as never,
+      }),
+    });
 
     await expect(
       __classesUpdateMetadataHandler(makeRequest()),

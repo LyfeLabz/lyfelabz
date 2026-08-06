@@ -1175,7 +1175,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   if (!overlay.isConnected) return;
   body.removeChild(loading);
 
-  const classes = (cachedClasses?.rows ?? []).filter((c) => c.status === "active");
+  const classes = (cachedClasses?.rows ?? []).filter(
+    (c): c is Extract<ClassSummary, { status: "active" }> =>
+      c.status === "active",
+  );
 
   if (classes.length === 0) {
     const empty = doc.createElement("p");
@@ -1266,7 +1269,8 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       readonly cfg: RowConfig;
       readonly link: IntegrationsClassLink | null;
     };
-    const classById = new Map<string, ClassSummary>(
+    type ActiveClassSummary = Extract<ClassSummary, { status: "active" }>;
+    const classById = new Map<string, ActiveClassSummary>(
       classes.map((c) => [c.id, c] as const),
     );
     const enabledRows: EnabledRow[] = [];
@@ -1360,7 +1364,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
 
 function renderRow(
   doc: Document,
-  cls: ClassSummary,
+  cls: Extract<ClassSummary, { status: "active" }>,
   rowState: Map<string, RowConfig>,
   onChange: () => void,
   link: IntegrationsClassLink | null,

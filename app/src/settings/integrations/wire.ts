@@ -3,6 +3,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 import type { ListClasses } from "../../classes/listClasses";
+import type { ClassSummary } from "../../classes/types";
 
 import type {
   AssignmentsCallables,
@@ -413,7 +414,10 @@ export function createListTeacherClasses(
     const rows = await listClasses(uid);
     return Object.freeze(
       rows
-        .filter((c) => c.status === "active")
+        .filter(
+          (c): c is Extract<ClassSummary, { status: "active" }> =>
+            c.status === "active",
+        )
         .map((c) =>
           Object.freeze({ id: c.id, title: c.title, grade: c.grade }),
         ),

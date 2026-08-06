@@ -36,9 +36,13 @@ jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
   );
+  const { assertClassSupports } = jest.requireActual(
+    "../shared/classes/eligibility",
+  );
   return {
     platformCallable: (handler: unknown) => handler,
     PlatformError,
+    assertClassSupports,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     classDocRef: mockClassDocRef,
     userRecordDocRef: mockUserRecordDocRef,
@@ -331,6 +335,24 @@ describe("enrollmentsTeacherAdd", () => {
 
   it("rejects an add against an archived class with enrollments.invalidClassStatus", async () => {
     mockClassGet.mockResolvedValueOnce(classSnapshot({ status: "archived" }));
+
+    await expect(
+      __enrollmentsTeacherAddHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollments.invalidClassStatus" });
+    expect(mockEnrollmentSet).not.toHaveBeenCalled();
+  });
+
+  it("rejects an add against a needsSetup class with enrollments.invalidClassStatus (Phase 2B.1)", async () => {
+    mockClassGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        title: "T",
+        status: "needsSetup",
+        createdAt: {} as never,
+      }),
+    });
 
     await expect(
       __enrollmentsTeacherAddHandler(makeRequest()),

@@ -1,6 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 
 import {
+  assertClassSupports,
   PlatformError,
   classDocRef,
   enrollmentCreationDocRef,
@@ -402,12 +403,11 @@ export async function synchronizeClassRoster(
       "Caller schoolId does not match class schoolId.",
     );
   }
-  if (classRecord.status !== "active") {
-    throw new PlatformError(
-      "lms.classNotActive",
-      "Class is not active; roster synchronization requires an active class.",
-    );
-  }
+  // Shared eligibility gate. `rosterSync` requires the class to be
+  // `active` per Phase 2B Spec §6 Option B (roster materialization is
+  // deferred until after activation). `needsSetup` and `archived` are
+  // refused with the historical `lms.classNotActive` code preserved.
+  assertClassSupports("rosterSync", classRecord);
   if (classRecord.enrollmentSource !== "lms") {
     throw new PlatformError(
       "lms.classNotLinked",

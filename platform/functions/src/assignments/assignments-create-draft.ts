@@ -2,6 +2,7 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertClassSupports,
   platformCallable,
   PlatformError,
   assignmentCreationDocRef,
@@ -307,12 +308,10 @@ async function assignmentsCreateDraftHandler(
       "Caller does not own the referenced class.",
     );
   }
-  if (classRecord.status !== "active") {
-    throw new PlatformError(
-      "assignments.invalidClassStatus",
-      "Assignments may only be created against an active class.",
-    );
-  }
+  // Shared eligibility gate. `assignDraft` requires the class to be
+  // `active`; `needsSetup` and `archived` are refused with the
+  // historical `assignments.invalidClassStatus` code preserved.
+  assertClassSupports("assignDraft", classRecord);
 
   const existingSnapshot = await assignmentDocRef(input.assignmentId).get();
   if (existingSnapshot.exists) {

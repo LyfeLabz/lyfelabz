@@ -19,25 +19,19 @@ import {
 // Google Classroom adapter. Sprint 23A shipped this file as a
 // scaffolded set of `PlatformError` rejects; Sprint 23B activates the
 // connection lifecycle and course discovery capabilities per PDR-020c
-// and the Sprint 23B specification.
+// and the Sprint 23B specification. Sprint 25 Phase 1 activates the
+// remaining two deferred operations.
 //
-// Active operations (Sprint 23B, extended in Sprint 23C):
+// Active operations:
 //
-//   - beginOAuth
-//   - completeOAuth
-//   - revokeGrant
-//   - listTeacherClasses
-//   - fetchClass
-//   - listClassRoster (Sprint 23C)
-//
-// Deferred operations:
-//
-//   - listClassTopics
-//   - publishAssignment
-//
-// Deferred operations still return the stable
-// `lms.providerNotYetOperational` error so no client that already
-// depends on the boundary contract is surprised by activation.
+//   - beginOAuth          (Sprint 23B)
+//   - completeOAuth       (Sprint 23B)
+//   - revokeGrant         (Sprint 23B)
+//   - listTeacherClasses  (Sprint 23B)
+//   - fetchClass          (Sprint 23B)
+//   - listClassRoster     (Sprint 23C)
+//   - listClassTopics     (Sprint 25 Phase 1)
+//   - publishAssignment   (Sprint 25 Phase 1)
 //
 // Vendor neutrality (PDR-020f): every Google-specific concept lives
 // inside this file and the `transport.ts` / `config.ts` /
@@ -70,13 +64,6 @@ export const GOOGLE_CLASSROOM_PUBLICATION_SCOPES: readonly string[] = [
   "https://www.googleapis.com/auth/classroom.coursework.me",
   "https://www.googleapis.com/auth/classroom.topics.readonly",
 ];
-
-function notYetOperational(op: string): PlatformError {
-  return new PlatformError(
-    "lms.providerNotYetOperational",
-    `Google Classroom ${op} requires operational OAuth provisioning (LMS_INTEGRATION_ARCHITECTURE.md §10.3.1). The provider adapter is scaffolded but the live upstream is not yet wired.`,
-  );
-}
 
 // Extract the (status, upstreamCode) pair from any Google-shaped
 // upstream error. Recognises both the production HTTPS error
@@ -115,10 +102,26 @@ function readUpstreamShape(
 function translateUpstreamError(err: unknown, op: string): PlatformError {
   if (err instanceof PlatformError) return err;
   const { status, code } = readUpstreamShape(err);
-  if (status === 401 || status === 403) {
+  if (status === 401) {
     return new PlatformError(
       "lms.upstreamAuthorizationFailed",
-      `Google Classroom rejected the upstream ${op} call as unauthorized (status ${status}).`,
+      `Google Classroom rejected the upstream ${op} call as unauthorized (status 401).`,
+    );
+  }
+  if (status === 403) {
+    // A 403 with INSUFFICIENT_SCOPE signals that the access token lacks the
+    // coursework publication scope. This is distinct from a general permission
+    // denial: the caller has a valid connection but needs incremental OAuth
+    // consent (PDR-030c). The callable treats this as non-terminal.
+    if (code === "INSUFFICIENT_SCOPE" || code === "ACCESS_TOKEN_SCOPE_INSUFFICIENT") {
+      return new PlatformError(
+        "lms.insufficientScope",
+        `Google Classroom requires additional OAuth scopes for ${op}.`,
+      );
+    }
+    return new PlatformError(
+      "lms.upstreamAuthorizationFailed",
+      `Google Classroom rejected the upstream ${op} call as unauthorized (status 403).`,
     );
   }
   if (status === 400 && code === "invalid_grant") {
@@ -462,11 +465,138 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
     );
   },
 
-  listClassTopics(): Promise<readonly LmsTopic[]> {
-    return Promise.reject(notYetOperational("topic listing"));
+  async listClassTopics(input): Promise<readonly LmsTopic[]> {
+    let transport;
+    try {
+      transport = getGoogleClassroomTransport();
+    } catch (err) {
+      throw translateUpstreamError(err, "listClassTopics");
+    }
+    const collected: LmsTopic[] = [];
+    let pageToken: string | undefined = undefined;
+    // Bounded pagination: topics per course are realistic in count; this
+    // bound defends against a runaway upstream cursor loop.
+    const MAX_PAGES = 25;
+    try {
+      for (let page = 0; page < MAX_PAGES; page += 1) {
+        const response = await transport.listCourseTopics({
+          accessToken: input.accessToken,
+          courseId: input.lmsClassId,
+          ...(pageToken !== undefined ? { pageToken } : {}),
+        });
+        for (const topic of response.topic ?? []) {
+          if (
+            typeof topic.topicId !== "string" ||
+            topic.topicId.trim().length === 0 ||
+            typeof topic.name !== "string" ||
+            topic.name.trim().length === 0
+          ) {
+            throw new PlatformError(
+              "lms.upstreamMalformedResponse",
+              "Google Classroom returned a malformed topic entry for listClassTopics.",
+            );
+          }
+          collected.push({ lmsTopicId: topic.topicId, name: topic.name });
+        }
+        if (!response.nextPageToken) return collected;
+        if (
+          typeof response.nextPageToken !== "string" ||
+          response.nextPageToken.length === 0
+        ) {
+          throw new PlatformError(
+            "lms.upstreamMalformedResponse",
+            "Google Classroom returned a malformed nextPageToken for listClassTopics.",
+          );
+        }
+        if (response.nextPageToken === pageToken) {
+          // Pagination loop guard, consistent with listClassRoster: a
+          // repeated cursor means the upstream is not advancing. Reject
+          // rather than collect the same page (and its duplicate topics)
+          // up to the page bound.
+          throw new PlatformError(
+            "lms.upstreamCallFailed",
+            "Google Classroom returned a repeated nextPageToken for listClassTopics.",
+          );
+        }
+        pageToken = response.nextPageToken;
+      }
+    } catch (err) {
+      throw translateUpstreamError(err, "listClassTopics");
+    }
+    // Ran out the page bound with a cursor still outstanding. Reject the
+    // whole operation rather than return a truncated topic list that
+    // looks complete, matching the listClassRoster contract.
+    throw new PlatformError(
+      "lms.upstreamCallFailed",
+      "Google Classroom listClassTopics exceeded the maximum-page bound.",
+    );
   },
 
-  publishAssignment(): Promise<LmsPublishedAssignment> {
-    return Promise.reject(notYetOperational("assignment publication"));
+  async publishAssignment(input): Promise<LmsPublishedAssignment> {
+    let transport;
+    try {
+      transport = getGoogleClassroomTransport();
+    } catch (err) {
+      throw translateUpstreamError(err, "publishAssignment");
+    }
+    // Bounded, AbortController-backed timeout (§2.3 Correction 3). A hang
+    // on the coursework POST must not consume the entire Cloud Functions
+    // execution budget. The controller's signal is threaded into the
+    // transport so a real fetch is genuinely cancelled when the deadline
+    // fires; the accompanying race guarantees this adapter's promise
+    // settles even if a transport implementation ignores the signal. The
+    // timer is always cleared in `finally`, so no timer handle survives a
+    // resolved, rejected, or timed-out call.
+    const PUBLICATION_TIMEOUT_MS = 30_000;
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        // Cancel the in-flight request, then reject the race with the
+        // approved sanitized failure. The raw provider response, if one
+        // ever arrives after this point, is discarded by the race.
+        controller.abort();
+        reject(
+          new PlatformError(
+            "lms.upstreamCallFailed",
+            "Google Classroom publishAssignment exceeded the 30s timeout.",
+          ),
+        );
+      }, PUBLICATION_TIMEOUT_MS);
+    });
+    // Start the work with the abort signal attached. Swallow any late
+    // rejection (e.g. the abort error) on the work promise so a post-race
+    // settlement never surfaces as an unhandled rejection.
+    const workPromise = transport.createCourseWork({
+      accessToken: input.accessToken,
+      courseId: input.lmsClassId,
+      title: input.title,
+      ...(input.instructions !== undefined
+        ? { description: input.instructions }
+        : {}),
+      link: input.lyfelabzAssignmentUrl,
+      ...(input.lmsTopicId !== undefined ? { topicId: input.lmsTopicId } : {}),
+      signal: controller.signal,
+    });
+    workPromise.catch(() => undefined);
+    try {
+      const result = await Promise.race([workPromise, timeoutPromise]);
+      if (typeof result.id !== "string" || result.id.trim().length === 0) {
+        throw new PlatformError(
+          "lms.upstreamMalformedResponse",
+          "Google Classroom returned a coursework resource with a missing or empty id.",
+        );
+      }
+      return {
+        lmsAssignmentId: result.id,
+        ...(typeof result.alternateLink === "string" && result.alternateLink.length > 0
+          ? { lmsAssignmentUrl: result.alternateLink }
+          : {}),
+      };
+    } catch (err) {
+      throw translateUpstreamError(err, "publishAssignment");
+    } finally {
+      if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
+    }
   },
 };

@@ -4,6 +4,19 @@ import {
   type CreateClass,
 } from "./classes/createClass";
 import {
+  createFirebaseLmsCreateClass,
+  type LmsCreateClass,
+} from "./classes/lmsCreateClass";
+import {
+  createFirebaseActivateClass,
+  type ActivateClass,
+} from "./classes/activateClass";
+import {
+  createFirebaseSyncRoster,
+  type SyncRoster,
+} from "./classes/syncRoster";
+import type { ImportFromClassroomDeps } from "./classes/importFromClassroom";
+import {
   createAuthInput,
   createFirestoreInput,
   getFirebaseAuth,
@@ -21,6 +34,12 @@ import {
   createAssignmentsCallables,
   createIntegrationsDeps,
 } from "./settings/integrations/wire";
+import {
+  createFirebaseUpdateTeacherDefaultGrade,
+  createFirestoreReadTeacherDefaultGrade,
+  type TeacherDefaultGrade,
+  type UpdateTeacherDefaultGrade,
+} from "./teacherPreferences";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
@@ -130,6 +149,37 @@ async function run(): Promise<void> {
   // session so cross-session state cannot leak. Null on any non-teacher
   // session so the Classes surface renders read-only.
   let createClass: CreateClass | null = null;
+  // Sprint 24B Phase 2B.4: certified `classesLmsCreate` seam. Consumed
+  // only by the Google Classroom import orchestrator, never by Manual
+  // Create.
+  let lmsCreateClass: LmsCreateClass | null = null;
+  // Sprint 24B Phase 2B.4: certified `classesActivate` seam. Consumed
+  // by the imported-class setup form on the Classes surface. Rebound
+  // per active-teacher session so cross-session state cannot leak.
+  let activateClass: ActivateClass | null = null;
+  // Sprint 24B Phase 2B.8: certified `lmsClassesSyncRoster` seam.
+  // Consumed by the LMS class workspace for the automatic initial sync
+  // after activation and for the manual "Sync roster" affordance.
+  // Rebound per active-teacher session so cross-session state cannot
+  // leak. Null on any non-teacher session.
+  let syncRoster: SyncRoster | null = null;
+  // Sprint 24B Phase 2: primary Import Class from Google Classroom
+  // orchestration dependencies. Composed from the certified
+  // Integrations callable seam (lmsProvidersList,
+  // lmsConnectionsDescribe, lmsConnectionsBegin, lmsConnectionsComplete,
+  // lmsClassesDiscover, lmsClassesImport) plus the certified
+  // `classesCreate` callable seam. Rebound per active-teacher session
+  // so cross-session state cannot leak. Null on any non-teacher
+  // session so the Classes surface renders without the primary import
+  // entry point.
+  let importFromClassroom: ImportFromClassroomDeps | null = null;
+  // Sprint 24B Phase 2B.2: resolved teacher `defaultGrade` preference
+  // and best-effort update seam. Preloaded once per active-teacher
+  // session so the Classes surface can prefill Manual Create without
+  // its own async read. Null on any non-teacher session, when the
+  // reader fails, or when no preference is stored.
+  let defaultGradePref: TeacherDefaultGrade | null = null;
+  let updateDefaultGrade: UpdateTeacherDefaultGrade | null = null;
   // Sprint 13B: session-scoped registry of teacher-owned assignment
   // metadata (title, status, class name). Populated by the certified
   // lifecycle path; consumed by the Assignment Detail metadata reader.
@@ -331,6 +381,34 @@ async function run(): Promise<void> {
       attemptsListForClass = createAttemptsListForClassCallable(functions);
       attemptGetForTeacher = createAttemptGetForTeacherCallable(functions);
       createClass = createFirebaseCreateClass(functions);
+      lmsCreateClass = createFirebaseLmsCreateClass(functions);
+      activateClass = createFirebaseActivateClass(functions);
+      syncRoster = createFirebaseSyncRoster(functions);
+      // Phase 2B.2: preload the teacher preference before any surface
+      // renders. The reader is fail-closed; a failure resolves to null
+      // and the Manual Create form falls back to the pre-Phase 2B.2
+      // seed. Sequenced before dispatch so the first Classes render
+      // already has the preference.
+      updateDefaultGrade =
+        createFirebaseUpdateTeacherDefaultGrade(functions);
+      try {
+        const readDefaultGrade = createFirestoreReadTeacherDefaultGrade(
+          db,
+          session.uid,
+        );
+        defaultGradePref = await readDefaultGrade();
+      } catch {
+        defaultGradePref = null;
+      }
+      if (runToken !== currentRunToken) return;
+      importFromClassroom = Object.freeze({
+        callables: integrations.callables,
+        openOAuth: integrations.openOAuth,
+        redirectUri: integrations.redirectUri,
+        lmsCreateClass,
+        listTeacherClasses: integrations.listTeacherClasses,
+        listClassLinks: integrations.listClassLinks ?? null,
+      });
       // Sprint 13C: hydrate the session-scoped assignment-detail registry
       // from the certified `assignmentsTeacherList` retrieval path. The
       // hydration runs once per active-teacher session and is calm on
@@ -381,6 +459,12 @@ async function run(): Promise<void> {
       attemptsListForClass = null;
       attemptGetForTeacher = null;
       createClass = null;
+      lmsCreateClass = null;
+      activateClass = null;
+      syncRoster = null;
+      importFromClassroom = null;
+      defaultGradePref = null;
+      updateDefaultGrade = null;
       assignmentDetailRegistry.clear();
       lastActiveTeacher = null;
     } else {
@@ -395,6 +479,12 @@ async function run(): Promise<void> {
       attemptsListForClass = null;
       attemptGetForTeacher = null;
       createClass = null;
+      lmsCreateClass = null;
+      activateClass = null;
+      syncRoster = null;
+      importFromClassroom = null;
+      defaultGradePref = null;
+      updateDefaultGrade = null;
       assignmentDetailRegistry.clear();
       lastActiveTeacher = null;
       studentAssignmentsList = null;
@@ -534,6 +624,11 @@ async function run(): Promise<void> {
     assignmentSummary: () => assignmentSummary,
     studentAssignmentsList: () => studentAssignmentsList,
     createClass: () => createClass,
+    importFromClassroom: () => importFromClassroom,
+    defaultGrade: () => defaultGradePref,
+    updateDefaultGrade: () => updateDefaultGrade,
+    activateClass: () => activateClass,
+    syncRoster: () => syncRoster,
     onLaunchAssignment: (url: string) => {
       // Navigate the current tab to the canonical lesson URL with the
       // assignment query parameter. The runtime detects assignment

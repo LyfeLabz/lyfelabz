@@ -23,33 +23,12 @@ export type CreateClassResult = {
 
 export type CreateClass = (input: CreateClassInput) => Promise<CreateClassResult>;
 
-// URL-safe classId generator. Matches the server-side
-// CLASS_ID_PATTERN `^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$`.
-// Uses crypto.getRandomValues on browsers; falls back to Math.random
-// only in environments where crypto is unavailable (never on the live
-// platform).
-const CLASS_ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
-const CLASS_ID_LENGTH = 20;
-
-function generateClassId(): string {
-  const g =
-    typeof globalThis !== "undefined"
-      ? (globalThis as { crypto?: Crypto }).crypto
-      : undefined;
-  const bytes = new Uint8Array(CLASS_ID_LENGTH);
-  if (g && typeof g.getRandomValues === "function") {
-    g.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < CLASS_ID_LENGTH; i += 1) {
-      bytes[i] = Math.floor(Math.random() * 256);
-    }
-  }
-  let out = "";
-  for (let i = 0; i < CLASS_ID_LENGTH; i += 1) {
-    out += CLASS_ID_ALPHABET[bytes[i]! % CLASS_ID_ALPHABET.length];
-  }
-  return out;
-}
+// Phase 2B.4: the URL-safe classId generator lives in ./classId so
+// both Manual Create and the LMS import orchestrator can share one
+// implementation without dragging firebase/functions into
+// shell-adjacent modules.
+import { generateClassId } from "./classId";
+export { generateClassId } from "./classId";
 
 type ClassesCreateResponse = {
   readonly classId?: unknown;

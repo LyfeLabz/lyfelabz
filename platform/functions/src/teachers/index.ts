@@ -15,3 +15,8 @@ export {
   type TeachersRequestVerificationRequest,
   type TeachersRequestVerificationResponse,
 } from "./teachers-request-verification";
+export {
+  teacherPreferencesUpdate,
+  type TeacherPreferencesUpdateRequest,
+  type TeacherPreferencesUpdateResponse,
+} from "./teacher-preferences-update";

@@ -1,6 +1,9 @@
 import type { Session } from "../session/types";
 import type { ListClasses } from "../classes/listClasses";
 import type { CreateClass } from "../classes/createClass";
+import type { ActivateClass } from "../classes/activateClass";
+import type { SyncRoster } from "../classes/syncRoster";
+import type { ImportFromClassroomDeps } from "../classes/importFromClassroom";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
@@ -12,6 +15,10 @@ import { mountWorkspaceOutlet } from "./surfaces/workspace";
 import type { SnapshotPreview } from "./surfaces/snapshot";
 import type { CurriculumAssignmentDetailSeam } from "./surfaces/curriculum";
 import type { AssignmentSummaryCallable } from "../assignments/summary/types";
+import type {
+  TeacherDefaultGrade,
+  UpdateTeacherDefaultGrade,
+} from "../teacherPreferences/types";
 
 // Top-level teacher-workspace shell mount.
 //
@@ -55,6 +62,21 @@ export type ShellDeps = {
   readonly assignmentSummary?: AssignmentSummaryCallable | null;
   // Sprint 20 internal beta: injected create-class callable seam.
   readonly createClass?: CreateClass | null;
+  // Sprint 24B Phase 2: injected dependencies for the primary Import
+  // Class from Google Classroom flow.
+  readonly importFromClassroom?: ImportFromClassroomDeps | null;
+  // Sprint 24B Phase 2B.2: resolved teacher `defaultGrade` preference
+  // and best-effort update seam. Threaded through workspace deps to the
+  // Classes and Settings surfaces. Null when the reader failed or no
+  // preference is stored.
+  readonly defaultGrade?: TeacherDefaultGrade | null;
+  readonly updateDefaultGrade?: UpdateTeacherDefaultGrade | null;
+  // Sprint 24B Phase 2B.4: certified `classesActivate` seam.
+  readonly activateClass?: ActivateClass | null;
+  // Sprint 24B Phase 2B.8: certified `lmsClassesSyncRoster` seam
+  // consumed by the LMS class workspace for the automatic initial sync
+  // after activation and for the manual "Sync roster" affordance.
+  readonly syncRoster?: SyncRoster | null;
 };
 
 export function mountTeacherShell(
@@ -87,6 +109,11 @@ export function mountTeacherShell(
     assignmentDetail: deps.assignmentDetail ?? null,
     assignmentSummary: deps.assignmentSummary ?? null,
     createClass: deps.createClass ?? null,
+    importFromClassroom: deps.importFromClassroom ?? null,
+    defaultGrade: deps.defaultGrade ?? null,
+    updateDefaultGrade: deps.updateDefaultGrade ?? null,
+    activateClass: deps.activateClass ?? null,
+    syncRoster: deps.syncRoster ?? null,
   };
 
   const renderNav = (): void => {

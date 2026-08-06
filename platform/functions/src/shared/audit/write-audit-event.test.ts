@@ -14,6 +14,7 @@ jest.mock("firebase-admin/firestore", () => ({
 }));
 
 import { PlatformError } from "../errors/platform-error";
+import { AUDIT_ACTIONS } from "../types/audit-event";
 import { writeAuditEvent, type WriteAuditEventInput } from "./write-audit-event";
 
 function validInput(
@@ -160,25 +161,55 @@ describe("writeAuditEvent", () => {
     expect(mockAdd).not.toHaveBeenCalled();
   });
 
-  it("accepts every canonical action value", async () => {
+  // Named regression assertions for the three actions that had drifted
+  // between the AuditAction type union and the removed VALID_ACTIONS
+  // allowlist prior to the Sprint 24B Phase 2B.6 single-source-of-truth
+  // refactor. Kept alongside the exhaustive AUDIT_ACTIONS iteration
+  // below so any future regression surfaces both a named signal and an
+  // aggregate signal.
+  it("regression (Sprint 24B Phase 2B.6): accepts classes.activated", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-cls-act" });
+    await writeAuditEvent(
+      validInput({ action: "classes.activated", actorRole: "teacher" }),
+    );
+    expect(mockAdd).toHaveBeenCalledTimes(1);
+    expect(mockAdd.mock.calls[0][0].action).toBe("classes.activated");
+  });
+
+  it("regression (Sprint 24B Phase 2B.6): accepts assignments.reopened", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-a-reop" });
+    await writeAuditEvent(
+      validInput({ action: "assignments.reopened", actorRole: "teacher" }),
+    );
+    expect(mockAdd).toHaveBeenCalledTimes(1);
+    expect(mockAdd.mock.calls[0][0].action).toBe("assignments.reopened");
+  });
+
+  it("regression (Sprint 24B Phase 2B.6): accepts assignments.recipientAdded", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-a-recip" });
+    await writeAuditEvent(
+      validInput({ action: "assignments.recipientAdded", actorRole: "teacher" }),
+    );
+    expect(mockAdd).toHaveBeenCalledTimes(1);
+    expect(mockAdd.mock.calls[0][0].action).toBe("assignments.recipientAdded");
+  });
+
+  // Exhaustive by construction: iterates the canonical AUDIT_ACTIONS tuple
+  // that is the single source of truth for both the AuditAction type and
+  // the runtime validator. Any new action added to AUDIT_ACTIONS is exercised
+  // here on the next test run, and any action present in the type union but
+  // absent from the runtime allowlist would fail this test with an
+  // audit.invalidAction rejection. That closes the Sprint 24B Phase 2B.6
+  // certification defect where `classes.activated` (and, historically,
+  // `assignments.reopened` and `assignments.recipientAdded`) had been added
+  // to the type union but not to the runtime allowlist.
+  it("accepts every action in the canonical AUDIT_ACTIONS tuple", async () => {
     mockAdd.mockResolvedValue({ id: "evt-any" });
 
-    const actions = [
-      "auth.userProvisioned",
-      "auth.activationRejected",
-      "students.activated",
-      "teachers.verificationRequested",
-      "teachers.verificationApproved",
-      "teachers.verificationDenied",
-      "schools.created",
-      "classes.created",
-      "classes.metadataUpdated",
-      "classes.archived",
-    ] as const;
-    for (const action of actions) {
+    for (const action of AUDIT_ACTIONS) {
       await writeAuditEvent(validInput({ action, actorRole: "teacher" }));
     }
-    expect(mockAdd).toHaveBeenCalledTimes(actions.length);
+    expect(mockAdd).toHaveBeenCalledTimes(AUDIT_ACTIONS.length);
   });
 
   it("rejects an empty correlationId when supplied", async () => {

@@ -40,9 +40,13 @@ jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
   );
+  const { assertClassSupports } = jest.requireActual(
+    "../shared/classes/eligibility",
+  );
   return {
     platformCallable: (handler: unknown) => handler,
     PlatformError,
+    assertClassSupports,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     classDocRef: mockClassDocRef,
     assignmentDocRef: mockAssignmentDocRef,
@@ -397,6 +401,23 @@ describe("assignmentsCreateDraft", () => {
     await expect(
       __assignmentsCreateDraftHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assignments.invalidClassStatus" });
+  });
+
+  it("rejects a needsSetup class with assignments.invalidClassStatus (Phase 2B.1)", async () => {
+    mockClassGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        title: "T",
+        status: "needsSetup",
+        createdAt: {} as never,
+      }),
+    });
+    await expect(
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.invalidClassStatus" });
+    expect(mockAssignmentSet).not.toHaveBeenCalled();
   });
 
   it("is idempotent when the same draft already exists", async () => {

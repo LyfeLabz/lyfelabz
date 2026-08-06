@@ -140,6 +140,13 @@ export type GoogleClassroomCourseWorkCreateRequest = {
   readonly description?: string;
   readonly link: string;
   readonly topicId?: string;
+  // Optional abort signal (Sprint 25 Phase 1, §2.3 Correction 3). The
+  // adapter supplies an AbortController-backed signal so the coursework
+  // POST is genuinely cancelled when the adapter-level timeout fires,
+  // rather than left running against the Cloud Functions deadline. This
+  // is an additive optional field; every other transport operation and
+  // every existing caller is unaffected.
+  readonly signal?: AbortSignal;
 };
 
 export type GoogleClassroomCourseWorkResource = {
@@ -347,6 +354,7 @@ export type HttpsFetch = (
     readonly method: "GET" | "POST";
     readonly headers?: Record<string, string>;
     readonly body?: string;
+    readonly signal?: AbortSignal;
   },
 ) => Promise<{
   readonly status: number;
@@ -392,6 +400,7 @@ async function callUpstream(
     readonly method: "GET" | "POST";
     readonly headers?: Record<string, string>;
     readonly body?: string;
+    readonly signal?: AbortSignal;
   },
 ): Promise<unknown> {
   const response = await fetchImpl(endpoint, init);
@@ -447,7 +456,12 @@ export function createHttpsGoogleClassroomTransport(
       const g = globalThis as unknown as {
         fetch: (
           i: string,
-          init: { method: string; headers?: Record<string, string>; body?: string },
+          init: {
+            method: string;
+            headers?: Record<string, string>;
+            body?: string;
+            signal?: AbortSignal;
+          },
         ) => Promise<{
           status: number;
           ok: boolean;
@@ -605,6 +619,9 @@ export function createHttpsGoogleClassroomTransport(
             "Content-Type": "application/json",
           },
           body: JSON.stringify(bodyObj),
+          // Forward the adapter's abort signal so the timeout genuinely
+          // cancels the in-flight POST (§2.3 Correction 3).
+          ...(input.signal !== undefined ? { signal: input.signal } : {}),
         },
       )) as GoogleClassroomCourseWorkResource;
       return parsed;

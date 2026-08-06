@@ -40,9 +40,13 @@ jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
   );
+  const { assertClassSupports } = jest.requireActual(
+    "../shared/classes/eligibility",
+  );
   return {
     platformCallable: (handler: unknown) => handler,
     PlatformError,
+    assertClassSupports,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     classesCollectionRef: mockClassesCollectionRef,
     enrollmentDocRef: mockEnrollmentDocRef,
@@ -342,6 +346,28 @@ describe("enrollmentsJoinByCode", () => {
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
+  it("rejects a needsSetup-class join code with enrollments.joinCodeNotFound (Phase 2B.1)", async () => {
+    mockClassesQuery.get.mockResolvedValueOnce({
+      empty: false,
+      docs: [
+        {
+          id: CLASS_ID,
+          data: () => ({
+            teacherId: "teacher-uid",
+            schoolId: SCHOOL_ID,
+            title: "T",
+            status: "needsSetup",
+            createdAt: {} as never,
+          }),
+        },
+      ],
+    });
+
+    await expect(
+      __enrollmentsJoinByCodeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollments.joinCodeNotFound" });
+  });
+
   it("rejects an archived-class join code with enrollments.joinCodeNotFound", async () => {
     mockClassesQuery.get.mockResolvedValueOnce(
       classQuerySnapshot({ status: "archived" }),
@@ -351,6 +377,57 @@ describe("enrollmentsJoinByCode", () => {
       __enrollmentsJoinByCodeHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "enrollments.joinCodeNotFound" });
     expect(mockEnrollmentSet).not.toHaveBeenCalled();
+  });
+
+  // Sprint 24B Phase 2B.7. Defense in depth: an active LMS-sourced class
+  // that carries a legacy joinCode from before the correction must
+  // refuse redemption. The rejection uses the same enrollments.joinCode
+  // NotFound code as an unknown code so the caller cannot distinguish
+  // "no such code" from "code belongs to an LMS class." No enrollment
+  // write occurs.
+  it("Sprint 24B Phase 2B.7: rejects an LMS-sourced class join code with enrollments.joinCodeNotFound even when a legacy joinCode exists", async () => {
+    mockClassesQuery.get.mockResolvedValueOnce({
+      empty: false,
+      docs: [
+        {
+          id: CLASS_ID,
+          data: () => ({
+            teacherId: "teacher-uid",
+            schoolId: SCHOOL_ID,
+            title: "T",
+            grade: "7",
+            block: "C",
+            joinCode: JOIN_CODE, // legacy value
+            status: "active",
+            createdAt: {} as never,
+            enrollmentSource: "lms",
+            lmsProviderRef: "googleClassroom",
+          }),
+        },
+      ],
+    });
+
+    await expect(
+      __enrollmentsJoinByCodeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollments.joinCodeNotFound" });
+    expect(mockEnrollmentSet).not.toHaveBeenCalled();
+  });
+
+  // Sprint 24B Phase 2B.7. Manual join-by-code still succeeds against a
+  // manual class that has no enrollmentSource field (the default).
+  it("Sprint 24B Phase 2B.7: still accepts a manual class join code when enrollmentSource is absent (default)", async () => {
+    // The default classQuerySnapshot omits enrollmentSource, which is
+    // treated as manual per the type contract. Reusing the existing
+    // canonical helper documents that the default path is preserved.
+    mockClassesQuery.get.mockResolvedValueOnce(classQuerySnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(absentSnapshot());
+    mockEnrollmentSet.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-manual", record: {} });
+
+    const result = await __enrollmentsJoinByCodeHandler(makeRequest());
+    expect(result.classId).toBe(CLASS_ID);
+    expect(result.alreadyEnrolled).toBe(false);
+    expect(mockEnrollmentSet).toHaveBeenCalled();
   });
 
   it("is idempotent: an existing active enrollment returns alreadyEnrolled without a second write", async () => {

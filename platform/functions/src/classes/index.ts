@@ -1,6 +1,11 @@
 // classes/ domain entry point.
 
 export {
+  classesActivate,
+  type ClassesActivateRequest,
+  type ClassesActivateResponse,
+} from "./classes-activate";
+export {
   classesArchive,
   type ClassesArchiveRequest,
   type ClassesArchiveResponse,
@@ -10,6 +15,11 @@ export {
   type ClassesCreateRequest,
   type ClassesCreateResponse,
 } from "./classes-create";
+export {
+  classesLmsCreate,
+  type ClassesLmsCreateRequest,
+  type ClassesLmsCreateResponse,
+} from "./classes-lms-create";
 export {
   classesUpdateMetadata,
   type ClassesUpdateMetadataRequest,

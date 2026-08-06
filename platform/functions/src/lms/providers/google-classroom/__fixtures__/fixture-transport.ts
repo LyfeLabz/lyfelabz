@@ -173,6 +173,8 @@ const FIXTURE_PAGE_SIZE = 2;
 export type FixtureFailureMode =
   | "none"
   | "authorization-failure"
+  | "insufficient-scope"
+  | "permission-denied"
   | "rate-limited"
   | "temporary-unavailable"
   | "malformed";
@@ -269,6 +271,28 @@ export function createFixtureGoogleClassroomTransport(
           401,
           "UNAUTHENTICATED",
           `fixture: upstream rejected ${op} as unauthenticated`,
+        );
+      case "insufficient-scope":
+        // Simulates a 403 response where Google signals the access token lacks
+        // the required coursework scope. The errorCode "INSUFFICIENT_SCOPE" is
+        // the signal translateUpstreamError uses to emit lms.insufficientScope
+        // rather than the generic lms.upstreamAuthorizationFailed.
+        throw new GoogleClassroomFixtureUpstreamError(
+          403,
+          "INSUFFICIENT_SCOPE",
+          `fixture: upstream rejected ${op} due to missing coursework scope`,
+        );
+      case "permission-denied":
+        // A 403 that is NOT a scope problem: the teacher's token is valid
+        // and fully scoped, but they lack permission for this course (or
+        // Google forbids the operation for another reason). This must map
+        // to lms.upstreamAuthorizationFailed, NOT lms.insufficientScope,
+        // so the callable never routes a plain permission denial into the
+        // incremental-consent path.
+        throw new GoogleClassroomFixtureUpstreamError(
+          403,
+          "PERMISSION_DENIED",
+          `fixture: upstream forbade ${op} (not a scope problem)`,
         );
       case "rate-limited":
         throw new GoogleClassroomFixtureUpstreamError(

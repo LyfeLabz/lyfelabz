@@ -162,7 +162,18 @@ function existingMatchesRequest(
   existing: ClassRecord,
   actor: { uid: string; schoolId: string },
   input: ClassesCreateRequest,
-): boolean {
+): existing is Extract<ClassRecord, { status: "active" | "archived" }> {
+  // Manual Create writes only `active` documents. A `needsSetup`
+  // pre-image is authored by the Phase 2B.3 LMS creation seam and does
+  // not carry the metadata Manual Create is idempotent on, so it
+  // cannot be an idempotent match here.
+  if (existing.status === "needsSetup") return false;
+  // Sprint 24B Phase 2B.7. Manual Create is never idempotent-compatible
+  // with an LMS-sourced record; a pre-image with `enrollmentSource:
+  // "lms"` belongs to the LMS creation seam and must fall through to
+  // the conflict branch. The default `undefined` and the explicit
+  // "joinCode" value are both treated as manual.
+  if ((existing.enrollmentSource ?? "joinCode") !== "joinCode") return false;
   if (existing.teacherId !== actor.uid) return false;
   if (existing.schoolId !== actor.schoolId) return false;
   if (existing.title !== input.title) return false;
@@ -222,6 +233,19 @@ async function classesCreateHandler(
   if (existingSnapshot.exists) {
     const existing = existingSnapshot.data();
     if (existing && existingMatchesRequest(existing, actor, input)) {
+      // Sprint 24B Phase 2B.7 invariant. Manual Create writes only
+      // manual classes, and manual classes always carry a joinCode.
+      // `existingMatchesRequest` guarantees the match rejects LMS
+      // pre-images (it refuses `enrollmentSource !== "joinCode"`), so
+      // the joinCode below is present by construction. Guard defensively
+      // and treat a missing joinCode as a conflict so a corrupt legacy
+      // record cannot be laundered through this branch.
+      if (typeof existing.joinCode !== "string") {
+        throw new PlatformError(
+          "classes.conflict",
+          "A class with this id already exists with different canonical fields.",
+        );
+      }
       safeLog(() =>
         log.info("classes.createIdempotent", {
           actorUserId: actor.uid,

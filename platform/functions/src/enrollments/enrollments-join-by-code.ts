@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertClassSupports,
   platformCallable,
   PlatformError,
   classesCollectionRef,
@@ -121,12 +122,33 @@ async function resolveClassByJoinCode(
   }
   const doc = snapshot.docs[0];
   const record = doc.data();
-  if (record.status !== "active") {
+  // Sprint 24B Phase 2B.7 defense in depth: LMS-sourced classes must
+  // never enroll students through the join-by-code path even if a
+  // legacy record still carries a joinCode from before the Phase 2B.7
+  // corrections. Reject with the same `enrollments.joinCodeNotFound`
+  // used for unknown codes so the caller cannot distinguish "no such
+  // code" from "code belongs to an LMS class". Emit a structured log so
+  // operators can observe legacy-code redemption attempts.
+  if (record.enrollmentSource === "lms") {
+    safeLog(() =>
+      log.warn("enrollments.joinCodeRefusedLmsClass", {
+        classId: doc.id,
+        schoolId,
+      }),
+    );
     throw new PlatformError(
       "enrollments.joinCodeNotFound",
       "No active class matches the supplied join code.",
     );
   }
+  // Shared eligibility gate. `studentJoin` requires the class to be
+  // `active`; any other status yields the same
+  // `enrollments.joinCodeNotFound` code as an unknown code so a
+  // partially-set-up class is indistinguishable from a bad code (Phase
+  // 2B Spec §4). A `needsSetup` class omits `joinCode` entirely per
+  // Spec §5 Option B, so the pre-image query above cannot match one;
+  // this gate is defense in depth.
+  assertClassSupports("studentJoin", record);
   return { classId: doc.id, record };
 }
 

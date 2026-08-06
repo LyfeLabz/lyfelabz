@@ -1,6 +1,13 @@
 import type { RouteSurface } from "../router";
 import type { ListClasses } from "../../classes/listClasses";
 import type { CreateClass } from "../../classes/createClass";
+import type { ActivateClass } from "../../classes/activateClass";
+import type { SyncRoster } from "../../classes/syncRoster";
+import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
+import type {
+  TeacherDefaultGrade,
+  UpdateTeacherDefaultGrade,
+} from "../../teacherPreferences/types";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
@@ -105,6 +112,25 @@ export type SurfaceDeps = {
   // route table; the callable itself is a function, so the getter form
   // is required to keep the type check unambiguous.
   readonly createClass?: () => CreateClass | null;
+  // Sprint 24B Phase 2: getter for the injected import-from-classroom
+  // dependencies. Rebound per active-teacher session so cross-session
+  // state cannot leak; null on any non-teacher session so the Classes
+  // surface renders without the primary import entry point.
+  readonly importFromClassroom?: () => ImportFromClassroomDeps | null;
+  // Sprint 24B Phase 2B.2: getters for the resolved `defaultGrade`
+  // preference and the best-effort update seam. Same getter pattern as
+  // the other per-active-teacher dependencies so per-session state can
+  // rebind across reruns without rebuilding the route table.
+  readonly defaultGrade?: () => TeacherDefaultGrade | null;
+  readonly updateDefaultGrade?: () => UpdateTeacherDefaultGrade | null;
+  // Sprint 24B Phase 2B.4: getter for the certified `classesActivate`
+  // seam. Rebound per active-teacher session so cross-session state
+  // cannot leak.
+  readonly activateClass?: () => ActivateClass | null;
+  // Sprint 24B Phase 2B.8: getter for the certified
+  // `lmsClassesSyncRoster` seam. Same rebind semantics as the other
+  // per-active-teacher dependencies.
+  readonly syncRoster?: () => SyncRoster | null;
 };
 
 // -----------------------------------------------------------------------------
@@ -583,6 +609,20 @@ export const makeActiveTeacherSurface =
         : null;
     const createClass =
       deps.createClass !== undefined ? deps.createClass() : null;
+    const importFromClassroom =
+      deps.importFromClassroom !== undefined
+        ? deps.importFromClassroom()
+        : null;
+    const defaultGrade =
+      deps.defaultGrade !== undefined ? deps.defaultGrade() : null;
+    const updateDefaultGrade =
+      deps.updateDefaultGrade !== undefined
+        ? deps.updateDefaultGrade()
+        : null;
+    const activateClass =
+      deps.activateClass !== undefined ? deps.activateClass() : null;
+    const syncRoster =
+      deps.syncRoster !== undefined ? deps.syncRoster() : null;
     mountTeacherShell(session, mount, {
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
@@ -592,6 +632,11 @@ export const makeActiveTeacherSurface =
       assignmentDetail,
       assignmentSummary,
       createClass,
+      importFromClassroom,
+      defaultGrade,
+      updateDefaultGrade,
+      activateClass,
+      syncRoster,
     });
   };
 

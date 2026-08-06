@@ -22,9 +22,13 @@ jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
   );
+  const { assertClassSupports } = jest.requireActual(
+    "../shared/classes/eligibility",
+  );
   return {
     platformCallable: (handler: unknown) => handler,
     PlatformError,
+    assertClassSupports,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     classDocRef: mockClassDocRef,
     classArchiveDocRef: mockClassArchiveDocRef,
@@ -63,21 +67,28 @@ function existingSnapshot(
   overrides: {
     teacherId?: string;
     schoolId?: string;
-    status?: "active" | "archived";
+    status?: "active" | "archived" | "needsSetup";
   } = {},
 ) {
+  const status = overrides.status ?? "active";
+  const base = {
+    teacherId: overrides.teacherId ?? "teacher-uid",
+    schoolId: overrides.schoolId ?? "school-a",
+    title: "Original Title",
+    status,
+    createdAt: {} as never,
+  } as const;
   return {
     exists: true,
-    data: () => ({
-      teacherId: overrides.teacherId ?? "teacher-uid",
-      schoolId: overrides.schoolId ?? "school-a",
-      title: "Original Title",
-      grade: "7",
-      block: "C",
-      joinCode: "ABCD1234",
-      status: overrides.status ?? "active",
-      createdAt: {} as never,
-    }),
+    data: () =>
+      status === "needsSetup"
+        ? base
+        : {
+            ...base,
+            grade: "7",
+            block: "C",
+            joinCode: "ABCD1234",
+          },
   };
 }
 
@@ -120,6 +131,24 @@ describe("classesArchive", () => {
       schoolId: "school-a",
       districtId: "district-1",
     });
+    expect(result).toEqual({
+      classId: CLASS_ID,
+      status: "archived",
+      alreadyArchived: false,
+    });
+  });
+
+  it("archives a needsSetup class per Phase 2B.1 (accepts pre-image needsSetup)", async () => {
+    mockClassGet.mockResolvedValueOnce(
+      existingSnapshot({ status: "needsSetup" }),
+    );
+    mockClassUpdate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-x", record: {} });
+
+    const result = await __classesArchiveHandler(makeRequest());
+
+    expect(mockClassUpdate).toHaveBeenCalledWith({ status: "archived" });
+    expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       classId: CLASS_ID,
       status: "archived",

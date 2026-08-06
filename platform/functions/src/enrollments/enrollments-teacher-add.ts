@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertClassSupports,
   platformCallable,
   PlatformError,
   classDocRef,
@@ -201,12 +202,10 @@ async function enrollmentsTeacherAddHandler(
       "Caller does not own this class.",
     );
   }
-  if (classRecord.status !== "active") {
-    throw new PlatformError(
-      "enrollments.invalidClassStatus",
-      "Enrollments may only be added to an active class.",
-    );
-  }
+  // Shared eligibility gate. `teacherAddEnrollment` requires the class
+  // to be `active`; `needsSetup` and `archived` are refused with the
+  // historical `enrollments.invalidClassStatus` code preserved.
+  assertClassSupports("teacherAddEnrollment", classRecord);
 
   const student = await loadStudent(input.studentId);
   if (student.role !== "student") {

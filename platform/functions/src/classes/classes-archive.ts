@@ -1,6 +1,7 @@
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertClassSupports,
   platformCallable,
   PlatformError,
   classArchiveDocRef,
@@ -129,6 +130,15 @@ async function classesArchiveHandler(
     );
   }
 
+  // Shared eligibility gate. `archive` accepts every currently defined
+  // status (`active`, `needsSetup`, and `archived`); the idempotent
+  // early-return below preserves the "no second audit event" invariant
+  // for records already in `archived`. Phase 2B Spec §4 and Reader
+  // Audit §7 authorize archive from `needsSetup` so that an orphan
+  // pre-activation class remains recoverable through the standard
+  // archive path.
+  assertClassSupports("archive", existing);
+
   if (existing.status === "archived") {
     safeLog(() =>
       log.info("classes.archiveIdempotent", {
@@ -142,12 +152,6 @@ async function classesArchiveHandler(
       alreadyArchived: true,
     };
   }
-
-  // `existing.status` narrows to `"active"` here per the current
-  // `ClassStatus` enumeration in shared/types/class.ts. If future
-  // architecture amendments extend the enumeration, this callable must be
-  // revisited so a non-active, non-archived status is either rejected
-  // explicitly or transitioned intentionally.
 
   const write: ClassArchiveWrite = { status: "archived" };
   await classArchiveDocRef(input.classId).update(write);

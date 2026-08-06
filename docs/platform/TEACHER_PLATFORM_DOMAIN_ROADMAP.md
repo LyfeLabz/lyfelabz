@@ -767,6 +767,13 @@ Every excluded capability remains reachable as its own subsequent sprint under t
 
 **Sequencing.** Depends on Phase 5 (Assignment Foundation) and Phase 6 (Submission Foundation), which own the record shapes the LMS phase extends. Both are certified complete. Does not require Phase 7 (Analytics) or Phase 8 (Administrator Platform); PDR-020d and PDR-020e establish that neither is a technical prerequisite for the initial scope. The recommended internal sprint sequence for Phase 9 is recorded in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` §8. The initial scope corresponds to the amendment's LMS Sprint B (Firestore, Rules, and callable scaffolding) and the discovery-and-import portion of LMS Sprint C. Refresh, publication, and the remaining LMS sprints are reachable subsequent phases and remain out of the initial scope.
 
+**Implementation status (updated 2026-08-05).**
+
+- **Sprint 24A - LMS infrastructure and OAuth host correction: certified.** See `SPRINT_24A_COMPLETION_REPORT.md`.
+- **Sprint 24B - activation seam and roster synchronization: ✅ Production Certified (2026-08-05).** Canonical record: `SPRINT_24B_FINAL_CERTIFICATION_REPORT.md`. Sprint 24B advanced Phase 9 beyond the initial scope to deliver the activation seam (`classesLmsCreate`, `classesActivate`) and roster synchronization (`lmsClassesSyncRoster`, `lms.rosterSynchronized`), certified end to end through the genuine teacher workflow under the Emulator Suite. Roster synchronization was one of the initial-scope exclusions above; it is now delivered and certified as a subsequent Phase 9 sprint, consistent with the amendment's internal sequence.
+
+**Next logical sprint: Sprint 25 - LMS Assignment Publication (initial scope).** This is the next capability in the Phase 9 internal sequence after roster synchronization. Its record shapes are already reserved by the certified data model (`lmsAssignmentPublications`, and the `lms.assignmentPublished` / `lms.publishFailed` audit vocabulary). Publication requires the reserved `classroom.coursework.me` scope, which raises the OAuth verification bar; Google OAuth verification for the existing readonly scopes is the highest-priority gating dependency to resolve first. Scope and content are set by the Sprint 25 definition and its PDR, not by implementation. Publication must preserve the one-dialog assign workflow in `ASSIGN_EXPERIENCE.md`.
+
 ---
 
 ---

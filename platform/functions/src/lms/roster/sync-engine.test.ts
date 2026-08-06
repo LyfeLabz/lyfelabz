@@ -58,8 +58,12 @@ jest.mock("../../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../../shared/errors/platform-error",
   );
+  const { assertClassSupports } = jest.requireActual(
+    "../../shared/classes/eligibility",
+  );
   return {
     PlatformError,
+    assertClassSupports,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     classDocRef: mockClassDocRef,
     enrollmentCreationDocRef: mockEnrollmentCreationDocRef,

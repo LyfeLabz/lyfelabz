@@ -1,6 +1,7 @@
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertClassSupports,
   platformCallable,
   PlatformError,
   classDocRef,
@@ -8,6 +9,7 @@ import {
   log,
   requireDistrictContext,
   writeAuditEvent,
+  type ActiveClassRecord,
   type ClassMetadataUpdateWrite,
   type ClassRecord,
 } from "../shared";
@@ -175,7 +177,7 @@ async function loadClass(classId: string): Promise<ClassRecord> {
 }
 
 function computeDiff(
-  existing: ClassRecord,
+  existing: ActiveClassRecord,
   input: ClassesUpdateMetadataRequest,
 ): {
   readonly write: ClassMetadataUpdateWrite;
@@ -254,12 +256,13 @@ async function classesUpdateMetadataHandler(
     );
   }
 
-  if (existing.status !== "active") {
-    throw new PlatformError(
-      "classes.invalidStatus",
-      `Metadata update requires status "active" (current: "${existing.status}").`,
-    );
-  }
+  // Shared eligibility gate. `editMetadata` requires the class to be
+  // `active`; `needsSetup` and `archived` are refused with the
+  // historical `classes.invalidStatus` code preserved. Metadata for a
+  // `needsSetup` class flows through the Phase 2B.3 activation
+  // callable, which sets grade and block atomically as part of the
+  // transition to `active`.
+  assertClassSupports("editMetadata", existing);
 
   const { write, changedFields } = computeDiff(existing, input);
   if (changedFields.length === 0) {
