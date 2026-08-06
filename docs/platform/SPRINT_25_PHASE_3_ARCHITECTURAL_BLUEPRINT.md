@@ -402,8 +402,9 @@ anchors below are the discovered locations.
 ## 13. Browser certification plan (Phase 4 executes; Phase 3 spot-verifies)
 
 Executed in Phase 4 as one continuous genuine run through the real
-teacher shell against the Emulator Suite with a Google Classroom API test
-double. No auth injection, no Firestore patching, no direct callable
+teacher shell against the Emulator Suite, exercising real Google
+Classroom through the real HTTPS transport (the Sprint 24B certification
+model). No auth injection, no Firestore patching, no direct callable
 invocation. Phase 3 performs an emulator-bound spot verification of the
 happy path and the consent trigger only; the full table is Phase 4.
 

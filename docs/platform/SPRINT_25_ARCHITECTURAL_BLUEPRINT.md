@@ -389,8 +389,11 @@ behavior; it does not presuppose it.
 ## 13. Browser certification plan
 
 Executed as one continuous genuine run through the real teacher shell
-against the Emulator Suite with a Google Classroom API test double. No
-auth injection, no Firestore patching, no direct callable invocation.
+against the Emulator Suite, exercising real Google Classroom through the
+real HTTPS transport (the Sprint 24B certification model: emulator
+Firestore, real Google OAuth, real Google Classroom, a dedicated
+certification account and course). No auth injection, no Firestore
+patching, no direct callable invocation.
 
 | ID | Observation | Expected |
 |----|-------------|----------|
@@ -401,7 +404,7 @@ auth injection, no Firestore patching, no direct callable invocation.
 | B5 | Turn the publish toggle on, pick a topic, confirm the dialog. | PASS |
 | B6 | First publish triggers a genuine incremental consent for the coursework scopes; previously granted readonly scopes are preserved. | PASS |
 | B7 | On success, the confirmation reads "The LyfeLabz assignment was scheduled. Publishing to Google Classroom succeeded." | PASS |
-| B8 | A coursework item appears in the linked course (test double) under the chosen topic, pointing at the LyfeLabz assignment URL. | PASS |
+| B8 | A coursework item appears in the linked course (real Google Classroom) under the chosen topic, pointing at the LyfeLabz assignment URL. | PASS |
 | B9 | Injected upstream failure: the LyfeLabz assignment is intact, the confirmation reads "did not succeed," and a retry entry point is offered. | PASS |
 | B10 | Retry from the assignment detail view succeeds and updates the confirmation. | PASS |
 | B11 | Publication without an activated LyfeLabz assignment is refused; activation without publication is supported. | PASS |
@@ -448,8 +451,9 @@ begins until the prior stage's review is approved.
 - **Stage 1 - Adapter go-live (server only).** Replace the stubbed
   Google Classroom coursework write with the live upstream call. Map and
   sanitize upstream errors onto the certified graceful-failure path.
-  Exercise entirely through `lmsAssignmentsPublish` against the Google
-  Classroom API test double. No client change, no scope change. Lowest
+  Exercise entirely through `lmsAssignmentsPublish` against the Jest
+  fixture transport (unit and integration tests). No client change, no
+  scope change. Lowest
   risk first, because the callable, records, rules, and audit already
   exist and are testable in isolation.
 - **Stage 2 - Incremental consent and scope widening.** Add the

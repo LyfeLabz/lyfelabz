@@ -54,8 +54,9 @@ exists in the certified tree and is reused rather than rebuilt. See §7.
    and make a failed publication retryable, with the LyfeLabz assignment
    authoritative in every case.
 6. Certify the workflow end to end through a genuine browser run against
-   the Emulator Suite with a Google Classroom API test double, and
-   verify it in the backend, before Sprint 25 is declared complete.
+   the Emulator Suite, exercising real Google Classroom (the Sprint 24B
+   certification model), and verify it in the backend, before Sprint 25
+   is declared complete.
 
 ## 3. Scope
 
@@ -244,7 +245,8 @@ The genuinely new engineering work is narrow:
 ## 8. Success criteria
 
 Sprint 25 is successful when all of the following hold under the
-Emulator Suite with a Google Classroom API test double:
+Emulator Suite with real Google Classroom (the Sprint 24B certification
+model):
 
 - A verified teacher, assigning a lesson to an LMS-linked `active`
   class, can opt in to publish and select a topic from within the one
@@ -289,13 +291,14 @@ Sprint 25 is not complete until both certifications below pass.
 Three levels of validation are kept distinct and must not be conflated:
 
 1. **Engineering validation.** Unit and integration tests, plus
-   emulator runs, exercising the callables and the adapter against a
-   Google Classroom API test double. This proves the code paths, not the
-   teacher workflow.
+   emulator runs, exercising the callables and the adapter. The Jest
+   suites use the fixture transport; the emulator runtime binds real
+   Google Classroom. This proves the code paths, not the teacher
+   workflow.
 2. **Genuine browser certification.** One continuous run through the real
    teacher shell against the Emulator Suite. The upstream Google
-   Classroom calls resolve against a real or explicitly certified test
-   environment or test double. This proves the workflow in the certified
+   Classroom calls resolve against real Google Classroom (the Sprint 24B
+   certification model). This proves the workflow in the certified
    environment.
 3. **Production rollout prerequisites.** The operational gates in §10.
    These are outside the sprint and are not certification.

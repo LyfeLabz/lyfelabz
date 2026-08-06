@@ -332,7 +332,7 @@ From `app/`:
 
 The blueprint §13 table (P3-1 through P3-12) is executed in Phase 4 as one
 continuous genuine run through the real teacher shell against the Emulator
-Suite with a Google Classroom API test double, plus the backend verification
+Suite with real Google Classroom (the Sprint 24B certification model), plus the backend verification
 (§14): callable ledger ordering, the widened single connection, `succeeded`
 and `failed` records, the `lmsPublicationRef` mirror, the audit chain, zero
 Secret Manager access, and no PII or token in any record, payload, or log.

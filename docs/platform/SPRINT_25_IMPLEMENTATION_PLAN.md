@@ -1343,7 +1343,7 @@ formal proof.
 | Component | Status |
 |---|---|
 | All implementation from Phases 1-3 | Unchanged. |
-| Google Classroom API test double | Configured for certification scenarios. |
+| Real Google Classroom (certification account and course) | Exercised through the real HTTPS transport; there is no runtime test double. |
 | Emulator Suite | Running at certification time. |
 | Historical debugging artifact ("Cert Class 2B8") | Clear before certification per Sprint 24B §11 recommendation. |
 
@@ -1357,9 +1357,12 @@ formal proof.
 
 1. **Pre-certification setup.** Clear the historical debugging artifact
    from the emulator per Sprint 24B §11. Confirm the emulator starts
-   cleanly. Confirm the Google Classroom API test double is configured
-   to respond to `createCourseWork`, `listCourseTopics`, and to simulate
-   an injected upstream failure for scenario B9.
+   cleanly. Confirm the certification Google account owns a real Google
+   Classroom course with at least one topic and that the certification
+   OAuth client is configured, per `SPRINT_25_CERTIFICATION_RUNBOOK.md`
+   §1. Failure scenarios are produced as the runbook and browser
+   checklist specify (real Google reachability, injected connection
+   state), never by a runtime test double.
 
 2. **Execute browser certification.** Run scenarios B1-B12 in sequence
    as one continuous genuine run. No auth injection. No Firestore
@@ -1479,7 +1482,7 @@ suite green.
 | 3 | Topic fetch blocks dialog open if slow | Medium | Medium | Run topic fetch concurrently with dialog rendering; degrade to empty selector on failure. |
 | 3 | `linkId` not available in the Assign dialog at row-augmentation time | Low | Medium | `createListClassLinks` returns `{ linkId, classId, providerId, lmsClassId }` already; match by `classId` to augment the class row. |
 | 3 | Consent popup blocked by the teacher's browser | Low | Low | The existing popup-blocked error path in `createBrowserOAuthHandoff` already handles this; surface a plain-language "please allow popups" message. |
-| 4 | Google Classroom API test double does not faithfully simulate the insufficient-scope 403 | Medium | Medium | Configure the test double explicitly for scenario B9; document the exact error shape it must return to trigger the incremental consent path. |
+| 4 | Real Google does not return the insufficient-scope 403 on first publish, so the incremental-consent path cannot be exercised in the browser run | Medium | Medium | Rely on the Phase 1 fixture-backed insufficient-scope test as standing evidence; if real Google cannot produce the condition, mark the scenario NOT-CERTIFIABLE-HERE per the browser checklist rather than simulating it. |
 
 ---
 
