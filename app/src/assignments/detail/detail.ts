@@ -6,6 +6,8 @@ import type {
 import type {
   AssignmentDetailMetadata,
   AssignmentDetailMetadataReader,
+  AssignmentLmsPublicationState,
+  AssignmentLmsRetrySeam,
   AssignmentStatus,
   AssignmentsCloseCallable,
   AssignmentsPublishCallable,
@@ -116,6 +118,16 @@ export type AssignmentDetailDeps = {
   // fetches each representative attempt and renders the per-question
   // factual summary. When absent no per-question panel is rendered.
   readonly attemptGetForTeacherCallable?: AttemptGetForTeacherCallable;
+  // Sprint 25 Phase 3: retry entry point for a Google Classroom
+  // publication that did not succeed (blueprint §8). When supplied, the
+  // surface renders a single calm publication-status line beneath the
+  // header and, unless the publication already succeeded, a teacher-
+  // initiated retry control. The seam owns the bounded retry workflow
+  // entirely; the surface only reflects state and disables the control
+  // while a retry is in flight. Absent for assignments with no recorded
+  // publication that did not succeed, so the pre-Phase-3 detail surface is
+  // unchanged.
+  readonly lmsRetry?: AssignmentLmsRetrySeam;
 };
 
 const STATUS_LABEL: Readonly<Record<AssignmentStatus, string>> = Object.freeze({
@@ -227,6 +239,12 @@ export function renderAssignmentDetail(
   let reopenUi: ReopenUiState = { kind: "idle" };
   let editUi: EditUiState = { kind: "closed" };
   let publishUi: PublishUiState = { kind: "idle" };
+  // Sprint 25 Phase 3: publication retry state. `lmsRetryState` is the
+  // current calm publication state (null when no retry seam is wired);
+  // `lmsRetryUi` is the in-flight submit lock for the retry control.
+  let lmsRetryState: AssignmentLmsPublicationState | null =
+    deps.lmsRetry?.initialState ?? null;
+  let lmsRetryUi: { kind: "idle" | "pending" } = { kind: "idle" };
 
   // Sprint 16 Slice 2: one shared per-render fetch cache backs all
   // Detail sub-panels so `assessmentAssignmentSummary` and
@@ -320,10 +338,17 @@ export function renderAssignmentDetail(
           reopenUi,
           editUi,
           publishUi,
+          { state: lmsRetryState, ui: lmsRetryUi, seam: deps.lmsRetry },
           shouldFocusTitle,
           {
             onCloseRequest: () => {
               openCloseConfirmation(s.metadata);
+            },
+            onLmsRetryRequest: () => {
+              void performLmsRetry();
+            },
+            onReconnectRequest: () => {
+              deps.lmsRetry?.onReconnect?.();
             },
             onReopenRequest: () => {
               openReopenConfirmation(s.metadata);
@@ -633,6 +658,31 @@ export function renderAssignmentDetail(
     }
   };
 
+  // Sprint 25 Phase 3: teacher-initiated publication retry. The seam owns
+  // the bounded workflow (fresh nonce, at most one incremental consent, at
+  // most one automatic re-issue) and never re-runs the LyfeLabz assignment
+  // lifecycle. The control is disabled while the retry is in flight so a
+  // repeated click cannot dispatch a concurrent request. A retry that again
+  // needs permission stops without looping (handled inside the seam).
+  const performLmsRetry = async (): Promise<void> => {
+    const seam = deps.lmsRetry;
+    if (seam === undefined) return;
+    if (lmsRetryUi.kind === "pending") return;
+    lmsRetryUi = { kind: "pending" };
+    rerender();
+    let next: AssignmentLmsPublicationState;
+    try {
+      next = await seam.retry();
+    } catch {
+      // The seam normalizes every outcome and does not reject; this is a
+      // defensive floor that keeps a retry available on an unexpected throw.
+      next = "failed";
+    }
+    lmsRetryState = next;
+    lmsRetryUi = { kind: "idle" };
+    rerender();
+  };
+
   const load = async (): Promise<void> => {
     const token = ++loadToken;
     state = { kind: "loading" };
@@ -699,9 +749,16 @@ function renderReady(
   reopenUi: ReopenUiState,
   editUi: EditUiState,
   publishUi: PublishUiState,
+  lmsRetry: {
+    readonly state: AssignmentLmsPublicationState | null;
+    readonly ui: { readonly kind: "idle" | "pending" };
+    readonly seam: AssignmentLmsRetrySeam | undefined;
+  },
   focusTitle: boolean,
   handlers: {
     readonly onCloseRequest: () => void;
+    readonly onLmsRetryRequest: () => void;
+    readonly onReconnectRequest: () => void;
     readonly onReopenRequest: () => void;
     readonly onEditRequest: () => void;
     readonly onEditTitleInput: (value: string) => void;
@@ -897,6 +954,15 @@ function renderReady(
   }
 
   mount.appendChild(header);
+
+  // Sprint 25 Phase 3: publication status + retry panel. Rendered only for a
+  // published or closed assignment that carries a retry seam (a recorded
+  // Google Classroom publication). A draft never publishes, so the panel is
+  // absent there. The panel is a calm, provider-neutral status line plus, for
+  // any state other than succeeded, a single teacher-initiated retry control.
+  if (lmsRetry.seam !== undefined && metadata.status !== "draft") {
+    renderLmsPublicationPanel(doc, mount, lmsRetry, handlers);
+  }
 
   if (focusTitle) {
     try {
@@ -1653,6 +1719,103 @@ function renderPublishConfirmDialog(
     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     doc.removeEventListener("keydown", onKey);
   };
+}
+
+// Sprint 25 Phase 3: calm, provider-neutral copy for each publication
+// state. No provider error code, callable name, OAuth term, token, or
+// Google identity is ever rendered (blueprint §10). The Google Classroom
+// product display name is the only provider reference, matching the Assign
+// dialog confirmation copy.
+const LMS_PUBLICATION_LINE: Readonly<
+  Record<AssignmentLmsPublicationState, string>
+> = Object.freeze({
+  succeeded: "Publishing to Google Classroom succeeded.",
+  failed: "Publishing to Google Classroom did not succeed.",
+  permissionNotGranted:
+    "Publishing to Google Classroom needs your permission. You can try again from the assignment.",
+  reconnectRequired:
+    "Google Classroom needs to be reconnected in Settings. Your assignment was scheduled.",
+});
+
+function renderLmsPublicationPanel(
+  doc: Document,
+  mount: HTMLElement,
+  lmsRetry: {
+    readonly state: AssignmentLmsPublicationState | null;
+    readonly ui: { readonly kind: "idle" | "pending" };
+    readonly seam: AssignmentLmsRetrySeam | undefined;
+  },
+  handlers: {
+    readonly onLmsRetryRequest: () => void;
+    readonly onReconnectRequest: () => void;
+  },
+): void {
+  const state = lmsRetry.state;
+  if (state === null) return;
+
+  const panel = doc.createElement("section");
+  panel.className = "shell-assignment-detail-lms";
+  panel.setAttribute("data-testid", "assignment-detail-lms");
+  panel.setAttribute("data-lms-state", state);
+  panel.setAttribute("aria-labelledby", "assignment-detail-lms-heading");
+
+  const heading = doc.createElement("h3");
+  heading.id = "assignment-detail-lms-heading";
+  heading.className = "shell-assignment-detail-lms-heading";
+  heading.setAttribute("data-testid", "assignment-detail-lms-heading");
+  heading.textContent = "Google Classroom";
+  panel.appendChild(heading);
+
+  const line = doc.createElement("p");
+  line.className = "shell-assignment-detail-lms-status";
+  line.setAttribute("data-testid", "assignment-detail-lms-status");
+  line.setAttribute("role", "status");
+  line.setAttribute("aria-live", "polite");
+  line.textContent = LMS_PUBLICATION_LINE[state];
+  panel.appendChild(line);
+
+  // A succeeded publication offers no retry; the status line stands alone.
+  if (state !== "succeeded") {
+    const actions = doc.createElement("div");
+    actions.className = "shell-assignment-detail-lms-actions";
+
+    // A reconnect-class outcome routes the teacher to the account-level
+    // Google Classroom connection management in Settings when that route is
+    // wired. The retry control remains available for use after reconnection.
+    if (state === "reconnectRequired" && lmsRetry.seam?.onReconnect !== undefined) {
+      const reconnect = doc.createElement("button");
+      reconnect.type = "button";
+      reconnect.className =
+        "shell-btn shell-assignment-detail-lms-reconnect";
+      reconnect.setAttribute(
+        "data-testid",
+        "assignment-detail-lms-reconnect",
+      );
+      reconnect.textContent = "Reconnect in Settings";
+      reconnect.addEventListener("click", () => {
+        handlers.onReconnectRequest();
+      });
+      actions.appendChild(reconnect);
+    }
+
+    const retry = doc.createElement("button");
+    retry.type = "button";
+    retry.className = "shell-btn shell-assignment-detail-lms-retry";
+    retry.setAttribute("data-testid", "assignment-detail-lms-retry");
+    retry.textContent = "Try again";
+    if (lmsRetry.ui.kind === "pending") {
+      retry.disabled = true;
+      retry.setAttribute("aria-busy", "true");
+    }
+    retry.addEventListener("click", () => {
+      handlers.onLmsRetryRequest();
+    });
+    actions.appendChild(retry);
+
+    panel.appendChild(actions);
+  }
+
+  mount.appendChild(panel);
 }
 
 function appendMetaPair(

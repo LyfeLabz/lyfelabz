@@ -27,6 +27,14 @@ import {
   renderActiveAssignmentsSection,
   type ActiveAssignmentsController,
 } from "./shared/activeAssignments";
+import {
+  createConsentCoordinator,
+  mintNonce,
+  recordLmsPublicationRetryContext,
+  runPublicationAction,
+  _resetLmsPublicationStateForTest,
+} from "./shared/lmsPublication";
+import type { AssignmentLmsPublicationState } from "../../assignments/detail/types";
 
 // Sprint 13B remediation: narrow visible entry-point seam so an
 // authenticated teacher can reach the certified Assignment Detail
@@ -1628,20 +1636,20 @@ function mintAssignmentId(
   return raw.length <= 64 ? raw : raw.slice(raw.length - 64);
 }
 
-function mintNonce(): string {
-  const g = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
-  if (g && typeof g.randomUUID === "function") {
-    return g.randomUUID().replace(/-/g, "").slice(0, 12);
-  }
-  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-}
+// `mintNonce` now lives in the shared publication module so the confirm
+// path, the automatic re-issue, and the detail-view retry all mint attempt
+// nonces the same way (implementation plan §2.1). It is imported above.
 
 type PerClassOutcome = {
   readonly classId: string;
   readonly assignmentId: string;
   readonly lyfelabzAssigned: boolean;
   readonly lmsRequested: boolean;
-  readonly lmsSucceeded: boolean;
+  // Sprint 25 Phase 3: the calm, provider-neutral publication state for
+  // this row. `notRequested` when the toggle was off (or the row was not
+  // LMS-linked). Otherwise one of the four `AssignmentLmsPublicationState`
+  // values produced by `runPublicationAction`.
+  readonly lmsState: "notRequested" | AssignmentLmsPublicationState;
 };
 
 // Run the certified per-class lifecycle:
@@ -1688,6 +1696,12 @@ async function runAssignmentLifecycle(input: {
       ? `${window.location.origin}${lesson.href}`
       : lesson.href;
 
+  // One consent coordinator per confirm action. When several LMS-linked
+  // rows in the same confirm each return insufficient scope, exactly one
+  // incremental-consent OAuth flow runs and the single completed consent is
+  // reused across every affected row (definition Part 10, blueprint §7).
+  const consentCoordinator = createConsentCoordinator();
+
   const outcomes = await Promise.all(
     enabledRows.map(async (row): Promise<PerClassOutcome> => {
       const assignmentId = mintAssignmentId(
@@ -1715,7 +1729,7 @@ async function runAssignmentLifecycle(input: {
           assignmentId,
           lyfelabzAssigned: false,
           lmsRequested: wantsLms,
-          lmsSucceeded: false,
+          lmsState: "notRequested",
         };
       }
 
@@ -1730,7 +1744,7 @@ async function runAssignmentLifecycle(input: {
           assignmentId,
           lyfelabzAssigned: false,
           lmsRequested: wantsLms,
-          lmsSucceeded: false,
+          lmsState: "notRequested",
         };
       }
 
@@ -1756,40 +1770,63 @@ async function runAssignmentLifecycle(input: {
       }
 
       // Step 3: optional LMS publication using the authoritative id.
-      if (!wantsLms || row.link === null || integrations === null) {
+      const link = row.link;
+      if (!wantsLms || link === null || integrations === null) {
         return {
           classId: row.classId,
           assignmentId,
           lyfelabzAssigned: true,
           lmsRequested: false,
-          lmsSucceeded: false,
+          lmsState: "notRequested",
         };
       }
       const lmsTopicId = row.cfg.lmsTopicId;
-      try {
-        const outcome = await integrations.callables.publishAssignment({
-          assignmentId,
-          linkId: row.link.linkId,
-          lyfelabzAssignmentUrl: lyfelabzUrl,
-          title: lesson.title,
-          ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
-        });
-        return {
-          classId: row.classId,
-          assignmentId,
-          lyfelabzAssigned: true,
-          lmsRequested: true,
-          lmsSucceeded: outcome.status === "succeeded",
-        };
-      } catch {
-        return {
-          classId: row.classId,
-          assignmentId,
-          lyfelabzAssigned: true,
-          lmsRequested: true,
-          lmsSucceeded: false,
-        };
-      }
+      // One attempt nonce per logical publication action for this row
+      // (implementation plan §2.1). It is passed on the initial call and
+      // reused on the single automatic re-issue after incremental consent;
+      // it is never re-minted per HTTPS call and never shared across rows.
+      const publishNonce = mintNonce();
+      const publishCallables = integrations.callables;
+      const result = await runPublicationAction({
+        nonce: publishNonce,
+        publish: (attemptNonce) =>
+          publishCallables.publishAssignment({
+            assignmentId,
+            linkId: link.linkId,
+            lyfelabzAssignmentUrl: lyfelabzUrl,
+            title: lesson.title,
+            ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
+            attemptNonce,
+          }),
+        consent: {
+          providerId: link.providerId,
+          beginConnection: publishCallables.beginConnection,
+          completeConnection: publishCallables.completeConnection,
+          openOAuth: integrations.openOAuth,
+          redirectUri: integrations.redirectUri,
+        },
+        coordinator: consentCoordinator,
+      });
+      // Record the retry context so the assignment detail view can offer a
+      // teacher-initiated retry for a publication that did not succeed.
+      // The latest state is recorded on every outcome, including success
+      // (which suppresses the retry affordance).
+      recordLmsPublicationRetryContext(teacherUid, {
+        assignmentId,
+        linkId: link.linkId,
+        providerId: link.providerId,
+        lyfelabzAssignmentUrl: lyfelabzUrl,
+        title: lesson.title,
+        ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
+        state: result.kind,
+      });
+      return {
+        classId: row.classId,
+        assignmentId,
+        lyfelabzAssigned: true,
+        lmsRequested: true,
+        lmsState: result.kind,
+      };
     }),
   );
 
@@ -1818,7 +1855,13 @@ function summarizeOutcomes(
   const assigned = outcomes.filter((o) => o.lyfelabzAssigned).length;
   const notAssigned = total - assigned;
   const lmsRequested = outcomes.filter((o) => o.lmsRequested).length;
-  const lmsSucceeded = outcomes.filter((o) => o.lmsSucceeded).length;
+  const lmsSucceeded = outcomes.filter((o) => o.lmsState === "succeeded").length;
+  const lmsReconnect = outcomes.filter(
+    (o) => o.lmsState === "reconnectRequired",
+  ).length;
+  const lmsPermission = outcomes.filter(
+    (o) => o.lmsState === "permissionNotGranted",
+  ).length;
   const lmsFailed = lmsRequested - lmsSucceeded;
 
   // Base LyfeLabz-scoped line. Independent per-class success/failure is
@@ -1841,9 +1884,20 @@ function summarizeOutcomes(
   // LMS-side outcome line follows the "return, do not redirect" and
   // "authoritative LyfeLabz record" rules of §7. It never blames the
   // teacher and never implies the LyfeLabz assignment was rolled back.
+  // The line is calm and provider-neutral: no error code, no OAuth term,
+  // no callable name, no Google identity (blueprint §10).
   let lmsLine: string;
   if (lmsFailed === 0) {
     lmsLine = "Publishing to Google Classroom succeeded.";
+  } else if (lmsSucceeded === 0 && lmsFailed === lmsReconnect) {
+    // Every requested publication was blocked by an inactive connection.
+    lmsLine =
+      "Google Classroom needs to be reconnected in Settings. Your assignment was scheduled.";
+  } else if (lmsSucceeded === 0 && lmsFailed === lmsPermission) {
+    // Every requested publication needs the coursework permission the
+    // teacher has not granted; the calm consent-needed line, no OAuth term.
+    lmsLine =
+      "Publishing to Google Classroom needs your permission. You can try again from the assignment.";
   } else if (lmsSucceeded === 0) {
     lmsLine = "Publishing to Google Classroom did not succeed.";
   } else {
@@ -1872,4 +1926,5 @@ export function _resetCurriculumSessionStateForTest(): void {
   sessionAssignmentsByLesson = null;
   sessionPersistedSlugs = null;
   sessionFilters = null;
+  _resetLmsPublicationStateForTest();
 }

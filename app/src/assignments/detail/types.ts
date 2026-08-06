@@ -132,3 +132,34 @@ export type AssignmentsPublishCallable = (input: {
 export type AssignmentDetailMetadataReader = (input: {
   readonly assignmentId: string;
 }) => Promise<AssignmentDetailMetadata | null>;
+
+// Sprint 25 Phase 3: calm, provider-neutral publication state for the
+// detail-view retry entry point. These are the only publication states the
+// teacher-facing detail surface ever renders; no provider error code,
+// callable name, OAuth term, token, or Google identity is exposed. The
+// string values match `PublicationActionResult["kind"]` from the shared
+// publication module so the entry point can map a completed action to a
+// state with no translation table.
+export type AssignmentLmsPublicationState =
+  | "succeeded"
+  | "failed"
+  | "permissionNotGranted"
+  | "reconnectRequired";
+
+// Sprint 25 Phase 3: injected retry seam for a class whose Google Classroom
+// publication did not succeed (blueprint §8). When supplied, the detail
+// surface renders a single, teacher-initiated retry affordance beneath the
+// header. The seam owns the bounded retry workflow entirely (fresh attempt
+// nonce, at most one incremental consent, at most one automatic re-issue);
+// the surface only reflects `initialState`, disables the control while a
+// retry is in flight, and renders the returned state. The retry never
+// re-runs `assignmentsCreateDraft` or `assignmentsPublish`; the LyfeLabz
+// assignment already exists and is authoritative. `onReconnect`, when
+// supplied, routes the teacher to the account-level Google Classroom
+// connection management in Settings; it is absent when no reconnect route
+// is wired, in which case the calm reconnect line stands on its own.
+export type AssignmentLmsRetrySeam = {
+  readonly initialState: AssignmentLmsPublicationState;
+  readonly retry: () => Promise<AssignmentLmsPublicationState>;
+  readonly onReconnect?: () => void;
+};

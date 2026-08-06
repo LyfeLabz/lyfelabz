@@ -52,6 +52,10 @@ import { createAssignmentDetailRegistry } from "./assignments/detail/registry";
 import { createAssignmentDetailMetadataReader } from "./assignments/detail/wire";
 import { renderAssignmentDetail } from "./assignments/detail/detail";
 import { hydrateAssignmentDetailRegistry } from "./assignments/detail/hydrate";
+import {
+  createDetailLmsRetrySeam,
+  clearLmsPublicationRetryContexts,
+} from "./shell/surfaces/shared/lmsPublication";
 import { createAssignmentsTeacherListCallable } from "./assignments/detail/hydrate-wire";
 import { createAssignmentsCloseCallable } from "./assignments/detail/close-wire";
 import { createAssignmentsReopenCallable } from "./assignments/detail/reopen-wire";
@@ -297,6 +301,20 @@ async function run(): Promise<void> {
       recipientListCallable: assignmentRecipientList ?? undefined,
       attemptsListForClassCallable: attemptsListForClass ?? undefined,
       attemptGetForTeacherCallable: attemptGetForTeacher ?? undefined,
+      // Sprint 25 Phase 3: publication retry entry point. Built only when
+      // the session-scoped store holds a publication that did not succeed
+      // for this assignment (recorded by the Assign confirm path). The seam
+      // runs the bounded single-consent-then-one-re-issue retry with a
+      // fresh nonce and never re-runs the LyfeLabz assignment lifecycle.
+      // Absent otherwise, so the pre-Phase-3 detail surface is unchanged.
+      lmsRetry:
+        lastActiveTeacher !== null
+          ? (createDetailLmsRetrySeam({
+              uid: lastActiveTeacher.uid,
+              assignmentId,
+              integrations,
+            }) ?? undefined)
+          : undefined,
       onStatusChange: (metadata) => {
         assignmentDetailRegistry.register(metadata);
         // Sprint 16 Slice 1: when Curriculum owns the mount, refresh the
@@ -466,6 +484,7 @@ async function run(): Promise<void> {
       defaultGradePref = null;
       updateDefaultGrade = null;
       assignmentDetailRegistry.clear();
+      clearLmsPublicationRetryContexts();
       lastActiveTeacher = null;
     } else {
       integrations = null;
@@ -486,6 +505,7 @@ async function run(): Promise<void> {
       defaultGradePref = null;
       updateDefaultGrade = null;
       assignmentDetailRegistry.clear();
+      clearLmsPublicationRetryContexts();
       lastActiveTeacher = null;
       studentAssignmentsList = null;
     }
