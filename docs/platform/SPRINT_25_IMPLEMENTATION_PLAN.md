@@ -1131,6 +1131,32 @@ behavior change is visible until Phase 3.
 
 ### Phase 3: Assign Dialog Extension
 
+> **Phase 3 planning note (added when Phase 3 planning began).** Phase 3
+> is now governed in detail by two Phase-3-specific documents that
+> elaborate this section without changing it:
+> `SPRINT_25_PHASE_3_DEFINITION.md` (scope-of-record) and
+> `SPRINT_25_PHASE_3_ARCHITECTURAL_BLUEPRINT.md` (workflows, failure
+> matrix, certification plan). A source review at Phase 3 planning time
+> found that much of this phase is already built in the certified tree:
+> the Assign dialog (`app/src/shell/surfaces/curriculum.ts`) already
+> carries LMS link detection (`createListClassLinks`), the per-row topic
+> selector wired to `lmsClassesListTopics`, the off-by-default "Also
+> publish to Google Classroom" toggle, the confirm-time
+> createDraft/publish/publishAssignment lifecycle, a dialog-level
+> in-flight submit lock, and the `summarizeOutcomes` confirmation
+> read-back. The genuine remaining Phase 3 work is narrower than a
+> from-scratch build: (1) pass a client-stable per-row `attemptNonce` on
+> the publish call (currently omitted, so the Phase 1 completed-attempt
+> guard cannot function); (2) the insufficient-scope incremental consent
+> handoff and single automatic re-issue (currently absent); (3) reconnect
+> routing for an inactive-connection outcome; (4) the assignment
+> detail-view retry entry point; and (5) hardened outcome mapping so a
+> thrown callable error maps to "did not succeed." The client seams and
+> types already carry `attemptNonce`, `capability`, `consentOutcome`, and
+> `errorCode`. Phase 3 changes no server file. Where this note and the
+> task list below differ in emphasis, the Phase 3 definition and blueprint
+> govern; the task list below remains accurate as the target behavior.
+
 **Objective.** Add the topic selector and opt-in publish toggle to
 LMS-linked `active` class rows in the Assign dialog. Wire topic fetch,
 confirm-time publication call, confirmation read-back, and retry entry
