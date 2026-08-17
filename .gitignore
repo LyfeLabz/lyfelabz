@@ -5,6 +5,13 @@ firestore-debug.log
 ui-debug.log
 *-debug.log
 
+# Firebase Emulator Suite export/import snapshots (disposable certification
+# state; auth_export/accounts.json holds test-teacher identity data - never commit)
+platform/firebase/sprint25-b9-pre-retest/
+platform/firebase/sprint25-cert-state/
+platform/firebase/*-export/
+platform/firebase/*-cert-state/
+
 # Node
 node_modules/
 

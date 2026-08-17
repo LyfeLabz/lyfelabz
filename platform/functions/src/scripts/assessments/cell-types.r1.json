@@ -1,0 +1,269 @@
+{
+  "activityId": "cell-types",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-25-certification-seed",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "A bacterium living in boiling hot springs can survive, reproduce, and respond to its environment, all with a single cell. What does this best demonstrate?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "That bacteria are simple and unimportant organisms"
+        },
+        {
+          "optionId": "B",
+          "text": "That unicellular organisms can be highly capable and successful in challenging environments"
+        },
+        {
+          "optionId": "C",
+          "text": "That all unicellular organisms prefer extreme environments"
+        },
+        {
+          "optionId": "D",
+          "text": "That bacteria are the least complex form of life"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Bacteria and other unicellular organisms have thrived in environments ranging from boiling springs to frozen tundra. One cell performing every life function is not a limitation; it is one of life's most successful strategies."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A single-celled amoeba must eat, move, sense its environment, remove waste, and reproduce, all without help from other cells. This is because:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Amoebas have not yet evolved the ability to become multicellular"
+        },
+        {
+          "optionId": "B",
+          "text": "Single-celled organisms are too small to have any internal structures"
+        },
+        {
+          "optionId": "C",
+          "text": "In a unicellular organism, there are no other cells to share the work, one cell must handle every life function"
+        },
+        {
+          "optionId": "D",
+          "text": "Unicellular organisms only perform two or three life functions at most"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "In a unicellular organism, division of labor between cells is impossible, there is only one cell. That single cell must obtain energy, respond to its environment, remove waste, and reproduce using its own internal machinery."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "A human muscle cell contracts efficiently but cannot absorb nutrients or carry oxygen on its own. What does this best illustrate about multicellular organisms?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Human cells are less capable than unicellular organisms"
+        },
+        {
+          "optionId": "B",
+          "text": "Multicellular organisms trade a cell's independence for specialization, each cell becomes expert at one job and depends on other cells for the rest"
+        },
+        {
+          "optionId": "C",
+          "text": "Muscle cells are a less evolved type of cell"
+        },
+        {
+          "optionId": "D",
+          "text": "All human cells are identical and do the same job"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Specialization means exchanging versatility for efficiency. A muscle cell is extraordinary at contracting but depends on red blood cells for oxygen and other cells to remove waste. This interdependence enables complexity but costs independence."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "In a multicellular organism, red blood cells carry oxygen, nerve cells transmit signals, and muscle cells contract. What biological principle does this represent?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Cell mutation"
+        },
+        {
+          "optionId": "B",
+          "text": "Cell theory"
+        },
+        {
+          "optionId": "C",
+          "text": "Division of labor, different cells specialize in different functions so the organism operates as a whole"
+        },
+        {
+          "optionId": "D",
+          "text": "Asexual reproduction"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Division of labor assigns different tasks to different units. In multicellular organisms, cell types specialize in particular jobs (just as different people in a school or factory specialize in different roles) allowing coordination at a scale no single cell could achieve."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which of the following best explains why multicellular organisms can grow larger and more complex than unicellular ones?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Multicellular organisms evolved after unicellular ones, making them more advanced"
+        },
+        {
+          "optionId": "B",
+          "text": "When different cells specialize for different jobs, the organism can support tissues, organs, and systems that no single cell could maintain alone"
+        },
+        {
+          "optionId": "C",
+          "text": "Multicellular organisms always have more DNA than unicellular organisms"
+        },
+        {
+          "optionId": "D",
+          "text": "Unicellular organisms cannot perform any form of division of labor"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Specialization allows multicellular organisms to build tissues, organs, and systems far beyond what one cell could sustain. A heart cell cannot also be a brain cell; but together, specialized cells create something far more capable than any single cell working alone."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Bacteria were among the first living organisms on Earth and still outnumber all other life forms. What does this suggest about prokaryotic cell design?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Prokaryotes survived only because more complex life hadn't evolved yet"
+        },
+        {
+          "optionId": "B",
+          "text": "Prokaryotes will eventually evolve into eukaryotes"
+        },
+        {
+          "optionId": "C",
+          "text": "The simplicity of prokaryotic cells makes them inefficient"
+        },
+        {
+          "optionId": "D",
+          "text": "Prokaryotic simplicity (fast reproduction and high adaptability) is an extraordinarily successful strategy, not a limitation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Prokaryotes are not incomplete; they are extraordinarily successful. Bacteria alone have survived every mass extinction in Earth's history. Fast reproduction and high adaptability make the prokaryotic strategy one of the most durable designs life has ever produced."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Eukaryotic cells have a nucleus and other membrane-bound compartments. How does this internal organization contribute to the survival of large, complex organisms?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It prevents prokaryotic cells from invading the organism"
+        },
+        {
+          "optionId": "B",
+          "text": "It guarantees all cells in an organism will divide at the same rate"
+        },
+        {
+          "optionId": "C",
+          "text": "It allows cells to manage complex internal functions independently, making greater specialization and coordination possible"
+        },
+        {
+          "optionId": "D",
+          "text": "It forces all eukaryotic cells to perform the same function"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Internal organization (a membrane-bound nucleus and separate compartments) allows eukaryotic cells to manage complex operations and regulate gene expression more precisely, making the cellular differentiation needed for specialization possible in larger organisms."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A student says: 'Eukaryotic cells are better than prokaryotic cells because they can form multicellular organisms.' What is the most accurate response?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The student is correct, eukaryotic cells are always superior to prokaryotic cells"
+        },
+        {
+          "optionId": "B",
+          "text": "The student is correct, multicellular organisms are the most successful form of life"
+        },
+        {
+          "optionId": "C",
+          "text": "The student is incorrect, prokaryotes cannot build any internal structures at all"
+        },
+        {
+          "optionId": "D",
+          "text": "The student is missing the point, prokaryotes and eukaryotes solve different survival problems, and both strategies have been extraordinarily successful"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Prokaryotes reproduce in minutes, survive where no eukaryote can exist, and have been thriving for over 3.5 billion years. Both cell designs solve the same challenge (surviving and reproducing) with different tools. Neither is superior; they are different strategies."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "A scientist observes an organism that: (1) lives in a deep-ocean hydrothermal vent, (2) consists of a single cell with no nucleus, (3) reproduces very rapidly. Which classification best fits this organism?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Multicellular eukaryote"
+        },
+        {
+          "optionId": "B",
+          "text": "Unicellular eukaryote"
+        },
+        {
+          "optionId": "C",
+          "text": "Unicellular prokaryote"
+        },
+        {
+          "optionId": "D",
+          "text": "Multicellular prokaryote"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "No nucleus + single cell = unicellular prokaryote. All known prokaryotes are unicellular, and no known organisms are both multicellular and prokaryotic. The absence of a membrane-bound nucleus is the defining structural feature of prokaryotic cells."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which statement best answers the driving question: 'If all living things are made of cells, why aren't all cells the same?'",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Cells became different because of random mutations with no survival benefit"
+        },
+        {
+          "optionId": "B",
+          "text": "Multicellular organisms evolved to replace unicellular ones"
+        },
+        {
+          "optionId": "C",
+          "text": "Different cell strategies evolved because different environments and challenges reward different solutions, there is no single best design"
+        },
+        {
+          "optionId": "D",
+          "text": "All cells are actually the same, visible differences are only cosmetic"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Different cell strategies evolved because different challenges reward different solutions. Prokaryotes thrive through speed and simplicity. Eukaryotes thrive through internal organization. Unicellular organisms thrive through independence. Multicellular organisms thrive through coordination. The diversity of strategies reflects the diversity of life's challenges."
+    }
+  ]
+}

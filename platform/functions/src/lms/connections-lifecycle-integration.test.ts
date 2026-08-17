@@ -382,9 +382,16 @@ describe("lmsConnectionsBegin -> lmsConnectionsComplete cross-callable integrati
     );
     const url = new URL(beginResponse.authorizationUrl);
     const scope = url.searchParams.get("scope") ?? "";
+    // The publication authorization URL merges the initial readonly scope set
+    // with the publication scope set: the widened grant carries all four.
     expect(scope).toContain("classroom.courses.readonly");
-    expect(scope).toContain("classroom.coursework.me");
+    expect(scope).toContain("classroom.rosters.readonly");
+    // Teacher-side coursework creation requires `classroom.coursework.students`.
+    // The caller-scoped `classroom.coursework.me` was disproved by live B9
+    // certification (Google granted it, courseWork.create still 403'd).
+    expect(scope).toContain("classroom.coursework.students");
     expect(scope).toContain("classroom.topics.readonly");
+    expect(scope).not.toContain("classroom.coursework.me");
   });
 
   it("omitted capability requests only the initial (readonly) scope set", async () => {
@@ -397,7 +404,9 @@ describe("lmsConnectionsBegin -> lmsConnectionsComplete cross-callable integrati
     const url = new URL(beginResponse.authorizationUrl);
     const scope = url.searchParams.get("scope") ?? "";
     expect(scope).toContain("classroom.courses.readonly");
+    expect(scope).toContain("classroom.rosters.readonly");
     expect(scope).not.toContain("classroom.coursework.me");
+    expect(scope).not.toContain("classroom.coursework.students");
     expect(scope).not.toContain("classroom.topics.readonly");
   });
 

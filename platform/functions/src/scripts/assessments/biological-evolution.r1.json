@@ -1,0 +1,269 @@
+{
+  "activityId": "biological-evolution",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-25-certification-seed",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is biological evolution?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A single organism changing its traits during its lifetime"
+        },
+        {
+          "optionId": "B",
+          "text": "A population changing over many generations due to environmental pressures"
+        },
+        {
+          "optionId": "C",
+          "text": "One species instantly turning into a completely different species"
+        },
+        {
+          "optionId": "D",
+          "text": "Only the strongest animals surviving in the wild"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Biological evolution describes populations (not individuals) changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "In natural selection, which organisms are MOST likely to reproduce and pass on their traits?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The largest organisms in a population"
+        },
+        {
+          "optionId": "B",
+          "text": "Those with traits that help them survive in their environment"
+        },
+        {
+          "optionId": "C",
+          "text": "Those that have been alive the longest"
+        },
+        {
+          "optionId": "D",
+          "text": "Those that look the most different from the rest of the population"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Natural selection favors organisms whose traits best match the environment; they survive longer and reproduce more, passing those helpful traits to the next generation."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "A population of moths lives on trees. When pollution darkens the bark, dark moths survive better than light moths. Over many generations, the population becomes mostly dark. What happened?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Individual moths changed color in response to pollution"
+        },
+        {
+          "optionId": "B",
+          "text": "The light moths chose to leave the trees"
+        },
+        {
+          "optionId": "C",
+          "text": "Dark moths survived because they blended in better"
+        },
+        {
+          "optionId": "D",
+          "text": "The moths evolved randomly without any cause"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "This is natural selection in action. Dark moths already existed in the population (variation). Predators spotted and ate more light moths. Dark moths survived and reproduced more, so dark coloring became more common over generations."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which of the following is an example of heritable variation?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A dog losing fur because of mange (a skin disease)"
+        },
+        {
+          "optionId": "B",
+          "text": "A plant growing taller because it gets more sunlight"
+        },
+        {
+          "optionId": "C",
+          "text": "A bird hatched with a longer beak than other birds"
+        },
+        {
+          "optionId": "D",
+          "text": "A scar a cat got from a fight"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Heritable variation means differences caused by genes that can be passed to offspring. A bird born with a longer beak inherited that trait and can pass it on. Scars, diseases, and environmental growth effects are NOT heritable."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Ambulocetus was a whale ancestor that had four legs and could walk on land AND swim. What type of fossil is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "An index fossil"
+        },
+        {
+          "optionId": "B",
+          "text": "A transitional fossil"
+        },
+        {
+          "optionId": "C",
+          "text": "A vestigial fossil"
+        },
+        {
+          "optionId": "D",
+          "text": "A homologous fossil"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Ambulocetus is a transitional fossil; it shows characteristics from two different groups (land animals and ocean mammals), bridging an evolutionary gap and providing evidence that whales evolved from land-walking ancestors."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "The forelimbs of a human arm, a whale flipper, and a bat wing all share the same bone structure underneath. What does this suggest?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "These animals must live in similar environments"
+        },
+        {
+          "optionId": "B",
+          "text": "These animals evolved from a common ancestor (homologous structures)"
+        },
+        {
+          "optionId": "C",
+          "text": "These structures perform the same function"
+        },
+        {
+          "optionId": "D",
+          "text": "These animals evolved at the same time period"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Homologous structures (the same bone arrangement in very different limbs) suggest these species inherited their limb structure from a shared ancestor, even though the limbs now serve different purposes."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A dolphin's fin and a shark's fin look similar and do the same job, but dolphins and sharks are not closely related. What does this represent?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Homologous structures, same ancestor, different function"
+        },
+        {
+          "optionId": "B",
+          "text": "Vestigial structures, leftover from ancestors"
+        },
+        {
+          "optionId": "C",
+          "text": "Analogous structures, convergent evolution producing similar solutions"
+        },
+        {
+          "optionId": "D",
+          "text": "Transitional structures, evidence of one evolving into the other"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Analogous structures result from convergent evolution: unrelated species independently evolve similar traits because they face similar environmental pressures. Dolphins and sharks both need fins to swim, but they evolved separately."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Humans have a tailbone (coccyx) that no longer serves its original function. What is this an example of?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A homologous structure"
+        },
+        {
+          "optionId": "B",
+          "text": "An analogous structure"
+        },
+        {
+          "optionId": "C",
+          "text": "A vestigial structure"
+        },
+        {
+          "optionId": "D",
+          "text": "A transitional fossil"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The coccyx is a vestigial structure, a body part that was useful in an ancestor (for a tail) but has been reduced or lost its function in modern humans. It's evidence that we share ancestry with animals that had tails."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Scientists compare the DNA of chimpanzees and humans and find they share about 98% of their genetic code. What is the most logical conclusion?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Chimpanzees and humans are essentially the same species"
+        },
+        {
+          "optionId": "B",
+          "text": "Humans evolved directly from chimpanzees"
+        },
+        {
+          "optionId": "C",
+          "text": "Chimpanzees and humans share a recent common ancestor"
+        },
+        {
+          "optionId": "D",
+          "text": "DNA comparisons are not reliable for tracing evolution"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The more DNA two species share, the more recently they diverged from a common ancestor. 98% similarity means humans and chimps branched from a shared ancestor relatively recently in evolutionary time; they didn't evolve from each other."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which of the following BEST describes why evolution is described as a change in a population, NOT a change in an individual?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Individuals change their own DNA to adapt during their lifetime"
+        },
+        {
+          "optionId": "B",
+          "text": "Only the strongest individuals evolve while weaker ones stay unchanged"
+        },
+        {
+          "optionId": "C",
+          "text": "Evolution is a population-level shift in trait frequency across generations"
+        },
+        {
+          "optionId": "D",
+          "text": "Populations only evolve when they move to a new environment"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "An individual's DNA doesn't change in response to the environment. Evolution works through reproduction: organisms with helpful traits have more offspring, those traits appear more often in the next generation, and gradually the trait becomes more common in the population. It's a change in the population, not the individual."
+    }
+  ]
+}

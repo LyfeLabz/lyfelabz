@@ -24,7 +24,7 @@ import {
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
 import { lmsClassLinkIdFor } from "./shared/ids";
-import { getLmsTokenStore } from "./tokens/token-store";
+import { resolveLiveCredential } from "./tokens/credential-resolver";
 
 // lmsClassesImport
 //
@@ -207,7 +207,9 @@ async function handler(
   // not the teacher-of-record; ownership drift produces the
   // `lms.ownershipDrift` audit event and the failure-state behavior in
   // PDR-019j.
-  const bundle = await getLmsTokenStore().resolve(connection.tokenRef);
+  // Resolve a live credential: an expired/near-expiry access token is
+  // refreshed in place before the ownership re-verification (PDR-030h).
+  const bundle = await resolveLiveCredential(connection.tokenRef);
   const adapter = getProviderAdapter(connection.providerId);
   let discovered;
   try {

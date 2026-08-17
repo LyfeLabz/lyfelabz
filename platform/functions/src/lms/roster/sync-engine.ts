@@ -21,7 +21,7 @@ import {
 
 import { getProviderAdapter } from "../providers/registry";
 import type { LmsProviderAdapter, LmsRosterStudent } from "../providers/provider";
-import { getLmsTokenStore } from "../tokens/token-store";
+import { resolveLiveCredential } from "../tokens/credential-resolver";
 import { enrollmentIdFor } from "../../enrollments/enrollments-join-by-code";
 
 // Provider-neutral roster synchronization engine.
@@ -443,7 +443,9 @@ export async function synchronizeClassRoster(
     );
   }
 
-  const bundle = await getLmsTokenStore().resolve(connection.tokenRef);
+  // Resolve a live credential: an expired/near-expiry access token is
+  // refreshed in place before the roster read (PDR-030h).
+  const bundle = await resolveLiveCredential(connection.tokenRef);
   const adapter = loadAdapter(connection.providerId);
 
   // Phase 1: read + plan. If the roster retrieval fails, the engine

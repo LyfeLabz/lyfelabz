@@ -7,9 +7,13 @@ import {
   lmsConnectionDocRef,
 } from "../shared";
 
+import {
+  ensureGoogleClassroomProductionBindings,
+  googleClassroomProductionSecrets,
+} from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
-import { getLmsTokenStore } from "./tokens/token-store";
+import { resolveLiveCredential } from "./tokens/credential-resolver";
 
 // lmsClassesListTopics
 //
@@ -40,6 +44,13 @@ export type LmsClassesListTopicsResponse = {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsClassesListTopicsResponse> {
+  // Install the Google Classroom production config/transport bindings at
+  // handler entry (Sprint 25 B9 certification finding). This callable
+  // reaches the upstream provider through `adapter.listClassTopics`, so it
+  // must independently bind its own transport rather than depend on a
+  // sibling callable having already run in the same worker. The installer
+  // is idempotent and respects a test-injected transport.
+  ensureGoogleClassroomProductionBindings();
   const actor = assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
@@ -96,7 +107,9 @@ async function handler(
     );
   }
 
-  const bundle = await getLmsTokenStore().resolve(connection.tokenRef);
+  // Resolve a live credential: an expired/near-expiry access token is
+  // refreshed in place before the topic read (PDR-030h).
+  const bundle = await resolveLiveCredential(connection.tokenRef);
   const adapter = getProviderAdapter(connection.providerId);
   const topics = await adapter.listClassTopics({
     accessToken: bundle.accessToken,
@@ -108,5 +121,8 @@ async function handler(
   };
 }
 
-export const lmsClassesListTopics = platformCallable(handler);
+export const lmsClassesListTopics = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
+  handler,
+);
 export const __lmsClassesListTopicsHandler = handler;

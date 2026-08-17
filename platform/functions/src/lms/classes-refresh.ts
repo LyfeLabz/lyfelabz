@@ -14,12 +14,16 @@ import {
   type LmsConnectionRevocationWrite,
 } from "../shared";
 
+import {
+  ensureGoogleClassroomProductionBindings,
+  googleClassroomProductionSecrets,
+} from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter } from "./providers/registry";
 import {
   assertAuthenticatedTeacherForLms,
   requireNonEmptyString,
 } from "./shared/actor";
-import { getLmsTokenStore } from "./tokens/token-store";
+import { resolveLiveCredential } from "./tokens/credential-resolver";
 
 // lmsClassesRefresh
 //
@@ -110,6 +114,13 @@ function extractErrorCode(err: unknown): string {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsClassesRefreshResponse> {
+  // Install the Google Classroom production config/transport bindings at
+  // handler entry (Sprint 25 B9 certification finding). This callable
+  // reaches the upstream provider through `adapter.fetchClass`, so it must
+  // independently bind its own transport rather than depend on a sibling
+  // callable having already run in the same worker. The installer is
+  // idempotent and respects a test-injected transport.
+  ensureGoogleClassroomProductionBindings();
   const actor = assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
@@ -192,14 +203,17 @@ async function handler(
     return { ...baseResponse, status: "reconnectRequired", changed: false };
   }
 
-  // Resolve the token bundle server-side (PDR-019e). The bundle never
-  // leaves the trust boundary of this callable.
+  // Resolve a live token bundle server-side (PDR-019e). The bundle never
+  // leaves the trust boundary of this callable. An expired/near-expiry
+  // access token is refreshed in place here (PDR-030h); a credential that
+  // can no longer be refreshed (revoked refresh token -> lms.reconnectRequired)
+  // maps to the same reconnect-required posture as a missing token.
   let bundle;
   try {
-    bundle = await getLmsTokenStore().resolve(connection.tokenRef);
+    bundle = await resolveLiveCredential(connection.tokenRef);
   } catch (err) {
     const code = extractErrorCode(err);
-    if (code === TOKEN_NOT_FOUND_CODE) {
+    if (code === TOKEN_NOT_FOUND_CODE || code === "lms.reconnectRequired") {
       return { ...baseResponse, status: "reconnectRequired", changed: false };
     }
     throw new PlatformError(
@@ -430,5 +444,8 @@ async function handleOwnershipDrift(
   };
 }
 
-export const lmsClassesRefresh = platformCallable(handler);
+export const lmsClassesRefresh = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
+  handler,
+);
 export const __lmsClassesRefreshHandler = handler;

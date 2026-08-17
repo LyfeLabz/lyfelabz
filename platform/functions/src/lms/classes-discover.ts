@@ -8,7 +8,7 @@ import {
 } from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
-import { getLmsTokenStore } from "./tokens/token-store";
+import { resolveLiveCredential } from "./tokens/credential-resolver";
 
 // lmsClassesDiscover
 //
@@ -76,7 +76,9 @@ async function handler(
     );
   }
 
-  const bundle = await getLmsTokenStore().resolve(existing.tokenRef);
+  // Resolve a live credential: an expired/near-expiry access token is
+  // refreshed in place before class discovery (PDR-030h).
+  const bundle = await resolveLiveCredential(existing.tokenRef);
   const adapter = getProviderAdapter(existing.providerId);
   const discovered = await adapter.listTeacherClasses({
     accessToken: bundle.accessToken,

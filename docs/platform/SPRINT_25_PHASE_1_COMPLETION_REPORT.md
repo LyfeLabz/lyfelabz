@@ -280,3 +280,77 @@ Phase 2 (OAuth scope changes and client incremental consent flow) depends on the
 3. A nonce-stable `publicationId` is always returned so the client can retry with the same `attemptNonce` after obtaining the broader scope.
 
 No Phase 2 work is authorized by this report.
+
+---
+
+## Certification Addendum: real-Google insufficient-scope error shape
+
+Recorded during Sprint 25 browser certification (paused at B4). Certification
+remained paused throughout; no B5 or B9 scenario was run.
+
+**Defect (certification-discovered).** The Phase 1 mapping above was verified
+only against the fixture transport's synthetic `errorCode` values
+(`INSUFFICIENT_SCOPE`, `PERMISSION_DENIED`). Real Google Classroom does not
+send those. A genuine OAuth scope shortfall arrives as HTTP 403 with the
+generic top-level `error.status = "PERMISSION_DENIED"` and the discriminating
+reason nested in `error.details[].reason = "ACCESS_TOKEN_SCOPE_INSUFFICIENT"`.
+The transport's `extractUpstreamCode` returned `error.status` first and never
+inspected `error.details[]`, so the adapter's insufficient-scope branch
+(which already recognizes `ACCESS_TOKEN_SCOPE_INSUFFICIENT`) was dead code
+against production. Every real insufficient-scope 403 was therefore
+misclassified as `lms.upstreamAuthorizationFailed`.
+
+**Scope of impact.** `listCourseTopics` and `createCourseWork` share
+`callUpstream` → `extractUpstreamCode` → `GoogleClassroomHttpsError` and both
+adapter methods translate through `translateUpstreamError`. So publication was
+affected identically to topic listing: a first real publish on a readonly-only
+connection would have returned `lms.upstreamAuthorizationFailed`, written a
+`failed` publication record, and emitted `lms.publishFailed` - defeating the
+non-terminal `lms.insufficientScope` contract this report depends on and
+denying the client its Phase 2 incremental-consent signal. (This also means
+the correction is what makes backend checks V5/V6 pass against real Google.)
+
+**Correction (smallest, provider-specific).** `extractUpstreamCode` in
+`platform/functions/src/lms/providers/google-classroom/transport.ts` now scans
+`error.details[]` for a `google.rpc.ErrorInfo` reason and surfaces it as the
+upstream code when it is one of the two exact scope markers
+(`ACCESS_TOKEN_SCOPE_INSUFFICIENT` or the legacy/fixture `INSUFFICIENT_SCOPE`),
+before falling back to `error.status`. An ordinary `PERMISSION_DENIED` (no such
+reason) is unchanged and still maps to `lms.upstreamAuthorizationFailed`. The
+adapter, callable, and provider-neutral error vocabulary are unchanged; raw
+Google bodies still never cross the client trust boundary. Initial OAuth scopes
+were NOT broadened and PDR-030 was NOT changed.
+
+**Tests added (real error shape, not synthetic codes).**
+
+- `transport-https.test.ts`: a real 403 `PERMISSION_DENIED` + details reason
+  `ACCESS_TOKEN_SCOPE_INSUFFICIENT` surfaces that reason as the upstream code
+  for both `listCourseTopics` and `createCourseWork`; an ordinary 403 without
+  the scope reason stays `PERMISSION_DENIED`.
+- `adapter-publication.test.ts`: the genuine fetch-based transport wired into
+  the adapter classifies the real insufficient-scope 403 as
+  `lms.insufficientScope` for both `listClassTopics` and `publishAssignment`,
+  and an ordinary real 403 as `lms.upstreamAuthorizationFailed`.
+- `assignments-publish.test.ts`: a scope shortfall reaching the callable stays
+  the non-terminal `lms.insufficientScope` outcome (no failed record, no
+  `lms.publishFailed`) and does not regress to
+  `lms.upstreamAuthorizationFailed`.
+
+**Client topic-load correctness (Phase 3 surface).** `ensureTopics`
+(`app/src/shell/surfaces/curriculum.ts`) previously cached an empty list on any
+topic-fetch failure. A pre-consent failure (expected, since the topics scope is
+post-consent) was thus remembered permanently and, after publication consent
+widened the connection, the real topics never appeared. The failure path no
+longer caches, so a later Assign-dialog open re-fetches against the possibly
+widened connection. The pre-consent empty selector remains the accepted
+degraded state, and topic loading still never triggers consent - publication
+remains the sole consent trigger.
+
+**B4 sequencing correction (documentation only).** The frozen architecture is
+authoritative: `classroom.topics.readonly` stays in the publication
+incremental-consent bundle. The browser checklist and runbook were corrected so
+B4 is a PRE-CONSENT check (topic selector present, empty "No topic" expected,
+no claim of a real topic read) and a new B4b verifies real topic population
+AFTER B9/B10 widen the connection. The backend verification checklist already
+treated topics as post-consent (V10) and its pre-consent insufficient-scope
+expectations (V5/V6) are unchanged, so it required no edit.

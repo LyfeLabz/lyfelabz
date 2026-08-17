@@ -126,8 +126,11 @@ Logging, hence out of scope for emulator certification and deferred).
 ### V10. Required publication scopes are present after successful consent
 - **Source:** `lmsConnections/{connectionId}.scopes`. **Support:**
   emulator-supported.
-- **Expected:** `classroom.coursework.me` and `classroom.topics.readonly`
+- **Expected:** `classroom.coursework.students` and `classroom.topics.readonly`
   are present after a successful B9 grant that led to a B7/B8 success.
+  (Scope correction, 2026-08-16, PDR-030g: the teacher-side write scope is
+  `classroom.coursework.students`, not the caller-scoped
+  `classroom.coursework.me` originally assumed.)
 - **Forbidden:** A succeeded publication whose connection lacks the
   coursework scopes.
 - **Pass/fail:** PASS when both coursework scopes are recorded. (Note: a

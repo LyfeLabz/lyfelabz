@@ -65,6 +65,11 @@ import {
   createAssignmentRecipientListCallable,
   type AssignmentRecipientListCallable,
 } from "./assignments/detail/roster-wire";
+// Sprint 25 certification (B2) fix: drop the Curriculum surface's
+// module-scoped teacher class cache on every bootstrap transition so a
+// same-uid sign-out/sign-in (auth-session replacement) cannot let the
+// Assign dialog reuse the prior session's class rows.
+import { invalidateCurriculumClassCache } from "./shell/surfaces/curriculum";
 import {
   createAttemptGetForTeacherCallable,
   createAttemptsListForClassCallable,
@@ -515,6 +520,13 @@ async function run(): Promise<void> {
     // Curriculum scroll snapshot so no offset can restore against an
     // unrelated surface or teacher context.
     curriculumScrollGuard.invalidate();
+    // Sprint 25 (B2): the same bootstrap boundary drops the Curriculum
+    // class cache. Sign-out/sign-in as the same teacher keeps the uid, so
+    // the uid-keyed cache would otherwise survive the teardown and feed
+    // the Assign dialog stale rows. In-tab surface navigation does not
+    // pass through `rerun`, so the intended within-session prefetch cache
+    // is preserved; only a real auth transition clears it.
+    invalidateCurriculumClassCache();
     dispatch(session, table, mount, window.history);
   };
 

@@ -18,10 +18,14 @@ import {
   type LmsAssignmentPublicationCreationWrite,
 } from "../shared";
 
+import {
+  ensureGoogleClassroomProductionBindings,
+  googleClassroomProductionSecrets,
+} from "./providers/google-classroom/config-firebase";
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
 import { lmsAssignmentPublicationIdFor } from "./shared/ids";
-import { getLmsTokenStore } from "./tokens/token-store";
+import { resolveLiveCredential } from "./tokens/credential-resolver";
 
 // lmsAssignmentsPublish
 //
@@ -109,6 +113,14 @@ function optionalNonEmptyString(value: unknown): string | undefined {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsAssignmentsPublishResponse> {
+  // Install the Google Classroom production config/transport bindings at
+  // handler entry (Sprint 25 B9 certification finding). This callable
+  // reaches the upstream provider through `adapter.publishAssignment`, so
+  // it must independently bind its own transport rather than depend on a
+  // sibling callable (import/discovery/sync) having already run in the same
+  // worker. The installer is idempotent and respects a test-injected
+  // transport, so it is safe under both production and fixture seams.
+  ensureGoogleClassroomProductionBindings();
   const actor = assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
@@ -282,7 +294,14 @@ async function handler(
   }
 
   const title = titleOverride ?? assignment.title ?? assignment.lessonSlug;
-  const bundle = await getLmsTokenStore().resolve(connection.tokenRef);
+  // Resolve a LIVE credential: an expired or near-expiry access token is
+  // refreshed in place before the coursework POST (Sprint 25 credential-
+  // refresh lifecycle, PDR-030h). This is the seam that lets an active
+  // connection with a stale access token self-heal without the teacher
+  // reconnecting. A refresh that cannot recover the credential throws a
+  // normalized PlatformError, which the Phase A catch below records as a
+  // failed publication rather than a false success.
+  const bundle = await resolveLiveCredential(connection.tokenRef);
   const adapter = getProviderAdapter(connection.providerId);
 
   // Phase A: upstream call.
@@ -504,5 +523,8 @@ async function handler(
   };
 }
 
-export const lmsAssignmentsPublish = platformCallable(handler);
+export const lmsAssignmentsPublish = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
+  handler,
+);
 export const __lmsAssignmentsPublishHandler = handler;

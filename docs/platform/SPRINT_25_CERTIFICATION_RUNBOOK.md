@@ -71,12 +71,17 @@ delta below.
 
 **Sprint 25 scope delta (the decisive prerequisite).** Sprint 25 requests
 two additional scopes at incremental consent:
-`https://www.googleapis.com/auth/classroom.coursework.me` and
+`https://www.googleapis.com/auth/classroom.coursework.students` and
 `https://www.googleapis.com/auth/classroom.topics.readonly`
-(`GOOGLE_CLASSROOM_PUBLICATION_SCOPES` in `adapter.ts`). Before
+(`GOOGLE_CLASSROOM_PUBLICATION_SCOPES` in `adapter.ts`). (Scope
+correction, 2026-08-16, Sprint 25 B9 live certification, PDR-030g: the
+original write scope `classroom.coursework.me` was disproved by real
+Google - Google granted it, yet teacher-side `courses.courseWork.create`
+still returned `ACCESS_TOKEN_SCOPE_INSUFFICIENT` - and is corrected to
+the teacher-side write scope `classroom.coursework.students`.) Before
 certification:
 - Confirm the certification OAuth client's consent screen will present
-  and grant these two scopes to the test teacher. `classroom.coursework.me`
+  and grant these two scopes to the test teacher. `classroom.coursework.students`
   is a sensitive scope; on an unverified app it triggers the
   unverified-app warning and the 100-user sensitive-scope cap, both
   acceptable for a single-operator certification. If Google will not
@@ -107,7 +112,7 @@ bind the real Google HTTPS transport. Therefore:
 ### 1.6 Test Google accounts and course
 - One test teacher Google account the operator controls.
 - A real Google Classroom course owned by the test teacher, with at least
-  one topic (required for B8/B12).
+  one topic (required for B4b/B8/B12; topic reads are post-consent only).
 - A second real course owned by the test teacher (single topic acceptable)
   for the multi-class scenarios B21/B22.
 - No student accounts are needed. Sprint 25 is teacher-initiated publish
@@ -118,12 +123,52 @@ bind the real Google HTTPS transport. Therefore:
 - `lmsProviders/googleClassroom`, one district, one school, the teacher
   `users/{teacherUid}`, and the teacher's Auth emulator record. No
   `lmsClassLinks`, no `lmsAssignmentPublications` seeded.
+- A deployed assessment for every cert lesson the run will assign. This is a
+  hard prerequisite: `assignmentsPublish` refuses a `draft -> published`
+  transition for a lesson whose assessment was never deployed
+  (`assessments.notDeployed`), so activation/publication fails without it.
+  `seed-emulator.js` now seeds these automatically through the certified
+  deployment pipeline (canonical set in
+  `platform/functions/src/scripts/assessments/cert-lessons.ts`:
+  `what-is-life`, `cell-types`, `biological-evolution`). Requires the
+  functions build (§3) so the pipeline is available under `lib/`. See
+  `SPRINT_25_B6_CERTIFICATION_FINDINGS.md`.
 - The teacher must reach the certified Sprint 24B state through the app
   (connect Google Classroom readonly, import a course, activate the
   class, sync roster) so the LMS-linked active class exists with a real
   `lmsClassLinks` binding. B9 requires the connection to hold **readonly
   scopes only** at the start of the publish flow. Do not pre-grant the
   coursework scopes.
+
+### 1.8 Per-callable production activation requirement (implementation invariant)
+
+This is a code invariant, not an emulator-startup or seed step. Nothing in
+this subsection is something the operator runs; it is what the production
+code must already satisfy, and it is stated here because a violation
+(Sprint 25 B9 finding, Phase 3 report §27A) is invisible until the first
+live upstream call and can depend on which callable a worker served first.
+
+Every callable that performs a real Google Classroom upstream transport
+operation must **independently**:
+
+1. call `ensureGoogleClassroomProductionBindings()` at handler entry, before
+   any provider or transport work; and
+2. declare `googleClassroomProductionSecrets` in its
+   `platformCallable({ secrets: [...] }, handler)` options.
+
+Neither may be inherited from another callable. The module-level transport
+is per-worker state; a callable that omits step 1 finds the transport
+unbound in any worker that has not already served a callable that bound it,
+and a callable that omits step 2 has no Secret Manager binding for the OAuth
+exchange. The installer is idempotent and does not overwrite a test-injected
+transport, so this wiring is safe under both production and fixture seams.
+
+Callables currently subject to this invariant (perform an upstream transport
+op): `lmsConnectionsBegin`, `lmsConnectionsComplete`, `lmsConnectionsDisconnect`,
+`lmsClassesDiscover`, `lmsClassesImport`, `lmsClassesSyncRoster`,
+`lmsClassesRefresh`, `lmsClassesListTopics`, `lmsAssignmentsPublish`.
+Pure Firestore/read-only callables (`lmsConnectionsDescribe`,
+`lmsProvidersList`) must **not** carry this wiring.
 
 ---
 
@@ -208,9 +253,19 @@ Wait for every emulator to report "started". On cold start the Functions
 log emits the durable-store installer lines.
 
 ### 4.2 Terminal B - Firestore seed
-Seed §1.7 through the Emulator UI at `http://localhost:4000` or a one-shot
-Node script bound to `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080` and
-`FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099`. Do not commit the script.
+Seed §1.7 by running the repository seed against the emulator (it binds the
+emulator hosts itself and seeds identity, org, the Auth teacher, and the cert
+assessments in one pass):
+```bash
+npm --prefix platform/functions run build   # once, so lib/ exists
+node platform/functions/seed-emulator.js
+node platform/functions/verify-seed.js      # must print cert assessments: ALL PRESENT
+```
+`verify-seed.js` fails (non-zero exit) if any cert lesson's deployed
+assessment, current revision, or revision/lesson pairing is missing or
+malformed. Do not proceed past a `MISSING/MALFORMED` result. The cert
+assessments alone can also be (re)seeded in isolation with
+`node platform/functions/seed-cert-assessments.js` (idempotent).
 
 ### 4.3 Terminal C - OAuth parameters (Sprint 25 delta)
 The emulator reads `platform/functions/.env.local` and `.secret.local`
@@ -255,16 +310,22 @@ connection is not consumed before the scenarios that depend on it, and so
 destructive states (revoked/disconnected connection) come last.
 
 1. **Baseline and controls (non-destructive):** B1, B2, B3, B4, B5. These
-   render and inspect surfaces; they mutate nothing upstream.
+   render and inspect surfaces; they mutate nothing upstream. B4 is the
+   PRE-CONSENT topic-selector check: the connection still holds only the
+   initial readonly scopes, so the topic selector is expected to be empty
+   ("No topic"); do not require real topics here. Real topic population is
+   verified post-consent in B4b (step 4).
 2. **Happy path, publication off:** B6. Confirms assigning still works and
    fires no publish.
 3. **Incremental consent (decisive, needs the readonly-only connection):**
    B9, then B10 as its ledger view. This is the one flow that must run
    while the connection still lacks the coursework scopes. Run it before
    any scenario that would widen the connection.
-4. **Happy path, publication on (needs the widened connection):** B7 (no
-   topic), B8 (topic). These require the coursework scopes granted in step
-   3.
+4. **Happy path, publication on (needs the widened connection):** B4b
+   (post-consent topic population from real Google), then B7 (no topic),
+   B8 (topic). These require the coursework scopes granted in step 3. Run
+   B4b first so the widened-connection topic read is verified before B8
+   selects a topic.
 5. **In-Classroom confirmation:** B11, B12 against the real course.
 6. **Bounded consent-failure scenarios (need a readonly-only connection):**
    B13 (cancel/deny) and, where Google permits a partial grant, B14 and
@@ -288,10 +349,10 @@ Per-scenario connection-state requirements:
 
 | Needs | Scenarios |
 |---|---|
-| Fresh readonly-only connection | B9/B10, B13, B14, B15, B22 |
-| Active widened connection | B7, B8, B11, B12, B18, B19 |
+| Fresh readonly-only connection | B4, B9/B10, B13, B14, B15, B22 |
+| Active widened connection | B4b, B7, B8, B11, B12, B18, B19 |
 | Deliberately non-active connection | B17 |
-| A course topic | B4, B8, B12 |
+| A course topic | B4b, B8, B12 |
 | A second class/course | B21, B22 |
 | Cleanup/restoration afterward | B16, B17, B20 (see §7) |
 

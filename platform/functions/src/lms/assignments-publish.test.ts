@@ -29,6 +29,12 @@ const mockGetProviderAdapter = jest.fn();
 const mockAssertAuthenticatedTeacherForLms = jest.fn();
 const mockRequireNonEmptyString = jest.fn();
 const mockLmsAssignmentPublicationIdFor = jest.fn();
+const mockEnsureBindings = jest.fn();
+// Records the options object passed to platformCallable at module load so a
+// test can assert the callable declares the Google Classroom production
+// secrets (Sprint 25 B9 certification finding, Part 4A). A plain holder (not
+// a jest.fn) so the capture survives beforeEach's jest.clearAllMocks().
+const mockCapturedCallableOptions: { value?: unknown } = {};
 
 const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
 
@@ -39,7 +45,7 @@ jest.mock("firebase-admin/firestore", () => ({
 }));
 
 jest.mock("firebase-functions/v2/https", () => ({
-  onCall: <T,>(handler: T) => handler,
+  onCall: <T,>(_options: unknown, handler: T) => handler,
 }));
 
 jest.mock("../shared", () => {
@@ -47,7 +53,14 @@ jest.mock("../shared", () => {
     "../shared/errors/platform-error",
   );
   return {
-    platformCallable: (handler: unknown) => handler,
+    // Two-arg-tolerant: the callable is now constructed as
+    // platformCallable({ secrets: [...] }, handler). Capture the options so
+    // the binding-contract test can assert the secrets declaration.
+    platformCallable: (optionsOrHandler: unknown, maybeHandler: unknown) => {
+      if (typeof optionsOrHandler === "function") return optionsOrHandler;
+      mockCapturedCallableOptions.value = optionsOrHandler;
+      return maybeHandler;
+    },
     PlatformError,
     log: { info: jest.fn(), warn: jest.fn(), error: mockLogError },
     writeAuditEvent: mockWriteAuditEvent,
@@ -68,6 +81,11 @@ jest.mock("../shared", () => {
     lmsConnectionDocRef: jest.fn(() => ({ get: mockConnectionGet })),
   };
 });
+
+jest.mock("./providers/google-classroom/config-firebase", () => ({
+  ensureGoogleClassroomProductionBindings: () => mockEnsureBindings(),
+  googleClassroomProductionSecrets: ["__gc_secret_sentinel__"] as const,
+}));
 
 jest.mock("./shared/actor", () => ({
   assertAuthenticatedTeacherForLms: mockAssertAuthenticatedTeacherForLms,
@@ -223,6 +241,28 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+describe("lmsAssignmentsPublish production-binding contract (Sprint 25 B9)", () => {
+  it("declares the Google Classroom production secrets on the callable", () => {
+    // Captured at module load. The callable must attach
+    // googleClassroomProductionSecrets so the Secret Manager value is bound
+    // per worker; the sentinel proves the value came from config-firebase.
+    expect(mockCapturedCallableOptions.value).toEqual({
+      secrets: ["__gc_secret_sentinel__"],
+    });
+  });
+
+  it("installs the production bindings at handler entry before any provider work", async () => {
+    setupHappyPath();
+    await __lmsAssignmentsPublishHandler(makeRequest());
+    expect(mockEnsureBindings).toHaveBeenCalledTimes(1);
+    // Bindings must be installed before the token store / adapter are reached,
+    // so this callable does not depend on a sibling having bound the transport.
+    const ensureOrder = mockEnsureBindings.mock.invocationCallOrder[0];
+    const adapterOrder = mockGetProviderAdapter.mock.invocationCallOrder[0];
+    expect(ensureOrder).toBeLessThan(adapterOrder);
+  });
+});
+
 describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
   describe("happy path: first successful publication", () => {
     it("returns succeeded with the lmsAssignmentId and lmsAssignmentUrl", async () => {
@@ -269,6 +309,79 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
         const record = mockPublicationCreationSet.mock.calls[0][0];
         expect(JSON.stringify(record)).not.toContain(FIXTURE_ACCESS_TOKEN);
       }
+    });
+  });
+
+  describe("expired-credential self-refresh (PDR-030h)", () => {
+    const STALE_TOKEN = "fixture-access-token-stale";
+    const FRESH_TOKEN = "fixture-access-token-fresh";
+    const OLD_EXPIRY = Date.now() - 1000; // already expired
+
+    function setupExpiredCredential() {
+      setupHappyPath();
+      const publish = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      const refreshCredential = jest.fn().mockResolvedValue({
+        accessToken: FRESH_TOKEN,
+        expiresInSeconds: 3600,
+      });
+      const persist = jest.fn().mockResolvedValue({
+        providerId: FIXTURE_PROVIDER_ID,
+        teacherId: FIXTURE_UID,
+        accessToken: FRESH_TOKEN,
+        refreshToken: "fixture-refresh-token",
+        scopes: ["scope.a"],
+        expiresAtEpochMs: Date.now() + 3600 * 1000,
+        upstreamAccountIdentifier: "fixture-upstream-id",
+      });
+      mockGetLmsTokenStore.mockReturnValue({
+        resolve: jest.fn().mockResolvedValue({
+          providerId: FIXTURE_PROVIDER_ID,
+          teacherId: FIXTURE_UID,
+          accessToken: STALE_TOKEN,
+          refreshToken: "fixture-refresh-token",
+          scopes: ["scope.a"],
+          expiresAtEpochMs: OLD_EXPIRY,
+          upstreamAccountIdentifier: "fixture-upstream-id",
+        }),
+        persistRefreshedCredential: persist,
+      });
+      mockGetProviderAdapter.mockReturnValue({ refreshCredential, publish, publishAssignment: publish });
+      return { publish, refreshCredential, persist };
+    }
+
+    it("refreshes the expired token before createCourseWork and publishes with the fresh token", async () => {
+      const { publish, refreshCredential, persist } = setupExpiredCredential();
+      const result = await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(refreshCredential).toHaveBeenCalledWith({
+        refreshToken: "fixture-refresh-token",
+      });
+      expect(persist).toHaveBeenCalledTimes(1);
+      expect(publish).toHaveBeenCalledTimes(1);
+      // The adapter received the REFRESHED token, never the stale one.
+      expect(publish.mock.calls[0][0].accessToken).toBe(FRESH_TOKEN);
+      expect(result.status).toBe("succeeded");
+    });
+
+    it("records a failed publication (not a false success) when the credential cannot be refreshed", async () => {
+      setupExpiredCredential();
+      // The refresh token is revoked -> resolver throws lms.reconnectRequired.
+      mockGetProviderAdapter.mockReturnValue({
+        refreshCredential: jest
+          .fn()
+          .mockRejectedValue(
+            new PlatformError(
+              "lms.upstreamAuthorizationFailed",
+              "refresh token revoked",
+            ),
+          ),
+        publishAssignment: jest.fn(),
+      });
+      await expect(
+        __lmsAssignmentsPublishHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "lms.reconnectRequired" });
     });
   });
 
@@ -319,6 +432,31 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
       // No failed record.
       expect(mockPublicationCreationSet).not.toHaveBeenCalled();
       // No lms.publishFailed audit.
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    });
+
+    // Sprint 25 certification finding: a real Google OAuth scope shortfall on
+    // createCourseWork now reaches this callable as lms.insufficientScope
+    // (the transport surfaces the ACCESS_TOKEN_SCOPE_INSUFFICIENT reason; see
+    // adapter-publication.test.ts "against the real HTTPS transport"). This
+    // guards the non-terminal contract at the callable boundary: it must not
+    // regress to the terminal lms.upstreamAuthorizationFailed path, which
+    // would write a failed record and a lms.publishFailed audit and deny the
+    // client its incremental-consent signal.
+    it("does not treat a scope shortfall as a terminal upstreamAuthorizationFailed", async () => {
+      setupHappyPath();
+      mockGetProviderAdapter.mockReturnValue({
+        publishAssignment: jest.fn().mockRejectedValue(
+          new PlatformError(
+            "lms.insufficientScope",
+            "Additional OAuth consent required.",
+          ),
+        ),
+      });
+      const result = await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(result.errorCode).toBe("lms.insufficientScope");
+      expect(result.errorCode).not.toBe("lms.upstreamAuthorizationFailed");
+      expect(mockPublicationCreationSet).not.toHaveBeenCalled();
       expect(mockWriteAuditEvent).not.toHaveBeenCalled();
     });
   });

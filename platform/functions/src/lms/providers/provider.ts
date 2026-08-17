@@ -45,6 +45,26 @@ export type LmsOAuthGrant = {
   readonly upstreamAccountIdentifier: string;
 };
 
+// The result of exchanging stored refresh material for a fresh access
+// token (Sprint 25 credential-refresh lifecycle, PDR-030h). A refresh is
+// credential maintenance, NOT a new authorization event: it never widens
+// scope, never mints OAuth state, and never changes the upstream account
+// identity. It renews only the access token and its expiry.
+//
+// `refreshToken` and `scopes` are present ONLY when the provider returns
+// authoritative replacements. The refresh orchestration
+// (`resolveLiveCredential`) preserves the existing refresh token and
+// existing scopes verbatim whenever these are omitted, so a refresh can
+// never lose offline access and can never regress the granted scope set.
+// The Google Classroom `refresh_token` grant omits both fields on every
+// ordinary refresh, so both are normally absent.
+export type LmsCredentialRefresh = {
+  readonly accessToken: string;
+  readonly expiresInSeconds?: number;
+  readonly refreshToken?: string;
+  readonly scopes?: readonly string[];
+};
+
 // -------------------- Discovery --------------------
 
 // The minimum classroom identity the discovery surface exposes. The set
@@ -152,6 +172,20 @@ export interface LmsProviderAdapter {
     readonly state: string;
     readonly redirectUri: string;
   }): Promise<LmsOAuthGrant>;
+
+  // Exchange stored refresh material for a fresh access token. Called by
+  // the vendor-neutral credential resolver (`resolveLiveCredential`) when a
+  // stored access token is expired or within the refresh skew of expiry
+  // (Sprint 25 credential-refresh lifecycle, PDR-030h). The adapter maps
+  // its provider-specific refresh endpoint into the vendor-neutral
+  // `LmsCredentialRefresh`; it never widens scope and never mints OAuth
+  // state. Errors are translated to the same stable vendor-neutral
+  // `PlatformError` vocabulary every other adapter operation uses, so the
+  // resolver can distinguish an unrecoverable credential (invalid_grant ->
+  // lms.upstreamAuthorizationFailed) from a transient upstream failure.
+  refreshCredential(input: {
+    readonly refreshToken: string;
+  }): Promise<LmsCredentialRefresh>;
 
   // Revoke the upstream grant. Every LMS interaction is reversible from
   // the teacher's side per PDR-019c; disconnect calls this method before

@@ -25,6 +25,20 @@ export type LmsTokenBundle = {
   readonly upstreamAccountIdentifier: string;
 };
 
+// The refreshed access-token material handed to the store's compare-and-swap
+// persistence path (Sprint 25 credential-refresh lifecycle, PDR-030h). The
+// resolver computes an absolute expiry from the provider's `expires_in`
+// before calling; the store never re-derives it. `refreshToken` and `scopes`
+// are present ONLY when the provider returned authoritative replacements; the
+// store preserves the existing values when they are absent so a refresh can
+// never lose offline access and can never regress the granted scope set.
+export type LmsRefreshedCredential = {
+  readonly accessToken: string;
+  readonly expiresAtEpochMs?: number;
+  readonly refreshToken?: string;
+  readonly scopes?: readonly string[];
+};
+
 export type LmsTokenStore = {
   // Persist a freshly-granted token bundle server-side and return an
   // opaque reference. The reference is safe to record in a Firestore
@@ -36,11 +50,64 @@ export type LmsTokenStore = {
   // resolution never leaves the Cloud Function trust boundary.
   resolve(tokenRef: string): Promise<LmsTokenBundle>;
 
+  // Atomically merge a refreshed access token onto the existing bundle at
+  // `tokenRef` and return the authoritative post-merge bundle
+  // (Sprint 25 credential-refresh lifecycle, PDR-030h). The tokenRef is
+  // stable across refresh: a refresh updates the existing document in place
+  // rather than minting a new reference, so the connection pointer never
+  // rotates for ordinary credential maintenance.
+  //
+  // Invariants:
+  //   - Compare-and-swap on expiry: if a concurrent refresh already advanced
+  //     the stored expiry beyond `observedExpiresAtEpochMs`, the newer stored
+  //     bundle is returned unchanged and the older result is discarded.
+  //   - refreshToken and scopes are preserved from the existing bundle when
+  //     the refreshed material omits them (never lose offline access; never
+  //     regress scope).
+  //   - providerId, teacherId, and upstreamAccountIdentifier are never
+  //     changed by a refresh.
+  persistRefreshedCredential(input: {
+    readonly tokenRef: string;
+    readonly observedExpiresAtEpochMs?: number;
+    readonly refreshed: LmsRefreshedCredential;
+  }): Promise<LmsTokenBundle>;
+
   // Revoke and discard the stored bundle for a reference. Called by the
   // disconnect callable after the adapter revokes the upstream grant so
   // no residual token material persists in the operational store.
   revoke(tokenRef: string): Promise<void>;
 };
+
+// Canonical refresh merge semantics, shared by every LmsTokenStore
+// implementation so the in-process and Firestore stores can never drift
+// (PDR-030h). The access token and (when provided) the expiry are renewed;
+// refreshToken and scopes are preserved from the existing bundle unless the
+// provider returned authoritative replacements; providerId, teacherId, and
+// upstreamAccountIdentifier are carried over unchanged.
+export function mergeRefreshedBundle(
+  current: LmsTokenBundle,
+  refreshed: LmsRefreshedCredential,
+): LmsTokenBundle {
+  const nextExpiry =
+    refreshed.expiresAtEpochMs !== undefined
+      ? refreshed.expiresAtEpochMs
+      : current.expiresAtEpochMs;
+  const nextRefreshToken =
+    refreshed.refreshToken !== undefined
+      ? refreshed.refreshToken
+      : current.refreshToken;
+  const nextScopes =
+    refreshed.scopes !== undefined ? refreshed.scopes : current.scopes;
+  return {
+    providerId: current.providerId,
+    teacherId: current.teacherId,
+    accessToken: refreshed.accessToken,
+    ...(nextRefreshToken !== undefined ? { refreshToken: nextRefreshToken } : {}),
+    scopes: nextScopes,
+    ...(nextExpiry !== undefined ? { expiresAtEpochMs: nextExpiry } : {}),
+    upstreamAccountIdentifier: current.upstreamAccountIdentifier,
+  };
+}
 
 // The default, in-process fallback store. Adequate for the Emulator
 // Suite and unit tests; not adequate for production. The production
@@ -66,6 +133,35 @@ class InProcessLmsTokenStore implements LmsTokenStore {
       );
     }
     return Promise.resolve(bundle);
+  }
+
+  persistRefreshedCredential(input: {
+    readonly tokenRef: string;
+    readonly observedExpiresAtEpochMs?: number;
+    readonly refreshed: LmsRefreshedCredential;
+  }): Promise<LmsTokenBundle> {
+    const current = this.bundles.get(input.tokenRef);
+    if (!current) {
+      return Promise.reject(
+        new PlatformError(
+          "lms.tokenNotFound",
+          "No LMS token bundle is registered for this reference.",
+        ),
+      );
+    }
+    // Compare-and-swap on expiry: a concurrent refresh that already advanced
+    // the stored expiry beyond what the caller observed wins; the older
+    // result is discarded rather than overwriting the newer bundle.
+    if (
+      current.expiresAtEpochMs !== undefined &&
+      input.observedExpiresAtEpochMs !== undefined &&
+      current.expiresAtEpochMs > input.observedExpiresAtEpochMs
+    ) {
+      return Promise.resolve(current);
+    }
+    const merged = mergeRefreshedBundle(current, input.refreshed);
+    this.bundles.set(input.tokenRef, merged);
+    return Promise.resolve(merged);
   }
 
   revoke(tokenRef: string): Promise<void> {

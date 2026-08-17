@@ -111,6 +111,153 @@ describe("FirestoreLmsTokenStore", () => {
     });
   });
 
+  describe("persistRefreshedCredential (PDR-030h)", () => {
+    const OLD_EXPIRY = 1_000_000_000_000;
+    const NEW_EXPIRY = OLD_EXPIRY + 60 * 60 * 1000;
+
+    it("updates the access token and expiry in place under the same tokenRef", async () => {
+      const { store } = makeStore();
+      const ref = await store.store(
+        fixtureBundle({ accessToken: "old-access", expiresAtEpochMs: OLD_EXPIRY }),
+      );
+      const merged = await store.persistRefreshedCredential({
+        tokenRef: ref,
+        observedExpiresAtEpochMs: OLD_EXPIRY,
+        refreshed: { accessToken: "new-access", expiresAtEpochMs: NEW_EXPIRY },
+      });
+      expect(merged.accessToken).toBe("new-access");
+      expect(merged.expiresAtEpochMs).toBe(NEW_EXPIRY);
+      // tokenRef is stable: resolving the SAME reference returns the update.
+      const resolved = await store.resolve(ref);
+      expect(resolved.accessToken).toBe("new-access");
+      expect(resolved.expiresAtEpochMs).toBe(NEW_EXPIRY);
+    });
+
+    it("preserves the existing refresh token when the refresh omits one", async () => {
+      const { store } = makeStore();
+      const ref = await store.store(
+        fixtureBundle({
+          refreshToken: "keep-this-refresh-token",
+          expiresAtEpochMs: OLD_EXPIRY,
+        }),
+      );
+      const merged = await store.persistRefreshedCredential({
+        tokenRef: ref,
+        observedExpiresAtEpochMs: OLD_EXPIRY,
+        refreshed: { accessToken: "new-access", expiresAtEpochMs: NEW_EXPIRY },
+      });
+      expect(merged.refreshToken).toBe("keep-this-refresh-token");
+      const resolved = await store.resolve(ref);
+      expect(resolved.refreshToken).toBe("keep-this-refresh-token");
+    });
+
+    it("preserves the existing scopes when the refresh omits them", async () => {
+      const { store } = makeStore();
+      const scopes = ["scope.a", "scope.b", "scope.c", "scope.d"];
+      const ref = await store.store(
+        fixtureBundle({ scopes, expiresAtEpochMs: OLD_EXPIRY }),
+      );
+      const merged = await store.persistRefreshedCredential({
+        tokenRef: ref,
+        observedExpiresAtEpochMs: OLD_EXPIRY,
+        refreshed: { accessToken: "new-access", expiresAtEpochMs: NEW_EXPIRY },
+      });
+      expect(merged.scopes).toEqual(scopes);
+    });
+
+    it("does not change providerId, teacherId, or upstream identity", async () => {
+      const { store } = makeStore();
+      const ref = await store.store(fixtureBundle({ expiresAtEpochMs: OLD_EXPIRY }));
+      const merged = await store.persistRefreshedCredential({
+        tokenRef: ref,
+        observedExpiresAtEpochMs: OLD_EXPIRY,
+        refreshed: { accessToken: "new-access", expiresAtEpochMs: NEW_EXPIRY },
+      });
+      expect(merged.providerId).toBe(PROVIDER);
+      expect(merged.teacherId).toBe(TEACHER);
+      expect(merged.upstreamAccountIdentifier).toBe("fixture-upstream-id");
+    });
+
+    it("adopts the stored bundle without overwriting when a concurrent refresh already advanced expiry (CAS)", async () => {
+      const { store } = makeStore();
+      // Seed a bundle whose stored expiry is ALREADY newer than the caller's
+      // observed value, as if another worker refreshed first.
+      const ref = await store.store(
+        fixtureBundle({ accessToken: "winner-access", expiresAtEpochMs: NEW_EXPIRY }),
+      );
+      const merged = await store.persistRefreshedCredential({
+        tokenRef: ref,
+        observedExpiresAtEpochMs: OLD_EXPIRY,
+        refreshed: {
+          accessToken: "loser-access",
+          expiresAtEpochMs: OLD_EXPIRY + 1000,
+        },
+      });
+      // The older result is discarded; the newer stored bundle is returned.
+      expect(merged.accessToken).toBe("winner-access");
+      expect(merged.expiresAtEpochMs).toBe(NEW_EXPIRY);
+      const resolved = await store.resolve(ref);
+      expect(resolved.accessToken).toBe("winner-access");
+    });
+
+    it("rejects with lms.tokenNotFound when the bundle was revoked concurrently", async () => {
+      const { store } = makeStore();
+      await expect(
+        store.persistRefreshedCredential({
+          tokenRef: "lms_token_gone",
+          observedExpiresAtEpochMs: OLD_EXPIRY,
+          refreshed: { accessToken: "x", expiresAtEpochMs: NEW_EXPIRY },
+        }),
+      ).rejects.toMatchObject({ code: "lms.tokenNotFound" });
+    });
+
+    it("converges two concurrent refreshers to a single newer-expiry write", async () => {
+      const { store, db } = makeStore();
+      const ref = await store.store(
+        fixtureBundle({
+          accessToken: "stale-access",
+          refreshToken: "shared-refresh-token",
+          expiresAtEpochMs: OLD_EXPIRY,
+        }),
+      );
+
+      // Interleave: while the first refresh transaction is paused after
+      // computing its write, a second refresh commits a LATER expiry. The
+      // first transaction then observes the version bump, retries, and its
+      // compare-and-swap adopts the newer bundle instead of overwriting it.
+      let fired = false;
+      (db as any).transactionHook = async () => {
+        if (fired) return;
+        fired = true;
+        await store.persistRefreshedCredential({
+          tokenRef: ref,
+          observedExpiresAtEpochMs: OLD_EXPIRY,
+          refreshed: {
+            accessToken: "second-access",
+            expiresAtEpochMs: OLD_EXPIRY + 2 * 60 * 60 * 1000,
+          },
+        });
+      };
+
+      const firstResult = await store.persistRefreshedCredential({
+        tokenRef: ref,
+        observedExpiresAtEpochMs: OLD_EXPIRY,
+        refreshed: {
+          accessToken: "first-access",
+          expiresAtEpochMs: OLD_EXPIRY + 1 * 60 * 60 * 1000,
+        },
+      });
+
+      // The later-expiry (second) refresh wins for both callers and for the
+      // durable store; the refresh token is never lost.
+      expect(firstResult.accessToken).toBe("second-access");
+      const resolved = await store.resolve(ref);
+      expect(resolved.accessToken).toBe("second-access");
+      expect(resolved.expiresAtEpochMs).toBe(OLD_EXPIRY + 2 * 60 * 60 * 1000);
+      expect(resolved.refreshToken).toBe("shared-refresh-token");
+    });
+  });
+
   describe("revoke", () => {
     it("removes the stored bundle so subsequent resolve fails", async () => {
       const { store } = makeStore();

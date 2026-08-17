@@ -129,6 +129,21 @@ workflow.**
 
 **PDR-030b. Coursework publication scopes.**
 
+> **SUPERSEDED (2026-08-16, Sprint 25 B9 live certification) - see
+> PDR-030g in `LYFELABZ_PLATFORM_DECISIONS.md`.** The write scope named
+> below (`classroom.coursework.me`) is corrected to
+> `classroom.coursework.students`. Live Google Classroom evidence proved
+> `.me` insufficient: Google granted `.me`, yet the teacher-side
+> `courses.courseWork.create` call still returned HTTP 403
+> `ACCESS_TOKEN_SCOPE_INSUFFICIENT`. `classroom.coursework.me` is a
+> caller-scoped (student-facing) scope and does not authorize a teacher
+> creating coursework in a course they own. The corrected publication
+> scope set is exactly `classroom.coursework.students` and
+> `classroom.topics.readonly`. Only the specific write-scope string
+> changes; the minimum-required, opt-in, teacher's-own-coursework
+> principle below is unchanged. The original wording is retained for
+> historical traceability.
+
 - Publication requires the Google Classroom coursework scopes
   (`classroom.coursework.me` and `classroom.topics.readonly`) in
   addition to the readonly scopes already granted for discovery and
@@ -200,6 +215,45 @@ implementation blocker.**
   with a Google Classroom API test double, independent of the
   verification timeline. Rollout waits on verification; the sprint does
   not.
+
+**PDR-030g. Publication write scope correction.**
+
+- Recorded canonically in `LYFELABZ_PLATFORM_DECISIONS.md`. The
+  publication write scope is corrected from `classroom.coursework.me` to
+  `classroom.coursework.students` (see the superseded note under
+  PDR-030b above).
+
+**PDR-030h. Automatic access-token refresh in the credential lifecycle.**
+
+> Recorded canonically in `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-030h).
+> Summarized here because it was exposed by the same Sprint 25 live
+> certification that produced PDR-030g.
+
+- Google Classroom OAuth access tokens expire ~1 hour after minting;
+  this is normal Google behavior. The refresh-token material and the
+  absolute `expiresAtEpochMs` were already persisted in the server-only
+  token bundle (Sprint 23D), but no production caller ever refreshed:
+  `FirestoreLmsTokenStore.resolve()` returned the stored access token
+  verbatim.
+- Live Sprint 25 B8 certification exposed the gap: an active, correctly
+  scoped connection whose access token had expired sent a dead token to
+  `courses.courseWork.create`, and real Google returned HTTP 401
+  `invalid_token`, producing a `failed` publication. This is a missing
+  credential-refresh lifecycle, not a topic or publication defect.
+- Refresh is now performed automatically at credential resolution,
+  centrally, through the vendor-neutral resolver
+  `resolveLiveCredential(tokenRef)`. Every Google Classroom operation
+  benefits: course discovery, roster read, topic listing, assignment
+  publication, and any future Classroom call.
+- Teachers do not need to reconnect every hour. A refresh does not widen
+  scopes, does not create OAuth state, and does not change connection
+  identity: the `tokenRef` is stable and the bundle is updated in place.
+  A concurrency-safe Firestore transaction with a compare-and-swap on
+  `expiresAtEpochMs` keeps multiple Functions workers convergent and
+  never loses a refresh token or regresses scope.
+- An invalid or revoked refresh token still requires an explicit
+  reconnect: the resolver surfaces the normalized `lms.reconnectRequired`
+  error and never falsely marks publication success.
 
 ## Rationale
 

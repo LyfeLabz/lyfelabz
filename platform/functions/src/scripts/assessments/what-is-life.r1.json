@@ -1,0 +1,269 @@
+{
+  "activityId": "what-is-life",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-25-certification-seed",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which of the following is NOT one of the six characteristics of life?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Have a backbone"
+        },
+        {
+          "optionId": "B",
+          "text": "Reproduce"
+        },
+        {
+          "optionId": "C",
+          "text": "Made of cells"
+        },
+        {
+          "optionId": "D",
+          "text": "Maintain homeostasis"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Having a backbone is NOT a characteristic of life, many living things like worms, insects, and plants have no backbone at all!"
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A sunflower turns its face to follow sunlight throughout the day. Which characteristic of life does this demonstrate?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Obtain and use energy"
+        },
+        {
+          "optionId": "B",
+          "text": "Grow and develop"
+        },
+        {
+          "optionId": "C",
+          "text": "Respond to stimuli"
+        },
+        {
+          "optionId": "D",
+          "text": "Reproduce"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Turning toward light (phototropism) is a response to a stimulus, the stimulus is light!"
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Your body shivers when you're cold and sweats when you're hot. This is an example of:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Obtaining energy"
+        },
+        {
+          "optionId": "B",
+          "text": "Maintaining homeostasis"
+        },
+        {
+          "optionId": "C",
+          "text": "Reproducing"
+        },
+        {
+          "optionId": "D",
+          "text": "Growing and developing"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Shivering and sweating are ways your body regulates its internal temperature, that's homeostasis in action!"
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which characteristic of life requires that ALL living things (from bacteria to blue whales) have at least one cell?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Respond to stimuli"
+        },
+        {
+          "optionId": "B",
+          "text": "Obtain and use energy"
+        },
+        {
+          "optionId": "C",
+          "text": "Reproduce"
+        },
+        {
+          "optionId": "D",
+          "text": "Made of cells"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Cell Theory states that all living things are made of cells. This is characteristic #1, no exceptions!"
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A fire can grow, consume oxygen, and release energy. Is a fire alive? Why or why not?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "No, it cannot reproduce or maintain homeostasis"
+        },
+        {
+          "optionId": "B",
+          "text": "Yes, it uses energy and grows"
+        },
+        {
+          "optionId": "C",
+          "text": "Yes, it responds to oxygen as a stimulus"
+        },
+        {
+          "optionId": "D",
+          "text": "No, it is not made of cells, but otherwise qualifies"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Fire fails multiple characteristics: it cannot reproduce, is not made of cells, and doesn't maintain homeostasis. ALL six must be met to be considered alive."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What is the main reason viruses are usually classified as nonliving?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They evolve too slowly to be considered alive"
+        },
+        {
+          "optionId": "B",
+          "text": "They are too small to be seen under most microscopes"
+        },
+        {
+          "optionId": "C",
+          "text": "They have no cells of their own"
+        },
+        {
+          "optionId": "D",
+          "text": "They cannot carry genetic material"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Most scientists classify viruses as nonliving because the cell is the minimum unit of life. Viruses have no cells of their own, so they cannot carry out life processes independently."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Bacteria consist of a single cell. This makes them:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Eukaryotic"
+        },
+        {
+          "optionId": "B",
+          "text": "Neither living nor nonliving"
+        },
+        {
+          "optionId": "C",
+          "text": "Multicellular"
+        },
+        {
+          "optionId": "D",
+          "text": "Unicellular"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Unicellular means one cell. Bacteria are single-celled (unicellular) organisms, and they are prokaryotic, not eukaryotic."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "In prokaryotic cells, where is the DNA found?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "In the mitochondria"
+        },
+        {
+          "optionId": "B",
+          "text": "Floating in the cytoplasm"
+        },
+        {
+          "optionId": "C",
+          "text": "Inside the nucleus"
+        },
+        {
+          "optionId": "D",
+          "text": "In the cell wall"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Prokaryotic cells do NOT have a nucleus, their DNA floats freely in the cytoplasm."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Can a unicellular organism also be eukaryotic?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Yes, for example, amoeba and paramecium are unicellular eukaryotes"
+        },
+        {
+          "optionId": "B",
+          "text": "No, all unicellular organisms are prokaryotic"
+        },
+        {
+          "optionId": "C",
+          "text": "No, eukaryotes must always be multicellular"
+        },
+        {
+          "optionId": "D",
+          "text": "Yes, but only if they have a cell wall"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Unicellular and eukaryotic are not mutually exclusive! Amoeba, paramecium, and many protists are single-celled but still have a nucleus, making them unicellular eukaryotes."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A student looks at a cell under a microscope and sees no nucleus, the DNA appears to be floating freely in the cell. What type of cell is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Eukaryotic, it must have lost its nucleus"
+        },
+        {
+          "optionId": "B",
+          "text": "Prokaryotic, no nucleus is the defining feature"
+        },
+        {
+          "optionId": "C",
+          "text": "Multicellular, large cells don't always have nuclei"
+        },
+        {
+          "optionId": "D",
+          "text": "Unicellular, small cells never have nuclei"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The absence of a membrane-bound nucleus is the defining feature of prokaryotic cells. Eukaryotic cells always have a nucleus enclosing their DNA."
+    }
+  ]
+}

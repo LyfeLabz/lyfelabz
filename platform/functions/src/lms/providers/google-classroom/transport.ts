@@ -24,7 +24,7 @@
 //   helper installs and restores the prior binding for a single scoped
 //   block so a failing test cannot leak state into the next test.
 
-import { PlatformError } from "../../../shared";
+import { PlatformError, log } from "../../../shared";
 
 // -------------------- REST v1 payload shapes --------------------
 //
@@ -360,6 +360,13 @@ export type HttpsFetch = (
   readonly status: number;
   readonly ok: boolean;
   text(): Promise<string>;
+  // Read a single named response header, or null when absent. Optional so
+  // existing in-memory fixtures need not implement it. The production
+  // global-fetch binding delegates to `Response.headers.get`. This is the
+  // minimum surface needed to read `WWW-Authenticate` for the Sprint 25 B9
+  // certification diagnostic; it deliberately exposes one named header at a
+  // time rather than copying all response headers into application state.
+  header?(name: string): string | null;
 }>;
 
 export type HttpsGoogleClassroomConfigResolver = () => {
@@ -380,18 +387,228 @@ function parseJsonSafely(body: string): unknown {
   }
 }
 
+// Google's google.rpc.ErrorInfo carries a machine-readable `reason` inside
+// error.details[]. For an OAuth scope shortfall the top-level error.status
+// is the generic "PERMISSION_DENIED"; only the nested reason
+// "ACCESS_TOKEN_SCOPE_INSUFFICIENT" distinguishes an insufficient-scope
+// denial from an ordinary permission denial. The scan is restricted to
+// these two exact scope markers ("ACCESS_TOKEN_SCOPE_INSUFFICIENT" is the
+// current real-Google spelling; "INSUFFICIENT_SCOPE" is the legacy /
+// fixture spelling) so an ordinary PERMISSION_DENIED is never reclassified
+// as insufficient scope.
+const SCOPE_INSUFFICIENT_REASONS: ReadonlySet<string> = new Set([
+  "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+  "INSUFFICIENT_SCOPE",
+]);
+
+function extractScopeInsufficientReason(details: unknown): string | undefined {
+  if (!Array.isArray(details)) return undefined;
+  for (const entry of details) {
+    if (entry && typeof entry === "object") {
+      const reason = (entry as Record<string, unknown>).reason;
+      if (
+        typeof reason === "string" &&
+        SCOPE_INSUFFICIENT_REASONS.has(reason)
+      ) {
+        return reason;
+      }
+    }
+  }
+  return undefined;
+}
+
 function extractUpstreamCode(parsed: unknown): string {
   if (parsed && typeof parsed === "object") {
     const p = parsed as Record<string, unknown>;
     if (typeof p.error === "string") return p.error;
     if (p.error && typeof p.error === "object") {
       const e = p.error as Record<string, unknown>;
+      // Prefer the structured scope-insufficient reason over the generic
+      // status so the adapter's boundary translator can classify insufficient
+      // scope. Only the two exact scope markers are surfaced here; every
+      // other error still reports its status (or message) unchanged.
+      const scopeReason = extractScopeInsufficientReason(e.details);
+      if (scopeReason !== undefined) return scopeReason;
       if (typeof e.status === "string") return e.status;
       if (typeof e.message === "string") return e.message;
     }
   }
   return "unknown";
 }
+
+// ============================================================================
+// TEMPORARY - Sprint 25 B9 certification diagnostic. REMOVE (or convert into
+// minimal permanent observability) before Sprint 25 closeout.
+//
+// Retention (2026-08-16, PDR-030g): this diagnostic has already captured the
+// stale-credential 401 (`invalid_token`) and the real 403
+// `ACCESS_TOKEN_SCOPE_INSUFFICIENT` under the wrong `classroom.coursework.me`
+// scope. It is intentionally RETAINED through ONE more real-Google B9 retest
+// under the corrected `classroom.coursework.students` scope, where it must
+// show NO scope-denial response on the publication path. Only after that clean
+// retest is it removed or converted to minimal permanent observability. Do not
+// broaden its logged fields.
+//
+// Purpose: capture a SANITIZED, non-identifying summary of a non-2xx Google
+// upstream response so ONE real-Google B9 retry reveals exactly how Google
+// signals an insufficient-scope denial (HTTP 401 vs 403, error.status,
+// error.details[].reason, and the WWW-Authenticate auth error token). This
+// block does NOT change classification: `extractUpstreamCode` and the value
+// thrown from `callUpstream` are untouched, so the B9 retry reproduces the
+// current failure while emitting the missing evidence.
+//
+// Sanitization invariants (never logged): access/refresh tokens,
+// Authorization or any request/response header set, OAuth codes, client
+// secrets, full request/response bodies, full error messages, Google account
+// email or user id, course id, coursework id, and any student/teacher PII.
+// Only bounded categorical enum tokens, numeric HTTP status, booleans, and a
+// route with every dynamic id segment replaced by "{id}" are emitted.
+
+// google.rpc canonical status codes and google.rpc.ErrorInfo reasons are
+// UPPER_SNAKE_CASE enum tokens (<=63 chars). Restricting logged values to this
+// shape guarantees no free-form identifier is ever emitted through these
+// fields.
+const DIAGNOSTIC_ENUM_TOKEN = /^[A-Z][A-Z0-9_]{0,62}$/;
+
+// Path segments that are static keywords in the OAuth token/revoke endpoints
+// and the Classroom REST v1 routes. Every other segment is a resource id
+// (course id, coursework id, ...) and is replaced with "{id}" before logging.
+const DIAGNOSTIC_STATIC_PATH_SEGMENTS: ReadonlySet<string> = new Set([
+  "v1",
+  "courses",
+  "courseWork",
+  "students",
+  "topics",
+  "userProfiles",
+  "me",
+  "token",
+  "revoke",
+]);
+
+// A small allowlist of Google's fixed, non-identifying error messages, mapped
+// to a categorical label. Any message not on this list is never logged (only a
+// presence boolean is), because arbitrary messages can embed identifiers.
+const DIAGNOSTIC_KNOWN_MESSAGES: ReadonlyMap<string, string> = new Map([
+  [
+    "Request had insufficient authentication scopes.",
+    "insufficientAuthenticationScopes",
+  ],
+  ["The caller does not have permission.", "callerLacksPermission"],
+  ["Invalid Credentials", "invalidCredentials"],
+  ["Login Required.", "loginRequired"],
+]);
+
+function diagnosticRoute(endpoint: string): string {
+  let path: string;
+  try {
+    path = new URL(endpoint).pathname;
+  } catch {
+    path = endpoint.split("?")[0] ?? endpoint;
+  }
+  return path
+    .split("/")
+    .map((seg) =>
+      seg.length === 0 || DIAGNOSTIC_STATIC_PATH_SEGMENTS.has(seg)
+        ? seg
+        : "{id}",
+    )
+    .join("/");
+}
+
+function diagnosticDetailReasons(details: unknown): string[] {
+  const out: string[] = [];
+  if (!Array.isArray(details)) return out;
+  for (const entry of details) {
+    if (entry && typeof entry === "object") {
+      const reason = (entry as Record<string, unknown>).reason;
+      if (typeof reason === "string" && DIAGNOSTIC_ENUM_TOKEN.test(reason)) {
+        out.push(reason);
+      }
+    }
+  }
+  return out;
+}
+
+// Parse only the authentication error token and the presence of an
+// error_description from a WWW-Authenticate challenge. The error token is a
+// fixed categorical value (e.g. insufficient_scope, invalid_token); the
+// description is reduced to a presence boolean because it can be free-form.
+function diagnosticAuthChallenge(header: string | null | undefined): {
+  authError?: string;
+  authErrorDescriptionPresent?: boolean;
+} {
+  if (typeof header !== "string" || header.length === 0) return {};
+  const out: { authError?: string; authErrorDescriptionPresent?: boolean } = {};
+  const errorMatch = /\berror\s*=\s*"?([a-zA-Z][a-zA-Z0-9_]{0,62})"?/.exec(
+    header,
+  );
+  if (errorMatch && errorMatch[1]) out.authError = errorMatch[1];
+  const descMatch = /\berror_description\s*=\s*"([^"]*)"/.exec(header);
+  if (descMatch) out.authErrorDescriptionPresent = descMatch[1].length > 0;
+  return out;
+}
+
+function emitUpstreamDiagnostic(
+  response: { readonly status: number; header?(name: string): string | null },
+  endpoint: string,
+  parsed: unknown,
+): void {
+  try {
+    const fields: Record<string, unknown> = {
+      temporary: true,
+      certification: "sprint25-b9",
+      httpStatus: response.status,
+      route: diagnosticRoute(endpoint),
+    };
+    if (parsed && typeof parsed === "object") {
+      const err = (parsed as Record<string, unknown>).error;
+      if (typeof err === "string") {
+        // OAuth token/revoke endpoints report a lowercase_underscore token.
+        if (/^[a-z][a-z0-9_]{0,62}$/.test(err)) {
+          fields.oauthError = err;
+        } else {
+          fields.oauthErrorPresent = true;
+        }
+      } else if (err && typeof err === "object") {
+        const e = err as Record<string, unknown>;
+        if (typeof e.status === "string" && DIAGNOSTIC_ENUM_TOKEN.test(e.status)) {
+          fields.errorStatus = e.status;
+        }
+        if (typeof e.code === "number") fields.errorCode = e.code;
+        const reasons = diagnosticDetailReasons(e.details);
+        if (reasons.length > 0) fields.detailReasons = reasons;
+        fields.errorMessagePresent =
+          typeof e.message === "string" && e.message.length > 0;
+        if (typeof e.message === "string") {
+          const category = DIAGNOSTIC_KNOWN_MESSAGES.get(e.message);
+          if (category !== undefined) fields.errorMessageCategory = category;
+        }
+      }
+    } else {
+      fields.bodyParsed = false;
+    }
+    const challenge = diagnosticAuthChallenge(
+      typeof response.header === "function"
+        ? response.header("WWW-Authenticate")
+        : undefined,
+    );
+    fields.wwwAuthenticatePresent =
+      challenge.authError !== undefined ||
+      challenge.authErrorDescriptionPresent !== undefined;
+    if (challenge.authError !== undefined) {
+      fields.wwwAuthenticateError = challenge.authError;
+    }
+    if (challenge.authErrorDescriptionPresent !== undefined) {
+      fields.wwwAuthenticateErrorDescriptionPresent =
+        challenge.authErrorDescriptionPresent;
+    }
+    log.warn("lms.googleClassroomUpstreamDiagnostic", fields);
+  } catch {
+    // A diagnostic must never affect control flow, the thrown error, or
+    // classification. Any failure building or emitting it is swallowed.
+  }
+}
+// ============================================================================
 
 async function callUpstream(
   fetchImpl: HttpsFetch,
@@ -407,6 +624,10 @@ async function callUpstream(
   const body = await response.text();
   if (!response.ok) {
     const parsed = parseJsonSafely(body);
+    // TEMPORARY Sprint 25 B9 diagnostic (see block above). Emits a sanitized
+    // summary and returns; the throw below is unchanged, so classification is
+    // not affected.
+    emitUpstreamDiagnostic(response, endpoint, parsed);
     throw new GoogleClassroomHttpsError(
       response.status,
       extractUpstreamCode(parsed),
@@ -466,9 +687,22 @@ export function createHttpsGoogleClassroomTransport(
           status: number;
           ok: boolean;
           text(): Promise<string>;
+          headers?: { get(name: string): string | null };
         }>;
       };
-      return g.fetch(input, init);
+      const res = await g.fetch(input, init);
+      // Wrap the native Response so the transport surface exposes exactly one
+      // named-header reader (delegating to the case-insensitive
+      // `Response.headers.get`). No full header set is copied out.
+      return {
+        status: res.status,
+        ok: res.ok,
+        text: () => res.text(),
+        header: (name: string): string | null =>
+          res.headers && typeof res.headers.get === "function"
+            ? res.headers.get(name)
+            : null,
+      };
     });
 
   return {

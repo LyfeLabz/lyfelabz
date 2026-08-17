@@ -216,6 +216,12 @@ describe("Google Classroom adapter - PKCE + server-side state", () => {
     for (const pubScope of GOOGLE_CLASSROOM_PUBLICATION_SCOPES) {
       expect(scope).toContain(pubScope);
     }
+    // Teacher-side courseWork.create requires the teacher-scoped write scope,
+    // not the caller-scoped `classroom.coursework.me` (disproved by live B9
+    // certification: Google granted `.me`, courseWork.create still 403'd).
+    expect(scope).toContain("classroom.coursework.students");
+    expect(scope).toContain("classroom.topics.readonly");
+    expect(scope).not.toContain("classroom.coursework.me");
   });
 
   it("beginOAuth with publication intent stores the publication intent in state", async () => {

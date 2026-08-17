@@ -976,6 +976,15 @@ describe("Assign Experience - Sprint 6E", () => {
         "[data-testid=assign-row-enabled-c2]",
       )?.checked,
     ).toBe(false);
+    // B5: revisiting a row must never surface a publish toggle in the ON
+    // state. With no LMS integration wired here the toggle is absent (an
+    // un-checkable, effectively-OFF control); the LMS-linked reopen path
+    // asserts the same OFF invariant in curriculum.lms-publish.test.ts.
+    expect(
+      document.querySelectorAll(
+        "[data-testid^=assign-row-lms-publish-]:checked",
+      ),
+    ).toHaveLength(0);
   });
 
   test("deselecting every row and reconfirming returns the card to Assign", async () => {

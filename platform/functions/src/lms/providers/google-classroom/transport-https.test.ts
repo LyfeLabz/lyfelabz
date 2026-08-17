@@ -15,6 +15,8 @@
 //     directly; instead the test confirms only the parameters we
 //     supplied come through, i.e. no leakage-via-side-effect).
 
+import { logger } from "firebase-functions";
+
 import {
   GoogleClassroomHttpsError,
   createHttpsGoogleClassroomTransport,
@@ -311,6 +313,423 @@ describe("createHttpsGoogleClassroomTransport", () => {
       expect((observed as GoogleClassroomHttpsError).upstreamCode).toBe(
         "UNAUTHENTICATED",
       );
+    });
+  });
+
+  // Real-Google insufficient-scope error shape (Sprint 25 certification
+  // finding). A genuine 403 for an OAuth scope shortfall carries the generic
+  // top-level status "PERMISSION_DENIED" and the discriminating reason
+  // "ACCESS_TOKEN_SCOPE_INSUFFICIENT" nested in error.details[]. The
+  // transport must surface that reason as the upstreamCode so the adapter
+  // can classify insufficient scope; an ordinary permission denial (no such
+  // reason) must keep reporting "PERMISSION_DENIED".
+  describe("insufficient-scope 403 (real Google error shape)", () => {
+    // Exact body Google returns when the access token lacks a required
+    // Classroom scope, e.g. classroom.topics.readonly for topics.list or
+    // classroom.coursework.students for teacher-side courseWork.create.
+    const SCOPE_INSUFFICIENT_BODY = JSON.stringify({
+      error: {
+        code: 403,
+        message: "Request had insufficient authentication scopes.",
+        status: "PERMISSION_DENIED",
+        details: [
+          {
+            "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+            reason: "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+            domain: "googleapis.com",
+            metadata: { service: "classroom.googleapis.com" },
+          },
+        ],
+      },
+    });
+
+    // An ordinary permission denial: valid scopes, but the caller is not
+    // permitted on this resource. Same 403 + PERMISSION_DENIED, but no
+    // scope-insufficient reason.
+    const ORDINARY_DENIAL_BODY = JSON.stringify({
+      error: {
+        code: 403,
+        message: "The caller does not have permission.",
+        status: "PERMISSION_DENIED",
+        details: [
+          {
+            "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+            reason: "IAM_PERMISSION_DENIED",
+            domain: "googleapis.com",
+          },
+        ],
+      },
+    });
+
+    function makeTransport(status: number, body: string) {
+      const { fetchImpl } = makeFetchImpl(() => ({ status, body }));
+      return createHttpsGoogleClassroomTransport({
+        resolveConfig: () => ({
+          clientId: FIXTURE_CLIENT_ID,
+          clientSecret: FIXTURE_CLIENT_SECRET,
+        }),
+        fetchImpl,
+      });
+    }
+
+    async function capture(op: () => Promise<unknown>): Promise<unknown> {
+      try {
+        await op();
+      } catch (err) {
+        return err;
+      }
+      return undefined;
+    }
+
+    it("surfaces ACCESS_TOKEN_SCOPE_INSUFFICIENT from listCourseTopics details[]", async () => {
+      const transport = makeTransport(403, SCOPE_INSUFFICIENT_BODY);
+      const observed = await capture(() =>
+        transport.listCourseTopics({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+        }),
+      );
+      expect(observed).toBeInstanceOf(GoogleClassroomHttpsError);
+      expect((observed as GoogleClassroomHttpsError).status).toBe(403);
+      expect((observed as GoogleClassroomHttpsError).upstreamCode).toBe(
+        "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+      );
+    });
+
+    it("surfaces ACCESS_TOKEN_SCOPE_INSUFFICIENT from createCourseWork details[]", async () => {
+      const transport = makeTransport(403, SCOPE_INSUFFICIENT_BODY);
+      const observed = await capture(() =>
+        transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        }),
+      );
+      expect(observed).toBeInstanceOf(GoogleClassroomHttpsError);
+      expect((observed as GoogleClassroomHttpsError).status).toBe(403);
+      expect((observed as GoogleClassroomHttpsError).upstreamCode).toBe(
+        "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+      );
+    });
+
+    it("keeps PERMISSION_DENIED for an ordinary 403 without a scope-insufficient reason", async () => {
+      const transport = makeTransport(403, ORDINARY_DENIAL_BODY);
+      const observed = await capture(() =>
+        transport.listCourseTopics({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+        }),
+      );
+      expect(observed).toBeInstanceOf(GoogleClassroomHttpsError);
+      expect((observed as GoogleClassroomHttpsError).status).toBe(403);
+      expect((observed as GoogleClassroomHttpsError).upstreamCode).toBe(
+        "PERMISSION_DENIED",
+      );
+    });
+  });
+
+  // ==========================================================================
+  // TEMPORARY - Sprint 25 B9 certification diagnostic (see the matching block
+  // in transport.ts). These tests pin the sanitized diagnostic emitted at the
+  // non-2xx boundary and prove it never leaks credentials or full bodies, and
+  // that it does NOT alter classification. Remove or adapt alongside the
+  // instrumentation before Sprint 25 closeout.
+  // ==========================================================================
+  describe("B9 sanitized upstream diagnostic", () => {
+    const DIAGNOSTIC_EVENT = "lms.googleClassroomUpstreamDiagnostic";
+    const FIXTURE_BEARER = "fixture-secret-access-token-value";
+
+    const SCOPE_INSUFFICIENT_BODY = JSON.stringify({
+      error: {
+        code: 403,
+        message: "Request had insufficient authentication scopes.",
+        status: "PERMISSION_DENIED",
+        details: [
+          {
+            "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+            reason: "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+            domain: "googleapis.com",
+          },
+        ],
+      },
+    });
+
+    const ORDINARY_DENIAL_BODY = JSON.stringify({
+      error: {
+        code: 403,
+        message: "The caller does not have permission.",
+        status: "PERMISSION_DENIED",
+        details: [
+          {
+            "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+            reason: "IAM_PERMISSION_DENIED",
+            domain: "googleapis.com",
+          },
+        ],
+      },
+    });
+
+    // A fetchImpl that also exposes a single named response header via the
+    // optional `header()` reader (mirrors the production global-fetch binding).
+    function makeFetchImplWithHeaders(
+      handler: (req: RecordedRequest) => {
+        status: number;
+        body: string;
+        headers?: Record<string, string>;
+      },
+    ): { fetchImpl: HttpsFetch; recorded: RecordedRequest[] } {
+      const recorded: RecordedRequest[] = [];
+      const fetchImpl: HttpsFetch = (input, init) => {
+        const request: RecordedRequest = {
+          url: input,
+          method: init.method,
+          headers: init.headers ?? {},
+          ...(init.body !== undefined ? { body: init.body } : {}),
+        };
+        recorded.push(request);
+        const response = handler(request);
+        const responseHeaders = response.headers ?? {};
+        return Promise.resolve({
+          status: response.status,
+          ok: response.status >= 200 && response.status < 300,
+          text: () => Promise.resolve(response.body),
+          header: (name: string): string | null => {
+            // Case-insensitive lookup, matching Response.headers.get.
+            const key = Object.keys(responseHeaders).find(
+              (k) => k.toLowerCase() === name.toLowerCase(),
+            );
+            return key !== undefined ? responseHeaders[key] : null;
+          },
+        });
+      };
+      return { fetchImpl, recorded };
+    }
+
+    function makeTransportWithHeaders(
+      status: number,
+      body: string,
+      headers?: Record<string, string>,
+    ) {
+      const { fetchImpl } = makeFetchImplWithHeaders(() => ({
+        status,
+        body,
+        ...(headers ? { headers } : {}),
+      }));
+      return createHttpsGoogleClassroomTransport({
+        resolveConfig: () => ({
+          clientId: FIXTURE_CLIENT_ID,
+          clientSecret: FIXTURE_CLIENT_SECRET,
+        }),
+        fetchImpl,
+      });
+    }
+
+    let warnSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      warnSpy = jest.spyOn(logger, "warn").mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    function lastDiagnostic(): Record<string, unknown> {
+      const call = warnSpy.mock.calls.find((c) => c[0] === DIAGNOSTIC_EVENT);
+      expect(call).toBeDefined();
+      return call![1] as Record<string, unknown>;
+    }
+
+    async function capture(op: () => Promise<unknown>): Promise<void> {
+      try {
+        await op();
+      } catch {
+        // Expected: the diagnostic fires on the failure path.
+      }
+    }
+
+    // A. 403 with error.status + details[].reason + WWW-Authenticate produces
+    //    the sanitized diagnostic fields.
+    it("A: captures status, error.status, detail reasons, and the WWW-Authenticate token from a 403", async () => {
+      const body = JSON.stringify({
+        error: {
+          code: 403,
+          message: "Request had insufficient authentication scopes.",
+          status: "PERMISSION_DENIED",
+          details: [
+            {
+              "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+              reason: "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+              domain: "googleapis.com",
+            },
+          ],
+        },
+      });
+      const transport = makeTransportWithHeaders(403, body, {
+        "WWW-Authenticate":
+          'Bearer realm="https://accounts.google.com/", error="insufficient_scope", error_description="Request had insufficient authentication scopes."',
+      });
+      await capture(() =>
+        transport.createCourseWork({
+          accessToken: FIXTURE_BEARER,
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        }),
+      );
+      const d = lastDiagnostic();
+      expect(d.httpStatus).toBe(403);
+      expect(d.errorStatus).toBe("PERMISSION_DENIED");
+      expect(d.detailReasons).toEqual(["ACCESS_TOKEN_SCOPE_INSUFFICIENT"]);
+      expect(d.wwwAuthenticateError).toBe("insufficient_scope");
+      expect(d.wwwAuthenticatePresent).toBe(true);
+      expect(d.wwwAuthenticateErrorDescriptionPresent).toBe(true);
+      expect(d.errorMessagePresent).toBe(true);
+      expect(d.errorMessageCategory).toBe("insufficientAuthenticationScopes");
+      expect(d.temporary).toBe(true);
+      // The route must not carry the course id.
+      expect(d.route).toBe("/v1/courses/{id}/courseWork");
+      expect(String(d.route)).not.toContain("fixture-course-planet-forge");
+    });
+
+    // B. 401 with WWW-Authenticate produces the sanitized authentication error
+    //    token.
+    it("B: captures the invalid_token authentication error token from a 401", async () => {
+      const body = JSON.stringify({
+        error: { status: "UNAUTHENTICATED", message: "Invalid Credentials" },
+      });
+      const transport = makeTransportWithHeaders(401, body, {
+        "WWW-Authenticate":
+          'Bearer realm="https://accounts.google.com/", error="invalid_token"',
+      });
+      await capture(() =>
+        transport.listTeacherCourses({ accessToken: FIXTURE_BEARER }),
+      );
+      const d = lastDiagnostic();
+      expect(d.httpStatus).toBe(401);
+      expect(d.errorStatus).toBe("UNAUTHENTICATED");
+      expect(d.wwwAuthenticateError).toBe("invalid_token");
+      expect(d.errorMessageCategory).toBe("invalidCredentials");
+    });
+
+    // C. Authorization bearer tokens are NEVER present in the diagnostic.
+    it("C: never includes the access token, the word Bearer, or an Authorization header", async () => {
+      const transport = makeTransportWithHeaders(
+        403,
+        SCOPE_INSUFFICIENT_BODY,
+        {
+          "WWW-Authenticate": 'Bearer error="insufficient_scope"',
+        },
+      );
+      await capture(() =>
+        transport.createCourseWork({
+          accessToken: FIXTURE_BEARER,
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        }),
+      );
+      const serialized = JSON.stringify(lastDiagnostic());
+      expect(serialized).not.toContain(FIXTURE_BEARER);
+      expect(serialized).not.toContain("Bearer");
+      expect(serialized.toLowerCase()).not.toContain("authorization");
+    });
+
+    // D. Full response bodies (and free-form messages / identifiers within
+    //    them) are NEVER logged.
+    it("D: never logs the full body or a free-form (identifier-bearing) message", async () => {
+      const identifyingBody = JSON.stringify({
+        error: {
+          code: 403,
+          message:
+            "User teacher-name@example.invalid lacks scope for course 987654321.",
+          status: "PERMISSION_DENIED",
+          details: [
+            {
+              "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+              reason: "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+            },
+          ],
+        },
+      });
+      const transport = makeTransportWithHeaders(403, identifyingBody);
+      await capture(() =>
+        transport.createCourseWork({
+          accessToken: FIXTURE_BEARER,
+          courseId: "987654321",
+          title: "Fictional Assignment",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        }),
+      );
+      const d = lastDiagnostic();
+      const serialized = JSON.stringify(d);
+      // The categorical shape is still captured...
+      expect(d.errorMessagePresent).toBe(true);
+      expect(d.detailReasons).toEqual(["ACCESS_TOKEN_SCOPE_INSUFFICIENT"]);
+      // ...but no free-form message, email, or course id is present, and the
+      // unknown message is not reduced to a category.
+      expect(d.errorMessageCategory).toBeUndefined();
+      expect(serialized).not.toContain("teacher-name@example.invalid");
+      expect(serialized).not.toContain("987654321");
+      expect(serialized).not.toContain("lacks scope");
+      expect(serialized).not.toContain(identifyingBody);
+    });
+
+    // E. Existing classification remains unchanged by this diagnostic patch:
+    //    the same upstreamCode is still thrown, and an ordinary denial still
+    //    reports PERMISSION_DENIED.
+    it("E: does not change the thrown upstreamCode (insufficient-scope path)", async () => {
+      const transport = makeTransportWithHeaders(403, SCOPE_INSUFFICIENT_BODY);
+      let observed: unknown;
+      try {
+        await transport.listCourseTopics({
+          accessToken: FIXTURE_BEARER,
+          courseId: "fixture-course-planet-forge",
+        });
+      } catch (err) {
+        observed = err;
+      }
+      expect(observed).toBeInstanceOf(GoogleClassroomHttpsError);
+      expect((observed as GoogleClassroomHttpsError).upstreamCode).toBe(
+        "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+      );
+      // The diagnostic fired, but classification is unchanged.
+      expect(warnSpy).toHaveBeenCalled();
+    });
+
+    it("E: does not change the thrown upstreamCode (ordinary PERMISSION_DENIED path)", async () => {
+      const transport = makeTransportWithHeaders(403, ORDINARY_DENIAL_BODY);
+      let observed: unknown;
+      try {
+        await transport.listCourseTopics({
+          accessToken: FIXTURE_BEARER,
+          courseId: "fixture-course-planet-forge",
+        });
+      } catch (err) {
+        observed = err;
+      }
+      expect((observed as GoogleClassroomHttpsError).upstreamCode).toBe(
+        "PERMISSION_DENIED",
+      );
+      const d = lastDiagnostic();
+      expect(d.detailReasons).toEqual(["IAM_PERMISSION_DENIED"]);
+      expect(d.wwwAuthenticatePresent).toBe(false);
+    });
+
+    it("emits no diagnostic on a 2xx success", async () => {
+      const transport = makeTransportWithHeaders(
+        200,
+        JSON.stringify({ id: "fixture-coursework-ok" }),
+      );
+      await transport.createCourseWork({
+        accessToken: FIXTURE_BEARER,
+        courseId: "fixture-course-planet-forge",
+        title: "Fictional Assignment",
+        link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+      });
+      const call = warnSpy.mock.calls.find((c) => c[0] === DIAGNOSTIC_EVENT);
+      expect(call).toBeUndefined();
     });
   });
 });

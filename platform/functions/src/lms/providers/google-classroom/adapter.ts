@@ -1,6 +1,7 @@
 import { PlatformError, type LmsProviderId } from "../../../shared";
 import { getLmsOAuthStateStore } from "../../oauth-state/state-store";
 import type {
+  LmsCredentialRefresh,
   LmsDiscoveredClass,
   LmsOAuthAuthorizationRequest,
   LmsOAuthGrant,
@@ -60,8 +61,20 @@ export const GOOGLE_CLASSROOM_INITIAL_SCOPES: readonly string[] = [
 // documented separately so a future contributor can see exactly which
 // sprint each scope belongs to. The teacher sees a scope-scoped consent
 // prompt at the moment the publication workflow requires it.
+//
+// Scope correction (Sprint 25 B9 live certification, superseding PDR-030b):
+// the original Sprint 25 assumption named `classroom.coursework.me` as the
+// publication write scope. Live Google Classroom evidence disproved it:
+// Google granted `classroom.coursework.me`, yet the teacher-side
+// `courses.courseWork.create` call still returned HTTP 403
+// ACCESS_TOKEN_SCOPE_INSUFFICIENT. `classroom.coursework.me` is a
+// caller-scoped (student-facing) scope and does not authorize a teacher
+// creating coursework in a course they own. LyfeLabz performs teacher-side
+// coursework creation, which requires `classroom.coursework.students`. This
+// remains the minimum-required teacher write scope; no broader Classroom
+// scope is authorized.
 export const GOOGLE_CLASSROOM_PUBLICATION_SCOPES: readonly string[] = [
-  "https://www.googleapis.com/auth/classroom.coursework.me",
+  "https://www.googleapis.com/auth/classroom.coursework.students",
   "https://www.googleapis.com/auth/classroom.topics.readonly",
 ];
 
@@ -312,6 +325,46 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
     }
   },
 
+  async refreshCredential(input): Promise<LmsCredentialRefresh> {
+    let transport;
+    try {
+      transport = getGoogleClassroomTransport();
+    } catch (err) {
+      throw translateUpstreamError(err, "refreshCredential");
+    }
+    try {
+      const refreshed = await transport.refreshAccessToken({
+        refreshToken: input.refreshToken,
+      });
+      if (
+        typeof refreshed.access_token !== "string" ||
+        refreshed.access_token.trim().length === 0
+      ) {
+        throw new PlatformError(
+          "lms.upstreamMalformedResponse",
+          "Google Classroom returned a refresh response with a missing or empty access token.",
+        );
+      }
+      // Scope preservation (PDR-030h): Google's refresh response carries a
+      // `scope` string, but a token refresh is not an authorization event
+      // and the connection document is the authoritative scope record. The
+      // returned scope is intentionally NOT surfaced here so the resolver
+      // preserves the existing granted scopes verbatim and can never regress
+      // them. Google's refresh_token grant likewise never returns a rotated
+      // refresh_token (the transport response type has no such field), so the
+      // resolver preserves the existing refresh token. Only the access token
+      // and its expiry are renewed.
+      return {
+        accessToken: refreshed.access_token,
+        ...(refreshed.expires_in !== undefined
+          ? { expiresInSeconds: refreshed.expires_in }
+          : {}),
+      };
+    } catch (err) {
+      throw translateUpstreamError(err, "refreshCredential");
+    }
+  },
+
   async revokeGrant(input): Promise<void> {
     let transport;
     try {
@@ -548,47 +601,67 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
     } catch (err) {
       throw translateUpstreamError(err, "publishAssignment");
     }
-    // Bounded, AbortController-backed timeout (§2.3 Correction 3). A hang
-    // on the coursework POST must not consume the entire Cloud Functions
-    // execution budget. The controller's signal is threaded into the
-    // transport so a real fetch is genuinely cancelled when the deadline
-    // fires; the accompanying race guarantees this adapter's promise
-    // settles even if a transport implementation ignores the signal. The
-    // timer is always cleared in `finally`, so no timer handle survives a
-    // resolved, rejected, or timed-out call.
+    // Bounded, AbortController-backed timeout (§2.3 Correction 3; Sprint 25
+    // B9 certification finding). A hang on the coursework POST must not
+    // consume the entire Cloud Functions execution budget. The controller's
+    // signal is threaded into the transport so a real fetch is genuinely
+    // cancelled when the deadline fires; the accompanying race guarantees
+    // this adapter's promise settles even if a transport implementation
+    // ignores the signal.
+    //
+    // Timer-lifecycle ownership: the timer is created, the work is started,
+    // and the race is awaited entirely INSIDE a single try whose `finally`
+    // clears the timer. This is the load-bearing structure. If
+    // `createCourseWork()` throws SYNCHRONOUSLY (a misbehaving transport, an
+    // argument-shape error), control still enters the `catch`/`finally`, so
+    // the timer is cleared and can never fire against an already-abandoned
+    // call. Previously the work was started before the try, so a synchronous
+    // throw skipped the `finally`, left the 30s timer live, and 30s later
+    // rejected an unconsumed timeout promise -> unhandled rejection ->
+    // Functions worker crash. A no-op `.catch()` is also attached to the
+    // timeout promise itself so that, however the race settles, the losing
+    // timeout rejection is always considered handled.
     const PUBLICATION_TIMEOUT_MS = 30_000;
     const controller = new AbortController();
     let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutHandle = setTimeout(() => {
-        // Cancel the in-flight request, then reject the race with the
-        // approved sanitized failure. The raw provider response, if one
-        // ever arrives after this point, is discarded by the race.
-        controller.abort();
-        reject(
-          new PlatformError(
-            "lms.upstreamCallFailed",
-            "Google Classroom publishAssignment exceeded the 30s timeout.",
-          ),
-        );
-      }, PUBLICATION_TIMEOUT_MS);
-    });
-    // Start the work with the abort signal attached. Swallow any late
-    // rejection (e.g. the abort error) on the work promise so a post-race
-    // settlement never surfaces as an unhandled rejection.
-    const workPromise = transport.createCourseWork({
-      accessToken: input.accessToken,
-      courseId: input.lmsClassId,
-      title: input.title,
-      ...(input.instructions !== undefined
-        ? { description: input.instructions }
-        : {}),
-      link: input.lyfelabzAssignmentUrl,
-      ...(input.lmsTopicId !== undefined ? { topicId: input.lmsTopicId } : {}),
-      signal: controller.signal,
-    });
-    workPromise.catch(() => undefined);
     try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          // Cancel the in-flight request, then reject the race with the
+          // approved sanitized failure. The raw provider response, if one
+          // ever arrives after this point, is discarded by the race.
+          controller.abort();
+          reject(
+            new PlatformError(
+              "lms.upstreamCallFailed",
+              "Google Classroom publishAssignment exceeded the 30s timeout.",
+            ),
+          );
+        }, PUBLICATION_TIMEOUT_MS);
+      });
+      // Guard the timeout promise unconditionally: the loser of the race
+      // (or an orphan if the work path throws synchronously below) must
+      // never surface later as an unhandled rejection.
+      timeoutPromise.catch(() => undefined);
+
+      // Start the work with the abort signal attached. This call may throw
+      // synchronously; because it is inside this try, the `finally` still
+      // runs and clears the timer. Swallow any late rejection (e.g. the
+      // abort error) on the work promise so a post-race settlement never
+      // surfaces as an unhandled rejection.
+      const workPromise = transport.createCourseWork({
+        accessToken: input.accessToken,
+        courseId: input.lmsClassId,
+        title: input.title,
+        ...(input.instructions !== undefined
+          ? { description: input.instructions }
+          : {}),
+        link: input.lyfelabzAssignmentUrl,
+        ...(input.lmsTopicId !== undefined ? { topicId: input.lmsTopicId } : {}),
+        signal: controller.signal,
+      });
+      workPromise.catch(() => undefined);
+
       const result = await Promise.race([workPromise, timeoutPromise]);
       if (typeof result.id !== "string" || result.id.trim().length === 0) {
         throw new PlatformError(

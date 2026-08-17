@@ -1,9 +1,21 @@
 # Sprint 25 - Browser Certification Checklist
 
-Status: Prepared for execution. Not yet executed. This document is the
+Status: **EXECUTED (partial, decisive path certified). Sprint 25 closes as
+COMPLETE WITH DOCUMENTED LIMITATION.** This document is the
 scenario-by-scenario browser certification checklist for the Sprint 25
 Google Classroom assignment-publication workflow. It is executed by a
 human operator through the real teacher shell against the Emulator Suite.
+
+Final per-scenario disposition is recorded in the authoritative matrix in
+`SPRINT_25_COMPLETION_REPORT.md` §9. The decisive real-Google observations
+(B9/B10 incremental consent; B8/B11/B12 real coursework write and filing) all
+PASSED against real Google Classroom with operator confirmation. B13
+(cancel-consent edge) is **PASS WITH LIMITATION** per
+`SPRINT_25_B13_ARCHITECTURE_REASSESSMENT_AND_CLOSURE.md`. The remaining
+robustness/failure-path/multi-class scenarios (B14 - B23, and B16 - B20) were
+not run as live browser certifications and rely on compensating unit/integration
+evidence; none surfaced a defect. See the completion report for the full
+matrix, evidence sources, and the honest claim boundary.
 
 Governing documents:
 - `SPRINT_25_DEFINITION.md` §9 (claim boundary), §8 (success criteria)
@@ -79,7 +91,13 @@ Each scenario below carries an **Upstream** field with one of:
 - The test teacher owns a real Google Classroom course with at least one
   topic, and a second real course (single topic acceptable) for the
   multi-class scenario.
-- A LyfeLabz lesson is available to assign (any published lesson slug).
+- A LyfeLabz lesson is available to assign. The lesson MUST have a deployed
+  assessment in the emulator, otherwise `assignmentsPublish` refuses the
+  `draft -> published` transition (`assessments.notDeployed`) and assignment
+  activation fails. The certification seed deploys assessments for the bounded
+  cert lesson set (`what-is-life`, `cell-types`, `biological-evolution`; see
+  `SPRINT_25_B6_CERTIFICATION_FINDINGS.md`). `verify-seed.js` must report
+  `cert assessments: ALL PRESENT` before starting.
 - A clean run starts from a teacher who has connected Google Classroom
   with readonly scopes only (Sprint 24B state) and has never granted the
   coursework scopes. B9 depends on this readonly-only starting point.
@@ -131,22 +149,54 @@ runbook.
 - **Pass/fail:** PASS when the non-LMS row is byte-equivalent to its
   pre-Sprint-25 rendering.
 
-### B4. LMS-linked active row shows the publication toggle and topic selector
+### B4. LMS-linked active row shows the publication toggle and topic selector (pre-consent)
+- **Frozen-architecture note:** `classroom.topics.readonly` is a
+  publication-capability scope granted only at first-publish incremental
+  consent (PDR-030b, PDR-030c; Blueprint §7). It is NOT part of the initial
+  readonly connection. Therefore, before B9, the topic list cannot be read
+  from real Google, and the selector is expected to be empty. Real topic
+  population is certified post-consent in B4b. Do not move
+  `classroom.topics.readonly` into the initial scopes.
 - **Setup:** Assign dialog open; the LMS-linked active class row visible.
-- **Upstream:** real-google (topics fetched via `lmsClassesListTopics` ->
-  live `listCourseTopics`).
+  The connection holds only the initial readonly scopes
+  (`classroom.courses.readonly`, `classroom.rosters.readonly`); no
+  publication consent has been granted yet. Run in the baseline phase,
+  before B9.
+- **Upstream:** real-google. `lmsClassesListTopics` -> live
+  `listCourseTopics` is attempted, but the token lacks
+  `classroom.topics.readonly`, so the call returns the non-terminal
+  insufficient-scope outcome and no topics. Topic listing NEVER triggers
+  consent; publication is the sole consent trigger (PDR-030c).
 - **Browser actions:** Inspect the LMS-linked active row. Open the topic
   selector.
 - **Expected visible state:** The row carries a topic selector and an
-  "Also publish to Google Classroom" toggle. The topic selector is
-  populated from the linked course's real topics, with "No topic" as the
-  default. A stale prefilled topic falls back to "No topic". A topic
-  fetch failure degrades to an empty selector with the toggle still
-  usable (verify only if a fetch failure occurs naturally; do not force).
-- **Evidence:** Screenshot of the populated selector; Functions log shows
-  one `lmsClassesListTopics` call returning the course topics.
+  "Also publish to Google Classroom" toggle. Because the topics scope is
+  not yet granted, the selector shows only "No topic" (the accepted
+  degraded pre-consent state). The toggle remains usable. Make NO claim
+  that real Google topics were successfully read at this step.
+- **Evidence:** Screenshot of the row showing both controls and the empty
+  ("No topic") selector.
 - **Pass/fail:** PASS when both controls appear only on LMS-linked active
-  rows and topics come from the real course.
+  rows and the selector is safely empty pre-consent. Do NOT require real
+  topics here; real topic population is certified in B4b.
+
+### B4b. Topic selector populates from real Google (post-consent)
+- **Setup:** Runs AFTER incremental publication consent (B9/B10) has
+  widened the connection so it holds `classroom.topics.readonly`. Reopen
+  the Assign dialog (or otherwise refresh the Assign topic state) so the
+  topic list is re-fetched against the widened connection. A prior
+  pre-consent failure is not cached, so reopening re-attempts the fetch.
+- **Upstream:** real-google (topics fetched via `lmsClassesListTopics` ->
+  live `listCourseTopics`, now authorized).
+- **Browser actions:** Open the topic selector on the LMS-linked active row.
+- **Expected visible state:** The selector is populated from the linked
+  course's real topics, with "No topic" as the default. A stale prefilled
+  topic falls back to "No topic".
+- **Evidence:** Screenshot of the populated selector; Functions log shows a
+  successful `lmsClassesListTopics` call returning the real course topics.
+- **Pass/fail:** PASS when the real Google Classroom topic appears in the
+  selector against the widened connection. This widened state feeds the
+  topic-publication scenario (B8/B12).
 
 ### B5. Publication toggle defaults off
 - **Setup:** Assign dialog open; LMS-linked active row visible; dialog
@@ -259,6 +309,31 @@ runbook.
   item (no topic) is not filed under any topic.
 
 ### B13. Teacher cancels or closes consent
+- **DISPOSITION: PASS WITH LIMITATION** (canonical; see
+  `SPRINT_25_B13_ARCHITECTURE_REASSESSMENT_AND_CLOSURE.md`). Concise record:
+  - The core publication feature is proven through real Google Classroom
+    certification (CT-001 B8/B11/B12; CT-003 B13 Attempt 1 both created real
+    coursework, operator-confirmed).
+  - The cancellation branch's LyfeLabz-side behavior has deterministic
+    automated coverage: insufficient-scope is non-terminal, the assignment
+    stays intact and retryable, no failed record and no re-issue
+    (`assignments-publish.test.ts:417-465`;
+    `connections-complete-oauth-state.test.ts:464-507`).
+  - Live reproduction of the exact incremental-consent cancellation state
+    became unreliable because of Google's accumulated-grant behavior
+    (`include_granted_scopes=true` re-folds every previously granted scope, so
+    a readonly-only starting fixture cannot be cheaply reproduced on the
+    certification account).
+  - Repeated fixture manipulation was intentionally stopped (Attempt 1, Attempt
+    2, and the planned Attempt 3 halted; history preserved in
+    `SPRINT_25_B13_CERTIFICATION_FINDINGS.md` and
+    `SPRINT_25_B13_RECOVERY_REPORT.md`).
+  - Identity continuity is protected reactively by the existing hard
+    `lms.identityMismatch` invariant at widening
+    (`connections-complete.ts:232-239`); a wrong account can be shown but can
+    never corrupt the connection.
+  - Proactive account continuity via `login_hint` is a UX follow-up (Sprint
+    26 candidate), not a Sprint 25 correctness blocker.
 - **Setup:** Readonly-only connection (a fresh readonly connection, or a
   connection that still lacks coursework scopes). Toggle on; confirm;
   when the consent prompt appears, cancel or close it.

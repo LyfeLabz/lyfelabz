@@ -418,4 +418,678 @@ PHASE 3 COMPLETE AND READY TO COMMIT.
 Phase 4 was not started. The frozen Sprint 25 architecture was preserved.
 Nothing was staged or committed.
 
+## 22. Certification-found defect: stale class cache (scenario B2)
+
+Browser certification paused at scenario **B2**. B2 exposed a
+**pre-existing** defect that predates Sprint 25 and is unrelated to the
+LMS-publication architecture certified above. The Phase 3 architecture is
+unchanged.
+
+**Symptom.** The Classes page showed the teacher's active class, but the
+Assign dialog (opened from the Curriculum surface) still reported "You do
+not have any active classes yet."
+
+**Root cause.** The Curriculum surface (`app/src/shell/surfaces/
+curriculum.ts`) warms a module-scoped, uid-keyed teacher class cache
+(`cachedClasses`) on mount. Because the SPA re-renders in place instead of
+reloading the module, that cache survived two boundaries it should not:
+
+1. A same-session class mutation (create / import / activate) performed on
+   the Classes surface. The Classes page reads classes fresh through its
+   own `listClasses` call; the Assign dialog kept serving the pre-mutation
+   (often empty) cached list.
+2. A same-uid sign-out/sign-in. The cache key is the uid, which is
+   identical across that teardown, so the incoming session reused the
+   outgoing session's rows.
+
+**Bounded fix.** A single class-scoped invalidation,
+`invalidateCurriculumClassCache()`, drops the class list and the LMS
+class-link caches (plus any in-flight fetch) so the next Assign open
+re-fetches. It deliberately leaves session preferences, filters, the
+assignment registries, the persisted-slug badges, and per-link LMS topics
+untouched. It is invoked:
+
+- after every class mutation on the Classes surface (`createClass`,
+  Google Classroom import link, and `activateClass` success paths in
+  `app/src/shell/surfaces/classes.ts`), before the mount-connection guard
+  so a confirmed server mutation always invalidates; and
+- at every auth bootstrap transition in `app/src/index.ts` `rerun()`
+  (alongside the existing Curriculum scroll-guard invalidation), so a
+  same-uid sign-out/sign-in cannot reuse the prior session's rows. In-tab
+  surface navigation does not pass through `rerun`, so the intended
+  within-session prefetch cache is preserved.
+
+No class data model, callable contract, Firestore rule, LMS architecture,
+or assignment architecture was changed. No Firestore data was modified.
+
+**Regression tests added.**
+`app/src/shell/surfaces/curriculum.class-cache-invalidation.test.ts`
+(5 tests): warm-empty-then-exists invalidation; same-session
+create-then-assign; same-uid sign-out/sign-in teardown; cross-teacher
+cache isolation; and unchanged behavior when the cache is valid. The
+failing browser scenario is reproduced by these tests: with the
+invalidation neutered, three of the five fail; with the fix in place all
+five pass.
+
+**Certification status.** Certification is **paused and must resume at
+B2**. No later certification scenario was started.
+
+## 23. Certification-found defect: publish toggle persists ON (scenario B5)
+
+Browser certification, resumed after B2, paused again at scenario **B5**.
+B5 exposed an implementation defect in the Assign dialog's rehydration
+seam. The frozen architecture is unchanged; the Assign experience was not
+redesigned.
+
+**Authoritative requirement.** Classroom publication is opt-in per action
+(PDR-019a: integration is opt-in per teacher, per class, per action). The
+publish toggle must be OFF every time the Assign dialog opens, and a prior
+ON state must never be restored.
+
+**Symptom.** A teacher opened an LMS-linked Assign row, turned the publish
+toggle ON, and confirmed. Reopening the same lesson/class restored the
+publish toggle in the ON state.
+
+**Root cause.** The confirm handler persists the full `RowConfig` per class
+so revisit-in-place can restore remembered fields. That stored config
+includes `publishToLms: true`. The rehydration seam
+(`app/src/shell/surfaces/curriculum.ts`) spread the prior row verbatim
+(`{ ...prior }`), so the ON flag was carried back onto the reopened row.
+This persistence was inherited accidentally from the older whole-row
+persistence mechanism; it was never an intentional preference. The server
+completed-attempt guard is a publication-safety control and is not the
+mechanism that enforces this UX rule.
+
+**Bounded fix.** A single-field reset at the rehydration seam: when prior
+row state exists, the dialog now rehydrates it as
+`{ ...prior, publishToLms: false }`. Every other remembered field is
+preserved exactly as before - enabled state, date, release time, points,
+legacy topic preference, `lmsTopicId`, and row order. `publishToLms` is the
+only field forced OFF on open. No architecture document, callable contract,
+Firestore rule, LMS architecture, or assignment architecture was changed.
+No Firestore data was modified.
+
+**Regression tests added.** `curriculum.lms-publish.test.ts` gains a
+three-test block: toggle ON + Confirm then reopen asserts the toggle is OFF
+while date/time/points/topic/enabled remain restored; a new explicit opt-in
+after the reset still publishes; and the cancel path reopens OFF and never
+publishes. The existing revisit-in-place test in `shell.test.ts` is
+strengthened to assert no ON publish toggle survives a reopen; the
+default-off test is unchanged and still passes. With the pre-fix verbatim
+spread restored, the new regression fails; with the reset in place it
+passes.
+
+**Certification status.** The bounded fix was browser-retested: scenario
+**B5 PASSES**. Certification resumes at the next scenario after B5.
+
+## 24. Certification-found defect: invalid assignment-id minting (scenario B6)
+
+Browser certification, resumed after B5, paused again at scenario **B6**.
+B6 exposed an implementation defect in the client's assignmentId minter.
+The frozen architecture is unchanged; the assignment lifecycle was not
+redesigned and no server contract was broadened.
+
+**Authoritative requirement.** Every assignment callable validates the
+client-supplied `assignmentId` against one shared URL-safe token pattern:
+
+```
+const ASSIGNMENT_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
+```
+
+An id must begin and end with an alphanumeric character, contain only
+letters, digits, hyphens, and underscores, and be at most 64 characters.
+
+**Symptom (browser evidence).** In B6 the first callable, `assignmentsCreateDraft`,
+rejected **both** createDraft requests. The actual callable response was:
+
+```
+{
+  "error": {
+    "details": { "code": "assignments.invalidAssignmentId" },
+    "message": "assignmentId must be a URL-safe token (letters, digits, hyphens, underscores).",
+    "status": "INVALID_ARGUMENT"
+  }
+}
+```
+
+Because createDraft failed for every row, no `assignmentsPublish` ran and
+no `lmsAssignmentsPublish` ran. The dialog had already closed optimistically,
+so the teacher saw the calm "LyfeLabz assignment was not created" outcome
+line but no assignment was created. This is proven browser evidence, not an
+inference.
+
+**Root cause.** `mintAssignmentId` (formerly in-line in
+`app/src/shell/surfaces/curriculum.ts`) built a deterministic readable id
+and, when it exceeded 64 characters, trimmed with `raw.slice(raw.length - 64)`.
+For real certification-length identifiers (28-char Firebase teacher uid,
+long lesson slug such as `earths-place-in-the-universe`, 20-char Firestore
+class id, 12-char nonce; readable form ~93 chars) this blind tail-slice
+could (a) begin with `-`, violating the pattern's alphanumeric-start rule,
+and (b) drop a differing class id sitting in the middle of the string, so
+two distinct classes could collide on one id.
+
+**Bounded fix.** The minter moved to a new firebase-free module,
+`app/src/shell/surfaces/shared/assignmentId.ts` (paralleling `classId.ts`),
+so it can be unit-tested in isolation. The over-length branch no longer
+tail-slices. It now:
+
+- keeps a valid alphanumeric leading sentinel (`a-...`) trimmed to a valid
+  boundary, and
+- appends a deterministic 64-bit FNV-1a digest of the full logical tuple
+  (teacher uid, lesson slug, class id, nonce), rendered in base36
+  (URL-safe `[0-9a-z]`).
+
+Every returned id now begins and ends alphanumeric, is <= 64 characters,
+contains only URL-safe characters, is deterministic for the same logical
+input, and is distinct across different nonces, class ids, teacher uids,
+and lesson slugs regardless of field lengths. The common (short) case is
+unchanged apart from a defensive trailing-separator trim. `ASSIGNMENT_ID_PATTERN`
+was not weakened and no server contract was broadened. No Firestore data
+was modified.
+
+**Failure UX.** No change was required. On total createDraft failure
+`summarizeOutcomes` already emits a visible, non-misleading, teacher-safe
+banner line ("... LyfeLabz assignment was not created. Google Classroom
+publication was not attempted."), and the false-success suite already
+asserts it renders. The optimistic-close UX was not redesigned.
+
+**Regression tests added.** A new focused suite
+`app/src/shell/surfaces/shared/assignmentId.test.ts` exercises real-length
+identifiers (28-char teacher uid; realistic 20-char class ids; long slugs
+including `parts-of-an-ecosystem`, `what-is-life`, `body-systems`,
+`earths-place-in-the-universe`) and asserts pattern conformance, <= 64
+length, determinism, and distinctness across nonce / class id / teacher
+uid. A contract test reads the server source, extracts its live
+`ASSIGNMENT_ID_PATTERN`, asserts the client mirror is byte-identical, and
+asserts every minted id passes the actual server regex. `curriculum.lms-publish.test.ts`
+gains a two-row publication-OFF lifecycle test whose createDraft validates
+the minted id against the server pattern: both createDraft calls succeed,
+both `assignmentsPublish` calls run, no `lmsAssignmentsPublish` runs, and
+the calm LyfeLabz success outcome is produced.
+
+**Certification status.** Certification remains **paused at scenario B6**
+pending browser retest of the bounded fix. It has not advanced to B7.
+
+## 25. Certification-found defect: success confirmation not visible (scenario B6)
+
+Browser certification, re-run after the assignmentId minter fix
+(section 24), confirmed the B6 backend lifecycle now **passes**:
+`assignmentsCreateDraft` succeeds, `assignmentsPublish` succeeds, no
+`lmsAssignmentsPublish` runs when Classroom publication is OFF, and the
+assignmentId minting defect is resolved. B6 nonetheless **failed on
+presentation**: after clicking Assign the dialog closed and the teacher
+perceived no visible success confirmation. The frozen architecture is
+unchanged; no assignment lifecycle logic was modified and the Assign
+experience was not redesigned.
+
+**Symptom (browser evidence).** After a successful Assign the dialog
+closed and the teacher, still scrolled near the assigned lesson card, saw
+nothing. The quiet self-dismissing banner *was* rendered with correct
+copy, but it was appended at the very bottom of the Curriculum surface
+(after the lesson grid), the page did not scroll to it, and it
+self-dismissed after four seconds. The backend, the generated summary,
+and the banner copy were all correct; the failure was purely visibility.
+
+**Root cause (two independent defects).**
+
+1. *Off-screen placement.* The `assign-success` live region was rendered
+   below the lesson grid, out of the teacher's viewport at the moment of
+   confirmation, and nothing scrolled it into view before it self-dismissed.
+
+2. *Stale self-dismiss timer.* `showSuccess()` created a new four-second
+   timeout on every call but never cleared the previous one. The Assign
+   flow calls it twice, first with the optimistic "Assigning..." line and
+   then with the final "Assigned..." outcome. The optimistic timer, still
+   pending, could fire and hide the final Assigned message early.
+
+**Bounded UI fix.** Smallest architecture-preserving change; no modal, no
+wizard, no navigation redesign; the quiet self-dismissing notification
+philosophy, the `role="status"` / `aria-live="polite"` semantics, the
+copy, the lifecycle, and the backend are all unchanged.
+
+- *Visibility.* `.shell-curriculum-success` in the shell host page
+  (`app/index.html`) is now a fixed toast anchored near the top-center of
+  the viewport (`position: fixed; top: 1rem`), so it is seen immediately
+  after Assign regardless of scroll position and without moving the
+  teacher's scroll. `showSuccess()` adds a `shell-curriculum-success-visible`
+  marker class when it shows the banner and removes it on dismiss, giving
+  the DOM a concrete, testable visibility signal.
+
+- *Timer correctness.* `showSuccess()` now tracks the pending self-dismiss
+  timeout per banner in a `WeakMap` and clears any in-flight timer before
+  installing the new one. Only the newest message owns the dismiss timer,
+  so the optimistic timeout can never hide the final Assigned line, and
+  the banner self-dismisses only after the newest four-second timeout.
+
+**Badge verification.** The lesson card's `✓ Assigned` badge already
+updates correctly on a successful publish: the lifecycle calls
+`markPersisted` before `onLifecycleComplete`, and `refreshAssignControl`
+re-derives the badge from the persisted-assignment registry. No badge
+change was made; a regression test now pins this behavior.
+
+**Regression tests added.** A new focused suite
+`app/src/shell/surfaces/curriculum.success-banner.test.ts`:
+
+- banner is visible (not hidden, carries the visible marker class,
+  retains `role="status"` / `aria-live="polite"`) after a successful
+  assignment;
+- banner shows the final "Assigned" line, not the optimistic "Assigning"
+  line, after both callbacks fire;
+- a second `showSuccess` clears the first timer, so at t=4000ms (when the
+  optimistic timer would have fired) the final message is still visible,
+  and the banner self-dismisses only after the newest timer;
+- banner stays visible for the full four seconds after the newest message;
+- a successful assignment still lights the `✓ Assigned` badge on the card.
+
+**Certification status.** Certification remains **paused at scenario B6**
+pending a browser retest of this bounded UI fix. It has not advanced to B7.
+
+## 26. Certification-found defect: toast CSS did not reach the visible state (scenario B6)
+
+Browser certification, re-run after section 25 (and after restarting the
+Functions emulator, which cleared the transient invalid-assignmentId
+condition), confirmed the B6 backend lifecycle passes and `showSuccess()`
+runs. The toast, however, still did not render as intended. This is a
+follow-up presentation defect to section 25, isolated to the CSS /
+served-document seam. No assignment lifecycle, assignmentId minting,
+Functions, Firestore, or Google Classroom publication logic was touched,
+and the Assign experience was not redesigned.
+
+**Symptom (browser evidence).** DevTools on `/app/teacher` showed the
+`assign-success` live region toggling and re-hiding on its four-second
+timer, but the applied `.shell-curriculum-success` styles contained the
+inline-callout token rule plus the older `margin: 0.75rem 0` rule, and
+did **not** contain the section-25 fixed-toast declarations
+(`position: fixed`, `top`, `left`, `transform`, `z-index`, `box-shadow`).
+The JavaScript behavior was current while the toast CSS was not.
+
+**Root cause (CSS cascade + JS/CSS seam; the served document was correct).**
+The document Firebase Hosting serves for `/app/teacher` is the repo-root
+`app/index.html` (`hosting.public: "."`, rewrite `/app/**` ->
+`/app/index.html`). The `build` script only bundles JS
+(`esbuild src/index.ts -> dist/bundle.js`); it never generates or copies
+the HTML, and `app/index.html` loads that separate bundle by URL. That is
+why the browser always receives current JavaScript regardless of the HTML:
+the JS is a distinct built artifact, while the toast CSS is inline in the
+hand-authored HTML. A byte-for-byte diff of the emulator response against
+the working tree was identical, so the served bytes were not stale; the
+DevTools screenshot reflected a **browser-cached pre-edit copy** of the
+HTML. Two genuine repo-level defects nonetheless survived a hard refresh:
+
+1. *Wrong state targeted.* `showSuccess()` toggles the class
+   `shell-curriculum-success-visible`, but **no rule for that class existed**.
+   The section-25 fixed-toast declarations were attached to the base
+   `.shell-curriculum-success` class instead of the visible-state class the
+   JavaScript actually adds - a JS/CSS seam with nothing backing the toggled
+   class.
+
+2. *Cascade override + header overlap.* A later "token unification" rule
+   (`.shell-curriculum-success`, same 0,1,0 specificity, declared after the
+   base rule) re-colored the class with the inline-callout success token
+   whose background is only ~8% opaque - unreadable for a toast floating
+   over page content - and `top: 1rem` (16px) did not clear the in-flow
+   application header (`.shell-header` measures ~70.5px: a 24.3px x 1.6
+   wordmark line box, or 44px coarse-pointer targets, plus 15.3px x 2 block
+   padding and a 1px border).
+
+**Bounded UI fix.** The visible **state** now owns the toast presentation.
+A single new rule, `.shell-curriculum-success.shell-curriculum-success-visible`
+(specificity 0,2,0), reliably outranks both the base rule and the token
+rule regardless of source order, so the fix cannot be silently undone by a
+future callout-token pass. It sets `position: fixed; top: 5.5rem` (88px at
+the app's 16px root, clearing the ~70.5-75.6px header with ~12-17px of gap,
+constant across breakpoints because the header keeps canonical padding and
+wordmark size on phones), `left: 50% / translateX(-50%)` centering, an
+**opaque** success background (`#e8fbf0`, the section-25 tint composited
+over white so it stays readable over any content), `#175a31` success ink
+for strong contrast, `margin: 0` so the fixed toast cannot shift layout,
+and a soft `box-shadow`. The base `.shell-curriculum-success` rule was
+reverted to its committed inline-callout form. `role="status"`,
+`aria-live="polite"`, the copy, the ~4s self-dismiss, and the backend are
+all unchanged. Measured live against the served stylesheet: header 70.47px,
+toast top 88px, gap 17.5px, computed background `rgb(232,251,240)` (opaque),
+ink `rgb(23,90,49)`, centered.
+
+**Regression tests added.** The section-25 jsdom suite asserts DOM state
+only; it passed the entire time the browser showed no toast, because jsdom
+never loads `app/index.html` or applies its CSS. A new node-environment
+suite `app/src/shell/surfaces/curriculum.assign-toast-css.test.ts` pins the
+served-document seam that actually failed:
+
+- Hosting config: `public` is `"."` and `/app/**` rewrites to
+  `/app/index.html`, so the asserted file is the served document.
+- JS/CSS agreement: `showSuccess()` toggles
+  `shell-curriculum-success-visible`, and the served HTML defines a rule for
+  that exact class.
+- Presentation: the visible-state rule is fixed, top-anchored with an
+  offset that clears the header (>= 4.8rem), centered, layered, with an
+  **opaque** background (not the `--tw-callout-success-bg` token and not a
+  translucent `rgba()`), and strong `#175a31` ink with `margin: 0`.
+- Cascade: the visible-state selector carries two classes (0,2,0), higher
+  than the token rule (0,1,0), so the toast wins.
+
+**Certification status.** Certification remains **paused at scenario B6**
+pending a browser retest of this bounded presentation fix. It has not
+advanced to B7.
+
+## 27. Certification-found defect: unactivated publish path (scenario B9)
+
+Browser certification, resumed after the B6 fixes, reached scenario **B9**
+(the first live Google Classroom *publication* attempt) and exposed two
+distinct production implementation defects on the publish path. Both are
+implementation defects, not architecture changes: the frozen Phase 2
+architecture, the publication contract, and every server-side invariant are
+unchanged. Certification is **stopped at B9** and was **not retried**; B9's
+intended sequence (publish attempt to a bound transport, then the missing
+`classroom.coursework.me` scope surfacing as `lms.insufficientScope`, then
+incremental consent and a successful retry) is precisely what these fixes
+restore the ability to observe. No scope was auto-granted, no consent was
+bypassed, and publication retry semantics were not changed.
+
+### 27A. Missing per-callable production transport binding
+
+**Root cause.** Three upstream Google Classroom callables performed a real
+transport operation without independently activating the production
+bindings. Each reached the provider through the adapter
+(`lmsAssignmentsPublish` -> `adapter.publishAssignment`,
+`lmsClassesListTopics` -> `adapter.listClassTopics`,
+`lmsClassesRefresh` -> `adapter.fetchClass`) but neither called
+`ensureGoogleClassroomProductionBindings()` at handler entry nor declared
+`googleClassroomProductionSecrets` on the `platformCallable(...)` options.
+The module-level transport is per-worker state. In a worker that had not yet
+served a callable that *did* activate the bindings (the Sprint 24B
+import/discovery/sync callables), the transport was still the sentinel
+`UnboundGoogleClassroomTransport`, whose `createCourseWork()` throws
+synchronously. The publish path therefore depended on another callable
+having run first in the same worker, which is not guaranteed.
+
+**Affected callables.** `lmsAssignmentsPublish`, `lmsClassesListTopics`,
+`lmsClassesRefresh`.
+
+**Bounded fix.** Each of the three callables now mirrors the established
+Sprint 24B pattern used by `lmsClassesImport` / `lmsClassesDiscover` /
+`lmsClassesSyncRoster`, verbatim:
+
+- calls `ensureGoogleClassroomProductionBindings()` as the first statement
+  of the handler, before any provider or transport work;
+- attaches `{ secrets: [...googleClassroomProductionSecrets] }` through the
+  existing `platformCallable(options, handler)` mechanism.
+
+The installer is idempotent and respects an explicitly installed test
+transport (it only binds when the seam is unbound), so fixture behavior is
+preserved and no global bootstrap was introduced. A bounded audit of every
+Google Classroom callable confirmed these were the only three missing the
+wiring; all other upstream callables already carried both, and the
+Firestore/read-only callables (`connectionsDescribe`, `providersList`)
+correctly carry neither.
+
+### 27B. Escaped timeout / unhandled-rejection worker crash
+
+**Root cause.** In `adapter.publishAssignment` the 30-second
+AbortController-backed timeout timer was created, and then
+`transport.createCourseWork()` was invoked, *before* the `try` whose
+`finally` cleared the timer. If `createCourseWork()` threw **synchronously**
+(exactly what the unbound transport of defect 27A does), control left the
+function before entering the `try`, so the `finally` never ran. The 30-second
+timer stayed live and, on firing, rejected a timeout promise that no longer
+had a consumer (the `Promise.race` was never reached). That unhandled
+rejection could crash the Functions worker roughly 30 seconds after the
+publish call had already returned an error, one interacting with the other:
+27A guaranteed the synchronous throw that 27B then turned into a delayed
+crash.
+
+**Affected code.** `platform/functions/src/lms/providers/google-classroom/adapter.ts`,
+`publishAssignment`.
+
+**Bounded fix.** The timer creation, the `createCourseWork()` call, and the
+`Promise.race` now live entirely inside a single `try` whose `finally`
+clears the timer. This one ownership boundary clears the timer regardless of
+how the call settles: synchronous throw, asynchronous rejection, success, or
+the 30-second timeout winning. A no-op `.catch()` is additionally attached to
+the timeout promise itself so the losing side of the race (or an orphan on a
+synchronous throw) can never surface as an unhandled rejection. The intended
+30-second timeout behavior is intact and still surfaces through the
+established `lms.upstreamCallFailed` contract. No process-level
+`unhandledRejection` handler was added; the lifecycle defect was fixed
+structurally rather than suppressed.
+
+### 27C. Regression coverage
+
+- **Transport binding (Part 4A).** Each of the three callables now has a
+  binding-contract test asserting (1) the callable declares
+  `googleClassroomProductionSecrets` (a sentinel from a mocked
+  `config-firebase` proves the value's provenance) and (2)
+  `ensureGoogleClassroomProductionBindings()` runs at handler entry before
+  the adapter is resolved. `lmsClassesListTopics` gained a new callable
+  suite (`classes-list-topics.test.ts`); `assignments-publish.test.ts` and
+  `classes-refresh.test.ts` were extended.
+- **Synchronous throw (Part 4B).** A new adapter test installs a transport
+  whose `createCourseWork()` throws synchronously, asserts the mapped
+  failure surfaces, advances fake timers past 30 seconds, and asserts
+  `jest.getTimerCount()` is 0 and no `unhandledRejection` fired. This test
+  fails against the pre-fix adapter (observed timer count 1) and passes
+  post-fix.
+- **Normal timeout (Part 4C).** A never-resolving transport asserts the
+  30-second timeout still fires as `lms.upstreamCallFailed`, the timer is
+  cleared afterward, and no later rejection leaks.
+- **Insufficient-scope path (Part 4D).** With a bound transport and a
+  readonly-only scope shortfall, publication surfaces `lms.insufficientScope`
+  rather than `lms.googleClassroomTransportUnbound` or a generic upstream
+  failure. Scopes were not widened to force success.
+
+### 27D. Confirmations
+
+- **OAuth state is readonly-only and untouched.** The certification
+  connection remains at its initial (readonly) scope. No code grants scopes,
+  bypasses consent, or alters publication retry semantics. The next B9 retry
+  can now produce the intended sequence: publish attempt -> bound real
+  transport -> missing `classroom.coursework.me` -> `lms.insufficientScope`
+  -> incremental consent -> retry -> successful publication.
+- **Existing failed publication record left untouched.** The `failed`
+  publication record written by the earlier transport-unbound attempt was not
+  altered, deleted, or migrated.
+- **No emulator/seed reframing.** This is a per-callable production-activation
+  requirement, not an emulator startup or seed obligation.
+
+### 27E. TEMPORARY B9 upstream diagnostic instrumentation (awaiting one real-Google capture)
+
+**Why.** §27 assumed the readonly-only publish attempt would surface as
+`lms.insufficientScope`. The resumed diagnosis established that the real
+readonly-only B9 attempt instead reached the genuine `createCourseWork` call,
+failed at real Google, and was translated to `lms.upstreamAuthorizationFailed`
+(not `lms.insufficientScope`). The current transport surfaces only a single
+`upstreamCode` string and cannot read `WWW-Authenticate` at all, so it discards
+the evidence needed to determine how Google actually signals an insufficient
+scope shortfall (HTTP 401 vs 403, `error.status`, `error.details[].reason`, or
+the `WWW-Authenticate` auth-error token). The permanent classification
+correction is therefore **awaiting one sanitized real-Google capture** from a
+single B9 diagnostic retry.
+
+**What was added (temporary).** Sanitized diagnostic instrumentation at the
+non-2xx boundary of the Google Classroom HTTPS transport
+(`transport.ts`, `callUpstream`). On any non-2xx upstream response it emits one
+structured log, `lms.googleClassroomUpstreamDiagnostic`, carrying only:
+HTTP status; `error.status` (enum-token only); `error.code` (numeric);
+`error.details[].reason` values (enum-token only); the `WWW-Authenticate`
+auth-error token (e.g. `insufficient_scope`, `invalid_token`) and a boolean
+presence of its `error_description`; `error.message` presence plus a
+categorical label drawn from a fixed allowlist of Google's own non-identifying
+messages; and a route with every dynamic id segment replaced by `{id}`. It
+explicitly never logs tokens, Authorization or any header set, OAuth
+codes/secrets, full request/response bodies, full error messages, account
+email, user id, course id, coursework id, or any student/teacher PII. To read
+`WWW-Authenticate`, the `HttpsFetch` seam gained one optional named-header
+reader (`header?(name)`), delegating to `Response.headers.get`; no full header
+set is copied into application state.
+
+**Classification intentionally unchanged.** `extractUpstreamCode`, the
+scope-insufficient reason scan, and the adapter's `translateUpstreamError`
+mapping are untouched. The diagnostic emits and returns; the value thrown from
+`callUpstream` is identical. This is deliberate: the next real B9 attempt must
+**reproduce the current failure** (still `lms.upstreamAuthorizationFailed` if
+that is what Google returns) while emitting the missing evidence. Tests pin
+that the thrown `upstreamCode` is unchanged for both the insufficient-scope and
+ordinary-denial shapes.
+
+**TEMPORARY - must be removed or converted before Sprint 25 closeout.** This
+instrumentation is a bounded certification diagnostic, marked `temporary: true`
+in its payload and flagged in-code. Before Sprint 25 closeout it must be
+removed or converted into appropriately minimal permanent observability, at the
+same time the permanent insufficient-scope classifier is written from the
+captured evidence.
+
+**Secondary scope observation (read-only, no change made).** A read-only review
+of the coursework-create scope was requested. The project docs (PDR-030b)
+select `classroom.coursework.me` as the publication write scope but do **not**
+capture Google's own API-reference scope-requirement table for
+`courses.courseWork.create`. Per Google's published Classroom API reference, a
+teacher creating coursework requires `classroom.coursework.students`;
+`classroom.coursework.me` is a caller-scoped (student-facing) scope and is a
+strong candidate for the true B9 root cause. Because the repository docs do not
+themselves establish Google's requirement, this is flagged as **requiring
+verification against the live Google API reference** (which the diagnostic
+capture will corroborate) rather than treated as settled. **No OAuth scope was
+changed**; `GOOGLE_CLASSROOM_PUBLICATION_SCOPES` is untouched.
+
+> **CONFIRMED and CORRECTED (2026-08-16, Sprint 25 B9 live certification,
+> PDR-030g).** The prediction above was corroborated by real Google. In the
+> live B9 run, Google granted `classroom.coursework.me`, yet the teacher-side
+> `courses.courseWork.create` call still returned HTTP 403
+> `ACCESS_TOKEN_SCOPE_INSUFFICIENT`. Token-lifecycle analysis ruled out stale
+> `tokenRef`, stale access token, worker isolation, token-store inconsistency,
+> and connection-metadata/token-bundle divergence: the post-consent token
+> genuinely carried `.me`. `GOOGLE_CLASSROOM_PUBLICATION_SCOPES` was
+> subsequently corrected from `classroom.coursework.me` to
+> `classroom.coursework.students`. The read-only-at-the-time wording above is
+> retained unchanged for traceability; see PDR-030g in
+> `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### 27F. RESOLVED - successful B9 (and co-observed B10) live certification (2026-08-16)
+
+After the §27A / §27B fixes and the PDR-030g scope correction
+(`classroom.coursework.me` -> `classroom.coursework.students`), the operator
+re-ran B9 against real Google from a clean readonly-only baseline. The
+complete intended sequence occurred end to end and **B9 is PASS** (B10 is
+co-observed PASS on the same run). The evidence below was read from the live
+emulator Functions log and emulator Firestore; no certification data, no
+token, and no Google Classroom coursework was edited or deleted to gather it.
+
+**Readonly baseline (pre-B9).** Connection `googleclassroom__cert-teacher-001`,
+tokenRef `lms_token_7bc61476...` present, scopes exactly
+`classroom.rosters.readonly` + `classroom.courses.readonly`. No publication
+scopes; `classroom.coursework.students` and `classroom.topics.readonly` both
+absent. (That baseline bundle was subsequently rotated out and is now absent,
+see below - authoritative confirmation of a fresh, unwidened starting point.)
+
+**Operator action.** Assigned Biological Evolution to one Google
+Classroom-linked class, publication enabled, topic "No topic", Assign clicked
+**exactly once**.
+
+**Observed backend chain (this run, assignment `...28x9thcelm9k7`), in order:**
+
+1. `lmsClassesListTopics` -> `lms.googleClassroomUpstreamDiagnostic` (HTTP 403,
+   route `/v1/courses/{id}/topics`, `ACCESS_TOKEN_SCOPE_INSUFFICIENT`) -
+   pre-consent topic read returns no topics, consistent with the readonly
+   baseline.
+2. `assignmentsCreateDraft` -> `assignments.created` (one draft, no duplicate).
+3. `assignmentsPublish` -> `assignments.published` (LyfeLabz activation).
+4. `lmsAssignmentsPublish` (first attempt) ->
+   `lms.googleClassroomUpstreamDiagnostic` (HTTP 403, route
+   `/v1/courses/{id}/courseWork`, `errorStatus PERMISSION_DENIED`,
+   `detailReasons [ACCESS_TOKEN_SCOPE_INSUFFICIENT]`, `WWW-Authenticate
+   insufficient_scope`) - the decisive insufficient-scope failure on coursework
+   creation.
+5. `lmsConnectionsBegin` (intent `publication`) - one incremental-consent
+   handoff opens.
+6. `lmsConnectionsComplete` -> `lms.connectionScopesWidened` - OAuth callback
+   recovered the publication intent, revalidated the same upstream account,
+   wrote a new token bundle, and widened the connection.
+7. `lmsAssignmentsPublish` (single automatic re-issue, same attemptNonce) ->
+   `lms.assignmentPublished` - success.
+
+Exactly one begin/complete pair; exactly two `lmsAssignmentsPublish` calls
+(insufficient, then success); no second `assignmentsCreateDraft`; the operator
+did not click Assign again. The re-issue is single and nonce-stable by
+construction (`curriculum.ts`: one `attemptNonce` per logical publication
+action, reused on the automatic post-consent re-issue and never re-minted).
+
+**Insufficient-scope proof (not a different failure).** The first publish
+failed at the coursework-create route with HTTP 403 `PERMISSION_DENIED`, detail
+reason `ACCESS_TOKEN_SCOPE_INSUFFICIENT`, and `WWW-Authenticate:
+insufficient_scope`. It was not `invalid_token`, not an expired token, not a
+wrong account (identity revalidation passed at widening), not a
+transport-unbound error (§27A), not a timeout, and not a generic authorization
+failure. This is the exact sanitized real-Google shape §27E was awaiting.
+
+**Post-consent credential (authoritative, emulator Firestore).** Connection
+`googleclassroom__cert-teacher-001`: status `active`, tokenRef rotated to
+`lms_token_0736b760...` (the readonly baseline bundle `...7bc61476...` was
+cleaned up after the connection update committed and is now absent),
+`scopesUpdatedAt 2026-08-16T17:07:48Z`. Stored scope set (sorted union), on
+both the connection document and the current token bundle:
+
+- `classroom.courses.readonly`
+- `classroom.coursework.students`
+- `classroom.rosters.readonly`
+- `classroom.topics.readonly`
+
+`classroom.coursework.me` is **absent**. `classroom.coursework.students` and
+`classroom.topics.readonly` are **present**. The prior readonly scopes are
+preserved (Google showed "LyfeLabz already has some access"; the teacher was
+not asked to re-grant them).
+
+**Publication record.**
+`lmsAssignmentPublications/...28x9thcelm9k7__googleclassroom__88c6cf85`: status
+`succeeded`, providerId `googleClassroom`, connectionId
+`googleclassroom__cert-teacher-001`, lmsClassId `871447706346`, lmsAssignmentId
+`874734574049`, lmsAssignmentUrl
+`https://classroom.google.com/c/ODcxNDQ3NzA2MzQ2/a/ODc0NzM0NTc0MDQ5/details`,
+publishedAt `2026-08-16T17:07:49.351Z`, no topic id (No topic), no error
+fields. Exactly one publication record for this assignment; the pre-consent
+insufficient-scope attempt left no separate record (V5/V6).
+
+**LyfeLabz assignment.** `assignments/...28x9thcelm9k7`: lessonSlug
+`biological-evolution`, title `Biological Evolution`, classId
+`3la0b7o2jgw03cfzebw5` (one class), status `published`. Exactly one assignment
+for the single Assign action; the OAuth round trip created no second one. Three
+earlier biological-evolution assignments are historical and were left
+untouched: `...o1jhtu9uyyqz` (failed on the pre-correction `.me` scope,
+`lms.upstreamAuthorizationFailed`, no coursework created) and
+`...2ntxr6yqeichv` / `...3kr1o1bweg9tl` (earlier incomplete B9 attempts, zero
+`lms.assignmentPublished`, no coursework created).
+
+**External Google Classroom confirmation.** The operator independently
+confirmed in the real course "LyfeLabz Testing": Biological Evolution, Posted
+1:07 PM, under No topic. This correlates with lmsClassId `871447706346`,
+lmsAssignmentId `874734574049` (the launcher URL's base64 segments decode to
+exactly those two ids), publishedAt 17:07:49Z (1:07 PM local), and the
+No-topic behavior recorded in the publication document.
+
+**Exactly one coursework item.** Across the entire B9 investigation exactly one
+`lms.assignmentPublished` fired and exactly one publication record reached
+`succeeded`; the three earlier assignments produced zero. The single idempotent
+publication key (`...88c6cf85`) means the automatic post-consent re-issue
+transitioned the same logical publication rather than creating a second
+coursework item.
+
+**Diagnostic disposition.** The temporary `lms.googleClassroomUpstreamDiagnostic`
+instrumentation (§27E; uncommitted working-tree only, marked `temporary: true`,
+`certification: "sprint25-b9"`) has now served its purpose - it captured the
+sanitized real-Google insufficient-scope shape above. Recommendation:
+**remove it, or convert it to minimal permanent observability, as a dedicated
+Sprint 25 closeout change**, together with writing the permanent
+insufficient-scope classifier from this capture. It is intentionally left in
+place for now; this B9 checkpoint does not authorize the production-code change,
+so it was not touched.
+
+**Certification status.** B9 and B10 are **PASS** as of 2026-08-16 (see §27F);
+the earlier "stopped at B9" status in §27E is superseded. Levels C (genuine
+browser run) and D (real Classroom coursework created and filed) were achieved
+for B9. The next operator step is **B4b** (post-consent topic-selector
+population from real Google), then **B7** (publish, no topic) and **B8**
+(publish, topic selected), per certification runbook §5 step 4; the connection
+now holds the widened scope set those scenarios require. Level E
+(production-rollout OAuth verification and Data Access declaration for the
+coursework scopes) remains out of scope.
+
 *End of Phase 3 completion report.*

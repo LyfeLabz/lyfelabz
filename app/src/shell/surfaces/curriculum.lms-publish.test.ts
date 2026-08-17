@@ -25,6 +25,7 @@ import {
   renderCurriculumSurface,
   _resetCurriculumSessionStateForTest,
 } from "./curriculum";
+import { ASSIGNMENT_ID_PATTERN } from "./shared/assignmentId";
 
 const freeze = <T>(v: T): T => Object.freeze(v) as T;
 const flush = (): Promise<void> =>
@@ -451,5 +452,211 @@ describe("Assign dialog - LMS publication wiring (Sprint 25 Phase 3)", () => {
     expect(text).not.toMatch(/token=/);
     expect(text).not.toMatch(/@example\.com/);
     expect(text).not.toMatch(/403/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B5 certification defect - the publish toggle must be OFF on every open.
+//
+// Classroom publication is opt-in per action (PDR-019a). The whole-row
+// persistence that remembers date/time/points/topic across dialog opens must
+// never carry the publishToLms flag ON. These tests pin the bounded
+// rehydration reset: prior ON state is dropped on reopen while every other
+// remembered field survives. The main regression fails against the pre-fix
+// verbatim `{ ...prior }` spread and passes after the reset.
+// ---------------------------------------------------------------------------
+describe("Assign dialog - publish toggle never persists ON across opens (B5)", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+  });
+
+  const reopen = async (mount: HTMLElement, slug: string): Promise<void> => {
+    // Confirm/Cancel close the dialog; guard against a stray overlay so the
+    // query below always targets the freshly reopened dialog.
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+    await openDialogFor(mount, slug);
+  };
+
+  test("toggle ON + Confirm, then reopen: publish toggle is OFF while date/time/points/topic/enabled remain restored", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations({ topics: [{ lmsTopicId: "t1", name: "Unit 1" }] });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+
+    // Only the LMS-linked class is assigned so the opt-in is unambiguous.
+    document.querySelector<HTMLInputElement>("[data-testid=assign-row-enabled-c2]")!.click();
+
+    // Set the legitimately-remembered fields on the LMS-linked row.
+    const time = document.querySelector<HTMLInputElement>("[data-testid=assign-row-time-c1]")!;
+    time.value = "07:45";
+    time.dispatchEvent(new Event("input"));
+    const date = document.querySelector<HTMLInputElement>("[data-testid=assign-row-date-c1]")!;
+    date.value = "2026-09-01";
+    date.dispatchEvent(new Event("input"));
+    const points = document.querySelector<HTMLInputElement>("[data-testid=assign-row-points-c1]")!;
+    points.value = "42";
+    points.dispatchEvent(new Event("input"));
+    const topic = document.querySelector<HTMLSelectElement>("[data-testid=assign-row-lms-topic-c1]")!;
+    topic.value = "t1";
+    topic.dispatchEvent(new Event("change"));
+
+    // Explicit opt-in for this action.
+    const toggle = document.querySelector<HTMLInputElement>("[data-testid=assign-row-lms-publish-c1]")!;
+    toggle.click();
+    expect(toggle.checked).toBe(true);
+
+    confirm();
+    await settle();
+    // The opt-in was honored for this action.
+    expect(it.publishCalls).toHaveLength(1);
+
+    // Reopen the same lesson.
+    await reopen(mount, "earths-layers");
+
+    // B5 assertion: prior ON state is not restored.
+    expect(
+      document.querySelector<HTMLInputElement>("[data-testid=assign-row-lms-publish-c1]")!.checked,
+    ).toBe(false);
+    // Every other remembered field survives the reset.
+    expect(document.querySelector<HTMLInputElement>("[data-testid=assign-row-time-c1]")!.value).toBe("07:45");
+    expect(document.querySelector<HTMLInputElement>("[data-testid=assign-row-date-c1]")!.value).toBe("2026-09-01");
+    expect(document.querySelector<HTMLInputElement>("[data-testid=assign-row-points-c1]")!.value).toBe("42");
+    expect(document.querySelector<HTMLSelectElement>("[data-testid=assign-row-lms-topic-c1]")!.value).toBe("t1");
+    expect(
+      document.querySelector<HTMLInputElement>("[data-testid=assign-row-enabled-c1]")!.checked,
+    ).toBe(true);
+  });
+
+  test("re-opting in on a new action still publishes after the reset", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations({});
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+
+    const optInAndConfirm = async (): Promise<void> => {
+      document.querySelector<HTMLInputElement>("[data-testid=assign-row-enabled-c2]")!.click();
+      document.querySelector<HTMLInputElement>("[data-testid=assign-row-lms-publish-c1]")!.click();
+      confirm();
+      await settle();
+    };
+
+    await openDialogFor(mount, "earths-layers");
+    await optInAndConfirm();
+    expect(it.publishCalls).toHaveLength(1);
+
+    // Reopen: toggle reset OFF; a fresh explicit opt-in publishes again.
+    await reopen(mount, "earths-layers");
+    expect(
+      document.querySelector<HTMLInputElement>("[data-testid=assign-row-lms-publish-c1]")!.checked,
+    ).toBe(false);
+    await optInAndConfirm();
+    expect(it.publishCalls).toHaveLength(2);
+  });
+
+  test("cancel after toggling ON reopens with the publish toggle OFF and never publishes", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations({});
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+    document.querySelector<HTMLInputElement>("[data-testid=assign-row-lms-publish-c1]")!.click();
+    // Cancel instead of confirming: nothing is published and nothing persists.
+    document.querySelector<HTMLButtonElement>("[data-testid=assign-cancel]")?.click();
+    expect(it.publishCalls).toHaveLength(0);
+
+    await reopen(mount, "earths-layers");
+    expect(
+      document.querySelector<HTMLInputElement>("[data-testid=assign-row-lms-publish-c1]")!.checked,
+    ).toBe(false);
+  });
+
+  // Sprint 25 certification B6 regression. Both rows enabled, publication
+  // toggle OFF (its off-by-default state), createDraft validating the
+  // minted assignmentId against the exact server ASSIGNMENT_ID_PATTERN.
+  // A minted id that violated the pattern (the B6 failure) would reject
+  // createDraft and abort the row; here both drafts and both publishes
+  // must run, no LMS publication may fire, and a success outcome shows.
+  test("two-row publication-OFF lifecycle: both drafts+publishes succeed under createDraft id-validation, no LMS call", async () => {
+    // A certification-length Firebase teacher uid forces the minter's
+    // over-length branch (the exact code path B6 exercised).
+    const longUidTeacher: Extract<Session, { kind: "activeTeacher" }> = freeze({
+      kind: "activeTeacher",
+      uid: "kJ8sQ2mZ1pXvL7nR4tB9wY0cD3gHfE5aT",
+      schoolId: "school-abc",
+      displayName: "Ada Lovelace",
+    });
+
+    const drafts: string[] = [];
+    const publishes: string[] = [];
+    const rejected: string[] = [];
+    const validatingAssignments: AssignmentsCallables = {
+      createDraft: async (input) => {
+        if (!ASSIGNMENT_ID_PATTERN.test(input.assignmentId)) {
+          rejected.push(input.assignmentId);
+          const err = new Error(
+            "assignmentId must be a URL-safe token (letters, digits, hyphens, underscores).",
+          );
+          (err as { code?: string }).code = "assignments.invalidAssignmentId";
+          throw err;
+        }
+        drafts.push(input.assignmentId);
+        return { assignmentId: input.assignmentId, status: "draft", alreadyCreated: false };
+      },
+      publish: async (input) => {
+        publishes.push(input.assignmentId);
+        return { assignmentId: input.assignmentId, status: "published", alreadyPublished: false };
+      },
+    };
+
+    // Links for BOTH classes: if publication were ever attempted with the
+    // toggle off, publishAssignment would be observable here.
+    const it = makeIntegrations({
+      links: freeze([
+        freeze({ linkId: "link-c1", classId: "c1", providerId: "google-classroom", lmsClassId: "gc-c1" }),
+        freeze({ linkId: "link-c2", classId: "c2", providerId: "google-classroom", lmsClassId: "gc-c2" }),
+      ] as IntegrationsClassLink[]),
+    });
+
+    const mount = mkMount();
+    renderCurriculumSurface(mount, longUidTeacher, {
+      listClasses: listTwo,
+      assignments: validatingAssignments,
+      integrations: it.deps,
+    });
+
+    await openDialogFor(mount, "earths-layers");
+    confirm();
+    await settle();
+
+    // Both rows completed the authoritative LyfeLabz lifecycle.
+    expect(rejected).toHaveLength(0);
+    expect(new Set(drafts).size).toBe(2);
+    expect(new Set(publishes).size).toBe(2);
+    // Every minted id is a valid, distinct URL-safe token.
+    for (const id of drafts) expect(id).toMatch(ASSIGNMENT_ID_PATTERN);
+    // Publication toggle stayed OFF: no lmsAssignmentsPublish ran.
+    expect(it.publishCalls).toHaveLength(0);
+    // Calm LyfeLabz success outcome, no Google Classroom line.
+    const text = banner(mount);
+    expect(text).toMatch(/Assigned Earth's Layers to 2 classes\./);
+    expect(text).not.toMatch(/Google Classroom/);
   });
 });

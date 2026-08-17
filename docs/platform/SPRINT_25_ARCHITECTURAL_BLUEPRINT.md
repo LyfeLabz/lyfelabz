@@ -206,10 +206,15 @@ With those extensions in place, the flow is:
 - The connection created in Sprint 24A/24B holds the readonly scopes
   (`classroom.courses.readonly`, `classroom.rosters.readonly`). Roster
   synchronization uses those. Publication requires the additional
-  coursework scopes (`classroom.coursework.me`,
+  coursework scopes (`classroom.coursework.students`,
   `classroom.topics.readonly`), which are declared in the adapter
   (`GOOGLE_CLASSROOM_PUBLICATION_SCOPES`) but not requested by the
-  existing authorization URL.
+  existing authorization URL. (Scope correction, 2026-08-16, Sprint 25 B9
+  live certification, PDR-030g: the original `classroom.coursework.me`
+  was disproved by real Google - it was granted yet teacher-side
+  `courses.courseWork.create` still returned
+  `ACCESS_TOKEN_SCOPE_INSUFFICIENT` - and is replaced by the teacher-side
+  write scope `classroom.coursework.students`.)
 - The first time a teacher publishes, the server reports that the
   coursework scopes are absent. The client runs the same OAuth handoff
   used for connect and reconnect (`lmsConnectionsBegin` then

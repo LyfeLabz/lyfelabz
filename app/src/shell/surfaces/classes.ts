@@ -25,6 +25,12 @@ import {
   renderSnapshotSurface,
   type SnapshotPreview,
 } from "./snapshot";
+// Sprint 25 certification (B2) fix: after any class mutation on this
+// surface, drop the Curriculum surface's module-scoped class cache so
+// the Assign dialog cannot keep serving the pre-mutation class list. The
+// two sibling surfaces already flow through the shared shell; this direct
+// import mirrors the existing sibling import of `./snapshot`.
+import { invalidateCurriculumClassCache } from "./curriculum";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
 // the authenticated teacher. See SPRINT_6B_SPECIFICATION.md §6.
@@ -414,6 +420,13 @@ export function renderClassesSurface(
   };
 
   const updateImportState = (next: ImportState): void => {
+    if (next.kind === "linked") {
+      // Sprint 25 (B2): the import created a new class server-side.
+      // Invalidate the Curriculum class cache unconditionally (before the
+      // surface-state guard) so a later Assign open re-fetches and can
+      // see the imported class.
+      invalidateCurriculumClassCache();
+    }
     if (state.kind !== "list") return;
     state = {
       kind: "list",
@@ -558,6 +571,11 @@ export function renderClassesSurface(
     rerender();
     void createClass({ title, grade, block })
       .then((result) => {
+        // Sprint 25 (B2): a class was created server-side. Invalidate the
+        // Curriculum class cache before the mount-connection guard so a
+        // later Assign open re-fetches and can see it even if the teacher
+        // has already navigated away from the Classes surface.
+        invalidateCurriculumClassCache();
         if (!mount.isConnected) return;
         // Phase 2B.2: best-effort preference update. Fire-and-forget.
         // A failure here must never surface an error to the teacher and
@@ -721,6 +739,11 @@ export function renderClassesSurface(
       block: submittedBlock,
     })
       .then(() => {
+        // Sprint 25 (B2): activation moved a `needsSetup` class to
+        // `active` (the only status the Assign dialog surfaces).
+        // Invalidate the Curriculum class cache before the mount guard so
+        // a later Assign open re-fetches the now-active class.
+        invalidateCurriculumClassCache();
         if (!mount.isConnected) return;
         // Phase 2B.4: best-effort defaultGrade preference update.
         // Activation has already succeeded; a preference failure must

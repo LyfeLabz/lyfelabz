@@ -25,6 +25,10 @@ const mockLogError = jest.fn();
 
 const mockTokenResolve = jest.fn();
 const mockGetAdapter = jest.fn();
+const mockEnsureBindings = jest.fn();
+// Plain holder (not a jest.fn) so the module-load capture survives the
+// per-test mockReset() sweep below (Sprint 25 B9, Part 4A).
+const mockCapturedCallableOptions: { value?: unknown } = {};
 
 jest.mock("firebase-admin/firestore", () => ({
   FieldValue: {
@@ -34,7 +38,7 @@ jest.mock("firebase-admin/firestore", () => ({
 }));
 
 jest.mock("firebase-functions/v2/https", () => ({
-  onCall: <T,>(handler: T) => handler,
+  onCall: <T,>(_options: unknown, handler: T) => handler,
 }));
 
 jest.mock("../shared", () => {
@@ -42,7 +46,14 @@ jest.mock("../shared", () => {
     "../shared/errors/platform-error",
   );
   return {
-    platformCallable: (handler: unknown) => handler,
+    // Two-arg-tolerant: the callable is now constructed as
+    // platformCallable({ secrets: [...] }, handler). Capture the options so
+    // the binding-contract test can assert the secrets declaration.
+    platformCallable: (optionsOrHandler: unknown, maybeHandler: unknown) => {
+      if (typeof optionsOrHandler === "function") return optionsOrHandler;
+      mockCapturedCallableOptions.value = optionsOrHandler;
+      return maybeHandler;
+    },
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     lmsClassLinkDocRef: mockLinkDocRef,
@@ -59,6 +70,11 @@ jest.mock("./tokens/token-store", () => ({
 
 jest.mock("./providers/registry", () => ({
   getProviderAdapter: () => mockGetAdapter(),
+}));
+
+jest.mock("./providers/google-classroom/config-firebase", () => ({
+  ensureGoogleClassroomProductionBindings: () => mockEnsureBindings(),
+  googleClassroomProductionSecrets: ["__gc_secret_sentinel__"] as const,
 }));
 
 import { __lmsClassesRefreshHandler } from "./classes-refresh";
@@ -168,6 +184,7 @@ describe("lmsClassesRefresh", () => {
       mockLogError,
       mockTokenResolve,
       mockGetAdapter,
+      mockEnsureBindings,
     ].forEach((m) => m.mockReset());
     mockLinkDocRef.mockReset();
     mockLinkDocRef.mockImplementation(() => ({ get: mockLinkGet }));
@@ -204,6 +221,40 @@ describe("lmsClassesRefresh", () => {
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
     expect(mockLinkBreakUpdate).not.toHaveBeenCalled();
     expect(mockConnectionUpdate).not.toHaveBeenCalled();
+  });
+
+  // Sprint 25 B9 certification finding (Part 4A): this callable reaches the
+  // upstream provider via adapter.fetchClass, so it must independently
+  // install the production bindings and declare the production secrets rather
+  // than depend on a sibling callable having bound the transport.
+  describe("production-binding contract (Sprint 25 B9)", () => {
+    it("declares the Google Classroom production secrets on the callable", () => {
+      expect(mockCapturedCallableOptions.value).toEqual({
+        secrets: ["__gc_secret_sentinel__"],
+      });
+    });
+
+    it("installs the production bindings at handler entry before any upstream work", async () => {
+      mockLinkGet.mockResolvedValueOnce(linkSnapshot());
+      mockConnectionGet.mockResolvedValueOnce(connectionSnapshot());
+      mockTokenResolve.mockResolvedValueOnce(tokenBundle());
+      mockGetAdapter.mockReturnValueOnce(
+        makeAdapter(() =>
+          Promise.resolve({
+            lmsClassId: LMS_CLASS_ID,
+            name: "Period 1",
+            ownerUpstreamAccountIdentifier: UPSTREAM_ACCOUNT,
+          }),
+        ),
+      );
+
+      await __lmsClassesRefreshHandler(makeRequest());
+
+      expect(mockEnsureBindings).toHaveBeenCalledTimes(1);
+      const ensureOrder = mockEnsureBindings.mock.invocationCallOrder[0];
+      const adapterOrder = mockGetAdapter.mock.invocationCallOrder[0];
+      expect(ensureOrder).toBeLessThan(adapterOrder);
+    });
   });
 
   it("returns ownershipDrift, marks the link broken, and audits lms.ownershipDrift when the upstream owner changed", async () => {

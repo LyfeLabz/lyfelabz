@@ -27,6 +27,7 @@ import {
   renderActiveAssignmentsSection,
   type ActiveAssignmentsController,
 } from "./shared/activeAssignments";
+import { mintAssignmentId } from "./shared/assignmentId";
 import {
   createConsentCoordinator,
   mintNonce,
@@ -419,6 +420,17 @@ function ensureTopics(
   integrations: IntegrationsDeps | null,
 ): Promise<void> {
   if (integrations === null) return Promise.resolve();
+  // A successful load (including a course that legitimately has no topics) is
+  // cached as authoritative for the session. A failed load is intentionally
+  // NOT cached. Before the teacher grants the publication scopes, the topics
+  // scope (classroom.topics.readonly) is absent, so the list call fails and
+  // the selector degrades to "No topic" - the accepted pre-consent state.
+  // Caching that failure as an empty list would be indistinguishable from
+  // "this course has no topics", so the real topics would never appear after
+  // publication incremental consent widens the connection. Leaving a failed
+  // load uncached lets the next Assign-dialog open re-attempt against the
+  // possibly-widened connection. Topic loading never triggers consent;
+  // publication remains the sole trigger for incremental consent.
   if (cachedTopicsByLinkId.has(linkId)) return Promise.resolve();
   const inFlight = topicsInFlightByLinkId.get(linkId);
   if (inFlight) return inFlight;
@@ -428,7 +440,8 @@ function ensureTopics(
       cachedTopicsByLinkId.set(linkId, rows);
     })
     .catch(() => {
-      cachedTopicsByLinkId.set(linkId, Object.freeze([]));
+      // Transient failure: do not cache. The call site reads an absent cache
+      // entry as an empty selector for this render, and a later open re-fetches.
     })
     .finally(() => {
       topicsInFlightByLinkId.delete(linkId);
@@ -726,15 +739,33 @@ function refreshAssignControl(
   card.setAttribute("data-lesson-assigned", assigned ? "true" : "false");
 }
 
+// Tracks the pending self-dismiss timer per banner so a newer
+// confirmation (e.g. the final outcome line that replaces the optimistic
+// "Assigning..." line) cancels the older timer instead of inheriting it.
+// Without this, the optimistic timeout could hide the final "Assigned"
+// message early.
+const successDismissTimers = new WeakMap<HTMLElement, number>();
+
 function showSuccess(banner: HTMLElement, summary: string): void {
   banner.textContent = summary;
   banner.hidden = false;
+  banner.classList.add("shell-curriculum-success-visible");
   const doc = banner.ownerDocument;
   const win = doc.defaultView ?? window;
-  win.setTimeout(() => {
+  // Cancel any in-flight dismissal so only the newest message owns the
+  // self-dismiss timer. This is what keeps the optimistic timeout from
+  // clearing the final Assigned confirmation.
+  const pending = successDismissTimers.get(banner);
+  if (pending !== undefined) {
+    win.clearTimeout(pending);
+  }
+  const handle = win.setTimeout(() => {
     banner.hidden = true;
     banner.textContent = "";
+    banner.classList.remove("shell-curriculum-success-visible");
+    successDismissTimers.delete(banner);
   }, 4000);
+  successDismissTimers.set(banner, handle);
 }
 
 function renderLessonCard(
@@ -1212,7 +1243,14 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     rowState.set(
       c.id,
       prior
-        ? { ...prior }
+        ? // Classroom publication is opt-in per action (PDR-019a). The
+          // publish toggle must be OFF every time the dialog opens; a
+          // prior ON state must never be restored. Every other
+          // remembered field (enabled, date, time, points, topic,
+          // lmsTopicId) rehydrates from the prior row as before. This
+          // forced reset is the single field the whole-row persistence
+          // must never carry across opens.
+          { ...prior, publishToLms: false }
         : {
             enabled: true,
             date: todayIsoDate(doc),
@@ -1614,27 +1652,13 @@ function fieldInput(
 // Authoritative assignment lifecycle
 // -----------------------------------------------------------------------------
 
-// Deterministic client-side assignmentId for a (teacher, lesson, class,
-// dialog-open) tuple. The server-side callable is idempotent against
-// replays of the same id (assignmentsCreateDraft §4 "Idempotency"), so a
-// unique id per teacher-initiated confirmation keeps repeat submissions
-// from silently minting duplicate records while still guaranteeing a
-// fresh record for each distinct confirmation moment. Constrained to the
-// callable's URL-safe pattern.
-function mintAssignmentId(
-  teacherUid: string,
-  lessonSlug: string,
-  classId: string,
-  nonce: string,
-): string {
-  const safe = (v: string): string =>
-    v.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
-  const raw = `a-${safe(lessonSlug)}-${safe(classId)}-${safe(teacherUid)}-${safe(nonce)}`;
-  // Callable enforces max 64 chars; trim from the front (which repeats
-  // stable teacher context) and keep the tail (which includes the fresh
-  // per-confirm nonce) so replay idempotency is preserved.
-  return raw.length <= 64 ? raw : raw.slice(raw.length - 64);
-}
+// Deterministic client-side assignmentId minting now lives in the
+// firebase-free `./shared/assignmentId` module so it can be unit-tested
+// against the server's URL-safe pattern in isolation. Sprint 25
+// certification scenario B6 exposed that the previous in-line minter
+// tail-sliced over-length ids and could emit an id beginning with "-",
+// which the callable rejected with `assignments.invalidAssignmentId`.
+// `mintAssignmentId` is imported above.
 
 // `mintNonce` now lives in the shared publication module so the confirm
 // path, the automatic re-issue, and the detail-view retry all mint attempt
@@ -1907,11 +1931,51 @@ function summarizeOutcomes(
 }
 
 // -----------------------------------------------------------------------------
+// Class-cache invalidation
+// -----------------------------------------------------------------------------
+
+// Production cache invalidation. Sprint 25 certification (scenario B2)
+// exposed a pre-existing defect: the module-scoped teacher class cache
+// (`cachedClasses`) is warmed on Curriculum mount and keyed only by uid.
+// Because the SPA re-renders in place instead of reloading this module,
+// that cache survives two boundaries it should not:
+//   1. A same-session class mutation (create / import / activate)
+//      performed on the Classes surface. The Classes page reads classes
+//      fresh, but the Assign dialog keeps serving the pre-mutation list,
+//      so a newly created class is invisible in Assign until reload.
+//   2. A same-uid sign-out/sign-in (auth-session replacement). The uid
+//      key matches across the teardown, so the incoming session reuses
+//      the outgoing session's rows.
+//
+// This function narrowly drops the class-scoped caches (the class list
+// and the LMS class-link cache, plus any in-flight fetch) so the next
+// Assign open re-fetches from the injected reader. It deliberately does
+// NOT touch session preferences, filters, the assignment registries, or
+// the persisted-slug badges: those are not class data, and dropping them
+// would silently change unrelated behavior. Per-link LMS topics are left
+// intact because they are LMS-owned per linkId and are re-fetched lazily
+// for any newly appearing link; a class mutation does not invalidate the
+// topics of an existing link.
+export function invalidateCurriculumClassCache(): void {
+  cachedClasses = null;
+  classesInFlight = null;
+  cachedClassLinks = null;
+  classLinksInFlight = null;
+}
+
+// -----------------------------------------------------------------------------
 // Test helpers
 // -----------------------------------------------------------------------------
 
 // Test-only reset. Clears the module-scoped session state so unit tests
 // can exercise a clean surface. Not called by production code.
+// Test-only handle onto the success-confirmation renderer so the
+// self-dismiss timer replacement (optimistic vs final message) can be
+// exercised deterministically with fake timers.
+export function _showSuccessForTest(banner: HTMLElement, summary: string): void {
+  showSuccess(banner, summary);
+}
+
 export function _resetCurriculumSessionStateForTest(): void {
   sessionAssignments.clear();
   cachedClasses = null;

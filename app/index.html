@@ -1402,6 +1402,42 @@
     color: var(--tw-callout-success-ink);
     border-radius: var(--tw-radius-control);
   }
+  /* Assign confirmation toast (ASSIGN_EXPERIENCE.md B6).
+     showSuccess() adds .shell-curriculum-success-visible when the banner
+     is shown, so the visible STATE owns the toast presentation. The
+     compound selector (specificity 0,2,0) reliably outranks both the base
+     .shell-curriculum-success rule and the token-unification callout rule
+     above, so the fixed toast wins the cascade regardless of source order.
+
+     top clears the in-flow application header (.shell-header): the wordmark
+     line box is 24.3px * 1.6 = 38.88px, or 44px touch targets on coarse
+     pointers, plus 15.3px * 2 block padding and a 1px border, i.e. a header
+     of ~70.5px (desktop) to ~75.6px (touch). 5.5rem = 88px at the app's
+     16px root clears the tallest case with ~12px of breathing room and
+     stays constant across breakpoints (the header keeps canonical padding
+     and wordmark size on phones). The background is an OPAQUE success tint
+     (rgba(61,220,132,0.12) composited over white) so the floating toast
+     stays readable over arbitrary page content, unlike the ~8%-opaque
+     inline callout token. Fixed positioning leaves the teacher's scroll
+     untouched. */
+  .shell-curriculum-success.shell-curriculum-success-visible {
+    position: fixed;
+    top: 5.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    width: max-content;
+    max-width: min(34rem, calc(100vw - 2rem));
+    box-sizing: border-box;
+    margin: 0;
+    text-align: center;
+    background: #e8fbf0;
+    border: 1px solid rgba(31, 107, 61, 0.30);
+    color: #175a31;
+    border-radius: 6px;
+    padding: 0.55rem 0.85rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
   .shell-classes-joincode {
     background: var(--tw-callout-success-bg);
     border-color: var(--tw-callout-success-edge);
