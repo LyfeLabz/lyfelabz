@@ -62,9 +62,19 @@ const OAUTH_VERIFIER_BYTES = 32;
 const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
 // Provider-neutral intent selector for an OAuth authorization flow.
-// "initialConnect" is the ordinary connect/reconnect path. "publication"
+// "initialConnect" is the ordinary first-time connect path. "publication"
 // requests the publication capability scope set via incremental consent.
-export type LmsOAuthStateIntent = "initialConnect" | "publication";
+// "reconnect" (Sprint 26 certification follow-up) is an explicit teacher-
+// requested credential recovery for an existing active connection whose
+// stored credential is no longer usable: it requests the same base
+// (initial) scope set as "initialConnect" but, unlike a duplicate
+// initial-connect, must NOT be idempotently short-circuited at completion -
+// it exchanges the fresh authorization code and replaces the unusable
+// credential on the same logical connection (connections-complete.ts).
+export type LmsOAuthStateIntent =
+  | "initialConnect"
+  | "publication"
+  | "reconnect";
 
 export type LmsOAuthStateIssueInput = {
   readonly teacherId: string;

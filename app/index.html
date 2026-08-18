@@ -512,6 +512,10 @@
     text-align: left;
     background: transparent;
     border: none;
+    /* Sprint 26 Phase 5: reset the base `button` top margin so the
+       Connected Services category keeps the same vertical rhythm as the
+       plain-paragraph categories. */
+    margin-top: 0;
     padding: 0;
     font: inherit;
     color: inherit;
@@ -566,6 +570,16 @@
     background: #eef1f5;
     color: #555;
     border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  /* Sprint 26 Phase 4: "action needed" connection status. Calm amber, not
+     an alarm, distinct from the verified (connected) and inactive pills. */
+  .shell-integrations-pill-attention {
+    background: rgba(214, 158, 46, 0.16);
+    color: #8a5a12;
+    border: 1px solid rgba(138, 90, 18, 0.28);
+  }
+  .shell-integrations-recovery {
+    margin: 0.35rem 0 0.75rem 0;
   }
   .shell-integrations-actions {
     display: flex;
@@ -1328,6 +1342,12 @@
     background: var(--tw-badge-neutral-bg);
     color: var(--tw-ink-muted);
     border-color: var(--tw-hairline);
+  }
+  /* Sprint 26 Phase 4: "action needed" pill, teacher-workspace palette. */
+  .shell-integrations-pill-attention {
+    background: rgba(176, 122, 26, 0.14);
+    color: #7a5210;
+    border: 1px solid rgba(122, 82, 16, 0.30);
   }
 
   /* 2. Inactive toggle: neutral teacher-side treatment. Active toggle

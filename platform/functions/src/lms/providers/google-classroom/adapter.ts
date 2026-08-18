@@ -260,12 +260,22 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
       state,
       code_challenge: codeChallenge,
       code_challenge_method: "S256",
-      login_hint: "",
+      login_hint: input.accountHint ?? "",
     });
-    // login_hint is intentionally empty and stripped so the parameter
-    // string is deterministic in tests but Google still sees an
-    // omitted value.
-    params.delete("login_hint");
+    // Sprint 26 Phase 1 account continuity contract. `login_hint` is
+    // Google's supported account-preference mechanism (PDR-019h: the
+    // Google concept is converted only inside this adapter). It is
+    // populated ONLY when the provider-neutral `accountHint` is supplied
+    // and non-empty. When it is absent - the Phase 1 default on every
+    // call, and always on initial connection - the empty value is
+    // stripped so Google sees an omitted parameter and the authorization
+    // URL stays byte-for-byte deterministic in tests, exactly as before
+    // this sprint. `login_hint` is a hint, never an enforcement boundary:
+    // completion-time identity validation remains the security boundary.
+    // Phase 2 will supply the durable connection identity here.
+    if (!input.accountHint) {
+      params.delete("login_hint");
+    }
 
     return {
       authorizationUrl: `${GOOGLE_OAUTH_AUTHORIZATION_ENDPOINT}?${params.toString()}`,

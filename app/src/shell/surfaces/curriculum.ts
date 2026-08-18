@@ -29,8 +29,10 @@ import {
 } from "./shared/activeAssignments";
 import { mintAssignmentId } from "./shared/assignmentId";
 import {
+  clearConnectionReconnectNeeded,
   createConsentCoordinator,
   mintNonce,
+  recordConnectionReconnectNeeded,
   recordLmsPublicationRetryContext,
   runPublicationAction,
   _resetLmsPublicationStateForTest,
@@ -368,6 +370,27 @@ function isAssigned(slug: string): boolean {
   return bucket.slugs.has(slug);
 }
 
+// Sprint 26 Phase 3 (Defect 2.B). Which persisted assignment statuses
+// qualify a lesson card for the "✓ Assigned" badge. Only a status that
+// represents an assignment that actually reached the successfully-published
+// workflow qualifies:
+//   - `published`: the assignment is live for students.
+//   - `closed`:    the assignment was published and later closed; it is
+//                  still historically an assignment of this lesson, and the
+//                  Active Assignments dashboard already treats a closed
+//                  assignment as a real (renderable) assignment. Keeping the
+//                  card "Assigned" for a closed assignment matches that
+//                  precedent and avoids an inconsistency between the lesson
+//                  card, Active Assignments, and the View summary control.
+//   - `draft`:     a stranded draft does NOT qualify. A draft has not
+//                  reached the assigned state; the durable draft remains
+//                  available to legitimate draft UI (the View drafts control
+//                  and the assignment detail surface), but it must never
+//                  light the successful "Assigned" badge.
+function qualifiesForAssignedBadge(status: AssignmentStatus): boolean {
+  return status === "published" || status === "closed";
+}
+
 function ensureClasses(
   uid: string,
   listClasses: ListClasses,
@@ -474,11 +497,21 @@ export function renderCurriculumSurface(
     try {
       for (const entry of assignmentDetail.list()) {
         registerAssignmentMetadata(session.uid, entry);
-        // Rediscover the Assigned badge for lessons whose persisted
-        // assignments were reloaded from the registry. Only entries
-        // that reached `published` status are ever registered by the
-        // lifecycle path, so this is a truthful signal.
-        if (typeof entry.lessonSlug === "string" && entry.lessonSlug.length > 0) {
+        // Sprint 26 Phase 3 (Defect 2.B). Rediscover the "✓ Assigned" badge
+        // only for lessons that have a hydrated assignment whose status
+        // qualifies as successfully assigned. The certified enumeration path
+        // opts into draft discovery (`includeDrafts: true` in
+        // `hydrate-wire.ts`), so the hydrated registry can now contain
+        // stranded `draft` entries. Marking every hydrated entry persisted
+        // regardless of status would let a draft-only lesson falsely show
+        // "Assigned" after a reload. The draft still hydrates and stays
+        // available to the View drafts control and the assignment detail
+        // surface; it simply does not drive the successful badge.
+        if (
+          typeof entry.lessonSlug === "string" &&
+          entry.lessonSlug.length > 0 &&
+          qualifiesForAssignedBadge(entry.status)
+        ) {
           markPersisted(session.uid, entry.lessonSlug);
         }
       }
@@ -1664,10 +1697,32 @@ function fieldInput(
 // path, the automatic re-issue, and the detail-view retry all mint attempt
 // nonces the same way (implementation plan §2.1). It is imported above.
 
+// Sprint 26 Phase 3 (Defect 2.A). The LyfeLabz-side lifecycle state for a
+// single class row. The earlier `lyfelabzAssigned: boolean` collapsed two
+// materially different failure states - "nothing was saved" and "a durable
+// draft was saved but publication did not complete" - into one falsy value,
+// which let the teacher-facing summary claim the assignment "was not
+// created" even though the durable draft existed. This discriminated state
+// carries enough information for a truthful per-class and aggregate summary:
+//   - `draftFailed`:      `assignmentsCreateDraft` failed; no durable
+//                         LyfeLabz assignment exists for this class.
+//   - `savedNotPublished`: the draft was created durably but
+//                         `assignmentsPublish` did not complete. The
+//                         assignment is recoverable (it rehydrates through
+//                         the certified draft-enumeration path and can be
+//                         published from the assignment detail surface).
+//   - `published`:        the LyfeLabz assignment reached `published`.
+// Only the `published` state qualifies the lesson card for the "✓ Assigned"
+// badge; see `qualifiesForAssignedBadge` and Defect 2.B.
+type LyfelabzAssignmentState =
+  | "draftFailed"
+  | "savedNotPublished"
+  | "published";
+
 type PerClassOutcome = {
   readonly classId: string;
   readonly assignmentId: string;
-  readonly lyfelabzAssigned: boolean;
+  readonly lyfelabzState: LyfelabzAssignmentState;
   readonly lmsRequested: boolean;
   // Sprint 25 Phase 3: the calm, provider-neutral publication state for
   // this row. `notRequested` when the toggle was off (or the row was not
@@ -1748,10 +1803,11 @@ async function runAssignmentLifecycle(input: {
           title: lesson.title,
         });
       } catch {
+        // Draft creation failed: nothing durable was saved for this class.
         return {
           classId: row.classId,
           assignmentId,
-          lyfelabzAssigned: false,
+          lyfelabzState: "draftFailed",
           lmsRequested: wantsLms,
           lmsState: "notRequested",
         };
@@ -1763,10 +1819,14 @@ async function runAssignmentLifecycle(input: {
       try {
         await assignments.publish({ assignmentId });
       } catch {
+        // Publication did not complete, but the durable draft from step 1
+        // exists and is recoverable. This is NOT "the assignment was not
+        // created" - the summary must say the assignment was saved and can
+        // be tried again.
         return {
           classId: row.classId,
           assignmentId,
-          lyfelabzAssigned: false,
+          lyfelabzState: "savedNotPublished",
           lmsRequested: wantsLms,
           lmsState: "notRequested",
         };
@@ -1799,7 +1859,7 @@ async function runAssignmentLifecycle(input: {
         return {
           classId: row.classId,
           assignmentId,
-          lyfelabzAssigned: true,
+          lyfelabzState: "published",
           lmsRequested: false,
           lmsState: "notRequested",
         };
@@ -1844,10 +1904,20 @@ async function runAssignmentLifecycle(input: {
         ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
         state: result.kind,
       });
+      // Arm or clear the session-local Settings recovery signal from an
+      // observed connection-not-usable outcome (Sprint 26 Phase 4,
+      // definition §7.F). Only `reconnectRequired` arms it; identity
+      // mismatch never does (its recovery is same-account retry, not a
+      // Settings reconnect, §7.E). Any usable outcome clears a prior signal.
+      if (result.kind === "reconnectRequired") {
+        recordConnectionReconnectNeeded(teacherUid, link.providerId);
+      } else {
+        clearConnectionReconnectNeeded(teacherUid, link.providerId);
+      }
       return {
         classId: row.classId,
         assignmentId,
-        lyfelabzAssigned: true,
+        lyfelabzState: "published",
         lmsRequested: true,
         lmsState: result.kind,
       };
@@ -1855,7 +1925,7 @@ async function runAssignmentLifecycle(input: {
   );
 
   const publishedIds = outcomes
-    .filter((o) => o.lyfelabzAssigned)
+    .filter((o) => o.lyfelabzState === "published")
     .map((o) => o.assignmentId);
   // The Assigned badge is authoritative iff at least one class reached
   // `published`. On a total-failure lifecycle we drop any optimistic
@@ -1876,8 +1946,20 @@ function summarizeOutcomes(
   outcomes: readonly PerClassOutcome[],
 ): string {
   const total = outcomes.length;
-  const assigned = outcomes.filter((o) => o.lyfelabzAssigned).length;
-  const notAssigned = total - assigned;
+  // Sprint 26 Phase 3 (Defect 2.A). Count the three LyfeLabz lifecycle
+  // states independently so the aggregate summary is truthful: a class
+  // whose draft was saved but not published is never reported as "not
+  // created", and a class that genuinely saved nothing is never reported
+  // as recoverable.
+  const published = outcomes.filter(
+    (o) => o.lyfelabzState === "published",
+  ).length;
+  const savedNotPublished = outcomes.filter(
+    (o) => o.lyfelabzState === "savedNotPublished",
+  ).length;
+  const draftFailed = outcomes.filter(
+    (o) => o.lyfelabzState === "draftFailed",
+  ).length;
   const lmsRequested = outcomes.filter((o) => o.lmsRequested).length;
   const lmsSucceeded = outcomes.filter((o) => o.lmsState === "succeeded").length;
   const lmsReconnect = outcomes.filter(
@@ -1886,24 +1968,58 @@ function summarizeOutcomes(
   const lmsPermission = outcomes.filter(
     (o) => o.lmsState === "permissionNotGranted",
   ).length;
+  const lmsIdentityMismatch = outcomes.filter(
+    (o) => o.lmsState === "identityMismatch",
+  ).length;
   const lmsFailed = lmsRequested - lmsSucceeded;
 
-  // Base LyfeLabz-scoped line. Independent per-class success/failure is
-  // reported alongside the aggregate count so a single failure never
-  // silently erases the successes for other classes.
+  // Phrase the "saved but not published" clause once so the singular and
+  // plural forms stay consistent wherever it appears.
+  const savedClause = (n: number): string =>
+    n === 1
+      ? "1 was saved but not published"
+      : `${n} were saved but not published`;
+  const notSavedClause = (n: number): string =>
+    n === 1 ? "1 could not be saved" : `${n} could not be saved`;
+
+  // Base LyfeLabz-scoped line. Independent per-class outcomes are reported
+  // alongside the aggregate count so one class's failure never silently
+  // erases another class's success, and a saved-but-not-published class is
+  // never described as though nothing was saved.
   let base: string;
-  if (assigned === total && total === 1) {
+  if (published === total && total === 1) {
     base = `Assigned ${lesson.title} to 1 class.`;
-  } else if (assigned === total) {
-    base = `Assigned ${lesson.title} to ${assigned} classes.`;
-  } else if (assigned === 0) {
-    base = `${lesson.title}: LyfeLabz assignment was not created. Google Classroom publication was not attempted.`;
+  } else if (published === total) {
+    base = `Assigned ${lesson.title} to ${published} classes.`;
+  } else if (published > 0) {
+    // Partial success: at least one class published, at least one did not.
+    const remainder: string[] = [];
+    if (savedNotPublished > 0) remainder.push(savedClause(savedNotPublished));
+    if (draftFailed > 0) remainder.push(notSavedClause(draftFailed));
+    base = `Assigned ${lesson.title} to ${published} of ${total} classes. Of the rest, ${remainder.join(" and ")}. You can try again from any assignment that was saved.`;
+  } else if (savedNotPublished > 0 && draftFailed === 0) {
+    // Nothing published, but every class saved a durable draft. The work
+    // was not lost - this must never say the assignment was not created.
+    base =
+      total === 1
+        ? `${lesson.title} was saved, but publishing did not complete. You can try again from the assignment.`
+        : `${lesson.title} was saved for ${savedNotPublished} classes, but publishing did not complete. You can try again from those assignments.`;
+  } else if (savedNotPublished === 0) {
+    // Nothing saved at all: draft creation failed for every class.
+    base =
+      total === 1
+        ? `${lesson.title} could not be saved. Please try assigning it again.`
+        : `${lesson.title} could not be saved for ${total} classes. Please try assigning it again.`;
   } else {
-    base = `Assigned ${lesson.title} to ${assigned} of ${total} classes. ${notAssigned} did not save.`;
+    // Mixed non-success: some classes saved a durable draft, others saved
+    // nothing. None published.
+    base = `${lesson.title}: ${savedClause(savedNotPublished)}, and ${notSavedClause(draftFailed)}. You can try again from any assignment that was saved.`;
   }
 
   if (lmsRequested === 0) return base;
-  if (assigned === 0) return base;
+  // No class reached `published`, so no Google Classroom publication was
+  // attempted. The base line already carries the truthful LyfeLabz outcome.
+  if (published === 0) return base;
 
   // LMS-side outcome line follows the "return, do not redirect" and
   // "authoritative LyfeLabz record" rules of §7. It never blames the
@@ -1917,6 +2033,14 @@ function summarizeOutcomes(
     // Every requested publication was blocked by an inactive connection.
     lmsLine =
       "Google Classroom needs to be reconnected in Settings. Your assignment was scheduled.";
+  } else if (lmsSucceeded === 0 && lmsFailed === lmsIdentityMismatch) {
+    // Every requested publication authorized with a different Google account
+    // than the one on the durable connection (Sprint 26 Phase 4, §7.E). The
+    // same-account recovery line, distinct from a generic permission failure.
+    // No OAuth term, no account identifier, no implication the connection was
+    // replaced - the existing connection is intact and the teacher can retry.
+    lmsLine =
+      "Publishing to Google Classroom needs the same Google account you first connected. You can try again from the assignment.";
   } else if (lmsSucceeded === 0 && lmsFailed === lmsPermission) {
     // Every requested publication needs the coursework permission the
     // teacher has not granted; the calm consent-needed line, no OAuth term.

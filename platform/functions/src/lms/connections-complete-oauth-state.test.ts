@@ -411,8 +411,26 @@ describe("lmsConnectionsComplete - server-side OAuth state pre-check", () => {
     // Connection doc updated (not created).
     expect(mockConnectionUpdate).toHaveBeenCalledTimes(1);
     expect(mockConnectionSet).not.toHaveBeenCalled();
-    // Audit event NOT emitted for widening.
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    // Sprint 26 Phase 1: a successful widening emits exactly one durable
+    // audit event, `lms.connectionScopesWidened`, targeting the
+    // connection, AFTER the connection document commit.
+    expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUserId: TEACHER_UID,
+        actorRole: "teacher",
+        action: "lms.connectionScopesWidened",
+        targetType: "lmsConnection",
+        payload: { providerId: PROVIDER },
+      }),
+    );
+    // The widening audit payload never carries the widened scope array,
+    // the upstream Google account identifier, or any token material.
+    const widenAudit = JSON.stringify(mockWriteAuditEvent.mock.calls[0]?.[0]);
+    expect(widenAudit).not.toContain("s2-publication");
+    expect(widenAudit).not.toContain("fixture-upstream-id");
+    expect(widenAudit).not.toContain("new-access-token");
+    expect(widenAudit).not.toContain("new-refresh-token");
     // Old token revoked from local store.
     expect(mockTokenStore.revoke).toHaveBeenCalledWith("tokref-existing");
     // Merged scopes written to connection doc.
@@ -508,6 +526,78 @@ describe("lmsConnectionsComplete - server-side OAuth state pre-check", () => {
     // Connection document not modified.
     expect(mockConnectionUpdate).not.toHaveBeenCalled();
     expect(mockTokenStore.store).not.toHaveBeenCalled();
+    // Sprint 26 Phase 1: the rejection emits exactly one durable, PII-safe
+    // audit event recording the widening rejection and its low-cardinality
+    // reason category. Neither the stored account ("account-A") nor the
+    // returned account ("account-B") is recorded anywhere in the payload.
+    expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUserId: TEACHER_UID,
+        actorRole: "teacher",
+        action: "lms.connectionWideningRejected",
+        targetType: "lmsConnection",
+        payload: { providerId: PROVIDER, reason: "identityMismatch" },
+      }),
+    );
+    const rejectAudit = JSON.stringify(mockWriteAuditEvent.mock.calls[0]?.[0]);
+    expect(rejectAudit).not.toContain("account-A");
+    expect(rejectAudit).not.toContain("account-B");
+  });
+
+  it("still hard-rejects identity mismatch when the best-effort audit write fails", async () => {
+    // Sprint 26 Phase 1 failure-safety invariant: audit persistence is
+    // observability, never a precondition for the security rejection. If
+    // the audit write throws, the mismatch must STILL reject and STILL
+    // leave the existing connection and credentials untouched.
+    mockConnectionGet.mockResolvedValue({
+      exists: true,
+      data: () => ({
+        teacherId: TEACHER_UID,
+        providerId: PROVIDER,
+        status: "active",
+        tokenRef: "tokref-existing",
+        scopes: ["s1"],
+      }),
+    });
+    mockTokenStore.resolve.mockResolvedValue({
+      providerId: "googleClassroom",
+      teacherId: TEACHER_UID,
+      accessToken: "old-access-token",
+      refreshToken: "old-refresh-token",
+      scopes: ["s1"],
+      upstreamAccountIdentifier: "account-A",
+    });
+    mockCompleteOAuth.mockResolvedValue({
+      accessToken: "new-access-token",
+      scopes: ["s1", "s2-publication"],
+      expiresInSeconds: 3600,
+      upstreamAccountIdentifier: "account-B",
+    });
+    // The audit collection is unavailable.
+    mockWriteAuditEvent.mockRejectedValue(new Error("audit backend down"));
+
+    const { state } = await getLmsOAuthStateStore().issue({
+      teacherId: TEACHER_UID,
+      providerId: PROVIDER,
+      redirectUri: REDIRECT,
+      intent: "publication",
+    });
+    await expect(
+      __lmsConnectionsCompleteHandler(
+        makeRequest({
+          providerId: PROVIDER,
+          code: "fixture-auth-code",
+          state,
+          redirectUri: REDIRECT,
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "lms.identityMismatch" });
+    // The security outcome is unchanged: no widening, no credential
+    // overwrite, existing connection intact.
+    expect(mockConnectionUpdate).not.toHaveBeenCalled();
+    expect(mockTokenStore.store).not.toHaveBeenCalled();
+    expect(mockTokenStore.revoke).not.toHaveBeenCalled();
   });
 
   it("carries forward the old refresh token when the new grant omits one", async () => {
@@ -729,6 +819,11 @@ describe("lmsConnectionsComplete - server-side OAuth state pre-check", () => {
     expect(mockConnectionUpdate).not.toHaveBeenCalled();
     // No local cleanup of the old bundle either (widen aborted before commit).
     expect(mockTokenStore.revoke).not.toHaveBeenCalled();
+    // Sprint 26 Phase 1: an aborted widening never emits the
+    // successful-widening audit event (no false evidence).
+    expect(mockWriteAuditEvent).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: "lms.connectionScopesWidened" }),
+    );
   });
 
   it("leaves the connection on its old tokenRef when the connection update() fails", async () => {
@@ -771,6 +866,12 @@ describe("lmsConnectionsComplete - server-side OAuth state pre-check", () => {
     // so the existing connection remains usable on its original tokenRef.
     expect(mockTokenStore.revoke).not.toHaveBeenCalled();
     expect(mockConnectionSet).not.toHaveBeenCalled();
+    // Sprint 26 Phase 1: the commit failed, so no successful-widening
+    // audit event is emitted (the event follows the commit, never precedes
+    // it).
+    expect(mockWriteAuditEvent).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: "lms.connectionScopesWidened" }),
+    );
   });
 
   it("still reports widened when the best-effort old-bundle cleanup fails", async () => {
@@ -810,5 +911,303 @@ describe("lmsConnectionsComplete - server-side OAuth state pre-check", () => {
     // Cleanup is hygiene, not lifecycle: its failure never fails the widen.
     expect(response.consentOutcome).toBe("widened");
     expect(mockConnectionUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  // ---------------------------------------------------------------------
+  // Sprint 26 certification follow-up - Reconnect recovery correction.
+  //
+  // These prove the corrected behavior: an explicit "reconnect" intent
+  // against an active connection is NOT idempotently short-circuited; it
+  // exchanges the fresh authorization code and replaces the unusable
+  // credential on the same logical connection with the base scope set,
+  // preserving the identity-mismatch hard invariant.
+  // ---------------------------------------------------------------------
+
+  async function issueReconnectState(): Promise<string> {
+    const { state } = await getLmsOAuthStateStore().issue({
+      teacherId: TEACHER_UID,
+      providerId: PROVIDER,
+      redirectUri: REDIRECT,
+      intent: "reconnect",
+    });
+    return state;
+  }
+
+  function activeWidenedConnectionSnapshot(): {
+    exists: true;
+    data: () => Record<string, unknown>;
+  } {
+    return {
+      exists: true,
+      data: () => ({
+        teacherId: TEACHER_UID,
+        providerId: PROVIDER,
+        status: "active",
+        tokenRef: "tokref-existing",
+        // Previously widened to include a publication scope.
+        scopes: ["s1", "s2-publication"],
+      }),
+    };
+  }
+
+  it("reconnect: exchanges the code and replaces the credential on the same connection with base scopes", async () => {
+    mockConnectionGet.mockResolvedValue(activeWidenedConnectionSnapshot());
+    // The stored bundle still resolves (its refresh token is dead at Google,
+    // but the bundle document is intact), so the upstream identity is
+    // available for revalidation.
+    mockTokenStore.resolve.mockResolvedValue({
+      providerId: "googleClassroom",
+      teacherId: TEACHER_UID,
+      accessToken: "dead-access-token",
+      refreshToken: "dead-refresh-token",
+      scopes: ["s1", "s2-publication"],
+      upstreamAccountIdentifier: "fixture-upstream-id",
+    });
+    // The reconnect grant returns a fresh working credential with the base
+    // scope set only (least privilege - publication is not requested).
+    mockCompleteOAuth.mockResolvedValue({
+      accessToken: "recovered-access-token",
+      refreshToken: "recovered-refresh-token",
+      scopes: ["base-a", "base-b"],
+      expiresInSeconds: 3600,
+      upstreamAccountIdentifier: "fixture-upstream-id",
+    });
+    mockTokenStore.store.mockResolvedValue("tokref-recovered");
+
+    const state = await issueReconnectState();
+    const response = await __lmsConnectionsCompleteHandler(
+      makeRequest({
+        providerId: PROVIDER,
+        code: "fixture-auth-code",
+        state,
+        redirectUri: REDIRECT,
+      }),
+    );
+
+    // Reconnect did NOT take the idempotent early return: the code was
+    // exchanged. This is the exact defect the correction fixes.
+    expect(mockCompleteOAuth).toHaveBeenCalledTimes(1);
+    expect(response.consentOutcome).toBe("recovered");
+    expect(response.alreadyConnected).toBe(true);
+
+    // A fresh credential was stored, carrying the new refresh token and the
+    // base scope set - the unusable old credential is no longer active.
+    expect(mockTokenStore.store).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const storeArg = (mockTokenStore.store.mock.calls as any)[0]?.[0] as Record<string, unknown>;
+    expect(storeArg.refreshToken).toBe("recovered-refresh-token");
+    expect(storeArg.accessToken).toBe("recovered-access-token");
+    expect(storeArg.scopes).toEqual(["base-a", "base-b"]);
+
+    // The connection document was UPDATED (same logical connection), not
+    // re-created, with the base scope set and the new tokenRef.
+    expect(mockConnectionSet).not.toHaveBeenCalled();
+    expect(mockConnectionUpdate).toHaveBeenCalledTimes(1);
+    const updateArg = mockConnectionUpdate.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(updateArg.scopes).toEqual(["base-a", "base-b"]);
+    expect(updateArg.tokenRef).toBe("tokref-recovered");
+    // The publication scope is dropped back to base until re-widened.
+    expect(updateArg.scopes).not.toContain("s2-publication");
+
+    // The old local bundle is cleaned up; the upstream grant is not revoked.
+    expect(mockTokenStore.revoke).toHaveBeenCalledWith("tokref-existing");
+    expect(mockAdapterRevokeGrant).not.toHaveBeenCalled();
+
+    // Exactly one durable, PII-safe recovery audit event, after the commit.
+    expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUserId: TEACHER_UID,
+        actorRole: "teacher",
+        action: "lms.connectionRecovered",
+        targetType: "lmsConnection",
+        payload: { providerId: PROVIDER },
+      }),
+    );
+    const recoverAudit = JSON.stringify(mockWriteAuditEvent.mock.calls[0]?.[0]);
+    expect(recoverAudit).not.toContain("fixture-upstream-id");
+    expect(recoverAudit).not.toContain("recovered-access-token");
+    expect(recoverAudit).not.toContain("recovered-refresh-token");
+    expect(recoverAudit).not.toContain("base-a");
+    // Never a false widening or false creation event for a recovery.
+    expect(mockWriteAuditEvent).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: "lms.connectionScopesWidened" }),
+    );
+    expect(mockWriteAuditEvent).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: "lms.connectionCreated" }),
+    );
+  });
+
+  it("reconnect: hard-rejects lms.identityMismatch and leaves the existing connection untouched", async () => {
+    mockConnectionGet.mockResolvedValue(activeWidenedConnectionSnapshot());
+    mockTokenStore.resolve.mockResolvedValue({
+      providerId: "googleClassroom",
+      teacherId: TEACHER_UID,
+      accessToken: "dead-access-token",
+      refreshToken: "dead-refresh-token",
+      scopes: ["s1"],
+      upstreamAccountIdentifier: "account-A",
+    });
+    // Reconnect returned a DIFFERENT Google account.
+    mockCompleteOAuth.mockResolvedValue({
+      accessToken: "recovered-access-token",
+      refreshToken: "recovered-refresh-token",
+      scopes: ["base-a"],
+      expiresInSeconds: 3600,
+      upstreamAccountIdentifier: "account-B",
+    });
+
+    const state = await issueReconnectState();
+    await expect(
+      __lmsConnectionsCompleteHandler(
+        makeRequest({
+          providerId: PROVIDER,
+          code: "fixture-auth-code",
+          state,
+          redirectUri: REDIRECT,
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "lms.identityMismatch" });
+
+    // No credential replacement, no connection overwrite, no duplicate.
+    expect(mockTokenStore.store).not.toHaveBeenCalled();
+    expect(mockConnectionUpdate).not.toHaveBeenCalled();
+    expect(mockConnectionSet).not.toHaveBeenCalled();
+    expect(mockTokenStore.revoke).not.toHaveBeenCalled();
+
+    // Exactly one durable, PII-safe rejection event; neither account leaks.
+    expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUserId: TEACHER_UID,
+        actorRole: "teacher",
+        action: "lms.connectionRecoveryRejected",
+        targetType: "lmsConnection",
+        payload: { providerId: PROVIDER, reason: "identityMismatch" },
+      }),
+    );
+    const rejectAudit = JSON.stringify(mockWriteAuditEvent.mock.calls[0]?.[0]);
+    expect(rejectAudit).not.toContain("account-A");
+    expect(rejectAudit).not.toContain("account-B");
+  });
+
+  it("reconnect: still hard-rejects identity mismatch when the best-effort audit write fails", async () => {
+    mockConnectionGet.mockResolvedValue(activeWidenedConnectionSnapshot());
+    mockTokenStore.resolve.mockResolvedValue({
+      providerId: "googleClassroom",
+      teacherId: TEACHER_UID,
+      accessToken: "dead-access-token",
+      refreshToken: "dead-refresh-token",
+      scopes: ["s1"],
+      upstreamAccountIdentifier: "account-A",
+    });
+    mockCompleteOAuth.mockResolvedValue({
+      accessToken: "recovered-access-token",
+      scopes: ["base-a"],
+      expiresInSeconds: 3600,
+      upstreamAccountIdentifier: "account-B",
+    });
+    mockWriteAuditEvent.mockRejectedValue(new Error("audit backend down"));
+
+    const state = await issueReconnectState();
+    await expect(
+      __lmsConnectionsCompleteHandler(
+        makeRequest({
+          providerId: PROVIDER,
+          code: "fixture-auth-code",
+          state,
+          redirectUri: REDIRECT,
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "lms.identityMismatch" });
+    expect(mockConnectionUpdate).not.toHaveBeenCalled();
+    expect(mockTokenStore.store).not.toHaveBeenCalled();
+    expect(mockTokenStore.revoke).not.toHaveBeenCalled();
+  });
+
+  it("reconnect: refuses with a sanitized failure when the existing token bundle cannot be resolved", async () => {
+    mockConnectionGet.mockResolvedValue(activeWidenedConnectionSnapshot());
+    mockTokenStore.resolve.mockRejectedValue(new Error("token bundle missing"));
+    mockCompleteOAuth.mockResolvedValue({
+      accessToken: "recovered-access-token",
+      scopes: ["base-a"],
+      expiresInSeconds: 3600,
+      upstreamAccountIdentifier: "fixture-upstream-id",
+    });
+
+    const state = await issueReconnectState();
+    await expect(
+      __lmsConnectionsCompleteHandler(
+        makeRequest({
+          providerId: PROVIDER,
+          code: "fixture-auth-code",
+          state,
+          redirectUri: REDIRECT,
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "lms.connectionTokenResolutionFailed" });
+    // The existing connection is untouched: no new token, no doc update.
+    expect(mockTokenStore.store).not.toHaveBeenCalled();
+    expect(mockConnectionUpdate).not.toHaveBeenCalled();
+  });
+
+  it("reconnect: carries forward the old refresh token when the new grant omits one", async () => {
+    mockConnectionGet.mockResolvedValue(activeWidenedConnectionSnapshot());
+    mockTokenStore.resolve.mockResolvedValue({
+      providerId: "googleClassroom",
+      teacherId: TEACHER_UID,
+      accessToken: "dead-access-token",
+      refreshToken: "preserved-refresh-token",
+      scopes: ["s1"],
+      upstreamAccountIdentifier: "fixture-upstream-id",
+    });
+    // Grant omits a refresh token.
+    mockCompleteOAuth.mockResolvedValue({
+      accessToken: "recovered-access-token",
+      scopes: ["base-a"],
+      expiresInSeconds: 3600,
+      upstreamAccountIdentifier: "fixture-upstream-id",
+    });
+    mockTokenStore.store.mockResolvedValue("tokref-recovered");
+
+    const state = await issueReconnectState();
+    await __lmsConnectionsCompleteHandler(
+      makeRequest({
+        providerId: PROVIDER,
+        code: "fixture-auth-code",
+        state,
+        redirectUri: REDIRECT,
+      }),
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const storeArg = (mockTokenStore.store.mock.calls as any)[0]?.[0] as Record<string, unknown>;
+    expect(storeArg?.refreshToken).toBe("preserved-refresh-token");
+  });
+
+  it("reconnect: with no active connection falls through to a normal new-connection create", async () => {
+    // The connection was revoked between arming the signal and reconnecting.
+    mockConnectionGet.mockResolvedValue({ exists: false });
+    mockCompleteOAuth.mockResolvedValue({
+      accessToken: "fresh-access-token",
+      refreshToken: "fresh-refresh-token",
+      scopes: ["base-a"],
+      expiresInSeconds: 3600,
+      upstreamAccountIdentifier: "fixture-upstream-id",
+    });
+
+    const state = await issueReconnectState();
+    const response = await __lmsConnectionsCompleteHandler(
+      makeRequest({
+        providerId: PROVIDER,
+        code: "fixture-auth-code",
+        state,
+        redirectUri: REDIRECT,
+      }),
+    );
+    // No active connection to recover, so this behaves as a fresh connect.
+    expect(response.consentOutcome).toBe("created");
+    expect(response.alreadyConnected).toBe(false);
+    expect(mockConnectionSet).toHaveBeenCalledTimes(1);
+    expect(mockConnectionUpdate).not.toHaveBeenCalled();
   });
 });

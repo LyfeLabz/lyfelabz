@@ -195,6 +195,16 @@ export function renderIntegrationsSurface(
     provider: IntegrationsProvider,
     active: IntegrationsConnection | null,
   ): HTMLElement => {
+    // Sprint 26 Phase 4 (definition §7.F). "Action needed" is derived only
+    // from a condition LyfeLabz has actually observed this session (a
+    // publication that found the connection unusable). It is never a
+    // speculative health probe, and it applies only to a connection that is
+    // still active - a revoked connection already renders "Not connected"
+    // with a Connect action, which is itself a usable recovery path.
+    const needsReconnect =
+      active !== null &&
+      (deps.connectionRecovery?.needsReconnect(provider.providerId) ?? false);
+
     const li = doc.createElement("li");
     li.className = "shell-card shell-integrations-row";
     li.setAttribute(
@@ -211,14 +221,20 @@ export function renderIntegrationsSurface(
     header.appendChild(title);
 
     const status = doc.createElement("span");
-    status.className = active
-      ? "shell-pill shell-pill-verified"
-      : "shell-pill shell-integrations-pill-inactive";
+    status.className = !active
+      ? "shell-pill shell-integrations-pill-inactive"
+      : needsReconnect
+        ? "shell-pill shell-integrations-pill-attention"
+        : "shell-pill shell-pill-verified";
     status.setAttribute(
       "data-testid",
       `integrations-status-${provider.providerId}`,
     );
-    status.textContent = active ? "Connected" : "Not connected";
+    status.textContent = !active
+      ? "Not connected"
+      : needsReconnect
+        ? "Connected, action needed"
+        : "Connected";
     header.appendChild(status);
     li.appendChild(header);
 
@@ -226,6 +242,22 @@ export function renderIntegrationsSurface(
     description.className = "shell-status";
     description.textContent = describeProvider(provider.providerId);
     li.appendChild(description);
+
+    // Calm recovery explainer, shown only when LyfeLabz knows action is
+    // needed. Plain language, no OAuth term, no account identifier, and no
+    // implication of data loss - the teacher's assignments are unaffected.
+    if (needsReconnect) {
+      const recovery = doc.createElement("p");
+      recovery.className = "shell-status shell-integrations-recovery";
+      recovery.setAttribute(
+        "data-testid",
+        `integrations-recovery-${provider.providerId}`,
+      );
+      recovery.setAttribute("role", "status");
+      recovery.textContent =
+        "Reconnect to keep assigning to your Google Classroom classes. Your LyfeLabz assignments are safe.";
+      li.appendChild(recovery);
+    }
 
     const actions = doc.createElement("div");
     actions.className = "shell-integrations-actions";
@@ -244,6 +276,26 @@ export function renderIntegrationsSurface(
       });
       actions.appendChild(connectBtn);
     } else {
+      // Reconnect is the primary recovery action, offered only in the
+      // action-needed state so a healthy connection is not cluttered with a
+      // maintenance control. It reuses the certified connect flow and never
+      // disconnects first, so the durable connection is preserved if the
+      // teacher abandons the reauthorization (definition §7.F, §9).
+      if (needsReconnect) {
+        const reconnectBtn = doc.createElement("button");
+        reconnectBtn.type = "button";
+        reconnectBtn.className = "shell-lesson-toggle shell-lesson-toggle-active";
+        reconnectBtn.setAttribute(
+          "data-testid",
+          `integrations-reconnect-${provider.providerId}`,
+        );
+        reconnectBtn.textContent = "Reconnect";
+        reconnectBtn.addEventListener("click", () => {
+          void onReconnect(provider);
+        });
+        actions.appendChild(reconnectBtn);
+      }
+
       const disconnectBtn = doc.createElement("button");
       disconnectBtn.type = "button";
       disconnectBtn.className = "shell-lesson-toggle shell-lesson-toggle-inactive";
@@ -308,6 +360,52 @@ export function renderIntegrationsSurface(
       notice = {
         kind: "info",
         message: `${provider.displayName} is now connected.`,
+      };
+      await refreshAfterMutation();
+    } catch (err) {
+      notice = { kind: "error", message: describeConnectError(err, provider) };
+      render();
+    }
+  };
+
+  // Sprint 26 Phase 4 (definition §7.F, §9), corrected by the Sprint 26
+  // certification follow-up. Recovery reauthorization for a connection
+  // LyfeLabz has observed to be unusable this session. It reuses the
+  // certified begin/complete connect flow with the initial scope set and
+  // never disconnects first, so the existing durable connection is preserved
+  // if the teacher abandons the reauthorization. The `reconnect: true` signal
+  // binds the explicit "reconnect" OAuth intent so completion actually
+  // replaces the unusable credential on the active connection instead of
+  // taking the idempotent duplicate-connect early return (which is what made
+  // the earlier Reconnect action a no-op for an active-but-unusable
+  // connection). On success the session-local "action needed" signal is
+  // cleared so the row returns to plain "Connected".
+  const onReconnect = async (
+    provider: IntegrationsProvider,
+  ): Promise<void> => {
+    notice = { kind: "info", message: `Reconnecting ${provider.displayName}...` };
+    render();
+    try {
+      const begin = await deps.callables.beginConnection({
+        providerId: provider.providerId,
+        redirectUri: deps.redirectUri,
+        reconnect: true,
+      });
+      const handoff = await deps.openOAuth({
+        authorizationUrl: begin.authorizationUrl,
+        redirectUri: deps.redirectUri,
+        expectedState: begin.state,
+      });
+      await deps.callables.completeConnection({
+        providerId: provider.providerId,
+        code: handoff.code,
+        state: handoff.state,
+        redirectUri: deps.redirectUri,
+      });
+      deps.connectionRecovery?.clear(provider.providerId);
+      notice = {
+        kind: "info",
+        message: `${provider.displayName} is reconnected.`,
       };
       await refreshAfterMutation();
     } catch (err) {

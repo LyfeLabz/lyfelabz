@@ -15,10 +15,13 @@ import type {
   OAuthHandoff,
 } from "../../../settings/integrations/types";
 import {
+  clearConnectionReconnectNeeded,
   createConsentCoordinator,
   createDetailLmsRetrySeam,
   extractThrownErrorCode,
+  readConnectionReconnectNeeded,
   readLmsPublicationRetryContext,
+  recordConnectionReconnectNeeded,
   recordLmsPublicationRetryContext,
   runPublicationAction,
   _resetLmsPublicationStateForTest,
@@ -300,6 +303,80 @@ describe("runPublicationAction - reconnect and thrown errors", () => {
   });
 });
 
+// Sprint 26 Phase 4 (definition §7.E, §7.B). A completion-time identity
+// mismatch must be a distinct recovery outcome, not flattened into the
+// generic permission-not-granted decline, so the surfaces can render
+// same-account recovery guidance. The mismatch reaches the client as a
+// thrown callable error at the consent completion step.
+describe("runPublicationAction - identity mismatch classification", () => {
+  beforeEach(() => {
+    _resetLmsPublicationStateForTest();
+  });
+
+  const identityMismatchThrow = (): never => {
+    const err = new Error("failed-precondition");
+    (err as { details?: unknown }).details = { code: "lms.identityMismatch" };
+    throw err;
+  };
+
+  test("consent completing against a different account maps to identityMismatch, not permissionNotGranted", async () => {
+    let call = 0;
+    const consent = makeConsent({
+      completeConnection: async () => identityMismatchThrow(),
+    });
+    const result = await runPublicationAction({
+      nonce: "n",
+      publish: async () => {
+        call += 1;
+        return insufficient();
+      },
+      consent: consent.seam,
+      coordinator: createConsentCoordinator(),
+    });
+    expect(result.kind).toBe("identityMismatch");
+    // Distinct from a generic decline.
+    expect(result.kind).not.toBe("permissionNotGranted");
+    // No automatic re-issue: the wrong account can never publish, and the
+    // durable connection was not mutated (backend hard-rejects first).
+    expect(call).toBe(1);
+    expect(consent.beginCalls).toBe(1);
+    expect(consent.openCalls).toBe(1);
+    expect(consent.completeCalls).toBe(1);
+  });
+
+  test("a generic decline (cancelled) still maps to permissionNotGranted, keeping the two states separate", async () => {
+    const consent = makeConsent({
+      openOAuth: async () => {
+        const err = new Error("cancelled");
+        (err as { code?: string }).code = "cancelled";
+        throw err;
+      },
+    });
+    const result = await runPublicationAction({
+      nonce: "n",
+      publish: async () => insufficient(),
+      consent: consent.seam,
+      coordinator: createConsentCoordinator(),
+    });
+    expect(result.kind).toBe("permissionNotGranted");
+  });
+
+  test("the coordinator latches identityMismatch so a second row reuses it without reopening OAuth", async () => {
+    const consent = makeConsent({
+      completeConnection: async () => identityMismatchThrow(),
+    });
+    const coordinator = createConsentCoordinator();
+    const first = await coordinator.ensureConsent(consent.seam);
+    const second = await coordinator.ensureConsent(consent.seam);
+    expect(first).toBe("identityMismatch");
+    expect(second).toBe("identityMismatch");
+    // One OAuth begin/open/complete across both rows (no consent loop).
+    expect(consent.beginCalls).toBe(1);
+    expect(consent.openCalls).toBe(1);
+    expect(consent.completeCalls).toBe(1);
+  });
+});
+
 describe("consent coordinator - multi-row coordination", () => {
   beforeEach(() => {
     _resetLmsPublicationStateForTest();
@@ -464,5 +541,114 @@ describe("session-scoped retry store and detail seam", () => {
     await seam.retry();
     expect(seen).toHaveLength(2);
     expect(seen[0]).not.toBe(seen[1]); // distinct logical actions
+  });
+});
+
+// Sprint 26 Phase 4 (definition §7.F, §8). The session-local connection-
+// recovery signal is the only "action needed" evidence LyfeLabz can honestly
+// hold: it records an observed reconnect-required condition, is uid-scoped,
+// and is never persisted (a reload forgets it, and the next attempt re-derives
+// it). Identity mismatch never arms it.
+describe("session-scoped connection-recovery signal", () => {
+  beforeEach(() => {
+    _resetLmsPublicationStateForTest();
+  });
+
+  test("record then read is uid- and provider-scoped; clear removes it", () => {
+    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+    recordConnectionReconnectNeeded("u1", "google-classroom");
+    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(true);
+    // A different teacher never sees another teacher's signal.
+    expect(readConnectionReconnectNeeded("u2", "google-classroom")).toBe(false);
+    // A different provider is unaffected.
+    expect(readConnectionReconnectNeeded("u1", "other")).toBe(false);
+    clearConnectionReconnectNeeded("u1", "google-classroom");
+    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+  });
+
+  test("a fresh session (reset) forgets the signal - it is not persisted", () => {
+    recordConnectionReconnectNeeded("u1", "google-classroom");
+    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(true);
+    _resetLmsPublicationStateForTest();
+    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+  });
+
+  test("a detail retry that stays reconnect-required arms the signal for Settings", async () => {
+    const integrations = {
+      redirectUri: "r",
+      openOAuth: async () => ({ code: "c", state: "s" }),
+      callables: {
+        beginConnection: async () => ({ authorizationUrl: "u", state: "s" }),
+        completeConnection: async () => ({ connectionId: "conn", alreadyConnected: false }),
+        publishAssignment: async () => failedWith("lms.connectionNotActive"),
+      },
+    } as unknown as IntegrationsDeps;
+    recordLmsPublicationRetryContext("u1", {
+      assignmentId: "a1",
+      linkId: "l1",
+      providerId: "google-classroom",
+      lyfelabzAssignmentUrl: "https://app/x",
+      title: "T",
+      state: "failed",
+    });
+    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const next = await seam.retry();
+    expect(next).toBe("reconnectRequired");
+    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(true);
+  });
+
+  test("a detail retry that succeeds clears a previously armed signal", async () => {
+    recordConnectionReconnectNeeded("u1", "google-classroom");
+    const integrations = {
+      redirectUri: "r",
+      openOAuth: async () => ({ code: "c", state: "s" }),
+      callables: {
+        beginConnection: async () => ({ authorizationUrl: "u", state: "s" }),
+        completeConnection: async () => ({ connectionId: "conn", alreadyConnected: false }),
+        publishAssignment: async () => succeeded(),
+      },
+    } as unknown as IntegrationsDeps;
+    recordLmsPublicationRetryContext("u1", {
+      assignmentId: "a1",
+      linkId: "l1",
+      providerId: "google-classroom",
+      lyfelabzAssignmentUrl: "https://app/x",
+      title: "T",
+      state: "reconnectRequired",
+    });
+    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const next = await seam.retry();
+    expect(next).toBe("succeeded");
+    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+  });
+
+  test("a detail retry that hits identity mismatch does NOT arm the Settings signal", async () => {
+    const integrations = {
+      redirectUri: "r",
+      openOAuth: async () => ({ code: "c", state: "s" }),
+      callables: {
+        beginConnection: async () => ({ authorizationUrl: "u", state: "s" }),
+        completeConnection: async () => {
+          const err = new Error("failed-precondition");
+          (err as { details?: unknown }).details = { code: "lms.identityMismatch" };
+          throw err;
+        },
+        publishAssignment: async () => insufficient(),
+      },
+    } as unknown as IntegrationsDeps;
+    recordLmsPublicationRetryContext("u1", {
+      assignmentId: "a1",
+      linkId: "l1",
+      providerId: "google-classroom",
+      lyfelabzAssignmentUrl: "https://app/x",
+      title: "T",
+      state: "failed",
+    });
+    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const next = await seam.retry();
+    expect(next).toBe("identityMismatch");
+    // Identity mismatch recovery lives in the publication surface (same-account
+    // retry), so Settings must not be armed as a required destination.
+    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
   });
 });

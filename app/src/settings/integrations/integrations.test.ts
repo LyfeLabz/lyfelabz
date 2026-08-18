@@ -197,6 +197,211 @@ describe("Sprint 24B Phase 1: Settings > Integrations account-level scope", () =
     ).toBeNull();
   });
 
+  // Sprint 26 Phase 4 (definition §7.F). The Settings reconnect dead-end is
+  // removed by an "action needed" state driven only by a session-local
+  // signal LyfeLabz actually observed. These tests cover the state matrix and
+  // the non-destructive reconnect action.
+  test("active connection with a known recovery condition shows action-needed and a Reconnect action", async () => {
+    const mount = mkMount();
+    const deps: IntegrationsDeps = {
+      ...makeDeps(),
+      connectionRecovery: {
+        needsReconnect: () => true,
+        clear: () => undefined,
+      },
+    };
+    renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
+    await flush();
+    await flush();
+
+    const status = mount.querySelector<HTMLElement>(
+      "[data-testid=integrations-status-googleClassroom]",
+    );
+    expect(status).not.toBeNull();
+    expect(status!.textContent).toBe("Connected, action needed");
+    expect(status!.className).toMatch(/shell-integrations-pill-attention/);
+
+    // A real recovery control exists (the removed dead-end), and Disconnect
+    // remains available as the secondary action.
+    expect(
+      mount.querySelector("[data-testid=integrations-reconnect-googleClassroom]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=integrations-disconnect-googleClassroom]"),
+    ).not.toBeNull();
+
+    // Calm recovery explainer, no raw code / OAuth term / account identifier.
+    const recovery = mount.querySelector<HTMLElement>(
+      "[data-testid=integrations-recovery-googleClassroom]",
+    );
+    expect(recovery).not.toBeNull();
+    expect(recovery!.textContent).toMatch(/Reconnect/);
+    expect(recovery!.textContent).not.toMatch(
+      /token|scope|OAuth|identity|lms\./i,
+    );
+  });
+
+  test("active connection with no known problem stays plain Connected with no Reconnect action", async () => {
+    const mount = mkMount();
+    const deps: IntegrationsDeps = {
+      ...makeDeps(),
+      connectionRecovery: {
+        needsReconnect: () => false,
+        clear: () => undefined,
+      },
+    };
+    renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
+    await flush();
+    await flush();
+
+    const status = mount.querySelector<HTMLElement>(
+      "[data-testid=integrations-status-googleClassroom]",
+    );
+    expect(status!.textContent).toBe("Connected");
+    expect(status!.className).toMatch(/shell-pill-verified/);
+    expect(
+      mount.querySelector("[data-testid=integrations-reconnect-googleClassroom]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=integrations-recovery-googleClassroom]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=integrations-disconnect-googleClassroom]"),
+    ).not.toBeNull();
+  });
+
+  test("no recovery seam wired: connected row is unchanged (backward compatible)", async () => {
+    const mount = mkMount();
+    renderIntegrationsSurface(mount, makeDeps(), { onExit: () => undefined });
+    await flush();
+    await flush();
+    const status = mount.querySelector<HTMLElement>(
+      "[data-testid=integrations-status-googleClassroom]",
+    );
+    expect(status!.textContent).toBe("Connected");
+    expect(
+      mount.querySelector("[data-testid=integrations-reconnect-googleClassroom]"),
+    ).toBeNull();
+  });
+
+  test("a not-connected provider never shows action-needed even if the signal is armed", async () => {
+    const mount = mkMount();
+    const deps: IntegrationsDeps = {
+      ...makeDeps({ describeConnections: async () => Object.freeze([]) }),
+      connectionRecovery: {
+        needsReconnect: () => true,
+        clear: () => undefined,
+      },
+    };
+    renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
+    await flush();
+    await flush();
+    const status = mount.querySelector<HTMLElement>(
+      "[data-testid=integrations-status-googleClassroom]",
+    );
+    expect(status!.textContent).toBe("Not connected");
+    expect(
+      mount.querySelector("[data-testid=integrations-connect-googleClassroom]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=integrations-reconnect-googleClassroom]"),
+    ).toBeNull();
+  });
+
+  test("Reconnect reuses the connect flow, never disconnects first, and clears the signal on success", async () => {
+    const calls: string[] = [];
+    const cleared: string[] = [];
+    const beginInputs: Array<Record<string, unknown>> = [];
+    const deps: IntegrationsDeps = {
+      ...makeDeps({
+        beginConnection: async (input) => {
+          calls.push("begin");
+          beginInputs.push(input as Record<string, unknown>);
+          return { authorizationUrl: "https://consent.test/a", state: "st" };
+        },
+        completeConnection: async () => {
+          calls.push("complete");
+          return { connectionId: "conn-1", alreadyConnected: false };
+        },
+        disconnect: async () => {
+          calls.push("disconnect");
+          return { alreadyRevoked: false };
+        },
+      }),
+      openOAuth: async () => {
+        calls.push("oauth");
+        return { code: "c", state: "st" };
+      },
+      connectionRecovery: {
+        needsReconnect: () => true,
+        clear: (providerId) => cleared.push(providerId),
+      },
+    };
+    const mount = mkMount();
+    renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
+    await flush();
+    await flush();
+
+    const reconnect = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-reconnect-googleClassroom]",
+    );
+    expect(reconnect).not.toBeNull();
+    reconnect!.click();
+    await flush();
+    await flush();
+    await flush();
+
+    // The certified connect pair ran; no disconnect was issued first.
+    expect(calls).toEqual(["begin", "oauth", "complete"]);
+    // The session-local signal was cleared for this provider.
+    expect(cleared).toEqual(["googleClassroom"]);
+    // Sprint 26 certification follow-up: Reconnect must carry the explicit
+    // reconnect signal so completion actually replaces the unusable
+    // credential instead of taking the idempotent duplicate-connect early
+    // return. Without this flag the button was a no-op for an active-but-
+    // unusable connection.
+    expect(beginInputs).toHaveLength(1);
+    expect(beginInputs[0]).toMatchObject({
+      providerId: "googleClassroom",
+      reconnect: true,
+    });
+    expect(beginInputs[0]).not.toHaveProperty("capability");
+  });
+
+  test("plain Connect does not carry the reconnect signal", async () => {
+    const beginInputs: Array<Record<string, unknown>> = [];
+    const deps: IntegrationsDeps = {
+      ...makeDeps({
+        describeConnections: async () => Object.freeze([]),
+        beginConnection: async (input) => {
+          beginInputs.push(input as Record<string, unknown>);
+          return { authorizationUrl: "https://consent.test/a", state: "st" };
+        },
+        completeConnection: async () => ({
+          connectionId: "conn-1",
+          alreadyConnected: false,
+        }),
+      }),
+      openOAuth: async () => ({ code: "c", state: "st" }),
+    };
+    const mount = mkMount();
+    renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
+    await flush();
+    await flush();
+
+    const connect = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-connect-googleClassroom]",
+    );
+    expect(connect).not.toBeNull();
+    connect!.click();
+    await flush();
+    await flush();
+    await flush();
+
+    expect(beginInputs).toHaveLength(1);
+    expect(beginInputs[0]).not.toHaveProperty("reconnect");
+  });
+
   test("never invokes discoverClasses, importClass, or refreshClass during load or connect flow", async () => {
     const calls: string[] = [];
     const spyDeps = makeDeps({

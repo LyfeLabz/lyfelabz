@@ -1733,6 +1733,12 @@ const LMS_PUBLICATION_LINE: Readonly<
   failed: "Publishing to Google Classroom did not succeed.",
   permissionNotGranted:
     "Publishing to Google Classroom needs your permission. You can try again from the assignment.",
+  // Sprint 26 Phase 4 (definition §7.E). Same-account recovery guidance,
+  // distinct from a generic permission failure. No OAuth term, no account
+  // identifier, and no implication that the existing connection was
+  // replaced - it was not. The "Try again" control below carries the retry.
+  identityMismatch:
+    "Publishing to Google Classroom needs the same Google account you first connected. Choose that account and try again.",
   reconnectRequired:
     "Google Classroom needs to be reconnected in Settings. Your assignment was scheduled.",
 });

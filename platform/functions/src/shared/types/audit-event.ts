@@ -66,6 +66,58 @@ export const AUDIT_ACTIONS = [
   // signals. Never carries provider account identifiers, Firebase UIDs,
   // student names, emails, or profile data.
   "lms.rosterSynchronized",
+  // Sprint 26 Phase 1 - minimal consent-flow observability. Two PII-safe
+  // durable outcomes on the incremental scope-widening path
+  // (connections-complete.ts), which previously had structured logging
+  // but no durable audit evidence (Sprint 26 §4.8, §7.G).
+  //
+  // `lms.connectionScopesWidened` records that an existing active
+  // connection's granted-scope set was successfully widened through
+  // incremental authorization. Emitted only AFTER the connection
+  // document update commits, so the event can never describe a widening
+  // that did not actually complete. Target is the `lmsConnection`; the
+  // payload carries only the provider id. It NEVER carries the widened
+  // scope array, the upstream Google account identifier, tokens, or any
+  // PII. Reuses the exact structured-log signal name already emitted at
+  // the same lifecycle point so there is one vocabulary for the outcome.
+  "lms.connectionScopesWidened",
+  // `lms.connectionWideningRejected` records that incremental widening
+  // was rejected. Emitted best-effort immediately before the hard
+  // `lms.identityMismatch` reject and BEFORE any connection or credential
+  // mutation, so audit persistence is never load-bearing for the
+  // security outcome. Target is the `lmsConnection`; the payload carries
+  // only the provider id and a low-cardinality `reason` category
+  // (currently only "identityMismatch"). It NEVER records either the
+  // stored or the returned Google identity, tokens, or any PII.
+  "lms.connectionWideningRejected",
+  // Sprint 26 certification follow-up - Reconnect recovery correction.
+  // Two PII-safe durable outcomes on the reconnect/recovery path
+  // (connections-complete.ts), which replaces the unusable credential on
+  // an existing active connection without disconnecting first. These are
+  // distinct product concepts from scope widening and from a brand-new
+  // connection, so they reuse neither `lms.connectionScopesWidened` (no
+  // scope was widened - only the base credential was restored) nor
+  // `lms.connectionCreated` (no new logical connection was created).
+  //
+  // `lms.connectionRecovered` records that an existing active connection's
+  // unusable credential was successfully replaced with a fresh one through
+  // an explicit teacher-requested reconnect. Emitted only AFTER the
+  // connection document update commits, so the event can never describe a
+  // recovery that did not actually complete. Target is the `lmsConnection`;
+  // the payload carries only the provider id. It NEVER carries the restored
+  // scope array, the upstream Google account identifier, tokens, or PII.
+  "lms.connectionRecovered",
+  // `lms.connectionRecoveryRejected` records that a reconnect was rejected
+  // because the returned Google identity did not match the identity on the
+  // existing durable connection. Emitted best-effort immediately before the
+  // hard `lms.identityMismatch` reject and BEFORE any connection or
+  // credential mutation, so audit persistence is never load-bearing for the
+  // security outcome. Symmetric with `lms.connectionWideningRejected`.
+  // Target is the `lmsConnection`; the payload carries only the provider id
+  // and a low-cardinality `reason` category (currently only
+  // "identityMismatch"). It NEVER records either the stored or the returned
+  // Google identity, tokens, or any PII.
+  "lms.connectionRecoveryRejected",
   // Sprint 23C-I - Student External Identity Bridge. Every event
   // targets an `externalIdentity` target type whose target ID is the
   // hashed document identifier; the raw provider account identifier

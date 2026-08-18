@@ -51,6 +51,18 @@ export const RECONNECT_ERROR_CODES: ReadonlySet<string> = new Set([
   "lms.connectionNotFound",
 ]);
 
+// Sprint 26 Phase 4 (definition §7.E, §7.B). The backend hard-rejects an
+// incremental publication authorization whose returned Google identity
+// does not match the identity already associated with the durable
+// connection (`connections-complete.ts`, `lms.identityMismatch`). That
+// rejection reaches the client as a thrown callable error at the consent
+// completion step. Before Phase 4 the consent handoff caught every throw
+// alike and reported "permission not granted", flattening the mismatch
+// into a generic permission failure. Phase 4 classifies it distinctly so
+// the surfaces can give the specific same-account recovery guidance
+// without exposing this raw code, OAuth terms, or any account identifier.
+export const IDENTITY_MISMATCH_CODE = "lms.identityMismatch";
+
 // Extract the sanitized platform error code from a thrown callable error.
 // A thrown `PlatformError` reaches the client as a Firebase callable error
 // whose `details` carries `{ code }` (server `translateThrown`). The raw
@@ -89,15 +101,22 @@ export type PublicationConsentSeam = {
 // await the same in-flight result and reuse the one completed consent. A
 // declined or failed consent latches `notGranted` for the remainder of the
 // action so no second OAuth flow is opened (no consent loop).
+// The bounded result of one incremental-consent handoff. `identityMismatch`
+// is distinguished from a generic `notGranted` decline so the surfaces can
+// route the teacher to specific same-account recovery guidance (Phase 4,
+// definition §7.E). Every other completion failure - popup blocked,
+// cancelled, denied, state mismatch, transport - stays `notGranted`.
+export type ConsentResult = "granted" | "notGranted" | "identityMismatch";
+
 export type ConsentCoordinator = {
   readonly ensureConsent: (
     seam: PublicationConsentSeam,
-  ) => Promise<"granted" | "notGranted">;
+  ) => Promise<ConsentResult>;
 };
 
 async function runConsentHandoff(
   seam: PublicationConsentSeam,
-): Promise<"granted" | "notGranted"> {
+): Promise<ConsentResult> {
   try {
     const begun = await seam.beginConnection({
       providerId: seam.providerId,
@@ -122,7 +141,16 @@ async function runConsentHandoff(
       redirectUri: seam.redirectUri,
     });
     return "granted";
-  } catch {
+  } catch (err) {
+    // A completion-time identity mismatch is a distinct recovery outcome:
+    // the teacher authorized with a different Google account than the one
+    // on the durable connection. The existing connection is untouched
+    // (the backend hard-rejects before any mutation, definition §7.B); the
+    // teacher simply needs to retry with the same account. Only the stable
+    // sanitized code is inspected; the raw error is never surfaced.
+    if (extractThrownErrorCode(err) === IDENTITY_MISMATCH_CODE) {
+      return "identityMismatch";
+    }
     // Popup blocked, cancelled, denied, state mismatch, or a completion
     // failure. No second automatic OAuth attempt is made; the caller stops
     // and offers manual retry.
@@ -131,8 +159,8 @@ async function runConsentHandoff(
 }
 
 export function createConsentCoordinator(): ConsentCoordinator {
-  let inFlight: Promise<"granted" | "notGranted"> | null = null;
-  let settled: "granted" | "notGranted" | null = null;
+  let inFlight: Promise<ConsentResult> | null = null;
+  let settled: ConsentResult | null = null;
   return {
     ensureConsent: (seam) => {
       if (settled !== null) return Promise.resolve(settled);
@@ -157,6 +185,7 @@ export type PublicationActionResult =
     }
   | { readonly kind: "failed" }
   | { readonly kind: "permissionNotGranted" }
+  | { readonly kind: "identityMismatch" }
   | { readonly kind: "reconnectRequired" };
 
 export type RunPublicationActionInput = {
@@ -234,6 +263,12 @@ export async function runPublicationAction(
   // the coordinator), then re-issue the publish exactly once with the same
   // nonce.
   const consentResult = await coordinator.ensureConsent(consent);
+  if (consentResult === "identityMismatch") {
+    // The teacher authorized with a different Google account. The durable
+    // connection is intact; the surfaces render same-account recovery
+    // guidance and the teacher can retry (definition §7.E). No re-issue.
+    return { kind: "identityMismatch" };
+  }
   if (consentResult !== "granted") {
     return { kind: "permissionNotGranted" };
   }
@@ -309,6 +344,63 @@ export function clearLmsPublicationRetryContexts(): void {
   retryStore = null;
 }
 
+// -----------------------------------------------------------------------------
+// Session-scoped connection-recovery signal (client only)
+// -----------------------------------------------------------------------------
+//
+// Sprint 26 Phase 4 (definition §7.F, §8). LyfeLabz has no durable backend
+// "connection needs reauthorization" field: the connection document status
+// is only `active` or `revoked`, and the `reconnectRequired` health verdict
+// is computed per class-refresh, never persisted on the connection. So the
+// only condition LyfeLabz can honestly know is one it has actually observed
+// this session: a publication attempt that returned a connection-not-usable
+// outcome (`reconnectRequired`). This store records that observation so the
+// Settings surface can surface an "action needed" state with a real
+// reconnect action rather than a dead-end, and so it honestly forgets on
+// reload (a fresh session re-derives the signal from the next attempt).
+//
+// It is session-local, in-memory, uid-scoped, and never persisted - the
+// same posture as the retry-context store above. It records ONLY the
+// reconnect-required condition. Identity mismatch is deliberately excluded:
+// its recovery lives in the publication surfaces (retry with the same
+// account), and it must not turn Settings into a misleading destination
+// (definition §7.E, §18). The signal never carries any Google identity,
+// token, scope, or error code.
+let connectionRecoveryStore: {
+  readonly uid: string;
+  readonly providers: Set<string>;
+} | null = null;
+
+export function recordConnectionReconnectNeeded(
+  uid: string,
+  providerId: string,
+): void {
+  if (connectionRecoveryStore === null || connectionRecoveryStore.uid !== uid) {
+    connectionRecoveryStore = { uid, providers: new Set() };
+  }
+  connectionRecoveryStore.providers.add(providerId);
+}
+
+export function readConnectionReconnectNeeded(
+  uid: string,
+  providerId: string,
+): boolean {
+  if (connectionRecoveryStore === null || connectionRecoveryStore.uid !== uid) {
+    return false;
+  }
+  return connectionRecoveryStore.providers.has(providerId);
+}
+
+export function clearConnectionReconnectNeeded(
+  uid: string,
+  providerId: string,
+): void {
+  if (connectionRecoveryStore === null || connectionRecoveryStore.uid !== uid) {
+    return;
+  }
+  connectionRecoveryStore.providers.delete(providerId);
+}
+
 // Build the detail-view retry seam for an assignment, or null when there is
 // no recorded publication that did not succeed. The seam runs the same
 // bounded single-consent-then-one-re-issue workflow as the confirm path,
@@ -359,13 +451,23 @@ export function createDetailLmsRetrySeam(input: {
       });
       const nextState: AssignmentLmsPublicationState = result.kind;
       recordLmsPublicationRetryContext(uid, { ...context, state: nextState });
+      // Keep the session-local Settings recovery signal honest: a retry that
+      // still finds the connection unusable arms "action needed" in Settings;
+      // any other terminal outcome (including a now-successful publish) clears
+      // it. Identity mismatch never arms it (definition §7.E, §7.F).
+      if (result.kind === "reconnectRequired") {
+        recordConnectionReconnectNeeded(uid, context.providerId);
+      } else {
+        clearConnectionReconnectNeeded(uid, context.providerId);
+      }
       return nextState;
     },
     ...(onReconnect !== undefined ? { onReconnect } : {}),
   });
 }
 
-// Test-only reset for the session-scoped retry store.
+// Test-only reset for the session-scoped client stores.
 export function _resetLmsPublicationStateForTest(): void {
   retryStore = null;
+  connectionRecoveryStore = null;
 }

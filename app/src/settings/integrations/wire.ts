@@ -145,10 +145,16 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
         throw new Error("lmsConnectionsComplete returned an unexpected shape.");
       }
       const rawOutcome = data.consentOutcome;
-      const consentOutcome: "created" | "widened" | "alreadyAuthorized" | undefined =
+      const consentOutcome:
+        | "created"
+        | "widened"
+        | "alreadyAuthorized"
+        | "recovered"
+        | undefined =
         rawOutcome === "created" ||
         rawOutcome === "widened" ||
-        rawOutcome === "alreadyAuthorized"
+        rawOutcome === "alreadyAuthorized" ||
+        rawOutcome === "recovered"
           ? rawOutcome
           : undefined;
       return {
@@ -439,6 +445,10 @@ export function createIntegrationsDeps(input: {
   readonly teacherUid: string;
   readonly win: Window;
   readonly db?: Firestore;
+  // Sprint 26 Phase 4: session-local reconnect-signal seam, already
+  // uid-bound by the entry point. Absent keeps the pre-Phase-4 binary
+  // Connected/Not-connected rendering.
+  readonly connectionRecovery?: IntegrationsDeps["connectionRecovery"];
 }): IntegrationsDeps {
   // The callback shell is committed at app/lms-callback.html and served
   // by Firebase Hosting from the /app/ path. The redirect URI must
@@ -455,6 +465,9 @@ export function createIntegrationsDeps(input: {
     redirectUri,
     ...(input.db !== undefined
       ? { listClassLinks: createListClassLinks(input.db, input.teacherUid) }
+      : {}),
+    ...(input.connectionRecovery !== undefined
+      ? { connectionRecovery: input.connectionRecovery }
       : {}),
   });
 }

@@ -196,6 +196,55 @@ describe("assignment detail - LMS publication retry (Sprint 25 Phase 3)", () => 
     expect(retryBtn(mount)).not.toBeNull();
   });
 
+  test("identity-mismatch state renders same-account recovery guidance and stays retryable", async () => {
+    // Sprint 26 Phase 4 (definition §7.E). Distinct from a generic permission
+    // failure: the teacher is told to use the same Google account, and the
+    // "Try again" control carries the retry (no OAuth term, no account
+    // identifier, no implication the connection was replaced).
+    const seam: AssignmentLmsRetrySeam = {
+      initialState: "identityMismatch",
+      retry: async () => "succeeded",
+    };
+    const { mount } = renderWithRetry(seam);
+    await settle();
+    expect(statusLine(mount)).toMatch(/same Google account you first connected/);
+    // Not the generic permission line.
+    expect(statusLine(mount)).not.toMatch(/needs your permission/);
+    expect(retryBtn(mount)).not.toBeNull();
+    // No Settings reconnect control for identity mismatch: recovery is retry
+    // with the same account, and Settings is not a required destination.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-lms-reconnect]"),
+    ).toBeNull();
+    // The panel carries no raw code, token, or account identifier.
+    const panel = mount.querySelector<HTMLElement>("[data-testid=assignment-detail-lms]");
+    const text = panel?.textContent ?? "";
+    expect(text).not.toMatch(/lms\./);
+    expect(text).not.toMatch(/token|scope|OAuth/i);
+    expect(text).not.toMatch(/@/);
+  });
+
+  test("a successful retry from identity mismatch updates the line to succeeded", async () => {
+    let calls = 0;
+    const seam: AssignmentLmsRetrySeam = {
+      initialState: "identityMismatch",
+      retry: async () => {
+        calls += 1;
+        return "succeeded";
+      },
+    };
+    const { mount, lifecycle } = renderWithRetry(seam);
+    await settle();
+    retryBtn(mount)!.click();
+    await settle();
+    expect(calls).toBe(1);
+    expect(statusLine(mount)).toMatch(/succeeded/);
+    expect(retryBtn(mount)).toBeNull();
+    // The LyfeLabz lifecycle is never re-run by a publication retry.
+    expect(lifecycle.createDraft).toBe(0);
+    expect(lifecycle.publish).toBe(0);
+  });
+
   test("reconnect state routes to Settings via onReconnect and still offers retry", async () => {
     let reconnectClicks = 0;
     const seam: AssignmentLmsRetrySeam = {

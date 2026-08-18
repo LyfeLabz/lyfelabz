@@ -9,6 +9,7 @@ import {
   log,
   writeAuditEvent,
   type LmsConnectionCreationWrite,
+  type WriteAuditEventInput,
 } from "../shared";
 
 import {
@@ -71,11 +72,17 @@ function coerceOAuthStateError(err: unknown): unknown {
 //     (new connection, consentOutcome "created"), or
 //   - widens the scope set of an existing active connection when the
 //     state binding carries the "publication" intent (PDR-030c, PDR-030d,
-//     consentOutcome "widened" / "alreadyAuthorized").
+//     consentOutcome "widened" / "alreadyAuthorized"), or
+//   - replaces the unusable credential of an existing active connection
+//     when the state binding carries the "reconnect" intent (Sprint 26
+//     certification follow-up, consentOutcome "recovered"), restoring the
+//     base scope set on the same logical connection.
 //
 // Idempotent under the Sprint 2 helper contract: a replayed completion
-// with the same (teacherId, providerId) pair and a non-publication
+// with the same (teacherId, providerId) pair and an "initialConnect"
 // intent returns the existing connection without minting a second token.
+// The "publication" and "reconnect" intents deliberately opt out of that
+// early return because each must act on the existing active connection.
 
 export type LmsConnectionsCompleteRequest = {
   readonly providerId: string;
@@ -88,9 +95,15 @@ export type LmsConnectionsCompleteResponse = {
   readonly connectionId: string;
   readonly providerId: string;
   readonly alreadyConnected: boolean;
-  // Discriminator added by PDR-030d. Absent on the non-publication
-  // idempotent early-return path (alreadyConnected: true, no intent).
-  readonly consentOutcome?: "created" | "widened" | "alreadyAuthorized";
+  // Discriminator added by PDR-030d, extended by the Sprint 26
+  // certification follow-up with "recovered". Absent on the idempotent
+  // duplicate-initial-connect early-return path (alreadyConnected: true, no
+  // intent).
+  readonly consentOutcome?:
+    | "created"
+    | "widened"
+    | "alreadyAuthorized"
+    | "recovered";
 };
 
 function safeLog(fn: () => void): void {
@@ -98,6 +111,24 @@ function safeLog(fn: () => void): void {
     fn();
   } catch {
     // Logging is observability, not lifecycle.
+  }
+}
+
+// Best-effort durable audit write (Sprint 26 Phase 1 observability).
+// Audit evidence is observability, never lifecycle or security: a failed
+// audit write is swallowed exactly like a failed structured-log line.
+// On the identity-mismatch path this guarantees the hard reject still
+// throws even if the audit collection is unavailable; on the successful
+// widening path it guarantees the already-committed widening is never
+// retroactively failed by a diagnostic write. This helper is used ONLY
+// for the two Sprint 26 widening-outcome events; the new-connection
+// `lms.connectionCreated` write remains awaited on its own lifecycle
+// path unchanged.
+async function safeAudit(input: WriteAuditEventInput): Promise<void> {
+  try {
+    await writeAuditEvent(input);
+  } catch {
+    // Audit is observability, not lifecycle.
   }
 }
 
@@ -157,11 +188,21 @@ async function handler(
     existingData.providerId === providerId &&
     existingData.status === "active";
 
-  // Intent-aware idempotent early return. An active connection with a
-  // non-publication intent is already complete; return without consuming
-  // the OAuth state. A publication intent with an active connection falls
-  // through to the scope-widening path below.
-  if (hasActiveConnection && binding?.intent !== "publication") {
+  // Intent-aware idempotent early return. An active connection reached by a
+  // duplicate/replayed initial-connect (intent "initialConnect", or an
+  // absent binding) is already complete; return without consuming the OAuth
+  // state or minting a second token. A "publication" intent falls through to
+  // the scope-widening path, and a "reconnect" intent falls through to the
+  // credential-recovery path, because each must act on the existing active
+  // connection rather than treat it as a no-op (Sprint 26 certification
+  // follow-up: the earlier version early-returned for reconnect too, which
+  // is exactly why the Settings Reconnect action did not replace an unusable
+  // credential on an active connection).
+  if (
+    hasActiveConnection &&
+    binding?.intent !== "publication" &&
+    binding?.intent !== "reconnect"
+  ) {
     safeLog(() =>
       log.info("lms.connectionCompleteIdempotent", {
         actorUserId: actor.uid,
@@ -232,6 +273,24 @@ async function handler(
     if (
       oldBundle.upstreamAccountIdentifier !== grant.upstreamAccountIdentifier
     ) {
+      // Sprint 26 Phase 1: record the widening rejection as durable,
+      // PII-safe audit evidence BEFORE throwing, and BEFORE any
+      // connection or credential mutation. Best-effort by construction
+      // (safeAudit swallows its own failures), so the hard reject below
+      // is never gated on audit persistence. The payload records only
+      // the provider and a low-cardinality reason category; NEITHER the
+      // stored identity (`oldBundle.upstreamAccountIdentifier`) nor the
+      // returned identity (`grant.upstreamAccountIdentifier`) is written.
+      await safeAudit({
+        actorUserId: actor.uid,
+        actorRole: "teacher",
+        action: "lms.connectionWideningRejected",
+        targetType: "lmsConnection",
+        targetId: connectionId,
+        schoolId: actor.schoolId,
+        districtId: actor.districtId,
+        payload: { providerId, reason: "identityMismatch" },
+      });
       throw new PlatformError(
         "lms.identityMismatch",
         "The account used for scope widening does not match the account on the existing connection.",
@@ -301,11 +360,165 @@ async function handler(
       }),
     );
 
+    // Sprint 26 Phase 1: durable, PII-safe audit evidence for a widening
+    // that ACTUALLY completed. Emitted only here, after the connection
+    // document update above has committed, so the event can never
+    // describe a widening that failed or aborted (a store/update failure
+    // throws earlier and never reaches this point; the alreadyAuthorized
+    // path returns before the commit and emits nothing). Best-effort so a
+    // diagnostic failure cannot retroactively fail the committed widening.
+    // The payload carries only the provider id: no widened scope array,
+    // no upstream Google account identifier, no tokens.
+    await safeAudit({
+      actorUserId: actor.uid,
+      actorRole: "teacher",
+      action: "lms.connectionScopesWidened",
+      targetType: "lmsConnection",
+      targetId: connectionId,
+      schoolId: actor.schoolId,
+      districtId: actor.districtId,
+      payload: { providerId },
+    });
+
     return {
       connectionId,
       providerId,
       alreadyConnected: true,
       consentOutcome: "widened",
+    };
+  }
+
+  // Reconnect / credential-recovery path (Sprint 26 certification
+  // follow-up): active connection + "reconnect" intent.
+  //
+  // The teacher explicitly requested recovery for a connection LyfeLabz
+  // observed to be unusable (for example a dead refresh token Google rejects
+  // with invalid_grant, surfaced to the teacher as reconnectRequired). Unlike
+  // the idempotent duplicate-initial-connect early return above, reconnect
+  // MUST exchange the fresh authorization code and replace the unusable
+  // credential on the SAME logical connection. It restores the base (initial)
+  // scope set; publication scope, if needed, is re-widened later through the
+  // normal incremental-consent path (least privilege preserved).
+  //
+  // Credential replacement reuses the same safe shape as the widening path:
+  // the existing connection remains authoritative until the connection
+  // document update commits; the old local token bundle is cleaned up only
+  // afterward; and the upstream Google grant is NEVER revoked here.
+  if (hasActiveConnection && binding.intent === "reconnect" && existingData) {
+    const oldTokenRef = existingData.tokenRef;
+
+    // Resolve the existing token bundle for identity revalidation and
+    // refresh-token carry-forward. `resolve` is a pure read: the stored
+    // refresh token may be dead at Google, but the bundle document itself
+    // still resolves, so the upstream identity remains available to compare.
+    let oldBundle;
+    try {
+      oldBundle = await getLmsTokenStore().resolve(oldTokenRef);
+    } catch {
+      throw new PlatformError(
+        "lms.connectionTokenResolutionFailed",
+        "Could not resolve the existing connection token bundle for reconnect.",
+      );
+    }
+
+    // Identity revalidation: the SAME hard invariant the widening path
+    // enforces (definition §6, §7.B). A reconnect that returns a different
+    // upstream account is hard-rejected before any mutation; the existing
+    // connection and its (unusable) credential are left exactly as they were,
+    // no duplicate connection is created, and the invariant is not weakened.
+    if (
+      oldBundle.upstreamAccountIdentifier !== grant.upstreamAccountIdentifier
+    ) {
+      // PII-safe, best-effort durable evidence of the reconnect rejection,
+      // symmetric with `lms.connectionWideningRejected`. Emitted BEFORE the
+      // throw and BEFORE any mutation; safeAudit swallows its own failures so
+      // the hard reject below is never gated on audit persistence. Neither
+      // the stored nor the returned identity is written.
+      await safeAudit({
+        actorUserId: actor.uid,
+        actorRole: "teacher",
+        action: "lms.connectionRecoveryRejected",
+        targetType: "lmsConnection",
+        targetId: connectionId,
+        schoolId: actor.schoolId,
+        districtId: actor.districtId,
+        payload: { providerId, reason: "identityMismatch" },
+      });
+      throw new PlatformError(
+        "lms.identityMismatch",
+        "The account used for reconnect does not match the account on the existing connection.",
+      );
+    }
+
+    // Restore the base connection: record exactly the scope set Google
+    // returned for this initial-scope authorization (sorted for stability).
+    // Reconnect never requests publication scope, so a connection that had
+    // been widened returns to base scope until publication re-widens it.
+    const restoredScopes = Array.from(new Set([...grant.scopes])).sort();
+
+    // Compose the fresh credential bundle. Google returns a new refresh
+    // token on this full-consent authorization; carry the old one forward
+    // only if it is somehow absent, mirroring the widening path.
+    const newBundle = {
+      providerId,
+      teacherId: actor.uid,
+      accessToken: grant.accessToken,
+      refreshToken: grant.refreshToken ?? oldBundle.refreshToken,
+      scopes: restoredScopes,
+      expiresAtEpochMs:
+        grant.expiresInSeconds !== undefined
+          ? Date.now() + grant.expiresInSeconds * 1000
+          : undefined,
+      upstreamAccountIdentifier: grant.upstreamAccountIdentifier,
+    };
+
+    // Store the new bundle before updating the connection document so the
+    // document update is atomic with a valid new tokenRef. The existing
+    // connection remains authoritative until this write succeeds; a store
+    // or update failure throws and leaves the connection on its old tokenRef.
+    const newTokenRef = await getLmsTokenStore().store(newBundle);
+    await lmsConnectionDocRef(connectionId).update({
+      scopes: restoredScopes,
+      tokenRef: newTokenRef,
+      scopesUpdatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // Best-effort cleanup of the old local token bundle. Hygiene, not
+    // lifecycle. The upstream Google grant is NOT revoked here.
+    try {
+      await getLmsTokenStore().revoke(oldTokenRef);
+    } catch {
+      // Intentional: cleanup failure does not fail the reconnect.
+    }
+
+    safeLog(() =>
+      log.info("lms.connectionRecovered", {
+        actorUserId: actor.uid,
+        connectionId,
+        providerId,
+      }),
+    );
+
+    // Durable, PII-safe evidence for a recovery that ACTUALLY completed,
+    // emitted only after the connection document update above committed.
+    // Best-effort so a diagnostic failure cannot retroactively fail the
+    // committed recovery. Payload carries only the provider id.
+    await safeAudit({
+      actorUserId: actor.uid,
+      actorRole: "teacher",
+      action: "lms.connectionRecovered",
+      targetType: "lmsConnection",
+      targetId: connectionId,
+      schoolId: actor.schoolId,
+      districtId: actor.districtId,
+      payload: { providerId },
+    });
+
+    return {
+      connectionId,
+      providerId,
+      alreadyConnected: true,
+      consentOutcome: "recovered",
     };
   }
 

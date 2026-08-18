@@ -194,6 +194,52 @@ describe("writeAuditEvent", () => {
     expect(mockAdd.mock.calls[0][0].action).toBe("assignments.recipientAdded");
   });
 
+  it("regression (Sprint 26 Phase 1): accepts lms.connectionScopesWidened", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-scopes-widened" });
+    await writeAuditEvent(
+      validInput({ action: "lms.connectionScopesWidened", actorRole: "teacher" }),
+    );
+    expect(mockAdd).toHaveBeenCalledTimes(1);
+    expect(mockAdd.mock.calls[0][0].action).toBe("lms.connectionScopesWidened");
+  });
+
+  it("regression (Sprint 26 Phase 1): accepts lms.connectionWideningRejected", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-widening-rejected" });
+    await writeAuditEvent(
+      validInput({
+        action: "lms.connectionWideningRejected",
+        actorRole: "teacher",
+      }),
+    );
+    expect(mockAdd).toHaveBeenCalledTimes(1);
+    expect(mockAdd.mock.calls[0][0].action).toBe(
+      "lms.connectionWideningRejected",
+    );
+  });
+
+  it("regression (Sprint 26 follow-up): accepts lms.connectionRecovered", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-conn-recovered" });
+    await writeAuditEvent(
+      validInput({ action: "lms.connectionRecovered", actorRole: "teacher" }),
+    );
+    expect(mockAdd).toHaveBeenCalledTimes(1);
+    expect(mockAdd.mock.calls[0][0].action).toBe("lms.connectionRecovered");
+  });
+
+  it("regression (Sprint 26 follow-up): accepts lms.connectionRecoveryRejected", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-conn-recovery-rejected" });
+    await writeAuditEvent(
+      validInput({
+        action: "lms.connectionRecoveryRejected",
+        actorRole: "teacher",
+      }),
+    );
+    expect(mockAdd).toHaveBeenCalledTimes(1);
+    expect(mockAdd.mock.calls[0][0].action).toBe(
+      "lms.connectionRecoveryRejected",
+    );
+  });
+
   // Exhaustive by construction: iterates the canonical AUDIT_ACTIONS tuple
   // that is the single source of truth for both the AuditAction type and
   // the runtime validator. Any new action added to AUDIT_ACTIONS is exercised

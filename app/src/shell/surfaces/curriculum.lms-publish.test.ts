@@ -98,6 +98,10 @@ const makeIntegrations = (opts: {
   topics?: ReadonlyArray<IntegrationsLmsTopic>;
   publish?: (input: PublishInput, call: number) => Promise<IntegrationsPublicationOutcome>;
   openOAuthRejects?: boolean;
+  // Sprint 26 Phase 4: simulate a completion-time identity mismatch (the
+  // teacher chose a different Google account during the chooser). The
+  // backend hard-rejects with `lms.identityMismatch` before any mutation.
+  completeRejectsIdentityMismatch?: boolean;
 }): IntegrationsHarness => {
   const publishCalls: PublishInput[] = [];
   const harness: IntegrationsHarness = {
@@ -124,11 +128,18 @@ const makeIntegrations = (opts: {
       harness.beginCalls += 1;
       return { authorizationUrl: "https://consent/auth", state: "st-1" };
     },
-    completeConnection: async () => ({
-      connectionId: "conn-1",
-      alreadyConnected: false,
-      consentOutcome: "widened" as const,
-    }),
+    completeConnection: async () => {
+      if (opts.completeRejectsIdentityMismatch) {
+        const err = new Error("failed-precondition");
+        (err as { details?: unknown }).details = { code: "lms.identityMismatch" };
+        throw err;
+      }
+      return {
+        connectionId: "conn-1",
+        alreadyConnected: false,
+        consentOutcome: "widened" as const,
+      };
+    },
     disconnect: async () => ({ alreadyRevoked: false }),
     discoverClasses: async () => [],
     importClass: async () => ({ linkId: "l", classId: "c", lmsClassId: "g", alreadyLinked: false }),
@@ -344,6 +355,42 @@ describe("Assign dialog - LMS publication wiring (Sprint 25 Phase 3)", () => {
     expect(banner(mount)).toMatch(/needs your permission/);
     // The LyfeLabz assignment is authoritative regardless.
     expect(banner(mount)).toMatch(/Assigned Earth's Layers/);
+  });
+
+  test("identity mismatch: same-account line, distinct from the permission line, connection intact", async () => {
+    // Sprint 26 Phase 4 (definition §7.E). The teacher authorized with a
+    // different Google account. The publish first returns insufficient scope
+    // (triggering consent); completion hard-rejects the wrong account. The
+    // banner tells the teacher to use the same account they first connected,
+    // not the generic permission line, and never implies the LyfeLabz
+    // assignment was lost or the connection replaced.
+    const asn = okAssignments();
+    const it = makeIntegrations({
+      completeRejectsIdentityMismatch: true,
+      publish: async () => ({
+        publicationId: "p",
+        status: "failed",
+        errorCode: "lms.insufficientScope",
+      }),
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+    document.querySelector<HTMLInputElement>("[data-testid=assign-row-enabled-c2]")!.click();
+    document.querySelector<HTMLInputElement>("[data-testid=assign-row-lms-publish-c1]")!.click();
+    confirm();
+    await settle();
+    expect(it.publishCalls).toHaveLength(1); // no re-issue for a wrong account
+    expect(banner(mount)).toMatch(/same Google account you first connected/);
+    expect(banner(mount)).not.toMatch(/needs your permission/);
+    // The LyfeLabz assignment is authoritative and never described as lost.
+    expect(banner(mount)).toMatch(/Assigned Earth's Layers/);
+    // No raw code, OAuth term, or account identifier in the teacher copy.
+    expect(banner(mount)).not.toMatch(/lms\.|token|scope|OAuth|@/);
   });
 
   test("inactive connection (thrown) routes to the reconnect line", async () => {

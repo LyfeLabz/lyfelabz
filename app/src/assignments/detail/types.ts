@@ -144,6 +144,11 @@ export type AssignmentLmsPublicationState =
   | "succeeded"
   | "failed"
   | "permissionNotGranted"
+  // Sprint 26 Phase 4: the incremental publication authorization completed
+  // with a different Google account than the one on the durable connection.
+  // Distinct from `permissionNotGranted` so the surface renders same-account
+  // recovery guidance (definition §7.E). The existing connection is intact.
+  | "identityMismatch"
   | "reconnectRequired";
 
 // Sprint 25 Phase 3: injected retry seam for a class whose Google Classroom

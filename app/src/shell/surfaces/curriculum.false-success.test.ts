@@ -230,7 +230,13 @@ describe("Assign false-success guard", () => {
     expect(detail.registered).toHaveLength(0);
   });
 
-  test("total-failure lifecycle surfaces a clear negative outcome message", async () => {
+  // Sprint 26 Phase 3 (Defect 2.A). Before Phase 3 this test asserted the
+  // banner said the assignment "was not created" when publish failed. That
+  // statement was false: `assignmentsCreateDraft` succeeded, so a durable
+  // LyfeLabz draft exists. The corrected outcome model reports the
+  // saved-but-not-published state truthfully and never claims nothing was
+  // created. This test intentionally supersedes the old expectation.
+  test("publish failure reports saved-but-not-published, never 'was not created'", async () => {
     const asn = makeAssignments({ failPublish: true });
     const detail = makeDetailSeam();
     const mount = mkMount();
@@ -250,7 +256,95 @@ describe("Assign false-success guard", () => {
     const banner = mount.querySelector<HTMLElement>(
       "[data-testid=assign-success]",
     );
-    expect(banner?.textContent ?? "").toMatch(/was not created/);
+    const text = banner?.textContent ?? "";
+    // Both classes reached the durable draft; publish failed for both.
+    expect(text).toMatch(/was saved for 2 classes/);
+    expect(text).toMatch(/publishing did not complete/i);
+    // The defect that this suite guards against: never say nothing was made.
+    expect(text).not.toMatch(/was not created/);
+    // The drafts survived, so no Assigned badge and no data loss claim.
+    expect(asn.drafts.length).toBe(2);
+    const btn = assignBtn(mount, "earths-layers");
+    expect(btn?.getAttribute("data-assigned")).toBe("false");
+  });
+
+  test("draft-create failure reports the assignment could not be saved", async () => {
+    const asn = makeAssignments({ failCreateDraft: true });
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+
+    clickAssign(mount, "earths-layers");
+    await flush();
+    clickConfirm();
+    await flush();
+    await flush();
+    await flush();
+
+    const banner = mount.querySelector<HTMLElement>(
+      "[data-testid=assign-success]",
+    );
+    const text = banner?.textContent ?? "";
+    // Nothing durable was saved: the message says so and does not imply a
+    // recoverable draft exists.
+    expect(text).toMatch(/could not be saved/i);
+    expect(text).not.toMatch(/was saved/);
+    expect(text).not.toMatch(/was not created/);
+    // No publish and no Google Classroom step is attempted or claimed.
+    expect(asn.publishes).toHaveLength(0);
+    expect(text).not.toMatch(/Google Classroom/);
+  });
+
+  test("mixed outcome: one class publishes, one saves-but-does-not-publish", async () => {
+    // c1 publish fails (saved but not published); c2 publishes.
+    let publishCall = 0;
+    const seam: AssignmentsCallables = {
+      createDraft: async (input) => ({
+        assignmentId: input.assignmentId,
+        status: "draft" as const,
+        alreadyCreated: false,
+      }),
+      publish: async (input) => {
+        publishCall += 1;
+        if (publishCall === 1) throw new Error("first publish failed");
+        return {
+          assignmentId: input.assignmentId,
+          status: "published" as const,
+          alreadyPublished: false,
+        };
+      },
+    };
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: seam,
+      assignmentDetail: detail.seam,
+    });
+
+    clickAssign(mount, "earths-layers");
+    await flush();
+    clickConfirm();
+    await flush();
+    await flush();
+    await flush();
+
+    const banner = mount.querySelector<HTMLElement>(
+      "[data-testid=assign-success]",
+    );
+    const text = banner?.textContent ?? "";
+    // The successful class is not downgraded by the other class's failure.
+    expect(text).toMatch(/Assigned Earth's Layers to 1 of 2 classes/);
+    // The saved-but-not-published class is reported truthfully.
+    expect(text).toMatch(/saved but not published/);
+    expect(text).not.toMatch(/was not created/);
+    // One class published, so the badge is Assigned.
+    const btn = assignBtn(mount, "earths-layers");
+    expect(btn?.textContent).toBe("✓ Assigned");
   });
 
   test("persisted assignment is rediscovered on remount (post-reload hydration)", () => {
@@ -389,5 +483,244 @@ describe("Assign false-success guard", () => {
     const btn = assignBtn(mount, "earths-layers");
     expect(btn?.textContent).toBe("Assign");
     expect(btn?.getAttribute("data-assigned")).toBe("false");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 26 Phase 3 (Defect 2.A) - three-way multi-class outcome truthfulness.
+// ---------------------------------------------------------------------------
+describe("Assign outcome model - three-way multi-class mix", () => {
+  const threeClasses: ReadonlyArray<ClassSummary> = freeze([
+    freeze({ id: "c1", title: "6A", grade: "6", status: "active" }),
+    freeze({ id: "c2", title: "7B", grade: "7", status: "active" }),
+    freeze({ id: "c3", title: "7C", grade: "7", status: "active" }),
+  ] as ClassSummary[]);
+  const listThree: ListClasses = () => Promise.resolve(threeClasses);
+
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+  });
+
+  test("published + saved-not-published + draft-failed are each reported truthfully", async () => {
+    // Deterministic ordering: createDraft is invoked in row order c1, c2,
+    // c3; publish is invoked (for rows that saved a draft) in the same
+    // relative order. So: c1 draft fails, c2 publish fails, c3 succeeds.
+    let draftCall = 0;
+    let publishCall = 0;
+    const seam: AssignmentsCallables = {
+      createDraft: async (input) => {
+        draftCall += 1;
+        if (draftCall === 1) throw new Error("first draft failed");
+        return {
+          assignmentId: input.assignmentId,
+          status: "draft" as const,
+          alreadyCreated: false,
+        };
+      },
+      publish: async (input) => {
+        publishCall += 1;
+        if (publishCall === 1) throw new Error("first publish failed");
+        return {
+          assignmentId: input.assignmentId,
+          status: "published" as const,
+          alreadyPublished: false,
+        };
+      },
+    };
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listThree,
+      assignments: seam,
+      assignmentDetail: detail.seam,
+    });
+
+    clickAssign(mount, "earths-layers");
+    await flush();
+    clickConfirm();
+    await flush();
+    await flush();
+    await flush();
+
+    const banner = mount.querySelector<HTMLElement>(
+      "[data-testid=assign-success]",
+    );
+    const text = banner?.textContent ?? "";
+    // One class published; it is not downgraded by the two failures.
+    expect(text).toMatch(/Assigned Earth's Layers to 1 of 3 classes/);
+    // The saved-but-not-published class is not upgraded and not lost.
+    expect(text).toMatch(/saved but not published/);
+    // The genuinely-unsaved class is reported as unsaved, not recoverable.
+    expect(text).toMatch(/could not be saved/);
+    expect(text).not.toMatch(/was not created/);
+    // A published class exists, so the badge is Assigned.
+    const btn = assignBtn(mount, "earths-layers");
+    expect(btn?.textContent).toBe("✓ Assigned");
+    // Exactly one draft was rejected; two drafts saved; one publish failed.
+    expect(detail.registered).toHaveLength(1); // only the published class
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 26 Phase 3 (Defect 2.B) - hydration/reload lesson-card semantics.
+//
+// A hydrated `draft` must not light the "Assigned" badge; a hydrated
+// `published` or `closed` assignment must. Draft entries remain available to
+// the legitimate View drafts control.
+// ---------------------------------------------------------------------------
+describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+  });
+
+  const viewControl = (
+    mount: HTMLElement,
+    slug: string,
+  ): HTMLButtonElement | null =>
+    mount.querySelector<HTMLButtonElement>(
+      `[data-testid=lesson-view-summary-${slug}]`,
+    );
+
+  test("hydrated draft leaves the card unassigned but exposes View drafts", () => {
+    const hydrated: AssignmentDetailMetadata[] = [
+      {
+        assignmentId: "asn-draft-1",
+        title: "Earth's Layers",
+        className: "6A · Grade 6",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ];
+    const detail = makeDetailSeam(hydrated);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+
+    const btn = assignBtn(mount, "earths-layers");
+    expect(btn?.textContent).toBe("Assign");
+    expect(btn?.getAttribute("data-assigned")).toBe("false");
+    // The draft is not lost: the legitimate draft control still appears.
+    const view = viewControl(mount, "earths-layers");
+    expect(view?.textContent).toBe("View drafts");
+    expect(view?.getAttribute("data-draft-only")).toBe("true");
+  });
+
+  test("hydrated published lights the Assigned badge", () => {
+    const hydrated: AssignmentDetailMetadata[] = [
+      {
+        assignmentId: "asn-pub-1",
+        title: "Earth's Layers",
+        className: "6A · Grade 6",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ];
+    const detail = makeDetailSeam(hydrated);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+
+    const btn = assignBtn(mount, "earths-layers");
+    expect(btn?.textContent).toBe("✓ Assigned");
+    expect(btn?.getAttribute("data-assigned")).toBe("true");
+  });
+
+  test("hydrated closed also lights the Assigned badge", () => {
+    const hydrated: AssignmentDetailMetadata[] = [
+      {
+        assignmentId: "asn-closed-1",
+        title: "Earth's Layers",
+        className: "6A · Grade 6",
+        status: "closed",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ];
+    const detail = makeDetailSeam(hydrated);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+
+    const btn = assignBtn(mount, "earths-layers");
+    expect(btn?.textContent).toBe("✓ Assigned");
+    expect(btn?.getAttribute("data-assigned")).toBe("true");
+  });
+
+  test("draft co-registered with a published assignment still lights Assigned (order-independent)", () => {
+    // Draft listed first, published second: the published entry must win.
+    const hydrated: AssignmentDetailMetadata[] = [
+      {
+        assignmentId: "asn-draft-2",
+        title: "Earth's Layers",
+        className: "7B",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c2",
+      },
+      {
+        assignmentId: "asn-pub-2",
+        title: "Earth's Layers",
+        className: "6A",
+        status: "published",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+    ];
+    const detail = makeDetailSeam(hydrated);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+
+    const btn = assignBtn(mount, "earths-layers");
+    expect(btn?.textContent).toBe("✓ Assigned");
+    expect(btn?.getAttribute("data-assigned")).toBe("true");
+  });
+
+  test("a draft-only lesson and a published lesson hydrate to independent card states", () => {
+    const hydrated: AssignmentDetailMetadata[] = [
+      {
+        assignmentId: "asn-draft-3",
+        title: "Earth's Layers",
+        className: "6A",
+        status: "draft",
+        lessonSlug: "earths-layers",
+        classId: "c1",
+      },
+      {
+        assignmentId: "asn-pub-3",
+        title: "What Is Life?",
+        className: "7B",
+        status: "published",
+        lessonSlug: "what-is-life",
+        classId: "c2",
+      },
+    ];
+    const detail = makeDetailSeam(hydrated);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: detail.seam,
+    });
+
+    const draftCard = assignBtn(mount, "earths-layers");
+    expect(draftCard?.getAttribute("data-assigned")).toBe("false");
+    const publishedCard = assignBtn(mount, "what-is-life");
+    expect(publishedCard?.getAttribute("data-assigned")).toBe("true");
   });
 });

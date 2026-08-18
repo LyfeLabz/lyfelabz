@@ -55,6 +55,8 @@ import { hydrateAssignmentDetailRegistry } from "./assignments/detail/hydrate";
 import {
   createDetailLmsRetrySeam,
   clearLmsPublicationRetryContexts,
+  clearConnectionReconnectNeeded,
+  readConnectionReconnectNeeded,
 } from "./shell/surfaces/shared/lmsPublication";
 import { createAssignmentsTeacherListCallable } from "./assignments/detail/hydrate-wire";
 import { createAssignmentsCloseCallable } from "./assignments/detail/close-wire";
@@ -393,6 +395,15 @@ async function run(): Promise<void> {
         teacherUid: session.uid,
         win: window,
         db,
+        // Sprint 26 Phase 4: bind the session-local reconnect signal to this
+        // teacher so Settings renders "action needed" only for a condition
+        // LyfeLabz actually observed this session (definition §7.F).
+        connectionRecovery: {
+          needsReconnect: (providerId) =>
+            readConnectionReconnectNeeded(session.uid, providerId),
+          clear: (providerId) =>
+            clearConnectionReconnectNeeded(session.uid, providerId),
+        },
       });
       assignments = createAssignmentsCallables(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);

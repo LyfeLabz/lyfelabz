@@ -103,6 +103,12 @@ export type IntegrationsCallables = {
     // incremental consent for the coursework scope set (PDR-030c).
     // Absent values use the initial scope set.
     readonly capability?: "publication";
+    // Sprint 26 certification follow-up. When true, this begin carries the
+    // explicit "reconnect" intent so completion replaces the unusable
+    // credential on the existing active connection instead of taking the
+    // idempotent duplicate-connect early return. Base scope set, never
+    // combined with `capability: "publication"`.
+    readonly reconnect?: boolean;
   }) => Promise<{ readonly authorizationUrl: string; readonly state: string }>;
   readonly completeConnection: (input: {
     readonly providerId: string;
@@ -112,9 +118,14 @@ export type IntegrationsCallables = {
   }) => Promise<{
     readonly connectionId: string;
     readonly alreadyConnected: boolean;
-    // Provider-neutral consent outcome discriminator (PDR-030d). Absent
-    // on the non-publication idempotent path.
-    readonly consentOutcome?: "created" | "widened" | "alreadyAuthorized";
+    // Provider-neutral consent outcome discriminator (PDR-030d), extended
+    // by the Sprint 26 certification follow-up with "recovered". Absent on
+    // the idempotent duplicate-initial-connect path.
+    readonly consentOutcome?:
+      | "created"
+      | "widened"
+      | "alreadyAuthorized"
+      | "recovered";
   }>;
   readonly disconnect: (input: {
     readonly connectionId: string;
@@ -235,6 +246,22 @@ export type ListTeacherClasses = () => Promise<
 // the rule to admit it.
 export type ListClassLinks = () => Promise<readonly IntegrationsClassLink[]>;
 
+// Sprint 26 Phase 4 (definition §7.F). Session-local connection-recovery
+// signal, uid-bound at the entry point. LyfeLabz has no durable "needs
+// reauthorization" connection field; this seam exposes only what LyfeLabz
+// has actually observed this session - a publication that returned a
+// connection-not-usable outcome - so the Settings surface can render an
+// "action needed" state with a real reconnect action instead of a
+// dead-end. It carries no Google identity, token, scope, or error code.
+// Absent keeps the pre-Phase-4 binary Connected/Not-connected rendering.
+export type IntegrationsConnectionRecovery = {
+  // True when LyfeLabz has observed, this session, that the provider's
+  // durable connection needs the teacher to reconnect.
+  readonly needsReconnect: (providerId: string) => boolean;
+  // Clear the signal for a provider after a successful reconnect.
+  readonly clear: (providerId: string) => void;
+};
+
 export type IntegrationsDeps = {
   readonly callables: IntegrationsCallables;
   readonly openOAuth: OAuthHandoff;
@@ -244,4 +271,6 @@ export type IntegrationsDeps = {
   // for the Assignment Dialog. Absent-or-null keeps every non-LMS row
   // shape unchanged per ASSIGN_EXPERIENCE.md §5.
   readonly listClassLinks?: ListClassLinks;
+  // Sprint 26 Phase 4: session-local reconnect signal reader/clearer.
+  readonly connectionRecovery?: IntegrationsConnectionRecovery;
 };

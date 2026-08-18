@@ -156,10 +156,24 @@ export interface LmsProviderAdapter {
   // §10.3.8 of the operational readiness section. When `intent` is
   // "publication", the adapter additionally requests the publication
   // capability scope set via incremental consent (PDR-030c).
+  // `accountHint` (Sprint 26 Phase 1 contract) is an optional,
+  // provider-neutral account-continuity hint: the opaque identity of the
+  // account the durable connection already owns, which the adapter may
+  // translate into the provider's supported account-preference mechanism
+  // (for Google Classroom, `login_hint`). It is a UX steering signal
+  // only, never an identity-security boundary: completion-time identity
+  // validation remains the boundary and is never weakened, skipped, or
+  // replaced by this hint. The provider-neutral core deliberately does
+  // not name any Google concept here (PDR-019h). Phase 1 adds the
+  // contract but does NOT populate it (the begin callable does not yet
+  // supply it and no connection lookup is performed), so the resulting
+  // authorization request is unchanged; Phase 2 supplies the durable
+  // connection identity.
   beginOAuth(input: {
     readonly teacherId: string;
     readonly redirectUri: string;
     readonly intent?: LmsOAuthStateIntent;
+    readonly accountHint?: string;
   }): Promise<LmsOAuthAuthorizationRequest>;
 
   // Complete the OAuth grant against the upstream provider. The adapter
