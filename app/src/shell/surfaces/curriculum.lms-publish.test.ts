@@ -80,7 +80,6 @@ const okAssignments = (): {
 type PublishInput = {
   assignmentId: string;
   linkId: string;
-  lyfelabzAssignmentUrl: string;
   title?: string;
   lmsTopicId?: string;
   attemptNonce?: string;

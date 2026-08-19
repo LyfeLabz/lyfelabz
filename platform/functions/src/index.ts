@@ -16,6 +16,7 @@ export {
   assignmentsPublish,
   assignmentsReopen,
   assignmentsRecipientAdd,
+  assignmentsRecipientCandidatesList,
   assignmentsRecipientList,
   assignmentsTeacherList,
   assignmentsUpdateDraft,
@@ -39,6 +40,7 @@ export {
 } from "./enrollments";
 export {
   lmsAssignmentsPublish,
+  lmsDeepLinkResolve,
   lmsClassesDiscover,
   lmsClassesImport,
   lmsClassesRefresh,
@@ -51,7 +53,10 @@ export {
   lmsProvidersList,
 } from "./lms";
 export { schoolsCreate } from "./schools";
-export { studentsCompleteOnboarding } from "./students";
+export {
+  studentsCompleteLmsOnboarding,
+  studentsCompleteOnboarding,
+} from "./students";
 export { submissionsCreate, submissionsFinalize } from "./submissions";
 export {
   teacherPreferencesUpdate,

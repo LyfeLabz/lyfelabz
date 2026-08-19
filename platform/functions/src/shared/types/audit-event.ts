@@ -58,6 +58,18 @@ export const AUDIT_ACTIONS = [
   "lms.ownershipDrift",
   "lms.assignmentPublished",
   "lms.publishFailed",
+  // Sprint 27 Phase 4 - Google Classroom assignment-aware deep link
+  // (PDR-027 §23). Emitted by the read-only `lmsDeepLinkResolve` resolver
+  // once per successful resolution of a `/app/a/{assignmentId}` arrival into
+  // an authorized (or informational) LyfeLabz assignment context. The audit
+  // target is the `assignment`; the payload carries only the resolved
+  // `attemptContext` and `internalTarget` routing hint. It NEVER carries a
+  // classmate identifier, a Classroom coursework identifier, a Google
+  // account identifier, a session or attempt id, a score, or any student PII
+  // beyond the actor identifiers the audit policy already permits. It is the
+  // ONLY document the resolver writes; the resolver is otherwise read-only
+  // against LyfeLabz state (PDR-027 §10.3, §17).
+  "lms.deepLinkResolved",
   // Sprint 23C - Google Classroom roster synchronization. Emitted once
   // per completed reconciliation of one linked upstream class against
   // one LyfeLabz class's enrollments. The audit target is the LyfeLabz

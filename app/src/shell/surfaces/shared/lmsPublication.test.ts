@@ -440,7 +440,6 @@ describe("session-scoped retry store and detail seam", () => {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
-      lyfelabzAssignmentUrl: "https://app/x",
       title: "T",
       state: "failed",
     });
@@ -458,7 +457,6 @@ describe("session-scoped retry store and detail seam", () => {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
-      lyfelabzAssignmentUrl: "https://app/x",
       title: "T",
       state: "succeeded",
     });
@@ -491,7 +489,6 @@ describe("session-scoped retry store and detail seam", () => {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
-      lyfelabzAssignmentUrl: "https://app/x",
       title: "Earth's Layers",
       state: "failed",
     });
@@ -532,7 +529,6 @@ describe("session-scoped retry store and detail seam", () => {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
-      lyfelabzAssignmentUrl: "https://app/x",
       title: "T",
       state: "failed",
     });
@@ -587,7 +583,6 @@ describe("session-scoped connection-recovery signal", () => {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
-      lyfelabzAssignmentUrl: "https://app/x",
       title: "T",
       state: "failed",
     });
@@ -612,7 +607,6 @@ describe("session-scoped connection-recovery signal", () => {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
-      lyfelabzAssignmentUrl: "https://app/x",
       title: "T",
       state: "reconnectRequired",
     });
@@ -640,7 +634,6 @@ describe("session-scoped connection-recovery signal", () => {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
-      lyfelabzAssignmentUrl: "https://app/x",
       title: "T",
       state: "failed",
     });

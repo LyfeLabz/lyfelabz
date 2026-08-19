@@ -139,7 +139,6 @@ function makeRequest(
     data: {
       assignmentId: FIXTURE_ASSIGNMENT_ID,
       linkId: FIXTURE_LINK_ID,
-      lyfelabzAssignmentUrl: FIXTURE_LYFELABZ_URL,
       title: "Fictional Assignment Title",
       ...overrides,
     },
@@ -309,6 +308,41 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
         const record = mockPublicationCreationSet.mock.calls[0][0];
         expect(JSON.stringify(record)).not.toContain(FIXTURE_ACCESS_TOKEN);
       }
+    });
+  });
+
+  describe("Sprint 27 Phase 4: server-authoritative deep-link URL", () => {
+    function adapterInput() {
+      const adapter = mockGetProviderAdapter.mock.results[0].value as {
+        publishAssignment: jest.Mock;
+      };
+      return adapter.publishAssignment.mock.calls[0][0] as {
+        lyfelabzAssignmentUrl: string;
+      };
+    }
+
+    it("constructs the coursework link server-side from the assignmentId", async () => {
+      setupHappyPath();
+      await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(adapterInput().lyfelabzAssignmentUrl).toBe(
+        `https://app.lyfelabz.com/app/a/${FIXTURE_ASSIGNMENT_ID}`,
+      );
+    });
+
+    it("ignores an arbitrary client-supplied lyfelabzAssignmentUrl", async () => {
+      setupHappyPath();
+      // A hostile or buggy client tries to point the Classroom coursework at
+      // an arbitrary external URL. The server ignores it entirely and emits
+      // the canonical server-built deep link instead.
+      await __lmsAssignmentsPublishHandler(
+        makeRequest({ lyfelabzAssignmentUrl: FIXTURE_LYFELABZ_URL }),
+      );
+      const sent = adapterInput().lyfelabzAssignmentUrl;
+      expect(sent).toBe(
+        `https://app.lyfelabz.com/app/a/${FIXTURE_ASSIGNMENT_ID}`,
+      );
+      expect(sent).not.toBe(FIXTURE_LYFELABZ_URL);
+      expect(sent).not.toContain("app.lyfelabz.invalid");
     });
   });
 

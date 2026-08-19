@@ -1,4 +1,5 @@
 const mockSetCustomUserClaims = jest.fn();
+const mockGetUser = jest.fn();
 const mockGetApps = jest.fn(() => [{}]);
 const mockInitializeApp = jest.fn();
 
@@ -8,11 +9,14 @@ jest.mock("firebase-admin/app", () => ({
 }));
 
 jest.mock("firebase-admin/auth", () => ({
-  getAuth: () => ({ setCustomUserClaims: mockSetCustomUserClaims }),
+  getAuth: () => ({
+    setCustomUserClaims: mockSetCustomUserClaims,
+    getUser: mockGetUser,
+  }),
 }));
 
 import { PlatformError } from "../errors/platform-error";
-import { writeCustomClaims } from "./claims";
+import { readCustomClaims, writeCustomClaims } from "./claims";
 
 function validInput(overrides: Partial<Parameters<typeof writeCustomClaims>[0]> = {}) {
   return {
@@ -28,6 +32,7 @@ function validInput(overrides: Partial<Parameters<typeof writeCustomClaims>[0]> 
 describe("writeCustomClaims", () => {
   beforeEach(() => {
     mockSetCustomUserClaims.mockReset();
+    mockGetUser.mockReset();
     mockGetApps.mockClear();
     mockInitializeApp.mockClear();
   });
@@ -200,5 +205,63 @@ describe("writeCustomClaims", () => {
       schoolId: "school-2",
       districtId: "district-2",
     });
+  });
+});
+
+describe("readCustomClaims", () => {
+  beforeEach(() => {
+    mockGetUser.mockReset();
+    mockSetCustomUserClaims.mockReset();
+    mockGetApps.mockClear();
+    mockInitializeApp.mockClear();
+  });
+
+  it("returns the normalized canonical view for a healthy claim set", async () => {
+    mockGetUser.mockResolvedValueOnce({
+      customClaims: {
+        role: "student",
+        schoolId: "school-123",
+        districtId: "district-abc",
+      },
+    });
+
+    await expect(readCustomClaims("uid-abc")).resolves.toEqual({
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+    expect(mockGetUser).toHaveBeenCalledWith("uid-abc");
+  });
+
+  it("returns an empty view when the user has no custom claims", async () => {
+    mockGetUser.mockResolvedValueOnce({ customClaims: undefined });
+    await expect(readCustomClaims("uid-abc")).resolves.toEqual({});
+  });
+
+  it("drops malformed or empty fields (invalid role, empty strings) from the view", async () => {
+    mockGetUser.mockResolvedValueOnce({
+      customClaims: {
+        role: "parent",
+        schoolId: "   ",
+        districtId: "district-abc",
+      },
+    });
+
+    await expect(readCustomClaims("uid-abc")).resolves.toEqual({
+      districtId: "district-abc",
+    });
+  });
+
+  it("resolves to an empty view when the lookup throws (fail toward repair)", async () => {
+    mockGetUser.mockRejectedValueOnce(new Error("auth unavailable"));
+    await expect(readCustomClaims("uid-abc")).resolves.toEqual({});
+  });
+
+  it("rejects an empty uid with claims.invalidUid and does not call getUser", async () => {
+    await expect(readCustomClaims("   ")).rejects.toMatchObject({
+      name: "PlatformError",
+      code: "claims.invalidUid",
+    });
+    expect(mockGetUser).not.toHaveBeenCalled();
   });
 });

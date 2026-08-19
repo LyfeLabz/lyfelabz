@@ -13,6 +13,7 @@ if (isFunctionsRuntime()) {
 }
 
 export { lmsAssignmentsPublish } from "./assignments-publish";
+export { lmsDeepLinkResolve } from "./deep-link-resolve";
 export { lmsClassesDiscover } from "./classes-discover";
 export { lmsClassesImport } from "./classes-import";
 export { lmsClassesRefresh } from "./classes-refresh";

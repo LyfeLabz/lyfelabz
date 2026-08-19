@@ -16,6 +16,10 @@ import type {
 } from "./types";
 import type { AssignmentRecipientListCallable } from "./roster-wire";
 import type {
+  AssignmentRecipientCandidatesListCallable,
+  AssignmentsRecipientAddCallable,
+} from "./late-recipient-wire";
+import type {
   AttemptGetForTeacherCallable,
   AttemptsListForClassCallable,
   CompletedAttemptSummary,
@@ -113,6 +117,21 @@ export type AssignmentDetailDeps = {
   // and Not started beneath the Assignment Summary card.
   readonly recipientListCallable?: AssignmentRecipientListCallable;
   readonly attemptsListForClassCallable?: AttemptsListForClassCallable;
+  // Sprint 27 Phase 5: late-recipient affordance seams. When both are
+  // supplied and the assignment is `published`, a narrow "Students not yet
+  // assigned" section renders beneath the roster. It lists the active
+  // enrolled students in the frozen class who are not yet recipients
+  // (`recipientCandidatesListCallable`) and lets the teacher explicitly add
+  // one through the certified append-only `manualAddition` path
+  // (`recipientAddCallable`, PDR-029h). Both boundaries are server-mediated:
+  // the client asserts nothing about enrollment, never constructs recipient
+  // provenance, and never mutates the frozen population directly. When either
+  // seam is absent the section is not rendered, so the pre-Sprint-27 detail
+  // surface is unchanged. Frozen-recipient semantics are preserved: no
+  // automatic or bulk addition occurs; a student joins the population only
+  // through this explicit, one-at-a-time teacher gesture.
+  readonly recipientCandidatesListCallable?: AssignmentRecipientCandidatesListCallable;
+  readonly recipientAddCallable?: AssignmentsRecipientAddCallable;
   // Sprint 15 Slice 6: per-attempt detail seam. When supplied and the
   // completed-attempt count meets the minimum threshold, the surface
   // fetches each representative attempt and renders the per-question
@@ -300,6 +319,19 @@ export function renderAssignmentDetail(
           detailCache.get(`attemptGet:${input.attemptId}`, () =>
             deps.attemptGetForTeacherCallable!(input),
           );
+  // Sprint 27 Phase 5: route the late-recipient candidate enumeration through
+  // the same per-render fetch cache. `refreshDetailCache()` on a successful
+  // add drops this entry so the section (and the roster above it) re-fetch
+  // exactly once and reflect the newly added recipient.
+  const sharedCandidatesListCallable:
+    | AssignmentRecipientCandidatesListCallable
+    | undefined =
+    deps.recipientCandidatesListCallable === undefined
+      ? undefined
+      : (input) =>
+          detailCache.get(`candidates:${input.assignmentId}`, () =>
+            deps.recipientCandidatesListCallable!(input),
+          );
 
   const rerender = (): void => {
     body.textContent = "";
@@ -333,6 +365,7 @@ export function renderAssignmentDetail(
             attemptsListForClassCallable: sharedAttemptsListCallable,
             recipientListCallable: sharedRecipientListCallable,
             attemptGetForTeacherCallable: sharedAttemptGetCallable,
+            recipientCandidatesListCallable: sharedCandidatesListCallable,
           },
           closeUi,
           reopenUi,
@@ -370,6 +403,18 @@ export function renderAssignmentDetail(
             },
             onPublishRequest: () => {
               openPublishConfirmation(s.metadata);
+            },
+            onRecipientAdded: () => {
+              // Sprint 27 Phase 5: a successful late-recipient add extends the
+              // frozen population by one immutable record. Drop the shared
+              // fetch cache and rerender so the roster above and the
+              // candidate section below both re-fetch exactly once and reflect
+              // the newly assigned student. This reuses the same
+              // cache-refresh + rerender seam the lifecycle actions use; no
+              // student client state is manipulated and no broad reload runs.
+              if (state.kind !== "ready") return;
+              refreshDetailCache();
+              rerender();
             },
           },
         );
@@ -737,6 +782,9 @@ type SharedDetailCallables = {
   readonly attemptsListForClassCallable: AttemptsListForClassCallable | undefined;
   readonly recipientListCallable: AssignmentRecipientListCallable | undefined;
   readonly attemptGetForTeacherCallable: AttemptGetForTeacherCallable | undefined;
+  readonly recipientCandidatesListCallable:
+    | AssignmentRecipientCandidatesListCallable
+    | undefined;
 };
 
 function renderReady(
@@ -766,6 +814,7 @@ function renderReady(
     readonly onEditSave: () => void;
     readonly onEditCancel: () => void;
     readonly onPublishRequest: () => void;
+    readonly onRecipientAdded: () => void;
   },
 ): void {
   const header = doc.createElement("div");
@@ -1048,6 +1097,33 @@ function renderReady(
     );
   }
 
+  // Sprint 27 Phase 5: the late-recipient affordance renders beneath the
+  // roster for a published assignment only, and only when both the candidate
+  // enumeration and the recipient-add seams are wired. A closed or draft
+  // assignment cannot gain recipients (PDR-029j), so the section is omitted
+  // there. When the seams are absent the section is not rendered, so the
+  // pre-Sprint-27 detail surface is unchanged.
+  if (
+    metadata.status === "published" &&
+    shared.recipientCandidatesListCallable !== undefined &&
+    deps.recipientAddCallable !== undefined
+  ) {
+    const candidatesHost = doc.createElement("section");
+    candidatesHost.className = "shell-assignment-detail-late-recipients";
+    candidatesHost.setAttribute(
+      "data-testid",
+      "assignment-detail-late-recipients-host",
+    );
+    mount.appendChild(candidatesHost);
+    void renderLateRecipientPanel(
+      candidatesHost,
+      metadata,
+      shared.recipientCandidatesListCallable,
+      deps.recipientAddCallable,
+      handlers.onRecipientAdded,
+    );
+  }
+
   // Sprint 15 Slice 6: per-question factual summary beneath the roster.
   // The threshold check happens after the completed-attempt count is
   // known so no per-attempt fetches are issued below the threshold.
@@ -1217,6 +1293,186 @@ async function renderRosterPanel(
     note.textContent = DISCREPANCY_NOTE_COPY;
     host.appendChild(note);
   }
+}
+
+// Sprint 27 Phase 5: the teacher-facing late-recipient section. Lists the
+// active enrolled students in the frozen class who are not yet recipients of
+// this published assignment and lets the teacher explicitly add one through
+// the certified `assignmentsRecipientAdd` (`manualAddition`) path.
+//
+// The section preserves frozen-recipient semantics: it never adds a student
+// automatically, never adds in bulk, and never mutates the population from
+// the client. Each add is a single, deliberate teacher gesture. On success
+// `onAdded` refreshes the surface so the roster above and this list below
+// both reflect the newly assigned student; the added student then disappears
+// from the candidate list because the server no longer returns them.
+//
+// A double click or a retry is guarded on the client (the section locks
+// while any add is in flight) and is idempotent server-side (`added: false`
+// on a repeat), so no duplicate recipient record can be created.
+async function renderLateRecipientPanel(
+  host: HTMLElement,
+  metadata: AssignmentDetailMetadata,
+  candidatesCallable: AssignmentRecipientCandidatesListCallable,
+  addCallable: AssignmentsRecipientAddCallable,
+  onAdded: () => void,
+): Promise<void> {
+  const doc = host.ownerDocument;
+  host.textContent = "";
+
+  const headingId = "assignment-detail-late-recipients-heading";
+  host.setAttribute("aria-labelledby", headingId);
+  const heading = doc.createElement("h3");
+  heading.id = headingId;
+  heading.className = "shell-assignment-detail-late-recipients-heading";
+  heading.setAttribute(
+    "data-testid",
+    "assignment-detail-late-recipients-heading",
+  );
+  heading.textContent = "Students not yet assigned";
+  host.appendChild(heading);
+
+  const loading = doc.createElement("p");
+  loading.className = "shell-assignment-detail-late-recipients-loading";
+  loading.setAttribute(
+    "data-testid",
+    "assignment-detail-late-recipients-loading",
+  );
+  loading.setAttribute("role", "status");
+  loading.setAttribute("aria-live", "polite");
+  loading.textContent = "Loading students...";
+  host.appendChild(loading);
+
+  let candidates: ReadonlyArray<{
+    readonly studentId: string;
+    readonly studentDisplayName: string;
+  }>;
+  try {
+    const res = await candidatesCallable({
+      assignmentId: metadata.assignmentId,
+    });
+    candidates = res.candidates;
+  } catch {
+    loading.remove();
+    const err = doc.createElement("p");
+    err.className = "shell-assignment-detail-late-recipients-error";
+    err.setAttribute(
+      "data-testid",
+      "assignment-detail-late-recipients-error",
+    );
+    err.setAttribute("role", "alert");
+    err.textContent = "The list of students is temporarily unavailable.";
+    host.appendChild(err);
+    return;
+  }
+
+  loading.remove();
+
+  if (candidates.length === 0) {
+    const empty = doc.createElement("p");
+    empty.className = "shell-assignment-detail-late-recipients-empty";
+    empty.setAttribute(
+      "data-testid",
+      "assignment-detail-late-recipients-empty",
+    );
+    empty.setAttribute("role", "status");
+    empty.setAttribute("aria-live", "polite");
+    empty.textContent = "Every enrolled student is already assigned.";
+    host.appendChild(empty);
+    return;
+  }
+
+  // A single calm inline error line, reused across add attempts. It never
+  // reveals a Firestore path, a callable name, a student identifier, or any
+  // internal error code.
+  const actionError = doc.createElement("p");
+  actionError.className = "shell-assignment-detail-late-recipients-action-error";
+  actionError.setAttribute(
+    "data-testid",
+    "assignment-detail-late-recipients-action-error",
+  );
+  actionError.setAttribute("role", "alert");
+  actionError.hidden = true;
+
+  // Section-level in-flight lock. Once any add is in flight every Add control
+  // is disabled so a second concurrent add cannot start before the surface
+  // rerenders. This is the client half of the double-add guard; the server
+  // half is the idempotent `assignmentsRecipientAdd`.
+  let submitting = false;
+  const addButtons: HTMLButtonElement[] = [];
+
+  const list = doc.createElement("ul");
+  list.className = "shell-assignment-detail-late-recipients-list";
+  list.setAttribute(
+    "data-testid",
+    "assignment-detail-late-recipients-list",
+  );
+
+  for (const candidate of candidates) {
+    const row = doc.createElement("li");
+    row.className = "shell-assignment-detail-late-recipients-row";
+    row.setAttribute(
+      "data-testid",
+      "assignment-detail-late-recipients-row",
+    );
+    row.setAttribute("data-student-id", candidate.studentId);
+
+    const name = doc.createElement("span");
+    name.className = "shell-assignment-detail-late-recipients-name";
+    name.setAttribute(
+      "data-testid",
+      "assignment-detail-late-recipients-name",
+    );
+    name.textContent = candidate.studentDisplayName;
+    row.appendChild(name);
+
+    const add = doc.createElement("button");
+    add.type = "button";
+    add.className = "shell-assignment-detail-late-recipients-add";
+    add.setAttribute(
+      "data-testid",
+      "assignment-detail-late-recipients-add",
+    );
+    add.setAttribute(
+      "aria-label",
+      `Add ${candidate.studentDisplayName} to this assignment`,
+    );
+    add.textContent = "Add to assignment";
+    add.addEventListener("click", () => {
+      if (submitting) return;
+      submitting = true;
+      actionError.hidden = true;
+      for (const b of addButtons) b.disabled = true;
+      add.textContent = "Adding...";
+      void (async () => {
+        try {
+          await addCallable({
+            assignmentId: metadata.assignmentId,
+            studentId: candidate.studentId,
+          });
+          // Success (including the idempotent `added: false` replay): refresh
+          // the surface so the roster and candidate list both reflect the new
+          // recipient. The rerender tears this panel down, so no local DOM
+          // cleanup is required on the success path.
+          onAdded();
+        } catch {
+          submitting = false;
+          for (const b of addButtons) b.disabled = false;
+          add.textContent = "Add to assignment";
+          actionError.hidden = false;
+          actionError.textContent =
+            "We could not add this student. Try again in a moment.";
+        }
+      })();
+    });
+    addButtons.push(add);
+    row.appendChild(add);
+
+    list.appendChild(row);
+  }
+
+  host.appendChild(list);
+  host.appendChild(actionError);
 }
 
 function appendRosterGroup(

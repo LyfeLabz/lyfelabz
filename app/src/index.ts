@@ -48,6 +48,12 @@ import { createAssignmentSummaryCallable } from "./assignments/summary/wire";
 import type { AssignmentSummaryCallable } from "./assignments/summary/types";
 import { createAssignmentsListForStudentCallable } from "./assignments/studentList/wire";
 import type { AssignmentsListForStudentCallable } from "./assignments/studentList/types";
+import { createAttemptsListForStudentCallable } from "./assignments/studentResults/wire";
+import type { StudentResultsListCallable } from "./assignments/studentResults/types";
+import { createDeepLinkResolveCallable } from "./assignments/deepLink/wire";
+import type { DeepLinkResolveCallable } from "./assignments/deepLink/types";
+import { parseDeepLinkAssignmentId } from "./assignments/deepLink/route";
+import { renderDeepLinkArrival } from "./assignments/deepLink/arrival";
 import { createAssignmentDetailRegistry } from "./assignments/detail/registry";
 import { createAssignmentDetailMetadataReader } from "./assignments/detail/wire";
 import { renderAssignmentDetail } from "./assignments/detail/detail";
@@ -67,6 +73,12 @@ import {
   createAssignmentRecipientListCallable,
   type AssignmentRecipientListCallable,
 } from "./assignments/detail/roster-wire";
+import {
+  createAssignmentRecipientCandidatesListCallable,
+  createAssignmentsRecipientAddCallable,
+  type AssignmentRecipientCandidatesListCallable,
+  type AssignmentsRecipientAddCallable,
+} from "./assignments/detail/late-recipient-wire";
 // Sprint 25 certification (B2) fix: drop the Curriculum surface's
 // module-scoped teacher class cache on every bootstrap transition so a
 // same-uid sign-out/sign-in (auth-session replacement) cannot let the
@@ -122,6 +134,27 @@ async function run(): Promise<void> {
   // any non-student session so the teacher shell never inherits a
   // student-scoped callable.
   let studentAssignmentsList: AssignmentsListForStudentCallable | null = null;
+  // Sprint 27 Phase 2 (Decision 1): caller-scoped `assessmentAttemptsList`
+  // seam consumed by the activeStudent My Results surface. Rebound per
+  // active-student session so cross-session state cannot leak; null on any
+  // non-student session so no other surface inherits a student-scoped read.
+  let studentResultsList: StudentResultsListCallable | null = null;
+  // Sprint 27 Phase 4 (Decision 4): caller-scoped `lmsDeepLinkResolve` seam
+  // consumed by the `/app/a/{assignmentId}` arrival surface. Rebound per
+  // active-student session so cross-session state cannot leak; null on any
+  // non-student session so no other surface inherits a student-scoped
+  // resolver.
+  let studentDeepLinkResolve: DeepLinkResolveCallable | null = null;
+  // Sprint 27 Phase 4: the assignmentId parsed from a Google Classroom
+  // deep-link arrival (`/app/a/{assignmentId}`), captured once at startup
+  // from the browser location. It is held in memory only (never persisted to
+  // storage per PDR-027 §9) and preserved across the sign-in / onboarding
+  // round trip through the browser URL, then consumed when the caller
+  // resolves to an active student. Null on a normal (non-deep-link) load.
+  let pendingDeepLinkAssignmentId: string | null =
+    typeof window !== "undefined" && window.location
+      ? parseDeepLinkAssignmentId(window.location.pathname)
+      : null;
   // Sprint 13D: certified `assignmentsClose` callable seam consumed by
   // the Assignment Detail surface. Rebound per active-teacher session so
   // cross-session state cannot leak. Null before an active-teacher
@@ -150,6 +183,13 @@ async function run(): Promise<void> {
   // attempts list consumed by the Assignment Detail roster grouping.
   let assignmentRecipientList: AssignmentRecipientListCallable | null = null;
   let attemptsListForClass: AttemptsListForClassCallable | null = null;
+  // Sprint 27 Phase 5: late-recipient affordance seams consumed by the
+  // Assignment Detail "Students not yet assigned" section. Rebound per
+  // active-teacher session so cross-session state cannot leak; null on any
+  // non-teacher session so the section never renders.
+  let assignmentRecipientCandidatesList: AssignmentRecipientCandidatesListCallable | null =
+    null;
+  let assignmentRecipientAdd: AssignmentsRecipientAddCallable | null = null;
   // Sprint 15 Slice 6: certified per-attempt detail seam consumed by
   // the per-question factual summary panel above the minimum-attempt
   // threshold. Absent below the threshold; the panel never issues a
@@ -308,6 +348,14 @@ async function run(): Promise<void> {
       recipientListCallable: assignmentRecipientList ?? undefined,
       attemptsListForClassCallable: attemptsListForClass ?? undefined,
       attemptGetForTeacherCallable: attemptGetForTeacher ?? undefined,
+      // Sprint 27 Phase 5: late-recipient affordance. Both seams are wired
+      // only for an active-teacher session; the detail surface renders the
+      // "Students not yet assigned" section only for a published assignment
+      // when both are present. Frozen-recipient semantics are preserved: the
+      // add is one-at-a-time, teacher-initiated, and server-mediated.
+      recipientCandidatesListCallable:
+        assignmentRecipientCandidatesList ?? undefined,
+      recipientAddCallable: assignmentRecipientAdd ?? undefined,
       // Sprint 25 Phase 3: publication retry entry point. Built only when
       // the session-scoped store holds a publication that did not succeed
       // for this assignment (recorded by the Assign confirm path). The seam
@@ -412,6 +460,9 @@ async function run(): Promise<void> {
       assignmentUpdateDraft = createAssignmentsUpdateDraftCallable(functions);
       assignmentPublish = createAssignmentsPublishCallable(functions);
       assignmentRecipientList = createAssignmentRecipientListCallable(functions);
+      assignmentRecipientCandidatesList =
+        createAssignmentRecipientCandidatesListCallable(functions);
+      assignmentRecipientAdd = createAssignmentsRecipientAddCallable(functions);
       attemptsListForClass = createAttemptsListForClassCallable(functions);
       attemptGetForTeacher = createAttemptGetForTeacherCallable(functions);
       createClass = createFirebaseCreateClass(functions);
@@ -458,6 +509,8 @@ async function run(): Promise<void> {
       if (runToken !== currentRunToken) return;
       lastActiveTeacher = session;
       studentAssignmentsList = null;
+      studentResultsList = null;
+      studentDeepLinkResolve = null;
     } else if (session.kind === "activeStudent") {
       // Sprint 17 Slice 4: certified student-scoped callable seam. This
       // branch never touches the teacher-only callables, never hydrates
@@ -482,6 +535,8 @@ async function run(): Promise<void> {
       }
       studentAssignmentsList =
         createAssignmentsListForStudentCallable(functions);
+      studentResultsList = createAttemptsListForStudentCallable(functions);
+      studentDeepLinkResolve = createDeepLinkResolveCallable(functions);
       integrations = null;
       assignments = null;
       assignmentSummary = null;
@@ -490,6 +545,8 @@ async function run(): Promise<void> {
       assignmentUpdateDraft = null;
       assignmentPublish = null;
       assignmentRecipientList = null;
+      assignmentRecipientCandidatesList = null;
+      assignmentRecipientAdd = null;
       attemptsListForClass = null;
       attemptGetForTeacher = null;
       createClass = null;
@@ -511,6 +568,8 @@ async function run(): Promise<void> {
       assignmentUpdateDraft = null;
       assignmentPublish = null;
       assignmentRecipientList = null;
+      assignmentRecipientCandidatesList = null;
+      assignmentRecipientAdd = null;
       attemptsListForClass = null;
       attemptGetForTeacher = null;
       createClass = null;
@@ -524,6 +583,8 @@ async function run(): Promise<void> {
       clearLmsPublicationRetryContexts();
       lastActiveTeacher = null;
       studentAssignmentsList = null;
+      studentResultsList = null;
+      studentDeepLinkResolve = null;
     }
     activeAssignmentsInvalidator = null;
     // Sprint 16 Slice 4: any bootstrap transition (sign-out, teacher
@@ -538,6 +599,54 @@ async function run(): Promise<void> {
     // pass through `rerun`, so the intended within-session prefetch cache
     // is preserved; only a real auth transition clears it.
     invalidateCurriculumClassCache();
+
+    // Sprint 27 Phase 4: Google Classroom deep-link arrival handoff. When a
+    // pending `/app/a/{assignmentId}` arrival is present, route by session
+    // kind (blueprint §8.3):
+    //   - active student: invoke the read-only resolver and hand off to the
+    //     existing runtime or a calm state. The resolver is the authorization
+    //     boundary; the normal My Assignments / My Results dispatch is skipped.
+    //   - provisioned / unauthenticated: render onboarding / sign-in WITHOUT
+    //     replacing the URL, so the `/app/a/{assignmentId}` location is
+    //     preserved across a redirect sign-in round trip (browser history is
+    //     the only permitted preservation mechanism, PDR-027 §9). The pending
+    //     id is kept so activation / sign-in re-resolves it. No token or PII
+    //     is ever stored in the return destination.
+    //   - any other kind (teacher, administrator, suspended, archived,
+    //     error): the deep link is student-only. Clear it and render normally.
+    if (pendingDeepLinkAssignmentId !== null) {
+      if (
+        session.kind === "activeStudent" &&
+        studentDeepLinkResolve !== null
+      ) {
+        const arrivalAssignmentId = pendingDeepLinkAssignmentId;
+        const resolve = studentDeepLinkResolve;
+        pendingDeepLinkAssignmentId = null;
+        void renderDeepLinkArrival(mount, {
+          assignmentId: arrivalAssignmentId,
+          resolve: (input) => resolve(input),
+          navigate: (url) => {
+            window.location.assign(url);
+          },
+          onGoToMyAssignments: () => {
+            dispatch(session, table, mount, window.history);
+          },
+        });
+        return;
+      }
+      if (
+        session.kind === "provisioned" ||
+        session.kind === "unauthenticated"
+      ) {
+        // Render without a history update so the deep-link URL survives the
+        // auth / onboarding round trip. The pending id is intentionally kept.
+        dispatch(session, table, mount);
+        return;
+      }
+      // Student-only link on a non-student session: discard it.
+      pendingDeepLinkAssignmentId = null;
+    }
+
     dispatch(session, table, mount, window.history);
   };
 
@@ -644,6 +753,47 @@ async function run(): Promise<void> {
     await join({ joinCode: input.joinCode });
   };
 
+  // Sprint 27 Phase 3 (Decision 2): LMS-rostered student activation. Unlike
+  // the manual path, no join code and no schoolId are sent. The server
+  // derives school and district from the authoritative LMS enrollment the
+  // teacher's roster sync established; the client asserts nothing about
+  // roster, class, school, district, or Google identity. The optional
+  // display name is the only value carried. After activation, the ID token
+  // is force-refreshed so the newly issued custom claims (role: "student",
+  // schoolId, districtId) are present before the active-student surface
+  // loads.
+  const onStudentLmsOnboarding = async (input: {
+    displayName?: string;
+  }): Promise<void> => {
+    const { getFunctions, httpsCallable, connectFunctionsEmulator } =
+      await import("firebase/functions");
+    const functions = getFunctions();
+    if (
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1")
+    ) {
+      try {
+        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+      } catch {
+        // already connected
+      }
+    }
+    const complete = httpsCallable(functions, "studentsCompleteLmsOnboarding");
+    await complete(
+      input.displayName !== undefined && input.displayName.length > 0
+        ? { displayName: input.displayName }
+        : {},
+    );
+    // Force an ID token refresh so the newly issued custom claims are
+    // present before the active-student surface issues any
+    // district-scoped read. This mirrors the manual onboarding path.
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await currentUser.getIdToken(true);
+    }
+  };
+
   const getGoogleDisplayName = (): string | null => {
     const u = auth.currentUser;
     if (!u) return null;
@@ -658,6 +808,7 @@ async function run(): Promise<void> {
     onRefreshSession,
     onRequestVerification,
     onStudentOnboarding,
+    onStudentLmsOnboarding,
     getGoogleDisplayName,
     listClasses,
     onLaunchPresentMode,
@@ -666,6 +817,7 @@ async function run(): Promise<void> {
     assignmentDetail: () => assignmentDetailSeam,
     assignmentSummary: () => assignmentSummary,
     studentAssignmentsList: () => studentAssignmentsList,
+    studentResultsList: () => studentResultsList,
     createClass: () => createClass,
     importFromClassroom: () => importFromClassroom,
     defaultGrade: () => defaultGradePref,

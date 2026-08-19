@@ -2036,7 +2036,6 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
   type LmsPublishIn = {
     assignmentId: string;
     linkId: string;
-    lyfelabzAssignmentUrl: string;
     title?: string;
     lmsTopicId?: string;
   };

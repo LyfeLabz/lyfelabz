@@ -301,17 +301,20 @@ export async function runPublicationAction(
 //
 // The detail-view retry entry point needs the minimal context to re-issue a
 // publish for a class whose publication did not succeed: the linkId, the
-// provider id, the LyfeLabz assignment URL, the title, and the optional
-// topic (blueprint §8, §12). That context is recorded by the Assign confirm
-// path when a publication is requested, and read by the entry point when it
-// opens the detail view. It is in-memory only, uid-scoped so a same-tab
-// teacher swap cannot leak a prior teacher's context, and never persisted.
-
+// provider id, the title, and the optional topic (blueprint §8, §12). That
+// context is recorded by the Assign confirm path when a publication is
+// requested, and read by the entry point when it opens the detail view. It is
+// in-memory only, uid-scoped so a same-tab teacher swap cannot leak a prior
+// teacher's context, and never persisted.
+//
+// Sprint 27 Phase 4 (blueprint Decision 4): the LyfeLabz assignment URL is no
+// longer carried here. The publish callable constructs the Classroom
+// destination server-side from the authoritative assignmentId, so the client
+// retry context neither holds nor sends a destination URL.
 export type LmsPublicationRetryContext = {
   readonly assignmentId: string;
   readonly linkId: string;
   readonly providerId: string;
-  readonly lyfelabzAssignmentUrl: string;
   readonly title: string;
   readonly lmsTopicId?: string;
   readonly state: AssignmentLmsPublicationState;
@@ -439,7 +442,6 @@ export function createDetailLmsRetrySeam(input: {
           integrations.callables.publishAssignment({
             assignmentId,
             linkId: context.linkId,
-            lyfelabzAssignmentUrl: context.lyfelabzAssignmentUrl,
             title: context.title,
             ...(context.lmsTopicId !== undefined && context.lmsTopicId !== ""
               ? { lmsTopicId: context.lmsTopicId }

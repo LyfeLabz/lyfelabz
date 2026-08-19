@@ -27,6 +27,22 @@ import { LESSON_LAUNCH_OVERRIDES } from "./launchOverrides";
 
 const LESSON_SLUG_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,126}[A-Za-z0-9])?$/;
 
+// Resolve the canonical lesson base path for a slug (override-aware), or
+// null when the slug is malformed. This is the practice-mode lesson URL: the
+// same path a classroom launch uses, without the `?assignment=` query. It is
+// the single home for the Sprint 18 override-table consultation so the
+// assignment launcher and the Sprint 27 deep-link practice handoff stay in
+// lockstep.
+export function buildLessonBasePath(lessonSlug: string): string | null {
+  if (typeof lessonSlug !== "string" || lessonSlug.length === 0) return null;
+  if (!LESSON_SLUG_PATTERN.test(lessonSlug)) return null;
+  // Sprint 18: consult the narrow slug-keyed override table. If the pilot
+  // lesson has a v2 artifact, use its `/app/lessons/...` path; otherwise emit
+  // the v1 path byte-for-byte identical to Sprint 17.
+  const override = LESSON_LAUNCH_OVERRIDES[lessonSlug];
+  return override ? override.path : `/lesson_${lessonSlug}.html`;
+}
+
 // The launcher accepts only the frozen tuple the server returns via
 // `assignmentsListForStudent`. Every field is re-checked here so a
 // malformed item (already dropped by parseAssignmentsListForStudentItem
@@ -38,17 +54,10 @@ export function buildAssignmentLaunchUrl(
   if (typeof assignmentId !== "string" || assignmentId.length === 0) {
     return null;
   }
-  if (typeof lessonSlug !== "string" || lessonSlug.length === 0) {
-    return null;
-  }
-  if (!LESSON_SLUG_PATTERN.test(lessonSlug)) return null;
+  const basePath = buildLessonBasePath(lessonSlug);
+  if (basePath === null) return null;
   // encodeURIComponent covers every reserved URL character including
   // `&`, `?`, `#`, `=`, and `/`; the assignmentId is treated as opaque.
   const encoded = encodeURIComponent(assignmentId);
-  // Sprint 18: consult the narrow slug-keyed override table. If the
-  // pilot lesson has a v2 artifact, use its `/app/lessons/...` path;
-  // otherwise emit the v1 URL byte-for-byte identical to Sprint 17.
-  const override = LESSON_LAUNCH_OVERRIDES[lessonSlug];
-  const basePath = override ? override.path : `/lesson_${lessonSlug}.html`;
   return `${basePath}?assignment=${encoded}`;
 }

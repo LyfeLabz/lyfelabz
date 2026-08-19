@@ -110,3 +110,47 @@ export async function writeCustomClaims(
 
   return claims;
 }
+
+// Normalized read view of a caller's current custom claims. Only canonical,
+// non-empty values survive; every absent or malformed field is `undefined`.
+// This is the read counterpart to `writeCustomClaims`, so a caller that must
+// decide whether authorization claims were actually persisted never reaches
+// `getAdminAuth()` directly.
+export type CustomClaimsView = {
+  readonly role?: Role;
+  readonly schoolId?: string;
+  readonly districtId?: string;
+};
+
+// Read the caller's current custom claims and normalize them to the
+// canonical view. Used to detect a partial-activation split-brain - a
+// `users/{uid}` document that reached `active` while the paired
+// `setCustomUserClaims` write failed - so an idempotent onboarding replay
+// can repair it instead of returning success over a token that carries no
+// authorization.
+//
+// A read failure resolves to an empty view rather than throwing: the caller
+// fails toward re-asserting claims (restoring authorization) rather than
+// trusting state it could not confirm. An invalid `uid` argument is a
+// programmer error and still throws, mirroring `writeCustomClaims`.
+export async function readCustomClaims(
+  uid: string,
+): Promise<CustomClaimsView> {
+  if (!isNonEmptyString(uid)) {
+    throw new PlatformError("claims.invalidUid", "uid must be a non-empty string.");
+  }
+  let raw: unknown;
+  try {
+    const record = await getAdminAuth().getUser(uid);
+    raw = record.customClaims;
+  } catch {
+    return {};
+  }
+  if (!raw || typeof raw !== "object") return {};
+  const claims = raw as Record<string, unknown>;
+  const view: { role?: Role; schoolId?: string; districtId?: string } = {};
+  if (isValidRole(claims.role)) view.role = claims.role;
+  if (isNonEmptyString(claims.schoolId)) view.schoolId = claims.schoolId;
+  if (isNonEmptyString(claims.districtId)) view.districtId = claims.districtId;
+  return view;
+}

@@ -4,8 +4,10 @@ export {
   type WriteAuditEventResult,
 } from "./audit/write-audit-event";
 export {
+  readCustomClaims,
   writeCustomClaims,
   type CanonicalCustomClaims,
+  type CustomClaimsView,
   type WriteCustomClaimsInput,
 } from "./auth/claims";
 export {

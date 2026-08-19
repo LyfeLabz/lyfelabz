@@ -18,6 +18,7 @@ import {
   type LmsAssignmentPublicationCreationWrite,
 } from "../shared";
 
+import { buildAssignmentDeepLinkUrl } from "./deep-link-url";
 import {
   ensureGoogleClassroomProductionBindings,
   googleClassroomProductionSecrets,
@@ -77,10 +78,16 @@ import { resolveLiveCredential } from "./tokens/credential-resolver";
 //     the timer is always cleared, and a hang surfaces as
 //     lms.upstreamCallFailed. This file does not re-add a timeout.
 
+// Sprint 27 Phase 4 (blueprint Decision 4): the client no longer supplies the
+// Classroom destination URL. The former `lyfelabzAssignmentUrl` field is
+// removed from the request contract; the server constructs the sole
+// coursework link material from the authoritative `assignmentId` it already
+// loads, via the single authorized `buildAssignmentDeepLinkUrl` producer. A
+// client value can no longer influence the Classroom destination (PDR-027
+// §8.3).
 export type LmsAssignmentsPublishRequest = {
   readonly assignmentId: string;
   readonly linkId: string;
-  readonly lyfelabzAssignmentUrl: string;
   readonly title?: string;
   readonly instructions?: string;
   readonly lmsTopicId?: string;
@@ -139,11 +146,13 @@ async function handler(
     "lms.invalidLinkId",
     "linkId must be a non-empty string.",
   );
-  const lyfelabzAssignmentUrl = requireNonEmptyString(
-    payload.lyfelabzAssignmentUrl,
-    "lms.invalidAssignmentUrl",
-    "lyfelabzAssignmentUrl must be a non-empty string.",
-  );
+  // Sprint 27 Phase 4: the coursework destination is constructed
+  // server-side from the authoritative assignmentId, never read from the
+  // client. Any `lyfelabzAssignmentUrl` a client still sends on the request
+  // is ignored (not read) and cannot influence the Classroom destination
+  // (PDR-027 §8.3). The single authorized builder emits exactly
+  // `https://app.lyfelabz.com/app/a/{assignmentId}`.
+  const lyfelabzAssignmentUrl = buildAssignmentDeepLinkUrl(assignmentId);
   const titleOverride = optionalNonEmptyString(payload.title);
   const instructions = optionalNonEmptyString(payload.instructions);
   const lmsTopicId = optionalNonEmptyString(payload.lmsTopicId);

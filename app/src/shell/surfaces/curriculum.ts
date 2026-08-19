@@ -1770,10 +1770,13 @@ async function runAssignmentLifecycle(input: {
     onLifecycleComplete,
   } = input;
   const nonce = mintNonce();
-  const lyfelabzUrl =
-    typeof window !== "undefined" && window.location
-      ? `${window.location.origin}${lesson.href}`
-      : lesson.href;
+
+  // Sprint 27 Phase 4 (blueprint Decision 4): the client no longer computes
+  // or supplies the Classroom destination URL. `lmsAssignmentsPublish`
+  // constructs the coursework link server-side from the authoritative
+  // assignmentId, so the former `window.location.origin + lesson.href`
+  // computation is removed and no client value can influence the destination
+  // (PDR-027 §8.3).
 
   // One consent coordinator per confirm action. When several LMS-linked
   // rows in the same confirm each return insufficient scope, exactly one
@@ -1877,7 +1880,6 @@ async function runAssignmentLifecycle(input: {
           publishCallables.publishAssignment({
             assignmentId,
             linkId: link.linkId,
-            lyfelabzAssignmentUrl: lyfelabzUrl,
             title: lesson.title,
             ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
             attemptNonce,
@@ -1899,7 +1901,6 @@ async function runAssignmentLifecycle(input: {
         assignmentId,
         linkId: link.linkId,
         providerId: link.providerId,
-        lyfelabzAssignmentUrl: lyfelabzUrl,
         title: lesson.title,
         ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
         state: result.kind,

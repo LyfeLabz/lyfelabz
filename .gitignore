@@ -11,6 +11,7 @@ platform/firebase/sprint25-b9-pre-retest/
 platform/firebase/sprint25-cert-state/
 platform/firebase/*-export/
 platform/firebase/*-cert-state/
+platform/firebase/*-snapshot-*/
 
 # Node
 node_modules/

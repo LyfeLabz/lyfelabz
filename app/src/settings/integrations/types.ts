@@ -165,10 +165,14 @@ export type IntegrationsCallables = {
     readonly status: IntegrationsClassHealthStatus;
     readonly changed: boolean;
   }>;
+  // Sprint 27 Phase 4 (blueprint Decision 4): the client no longer supplies
+  // the Classroom destination URL. `lmsAssignmentsPublish` constructs the
+  // coursework link server-side from the authoritative assignmentId, so the
+  // former `lyfelabzAssignmentUrl` field is removed from this request shape.
+  // The client cannot influence the Classroom destination (PDR-027 §8.3).
   readonly publishAssignment: (input: {
     readonly assignmentId: string;
     readonly linkId: string;
-    readonly lyfelabzAssignmentUrl: string;
     readonly title?: string;
     readonly instructions?: string;
     readonly lmsTopicId?: string;

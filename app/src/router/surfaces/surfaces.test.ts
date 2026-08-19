@@ -26,6 +26,10 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
       Promise<void>,
       [{ displayName: string; joinCode: string }]
     >;
+    studentLmsOnboarding: jest.Mock<
+      Promise<void>,
+      [{ displayName?: string }]
+    >;
     googleDisplayName: jest.Mock<string | null, []>;
   };
 } {
@@ -43,6 +47,10 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     Promise<void>,
     [{ displayName: string; joinCode: string }]
   >(() => Promise.resolve());
+  const studentLmsOnboarding = jest.fn<
+    Promise<void>,
+    [{ displayName?: string }]
+  >(() => Promise.resolve());
   const googleDisplayName = jest.fn<string | null, []>(() => null);
   const deps: SurfaceDeps = {
     onSignOut: signOut,
@@ -50,6 +58,7 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     onRefreshSession: refresh,
     onRequestVerification: requestVerification,
     onStudentOnboarding: studentOnboarding,
+    onStudentLmsOnboarding: studentLmsOnboarding,
     getGoogleDisplayName: googleDisplayName,
     listClasses,
     onLaunchPresentMode: () => undefined,
@@ -64,6 +73,7 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
       requestVerification,
       listClasses,
       studentOnboarding,
+      studentLmsOnboarding,
       googleDisplayName,
     },
   };
@@ -424,6 +434,225 @@ describe("provisioned surface - student branch", () => {
     );
     expect(banner?.textContent).not.toContain("functions/");
     expect(banner?.textContent).toContain("could not reach");
+  });
+});
+
+describe("provisioned surface - Google Classroom (LMS) branch", () => {
+  const provSession = (): Session =>
+    freeze<Session>({ kind: "provisioned", uid: "u1" });
+
+  test("renders the Google Classroom affordance alongside the manual join-code form", () => {
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    // Manual path preserved.
+    expect(mount.querySelector("[data-testid=join-class]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=join-code]")).not.toBeNull();
+    // New LMS affordance present.
+    expect(mount.querySelector("[data-testid=lms-onboarding]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=lms-divider]")).not.toBeNull();
+  });
+
+  test("on click with no typed name, calls the LMS callable once with an empty payload and schedules a refresh", async () => {
+    jest.useFakeTimers();
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=lms-onboarding]")
+      ?.click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(spies.studentLmsOnboarding).toHaveBeenCalledTimes(1);
+    expect(spies.studentLmsOnboarding).toHaveBeenCalledWith({});
+    // Manual onboarding is never invoked by the LMS path.
+    expect(spies.studentOnboarding).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(700);
+    await Promise.resolve();
+    expect(spies.refresh).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
+  });
+
+  test("reuses a typed student name as the optional displayName", async () => {
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    (
+      mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement
+    ).value = "Grace";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=lms-onboarding]")
+      ?.click();
+    await flush();
+    expect(spies.studentLmsOnboarding).toHaveBeenCalledTimes(1);
+    expect(spies.studentLmsOnboarding).toHaveBeenCalledWith({
+      displayName: "Grace",
+    });
+  });
+
+  test("never sends a join code, school, class, district, or provider identity", async () => {
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    (
+      mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement
+    ).value = "Grace";
+    // Even if a join code is typed, the LMS path ignores it entirely.
+    (mount.querySelector("[data-testid=join-code]") as HTMLInputElement).value =
+      "ABCD1234";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=lms-onboarding]")
+      ?.click();
+    await flush();
+    expect(spies.studentLmsOnboarding).toHaveBeenCalledTimes(1);
+    const arg = spies.studentLmsOnboarding.mock.calls[0][0];
+    // The only permitted key is displayName. No authority-bearing field is
+    // ever carried from the client.
+    expect(Object.keys(arg).sort()).toEqual(["displayName"]);
+    for (const forbidden of [
+      "joinCode",
+      "schoolId",
+      "districtId",
+      "classId",
+      "studentId",
+      "providerId",
+      "providerAccountId",
+      "role",
+      "uid",
+    ]) {
+      expect(forbidden in arg).toBe(false);
+    }
+  });
+
+  test("renders the no-enrollment recovery state calmly and does not schedule a refresh", async () => {
+    const err = Object.assign(new Error("no enrollment"), {
+      code: "functions/failed-precondition",
+      details: { code: "students.noLmsEnrollment" },
+    });
+    const { deps, spies } = makeDeps({
+      onStudentLmsOnboarding: () => Promise.reject(err),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lms-onboarding]",
+    )!;
+    btn.click();
+    await flush();
+    await flush();
+    const banner = mount.querySelector(
+      "[data-testid=lms-error-host] [data-testid=error-banner]",
+    );
+    expect(banner?.textContent).toContain(
+      "Ask your teacher to update the class roster",
+    );
+    // No internal codes or identifiers leak.
+    expect(banner?.textContent).not.toContain("functions/");
+    expect(banner?.textContent).not.toContain("students.");
+    expect(banner?.textContent?.toLowerCase()).not.toContain("school");
+    expect(banner?.textContent?.toLowerCase()).not.toContain("district");
+    // No transition to the active surface; the button is available to retry.
+    expect(spies.refresh).not.toHaveBeenCalled();
+    expect(btn.disabled).toBe(false);
+    // The manual error host stays empty: the two flows do not contaminate.
+    expect(
+      mount.querySelector(
+        "[data-testid=student-error-host] [data-testid=error-banner]",
+      ),
+    ).toBeNull();
+  });
+
+  test("allows a retry after a no-enrollment failure (button re-enabled, callable re-invoked)", async () => {
+    const err = Object.assign(new Error("no enrollment"), {
+      code: "functions/failed-precondition",
+      details: { code: "students.noLmsEnrollment" },
+    });
+    const lms = jest
+      .fn<Promise<void>, [{ displayName?: string }]>()
+      .mockRejectedValueOnce(err)
+      .mockResolvedValueOnce(undefined);
+    const { deps } = makeDeps({ onStudentLmsOnboarding: lms });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lms-onboarding]",
+    )!;
+    btn.click();
+    await flush();
+    await flush();
+    expect(btn.disabled).toBe(false);
+    btn.click();
+    await flush();
+    expect(lms).toHaveBeenCalledTimes(2);
+  });
+
+  test("does not leak raw Firebase error codes for generic unavailability", async () => {
+    const err = Object.assign(new Error("boom"), {
+      code: "functions/unavailable",
+    });
+    const { deps } = makeDeps({
+      onStudentLmsOnboarding: () => Promise.reject(err),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=lms-onboarding]")
+      ?.click();
+    await flush();
+    await flush();
+    const banner = mount.querySelector(
+      "[data-testid=lms-error-host] [data-testid=error-banner]",
+    );
+    expect(banner?.textContent).not.toContain("functions/");
+    expect(banner?.textContent).toContain("could not reach");
+  });
+
+  test("degrades calmly when the LMS onboarding dependency is not wired", async () => {
+    const { deps, spies } = makeDeps({ onStudentLmsOnboarding: undefined });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=lms-onboarding]")
+      ?.click();
+    await flush();
+    const banner = mount.querySelector(
+      "[data-testid=lms-error-host] [data-testid=error-banner]",
+    );
+    expect(banner?.textContent).toContain("not available");
+    expect(spies.refresh).not.toHaveBeenCalled();
+  });
+
+  test("the manual join-code path still works independently of the LMS affordance", async () => {
+    jest.useFakeTimers();
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    (
+      mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement
+    ).value = "Ada";
+    (mount.querySelector("[data-testid=join-code]") as HTMLInputElement).value =
+      "abcd1234";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=join-class]")
+      ?.click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(spies.studentOnboarding).toHaveBeenCalledTimes(1);
+    // The LMS callable is untouched by the manual path.
+    expect(spies.studentLmsOnboarding).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(700);
+    await Promise.resolve();
+    expect(spies.refresh).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 });
 
@@ -813,6 +1042,288 @@ describe("active student surface (Slice 4 assignment discovery)", () => {
     table.activeStudent(studentSession(), mount);
     await flush();
     expect(mount.textContent).not.toContain("LyfeLabz Teacher Platform");
+  });
+});
+
+describe("active student surface (Sprint 27 My Results + status + navigation)", () => {
+  const studentSession = () =>
+    freeze<Session>({
+      kind: "activeStudent",
+      uid: "u1",
+      schoolId: "s1",
+      displayName: "Ben",
+    });
+
+  const okItem = (over: Record<string, unknown> = {}) =>
+    ({
+      assignmentId: "assign-1",
+      lessonSlug: "what-is-life",
+      title: "What is life?",
+      status: "published" as const,
+      publishedAt: 1_700_000_000_000,
+      ...over,
+    }) as const;
+
+  const okAttempt = (over: Record<string, unknown> = {}) => ({
+    attemptId: "at-1",
+    assignmentId: "assign-1",
+    attemptNumber: 1,
+    score: 8,
+    maxScore: 10,
+    percentage: 80,
+    submittedAt: 1_000,
+    ...over,
+  });
+
+  // Getter seams matching SurfaceDeps.studentAssignmentsList /
+  // studentResultsList: `() => callable | null`.
+  const assignmentsSeam =
+    (items: ReadonlyArray<ReturnType<typeof okItem>>) => () => () =>
+      Promise.resolve({ items: Object.freeze(items) as ReadonlyArray<ReturnType<typeof okItem>> });
+  const resultsSeam =
+    (attempts: ReadonlyArray<ReturnType<typeof okAttempt>>) => () => () =>
+      Promise.resolve({ attempts: Object.freeze(attempts) });
+
+  const goResults = (mount: HTMLElement): void => {
+    mount.querySelector<HTMLButtonElement>("[data-testid=nav-results]")?.click();
+  };
+
+  test("renders the two-surface identity menu as an accessible tablist", () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    const nav = mount.querySelector("[data-testid=student-nav]");
+    expect(nav?.getAttribute("role")).toBe("tablist");
+    const assignmentsTab = mount.querySelector("[data-testid=nav-assignments]");
+    const resultsTab = mount.querySelector("[data-testid=nav-results]");
+    expect(assignmentsTab?.getAttribute("role")).toBe("tab");
+    expect(resultsTab?.getAttribute("role")).toBe("tab");
+    // Default selection is My Assignments; selection is exposed via
+    // aria-selected, not color alone.
+    expect(assignmentsTab?.getAttribute("aria-selected")).toBe("true");
+    expect(resultsTab?.getAttribute("aria-selected")).toBe("false");
+  });
+
+  test("navigates from My Assignments to My Results and back", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: resultsSeam([okAttempt()]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=assignments-list]")).not.toBeNull();
+
+    goResults(mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=results-list]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=assignments-list]")).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=nav-results]")?.getAttribute("aria-selected"),
+    ).toBe("true");
+
+    mount.querySelector<HTMLButtonElement>("[data-testid=nav-assignments]")?.click();
+    await flush();
+    expect(mount.querySelector("[data-testid=assignments-list]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=results-list]")).toBeNull();
+  });
+
+  test("My Results shows a loading indicator while the read is in flight", () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: () => () => new Promise(() => undefined),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    goResults(mount);
+    expect(mount.querySelector("[data-testid=loading-indicator]")).not.toBeNull();
+  });
+
+  test("My Results empty state when there are no completed attempts", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    goResults(mount);
+    await flush();
+    const empty = mount.querySelector("[data-testid=results-empty]");
+    expect(empty?.textContent).toBe("You have not completed any assignments yet.");
+  });
+
+  test("My Results empty state when the results seam is missing (no throw)", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      // no studentResultsList
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    expect(() => goResults(mount)).not.toThrow();
+    await flush();
+    expect(mount.querySelector("[data-testid=results-empty]")).not.toBeNull();
+  });
+
+  test("My Results error state renders a recoverable banner and a retry that re-invokes", async () => {
+    let call = 0;
+    const resultsCallable = jest.fn(() => {
+      call += 1;
+      return call === 1
+        ? Promise.reject(new Error("boom"))
+        : Promise.resolve({ attempts: Object.freeze([okAttempt()]) });
+    });
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: () => resultsCallable,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    // Navigate to My Results before the first read settles so the results
+    // view shares the same in-flight (rejecting) read the default view
+    // started for status decoration. On My Assignments that failure
+    // degrades silently; on My Results it surfaces the recoverable error.
+    goResults(mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=results-error]")).not.toBeNull();
+    mount.querySelector<HTMLButtonElement>("[data-testid=results-retry]")?.click();
+    await flush();
+    expect(mount.querySelector("[data-testid=results-list]")).not.toBeNull();
+  });
+
+  test("My Results shows best score, attempt count, and the Perfect Score status", async () => {
+    const resultsCallable = jest.fn(() =>
+      Promise.resolve({
+        attempts: Object.freeze([
+          okAttempt({ attemptId: "at-1", attemptNumber: 1, score: 6, maxScore: 10, percentage: 60 }),
+          okAttempt({ attemptId: "at-2", attemptNumber: 2, score: 10, maxScore: 10, percentage: 100 }),
+        ]),
+      }),
+    );
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: () => resultsCallable,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    goResults(mount);
+    await flush();
+    expect(resultsCallable).toHaveBeenCalledWith();
+    expect(mount.querySelectorAll("[data-testid=results-item]")).toHaveLength(1);
+    expect(
+      mount.querySelector("[data-testid=results-best-score]")?.textContent,
+    ).toBe("Best score: 10 / 10");
+    expect(
+      mount.querySelector("[data-testid=results-attempt-count]")?.textContent,
+    ).toBe("2 attempts completed");
+    // Status conveyed by visible label text, never color alone.
+    expect(
+      mount.querySelector("[data-testid=results-status]")?.textContent,
+    ).toContain("Perfect Score");
+    // A perfect best offers no Improve My Score control.
+    expect(mount.querySelector("[data-testid=results-improve]")).toBeNull();
+  });
+
+  test("Improve My Score is offered on a less-than-perfect best and reuses the launch path", async () => {
+    const onLaunchAssignment = jest.fn();
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: resultsSeam([okAttempt({ score: 8, maxScore: 10, percentage: 80 })]),
+      onLaunchAssignment,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    goResults(mount);
+    await flush();
+    const improve = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=results-improve]",
+    );
+    expect(improve).not.toBeNull();
+    expect(improve?.getAttribute("data-assignment-launch-url")).toBe(
+      "/lesson_what-is-life.html?assignment=assign-1",
+    );
+    improve?.click();
+    expect(onLaunchAssignment).toHaveBeenCalledTimes(1);
+    expect(onLaunchAssignment).toHaveBeenCalledWith(
+      "/lesson_what-is-life.html?assignment=assign-1",
+    );
+  });
+
+  test("fallback historical item: an attempt whose assignment is no longer listed shows a safe label and no Improve My Score (fail closed)", async () => {
+    const { deps } = makeDeps({
+      // The current assignment list does NOT contain assign-ghost.
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: resultsSeam([
+        okAttempt({
+          attemptId: "ghost-1",
+          assignmentId: "assign-ghost",
+          score: 8,
+          maxScore: 10,
+          percentage: 80,
+        }),
+      ]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    goResults(mount);
+    await flush();
+    const titles = Array.from(
+      mount.querySelectorAll("[data-testid=results-item-title]"),
+    ).map((el) => el.textContent);
+    expect(titles).toEqual(["Assignment no longer listed"]);
+    // The internal id must not become the primary label.
+    expect(mount.textContent).not.toContain("assign-ghost");
+    // Even though the best is less than perfect, no launchable target
+    // exists, so Improve My Score is withheld (fail closed).
+    expect(mount.querySelector("[data-testid=results-improve]")).toBeNull();
+  });
+
+  test("My Assignments shows status once results are wired: derived for attempted, Ready to Begin for unattempted", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([
+        okItem(),
+        okItem({ assignmentId: "assign-2", lessonSlug: "cell-types", title: "Cell Types" }),
+      ]),
+      studentResultsList: resultsSeam([
+        okAttempt({ assignmentId: "assign-1", score: 10, maxScore: 10, percentage: 100 }),
+      ]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const statuses = Array.from(
+      mount.querySelectorAll("[data-testid=assignments-item-status]"),
+    ).map((el) => el.textContent);
+    expect(statuses).toHaveLength(2);
+    expect(statuses[0]).toContain("Perfect Score");
+    expect(statuses[1]).toContain("Ready to Begin");
+  });
+
+  test("My Assignments renders without status when the results read fails (no mislabeling)", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: () => () => Promise.reject(new Error("results down")),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    // The assignment still renders and is launchable; no status chip is
+    // shown rather than a misleading Ready to Begin.
+    expect(mount.querySelector("[data-testid=assignments-item]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=assignments-item-status]")).toBeNull();
   });
 });
 
