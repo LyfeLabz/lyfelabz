@@ -227,16 +227,14 @@ export function renderSettingsSurface(
     const intro = doc.createElement("p");
     intro.className = "shell-status shell-settings-intro";
     intro.setAttribute("data-testid", "settings-intro");
+    // Sprint 28.5D (microcopy): the intro was trimmed from two future-facing
+    // philosophical paragraphs to a single sentence so the live control
+    // (Default grade) and Connected Services are easier to find. The
+    // information architecture (the preference categories below) is
+    // unchanged.
     intro.textContent =
-      "Settings is where you will manage how LyfeLabz works for you. It is the private, teacher-only surface for the preferences that shape your everyday workflow.";
+      "Manage your LyfeLabz preferences. This is your private, teacher-only space for the settings that shape your everyday workflow.";
     container.appendChild(intro);
-
-    const purpose = doc.createElement("p");
-    purpose.className = "shell-settings-purpose";
-    purpose.setAttribute("data-testid", "settings-purpose");
-    purpose.textContent =
-      "Settings is not a dashboard, an account console, or an administration surface. It is a calm place to make LyfeLabz feel like your own.";
-    container.appendChild(purpose);
 
     const categoriesHeading = doc.createElement("h3");
     categoriesHeading.id = "settings-categories-heading";

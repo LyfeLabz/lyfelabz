@@ -61,6 +61,29 @@ export type CurriculumAssignmentDetailSeam = {
   readonly setActiveAssignmentsInvalidator?: (
     invalidator: ((assignmentId: string) => void) | null,
   ) => void;
+  // Sprint 28.5D (D2A): shell/outlet seam. The persistent Teacher
+  // Workspace shell registers a bounded controller here at mount so the
+  // entry-point Assignment Detail opener can render Detail into the shell's
+  // own content outlet instead of clearing `#app-root`. Registering the
+  // controller keeps the header, navigation, and footer mounted while
+  // Detail is displayed; the controller clears only the outlet's local
+  // content. When absent-or-unset (a shell built without this seam, or a
+  // non-teacher session), the opener falls back to its pre-28.5D behavior.
+  // See TeacherShellOutletController.
+  readonly setOutletController?: (
+    controller: TeacherShellOutletController | null,
+  ) => void;
+};
+
+// Sprint 28.5D (D2A): the bounded surface-render seam exposed by the
+// Teacher Workspace shell. `show` clears the shell's content outlet and
+// hands the caller the outlet host to render an overlay surface (today
+// only Assignment Detail) while the header, navigation, and footer remain
+// mounted and Curriculum stays the active global navigation context. It is
+// deliberately not a router, a history stack, or a navigation state
+// machine; it is a single "render this into my outlet" call.
+export type TeacherShellOutletController = {
+  readonly show: (render: (host: HTMLElement) => void) => void;
 };
 
 // Curriculum surface. The teacher curriculum landing page introduced by
@@ -1511,10 +1534,17 @@ function renderRow(
 
   // For LMS-linked classes, the Google Classroom topic field is a
   // populated dropdown per ASSIGN_EXPERIENCE.md §5 ("LMS-linked class
-  // row shape"). For non-LMS classes the plain-text preference input is
-  // preserved so Sprint 6E's remembered-topic behavior is unchanged.
-  let topicInput: { wrapper: HTMLElement; input: HTMLInputElement } | null =
-    null;
+  // row shape").
+  //
+  // Sprint 28.5D (microcopy): a manual (non-LMS) LyfeLabz class has no
+  // Google Classroom to publish to, so the free-text "Google Classroom
+  // topic" field that used to render for it was inert and mildly confusing
+  // (28.5C audit §11/§23). It is now omitted for non-LMS rows. This is a
+  // presentation-only conditional keyed on the same class/LMS state the
+  // dialog already resolves (`link && integrations`); no stored value,
+  // submit payload, or LMS-linked publication behavior changes. The
+  // remembered-topic preference plumbing (`cfg.topic`) is retained but
+  // simply never surfaced for a manual class.
   let lmsTopicSelect: HTMLSelectElement | null = null;
   if (link && integrations !== null) {
     const wrapper = doc.createElement("label");
@@ -1566,18 +1596,6 @@ function renderRow(
         cfg.lmsTopicId = "";
       }
     });
-  } else {
-    topicInput = fieldInput(doc, {
-      id: `assign-row-topic-${cls.id}`,
-      label: "Google Classroom topic",
-      type: "text",
-      value: cfg.topic,
-      placeholder: "None",
-      onInput: (v) => {
-        cfg.topic = v;
-      },
-    });
-    fields.appendChild(topicInput.wrapper);
   }
 
   const pointsInput = fieldInput(doc, {
@@ -1632,7 +1650,6 @@ function renderRow(
       timeInput.input,
       pointsInput.input,
     ];
-    if (topicInput) controls.push(topicInput.input);
     if (lmsTopicSelect) controls.push(lmsTopicSelect);
     if (publishCheckbox) controls.push(publishCheckbox);
     for (const el of controls) {

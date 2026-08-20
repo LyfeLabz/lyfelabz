@@ -439,9 +439,27 @@ function renderCard(
   return card;
 }
 
-function formatLocalDate(d: Date): string {
-  const yyyy = String(d.getFullYear()).padStart(4, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+// Sprint 28.5D (D4): teacher-facing short date. The published date is
+// presented in a human-readable "Aug 20, 2026" form rather than a raw ISO
+// "2026-08-20" developer format. The month abbreviations are a fixed table
+// (not `toLocaleDateString`) so the output is deterministic across
+// environments and locales while still reading naturally to a teacher.
+const SHORT_MONTHS: ReadonlyArray<string> = Object.freeze([
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+]);
+
+export function formatLocalDate(d: Date): string {
+  const month = SHORT_MONTHS[d.getMonth()] ?? "";
+  return `${month} ${d.getDate()}, ${d.getFullYear()}`;
 }

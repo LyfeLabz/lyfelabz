@@ -933,7 +933,7 @@ function renderErrorState(doc: Document, mount: HTMLElement): void {
   status.setAttribute("data-testid", "classes-status");
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
-  status.textContent = "We could not load your classrooms.";
+  status.textContent = "We could not load your classes.";
   mount.appendChild(status);
 
   const region = doc.createElement("div");
@@ -1013,7 +1013,7 @@ function renderListState(
   mount.appendChild(region);
 
   if (classes.length === 0) {
-    status.textContent = "You do not have any classrooms yet.";
+    status.textContent = "You do not have any classes yet.";
     const empty = doc.createElement("p");
     empty.className = "shell-classes-empty";
     empty.setAttribute("data-testid", "classes-empty");
@@ -1025,7 +1025,7 @@ function renderListState(
   }
 
   status.textContent =
-    classes.length === 1 ? "1 classroom" : `${classes.length} classrooms`;
+    classes.length === 1 ? "1 class" : `${classes.length} classes`;
 
   const prompt = doc.createElement("p");
   prompt.className = "shell-classes-prompt";
@@ -2075,7 +2075,7 @@ function renderRosterSurface(
   foundation.className = "shell-roster-foundation";
   foundation.setAttribute("data-testid", "roster-foundation");
   foundation.textContent =
-    "The full class-level workspace will grow into this space as later sprints extend the Teacher Platform. Snapshot remains your between-moments view of this class.";
+    "Students who join with the class code appear here. Snapshot remains your between-moments view of this class.";
   mount.appendChild(foundation);
 }
 

@@ -735,7 +735,7 @@ describe("Classroom Workspace surface (Sprint 6B, preserved by 6C)", () => {
     expect(mount.querySelector("[data-testid=classes-list]")).toBeNull();
     expect(
       mount.querySelector("[data-testid=classes-status]")?.textContent,
-    ).toBe("You do not have any classrooms yet.");
+    ).toBe("You do not have any classes yet.");
   });
 
   test("shows a loading status before the fetcher resolves", () => {
@@ -1026,7 +1026,11 @@ describe("Assign Experience - Sprint 6E", () => {
     ).toBe(true);
   });
 
-  test("release time and Google Classroom topic are remembered across dialog opens", async () => {
+  test("release time is remembered across dialog opens", async () => {
+    // Sprint 28.5D (microcopy): the inert "Google Classroom topic" text
+    // field no longer renders for a manual (non-LMS) class, so this test
+    // covers the remembered release time only. The manual-class topic field
+    // is asserted absent by curriculum.manual-topic.test.ts.
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, { listClasses: listTwo });
     mount
@@ -1040,11 +1044,9 @@ describe("Assign Experience - Sprint 6E", () => {
     );
     time!.value = "08:20";
     time!.dispatchEvent(new Event("input"));
-    const topic = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-topic-c1]",
-    );
-    topic!.value = "Unit 2";
-    topic!.dispatchEvent(new Event("input"));
+    expect(
+      document.querySelector("[data-testid=assign-row-topic-c1]"),
+    ).toBeNull();
     document
       .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
       ?.click();
@@ -1061,11 +1063,6 @@ describe("Assign Experience - Sprint 6E", () => {
         "[data-testid=assign-row-time-c1]",
       )?.value,
     ).toBe("08:20");
-    expect(
-      document.querySelector<HTMLInputElement>(
-        "[data-testid=assign-row-topic-c1]",
-      )?.value,
-    ).toBe("Unit 2");
   });
 
   test("cancelling the dialog schedules nothing and leaves the card in its unassigned state", async () => {
@@ -1493,12 +1490,16 @@ describe("Settings workspace surface (Sprint 6H)", () => {
     expect(
       mount.querySelector("[data-testid=surface-headline]")?.textContent,
     ).toBe("Settings");
+    // Sprint 28.5D (microcopy): the intro was trimmed to one sentence and
+    // the separate philosophical "purpose" paragraph was removed so the live
+    // controls are easier to find. The information architecture (categories,
+    // growth notice) is unchanged.
     expect(
       mount.querySelector("[data-testid=settings-intro]")?.textContent,
-    ).toContain("Settings is where you will manage how LyfeLabz works for you.");
+    ).toContain("Manage your LyfeLabz preferences.");
     expect(
-      mount.querySelector("[data-testid=settings-purpose]")?.textContent,
-    ).toContain("not a dashboard");
+      mount.querySelector("[data-testid=settings-purpose]"),
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=settings-growth-notice]")?.textContent,
     ).toContain(
@@ -1635,7 +1636,7 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
     expect(
       mount.querySelector("[data-testid=classes-status]")?.textContent,
-    ).toBe("You do not have any classrooms yet.");
+    ).toBe("You do not have any classes yet.");
   });
 
   test("no-selected-class state: classes exist but nothing is selected renders the class list with a chooser prompt", async () => {

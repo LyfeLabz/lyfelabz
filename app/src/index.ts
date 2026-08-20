@@ -84,6 +84,7 @@ import {
 // same-uid sign-out/sign-in (auth-session replacement) cannot let the
 // Assign dialog reuse the prior session's class rows.
 import { invalidateCurriculumClassCache } from "./shell/surfaces/curriculum";
+import type { TeacherShellOutletController } from "./shell/surfaces/curriculum";
 import {
   createAttemptGetForTeacherCallable,
   createAttemptsListForClassCallable,
@@ -257,6 +258,14 @@ async function run(): Promise<void> {
   // mount reads the fresh registry as today.
   let activeAssignmentsInvalidator: ((assignmentId: string) => void) | null =
     null;
+  // Sprint 28.5D (D2A): the persistent Teacher Workspace shell registers a
+  // bounded outlet controller here at mount so Assignment Detail renders
+  // inside the shell's content outlet (header, navigation, footer preserved)
+  // instead of clearing `#app-root`. Re-registered on every shell mount;
+  // null before the shell mounts and on any non-teacher session. When null
+  // the opener falls back to the pre-28.5D `#app-root` mount (defensive; in
+  // production Detail is only reachable from within a mounted shell).
+  let teacherShellOutletController: TeacherShellOutletController | null = null;
   // Sprint 16 Slice 4: session-scoped Curriculum scroll guard. The
   // guard captures the current Curriculum scroll offset when the
   // teacher opens Assignment Detail and restores it (clamped to the
@@ -290,6 +299,10 @@ async function run(): Promise<void> {
   };
   const openAssignmentDetail = (assignmentId: string): void => {
     if (assignmentSummary === null) return;
+    // Capture the narrowed callable so the deferred `renderDetailInto`
+    // closure below keeps the non-null type (TS re-widens `assignmentSummary`
+    // inside a closure that could run later).
+    const summaryCallable = assignmentSummary;
     // Sprint 16 Slice 4: snapshot the current Curriculum scroll offset
     // so the return trip through the lighter Back path can restore the
     // teacher near their prior position. Scoped to the active teacher
@@ -301,14 +314,19 @@ async function run(): Promise<void> {
     // so a lifecycle change fired during this Detail surface's lifetime
     // cannot invoke a stale handler bound to a detached section.
     activeAssignmentsInvalidator = null;
-    const target = findMount();
-    target.textContent = "";
-    renderAssignmentDetail(target, {
+    // Sprint 28.5D (D2A): render Assignment Detail into the persistent shell
+    // outlet when the shell has registered its controller, so the teacher
+    // header and navigation remain mounted (Curriculum stays active) and only
+    // the outlet's local content is replaced. `show` clears the outlet and
+    // supplies the host. Falls back to clearing `#app-root` (pre-28.5D
+    // behavior) only if no shell outlet is registered.
+    const renderDetailInto = (target: HTMLElement): void => {
+      renderAssignmentDetail(target, {
       assignmentId,
       loadMetadata: createAssignmentDetailMetadataReader(
         assignmentDetailRegistry,
       ),
-      summaryCallable: assignmentSummary,
+      summaryCallable: summaryCallable,
       onBack: () => {
         // Sprint 16 Slice 1: happy-path Back re-renders Curriculum
         // against the already-hydrated registry and callable set instead
@@ -379,7 +397,15 @@ async function run(): Promise<void> {
         // remounts and re-installs its handler.
         activeAssignmentsInvalidator?.(metadata.assignmentId);
       },
-    });
+      });
+    };
+    if (teacherShellOutletController !== null) {
+      teacherShellOutletController.show(renderDetailInto);
+    } else {
+      const target = findMount();
+      target.textContent = "";
+      renderDetailInto(target);
+    }
   };
   // Sprint 13B remediation. Stable per-tab seam consumed by the
   // Curriculum surface. `register` records teacher-owned metadata into
@@ -411,6 +437,14 @@ async function run(): Promise<void> {
       invalidator: ((assignmentId: string) => void) | null,
     ) => {
       activeAssignmentsInvalidator = invalidator;
+    },
+    // Sprint 28.5D (D2A): the Teacher Workspace shell registers its content
+    // outlet controller here at mount so the Assignment Detail opener renders
+    // Detail inside the persistent shell rather than clearing `#app-root`.
+    // Registered on every shell mount; the slot is dropped on every bootstrap
+    // transition so a stale, detached outlet cannot be reused.
+    setOutletController: (controller: TeacherShellOutletController | null) => {
+      teacherShellOutletController = controller;
     },
   });
   const rerun = async (): Promise<void> => {
@@ -587,6 +621,11 @@ async function run(): Promise<void> {
       studentDeepLinkResolve = null;
     }
     activeAssignmentsInvalidator = null;
+    // Sprint 28.5D (D2A): drop the shell outlet controller on every bootstrap
+    // transition, mirroring the invalidator above. A teacher shell re-registers
+    // its controller when it mounts later in this same dispatch; a non-teacher
+    // session leaves it null so no stale, detached outlet can be reused.
+    teacherShellOutletController = null;
     // Sprint 16 Slice 4: any bootstrap transition (sign-out, teacher
     // swap, or a full auth-driven `rerun`) invalidates the pending
     // Curriculum scroll snapshot so no offset can restore against an

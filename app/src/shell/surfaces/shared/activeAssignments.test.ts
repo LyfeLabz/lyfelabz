@@ -4,6 +4,7 @@
 import {
   _resetActiveAssignmentsSessionStateForTest,
   compareCards,
+  formatLocalDate,
   isRenderableCard,
   renderActiveAssignmentsSection,
 } from "./activeAssignments";
@@ -42,6 +43,21 @@ describe("isRenderableCard", () => {
   });
   test("rejects a record missing a title", () => {
     expect(isRenderableCard(meta({ title: "" }))).toBe(false);
+  });
+});
+
+describe("formatLocalDate (Sprint 28.5D D4 humanized short date)", () => {
+  test("renders Mon D, YYYY rather than raw ISO", () => {
+    expect(formatLocalDate(new Date(2026, 7, 20, 9, 0, 0))).toBe("Aug 20, 2026");
+    expect(formatLocalDate(new Date(2026, 0, 1, 9, 0, 0))).toBe("Jan 1, 2026");
+    expect(formatLocalDate(new Date(2026, 11, 31, 9, 0, 0))).toBe(
+      "Dec 31, 2026",
+    );
+  });
+  test("never emits the ISO developer format", () => {
+    expect(formatLocalDate(new Date(2026, 7, 20, 9, 0, 0))).not.toMatch(
+      /^\d{4}-\d{2}-\d{2}$/,
+    );
   });
 });
 
@@ -460,18 +476,23 @@ describe("renderActiveAssignmentsSection", () => {
     expect(calls).toEqual([]);
   });
 
-  test("card renders published date when publishedAt is present", () => {
+  test("card renders published date in a human-readable short format", () => {
     const mount = mkMount();
+    // Sprint 28.5D (D4): the dashboard date is humanized from raw ISO
+    // (2026-07-18) to "Jul 18, 2026". Construct the timestamp from local
+    // date components so the local getters used by the deterministic
+    // formatter render a fixed, timezone-independent value.
+    const publishedAt = new Date(2026, 6, 18, 12, 0, 0).getTime();
     renderActiveAssignmentsSection(mount, {
-      listRegistry: () => [
-        meta({ assignmentId: "p1", publishedAt: new Date("2026-07-18T12:00:00Z").getTime() }),
-      ],
+      listRegistry: () => [meta({ assignmentId: "p1", publishedAt })],
       open: () => undefined,
     });
     const date = mount.querySelector(
       "[data-testid=active-assignment-date-p1]",
     );
-    expect(date?.textContent).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(date?.textContent).toBe("Jul 18, 2026");
+    // No raw ISO developer format leaks to the teacher.
+    expect(date?.textContent).not.toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
 

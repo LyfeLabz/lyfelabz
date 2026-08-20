@@ -1718,6 +1718,928 @@
      keeps the divider language consistent with the strengthened
      Workspace divider above. */
   .shell-footer { border-top-color: var(--tw-hairline); }
+
+  /* ==================================================================
+     Sprint 28.5D: Teacher Workspace UX Polish.
+
+     Closes the "two design eras" gap the 28.5C audit found: the
+     post-Sprint-20 surfaces (Assignment Detail, Active Assignments, the
+     class workspace / Snapshot / Roster) emitted shell-* class names that
+     had no CSS and rendered with browser defaults. This block gives those
+     classes the same calm card / button / status grammar as the Sprint 20
+     surfaces, defines the shared management controls (shell-btn,
+     shell-spinner), and tightens Curriculum density at classroom widths.
+     Presentation only: it reuses the existing --tw-* tokens, introduces no
+     new design system, and adds no new components, copy, or DOM.
+     ================================================================== */
+
+  /* ---- D1: shared teacher management controls ---------------------- */
+
+  /* shell-btn is the canonical management button. The default is a calm
+     secondary control: management actions (Open assignment, Close/Reopen,
+     Add, Try again) should read as intentional without every one becoming
+     a bright green primary CTA. Native <button> semantics, accessible
+     names, and testids are owned by the markup; this rule only paints. */
+  .shell-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0.45rem 0.9rem;
+    min-height: 36px;
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--tw-ink-soft);
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background 0.15s ease, border-color 0.15s ease,
+                box-shadow 0.15s ease, color 0.15s ease;
+  }
+  .shell-btn:hover {
+    border-color: var(--tw-nav-edge);
+    color: var(--tw-ink);
+  }
+  .shell-btn:disabled,
+  .shell-btn[aria-busy="true"] {
+    opacity: 0.6;
+    cursor: default;
+    border-color: var(--tw-hairline);
+    color: var(--tw-ink-muted);
+  }
+  /* --primary opts a control into the LyfeLabz green identity; --danger
+     is a calm reversible-lifecycle treatment (never an alarming
+     destructive red). The modifiers exist so future management surfaces
+     can reach for hierarchy without redefining the button. */
+  .shell-btn-primary {
+    color: #fff;
+    background: var(--tw-primary);
+    border-color: var(--tw-primary-strong);
+    box-shadow: 0 1px 2px rgba(23, 90, 49, 0.18);
+  }
+  .shell-btn-primary:hover {
+    background: var(--tw-primary-strong);
+    border-color: var(--tw-primary-strong);
+    color: #fff;
+  }
+  .shell-btn-danger {
+    color: var(--tw-callout-error-ink);
+    background: var(--tw-surface);
+    border-color: var(--tw-callout-error-edge);
+  }
+  .shell-btn-danger:hover {
+    background: var(--tw-callout-error-bg);
+    border-color: var(--tw-callout-error-edge);
+  }
+  /* Publish advances a draft to published: the single deliberate forward
+     action on the draft detail view, so it carries the green primary
+     identity. Every other lifecycle/management action stays a calm
+     secondary shell-btn (restraint check: not every action is a CTA). */
+  .shell-btn.shell-assignment-detail-publish-action {
+    color: #fff;
+    background: var(--tw-primary);
+    border-color: var(--tw-primary-strong);
+    box-shadow: 0 1px 2px rgba(23, 90, 49, 0.18);
+  }
+  .shell-btn.shell-assignment-detail-publish-action:hover {
+    background: var(--tw-primary-strong);
+    color: #fff;
+  }
+
+  /* shell-spinner: a restrained loading indicator. The accessible
+     loading semantics (role="status", aria-live, the visible label) stay
+     in the markup; the spinner is aria-hidden decoration. */
+  .shell-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--tw-hairline);
+    border-top-color: var(--tw-nav-edge);
+    border-radius: 50%;
+    vertical-align: -0.15rem;
+    animation: shell-spin 0.7s linear infinite;
+  }
+  @keyframes shell-spin { to { transform: rotate(360deg); } }
+
+  /* Consistent teal focus ring for the newly-styled controls, matching
+     the Sprint 20 allowlist so keyboard focus is uniform across the
+     workspace. */
+  .shell-btn:focus-visible,
+  .shell-class-nav-button:focus-visible,
+  .shell-active-assignments-toggle-btn:focus-visible,
+  .shell-assignment-detail-back:focus-visible,
+  .shell-assignment-detail-late-recipients-add:focus-visible,
+  .shell-class-workspace-back:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+    border-color: var(--tw-nav-edge);
+  }
+
+  /* Shared quiet status pill, reused across the newer surfaces so the few
+     real statuses get one consistent treatment (audit §17: keep the
+     restraint, do not proliferate pills). */
+  .shell-assignment-detail-status,
+  .shell-snapshot-status,
+  .shell-class-status {
+    display: inline-block;
+    padding: 0.12rem 0.6rem;
+    border-radius: var(--tw-radius-pill);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.5;
+    background: var(--tw-badge-neutral-bg);
+    color: var(--tw-ink-soft);
+    border: 1px solid var(--tw-hairline);
+  }
+  /* Live / positive states adopt the teal identity; closed/archived stay
+     neutral; draft / needs-setup use the calm amber attention tint. */
+  .shell-assignment-detail-status-published,
+  .shell-snapshot-status-active,
+  .shell-class-status-active {
+    background: var(--tw-pill-verified-bg);
+    color: var(--tw-pill-verified-ink);
+    border-color: var(--tw-pill-verified-edge);
+  }
+  .shell-assignment-detail-status-closed,
+  .shell-snapshot-status-archived,
+  .shell-class-status-archived {
+    background: var(--tw-badge-neutral-bg);
+    color: var(--tw-ink-muted);
+    border-color: var(--tw-hairline);
+  }
+  .shell-assignment-detail-status-draft,
+  .shell-snapshot-status-needsSetup,
+  .shell-class-status-needsSetup {
+    background: rgba(176, 122, 26, 0.14);
+    color: #7a5210;
+    border-color: rgba(122, 82, 16, 0.30);
+  }
+
+  /* ---- D2B: Assignment Detail --------------------------------------- */
+
+  /* The detail surface renders inside the shell outlet (D2A), so it
+     inherits the left-aligned reading order. The outer node carries
+     shell-card in markup; neutralize it here so Detail is a page frame
+     (not a card-in-card container) whose sections own the card grammar. */
+  .shell-assignment-detail {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    max-width: 62rem;
+  }
+  /* "Assignment" reads as a quiet eyebrow above the real title. */
+  .shell-assignment-detail-headline {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--tw-ink-muted);
+    margin: 0 0 0.35rem 0;
+    outline: none;
+  }
+  .shell-assignment-detail-back {
+    display: inline-block;
+    margin: 0 0 0.85rem 0;
+    padding: 0.3rem 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-nav-edge);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .shell-assignment-detail-back:hover { text-decoration: underline; }
+  .shell-assignment-detail-body { display: block; }
+
+  /* Header groups identity + state + lifecycle in one surface. */
+  .shell-assignment-detail-header {
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow: var(--tw-shadow-card);
+    padding: 1rem 1.15rem;
+    margin: 0 0 1rem 0;
+  }
+  .shell-assignment-detail-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0 0 0.7rem 0;
+    outline: none;
+  }
+  /* Meta becomes a row of label-over-value groups instead of
+     undifferentiated stacked text (audit §12). */
+  .shell-assignment-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.75rem;
+    margin: 0 0 0.85rem 0;
+  }
+  .shell-assignment-detail-meta-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    align-items: flex-start;
+  }
+  .shell-assignment-detail-meta-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tw-ink-muted);
+    margin: 0;
+  }
+  .shell-assignment-detail-meta-value {
+    margin: 0;
+    color: var(--tw-ink);
+    font-weight: 500;
+  }
+  .shell-assignment-detail-lifecycle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  .shell-assignment-detail-draft-label,
+  .shell-assignment-detail-closed-label {
+    margin: 0;
+    color: var(--tw-ink-muted);
+    font-weight: 500;
+  }
+  /* Lifecycle error lines are real red callouts and wrap to their own row
+     below the actions (audit §18: role="alert" should look like an error). */
+  .shell-assignment-detail-close-error,
+  .shell-assignment-detail-reopen-error,
+  .shell-assignment-detail-publish-error {
+    flex: 1 0 100%;
+    margin: 0.35rem 0 0 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-callout-error-ink);
+    font-size: 0.9rem;
+  }
+
+  /* Section surfaces. The plain (non-draft) summary host is a transparent
+     wrapper because the Assignment Summary card inside it already carries
+     shell-card; every other section is a card in its own right. */
+  .shell-assignment-detail-summary { margin: 0 0 1rem 0; }
+  .shell-assignment-detail-roster,
+  .shell-assignment-detail-late-recipients,
+  .shell-assignment-detail-questions,
+  .shell-assignment-detail-lms,
+  .shell-assignment-detail-draft-summary {
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow: var(--tw-shadow-card);
+    padding: 1rem 1.15rem;
+    margin: 0 0 1rem 0;
+  }
+  .shell-assignment-detail-roster-heading,
+  .shell-assignment-detail-late-recipients-heading,
+  .shell-assignment-detail-questions-heading,
+  .shell-assignment-detail-lms-heading,
+  .shell-assignment-detail-draft-summary-heading,
+  .shell-assignment-summary-headline {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0 0 0.6rem 0;
+  }
+  .shell-assignment-detail-draft-summary-body,
+  .shell-assignment-detail-roster-empty,
+  .shell-assignment-detail-roster-empty-recipients,
+  .shell-assignment-detail-roster-discrepancy,
+  .shell-assignment-detail-loading-label,
+  .shell-assignment-detail-empty {
+    color: var(--tw-ink-muted);
+    margin: 0.25rem 0 0 0;
+  }
+  .shell-assignment-detail-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--tw-ink-muted);
+    padding: 0.5rem 0;
+  }
+  .shell-assignment-detail-loading-label { margin: 0; }
+
+  /* Top-level detail error: red callout + retry. */
+  .shell-assignment-detail-error {
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    border-radius: var(--tw-radius-card);
+    color: var(--tw-callout-error-ink);
+    padding: 1rem 1.15rem;
+  }
+  .shell-assignment-detail-error-message { margin: 0 0 0.6rem 0; }
+
+  /* Roster rows. */
+  .shell-assignment-detail-roster-group { margin: 0 0 0.75rem 0; }
+  .shell-assignment-detail-roster-group:last-child { margin-bottom: 0; }
+  .shell-assignment-detail-roster-group-heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--tw-ink-soft);
+    margin: 0.5rem 0 0.25rem 0;
+  }
+  .shell-assignment-detail-roster-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .shell-assignment-detail-roster-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--tw-hairline-soft);
+  }
+  .shell-assignment-detail-roster-row:last-child { border-bottom: 0; }
+  .shell-assignment-detail-roster-name { color: var(--tw-ink); }
+  .shell-assignment-detail-roster-percentage {
+    color: var(--tw-ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Late recipients: each name and its Add action are one scannable row. */
+  .shell-assignment-detail-late-recipients-status,
+  .shell-assignment-detail-late-recipients-loading {
+    color: var(--tw-ink-muted);
+    margin: 0 0 0.5rem 0;
+    min-height: 1.2em;
+  }
+  .shell-assignment-detail-late-recipients-empty {
+    color: var(--tw-ink-muted);
+    margin: 0.25rem 0 0 0;
+  }
+  .shell-assignment-detail-late-recipients-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.25rem 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .shell-assignment-detail-late-recipients-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0.7rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-assignment-detail-late-recipients-name {
+    color: var(--tw-ink);
+    font-weight: 500;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  /* The Add control is not a shell-btn in markup; give it the same calm
+     secondary treatment so it reads as a real, distinct button per row. */
+  .shell-assignment-detail-late-recipients-add {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.35rem 0.8rem;
+    min-height: 32px;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--tw-ink-soft);
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease,
+                color 0.15s ease;
+  }
+  .shell-assignment-detail-late-recipients-add:hover {
+    border-color: var(--tw-nav-edge);
+    color: var(--tw-ink);
+  }
+  .shell-assignment-detail-late-recipients-add:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  /* Closed/draft "add" note is informational, not broken. */
+  .shell-assignment-detail-late-recipients-info-note {
+    margin: 0.25rem 0 0 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--tw-callout-info-bg);
+    border: 1px solid var(--tw-callout-info-edge);
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-callout-info-ink);
+    font-size: 0.9rem;
+  }
+  /* Add failure is a real error. */
+  .shell-assignment-detail-late-recipients-error,
+  .shell-assignment-detail-late-recipients-action-error {
+    margin: 0.35rem 0 0 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-callout-error-ink);
+    font-size: 0.9rem;
+  }
+
+  /* Question results. */
+  .shell-assignment-detail-questions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.25rem 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .shell-assignment-detail-question {
+    padding: 0.6rem 0.75rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-assignment-detail-question-prompt {
+    margin: 0 0 0.2rem 0;
+    font-weight: 600;
+    color: var(--tw-ink);
+  }
+  .shell-assignment-detail-question-rate {
+    margin: 0 0 0.35rem 0;
+    color: var(--tw-ink-soft);
+    font-size: 0.9rem;
+  }
+  .shell-assignment-detail-question-options {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .shell-assignment-detail-question-option {
+    color: var(--tw-ink-muted);
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .shell-assignment-detail-questions-loading,
+  .shell-assignment-detail-questions-deferred {
+    color: var(--tw-ink-muted);
+    margin: 0.25rem 0 0 0;
+  }
+  .shell-assignment-detail-questions-error {
+    margin: 0.35rem 0 0 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-callout-error-ink);
+    font-size: 0.9rem;
+  }
+
+  /* LMS publication panel: integrated, calm, secondary. */
+  .shell-assignment-detail-lms-status {
+    margin: 0 0 0.6rem 0;
+    color: var(--tw-ink-soft);
+  }
+  .shell-assignment-detail-lms-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Draft inline editor. */
+  .shell-assignment-detail-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .shell-assignment-detail-editor-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .shell-assignment-detail-editor-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--tw-ink-soft);
+  }
+  .shell-assignment-detail-editor-input {
+    font: inherit;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+    min-height: 36px;
+    box-sizing: border-box;
+  }
+  .shell-assignment-detail-editor-input:focus-visible {
+    outline: none;
+    border-color: var(--tw-nav-edge);
+    box-shadow: var(--tw-focus-ring);
+  }
+  .shell-assignment-detail-editor-instructions {
+    color: var(--tw-ink-muted);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  .shell-assignment-detail-editor-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+  .shell-assignment-detail-editor-error,
+  .shell-assignment-detail-editor-save-error {
+    margin: 0.35rem 0 0 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-callout-error-ink);
+    font-size: 0.9rem;
+  }
+
+  /* Assignment Summary metric grid (inside the summary card). */
+  .shell-assignment-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+    gap: 0.6rem;
+    margin: 0.5rem 0 0 0;
+  }
+  .shell-assignment-summary-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.55rem 0.7rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-assignment-summary-metric-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tw-ink-muted);
+    margin: 0;
+  }
+  .shell-assignment-summary-metric-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .shell-assignment-summary-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--tw-ink-muted);
+  }
+  .shell-assignment-summary-loading-label { margin: 0; }
+  .shell-assignment-summary-empty {
+    color: var(--tw-ink-muted);
+    margin: 0.25rem 0 0 0;
+  }
+  .shell-assignment-summary-error {
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-callout-error-ink);
+    padding: 0.75rem 0.85rem;
+  }
+  .shell-assignment-summary-error-message { margin: 0 0 0.5rem 0; }
+
+  /* ---- D4: Active Assignments dashboard ----------------------------- */
+
+  .shell-active-assignments-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--tw-radius-control);
+    font: inherit;
+    cursor: pointer;
+    color: var(--tw-ink);
+  }
+  .shell-active-assignments-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+  }
+  /* A caret so the accordion reads as expandable without color alone. */
+  .shell-active-assignments-toggle-btn::before {
+    content: "▸";
+    color: var(--tw-ink-muted);
+    font-size: 0.8rem;
+    transition: transform 0.15s ease;
+  }
+  .shell-active-assignments-toggle-btn[aria-expanded="true"]::before {
+    transform: rotate(90deg);
+  }
+  .shell-active-assignments-summaries {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: 0.5rem 0 0 0;
+  }
+  .shell-active-assignment-summary {
+    margin: 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.92rem;
+  }
+  .shell-active-assignments-expanded { margin: 0.65rem 0 0 0; }
+  .shell-active-assignments-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.75rem;
+    margin: 0.5rem 0 0 0;
+  }
+  .shell-active-assignment-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.8rem 0.9rem;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow: var(--tw-shadow-card);
+  }
+  .shell-active-assignment-title {
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0;
+  }
+  .shell-active-assignment-class {
+    margin: 0;
+    color: var(--tw-ink-soft);
+    font-size: 0.9rem;
+  }
+  .shell-active-assignment-state {
+    margin: 0.1rem 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .shell-active-assignment-progress {
+    margin: 0;
+    color: var(--tw-ink-soft);
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .shell-active-assignment-date {
+    margin: 0.1rem 0 0.4rem 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.85rem;
+  }
+  .shell-active-assignment-open {
+    align-self: flex-start;
+    margin-top: 0.2rem;
+  }
+  .shell-active-assignments-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 0.5rem 0;
+    color: var(--tw-ink-soft);
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  /* ---- D3: class workspace ------------------------------------------ */
+
+  .shell-class-workspace-back {
+    display: inline-block;
+    margin: 0 0 0.75rem 0;
+    padding: 0.3rem 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-nav-edge);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .shell-class-workspace-back:hover { text-decoration: underline; }
+
+  /* Snapshot / Roster switcher: a compact segmented tab bar with a real
+     selected state (underline + weight + color, not color alone) and
+     aria-current already set in markup. Semantics stay button-based. */
+  .shell-class-nav { margin: 0.5rem 0 1rem 0; }
+  .shell-class-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--tw-hairline);
+  }
+  .shell-class-nav-item { margin: 0; }
+  .shell-class-nav-button {
+    margin: 0;
+    padding: 0.45rem 0.9rem;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--tw-ink-muted);
+    cursor: pointer;
+  }
+  .shell-class-nav-button:hover { color: var(--tw-ink); }
+  .shell-class-nav-active {
+    color: var(--tw-nav-edge);
+    border-bottom-color: var(--tw-nav-edge);
+  }
+
+  /* Class identity line: grade and status no longer run together
+     (audit §17: "Grade 7Active" -> "Grade 7  [Active]"). */
+  .shell-snapshot-context {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.25rem 0 1rem 0;
+  }
+  .shell-snapshot-grade {
+    color: var(--tw-ink-muted);
+    font-weight: 500;
+  }
+  .shell-snapshot-purpose,
+  .shell-roster-purpose { margin: 0 0 0.5rem 0; }
+  .shell-roster-foundation {
+    color: var(--tw-ink-muted);
+    margin: 0.5rem 0 0 0;
+    max-width: 42rem;
+  }
+  .shell-snapshot-region { margin: 0.5rem 0 0 0; }
+  .shell-snapshot-empty {
+    color: var(--tw-ink-muted);
+    margin: 0.5rem 0 0 0;
+  }
+  .shell-snapshot-preview-notice {
+    color: var(--tw-ink-muted);
+    font-size: 0.88rem;
+    margin: 0 0 0.6rem 0;
+  }
+  .shell-snapshot-groups {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: 0.75rem;
+  }
+  .shell-snapshot-group {
+    padding: 0.8rem 0.9rem;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow: var(--tw-shadow-card);
+  }
+  .shell-snapshot-group-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0 0 0.15rem 0;
+  }
+  .shell-snapshot-group-count {
+    color: var(--tw-ink-muted);
+    font-size: 0.85rem;
+    margin: 0 0 0.4rem 0;
+  }
+  .shell-snapshot-group-names {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .shell-snapshot-group-name { color: var(--tw-ink-soft); }
+
+  /* Class cards: left-aligned like every other card in the product
+     (audit §9: the class card was the lone center-aligned outlier - a
+     <button> inheriting the browser default), laid out in an even grid. */
+  .shell-classes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.85rem;
+  }
+  .shell-classes-item { margin: 0; }
+  .shell-class-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    text-align: left;
+    margin: 0;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+  }
+  .shell-class-card:hover {
+    border-color: var(--tw-nav-edge);
+  }
+  .shell-class-card:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+    border-color: var(--tw-nav-edge);
+  }
+  .shell-class-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0;
+  }
+  .shell-class-grade {
+    margin: 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.9rem;
+  }
+  .shell-class-joincode {
+    margin: 0;
+    color: var(--tw-ink-soft);
+    font-size: 0.85rem;
+  }
+  .shell-class-joincode-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--tw-ink);
+  }
+  .shell-class-setup-affordance {
+    margin: 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.9rem;
+  }
+  .shell-class-setup-cta {
+    color: var(--tw-nav-edge);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* ---- D5: Curriculum density at classroom widths ------------------- */
+
+  /* Tighten the grid track and card min-height so classroom laptops
+     (1024) and split Chromebooks (768) show materially more lessons per
+     screen: ~4 cols @1280, 3 @1024, 2 @768, 1 on phones. The two-line
+     title clamp and equal-height contract are preserved. */
+  .shell-curriculum-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  .shell-lesson-card { min-height: 7.25rem; }
+
+  /* Motion preference: the spinner and caret honor reduced-motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .shell-spinner { animation: none; }
+    .shell-active-assignments-toggle-btn::before { transition: none; }
+    .shell-btn,
+    .shell-assignment-detail-late-recipients-add,
+    .shell-class-card { transition: none !important; }
+  }
+
+  /* Coarse-pointer touch targets for the new controls. */
+  @media (pointer: coarse) {
+    .shell-btn,
+    .shell-assignment-detail-late-recipients-add,
+    .shell-class-nav-button,
+    .shell-active-assignment-open { min-height: 44px; }
+  }
+
+  /* Narrow widths: detail meta and rows stack cleanly; sections stay
+     full-width. */
+  @media (max-width: 480px) {
+    .shell-assignment-detail-meta { gap: 0.5rem 1rem; }
+    .shell-assignment-detail-late-recipients-row,
+    .shell-assignment-detail-roster-row {
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .shell-active-assignments-list,
+    .shell-classes-list,
+    .shell-snapshot-groups { grid-template-columns: 1fr; }
+  }
 </style>
 <style id="auth-canonical">
   /* ------------------------------------------------------------------

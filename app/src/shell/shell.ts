@@ -93,6 +93,13 @@ export function mountTeacherShell(
   body.setAttribute("data-testid", "shell-body");
 
   let activeKey: WorkspaceSurfaceKey = "curriculum";
+  // Sprint 28.5D (D2A): true while an overlay surface (Assignment Detail)
+  // occupies the outlet in place of the active workspace surface. Curriculum
+  // remains the active navigation context throughout, but a nav click on the
+  // already-active item must still re-mount that surface to leave the
+  // overlay, so the normal same-key early-return is suspended while this is
+  // set. This is a single bounded flag, not a navigation state machine.
+  let showingDetail = false;
   const navMount = doc.createElement("div");
   navMount.className = "shell-nav-mount";
   body.appendChild(navMount);
@@ -121,7 +128,14 @@ export function mountTeacherShell(
     renderNavigation(navMount, {
       activeKey,
       onSelect: (next) => {
-        if (next === activeKey) return;
+        // Sprint 28.5D (D2A): while Assignment Detail occupies the outlet,
+        // selecting the already-active item (Curriculum) is a real
+        // navigation that must clear Detail and re-mount the surface, so the
+        // same-key early-return only applies when a surface (not Detail) is
+        // showing. Selecting any item leaves Detail cleanly: the outlet is
+        // cleared and the chosen surface mounts fresh.
+        if (next === activeKey && !showingDetail) return;
+        showingDetail = false;
         activeKey = next;
         outletHost.textContent = "";
         mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
@@ -136,4 +150,19 @@ export function mountTeacherShell(
   mount.appendChild(body);
 
   renderFooter(mount);
+
+  // Sprint 28.5D (D2A): register the shell's outlet with the entry-point
+  // Assignment Detail opener so Detail renders inside this persistent shell
+  // (header, navigation, footer preserved) rather than replacing `#app-root`.
+  // `show` clears only the outlet's local content and hands back the host;
+  // the active navigation key is left untouched so Curriculum stays the
+  // active context while Detail is displayed. Guarded so a shell built
+  // without the seam (or a harness that does not wire it) is unaffected.
+  deps.assignmentDetail?.setOutletController?.({
+    show: (render) => {
+      showingDetail = true;
+      outletHost.textContent = "";
+      render(outletHost);
+    },
+  });
 }
