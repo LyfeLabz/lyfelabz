@@ -1,0 +1,269 @@
+{
+  "activityId": "energy-flow",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Where does the energy in almost every ecosystem originally come from?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The soil"
+        },
+        {
+          "optionId": "B",
+          "text": "Decomposers"
+        },
+        {
+          "optionId": "C",
+          "text": "The Sun"
+        },
+        {
+          "optionId": "D",
+          "text": "Water"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Energy enters almost every ecosystem as sunlight. The Sun is the original source of energy for nearly all living things."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "An organism that makes its own food, usually using sunlight, is called what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A producer"
+        },
+        {
+          "optionId": "B",
+          "text": "A consumer"
+        },
+        {
+          "optionId": "C",
+          "text": "A scavenger"
+        },
+        {
+          "optionId": "D",
+          "text": "A carnivore"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A producer, also called an autotroph, makes its own food, usually through photosynthesis."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which type of organism cannot make its own food and must eat other organisms?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A producer"
+        },
+        {
+          "optionId": "B",
+          "text": "An autotroph"
+        },
+        {
+          "optionId": "C",
+          "text": "The Sun"
+        },
+        {
+          "optionId": "D",
+          "text": "A consumer"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A consumer, also called a heterotroph, cannot make food and gets energy by eating other organisms."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "A rabbit eats only plants. What kind of consumer is it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A carnivore"
+        },
+        {
+          "optionId": "B",
+          "text": "A herbivore"
+        },
+        {
+          "optionId": "C",
+          "text": "A decomposer"
+        },
+        {
+          "optionId": "D",
+          "text": "A producer"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A herbivore eats only plants. A rabbit that eats grass and leaves is a herbivore."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "What do decomposers do in an ecosystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They make food from sunlight"
+        },
+        {
+          "optionId": "B",
+          "text": "They hunt and kill live prey"
+        },
+        {
+          "optionId": "C",
+          "text": "They break down dead matter and return materials to the environment"
+        },
+        {
+          "optionId": "D",
+          "text": "They add brand new energy to the ecosystem"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Decomposers break down waste and dead organisms, returning raw materials to the environment for producers to reuse."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What does a food chain show?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Every organism that lives in a region"
+        },
+        {
+          "optionId": "B",
+          "text": "One path of energy flow through an ecosystem"
+        },
+        {
+          "optionId": "C",
+          "text": "Only the decomposers in an ecosystem"
+        },
+        {
+          "optionId": "D",
+          "text": "The weather patterns of an ecosystem"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A food chain shows one single path of energy as it flows from one organism to the next."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "How is a food web different from a food chain?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It has no producers in it"
+        },
+        {
+          "optionId": "B",
+          "text": "It shows only one path of energy"
+        },
+        {
+          "optionId": "C",
+          "text": "It leaves out all the consumers"
+        },
+        {
+          "optionId": "D",
+          "text": "It shows many overlapping food chains at once"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A food web combines many overlapping food chains to show all the paths energy can take through an ecosystem."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "About how much of the energy at one feeding level is passed on to the next level up?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "About 10%"
+        },
+        {
+          "optionId": "B",
+          "text": "About 50%"
+        },
+        {
+          "optionId": "C",
+          "text": "About 90%"
+        },
+        {
+          "optionId": "D",
+          "text": "All of it"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Only about 10% of the energy at a level moves to the next level. The rest is used for life processes or lost as heat."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "At which level of an energy pyramid is the most energy available?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The top consumers"
+        },
+        {
+          "optionId": "B",
+          "text": "The decomposers"
+        },
+        {
+          "optionId": "C",
+          "text": "The producers"
+        },
+        {
+          "optionId": "D",
+          "text": "The second-level consumers"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The greatest amount of energy is at the producer level, at the base of the pyramid. Energy shrinks toward the top."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Why are there usually far fewer top predators than plants in an ecosystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Top predators are simply larger animals"
+        },
+        {
+          "optionId": "B",
+          "text": "Much less energy is available at the higher feeding levels"
+        },
+        {
+          "optionId": "C",
+          "text": "Plants only grow during certain seasons"
+        },
+        {
+          "optionId": "D",
+          "text": "Top predators do not need to eat very often"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Because only about 10% of energy passes up each level, there is far less energy at the top, so it supports fewer organisms."
+    }
+  ]
+}

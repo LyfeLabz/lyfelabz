@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_cell-types.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=cell-types --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2634,6 +2640,10 @@ function ctSelectAnswer(qi, chosenIndex) {
   document.getElementById(`ct-q-${qi}-${chosenIndex}`).classList.add('selected');
   ctUpdateProgress();
   ctRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(ctQuizState.selected);
 }
 
 // ── PROGRESS BAR ──────────────────────────────────────────────────────
@@ -2658,6 +2668,7 @@ function ctValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function ctSubmitQuiz() {
   if (ctQuizState.submitted) return;
+  var ctAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!ctQuizState.selected.every(s => s !== null)) return;
   const ctThinkGate = document.getElementById('ct-thinking');
@@ -2719,6 +2730,33 @@ function ctSubmitQuiz() {
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (ctAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by ctQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var ctFinalStatus = document.getElementById('ct-submit-status');
+    ctFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var ctGenericError = 'Submission did not complete. Please refresh and try again.';
+    function ctShowSubmitError(msg) {
+      ctFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ctGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(ctQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        ctFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        ctShowSubmitError(r.message);
+      } else {
+        ctShowSubmitError(null);
+      }
+    }, function () {
+      ctShowSubmitError(null);
+    });
+    return;
   }
 
   if (ctQuizMode === 'practice') {

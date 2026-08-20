@@ -1,0 +1,269 @@
+{
+  "activityId": "pure-substances-and-mixtures",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes a pure substance?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A sample of matter with the same ingredients throughout - only one type of particle"
+        },
+        {
+          "optionId": "B",
+          "text": "Any clear liquid that you can see through, like apple juice"
+        },
+        {
+          "optionId": "C",
+          "text": "A combination of different particles that are not chemically joined"
+        },
+        {
+          "optionId": "D",
+          "text": "Matter that has been cleaned with a filter"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A pure substance has the same ingredients throughout: only one type of particle, which can be an element, a molecule, or a compound. Looking clear or clean is not the test - apple juice looks uniform but contains many different substances."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A scientist zooms in on a sample of air and finds nitrogen molecules, oxygen molecules, and a few other gases - all spread perfectly evenly. What is air?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A pure substance, because all the particles are gases"
+        },
+        {
+          "optionId": "B",
+          "text": "A homogeneous mixture, because different particles are evenly distributed"
+        },
+        {
+          "optionId": "C",
+          "text": "A heterogeneous mixture, because there is more than one type of particle"
+        },
+        {
+          "optionId": "D",
+          "text": "A compound, because the gases are chemically joined"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Air contains different particles (nitrogen, oxygen, and more) that are NOT chemically joined, so it is a mixture - and because they are evenly distributed, it is homogeneous. \"Homo\" means one or same throughout."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which line correctly matches a mixture to its type?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Chicken soup = homogeneous, because everything is in one bowl"
+        },
+        {
+          "optionId": "B",
+          "text": "Coffee = heterogeneous, because it is made of water plus coffee"
+        },
+        {
+          "optionId": "C",
+          "text": "Chicken soup = heterogeneous, because its parts are unevenly distributed and you can see them"
+        },
+        {
+          "optionId": "D",
+          "text": "Salad dressing = homogeneous, because shaking blends it completely"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "\"Hetero\" means many different parts you can see. Chicken soup has chunks of chicken, vegetables, and noodles spread unevenly - one spoonful is never the same as the next. Coffee is homogeneous, and shaken dressing separates right back into layers."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "A chef accidentally mixes sugar into a pot of water and it dissolves completely. Which method gets the sugar back, and why?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Filtration, because the filter will trap the sugar crystals"
+        },
+        {
+          "optionId": "B",
+          "text": "Sieving, because the sugar grains are bigger than water particles"
+        },
+        {
+          "optionId": "C",
+          "text": "Magnetism, because sugar is attracted to magnets"
+        },
+        {
+          "optionId": "D",
+          "text": "Evaporation, because removing the water as gas leaves the solid sugar behind"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Dissolved sugar particles are too small for any filter or sieve to catch, and sugar is not magnetic. Evaporation removes the liquid by turning it into gas, leaving the solid sugar behind - the same trick that recovers salt from salt water."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A mixture contains iron filings, pebbles, and fine sand. Which plan separates all three parts?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Use a magnet to remove the iron, then a sieve to separate the pebbles from the sand"
+        },
+        {
+          "optionId": "B",
+          "text": "Use evaporation to remove the sand, then a magnet for the iron"
+        },
+        {
+          "optionId": "C",
+          "text": "Use a coffee filter to catch the pebbles, then evaporation for the rest"
+        },
+        {
+          "optionId": "D",
+          "text": "It cannot be separated, because the parts are chemically joined"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Match each tool to a difference: only the iron is magnetic, so the magnet pulls it out first. Then the pebbles and sand differ in size, so a sieve lets the fine sand fall through. The parts were never chemically joined, so physical separation always works."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Which sample is a pure substance?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A bowl of trail mix with nuts and raisins"
+        },
+        {
+          "optionId": "B",
+          "text": "A bar of pure gold"
+        },
+        {
+          "optionId": "C",
+          "text": "A glass of sweet iced tea"
+        },
+        {
+          "optionId": "D",
+          "text": "A scoop of garden soil"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A pure substance is made of only one type of particle. A bar of pure gold is nothing but gold atoms - an element. Trail mix, iced tea, and garden soil are all mixtures of different substances."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "You pour salt water through a paper coffee filter, but the water that drips out still tastes salty. Why?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The filter paper added salt to the water"
+        },
+        {
+          "optionId": "B",
+          "text": "Salt is magnetic and clings to the filter"
+        },
+        {
+          "optionId": "C",
+          "text": "The dissolved salt particles are too small for the filter to trap"
+        },
+        {
+          "optionId": "D",
+          "text": "Salt and water chemically joined into a compound"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Dissolved salt spreads through water as tiny particles far smaller than the holes in filter paper, so they pass right through. To get the salt back you need evaporation, which removes the water as gas and leaves the salt behind."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Iron filings are mixed into a pile of dry sand. Which tool separates them most easily, and why?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Evaporation, because the sand will turn into gas"
+        },
+        {
+          "optionId": "B",
+          "text": "Filtration, because the iron will dissolve in water"
+        },
+        {
+          "optionId": "C",
+          "text": "Sieving, because iron and sand are exactly the same size"
+        },
+        {
+          "optionId": "D",
+          "text": "Magnetism, because iron is magnetic but sand is not"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A magnet grabs only the magnetic part. Iron is magnetic and sand is not, so a magnet pulls the iron filings straight out. Evaporation and filtration target liquids, and sieving needs a size difference between the parts."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which of these is a heterogeneous mixture?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Salt water, because the salt spreads evenly"
+        },
+        {
+          "optionId": "B",
+          "text": "A green salad, because you can see the separate pieces"
+        },
+        {
+          "optionId": "C",
+          "text": "Clean air, because it holds several gases"
+        },
+        {
+          "optionId": "D",
+          "text": "Black coffee, because it is dark in color"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Heterogeneous means the parts are spread unevenly and you can pick them out. A salad has visible, separate pieces. Salt water, air, and coffee are all homogeneous - evenly mixed throughout."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "What is the key difference between a mixture and a compound?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A mixture always looks cloudy, while a compound is always clear"
+        },
+        {
+          "optionId": "B",
+          "text": "A mixture is always a liquid, while a compound is always a solid"
+        },
+        {
+          "optionId": "C",
+          "text": "A mixture's parts are not chemically joined and can be separated physically"
+        },
+        {
+          "optionId": "D",
+          "text": "A mixture can never be separated once it has been made"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "In a mixture the substances are combined but never chemically joined, so physical methods like filtration or evaporation can pull them apart. In a compound the atoms are chemically bonded, which is why a mixture's parts stay separable and a compound's do not."
+    }
+  ]
+}

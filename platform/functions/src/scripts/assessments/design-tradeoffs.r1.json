@@ -1,0 +1,269 @@
+{
+  "activityId": "design-tradeoffs",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is the difference between a criterion and a constraint?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A criterion is a goal the design aims for; a constraint is a limit it must stay within"
+        },
+        {
+          "optionId": "B",
+          "text": "A criterion is a limit; a constraint is a goal"
+        },
+        {
+          "optionId": "C",
+          "text": "They mean exactly the same thing"
+        },
+        {
+          "optionId": "D",
+          "text": "A criterion applies only to cars and a constraint only to bikes"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Criteria are the goals you want, like speed or low cost. Constraints are the fixed limits you must respect, like a budget or the materials available."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A design team is told the product must weigh under 2 kilograms. This requirement is a",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "criterion"
+        },
+        {
+          "optionId": "B",
+          "text": "tradeoff"
+        },
+        {
+          "optionId": "C",
+          "text": "constraint"
+        },
+        {
+          "optionId": "D",
+          "text": "prototype"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A fixed limit the design must stay within is a constraint. A maximum weight the design cannot exceed is a boundary, not a goal."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "An engineer makes a drone's frame thinner to reduce its weight, but now the frame bends more easily. This is an example of a",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "constraint"
+        },
+        {
+          "optionId": "B",
+          "text": "tradeoff"
+        },
+        {
+          "optionId": "C",
+          "text": "criterion"
+        },
+        {
+          "optionId": "D",
+          "text": "decision matrix"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Gaining one quality (less weight) by giving up another (strength) is a tradeoff. Improving one criterion often worsens another."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Why is it usually impossible to make a design that is best at every criterion at once?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Engineers are not skilled enough to do it"
+        },
+        {
+          "optionId": "B",
+          "text": "The criteria often trade against each other, so improving one worsens another"
+        },
+        {
+          "optionId": "C",
+          "text": "There are never enough materials"
+        },
+        {
+          "optionId": "D",
+          "text": "Customers do not want good designs"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Criteria pull against each other. Making a product faster, cheaper, lighter, and stronger all at once is rarely possible, so engineers must balance them."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "What does it mean to optimize a design?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "To make it perfect at every single criterion"
+        },
+        {
+          "optionId": "B",
+          "text": "To remove all of its constraints"
+        },
+        {
+          "optionId": "C",
+          "text": "To adjust it so it meets the most important criteria as well as possible within the constraints"
+        },
+        {
+          "optionId": "D",
+          "text": "To copy a competing design exactly"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Optimization is finding the best balance for the important criteria while staying inside the constraints. It manages tradeoffs rather than erasing them."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "A team compares three designs by scoring each one on speed, cost, and safety, then adding the scores. What tool are they using?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "a prototype"
+        },
+        {
+          "optionId": "B",
+          "text": "a constraint list"
+        },
+        {
+          "optionId": "C",
+          "text": "a decision matrix"
+        },
+        {
+          "optionId": "D",
+          "text": "a boundary"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A decision matrix scores each competing design against the criteria so the options can be compared fairly, side by side."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "In a decision matrix, what does weighting do?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It gives the most important criteria extra value in the total"
+        },
+        {
+          "optionId": "B",
+          "text": "It makes every design score the same"
+        },
+        {
+          "optionId": "C",
+          "text": "It removes the lowest-scoring design automatically"
+        },
+        {
+          "optionId": "D",
+          "text": "It measures how heavy each design is"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Weighting gives more importance to the criteria that matter most, so those rows count for more when the scores are added up."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Two phones solve the same need in different ways: one has a huge battery and one is very thin and light. These are best described as",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "constraints"
+        },
+        {
+          "optionId": "B",
+          "text": "competing solutions"
+        },
+        {
+          "optionId": "C",
+          "text": "prototypes of each other"
+        },
+        {
+          "optionId": "D",
+          "text": "the same design"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Competing solutions are two or more different designs for the same problem. Engineers compare them to choose the best fit."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "In the bike decision matrix, the Cruiser and All-Terrain tied. What is the best way to break the tie?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Pick the one that looks nicer"
+        },
+        {
+          "optionId": "B",
+          "text": "Decide which criteria matter most for the rider and weight them"
+        },
+        {
+          "optionId": "C",
+          "text": "Always choose the cheapest option"
+        },
+        {
+          "optionId": "D",
+          "text": "Add a brand-new design instead"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The best choice depends on the goal. Deciding which criteria matter most and weighting them shows which design fits that particular rider best."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which statement best sums up engineering design?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Every good design is perfect at everything"
+        },
+        {
+          "optionId": "B",
+          "text": "The best design has no constraints"
+        },
+        {
+          "optionId": "C",
+          "text": "Every design involves tradeoffs, and the best one balances them for the goal"
+        },
+        {
+          "optionId": "D",
+          "text": "Tradeoffs only happen in cheap products"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Every real design is a compromise. Because criteria trade against each other within constraints, the best design balances those tradeoffs to fit the goal."
+    }
+  ]
+}

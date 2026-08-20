@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_earths-place-in-the-universe.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=earths-place-in-the-universe --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2156,6 +2162,10 @@ function epuSelectAnswer(qi, chosenIndex) {
   // Submit unlocks only when every question is answered AND a written
   // explanation exists (see epuRefreshSubmitState).
   epuRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(epuQuizState.selected);
 }
 
 function epuUpdateProgress() {
@@ -2177,6 +2187,7 @@ function epuValidateStudentInfo() {
 
 function epuSubmitQuiz() {
   if (epuQuizState.submitted) return;
+  var epuAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!epuQuizState.selected.every(s => s !== null)) return;
   const epuThinkGate = document.getElementById('epu-thinking');
@@ -2236,6 +2247,33 @@ function epuSubmitQuiz() {
       const more = document.getElementById('go-further-anchor');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (epuAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by epuQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var epuFinalStatus = document.getElementById('epu-submit-status');
+    epuFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var epuGenericError = 'Submission did not complete. Please refresh and try again.';
+    function epuShowSubmitError(msg) {
+      epuFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || epuGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(epuQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        epuFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        epuShowSubmitError(r.message);
+      } else {
+        epuShowSubmitError(null);
+      }
+    }, function () {
+      epuShowSubmitError(null);
+    });
+    return;
   }
 
   if (epuQuizMode === 'practice') {

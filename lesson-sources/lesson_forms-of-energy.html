@@ -1,0 +1,2426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_forms-of-energy.html">
+<meta name="description" content="Explore the forms of energy, potential and kinetic energy, joules, and how energy transforms from one form to another while the total amount is conserved. A Grade 7 physical science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Forms of Energy</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #3498db;
+    --accent-dim:  rgba(52,152,219,0.15);
+    --accent-glow: rgba(52,152,219,0.3);
+    --accent-dark: #2980b9;
+    --accent2:     #5dade2;
+    --teal:        #3bc8e8;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --orange:      #e67e22;
+    --green:       #2ecc71;
+    --blue:        #5dade2;
+    --red:         #e74c3c;
+    --dark:        #1a2535;
+    --dark2:       #243447;
+    --card:        #1e2f42;
+    --text:        #e8f4f8;
+    --text-muted:  #8aafca;
+    --border:      rgba(52,152,219,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(16,24,36,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(52,152,219,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(52,152,219,0.25); border-color: rgba(52,152,219,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #141d2c 0%, #243447 50%, #1a2535 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(52,152,219,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(93,173,226,0.07) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,244,248,0.78); max-width: 620px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(52,152,219,0.08); border: 1px solid rgba(52,152,219,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(93,173,226,0.85); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(52,152,219,0.06); border: 1px solid rgba(52,152,219,0.22);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(138,175,202,0.8); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ── */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid #9fb8cc; border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(138,175,202,0.85); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(93,173,226,0.8); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,244,248,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(52,152,219,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,244,248,0.78); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto; padding: 1.4rem 1.8rem;
+    background: rgba(52,152,219,0.06); border: 1px solid rgba(52,152,219,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    font-size: 1rem; color: var(--text-muted); max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout.teal { background: rgba(59,200,232,0.06); border-color: rgba(59,200,232,0.2); border-left-color: var(--teal); }
+
+  /* ── REVIEW / REFRESHER ── */
+  .refresher-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; max-width: 760px; }
+  .refresher-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--teal); border-radius: 16px;
+    padding: 1.5rem 1.6rem; display: flex; align-items: flex-start; gap: 1.1rem;
+  }
+  .refresher-icon { font-size: 1.8rem; flex-shrink: 0; line-height: 1; }
+  .refresher-body { flex: 1; }
+  .refresher-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.3rem; }
+  .refresher-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.4rem; line-height: 1.3; }
+  .refresher-grade { font-size: 0.72rem; font-weight: 800; color: var(--text-muted); }
+  .refresher-text { font-size: 0.92rem; color: rgba(232,244,248,0.78); line-height: 1.6; margin: 0.5rem 0 0.9rem; }
+  .refresher-link {
+    display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 900;
+    letter-spacing: 0.04em; color: var(--accent2); text-decoration: none;
+    background: var(--accent-dim); border: 1px solid rgba(52,152,219,0.4);
+    padding: 0.5rem 1.1rem; border-radius: 99px; transition: all 0.2s;
+  }
+  .refresher-link:hover { background: rgba(52,152,219,0.25); border-color: rgba(52,152,219,0.7); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(52,152,219,0.08) 0%, rgba(52,152,219,0.03) 100%);
+    border: 1.5px solid rgba(52,152,219,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(52,152,219,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,244,248,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; line-height: 1.25; }
+  .card-body { color: rgba(232,244,248,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(93,173,226,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(52,152,219,0.07); border-left: 3px solid var(--accent2); color: rgba(232,244,248,0.85); }
+  .callout.teal   { background: rgba(59,200,232,0.06); border-left: 3px solid var(--teal);    color: rgba(232,244,248,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,244,248,0.85); }
+
+  /* ── LEARNING GOALS ── */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.9); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.3rem; text-align: left; cursor: pointer;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+  .gc-chev { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .glossary-card.open .gc-chev { color: var(--gold); }
+  .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.6rem; }
+  .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+  .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-blue   { border-top-color: var(--blue);   } .gc-blue .gc-term   { color: var(--blue); }
+  .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+  .gc-slate  { border-top-color: var(--accent2);} .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-jump {
+    display: inline-block; margin-top: 0.55rem; font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px dashed rgba(245,200,66,0.5); cursor: pointer;
+  }
+  .gc-jump:hover { border-bottom-style: solid; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAME-IT REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 820px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it.orange-it { border-left-color: var(--orange); }
+  .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label   { color: var(--teal); }
+  .name-it.green-it .name-it-label  { color: var(--green); }
+  .name-it.orange-it .name-it-label { color: var(--orange); }
+  .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .name-it p strong { font-weight: 800; }
+  .name-it.teal-it p strong   { color: var(--teal); }
+  .name-it.green-it p strong  { color: var(--green); }
+  .name-it.orange-it p strong { color: var(--orange); }
+  .name-it.slate-it p strong  { color: var(--accent2); }
+
+  /* ── FORMS SELECTOR (interactive) ── */
+  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .layer-figure { flex: 0 0 auto; width: 280px; max-width: 100%; margin: 0 auto; }
+  .layer-figure svg { width: 100%; height: auto; display: block; }
+  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-row {
+    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s; position: relative; border: none; text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .layer-row:hover { filter: brightness(1.18); }
+  .layer-row .layer-tag { opacity: 0.8; font-size: 0.7rem; font-weight: 700; }
+  .layer-detail-panel {
+    background: rgba(52,152,219,0.06); border: 1px solid rgba(52,152,219,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 150px; display: flex; align-items: center;
+  }
+  .ld-inner { width: 100%; }
+  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(93,173,226,0.85); margin-bottom: 0.4rem; }
+  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .ld-body { font-size: 0.9rem; color: rgba(232,244,248,0.82); line-height: 1.7; }
+
+  /* ── PE / KE COMPARISON ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(93,173,226,0.06); border: 1px solid rgba(93,173,226,0.3); }
+  .crust-card.continental { background: rgba(230,126,34,0.06); border: 1px solid rgba(230,126,34,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .crust-card.oceanic .crust-title { color: var(--blue); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.6rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--blue); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
+
+  /* ── FIGURE BOX ── */
+  .figure-box {
+    background: rgba(10,18,30,0.55); border: 1px solid rgba(52,152,219,0.16);
+    border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
+  }
+  .figure-box svg { width: 100%; height: auto; display: block; }
+  .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(93,173,226,0.75); margin-top: 0.8rem; }
+
+  /* ── TRANSFORMATION CHAINS ── */
+  .chain-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 1.5rem 0 0; }
+  .chain-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.3rem 1.5rem; }
+  .chain-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); margin-bottom: 0.7rem; }
+  .chain-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+  .chain-step {
+    font-size: 0.82rem; font-weight: 800; padding: 0.35rem 0.85rem; border-radius: 99px;
+    border: 1px solid; line-height: 1.2;
+  }
+  .chain-arrow { color: var(--text-muted); font-weight: 900; font-size: 1rem; }
+  .cs-gold  { color: var(--gold);   background: rgba(245,200,66,0.1);  border-color: rgba(245,200,66,0.35); }
+  .cs-teal  { color: var(--teal);   background: rgba(59,200,232,0.1);  border-color: rgba(59,200,232,0.35); }
+  .cs-blue  { color: var(--blue);   background: rgba(93,173,226,0.1);  border-color: rgba(93,173,226,0.35); }
+  .cs-orange{ color: var(--orange); background: rgba(230,126,34,0.1);  border-color: rgba(230,126,34,0.35); }
+  .cs-green { color: var(--green);  background: rgba(46,204,113,0.1);  border-color: rgba(46,204,113,0.35); }
+
+  /* ── QUICK RECALL ── */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(46,204,113,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* ── WRAP-UP BEATS ── */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+  .wrapup-beat-2 { background: rgba(59,200,232,0.05); border: 1px solid rgba(59,200,232,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
+  .wuc-2 { color: var(--teal);   background: rgba(59,200,232,0.08); border-color: rgba(59,200,232,0.3); }
+  .wuc-3 { color: var(--orange); background: rgba(230,126,34,0.08);  border-color: rgba(230,126,34,0.3); }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-styles */
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem;
+    background: rgba(52,152,219,0.1); border: 1.5px solid rgba(52,152,219,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(52,152,219,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(138,175,202,0.6); background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(93,173,226,0.85); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(93,173,226,0.22) 0%, rgba(52,152,219,0.14) 100%);
+    color: #ddeefb; border: 1px solid rgba(93,173,226,0.55);
+    box-shadow: 0 0 14px rgba(93,173,226,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(93,173,226,0.6);
+  }
+  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-student-info-styles */
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent2);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select {
+    width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border); border-radius: 10px; color: var(--text);
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(52,152,219,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #1e2f42; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted); width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left; color: rgba(232,244,248,0.9); width: 100%; }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(52,152,219,0.5); background: rgba(52,152,219,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(93,173,226,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(59,200,232,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(59,200,232,0.4) !important; background: rgba(59,200,232,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(59,200,232,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(52,152,219,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board { display: none; background: var(--card); border: 1px solid rgba(93,173,226,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(52,152,219,0.08); }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,244,248,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .mystery-loop { background: rgba(52,152,219,0.06); border: 1px solid rgba(52,152,219,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+  .mystery-loop strong { color: var(--text); }
+  .ml-label { display: block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem; }
+  .score-submitted { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .score-error { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .reset-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+  /* ── GO FURTHER ── */
+  #continue { background: var(--dark); }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+  .continue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+  .connections-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 600px) { .connections-grid { grid-template-columns: 1fr; } }
+  .cont-card { border-radius: 18px; padding: 1.5rem 1.5rem 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+  .cont-card.soon::before { background: linear-gradient(90deg, #7a8fa6, #9fb0c4); }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; background: rgba(122,143,166,0.14); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-muted); }
+  .cont-card.lesson .cont-cat { color: #2dd4bf; }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+  .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+  .cont-status { display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.95rem; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); align-self: flex-start; margin-top: auto; }
+  .cont-card.lesson .cont-status { background: rgba(20,184,166,0.12); border-color: rgba(20,184,166,0.4); color: #2dd4bf; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(93,173,226,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(93,173,226,0.32); box-shadow: 0 0 0 5px rgba(93,173,226,0.2); border-radius: 4px; }
+    55%  { background: rgba(93,173,226,0.2);  box-shadow: 0 0 0 7px rgba(93,173,226,0.1); border-radius: 4px; }
+    100% { background: rgba(93,173,226,0);    box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .name-it.pulsing { animation: vocabPulse 3s ease forwards; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+    nav { padding: 0.85rem 1.2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background:#0e1726; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+  footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+  footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+  footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-touchtarget */
+  .mode-btn,
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-touchtarget */
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#chem" class="nav-back">&#8592; Physical Science</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#9889;</span>
+  <span class="hero-float">&#128293;</span>
+  <span class="hero-float">&#127763;</span>
+  <span class="hero-float">&#128267;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Forms of Energy</h1>
+  <p>A roller coaster sits still at the top of a hill, then races down in a blur. Nothing was added, yet everything changed. Energy was at work the whole time.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How does energy change from one form to another without ever being created or destroyed?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">&#128300; Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (a roller coaster) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking energy into small, sequenced sections keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams and an interactive selector builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace energy as it changes form, mirroring authentic physical science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">&#9889;</span>
+        <div class="goal-text">I can describe energy as the ability to cause change and explain the difference between potential and kinetic energy.</div>
+        <span class="goal-std">7.MS-PS3-7(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127919;</span>
+        <div class="goal-text">I can identify and compare the different forms of energy.</div>
+        <span class="goal-std">7.MS-PS3-7(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128260;</span>
+        <div class="goal-text">I can explain how energy transforms from one form to another.</div>
+        <span class="goal-std">7.MS-PS3-7(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#9878;&#65039;</span>
+        <div class="goal-text">I can use the relationship between potential and kinetic energy to explain that the total energy in a system stays the same.</div>
+        <span class="goal-std">7.MS-PS3-7(MA)</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Vocabulary to Know</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The ability to cause change or do work. Energy is measured in joules.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Potential Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Stored energy that an object has because of its position, condition, or chemical makeup.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pe')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Kinetic Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The energy of motion. The amount depends on an object's mass and speed.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-ke')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Joule</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The unit used to measure energy, written with the symbol J.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Mechanical Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The total of an object's potential and kinetic energy. It is the energy of position and motion.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forms')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Chemical Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Potential energy stored in the bonds between atoms, released during chemical reactions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forms')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Thermal Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The total kinetic and potential energy of all the particles that make up a material.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forms')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Electrical Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy that comes from the movement of charged particles, such as electrons.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forms')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Electromagnetic Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy that travels in waves and can move through empty space, such as light from the Sun.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forms')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Sound Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Kinetic energy caused by the vibration of particles in a medium like air, water, or steel.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forms')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Energy Transformation</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">When energy changes from one form to another.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-transform')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Conservation of Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The principle that energy cannot be created or destroyed. It only changes forms.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-conservation')">See it in the lesson &#8595;</span></div>
+      </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE PHENOMENON
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">Still at the Top, Flying at the Bottom</h2>
+    <p class="section-desc">A roller coaster car is towed slowly to the top of the first hill and pauses. Then it drops, screaming down the track faster and faster. No engine pushes it down. So where does all that motion come from?</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#127906;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>Motion From Nowhere?</h3>
+        <p>At the top of the hill the car is barely moving, yet something powerful is waiting inside it. As it rushes down, it gains speed, and at the bottom you can hear the roar and feel the heat in the wheels. Nothing was added at the top. The energy was already there, just in a different form, waiting to change.</p>
+      </div>
+    </div>
+
+    <!-- Roller coaster PE/KE figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A roller coaster hill. The car at the top has high stored energy and low motion energy. The car at the bottom has low stored energy and high motion energy.">
+        <!-- track -->
+        <path d="M40,70 C160,70 200,250 300,250 C400,250 440,250 560,250" fill="none" stroke="#5dade2" stroke-width="6" stroke-linecap="round"/>
+        <!-- support posts -->
+        <line x1="60" y1="78" x2="60" y2="270" stroke="rgba(93,173,226,0.35)" stroke-width="4"/>
+        <line x1="520" y1="252" x2="520" y2="270" stroke="rgba(93,173,226,0.35)" stroke-width="4"/>
+        <line x1="0" y1="270" x2="600" y2="270" stroke="rgba(93,173,226,0.45)" stroke-width="3"/>
+        <!-- car at top -->
+        <rect x="44" y="52" width="34" height="18" rx="4" fill="#f5c842"/>
+        <circle cx="52" cy="72" r="4" fill="#2c3e50"/><circle cx="70" cy="72" r="4" fill="#2c3e50"/>
+        <!-- car at bottom -->
+        <rect x="430" y="232" width="34" height="18" rx="4" fill="#e67e22"/>
+        <circle cx="438" cy="252" r="4" fill="#2c3e50"/><circle cx="456" cy="252" r="4" fill="#2c3e50"/>
+        <!-- labels -->
+        <text x="95" y="48" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#f5c842">High stored energy</text>
+        <text x="95" y="66" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#8aafca">Low motion energy</text>
+        <text x="320" y="228" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#e67e22">Low stored energy</text>
+        <text x="320" y="246" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#8aafca">High motion energy</text>
+        <!-- motion arrows -->
+        <path d="M150,150 L185,185" stroke="#3bc8e8" stroke-width="4" marker-end="url(#rcarrow)"/>
+        <defs>
+          <marker id="rcarrow" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#3bc8e8"/></marker>
+        </defs>
+      </svg>
+      <div class="figure-caption">At the top the car stores energy. As it falls, that stored energy turns into energy of motion.</div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-engage">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Where did the rushing car's motion at the bottom come from, if nothing pushed it down the hill?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>New energy was created the moment the car started to fall.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Stored energy from the top changed into energy of motion.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>The car had no energy at the top, so the motion came from the track.</button>
+      </div>
+    </div>
+
+    <div class="name-it slate-it predict-gated" data-gate="qp-engage">
+      <div class="name-it-label">Here's the big idea</div>
+      <p>The best answer is <strong>B</strong>. At the top of the hill, the car holds stored energy because of its high position. As it drops, that stored energy changes into energy of motion. No energy was created or lost. It simply changed form. To understand the roller coaster, and almost everything else around you, we need to look at the forms energy takes and how it moves between them.</p>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2rem;">
+      <strong>Where we're headed:</strong> First we'll define energy and meet its two big families, stored and moving. Then we'll explore the many forms energy takes, watch it change from one to another, and finish with the rule that ties it all together.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a familiar phenomenon.</li><li>Raise a question students will want answered.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete, familiar example</li><li>Short framing text</li><li>Visual anchor</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     REVIEW PREVIOUS LEARNING
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="refresher" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Review Previous Learning</span>
+    <h2 class="section-title">Need a Refresher?</h2>
+    <p class="section-desc">This lesson builds on ideas you may have seen before. Two of the forms of energy ahead, sound and light, travel as waves, which you explored back in Grade 6.</p>
+
+    <div class="refresher-grid">
+      <div class="refresher-card">
+        <span class="refresher-icon">&#127754;</span>
+        <div class="refresher-body">
+          <div class="refresher-eyebrow">Review &middot; Grade 6</div>
+          <div class="refresher-title">The Nature of Waves</div>
+          <div class="refresher-grade">Grade 6 &middot; Physical Science</div>
+          <p class="refresher-text">Waves carry energy from one place to another without carrying matter along with them. If how a wave moves energy feels fuzzy, review this lesson before continuing. It will make sound energy and electromagnetic energy easier to picture.</p>
+          <a href="lesson_nature-of-waves.html" class="refresher-link">Review Lesson &#8594;</a>
+        </div>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Reactivate Grade 6 knowledge of waves.</li><li>Bridge prior learning to new Grade 7 content.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval of prior knowledge</li><li>Building on existing schema</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional, not required</li><li>Clear link to the prior lesson</li><li>Short explanation of why it helps</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1: WHAT IS ENERGY?
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explore" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; What Is Energy?</span>
+    <h2 class="section-title">Stored and Moving</h2>
+    <p class="section-desc">Before we can follow energy as it changes, we need a clear definition and a way to sort it. Almost all energy falls into one of two big families.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9889;</span>
+        <div class="card-title">Energy Is the Ability to Cause Change</div>
+      </div>
+      <div class="card-body">
+        <p><strong>Energy</strong> is the ability to cause change or to do work. Every time something heats up, speeds up, lights up, or makes a sound, energy is at work. Energy comes in many forms and has many effects.</p>
+        <p>Scientists measure energy in a unit called the <span class="vocab">joule</span>, written with the symbol J. Whether it is the energy in a battery or the energy of a moving car, it can all be measured in joules.</p>
+      </div>
+    </div>
+
+    <div id="term-pe" class="name-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Potential Energy</div>
+      <p><strong style="color: var(--gold);">Potential energy</strong> is stored energy. An object can store energy because of its position, its condition, or its chemical makeup. The roller coaster at the top of the hill has potential energy because of its high position. It is energy that is ready to be used later.</p>
+    </div>
+
+    <div id="term-ke" class="name-it teal-it">
+      <div class="name-it-label">Key idea: Kinetic Energy</div>
+      <p><strong>Kinetic energy</strong> is the energy of motion. Anything that moves has kinetic energy. The amount of kinetic energy depends on the object's <strong>mass</strong> and its <strong>speed</strong>. A heavier object, or a faster one, carries more kinetic energy.</p>
+    </div>
+
+    <!-- PE vs KE comparison -->
+    <div class="crust-grid">
+      <div class="crust-card continental">
+        <div class="crust-title">Potential Energy</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span><strong>Stored</strong> and ready to use</span></li>
+          <li><span class="crust-dot"></span><span>Depends on position, condition, or chemistry</span></li>
+          <li><span class="crust-dot"></span><span>Example: a ball held up high, a stretched rubber band, food</span></li>
+        </ul>
+      </div>
+      <div class="crust-card oceanic">
+        <div class="crust-title">Kinetic Energy</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>The energy of <strong>motion</strong></span></li>
+          <li><span class="crust-dot"></span><span>Depends on mass and speed</span></li>
+          <li><span class="crust-dot"></span><span>Example: a rolling ball, a running person, falling water</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Potential energy is energy waiting to happen. Kinetic energy is energy happening right now. Many everyday events are simply one of these two changing into the other.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Define energy before naming any form.</li><li>Establish the potential and kinetic split as an organizer.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Concept formation</li><li>Compare and contrast</li><li>Dual coding with the comparison cards</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday examples for each type</li><li>Side-by-side comparison cards</li><li>Key terms defined in place</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: THE FORMS OF ENERGY (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="forms" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Forms of Energy</span>
+    <h2 class="section-title" id="term-forms">Many Forms, One Idea</h2>
+    <p class="section-desc">Energy shows up in many forms. Each form is still either stored (potential) or moving (kinetic). Click a form to explore what it is and where you see it.</p>
+
+    <div class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A glowing energy symbol representing the many forms energy can take">
+          <circle cx="120" cy="120" r="100" fill="rgba(52,152,219,0.10)" stroke="rgba(93,173,226,0.4)" stroke-width="2"/>
+          <circle cx="120" cy="120" r="62" fill="rgba(245,200,66,0.12)" stroke="rgba(245,200,66,0.4)" stroke-width="2"/>
+          <path d="M132,60 L96,128 L120,128 L108,184 L150,108 L124,108 Z" fill="#f5c842"/>
+          <text x="120" y="220" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#8aafca">Energy takes many forms</text>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(230,126,34,0.28); color: #f0a55e;" onclick="formClick(1)">
+            <span>Mechanical</span><span class="layer-tag">potential + kinetic</span>
+          </div>
+          <div class="layer-row" style="background: rgba(59,200,232,0.26); color: #6fd8ef;" onclick="formClick(2)">
+            <span>Sound</span><span class="layer-tag">kinetic</span>
+          </div>
+          <div class="layer-row" style="background: rgba(93,173,226,0.26); color: #8ec8ee;" onclick="formClick(3)">
+            <span>Electromagnetic</span><span class="layer-tag">kinetic</span>
+          </div>
+          <div class="layer-row" style="background: rgba(52,152,219,0.30); color: #7bbef0;" onclick="formClick(4)">
+            <span>Electrical</span><span class="layer-tag">kinetic</span>
+          </div>
+          <div class="layer-row" style="background: rgba(46,204,113,0.26); color: #5fd99a;" onclick="formClick(5)">
+            <span>Chemical</span><span class="layer-tag">potential</span>
+          </div>
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3cf5e;" onclick="formClick(6)">
+            <span>Thermal</span><span class="layer-tag">potential + kinetic</span>
+          </div>
+          <div class="layer-row" style="background: rgba(231,76,60,0.24); color: #ef8a7e;" onclick="formClick(7)">
+            <span>Nuclear</span><span class="layer-tag">potential</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a form</div>
+            <div class="ld-title" id="ld-title">Start anywhere &#8594;</div>
+            <div class="ld-body" id="ld-body">Each form of energy has its own source and effect, but they are all still either stored or moving. Click any form to find out what it is and where you would see it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128270;</span>
+      <div class="callout-body"><strong>A clear pattern:</strong> Every form on this list is still potential, kinetic, or a mix of both. Chemical and nuclear energy are stored, so they are types of potential energy. Sound and electrical energy involve movement, so they are types of kinetic energy. Mechanical and thermal energy include both, since their particles are moving and also store energy.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Survey the forms of energy in one place.</li><li>Tie each form back to the potential or kinetic split.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Categorization</li><li>Dual coding with the interactive selector</li><li>Pattern recognition</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each form, no hover</li><li>Each form tagged potential or kinetic</li><li>Familiar examples in plain language</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: ENERGY TRANSFORMATIONS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="transform" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Transformations</span>
+    <h2 class="section-title">When Energy Changes Form</h2>
+    <p class="section-desc">Energy rarely stays in one form for long. The most interesting things happen when it changes, and this is exactly what powers the world around you.</p>
+
+    <div id="term-transform" class="name-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Energy Transformation</div>
+      <p>An <strong style="color: var(--gold);">energy transformation</strong> happens when energy changes from one form to another. The amount of energy does not change, only its form. The roller coaster turns potential energy into kinetic energy, and a flashlight turns chemical energy into light.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1rem;">Here are everyday examples. Follow each arrow as one form of energy becomes another.</p>
+
+    <div class="chain-grid">
+      <div class="chain-card">
+        <div class="chain-name">&#127906; Roller Coaster</div>
+        <div class="chain-flow">
+          <span class="chain-step cs-gold">Potential energy</span>
+          <span class="chain-arrow">&#8594;</span>
+          <span class="chain-step cs-teal">Kinetic energy</span>
+          <span class="chain-arrow">&#8594;</span>
+          <span class="chain-step cs-orange">Thermal + Sound</span>
+        </div>
+      </div>
+      <div class="chain-card">
+        <div class="chain-name">&#128294; Flashlight</div>
+        <div class="chain-flow">
+          <span class="chain-step cs-green">Chemical energy</span>
+          <span class="chain-arrow">&#8594;</span>
+          <span class="chain-step cs-blue">Electrical energy</span>
+          <span class="chain-arrow">&#8594;</span>
+          <span class="chain-step cs-gold">Light + Thermal</span>
+        </div>
+      </div>
+      <div class="chain-card">
+        <div class="chain-name">&#127869;&#65039; Eating Food</div>
+        <div class="chain-flow">
+          <span class="chain-step cs-green">Chemical energy</span>
+          <span class="chain-arrow">&#8594;</span>
+          <span class="chain-step cs-teal">Kinetic energy</span>
+          <span class="chain-arrow">&#8594;</span>
+          <span class="chain-step cs-orange">Thermal energy</span>
+        </div>
+      </div>
+      <div class="chain-card">
+        <div class="chain-name">&#127757; Solar Panel</div>
+        <div class="chain-flow">
+          <span class="chain-step cs-gold">Electromagnetic (light)</span>
+          <span class="chain-arrow">&#8594;</span>
+          <span class="chain-step cs-blue">Electrical energy</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout teal" style="margin-top: 2rem;">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>Notice the chains:</strong> Energy often passes through several forms in a row. Each step is a transformation, and some energy usually spreads out as thermal energy along the way. That heat is not lost, it has just changed form.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show energy moving between forms in real systems.</li><li>Connect transformations back to the phenomenon.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling</li><li>Worked examples</li><li>Dual coding with energy chains</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Familiar, concrete examples</li><li>Color-coded, scannable chains</li><li>Short labels with clear arrows</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: CONSERVATION OF ENERGY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="conservation" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Conservation</span>
+    <h2 class="section-title">Nothing Is Lost</h2>
+    <p class="section-desc">If energy keeps changing form, you might wonder whether some of it disappears. It does not. One powerful rule explains why.</p>
+
+    <div id="term-conservation" class="name-it green-it">
+      <div class="name-it-label">Key idea: Conservation of Energy</div>
+      <p>The <strong>law of conservation of energy</strong> states that energy cannot be created or destroyed. It only changes from one form into another. The total amount of energy in a system stays the same before and after a transformation.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9878;&#65039;</span>
+        <div class="card-title">Following the Energy on a Roller Coaster</div>
+      </div>
+      <div class="card-body">
+        <p>At the top of the hill, the car is full of potential energy and has almost no kinetic energy. As it drops, the potential energy shrinks while the kinetic energy grows by the same amount. At the bottom, most of the energy is now kinetic.</p>
+        <p>Add the potential and kinetic energy together at any point and you get nearly the same total. Some energy also turns into thermal energy and sound from friction with the track and air. None of it vanishes. It is all still there, just spread across different forms.</p>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The pattern holds everywhere:</strong> In every transformation, the forms change but the total stays the same. When energy seems to disappear, it has usually spread out as thermal energy into the surroundings.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State the rule that ties transformations together.</li><li>Resolve the misconception that energy is used up.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Misconception checking</li><li>Principle-based reasoning</li><li>Closure on the phenomenon</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain causal explanation</li><li>Returns to the familiar roller coaster</li><li>Rule stated clearly and restated</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">A ball is held high above the ground but is not moving. What kind of energy does it have?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Kinetic energy, because it is high up</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Potential energy, stored because of its position</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>No energy at all, because it is still</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">A battery powers a flashlight bulb. Which transformation is happening?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Sound energy into nuclear energy</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Thermal energy into potential energy</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Chemical energy into electrical energy, then into light</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">During a transformation, some energy turns into thermal energy that spreads out. What does the law of conservation of energy say about it?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>It is destroyed and gone for good</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>It still exists; the total energy stays the same</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>New energy was created to replace it</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: PUTTING IT TOGETHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">From Stored to Moving and Beyond</h2>
+    <p class="section-desc">You started with a question: where does the roller coaster's motion come from if nothing pushes it? Now you can trace the whole story, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">It Starts Stored</div>
+        <div class="wrapup-beat-answer">Energy is the ability to cause change.</div>
+        <div class="wrapup-beat-body">At the top of the hill, the car holds <strong>potential energy</strong> because of its high position. It is stored and ready, even though the car is barely moving.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">Stored Becomes Moving</div>
+        <div class="wrapup-beat-answer">Energy transforms from one form to another.</div>
+        <div class="wrapup-beat-body">As the car drops, potential energy changes into <strong>kinetic energy</strong>, the energy of motion. Some also becomes <strong>thermal</strong> and <strong>sound</strong> energy from friction.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">Nothing Is Lost</div>
+        <div class="wrapup-beat-answer">The total energy stays the same.</div>
+        <div class="wrapup-beat-body">By the <strong>law of conservation of energy</strong>, the forms change but the total never does. Energy is never created or destroyed.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full chain:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Potential energy at the top</span>
+        <span class="wuc wuc-2">Transforms into kinetic energy</span>
+        <span class="wuc wuc-2">Some becomes thermal and sound</span>
+        <span class="wuc wuc-3">Total energy stays the same</span>
+        <span class="wuc wuc-3">Energy only changes form</span>
+      </div>
+      <div style="margin-top: 1rem;">Energy is the ability to cause change, and it never disappears. It takes many forms, and it moves between them constantly. Once you can follow energy as it transforms, you can explain the roller coaster, the flashlight, the food you eat, and the Sun in the sky.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you explored, from potential and kinetic energy to transformations and conservation. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-mode-toggle-markup -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="feSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="feSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-mode-toggle-markup -->
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-student-info-markup -->
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="fe-student-name">Student Name</label>
+          <input type="text" id="fe-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="fe-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="fe-teacher-select">Teacher</label>
+          <select id="fe-teacher-select">
+            <option value="">- Select -</option>
+            <option value="mr-kankel">Mr. Kankel</option>
+            <option value="mr-rovner">Mr. Rovner</option>
+          </select>
+          <div class="info-error" id="fe-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="fe-block-select">Class Block</label>
+          <select id="fe-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A Block</option><option value="B">B Block</option>
+            <option value="C">C Block</option><option value="D">D Block</option>
+            <option value="E">E Block</option><option value="F">F Block</option>
+            <option value="G">G Block</option>
+          </select>
+          <div class="info-error" id="fe-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-student-info-markup -->
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="fe-progress"></div></div>
+        <div class="progress-text" id="fe-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="fe-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes feThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(59,200,232,0.07); border:1px solid rgba(59,200,232,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: feThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="fe-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one or two sentences, trace the roller coaster's energy from the top of the hill to the bottom. Name the forms it changes into, and explain why the total amount of energy never changes. Use the word <strong>conserved</strong>.</p>
+      <textarea class="think-input" id="fe-thinking" placeholder="Write your explanation here..." aria-label="Trace the roller coaster's energy from the top of the hill to the bottom and explain why the total never changes"></textarea>
+      <div class="think-model" id="fe-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        At the top of the hill the car holds <strong>potential energy</strong> because of its high position. As it drops, that stored energy changes into <strong>kinetic energy</strong>, the energy of motion, and some spreads out as thermal and sound energy from friction. No energy is created or destroyed along the way, so the total stays the same. Energy is <strong>conserved</strong>; it only changes form. If your sentences follow the energy from stored to moving and explain why the total never changes, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student building the transformation chain in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Cause and effect: tracing energy from stored to moving</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Short response, one or two sentences</li><li>Keyword scaffold provided</li><li>Model answer revealed after submitting</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="fe-submit-btn" onclick="feSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score Board -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
+    <div class="score-board" id="fe-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="fe-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
+      <div class="big-score" id="fe-score-num"></div>
+      <p id="fe-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">&#128269; The Question You Came In With</span>
+        You started this lesson asking: <strong>"How does energy change from one form to another without ever being created or destroyed?"</strong> If you can trace potential energy to kinetic energy to thermal and sound, and explain why the total never changes, you have answered it.
+      </div>
+      <div id="fe-submit-status"></div>
+      <button class="reset-btn" onclick="feResetQuiz()">Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>potential energy</strong>, <strong>kinetic energy</strong>, and the <strong>energy transformations</strong> that keep the total amount conserved. More investigations, simulations, and challenges are coming soon.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-name">More Coming Soon</div>
+        <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+        <span class="cont-status">Coming Soon</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Energy is the same idea showing up in many disguises. These lessons follow what happens once energy starts to move and change form.</p>
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_energy-transfer.html" aria-label="Energy Transfer lesson">
+        <div class="cont-icon">&#128165;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Energy Transfer</div>
+        <div class="cont-desc">Once you know the forms energy takes, you can follow it moving from one object to another during a collision or a push.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_heat-transfer.html" aria-label="Heat Transfer lesson">
+        <div class="cont-icon">&#128293;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Heat Transfer</div>
+        <div class="cont-desc">Thermal energy is one of the forms energy takes, and heat transfer explains how it moves from warmer objects to cooler ones.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_introduction-to-electricity.html" aria-label="Introduction to Electricity lesson">
+        <div class="cont-icon">&#9889;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Introduction to Electricity</div>
+        <div class="cont-desc">Electrical energy is one form that can be transformed into light, sound, motion, and thermal energy.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_renewable-and-nonrenewable-resources.html" aria-label="Renewable and Nonrenewable Resources lesson">
+        <div class="cont-icon">&#128268;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Renewable and Nonrenewable Resources</div>
+        <div class="cont-desc">The fuels, sunlight, and wind we depend on are all stores of energy. See which of these sources nature replaces and which run out for good.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (one open at a time, click to reveal) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.glossary-card.open').forEach(function(c){
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded', 'false');
+      var chev = c.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▾';
+    });
+    if (!isOpen) {
+      card.classList.add('open');
+      card.setAttribute('aria-expanded', 'true');
+      var chev = card.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▴';
+    }
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== FORMS OF ENERGY INTERACTIVE ===== -->
+<script>
+const formData = {
+  1: { label: 'Form · Potential + Kinetic', title: 'Mechanical Energy', body: 'The energy of moving objects and stored energy in objects. It is the sum of an object’s potential and kinetic energy, the energy of position and motion. A swinging pendulum and a bouncing ball both have mechanical energy.' },
+  2: { label: 'Form · Kinetic', title: 'Sound Energy', body: 'A form of kinetic energy caused by the vibration of particles in a medium such as steel, water, or air. When something vibrates, it makes the particles around it vibrate too, and that traveling vibration is sound.' },
+  3: { label: 'Form · Kinetic', title: 'Electromagnetic Energy', body: 'Energy that travels in waves and can move through empty space, such as light from the Sun. Visible light, x-rays, and microwaves are all electromagnetic energy. It does not need a medium to travel.' },
+  4: { label: 'Form · Kinetic', title: 'Electrical Energy', body: 'Energy that results from the position or motion of charged particles. Electrical energy is caused by the movement of electric charges, usually electrons. It is how we get light and power from power lines.' },
+  5: { label: 'Form · Potential', title: 'Chemical Energy', body: 'A form of potential energy stored in the bonds between atoms and molecules. It depends on the kinds of atoms and how they are arranged, and it is released during chemical reactions. Batteries, matches, and the food you eat all store chemical energy.' },
+  6: { label: 'Form · Potential + Kinetic', title: 'Thermal Energy', body: 'The total kinetic and potential energy of all the particles that make up a material. The higher the temperature, the faster the particles move. Thermal energy is the heat energy you feel from a stove or a warm day.' },
+  7: { label: 'Form · Potential', title: 'Nuclear Energy', body: 'Energy released when atoms break apart or when two small nuclei come together. It is stored in the nucleus of an atom. The energy that powers the Sun is nuclear energy.' }
+};
+function formClick(n) {
+  const d = formData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(93,173,226,0.75)' : 'none';
+    el.style.outlineOffset = '1px';
+  });
+}
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! A raised object stores potential energy because of its position, even when it is not moving.',
+    'Not quite. The ball is not moving, so it has no kinetic energy yet. Its energy is stored as potential energy because of its high position.');
+  wireQR('qr2', 2,
+    'Correct! The battery’s chemical energy becomes electrical energy, which the bulb turns into light and some thermal energy.',
+    'Not quite. The battery stores chemical energy. That becomes electrical energy, which the bulb turns into light.');
+  wireQR('qr3', 1,
+    'Correct! Energy cannot be created or destroyed. The thermal energy spread out, but the total energy stays the same.',
+    'Not quite. By the law of conservation of energy, that thermal energy was not destroyed. It spread out, and the total energy stays the same.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+// Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-endpoint */
+const FE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
+  /* LYFELABZ:V1-ONLY:END legacy-endpoint */
+
+var feQuizState = { selected: [], submitted: false };
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-state */
+var feQuizMode  = 'practice';
+  /* LYFELABZ:V1-ONLY:END legacy-mode-state */
+
+var feQuizQuestions = [
+  {
+    q: "What is the best definition of energy?",
+    options: [
+      "The ability to cause change or do work",
+      "A material that all objects are made of",
+      "A force that only pushes objects downward",
+      "The temperature of an object"
+    ],
+    correct: 0,
+    explanation: "Energy is the ability to cause change or to do work. It comes in many forms and is measured in joules."
+  },
+  {
+    q: "A drawn bow holds energy because the string is pulled back and ready to launch an arrow. What kind of energy is this?",
+    options: [
+      "Kinetic energy, because the bow will move",
+      "Thermal energy, because the bow is warm",
+      "Potential energy, stored because of its condition",
+      "Sound energy, because the string can twang"
+    ],
+    correct: 2,
+    explanation: "Potential energy is stored energy due to position, condition, or chemical makeup. A stretched bow stores potential energy in its bent shape, ready to be used."
+  },
+  {
+    q: "Two balls roll across the floor. The amount of kinetic energy each one has depends on what?",
+    options: [
+      "Only the color of the ball",
+      "Its mass and its speed",
+      "Only how high it once was",
+      "The time of day it is rolling"
+    ],
+    correct: 1,
+    explanation: "Kinetic energy is the energy of motion, and the amount depends on an object's mass and speed. A heavier or faster ball has more kinetic energy."
+  },
+  {
+    q: "Which unit do scientists use to measure energy?",
+    options: ["The meter", "The degree", "The newton", "The joule"],
+    correct: 3,
+    explanation: "Energy is measured in joules, written with the symbol J. Any form of energy can be measured in joules."
+  },
+  {
+    q: "Mechanical energy is best described as which of the following?",
+    options: [
+      "Energy that travels only through empty space",
+      "The sum of an object's potential and kinetic energy",
+      "Energy stored only in the bonds between atoms",
+      "Energy made only by vibrating particles"
+    ],
+    correct: 1,
+    explanation: "Mechanical energy is the energy of position and motion. It is the sum of an object's potential and kinetic energy."
+  },
+  {
+    q: "Why does an object's thermal energy increase as its temperature rises?",
+    options: [
+      "Its particles move faster and bump into each other more",
+      "Its particles stop moving completely",
+      "It gains new atoms from the air",
+      "It turns its motion into stored chemical energy"
+    ],
+    correct: 0,
+    explanation: "Thermal energy is the total kinetic and potential energy of all the particles in a material. The higher the temperature, the faster the particles move, so the thermal energy is greater."
+  },
+  {
+    q: "A battery, a match, and the food you eat all store the same form of energy. Which is it?",
+    options: [
+      "Sound energy",
+      "Electromagnetic energy",
+      "Chemical energy",
+      "Nuclear energy"
+    ],
+    correct: 2,
+    explanation: "Chemical energy is potential energy stored in the bonds between atoms. It is released during chemical reactions, such as a battery working, a match burning, or food breaking down."
+  },
+  {
+    q: "What is happening when energy changes from one form to another?",
+    options: [
+      "An energy transfer of matter",
+      "A loss of energy from the system",
+      "A creation of brand new energy",
+      "An energy transformation"
+    ],
+    correct: 3,
+    explanation: "An energy transformation is when energy changes from one form into another. The amount stays the same; only the form changes."
+  },
+  {
+    q: "The law of conservation of energy states that energy can do which of the following?",
+    options: [
+      "Be created whenever it is needed",
+      "Only change forms, never be created or destroyed",
+      "Be destroyed when an object stops moving",
+      "Disappear once it turns into heat"
+    ],
+    correct: 1,
+    explanation: "The law of conservation of energy says energy cannot be created or destroyed. It only changes from one form into another, so the total stays the same."
+  },
+  {
+    q: "A roller coaster car races to the bottom of a hill, then slows as it climbs the next one. Which best explains the energy change?",
+    options: [
+      "Its energy is destroyed as it slows down",
+      "It makes new energy to climb the next hill",
+      "Kinetic energy changes back into potential energy as it rises",
+      "Its potential energy turns into chemical energy"
+    ],
+    correct: 2,
+    explanation: "As the car climbs, its motion slows and its height grows, so kinetic energy transforms back into potential energy. The total energy stays the same, minus some lost to thermal energy and sound."
+  }
+];
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-set-quiz-mode */
+function feSetQuizMode(mode) {
+  feQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+  /* LYFELABZ:V1-ONLY:END legacy-set-quiz-mode */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-init-iife */
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') feSetQuizMode('classroom');
+  else feSetQuizMode('practice');
+})();
+  /* LYFELABZ:V1-ONLY:END legacy-mode-init-iife */
+
+function feBuildQuiz() {
+  var container = document.getElementById('fe-quiz-questions');
+  container.innerHTML = '';
+  feQuizState.selected  = new Array(feQuizQuestions.length).fill(null);
+  feQuizState.submitted = false;
+  document.getElementById('fe-submit-btn').disabled = true;
+  feUpdateProgress();
+  var letters = ['A','B','C','D'];
+  feQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="feSelectAnswer(' + qi + ',' + oi + ')" id="fe-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="fe-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function feSelectAnswer(qi, chosenIndex) {
+  if (feQuizState.submitted) return;
+  var prev = feQuizState.selected[qi];
+  if (prev !== null) document.getElementById('fe-q-' + qi + '-' + prev).classList.remove('selected');
+  feQuizState.selected[qi] = chosenIndex;
+  document.getElementById('fe-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  feUpdateProgress();
+  feRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(feQuizState.selected);
+}
+
+function feUpdateProgress() {
+  var total    = feQuizQuestions.length;
+  var answered = feQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('fe-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('fe-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-validate-student-info */
+function feValidateStudentInfo() {
+  var name    = document.getElementById('fe-student-name').value.trim();
+  var teacher = document.getElementById('fe-teacher-select').value;
+  var block   = document.getElementById('fe-block-select').value;
+  document.getElementById('fe-err-name').classList.toggle('show', !name);
+  document.getElementById('fe-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('fe-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+  /* LYFELABZ:V1-ONLY:END legacy-validate-student-info */
+
+function feSubmitQuiz() {
+  if (feQuizState.submitted) return;
+  var feAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!feQuizState.selected.every(function (s) { return s !== null; })) return;
+  var feThinkGate = document.getElementById('fe-thinking');
+  if (feThinkGate && !feThinkGate.value.trim()) return;
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-validation-guard */
+  if (feQuizMode === 'classroom') {
+    var info = feValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-validation-guard */
+  feQuizState.submitted = true;
+  document.getElementById('fe-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('fe-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('fe-think-model').classList.add('show');
+  var correct = 0;
+  feQuizQuestions.forEach(function (q, qi) {
+    var chosen    = feQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('fe-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('fe-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('fe-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = feQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand forms of energy cold.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+    : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
+    : '\u{1F4AA} Keep going; review each section carefully and try again!';
+  document.getElementById('fe-score-num').textContent = score;
+  document.getElementById('fe-score-msg').textContent = msg;
+  var sb = document.getElementById('fe-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
+
+  if (pct === 100) {
+    feQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (feAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by feQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var feReturnCtl = document.getElementById('back-to-assignments');
+    if (feReturnCtl) feReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
+    var feFinalStatus = document.getElementById('fe-submit-status');
+    feFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var feGenericError = 'Submission did not complete. Please refresh and try again.';
+    function feShowSubmitError(msg) {
+      feFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || feGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(feQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        feFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        feShowSubmitError(r.message);
+      } else {
+        feShowSubmitError(null);
+      }
+    }, function () {
+      feShowSubmitError(null);
+    });
+    return;
+  }
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-practice-completion */
+  if (feQuizMode === 'practice') {
+    document.getElementById('fe-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(52,152,219,0.08);border-color:rgba(52,152,219,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-practice-completion */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-apps-script-submit */
+  var info2 = feValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  var letters = ['A','B','C','D'];
+  var params = new URLSearchParams({ resourceId: 'lesson_forms-of-energy', grade: '7', teacher: info2.teacher, studentName: info2.name, block: info2.block });
+  feQuizState.selected.forEach(function (idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
+  fetch(FE_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('fe-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('fe-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('fe-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+  /* LYFELABZ:V1-ONLY:END legacy-apps-script-submit */
+  /* LYFELABZ:V2-ONLY:BEGIN platform-standalone-completion */
+  document.getElementById('fe-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+  /* LYFELABZ:V2-ONLY:END platform-standalone-completion */
+}
+
+function feResetQuiz() {
+  if (feQuizState.continueTimer) {
+    clearTimeout(feQuizState.continueTimer);
+    feQuizState.continueTimer = null;
+  }
+  document.getElementById('fe-score').classList.remove('show');
+  document.getElementById('fe-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('fe-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('fe-think-model').classList.remove('show');
+  feBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function feRefreshSubmitState() {
+  var quizDone  = feQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('fe-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('fe-submit-btn').disabled = feQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('fe-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', feRefreshSubmitState);
+})();
+
+feBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

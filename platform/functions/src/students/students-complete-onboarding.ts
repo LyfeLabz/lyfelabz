@@ -4,6 +4,7 @@ import {
   platformCallable,
   PlatformError,
   log,
+  readCustomClaims,
   schoolDocRef,
   userRecordDocRef,
   writeAuditEvent,
@@ -160,10 +161,20 @@ function safeLog(fn: () => void): void {
 //
 // Idempotency: a caller who is already `active` with the same role and
 // schoolId receives a success response with `alreadyActive: true`. No
-// second update is performed, no second claims write is performed, and no
-// second `students.activated` audit event is emitted. The state on the
-// user document, the identity token claims, and the audit stream are all
-// unchanged.
+// second user-record update is performed and no second `students.activated`
+// audit event is emitted.
+//
+// The idempotent branch also hardens the activation sequence's one
+// non-atomic seam. Because the custom-claims write cannot share a
+// transaction with the Firestore user-record update, a prior attempt can
+// leave the record `active` while the claims write failed, stranding the
+// student on the pending surface with a token that carries no
+// authorization. On the replay this branch reads the caller's own claims
+// and, only when they are missing or stale, re-derives the district from
+// the school the record already names and re-asserts the canonical student
+// claims. Healthy claims stay a bounded no-op (no claims write); a
+// split-brain is repaired rather than papered over with a success
+// response. This mirrors the certified LMS onboarding self-heal.
 async function studentsCompleteOnboardingHandler(
   request: CallableRequest<unknown>,
 ): Promise<StudentsCompleteOnboardingResponse> {
@@ -177,17 +188,58 @@ async function studentsCompleteOnboardingHandler(
     user.role === "student" &&
     user.schoolId === input.schoolId
   ) {
-    safeLog(() =>
-      log.info("students.onboardingIdempotent", {
+    // Canonical authority for the repair is the RECORD schoolId, not the
+    // client-supplied value, matching the LMS self-heal. In this branch they
+    // are equal (the gate above requires user.schoolId === input.schoolId)
+    // and non-empty (the validator rejects an empty input.schoolId), so the
+    // empty-schoolId guard below is defense-in-depth: it fails closed rather
+    // than emit a claim with an empty schoolId if a corrupt active record
+    // ever reaches here.
+    const schoolId = user.schoolId;
+    if (!isNonEmptyString(schoolId)) {
+      throw new PlatformError(
+        "students.invalidStatus",
+        "The active student record is missing its school assignment.",
+      );
+    }
+
+    // Self-heal a partial-activation split-brain. Read the caller's own
+    // claims and re-assert the canonical student claims only when they are
+    // missing or stale. This never re-runs activation, never accepts a
+    // client authority field, and derives districtId server-side from the
+    // school the record already names.
+    const claims = await readCustomClaims(uid);
+    const claimsHealthy =
+      claims.role === "student" &&
+      claims.schoolId === schoolId &&
+      isNonEmptyString(claims.districtId);
+
+    if (!claimsHealthy) {
+      const districtId = await resolveSchoolDistrictId(schoolId);
+      await writeCustomClaims({
         uid,
-        schoolId: input.schoolId,
-      }),
-    );
+        status: "active",
+        role: "student",
+        schoolId,
+        districtId,
+      });
+      // Log the repair; do NOT emit a second students.activated audit event.
+      // The activation already happened; this restores the authorization the
+      // activation intended.
+      safeLog(() =>
+        log.warn("students.onboardingClaimsRepaired", { uid, schoolId }),
+      );
+    } else {
+      safeLog(() =>
+        log.info("students.onboardingIdempotent", { uid, schoolId }),
+      );
+    }
+
     return {
       uid,
       status: "active",
       role: "student",
-      schoolId: input.schoolId,
+      schoolId,
       alreadyActive: true,
     };
   }

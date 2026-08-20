@@ -1,0 +1,2454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_energy-flow.html">
+<meta name="description" content="Explore energy flow in ecosystems: how sunlight enters through producers, moves through consumers and decomposers along food chains and food webs, and shrinks at each level of the energy pyramid. A Grade 7 science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Energy Flow in Ecosystems</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --orange:      #e8814a;
+    --green:       #3ddc84;
+    --blue:        #7cc8f8;
+    --red:         #e74c3c;
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 620px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto; padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    font-size: 1rem; color: var(--text-muted); max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout.teal { background: rgba(29,233,182,0.06); border-color: rgba(29,233,182,0.2); border-left-color: var(--teal); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; line-height: 1.25; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── LEARNING GOALS ── */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.3rem; text-align: left; cursor: pointer;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+  .gc-chev { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .glossary-card.open .gc-chev { color: var(--gold); }
+  .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.6rem; }
+  .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+  .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-blue   { border-top-color: var(--blue);   } .gc-blue .gc-term   { color: var(--blue); }
+  .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+  .gc-slate  { border-top-color: var(--accent2);} .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-jump {
+    display: inline-block; margin-top: 0.55rem; font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px dashed rgba(245,200,66,0.5); cursor: pointer;
+  }
+  .gc-jump:hover { border-bottom-style: solid; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAME-IT REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 820px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it.orange-it { border-left-color: var(--orange); }
+  .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it.blue-it { border-left-color: var(--blue); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label   { color: var(--teal); }
+  .name-it.green-it .name-it-label  { color: var(--green); }
+  .name-it.orange-it .name-it-label { color: var(--orange); }
+  .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it.blue-it .name-it-label   { color: var(--blue); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .name-it p strong { font-weight: 800; }
+  .name-it.teal-it p strong   { color: var(--teal); }
+  .name-it.green-it p strong  { color: var(--green); }
+  .name-it.orange-it p strong { color: var(--orange); }
+  .name-it.slate-it p strong  { color: var(--accent2); }
+  .name-it.blue-it p strong   { color: var(--blue); }
+
+  /* ── COMPARISON GRID ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.8rem; }
+  .crust-card.oceanic .crust-title { color: var(--green); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--green); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
+
+  /* ── STAGE SELECTOR (interactive energy flow) ── */
+  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
+  .layer-figure svg { width: 100%; height: auto; display: block; }
+  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-row {
+    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s; position: relative; border: none; text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .layer-row:hover { filter: brightness(1.18); }
+  .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
+  .layer-detail-panel {
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 150px; display: flex; align-items: center;
+  }
+  .ld-inner { width: 100%; }
+  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── FIGURE ── */
+  .figure-box {
+    background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
+    border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
+  }
+  .figure-box svg { width: 100%; height: auto; display: block; }
+  .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── QUICK RECALL ── */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* ── WRAP-UP BEATS ── */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--green), rgba(61,220,132,0.3)); }
+  .wrapup-beat-2 { background: rgba(232,129,74,0.05); border: 1px solid rgba(232,129,74,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+  .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--green); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--orange); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--green);  background: rgba(61,220,132,0.08); border-color: rgba(61,220,132,0.3); }
+  .wuc-2 { color: var(--orange); background: rgba(232,129,74,0.08); border-color: rgba(232,129,74,0.3); }
+  .wuc-3 { color: var(--blue);   background: rgba(124,200,248,0.08); border-color: rgba(124,200,248,0.3); }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-styles */
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55); background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-student-info-styles */
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent2);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select {
+    width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border); border-radius: 10px; color: var(--text);
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted); width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left; color: rgba(232,237,242,0.9); width: 100%; }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+  .mystery-loop strong { color: var(--text); }
+  .ml-label { display: block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem; }
+  .score-submitted { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(29,233,182,0.1); border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .score-error { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .reset-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── GO FURTHER ── */
+  #continue { background: var(--dark); }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+  .continue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+  .connections-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 600px) { .connections-grid { grid-template-columns: 1fr; } }
+  .cont-card { border-radius: 18px; padding: 1.5rem 1.5rem 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+  .cont-card.soon::before { background: linear-gradient(90deg, #7a8fa6, #9fb0c4); }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; background: rgba(122,143,166,0.14); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-muted); }
+  .cont-card.lesson .cont-cat { color: #2dd4bf; }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+  .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+  .cont-status { display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.95rem; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); align-self: flex-start; margin-top: auto; }
+  .cont-card.lesson .cont-status { background: rgba(20,184,166,0.12); border-color: rgba(20,184,166,0.4); color: #2dd4bf; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .name-it.pulsing { animation: vocabPulse 3s ease forwards; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+    nav { padding: 0.85rem 1.2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+  footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+  footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+  footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-touchtarget */
+  .mode-btn,
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-touchtarget */
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#bio" class="nav-back">&#8592; Life Science</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#127806;</span>
+  <span class="hero-float">&#128007;</span>
+  <span class="hero-float">&#129418;</span>
+  <span class="hero-float">&#9728;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Energy Flow in Ecosystems</h1>
+  <p>A field can hold millions of grass plants, thousands of grasshoppers, hundreds of birds, but only a few hawks. As you climb a food chain, the amount of life shrinks fast. The reason is energy, and how little of it survives each step.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">Why does the amount of life shrink as you move up a food chain?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">&#128300; Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (far fewer hawks than grass plants) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the flow of energy into small, sequenced roles keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each step with food chains, food webs, and an energy pyramid builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Systems thinking: students trace energy moving among the living parts of an ecosystem, mirroring authentic science. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">&#9728;&#65039;</span>
+        <div class="goal-text">I can describe how energy enters an ecosystem from the Sun and flows through living things.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127806;</span>
+        <div class="goal-text">I can explain the roles of producers, consumers, and decomposers in moving energy.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128279;</span>
+        <div class="goal-text">I can model energy flow using a food chain and a food web.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128202;</span>
+        <div class="goal-text">I can explain why only about 10% of energy passes to the next feeding level.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Vocabulary to Know</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Producer</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An organism, such as a plant, that makes its own food. Also called an autotroph.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-producer')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Consumer</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An organism that cannot make its own food and gets energy by eating other organisms. Also called a heterotroph.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-consumer')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Decomposer</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An organism that breaks down dead matter and waste, returning raw materials to the environment.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-decomposer')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Herbivore</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A consumer that eats only plants, such as a rabbit or a deer.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Carnivore</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A consumer that eats other animals, such as a hawk or a lion.</div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Omnivore</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A consumer that eats both plants and animals, such as a bear or a human.</div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Scavenger</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An organism that mostly eats dead and decaying matter, such as a vulture or a hyena.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Food Chain</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A model that shows one path of energy as it flows from one organism to the next.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-foodchain')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Food Web</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A model of many overlapping food chains that shows how energy flows through an ecosystem.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-foodweb')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Energy Pyramid</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A model that shows how much energy is available at each feeding level. Energy shrinks toward the top.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pyramid')">See it in the lesson &#8595;</span></div>
+      </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE PHENOMENON
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">A Lot of Grass, Very Few Hawks</h2>
+    <p class="section-desc">Look closely at a grassland and you find a clear pattern. There is a huge amount of grass, fewer grass eaters, and only a handful of top predators. The higher up the food chain you look, the fewer organisms there are.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#129413;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>The Shrinking Numbers</h3>
+        <p>A single hawk needs a large area to survive. It eats many snakes and mice. Those animals each ate many grasshoppers. The grasshoppers each ate many blades of grass. So a whole field of grass supports only one hawk. Why does it take so much grass at the bottom to support so little life at the top?</p>
+      </div>
+    </div>
+
+    <!-- Food chain scene -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A grassland food chain: the Sun gives energy to grass, a grasshopper eats grass, a bird eats the grasshopper, and a hawk eats the bird, with arrows showing energy moving from left to right">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#16314a"/>
+            <stop offset="100%" stop-color="#1d3a52"/>
+          </linearGradient>
+          <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a5d3a"/>
+            <stop offset="100%" stop-color="#33402a"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="600" height="225" fill="url(#sky)"/>
+        <rect x="0" y="225" width="600" height="75" fill="url(#ground)"/>
+        <!-- sun -->
+        <circle cx="60" cy="55" r="26" fill="#f5c842"/>
+        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+          <line x1="60" y1="15" x2="60" y2="4"/><line x1="60" y1="95" x2="60" y2="106"/>
+          <line x1="20" y1="55" x2="9" y2="55"/><line x1="100" y1="55" x2="111" y2="55"/>
+          <line x1="31" y1="26" x2="23" y2="18"/><line x1="89" y1="84" x2="97" y2="92"/>
+          <line x1="89" y1="26" x2="97" y2="18"/><line x1="31" y1="84" x2="23" y2="92"/>
+        </g>
+        <text x="60" y="135" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#f5c842">Sun</text>
+        <!-- grass -->
+        <g stroke="#3ddc84" stroke-width="4" stroke-linecap="round">
+          <line x1="170" y1="225" x2="170" y2="195"/><line x1="178" y1="225" x2="184" y2="197"/><line x1="162" y1="225" x2="156" y2="197"/>
+        </g>
+        <text x="172" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Grass</text>
+        <!-- grasshopper -->
+        <ellipse cx="305" cy="210" rx="16" ry="8" fill="#8fc23a"/>
+        <text x="305" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#8fc23a">Grasshopper</text>
+        <!-- bird -->
+        <circle cx="430" cy="200" r="12" fill="#7cc8f8"/><path d="M442,196 l14,-5 -10,9 Z" fill="#7cc8f8"/>
+        <text x="432" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Bird</text>
+        <!-- hawk -->
+        <ellipse cx="545" cy="190" rx="15" ry="11" fill="#e8814a"/><path d="M558,184 l16,-6 -11,11 Z" fill="#e8814a"/>
+        <text x="546" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Hawk</text>
+        <!-- arrows -->
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9fb8cc"/></marker>
+        </defs>
+        <line x1="92" y1="150" x2="150" y2="195" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)"/>
+        <line x1="200" y1="205" x2="278" y2="208" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)"/>
+        <line x1="330" y1="206" x2="406" y2="201" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)"/>
+        <line x1="452" y1="197" x2="518" y2="192" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)"/>
+      </svg>
+      <div class="figure-caption">Energy flows from the Sun to grass to grasshopper to bird to hawk. The arrows point in the direction the energy moves.</div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-engage">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why are there so many more grass plants than hawks in the same field?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>Hawks choose to live far apart from one another.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Each step up the food chain has much less energy available.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Grass reproduces faster than animals can ever eat it.</button>
+      </div>
+    </div>
+
+    <div class="name-it slate-it predict-gated" data-gate="qp-engage">
+      <div class="name-it-label">Here's the big idea</div>
+      <p>The best answer is <strong>B</strong>. Energy enters the ecosystem from the Sun and is captured by plants. Each time one organism eats another, most of that energy is used up or lost. Only a small part is passed on. By the time energy reaches the top, very little is left, so very few organisms can be supported. To see why, we have to follow the energy.</p>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2rem;">
+      <strong>Where we're headed:</strong> First we'll meet the two kinds of organisms, the ones that make food and the ones that eat it. Then we'll follow energy as it enters through plants, moves along food chains and food webs, and shrinks at every step of the energy pyramid.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a familiar phenomenon: lots of grass, few hawks.</li><li>Raise a question students will want answered.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1: TWO KINDS OF ORGANISMS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explore" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Makers and Eaters</span>
+    <h2 class="section-title">Two Kinds of Organisms</h2>
+    <p class="section-desc">Every living thing needs energy. The difference between organisms is how they get it. Some make their own food. The rest have to eat.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127793;</span>
+        <div class="card-title">Making Food or Eating Food</div>
+      </div>
+      <div class="card-body">
+        <p>Energy does not appear out of nowhere. It has to be captured and then passed along. Living things fall into two groups based on how they get the energy they need.</p>
+        <p id="term-producer">A <span class="vocab">producer</span> makes its own food, usually using sunlight. A <span class="vocab">consumer</span> cannot make food, so it must eat other organisms to get energy.</p>
+      </div>
+    </div>
+
+    <div class="crust-grid">
+      <div class="crust-card oceanic">
+        <div class="crust-title">&#127807; Producers (Autotrophs)</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Make their own food, usually through <strong>photosynthesis</strong></span></li>
+          <li><span class="crust-dot"></span><span>Capture energy directly from <strong>sunlight</strong></span></li>
+          <li><span class="crust-dot"></span><span>Examples: grass, trees, even the Venus flytrap</span></li>
+        </ul>
+      </div>
+      <div class="crust-card continental">
+        <div class="crust-title">&#129418; Consumers (Heterotrophs)</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Cannot make their own food</span></li>
+          <li><span class="crust-dot"></span><span>Get energy by <strong>eating</strong> other organisms</span></li>
+          <li><span class="crust-dot"></span><span>Examples: grasshoppers, deer, hawks, humans</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="term-consumer" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Kinds of consumers</div>
+      <p>Consumers are grouped by what they eat. A <strong>herbivore</strong> eats only plants. A <strong>carnivore</strong> eats other animals. An <strong>omnivore</strong> eats both plants and animals. A <strong>scavenger</strong> mostly eats dead and decaying matter, such as a vulture feeding on a carcass.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Producers bring energy into the living world by capturing sunlight. Every consumer, from the smallest insect to the largest predator, depends on that captured energy being passed along.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Establish producers vs consumers before tracing energy.</li><li>Sort consumers by what they eat.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Comparison and contrast</li><li>Categorization</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two short, parallel comparison cards</li><li>Plain "makers vs eaters" framing</li><li>Key terms in bold</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: FOLLOW THE ENERGY (interactive journey)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="journey" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Journey</span>
+    <h2 class="section-title">Follow the Energy</h2>
+    <p class="section-desc">Energy moves through an ecosystem in a clear order, from the Sun to producers to consumers and finally to decomposers. Click a stage to follow the energy.</p>
+
+    <div class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An energy flow diagram: the Sun gives energy to a plant, the plant feeds an animal, and a decomposer breaks down dead matter and returns materials to the soil">
+          <rect x="0" y="0" width="320" height="280" fill="#13283c"/>
+          <rect x="0" y="215" width="320" height="65" fill="#3a4a2c"/>
+          <!-- sun -->
+          <circle cx="55" cy="45" r="22" fill="#f5c842"/>
+          <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+            <line x1="55" y1="12" x2="55" y2="4"/><line x1="55" y1="78" x2="55" y2="86"/>
+            <line x1="22" y1="45" x2="14" y2="45"/><line x1="88" y1="45" x2="96" y2="45"/>
+          </g>
+          <text x="55" y="105" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">Sun</text>
+          <!-- plant -->
+          <rect x="142" y="178" width="8" height="42" fill="#6b4a2a"/>
+          <circle cx="146" cy="166" r="22" fill="#3ddc84"/>
+          <!-- animal -->
+          <ellipse cx="240" cy="200" rx="20" ry="12" fill="#c9a06a"/><circle cx="256" cy="192" r="8" fill="#c9a06a"/>
+          <!-- decomposer mushroom -->
+          <rect x="100" y="246" width="6" height="14" fill="#d8c9a8"/>
+          <ellipse cx="103" cy="246" rx="13" ry="7" fill="#1de9b6"/>
+          <text x="103" y="274" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#1de9b6">decomposer</text>
+          <!-- arrows -->
+          <path d="M78,70 C100,110 115,135 130,150" stroke="#f5c842" stroke-width="4" fill="none" marker-end="url(#e1)"/>
+          <path d="M170,170 C195,180 210,190 220,195" stroke="#e8814a" stroke-width="4" fill="none" marker-end="url(#e2)"/>
+          <path d="M225,210 C180,235 140,245 120,250" stroke="#1de9b6" stroke-width="4" fill="none" marker-end="url(#e3)"/>
+          <defs>
+            <marker id="e1" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
+            <marker id="e2" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e8814a"/></marker>
+            <marker id="e3" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#1de9b6"/></marker>
+          </defs>
+          <text x="100" y="125" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#f5c842">1</text>
+          <text x="195" y="178" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#e8814a">2</text>
+          <text x="160" y="245" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#1de9b6">3</text>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d27a;" onclick="layerClick(1)">
+            <span>1 &middot; Energy Enters</span><span class="layer-tag">the Sun</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(2)">
+            <span>2 &middot; Producers Capture It</span><span class="layer-tag">photosynthesis</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(3)">
+            <span>3 &middot; Consumers Pass It On</span><span class="layer-tag">eating</span>
+          </div>
+          <div class="layer-row" style="background: rgba(29,233,182,0.24); color: #8ef0db;" onclick="layerClick(4)">
+            <span>4 &middot; Decomposers Recycle</span><span class="layer-tag">breakdown</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a stage</div>
+            <div class="ld-title" id="ld-title">Start with the Sun &#8594;</div>
+            <div class="ld-body" id="ld-body">Each stage moves energy to a new place. Click any stage to follow the energy and see which organisms are at work.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#9728;&#65039;</span>
+      <div class="callout-body"><strong>One-way street:</strong> Unlike matter, energy does not cycle back to the Sun. It flows in one direction, entering as sunlight and leaving as heat. The Sun must keep supplying new energy to keep the ecosystem running.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Give a whole-flow map before studying each step.</li><li>Show energy flows one way, while materials recycle.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Dual coding with the interactive diagram</li><li>Pattern recognition (in, capture, pass, recycle)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each stage, no hover</li><li>Labeled diagram paired with text</li><li>Numbered, ordered stages</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: FOOD CHAINS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="into" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Food Chains</span>
+    <h2 class="section-title">One Path of Energy</h2>
+    <p class="section-desc">The simplest way to model energy flow is a food chain. It follows a single path, showing who eats whom and which way the energy moves.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128279;</span>
+        <div class="card-title">Reading a Food Chain</div>
+      </div>
+      <div class="card-body">
+        <p>Energy enters at the Sun and is captured by a producer. A consumer eats the producer, and another consumer eats that one. Decomposers then recycle the materials when organisms die.</p>
+        <p>The arrows in a food chain always point in the direction the energy flows, from the organism being eaten to the one that eats it.</p>
+      </div>
+    </div>
+
+    <div id="term-foodchain" class="name-it gold" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Food Chain</div>
+      <p>A <strong style="color: var(--gold);">food chain</strong> shows one path of energy flow through an ecosystem. A typical order is: Sun, then producer, then first-level consumer, then second-level consumer, with decomposers recycling materials back to producers.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129436;</span>
+        <div class="card-title">Feeding Levels</div>
+      </div>
+      <div class="card-body">
+        <p>Each step in a food chain is a feeding level. Producers sit at the bottom. A <strong>first-level consumer</strong> eats producers. A <strong>second-level consumer</strong> eats first-level consumers, and so on up the chain.</p>
+        <p>A grasshopper eating grass is a first-level consumer. A bird eating the grasshopper is a second-level consumer. The hawk that eats the bird sits higher still.</p>
+      </div>
+    </div>
+
+    <div class="callout teal">
+      <span class="callout-icon">&#127807;</span>
+      <div class="callout-body"><strong>Producers come first:</strong> Almost every food chain begins with a producer, because producers are the organisms that bring the Sun's energy into the living world.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce the simplest model of energy flow.</li><li>Teach feeding levels and arrow direction.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Chunking a sequence</li><li>Cause-and-effect (eaten to eater)</li><li>Modeling with arrows</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key term defined in place</li><li>Short paragraphs</li><li>Concrete grassland example</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: FOOD WEBS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="out" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Food Webs</span>
+    <h2 class="section-title">Many Paths at Once</h2>
+    <p class="section-desc">In a real ecosystem, most organisms eat more than one kind of food, and most are eaten by more than one predator. A single food chain cannot capture all of that. A food web can.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128376;&#65039;</span>
+        <div class="card-title">Chains That Overlap</div>
+      </div>
+      <div class="card-body">
+        <p>A mouse might be eaten by a hawk, a snake, or an owl. A hawk might eat a mouse, a snake, or a rabbit. Each of those connections is part of a different food chain.</p>
+        <p>When you draw all of those overlapping chains together, you get a food web. It shows the many paths energy can take through one ecosystem.</p>
+      </div>
+    </div>
+
+    <div id="term-foodweb" class="name-it blue-it">
+      <div class="name-it-label">Key idea: Food Web</div>
+      <p>A <strong>food web</strong> is a model that shows the flow of energy through many different organisms in an ecosystem. It is made of many overlapping food chains, and the arrows show the direction the energy flows.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129518;</span>
+        <div class="card-title">Why Food Webs Matter</div>
+      </div>
+      <div class="card-body">
+        <p>Because energy can travel many paths, a food web is more stable than a single chain. If one food source disappears, many animals can switch to another.</p>
+        <p>This is why scientists usually use a food web, not a single food chain, to model a whole ecosystem.</p>
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Chain vs web:</strong> A food chain follows one path of energy. A food web combines many chains to show all the paths at once. Both use arrows pointing in the direction the energy flows.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Extend the chain model to a more realistic web.</li><li>Connect overlapping paths to stability.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison (chain vs web)</li><li>Schema extension</li><li>Cause-and-effect (many paths to stability)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key term defined in place</li><li>Familiar predator and prey examples</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: ENERGY PYRAMID
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="storage" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The 10% Rule</span>
+    <h2 class="section-title">Energy Shrinks at Every Step</h2>
+    <p class="section-desc">Energy does not pass cleanly from one organism to the next. Most of it is used up or lost along the way. That loss is the key to our opening puzzle.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128293;</span>
+        <div class="card-title">Where the Energy Goes</div>
+      </div>
+      <div class="card-body">
+        <p>When an organism eats, it takes in energy. But it uses most of that energy to live, to grow, to move, and to stay warm. A lot also leaves the body as heat.</p>
+        <p>This means only part of the energy stored in one organism is available to the next organism that eats it.</p>
+      </div>
+    </div>
+
+    <!-- Energy pyramid figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An energy pyramid showing energy shrinking from producers at the wide base up to top consumers at the narrow tip. Each level passes about ten percent of its energy to the level above it">
+        <rect x="0" y="0" width="560" height="320" fill="#0f1c2b"/>
+        <!-- level 4 top -->
+        <polygon points="280,30 230,90 330,90" fill="#e8814a"/>
+        <text x="280" y="72" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="#1a0f08">10</text>
+        <!-- level 3 -->
+        <polygon points="230,92 330,92 365,152 195,152" fill="#7cc8f8"/>
+        <text x="280" y="130" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#0a1d2c">100</text>
+        <!-- level 2 -->
+        <polygon points="195,154 365,154 400,214 160,214" fill="#8fc23a"/>
+        <text x="280" y="192" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#0e1a05">1,000</text>
+        <!-- level 1 base -->
+        <polygon points="160,216 400,216 440,286 120,286" fill="#3ddc84"/>
+        <text x="280" y="258" text-anchor="middle" font-family="Nunito,sans-serif" font-size="15" font-weight="900" fill="#08200f">10,000</text>
+        <!-- right side labels -->
+        <text x="455" y="65" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Top consumer</text>
+        <text x="455" y="127" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">2nd consumer</text>
+        <text x="455" y="189" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#8fc23a">1st consumer</text>
+        <text x="455" y="255" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Producers</text>
+        <!-- arrow up -->
+        <defs>
+          <marker id="pu" markerWidth="10" markerHeight="10" refX="5" refY="2" orient="auto"><path d="M0,9 L5,0 L10,9 Z" fill="#9fb8cc"/></marker>
+        </defs>
+        <line x1="70" y1="286" x2="70" y2="55" stroke="#9fb8cc" stroke-width="3" marker-end="url(#pu)"/>
+        <text x="40" y="175" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc" transform="rotate(-90 40 175)">Energy available shrinks</text>
+        <text x="280" y="308" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#9fb8cc">Only about 10% of energy moves to the next level up</text>
+      </svg>
+      <div class="figure-caption">Numbers show units of energy. Each level holds about one tenth of the level below it, so the pyramid narrows toward the top.</div>
+    </div>
+
+    <div id="term-pyramid" class="name-it gold" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Energy Pyramid</div>
+      <p>An <strong style="color: var(--gold);">energy pyramid</strong> shows how much energy is available at each feeding level. The greatest amount of energy is at the producer level. The least is at the top. Only about <strong style="color: var(--gold);">10%</strong> of the energy at one level is passed on to the next level up.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128202;</span>
+      <div class="callout-body"><strong>Back to the puzzle:</strong> Because each level keeps only about a tenth of the energy, there is far less energy at the top than at the bottom. That is why a whole field of grass supports only a few hawks. The shrinking energy is the shrinking life.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Explain why energy decreases up the levels.</li><li>Answer the opening phenomenon directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the pyramid</li><li>Cause-and-effect (energy loss to fewer organisms)</li><li>Quantitative reasoning (the 10% rule)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key term defined in place</li><li>Numbers shown on the diagram</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Where does the energy in almost every ecosystem originally come from?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>The Sun</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Decomposers</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>The soil</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">A hawk eats a snake that ate a mouse. The hawk gets its energy by eating, so it is a what?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Producer</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Consumer</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Decomposer</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">About how much of the energy at one feeding level is passed on to the next level up?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>About 90%</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>About 50%</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>About 10%</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: PUTTING IT TOGETHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">From Sunlight to the Top</h2>
+    <p class="section-desc">You started with a question: why does the amount of life shrink as you move up a food chain? Now you can trace the whole flow, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">Energy Enters</div>
+        <div class="wrapup-beat-answer">The Sun powers the whole ecosystem.</div>
+        <div class="wrapup-beat-body">Energy enters as sunlight. <strong>Producers</strong> capture it through photosynthesis and bring it into the living world.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">Energy Moves</div>
+        <div class="wrapup-beat-answer">Consumers pass energy along the food web.</div>
+        <div class="wrapup-beat-body">A <strong>consumer</strong> eats a producer, and another eats that consumer. <strong>Food chains</strong> and <strong>food webs</strong> model these paths, while <strong>decomposers</strong> recycle materials.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">Energy Shrinks</div>
+        <div class="wrapup-beat-answer">Only about 10% reaches the next level.</div>
+        <div class="wrapup-beat-body">Most energy is used or lost as heat at each step. The <strong>energy pyramid</strong> shows why there is so little life at the top.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full flow:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Energy enters from the Sun</span>
+        <span class="wuc wuc-1">Producers capture it</span>
+        <span class="wuc wuc-2">Consumers pass it along</span>
+        <span class="wuc wuc-2">Decomposers recycle materials</span>
+        <span class="wuc wuc-3">Only about 10% moves up each level</span>
+      </div>
+      <div style="margin-top: 1rem;">Energy flows in one direction, entering as sunlight and leaving as heat. Because so little survives each step, the higher you look in a food chain, the less life it can support. That is why a whole field of grass feeds only a few hawks.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the steps into one cause-and-effect flow.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you explored, from producers to the energy pyramid. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-mode-toggle-markup -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-mode-toggle-markup -->
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-student-info-markup -->
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="el-student-name">Student Name</label>
+          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="el-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-teacher-select">Teacher</label>
+          <select id="el-teacher-select">
+            <option value="">- Select -</option>
+            <option value="mr-kankel">Mr. Kankel</option>
+            <option value="mr-rovner">Mr. Rovner</option>
+          </select>
+          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-block-select">Class Block</label>
+          <select id="el-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A Block</option><option value="B">B Block</option>
+            <option value="C">C Block</option><option value="D">D Block</option>
+            <option value="E">E Block</option><option value="F">F Block</option>
+            <option value="G">G Block</option>
+          </select>
+          <div class="info-error" id="el-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-student-info-markup -->
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
+        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="el-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes elThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(29,233,182,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(29,233,182,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-actions { margin-top:0.9rem; }
+      .think-reveal-btn { font-family:'Nunito', sans-serif; font-size:0.85rem; font-weight:900; letter-spacing:0.04em; border-radius:99px; padding:0.55rem 1.3rem; cursor:pointer; background:transparent; color:var(--teal); border:1px solid rgba(29,233,182,0.5); transition:transform 0.15s; }
+      .think-reveal-btn:hover { transform:translateY(-1px); }
+      .think-reveal-btn:focus-visible { outline:2px solid var(--teal); outline-offset:2px; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(29,233,182,0.07); border:1px solid rgba(29,233,182,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: elThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="el-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one or two sentences, explain why the amount of life shrinks as you move up a food chain. Trace what happens to the energy at each step, not just which animals are involved. Use the word <strong>lost</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Write your explanation here..." aria-label="Explain why the amount of life shrinks as you move up a food chain"></textarea>
+      <div class="think-model" id="el-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        Energy enters from the Sun and producers capture it, but each time one organism eats another, only about 10% is passed on and the rest is used to live or <strong>lost</strong> as heat. By the top of the food chain there is too little energy left to support many organisms, so the amount of life shrinks. If your sentence follows the energy shrinking step by step, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student constructing the central idea in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Systems thinking: tracing energy through the whole flow</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sentence-length response, not an essay</li><li>Keyword scaffold ("lost")</li><li>Model answer to compare against</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score Board -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
+    <div class="score-board" id="el-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="el-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
+      <div class="big-score" id="el-score-num"></div>
+      <p id="el-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">&#128269; The Question You Came In With</span>
+        You started this lesson asking: <strong>"Why does the amount of life shrink as you move up a food chain?"</strong> If you can trace energy entering from the Sun, getting captured by producers, passing through consumers in a food web, and shrinking by about 90% at each step of the energy pyramid, you have answered it.
+      </div>
+      <div id="el-submit-status"></div>
+      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>producers</strong>, <strong>food webs</strong>, and the <strong>energy pyramid</strong> that shows why energy shrinks at every level. More investigations, simulations, and challenges are coming soon.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-name">More Coming Soon</div>
+        <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+        <span class="cont-status">Coming Soon</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Energy flow explains how organisms are connected by what they eat. These lessons trace where that energy starts and how matter travels with it.</p>
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_photosynthesis.html" aria-label="Photosynthesis lesson">
+        <div class="cont-icon">&#127811;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Photosynthesis</div>
+        <div class="cont-desc">The energy moving through every food web started as sunlight that producers captured during photosynthesis.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_carbon-cycle.html" aria-label="The Carbon Cycle lesson">
+        <div class="cont-icon">&#9851;&#65039;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">The Carbon Cycle</div>
+        <div class="cont-desc">Energy and matter travel through the same ecosystem along the same feeding paths, but energy flows one way while carbon cycles.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_parts-of-an-ecosystem.html" aria-label="Parts of an Ecosystem lesson">
+        <div class="cont-icon">&#127795;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Parts of an Ecosystem</div>
+        <div class="cont-desc">Feeding relationships are what link producers, consumers, and decomposers into one working system.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_body-systems.html" aria-label="Body Systems lesson">
+        <div class="cont-icon">&#129728;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Body Systems</div>
+        <div class="cont-desc">You already used this way of thinking inside one organism, where cells, tissues, organs, and systems work as a team. A food web is that same idea scaled up to how whole organisms depend on each other.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (one open at a time, click to reveal) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.glossary-card.open').forEach(function(c){
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded', 'false');
+      var chev = c.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▾';
+    });
+    if (!isOpen) {
+      card.classList.add('open');
+      card.setAttribute('aria-expanded', 'true');
+      var chev = card.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▴';
+    }
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== ENERGY FLOW STAGES INTERACTIVE ===== -->
+<script>
+const layerData = {
+  1: { label: 'Stage 1 · Energy enters', title: 'The Sun', body: 'Almost all the energy in an ecosystem starts at the Sun. Sunlight reaches Earth and becomes the original source of energy for nearly every living thing. The energy must keep arriving, because it flows one way and does not return.' },
+  2: { label: 'Stage 2 · Energy is captured', title: 'Producers Capture It', body: 'Producers, such as plants, use photosynthesis to capture sunlight and store it as food. This is the doorway that lets the Sun’s energy enter the living world. Producers hold the most energy of any feeding level.' },
+  3: { label: 'Stage 3 · Energy passes along', title: 'Consumers Pass It On', body: 'Consumers cannot make food, so they eat to get energy. A first-level consumer eats producers, and higher consumers eat other consumers. Each time, only a small part of the energy is passed on.' },
+  4: { label: 'Stage 4 · Materials recycle', title: 'Decomposers Recycle', body: 'Decomposers break down dead organisms and waste, returning raw materials to the environment for producers to use again. They recycle matter even though the energy itself keeps moving on and eventually leaves as heat.' }
+};
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
+    el.style.outlineOffset = '1px';
+  });
+}
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 0,
+    'Correct! Almost all energy in an ecosystem starts as sunlight from the Sun.',
+    'Not quite. The original source of energy for nearly every ecosystem is the Sun.');
+  wireQR('qr2', 1,
+    'Correct! The hawk eats other organisms to get energy, so it is a consumer.',
+    'Not quite. An organism that gets energy by eating others is a consumer.');
+  wireQR('qr3', 2,
+    'Correct! Only about 10% of the energy moves to the next level. The rest is used or lost as heat.',
+    'Not quite. Only about 10% of energy passes to the next feeding level.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+// Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-endpoint */
+const EL_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
+  /* LYFELABZ:V1-ONLY:END legacy-endpoint */
+
+var elQuizState = { selected: [], submitted: false };
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-state */
+var elQuizMode  = 'practice';
+  /* LYFELABZ:V1-ONLY:END legacy-mode-state */
+
+var elQuizQuestions = [
+  {
+    q: "Where does the energy in almost every ecosystem originally come from?",
+    options: [
+      "The soil",
+      "Decomposers",
+      "The Sun",
+      "Water"
+    ],
+    correct: 2,
+    explanation: "Energy enters almost every ecosystem as sunlight. The Sun is the original source of energy for nearly all living things."
+  },
+  {
+    q: "An organism that makes its own food, usually using sunlight, is called what?",
+    options: [
+      "A producer",
+      "A consumer",
+      "A scavenger",
+      "A carnivore"
+    ],
+    correct: 0,
+    explanation: "A producer, also called an autotroph, makes its own food, usually through photosynthesis."
+  },
+  {
+    q: "Which type of organism cannot make its own food and must eat other organisms?",
+    options: [
+      "A producer",
+      "An autotroph",
+      "The Sun",
+      "A consumer"
+    ],
+    correct: 3,
+    explanation: "A consumer, also called a heterotroph, cannot make food and gets energy by eating other organisms."
+  },
+  {
+    q: "A rabbit eats only plants. What kind of consumer is it?",
+    options: [
+      "A carnivore",
+      "A herbivore",
+      "A decomposer",
+      "A producer"
+    ],
+    correct: 1,
+    explanation: "A herbivore eats only plants. A rabbit that eats grass and leaves is a herbivore."
+  },
+  {
+    q: "What do decomposers do in an ecosystem?",
+    options: [
+      "They make food from sunlight",
+      "They hunt and kill live prey",
+      "They break down dead matter and return materials to the environment",
+      "They add brand new energy to the ecosystem"
+    ],
+    correct: 2,
+    explanation: "Decomposers break down waste and dead organisms, returning raw materials to the environment for producers to reuse."
+  },
+  {
+    q: "What does a food chain show?",
+    options: [
+      "Every organism that lives in a region",
+      "One path of energy flow through an ecosystem",
+      "Only the decomposers in an ecosystem",
+      "The weather patterns of an ecosystem"
+    ],
+    correct: 1,
+    explanation: "A food chain shows one single path of energy as it flows from one organism to the next."
+  },
+  {
+    q: "How is a food web different from a food chain?",
+    options: [
+      "It has no producers in it",
+      "It shows only one path of energy",
+      "It leaves out all the consumers",
+      "It shows many overlapping food chains at once"
+    ],
+    correct: 3,
+    explanation: "A food web combines many overlapping food chains to show all the paths energy can take through an ecosystem."
+  },
+  {
+    q: "About how much of the energy at one feeding level is passed on to the next level up?",
+    options: [
+      "About 10%",
+      "About 50%",
+      "About 90%",
+      "All of it"
+    ],
+    correct: 0,
+    explanation: "Only about 10% of the energy at a level moves to the next level. The rest is used for life processes or lost as heat."
+  },
+  {
+    q: "At which level of an energy pyramid is the most energy available?",
+    options: [
+      "The top consumers",
+      "The decomposers",
+      "The producers",
+      "The second-level consumers"
+    ],
+    correct: 2,
+    explanation: "The greatest amount of energy is at the producer level, at the base of the pyramid. Energy shrinks toward the top."
+  },
+  {
+    q: "Why are there usually far fewer top predators than plants in an ecosystem?",
+    options: [
+      "Top predators are simply larger animals",
+      "Much less energy is available at the higher feeding levels",
+      "Plants only grow during certain seasons",
+      "Top predators do not need to eat very often"
+    ],
+    correct: 1,
+    explanation: "Because only about 10% of energy passes up each level, there is far less energy at the top, so it supports fewer organisms."
+  }
+];
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-set-quiz-mode */
+function elSetQuizMode(mode) {
+  elQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+  /* LYFELABZ:V1-ONLY:END legacy-set-quiz-mode */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-init-iife */
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
+  else elSetQuizMode('practice');
+})();
+  /* LYFELABZ:V1-ONLY:END legacy-mode-init-iife */
+
+function elBuildQuiz() {
+  var container = document.getElementById('el-quiz-questions');
+  container.innerHTML = '';
+  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
+  elQuizState.submitted = false;
+  document.getElementById('el-submit-btn').disabled = true;
+  elUpdateProgress();
+  var letters = ['A','B','C','D'];
+  elQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function elSelectAnswer(qi, chosenIndex) {
+  if (elQuizState.submitted) return;
+  var prev = elQuizState.selected[qi];
+  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
+  elQuizState.selected[qi] = chosenIndex;
+  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  elUpdateProgress();
+  elRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(elQuizState.selected);
+}
+
+function elUpdateProgress() {
+  var total    = elQuizQuestions.length;
+  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-validate-student-info */
+function elValidateStudentInfo() {
+  var name    = document.getElementById('el-student-name').value.trim();
+  var teacher = document.getElementById('el-teacher-select').value;
+  var block   = document.getElementById('el-block-select').value;
+  document.getElementById('el-err-name').classList.toggle('show', !name);
+  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('el-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+  /* LYFELABZ:V1-ONLY:END legacy-validate-student-info */
+
+function elSubmitQuiz() {
+  if (elQuizState.submitted) return;
+  var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-validation-guard */
+  if (elQuizMode === 'classroom') {
+    var info = elValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-validation-guard */
+  elQuizState.submitted = true;
+  document.getElementById('el-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('el-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('el-think-model').classList.add('show');
+  var correct = 0;
+  elQuizQuestions.forEach(function (q, qi) {
+    var chosen    = elQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('el-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = elQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand energy flow cold.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+    : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
+    : '\u{1F4AA} Keep going; review each section carefully and try again!';
+  document.getElementById('el-score-num').textContent = score;
+  document.getElementById('el-score-msg').textContent = msg;
+  var sb = document.getElementById('el-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
+
+  if (pct === 100) {
+    elQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (elAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by elQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var elReturnCtl = document.getElementById('back-to-assignments');
+    if (elReturnCtl) elReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
+    var elFinalStatus = document.getElementById('el-submit-status');
+    elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var elGenericError = 'Submission did not complete. Please refresh and try again.';
+    function elShowSubmitError(msg) {
+      elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || elGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(elQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        elFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        elShowSubmitError(r.message);
+      } else {
+        elShowSubmitError(null);
+      }
+    }, function () {
+      elShowSubmitError(null);
+    });
+    return;
+  }
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-practice-completion */
+  if (elQuizMode === 'practice') {
+    document.getElementById('el-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-practice-completion */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-apps-script-submit */
+  var info2 = elValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  var letters = ['A','B','C','D'];
+  var params = new URLSearchParams({ resourceId: 'lesson_energy-flow', grade: '7', teacher: info2.teacher, studentName: info2.name, block: info2.block });
+  elQuizState.selected.forEach(function (idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
+  fetch(EL_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('el-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('el-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('el-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+  /* LYFELABZ:V1-ONLY:END legacy-apps-script-submit */
+  /* LYFELABZ:V2-ONLY:BEGIN platform-standalone-completion */
+  document.getElementById('el-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+  /* LYFELABZ:V2-ONLY:END platform-standalone-completion */
+}
+
+function elResetQuiz() {
+  if (elQuizState.continueTimer) {
+    clearTimeout(elQuizState.continueTimer);
+    elQuizState.continueTimer = null;
+  }
+  document.getElementById('el-score').classList.remove('show');
+  document.getElementById('el-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('el-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('el-think-model').classList.remove('show');
+  elBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
+})();
+
+elBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

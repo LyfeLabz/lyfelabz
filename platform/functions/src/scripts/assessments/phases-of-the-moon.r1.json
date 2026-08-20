@@ -1,0 +1,269 @@
+{
+  "activityId": "phases-of-the-moon",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "How long does it take for the Moon to complete one full orbit around Earth?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "7 days"
+        },
+        {
+          "optionId": "B",
+          "text": "27.3 days"
+        },
+        {
+          "optionId": "C",
+          "text": "365 days"
+        },
+        {
+          "optionId": "D",
+          "text": "12 hours"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The Moon takes 27.3 days (roughly one month) to orbit Earth. This is its orbital period, and it's also where the word 'month' originally comes from."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Does the Moon rotate on its axis? If so, how often?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "No; it stays fixed while Earth rotates"
+        },
+        {
+          "optionId": "B",
+          "text": "Yes, once every 24 hours, like Earth"
+        },
+        {
+          "optionId": "C",
+          "text": "Yes, once every 27.3 days"
+        },
+        {
+          "optionId": "D",
+          "text": "Yes, once per year, like Earth's orbit"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The Moon does rotate, once every 27.3 days, exactly matching its orbital period. This perfect synchrony is called tidal locking, and it is why we always see the same face of the Moon from Earth."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "What actually causes Moon phases as seen from Earth?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Earth's shadow covering part of the Moon"
+        },
+        {
+          "optionId": "B",
+          "text": "Clouds blocking different parts of the Moon"
+        },
+        {
+          "optionId": "C",
+          "text": "Our shifting view of the Moon's lit side"
+        },
+        {
+          "optionId": "D",
+          "text": "The Moon drifting closer and farther from Earth"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Moon phases are NOT caused by Earth's shadow; that is a lunar eclipse. Phases occur because the Moon orbits Earth, and we see different portions of its sunlit half depending on where it is in its orbit."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "During which phase is the Moon located between Earth and the Sun?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Full Moon"
+        },
+        {
+          "optionId": "B",
+          "text": "First Quarter"
+        },
+        {
+          "optionId": "C",
+          "text": "New Moon"
+        },
+        {
+          "optionId": "D",
+          "text": "Waxing Gibbous"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "During New Moon, the Moon sits directly between Earth and the Sun. Its lit side faces away from us, so we see no illuminated surface from Earth. This is day 0 of the lunar cycle."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A student looks at the Moon and sees more than half of it lit, and the lit portion is getting smaller each night. What phase is it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Waxing Gibbous"
+        },
+        {
+          "optionId": "B",
+          "text": "Waning Gibbous"
+        },
+        {
+          "optionId": "C",
+          "text": "First Quarter"
+        },
+        {
+          "optionId": "D",
+          "text": "Waning Crescent"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "More than half lit = Gibbous. Getting smaller = Waning. Waning Gibbous occurs after Full Moon, when the lit area is still large but shrinking each night toward Third Quarter."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What does the term 'waxing' mean when describing Moon phases?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The lit portion is shrinking"
+        },
+        {
+          "optionId": "B",
+          "text": "The Moon is moving toward Earth"
+        },
+        {
+          "optionId": "C",
+          "text": "The lit portion is growing"
+        },
+        {
+          "optionId": "D",
+          "text": "The Moon is full"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Waxing means the lit portion is growing, the Moon is moving from New toward Full. Waning is the opposite: the lit portion is shrinking as the Moon moves from Full back toward New."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "What keeps the Moon in orbit around Earth?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The Sun's magnetic field"
+        },
+        {
+          "optionId": "B",
+          "text": "Earth's gravitational pull on the Moon"
+        },
+        {
+          "optionId": "C",
+          "text": "The Moon's own engine-like core"
+        },
+        {
+          "optionId": "D",
+          "text": "Dark matter pushing from behind"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Earth's gravity (generated by its enormous mass) continuously pulls the Moon toward it, keeping it in a curved orbit. Without gravity, the Moon would fly off in a straight line into space."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Using the mnemonic 'New Cats Quickly Get Fat With Lazy Cats,' what phase does the letter 'G' stand for?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Waning Gibbous"
+        },
+        {
+          "optionId": "B",
+          "text": "Third Quarter"
+        },
+        {
+          "optionId": "C",
+          "text": "Waxing Gibbous"
+        },
+        {
+          "optionId": "D",
+          "text": "Full Moon"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "In the mnemonic, G stands for 'Get' = Waxing Gibbous. The full sequence is: New, Crescent (waxing), Quarter (first), Gibbous (waxing), Full, Waning Gibbous, Lazy (third quarter), Crescent (waning)."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which of the following correctly describes a 'gibbous' moon?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Less than half of the visible surface is lit"
+        },
+        {
+          "optionId": "B",
+          "text": "Exactly half of the visible surface is lit"
+        },
+        {
+          "optionId": "C",
+          "text": "More than half of the visible surface is lit"
+        },
+        {
+          "optionId": "D",
+          "text": "None of the visible surface is lit"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Gibbous means more than half of the Moon's visible surface is illuminated. There are two gibbous phases: Waxing Gibbous (growing toward Full) and Waning Gibbous (shrinking away from Full)."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "In what direction does the Moon orbit Earth when viewed from above the North Pole?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Clockwise"
+        },
+        {
+          "optionId": "B",
+          "text": "Counterclockwise"
+        },
+        {
+          "optionId": "C",
+          "text": "Back and forth, it oscillates"
+        },
+        {
+          "optionId": "D",
+          "text": "It does not move, Earth moves around it"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Viewed from above Earth's North Pole, the Moon orbits counterclockwise. This is why phases always follow a specific, predictable sequence, the Moon always moves in the same direction around Earth."
+    }
+  ]
+}

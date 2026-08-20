@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_organelles.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=organelles --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2376,6 +2382,10 @@ function ogSelectAnswer(qi, chosenIndex) {
   document.getElementById(`og-q-${qi}-${chosenIndex}`).classList.add('selected');
   ogUpdateProgress();
   ogRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(ogQuizState.selected);
 }
 
 function ogUpdateProgress() {
@@ -2397,6 +2407,7 @@ function ogValidateStudentInfo() {
 
 function ogSubmitQuiz() {
   if (ogQuizState.submitted) return;
+  var ogAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
 
   // Require every quiz item answered and a written explanation before submitting.
   if (!ogQuizState.selected.every(s => s !== null)) return;
@@ -2464,6 +2475,33 @@ function ogSubmitQuiz() {
   }
 
   // ── Practice mode: skip submission ─────────────────────
+  if (ogAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by ogQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var ogFinalStatus = document.getElementById('og-submit-status');
+    ogFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var ogGenericError = 'Submission did not complete. Please refresh and try again.';
+    function ogShowSubmitError(msg) {
+      ogFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ogGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(ogQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        ogFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        ogShowSubmitError(r.message);
+      } else {
+        ogShowSubmitError(null);
+      }
+    }, function () {
+      ogShowSubmitError(null);
+    });
+    return;
+  }
+
   if (ogQuizMode === 'practice') {
     document.getElementById('og-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';

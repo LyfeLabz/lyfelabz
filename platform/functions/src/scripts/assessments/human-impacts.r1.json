@@ -1,0 +1,269 @@
+{
+  "activityId": "human-impacts",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Why does a human activity in one place often affect many parts of an ecosystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Because ecosystems have no living parts"
+        },
+        {
+          "optionId": "B",
+          "text": "Because an ecosystem is a system of connected parts"
+        },
+        {
+          "optionId": "C",
+          "text": "Because each species lives completely on its own"
+        },
+        {
+          "optionId": "D",
+          "text": "Because humans live outside of all ecosystems"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "An ecosystem is a system of connected parts, so a change in one part can ripple out to the others."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "What is runoff?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Air pollution from factories"
+        },
+        {
+          "optionId": "B",
+          "text": "A kind of renewable energy"
+        },
+        {
+          "optionId": "C",
+          "text": "A natural predator of fish"
+        },
+        {
+          "optionId": "D",
+          "text": "Water that flows over land and carries materials into bodies of water"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Runoff is water that flows over the land and carries soil, fertilizer, or other materials into rivers, lakes, and oceans."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "In the green lake, why did the fish die after the algae bloom?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The algae used up the oxygen in the water"
+        },
+        {
+          "optionId": "B",
+          "text": "The algae ate the fish directly"
+        },
+        {
+          "optionId": "C",
+          "text": "The water became too cold for fish"
+        },
+        {
+          "optionId": "D",
+          "text": "The fish were caught by people"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "As the algae died and broke down, bacteria used up the oxygen in the water, so the fish could no longer breathe."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which of these is an example of habitat loss?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Adding solar panels to a roof"
+        },
+        {
+          "optionId": "B",
+          "text": "Recycling glass and paper"
+        },
+        {
+          "optionId": "C",
+          "text": "Clearing a forest to build houses"
+        },
+        {
+          "optionId": "D",
+          "text": "Planting a community garden"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Habitat loss happens when the natural place a species lives is destroyed, such as clearing a forest for development."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Why can an invasive species spread so easily in a new ecosystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It always eats only plants"
+        },
+        {
+          "optionId": "B",
+          "text": "It often has no natural predators there"
+        },
+        {
+          "optionId": "C",
+          "text": "It makes the soil richer for native plants"
+        },
+        {
+          "optionId": "D",
+          "text": "It cannot reproduce in the new area"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "With no natural predators in its new home, an invasive species can multiply quickly and crowd out native species."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What are ecosystem services?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Companies that sell wild animals"
+        },
+        {
+          "optionId": "B",
+          "text": "Rules that ban all fishing"
+        },
+        {
+          "optionId": "C",
+          "text": "Machines that clean rivers"
+        },
+        {
+          "optionId": "D",
+          "text": "Benefits healthy ecosystems give people, like clean water and air"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Ecosystem services are the benefits people get from healthy ecosystems, such as clean water, clean air, food, and fertile soil."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Which of these is a renewable resource?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Sunlight"
+        },
+        {
+          "optionId": "B",
+          "text": "Coal"
+        },
+        {
+          "optionId": "C",
+          "text": "Oil"
+        },
+        {
+          "optionId": "D",
+          "text": "Natural gas"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Sunlight is renewable because nature replaces it constantly. Coal, oil, and natural gas are nonrenewable."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A farmer reduces how much fertilizer washes into a nearby lake. What is the most likely result?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The lake immediately loses all its fish"
+        },
+        {
+          "optionId": "B",
+          "text": "The lake's water turns green faster"
+        },
+        {
+          "optionId": "C",
+          "text": "The lake has fewer algae blooms and can recover"
+        },
+        {
+          "optionId": "D",
+          "text": "The lake gains an invasive species"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Less fertilizer runoff means fewer nutrients feeding algae, so blooms are less likely and the lake can begin to recover."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which choice best shows conservation in action?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Draining a wetland for a parking lot"
+        },
+        {
+          "optionId": "B",
+          "text": "Setting aside a protected area to keep a habitat whole"
+        },
+        {
+          "optionId": "C",
+          "text": "Releasing a new species into a lake"
+        },
+        {
+          "optionId": "D",
+          "text": "Dumping extra waste into a river"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Conservation is the protection and careful use of ecosystems, such as setting aside protected areas to keep habitats whole."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "What is the best summary of how humans affect Earth's systems?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Humans can only harm ecosystems, never help them"
+        },
+        {
+          "optionId": "B",
+          "text": "Humans have no real effect on ecosystems"
+        },
+        {
+          "optionId": "C",
+          "text": "Human effects always stay in one small place"
+        },
+        {
+          "optionId": "D",
+          "text": "Human activities can both disrupt and help maintain ecosystems"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Human activities can disrupt ecosystems through pollution and habitat loss, but human choices can also protect and restore them."
+    }
+  ]
+}

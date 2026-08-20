@@ -1,0 +1,269 @@
+{
+  "activityId": "structural-systems",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is a structural system?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A single beam strong enough to hold any weight"
+        },
+        {
+          "optionId": "B",
+          "text": "A set of connected parts that work together to carry loads"
+        },
+        {
+          "optionId": "C",
+          "text": "Any object taller than a person"
+        },
+        {
+          "optionId": "D",
+          "text": "A pile of building materials kept on a site"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A structural system is a set of connected parts that work together to carry loads and hold a shape. The job of staying up is shared among the parts."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Which component carries weight straight down to the foundation?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A column"
+        },
+        {
+          "optionId": "B",
+          "text": "A beam"
+        },
+        {
+          "optionId": "C",
+          "text": "A cable"
+        },
+        {
+          "optionId": "D",
+          "text": "A roof"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Columns are upright parts that carry weight straight down to the foundation. They are mainly in compression."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "A horizontal part that spans across open space and carries weight to the columns is called a",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "foundation"
+        },
+        {
+          "optionId": "B",
+          "text": "connection"
+        },
+        {
+          "optionId": "C",
+          "text": "beam"
+        },
+        {
+          "optionId": "D",
+          "text": "truss"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A beam is a horizontal part that spans across open space and carries weight to the columns. Floors and bridge decks rest on beams."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "The steady weight of a building's own beams, walls, and floors is its",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "live load"
+        },
+        {
+          "optionId": "B",
+          "text": "dead load"
+        },
+        {
+          "optionId": "C",
+          "text": "wind load"
+        },
+        {
+          "optionId": "D",
+          "text": "shear force"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The dead load is the constant weight of the structure itself. It does not change from day to day."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which of these is the best example of a live load?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The weight of the steel columns"
+        },
+        {
+          "optionId": "B",
+          "text": "The concrete foundation"
+        },
+        {
+          "optionId": "C",
+          "text": "A crowd of people gathering on a balcony"
+        },
+        {
+          "optionId": "D",
+          "text": "The roof panels bolted in place"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A live load is a changing weight that comes and goes. A crowd of people is a live load, while the columns, foundation, and roof are dead load."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Which force stretches or pulls a material apart?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Compression"
+        },
+        {
+          "optionId": "B",
+          "text": "Shear"
+        },
+        {
+          "optionId": "C",
+          "text": "Torsion"
+        },
+        {
+          "optionId": "D",
+          "text": "Tension"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Tension is a force that stretches or pulls a material apart. A bridge cable holding up the deck is in tension."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A column under a heavy roof is being squeezed together. This force is",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "tension"
+        },
+        {
+          "optionId": "B",
+          "text": "torsion"
+        },
+        {
+          "optionId": "C",
+          "text": "shear"
+        },
+        {
+          "optionId": "D",
+          "text": "compression"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Compression is a force that squeezes or pushes a material together. A column under a load is in compression."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Wind makes a tall tower twist, turning the top relative to the base. This twisting force is",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "torsion"
+        },
+        {
+          "optionId": "B",
+          "text": "tension"
+        },
+        {
+          "optionId": "C",
+          "text": "compression"
+        },
+        {
+          "optionId": "D",
+          "text": "a dead load"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Torsion is a twisting force that turns one end of a material relative to the other. Wind can twist a tall structure with torsion."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Why are triangles used so often in bridges and trusses?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They are always the cheapest shape"
+        },
+        {
+          "optionId": "B",
+          "text": "They hold their shape under load instead of folding"
+        },
+        {
+          "optionId": "C",
+          "text": "They are the only shape that floats"
+        },
+        {
+          "optionId": "D",
+          "text": "They make a structure lighter than any other shape"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A triangle holds its shape under load because its angles cannot change without bending a side. That makes triangles the most stable shape for structures."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "In 1940 the Tacoma Narrows Bridge twisted apart in the wind. This failure happened because the bridge could not resist",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the weight of its own paint"
+        },
+        {
+          "optionId": "B",
+          "text": "people walking across it"
+        },
+        {
+          "optionId": "C",
+          "text": "torsion, the twisting force from the wind"
+        },
+        {
+          "optionId": "D",
+          "text": "the dead load of its towers"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The bridge failed because it could not resist torsion, the twisting force created by the wind. Engineers now design bridges to handle that force."
+    }
+  ]
+}

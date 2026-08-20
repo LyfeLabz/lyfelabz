@@ -1,0 +1,269 @@
+{
+  "activityId": "designing-to-scale",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is the main job of an engineering drawing?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "To be framed and admired as a work of art"
+        },
+        {
+          "optionId": "B",
+          "text": "To use up extra paper in the design room"
+        },
+        {
+          "optionId": "C",
+          "text": "To communicate a design so someone else can build it"
+        },
+        {
+          "optionId": "D",
+          "text": "To keep the design a secret from other people"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A drawing exists to move an idea from your head into someone else's hands. Its job is communication, not decoration."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A drawing is made to scale so a big object fits on paper. What stays true when it is drawn to scale?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Every part shrinks by the same amount, so the proportions stay correct"
+        },
+        {
+          "optionId": "B",
+          "text": "Only the tallest part is drawn and the rest are left off"
+        },
+        {
+          "optionId": "C",
+          "text": "The exact colors of the real object are copied"
+        },
+        {
+          "optionId": "D",
+          "text": "The drawing ends up larger than the real object"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Scaling shrinks every part by the same amount, so a part twice as long in real life is still twice as long on paper. That is what keeps the drawing honest."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "You need to draw a full-size house so it fits on one sheet of paper. Which scale makes the most sense?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Full size, one to one, so nothing is shrunk"
+        },
+        {
+          "optionId": "B",
+          "text": "One unit on paper stands for 100 units in real life"
+        },
+        {
+          "optionId": "C",
+          "text": "Scaled up, five to one, so the drawing is bigger than the house"
+        },
+        {
+          "optionId": "D",
+          "text": "No scale at all, just a quick sketch"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A house is far too big for full size, so you shrink it. A scale like 1 unit for 100 fits the whole house on the page while keeping it readable."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "What does a scale bar on a drawing tell a builder?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The name of the person who made the drawing"
+        },
+        {
+          "optionId": "B",
+          "text": "Which colors to paint the finished object"
+        },
+        {
+          "optionId": "C",
+          "text": "How heavy the finished object will be"
+        },
+        {
+          "optionId": "D",
+          "text": "What one unit on the drawing stands for in real life"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A scale bar is the key that lets any builder turn the drawing back into real sizes, without ever meeting the designer."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Two builders get the same drawing with a scale and measurements, but nothing on it is labeled. What is the most likely problem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The drawing is far too colorful to follow"
+        },
+        {
+          "optionId": "B",
+          "text": "They cannot begin, because a drawing with no labels also has no scale"
+        },
+        {
+          "optionId": "C",
+          "text": "They may put parts in the wrong place, since nothing names what each part is"
+        },
+        {
+          "optionId": "D",
+          "text": "The finished object will come out the wrong color"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Labels name each part and show how it fits. Without them, the sizes may be right but the parts can still end up in the wrong places."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "One drawing of a chair is a beautiful, shaded painting with no measurements. Another is plain but has a scale, dimensions, and labels. Which is the better engineering drawing?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The plain one, because a builder could make it exactly"
+        },
+        {
+          "optionId": "B",
+          "text": "The painting, because it looks more realistic and finished"
+        },
+        {
+          "optionId": "C",
+          "text": "The painting, because it clearly took much more effort"
+        },
+        {
+          "optionId": "D",
+          "text": "Neither, because a chair is too simple to need a drawing"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "An engineering drawing is judged by whether someone can build from it. The plain drawing communicates the real sizes; the painting only looks good."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "You are drawing a tiny watch gear so small it is hard to see. Which choice would help you show it clearly?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Shrink it further with a 1 unit for 100 scale"
+        },
+        {
+          "optionId": "B",
+          "text": "Scale it up so the drawing is larger than the real gear"
+        },
+        {
+          "optionId": "C",
+          "text": "Leave the scale off so no one gets confused"
+        },
+        {
+          "optionId": "D",
+          "text": "Draw it in several bright colors"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Scale works both ways. For something tiny, you scale up and draw it bigger than real life so every tooth is clear, then note the scale."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Which of these is a model an engineer might use to communicate a design?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A song written about the design"
+        },
+        {
+          "optionId": "B",
+          "text": "An idea kept only inside your head"
+        },
+        {
+          "optionId": "C",
+          "text": "A scaled drawing or a small build of the design"
+        },
+        {
+          "optionId": "D",
+          "text": "A completely blank sheet of paper"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A model is any representation that helps others understand an idea. A scaled drawing or a small build both let other people see and build the design."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "A drawing shows a doghouse where the door is almost as big as the whole wall, even though the real door is small. What is wrong?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The drawing simply needs more color and shading to look finished"
+        },
+        {
+          "optionId": "B",
+          "text": "The scale bar has been drawn in a font that is too fancy"
+        },
+        {
+          "optionId": "C",
+          "text": "Nothing is wrong, because the size of the door on paper does not matter"
+        },
+        {
+          "optionId": "D",
+          "text": "The proportions are wrong, so the build will not match the real doghouse"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "In a scaled drawing every part must keep its true proportion. A door drawn too big means the builder makes it wrong, even if the scale is correct."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A classmate says, \"My design is amazing, so it does not matter if anyone else understands my drawing.\" What is the best engineering response?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A great idea is only useful if others can understand and build it, so the drawing has to communicate"
+        },
+        {
+          "optionId": "B",
+          "text": "You are right; if the idea is good enough, the drawing can be skipped"
+        },
+        {
+          "optionId": "C",
+          "text": "Only the person who dreamed up the design should ever be allowed to build it"
+        },
+        {
+          "optionId": "D",
+          "text": "Drawings are only there for decoration, so it truly does not matter"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Good engineers do not just build great ideas; they communicate them so others can build them too. A drawing no one else understands cannot do that."
+    }
+  ]
+}

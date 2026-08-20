@@ -1,0 +1,269 @@
+{
+  "activityId": "conducting-experiments",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes a good hypothesis?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A wild guess about what might happen, based on nothing in particular"
+        },
+        {
+          "optionId": "B",
+          "text": "A testable, educated guess that explains the cause-and-effect relationship between variables"
+        },
+        {
+          "optionId": "C",
+          "text": "A fact that has already been proven true by other scientists"
+        },
+        {
+          "optionId": "D",
+          "text": "A question that begins every scientific investigation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A hypothesis is an educated guess that explains an observation based on your prior knowledge. A good one is testable and explains the cause-and-effect relationship between variables - it is not a wild guess, a proven fact, or the question itself."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A student wants to know if the height a ball is dropped from changes how high it bounces. She drops the same ball from 1 m, 2 m, and 3 m onto the same floor. What is the independent variable?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "How high the ball bounces"
+        },
+        {
+          "optionId": "B",
+          "text": "The type of ball used"
+        },
+        {
+          "optionId": "C",
+          "text": "The height the ball is dropped from"
+        },
+        {
+          "optionId": "D",
+          "text": "The type of floor"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The drop height is the factor the student manipulates or changes on purpose - the independent variable. The bounce height responds to that change (dependent variable), and the same ball and same floor are control variables."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "In the bouncing ball experiment, why must the student use the same ball and the same floor for every drop?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "To make sure any change in bounce height was caused by the drop height alone"
+        },
+        {
+          "optionId": "B",
+          "text": "To save money on buying extra balls"
+        },
+        {
+          "optionId": "C",
+          "text": "Because the dependent variable must never change"
+        },
+        {
+          "optionId": "D",
+          "text": "So the experiment finishes faster"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Control variables are kept constant to ensure any change measured was due to the independent variable. If the ball or floor changed too, the student could never tell what really caused a difference in bounce."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which of these is a quantitative observation?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The foam smelled sweet and looked creamy white"
+        },
+        {
+          "optionId": "B",
+          "text": "The soda felt cold and fizzy on my hand"
+        },
+        {
+          "optionId": "C",
+          "text": "The eruption was really impressive and loud"
+        },
+        {
+          "optionId": "D",
+          "text": "The eruption lasted 8 seconds and reached 190 centimeters"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Quantitative observations involve precise measurements and numerical quantities - like 8 seconds and 190 centimeters. Smells, textures, and opinions about how impressive something was are qualitative (or not observations at all)."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "You walk into the kitchen and observe: the cookie jar is open, crumbs are on the floor, and your dog is licking its lips. You conclude the dog ate the cookies. Which statement is true?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Seeing the crumbs is an inference; the dog eating the cookies is an observation"
+        },
+        {
+          "optionId": "B",
+          "text": "The open jar, the crumbs, and the lip-licking are observations; the dog eating the cookies is an inference"
+        },
+        {
+          "optionId": "C",
+          "text": "Everything in the scenario is an observation"
+        },
+        {
+          "optionId": "D",
+          "text": "Everything in the scenario is an inference"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "What you directly see - open jar, crumbs, lip-licking - are observations. You never saw the dog eat the cookies; that conclusion is an inference, drawn from your observations. It is a reasonable one, but it is still an inference."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "A gardener tests whether more sunlight makes tomato plants grow taller. She gives plants 2, 6, and 10 hours of light and measures their height after a month. What is the dependent variable?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The height the plants grow"
+        },
+        {
+          "optionId": "B",
+          "text": "The number of hours of light"
+        },
+        {
+          "optionId": "C",
+          "text": "The type of tomato plant"
+        },
+        {
+          "optionId": "D",
+          "text": "The amount of water given"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The dependent variable is what you measure - the factor that responds to the change. Plant height responds to the light, so it is dependent. Hours of light is the independent variable, and plant type and water are control variables."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Which of these is a qualitative observation?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The plant grew 12 centimeters in two weeks"
+        },
+        {
+          "optionId": "B",
+          "text": "The experiment ran for exactly 14 days"
+        },
+        {
+          "optionId": "C",
+          "text": "The leaves were a deep green and felt waxy"
+        },
+        {
+          "optionId": "D",
+          "text": "The pot held 500 milliliters of water"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Qualitative observations use the senses to describe qualities like color and texture - deep green, waxy leaves. The other choices use numbers and measurements, which makes them quantitative."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Why is \"My plant will grow because plants are amazing\" a weak hypothesis?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It is too long to fit in a lab notebook"
+        },
+        {
+          "optionId": "B",
+          "text": "It uses the word because, which is not allowed"
+        },
+        {
+          "optionId": "C",
+          "text": "It correctly names the independent and dependent variables"
+        },
+        {
+          "optionId": "D",
+          "text": "It is not testable and does not explain a cause-and-effect relationship"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A strong hypothesis is testable and explains how one variable affects another. \"Plants are amazing\" cannot be measured and names no cause and effect, so there is no way to design a fair experiment around it."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "You observe that the sidewalk is wet but the covered porch under the roof is completely dry. What is the most reasonable inference?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It rained, and the roof kept the porch dry"
+        },
+        {
+          "optionId": "B",
+          "text": "Someone mopped only the sidewalk"
+        },
+        {
+          "optionId": "C",
+          "text": "The porch is made of waterproof material"
+        },
+        {
+          "optionId": "D",
+          "text": "The sidewalk is always wet in the morning"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "An inference is a conclusion drawn from observations. A wet sidewalk plus a dry, covered porch points to rain that the roof blocked. The other choices ignore the clues or add details you never observed."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Two students test whether warmer water dissolves sugar faster. To make it a fair test, which factor should they keep the same?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The temperature of the water"
+        },
+        {
+          "optionId": "B",
+          "text": "How fast the sugar dissolves"
+        },
+        {
+          "optionId": "C",
+          "text": "The amount of sugar added to each cup"
+        },
+        {
+          "optionId": "D",
+          "text": "Whether the water is warm or cold"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Control variables stay constant so the test stays fair. The amount of sugar must be the same in every cup. Water temperature is the independent variable they change on purpose, and how fast the sugar dissolves is the dependent variable they measure."
+    }
+  ]
+}

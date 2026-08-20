@@ -1,0 +1,269 @@
+{
+  "activityId": "transportation-systems",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which subsystem controls the direction a vehicle travels?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Structural"
+        },
+        {
+          "optionId": "B",
+          "text": "Guidance"
+        },
+        {
+          "optionId": "C",
+          "text": "Propulsion"
+        },
+        {
+          "optionId": "D",
+          "text": "Suspension"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The guidance subsystem controls direction. A steering wheel, a rudder, and a navigation system are all part of guidance."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A car rolls over a bump in the road, but the ride stays smooth and the body stays steady. Which subsystem is doing its job?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Control"
+        },
+        {
+          "optionId": "B",
+          "text": "Propulsion"
+        },
+        {
+          "optionId": "C",
+          "text": "Suspension"
+        },
+        {
+          "optionId": "D",
+          "text": "Guidance"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The suspension subsystem absorbs bumps and keeps the vehicle stable. Springs and shock absorbers let the wheels move while the body stays steady."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which subsystem provides the motion that moves a vehicle forward?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Propulsion"
+        },
+        {
+          "optionId": "B",
+          "text": "Structural"
+        },
+        {
+          "optionId": "C",
+          "text": "Guidance"
+        },
+        {
+          "optionId": "D",
+          "text": "Control"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The propulsion subsystem provides motion. An engine, an electric motor, a propeller, and a jet engine are all forms of propulsion."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "The frame and body of a car hold all the other parts in place and give the vehicle its shape. These belong to which subsystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Propulsion"
+        },
+        {
+          "optionId": "B",
+          "text": "Control"
+        },
+        {
+          "optionId": "C",
+          "text": "Suspension"
+        },
+        {
+          "optionId": "D",
+          "text": "Structural"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The structural subsystem supports the vehicle and holds its parts in place. The frame, body, and an airplane's wings are all structural."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A driver presses the brake pedal and the car slows down. Braking is part of which subsystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Guidance"
+        },
+        {
+          "optionId": "B",
+          "text": "Control"
+        },
+        {
+          "optionId": "C",
+          "text": "Structural"
+        },
+        {
+          "optionId": "D",
+          "text": "Propulsion"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The control subsystem regulates and monitors how the vehicle operates. Brakes, sensors, computers, and cruise control are all part of control."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "On an airplane, the wings help support the aircraft and give it shape. The wings are part of which subsystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Propulsion"
+        },
+        {
+          "optionId": "B",
+          "text": "Guidance"
+        },
+        {
+          "optionId": "C",
+          "text": "Structural"
+        },
+        {
+          "optionId": "D",
+          "text": "Control"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The wings are part of the structural subsystem, which supports the vehicle. On a car this same subsystem is the frame and body."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A car gets a flat tire. Why does this affect more than just the one wheel?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The subsystems interact, so trouble in one affects the others"
+        },
+        {
+          "optionId": "B",
+          "text": "Each subsystem works completely on its own"
+        },
+        {
+          "optionId": "C",
+          "text": "The tire is the only part that matters"
+        },
+        {
+          "optionId": "D",
+          "text": "Nothing else about the car changes at all"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Because the subsystems depend on one another, a flat tire makes the car harder to steer and slower to stop. A failure in one subsystem reaches the whole vehicle."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "The rudder of a ship and the steering wheel of a car do a similar job. Which subsystem do they both belong to?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Suspension"
+        },
+        {
+          "optionId": "B",
+          "text": "Structural"
+        },
+        {
+          "optionId": "C",
+          "text": "Propulsion"
+        },
+        {
+          "optionId": "D",
+          "text": "Guidance"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Both the rudder and the steering wheel control direction, so they belong to the guidance subsystem."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes how a vehicle's subsystems work?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Each subsystem works alone with no connection to the others"
+        },
+        {
+          "optionId": "B",
+          "text": "No subsystem works alone; together they make one transportation system"
+        },
+        {
+          "optionId": "C",
+          "text": "Only the propulsion subsystem actually matters"
+        },
+        {
+          "optionId": "D",
+          "text": "A vehicle really has just one subsystem"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "No subsystem works alone. Each one has a different job, and through their interactions they work together as one transportation system."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A jet engine, an electric motor, and a propeller are all examples of parts from which subsystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Control"
+        },
+        {
+          "optionId": "B",
+          "text": "Guidance"
+        },
+        {
+          "optionId": "C",
+          "text": "Propulsion"
+        },
+        {
+          "optionId": "D",
+          "text": "Suspension"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "All three provide motion, so they are part of the propulsion subsystem. Different vehicles use different forms of propulsion to move."
+    }
+  ]
+}

@@ -1,0 +1,3672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_engineering-design.html">
+<meta name="description" content="How did the Air Jordan 1 and the PlayStation go from rough first models to icons? Discover criteria, constraints, prototypes, iterations, and the engineering design process. Grade 6 aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Engineering Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+
+  /* ===== CSS VARIABLES ===== */
+  :root {
+    --green:       #2ecc71;
+    --green-dark:  #27ae60;
+    --blue:        #3498db;
+    --blue-dark:   #2980b9;
+    --teal:        #3bc8e8;
+    --teal-deep:   #1abc9c;
+    --purple:      #9b59b6;
+    --red:         #e74c3c;
+    --orange:      #e67e22;
+    --yellow:      #f1c40f;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #1a2535;
+    --dark2:       #243447;
+    --card:        #1e2f42;
+    --text:        #e8f4f8;
+    --text-muted:  #8aafca;
+    --border:      rgba(52,152,219,0.2);
+
+    /* Engineering-design color system */
+    --criteria:        #3bc8e8;   /* teal   - criteria (the must-do list) */
+    --criteria-dim:    rgba(59,200,232,0.08);
+    --criteria-border: rgba(59,200,232,0.3);
+
+    --constraint:        #e67e22; /* orange - constraints (the limits) */
+    --constraint-dim:    rgba(230,126,34,0.08);
+    --constraint-border: rgba(230,126,34,0.3);
+
+    --iterate:        #2ecc71;    /* green  - prototypes and iteration */
+    --iterate-dim:    rgba(46,204,113,0.08);
+    --iterate-border: rgba(46,204,113,0.3);
+  }
+
+  /* ===== RESET ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ===== STARFIELD ===== */
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.65);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(59,200,232,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(46,204,113,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(230,126,34,0.04) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.4);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p.hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .hero-float {
+    position: absolute;
+    font-size: 4.5rem;
+    opacity: 0.045;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+    filter: blur(0.5px);
+  }
+  .hero-float:nth-child(1) { top: 8%;    left: 4%;   animation-delay: 0s;   font-size: 5rem;   }
+  .hero-float:nth-child(2) { top: 15%;   right: 5%;  animation-delay: 1.5s; font-size: 3.8rem; }
+  .hero-float:nth-child(3) { bottom: 8%; left: 10%;  animation-delay: 3s;   font-size: 3.5rem; }
+  .hero-float:nth-child(4) { bottom: 12%;right: 4%;  animation-delay: 4.5s; font-size: 4.2rem; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== DRIVING QUESTION ===== */
+  .driving-question {
+    max-width: 760px;
+    margin: 1.6rem auto 0;
+    padding: 1.1rem 1.6rem;
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.22);
+    border-left: 4px solid var(--teal);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body  { flex: 1; text-align: left; }
+  .dq-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(59,200,232,0.8);
+    margin-bottom: 0.3rem;
+  }
+  .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 760px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* ===== BRIDGE CALLOUT ===== */
+  .bridge-callout {
+    margin: 2rem auto 0;
+    max-width: 800px;
+    padding: 1.1rem 1.4rem;
+    background: rgba(245,200,66,0.06);
+    border: 1px solid rgba(245,200,66,0.22);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    font-size: 0.98rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .bridge-callout strong { color: var(--gold); }
+  .bridge-callout.teal {
+    background: rgba(59,200,232,0.06);
+    border-color: rgba(59,200,232,0.22);
+    border-left-color: var(--teal);
+  }
+  .bridge-callout.teal strong { color: var(--teal); }
+  .bridge-callout.green {
+    background: rgba(46,204,113,0.06);
+    border-color: rgba(46,204,113,0.22);
+    border-left-color: var(--green);
+  }
+  .bridge-callout.green strong { color: var(--green); }
+  .bridge-callout.orange {
+    background: rgba(230,126,34,0.06);
+    border-color: rgba(230,126,34,0.22);
+    border-left-color: var(--orange);
+  }
+  .bridge-callout.orange strong { color: var(--orange); }
+
+  /* ===== FOOTER ===== */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
+  footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
+  footer .footer-links { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,.4); background:rgba(245,200,66,.08); padding:.25rem .75rem; border-radius:99px; transition:border-color .2s,background .2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,.7); background:rgba(59,200,232,.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,.22); border-color:rgba(59,200,232,.95); }
+  footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
+
+  /* ===== RESPONSIVE NAV ===== */
+  @media (max-width: 900px) {
+    nav { padding: 0.75rem 1.2rem; flex-wrap: wrap; gap: 0.6rem; }
+    .nav-links { gap: 0.9rem; order: 3; width: 100%; justify-content: center; }
+    .nav-links a { font-size: 0.78rem; }
+  }
+  @media (max-width: 560px) {
+    .hero { padding: 4rem 1.2rem 3.5rem; }
+    section { padding: 3.5rem 1.2rem; }
+  }
+</style>
+
+<!-- ── Learning Science Focus Bar ── -->
+<style>
+.ls-focus { display: none; }
+body.ls-active .ls-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+@keyframes barFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59,200,232,0.8);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.11);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255,255,255,0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]:hover::after,
+.ls-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before { display: none; }
+  body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
+}
+
+/* ── Instructional Design notes · Educator Mode ── */
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid #9fb8cc; border-radius: 14px;
+  animation: barFadeIn 0.35s ease both;
+}
+.edu-note-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+}
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+}
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
+</style>
+
+
+<!-- ── Engagement + Content Styles ── -->
+<style>
+
+/* ── QUESTION PAUSE CARD ── */
+.question-pause {
+  max-width: 760px;
+  margin: 0.5rem auto 2rem;
+  padding: 1.2rem 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.question-pause-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+.question-pause-text {
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.question-pause-text strong {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 800;
+}
+@media (max-width: 480px) {
+  .question-pause {
+    padding: 0.9rem 1rem;
+    gap: 0.6rem;
+    margin-top: 0;
+  }
+  .question-pause-icon { font-size: 1.2rem; }
+  .question-pause-text { font-size: 0.9rem; }
+}
+
+/* ── PREDICT BEFORE REVEAL ── */
+.question-pause.predict-pause {
+  display: block;
+}
+.question-pause.predict-pause .qp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.predict-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.predict-btn {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 0.55rem 0.7rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.predict-btn:hover:not(.locked) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.08);
+}
+.predict-btn.chosen {
+  border-color: var(--gold);
+  background: rgba(245,200,66,0.16);
+  color: var(--gold);
+}
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; }
+.question-pause.locked .predict-btn.chosen { opacity: 1; }
+
+.predict-gated { display: none; }
+.predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@keyframes predictFadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HOOK MYSTERY CARDS (Engage) ── */
+.hook-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 720px) { .hook-grid { grid-template-columns: 1fr; } }
+
+.hook-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem 1.6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  cursor: pointer;
+  user-select: none;
+}
+.hook-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+}
+.hook-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.hook-card.c1::before { background: linear-gradient(90deg, var(--teal), rgba(59,200,232,0.4)); }
+.hook-card.c2::before { background: linear-gradient(90deg, var(--green), rgba(46,204,113,0.4)); }
+.hook-card.c3::before { background: linear-gradient(90deg, var(--orange), rgba(230,126,34,0.4)); }
+
+.hook-card-icon { font-size: 2.8rem; margin-bottom: 0.6rem; display: block; line-height: 1; }
+.hook-card-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.hook-card-observation {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.hook-card-question {
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--gold);
+  line-height: 1.5;
+}
+.hook-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
+.hook-card.revealed { cursor: default; }
+.hook-card-prompt {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 1rem;
+  border: 1px dashed rgba(245,200,66,0.45);
+  border-radius: 99px;
+  margin-top: 0.4rem;
+}
+.hook-card .hook-card-observation,
+.hook-card .hook-card-question { display: none; }
+.hook-card.revealed .hook-card-prompt { display: none; }
+.hook-card.revealed .hook-card-observation,
+.hook-card.revealed .hook-card-question {
+  display: block;
+  animation: predictFadeUp 0.4s ease both;
+}
+
+/* ── OBSERVE ROW ── */
+.observe-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 560px) { .observe-row { grid-template-columns: 1fr; } }
+.observe-card {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+.observe-icon { font-size: 1.6rem; flex-shrink: 0; }
+.observe-card strong { color: var(--teal); }
+.observe-card.green-card { background: rgba(46,204,113,0.05); border-color: rgba(46,204,113,0.2); }
+.observe-card.green-card strong { color: var(--green); }
+.observe-card.orange-card { background: rgba(230,126,34,0.05); border-color: rgba(230,126,34,0.2); }
+.observe-card.orange-card strong { color: var(--orange); }
+
+/* ── NAME-IT REVEAL ── */
+.name-it {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+}
+.name-it.teal-it { border-left-color: var(--teal); }
+.name-it.green-it { border-left-color: var(--green); }
+.name-it.orange-it { border-left-color: var(--orange); }
+.name-it-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+.name-it.teal-it .name-it-label   { color: var(--teal); }
+.name-it.green-it .name-it-label  { color: var(--green); }
+.name-it.orange-it .name-it-label { color: var(--orange); }
+.name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+.name-it p strong { font-weight: 800; }
+.name-it.teal-it p strong   { color: var(--teal); }
+.name-it.green-it p strong  { color: var(--green); }
+.name-it.orange-it p strong { color: var(--orange); }
+
+/* ── EXAMPLE GRID ── */
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 600px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
+.example-chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+/* ── CRITERIA VS CONSTRAINTS COMPARISON ── */
+.avd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 640px) { .avd-grid { grid-template-columns: 1fr; } }
+.avd-card {
+  border-radius: 18px;
+  padding: 1.8rem 1.6rem;
+}
+.avd-card.crit {
+  background: var(--criteria-dim);
+  border: 1px solid var(--criteria-border);
+}
+.avd-card.cons {
+  background: var(--constraint-dim);
+  border: 1px solid var(--constraint-border);
+}
+.avd-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.35rem;
+  margin-bottom: 0.3rem;
+}
+.avd-card.crit .avd-title { color: var(--criteria); }
+.avd-card.cons .avd-title { color: var(--constraint); }
+.avd-tagline {
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+}
+.avd-card.crit .avd-tagline { color: rgba(59,200,232,0.7); }
+.avd-card.cons .avd-tagline { color: rgba(230,126,34,0.7); }
+.avd-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+.avd-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.avd-list li strong { color: var(--text); }
+.avd-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+.avd-card.crit .avd-dot { background: var(--criteria); }
+.avd-card.cons .avd-dot { background: var(--constraint); }
+
+/* ── CRITERIA / CONSTRAINT SORTER ── */
+.sorter-card {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2rem 1.8rem 2.2rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.sorter-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.25rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+.sorter-sub {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 auto 1.5rem;
+}
+.sorter-sub strong { color: var(--gold); }
+.sorter-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 0.8rem;
+}
+.sorter-statement {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.55;
+  margin-bottom: 0.7rem;
+}
+.sorter-btns { display: flex; gap: 0.55rem; flex-wrap: wrap; }
+.sorter-btn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: 0.45rem 1.2rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  color: var(--text);
+}
+.sorter-btn.b-crit:hover:not(:disabled) { border-color: var(--criteria); background: var(--criteria-dim); color: var(--criteria); }
+.sorter-btn.b-cons:hover:not(:disabled) { border-color: var(--constraint); background: var(--constraint-dim); color: var(--constraint); }
+.sorter-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.sorter-item.done .sorter-btn { cursor: default; opacity: 0.4; }
+.sorter-item.done .sorter-btn.picked-right {
+  opacity: 1;
+  border-color: var(--green);
+  background: rgba(46,204,113,0.12);
+  color: var(--green);
+}
+.sorter-item.done .sorter-btn.picked-wrong {
+  opacity: 1;
+  border-color: var(--red);
+  background: rgba(231,76,60,0.1);
+  color: #ff9b8e;
+}
+.sorter-fb {
+  display: none;
+  margin-top: 0.65rem;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+}
+.sorter-fb.visible { display: block; animation: predictFadeUp 0.35s ease both; }
+.sorter-fb.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.sorter-fb.no { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.3);  color: #ecb3b3; }
+.sorter-score {
+  display: none;
+  margin-top: 1.1rem;
+  text-align: center;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(245,200,66,0.08);
+  border: 1px solid rgba(245,200,66,0.3);
+  color: var(--gold);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+.sorter-score.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+
+/* ── DESIGN CYCLE EXPLORER ── */
+.cycle-card {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2.2rem 2rem 2.4rem;
+  max-width: 980px;
+  margin: 0 auto 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.cycle-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 25px;
+  background: linear-gradient(135deg,
+    rgba(59,200,232,0.3) 0%, rgba(245,200,66,0.08) 25%,
+    rgba(46,204,113,0.25) 50%, rgba(245,200,66,0.08) 75%,
+    rgba(230,126,34,0.25) 100%
+  );
+  background-size: 400% 400%;
+  animation: borderFlow 6s ease infinite;
+  z-index: 0;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+@keyframes borderFlow {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.cycle-card > * { position: relative; z-index: 1; }
+.cycle-progress {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1.3rem;
+}
+.cycle-progress strong { color: var(--gold); }
+.cycle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.9rem;
+}
+@media (max-width: 860px) { .cycle-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .cycle-grid { grid-template-columns: 1fr; } }
+.cycle-step {
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.13);
+  border-radius: 16px;
+  padding: 1.2rem 1rem 1.1rem;
+  text-align: center;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.cycle-step:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.3); border-color: rgba(245,200,66,0.45); }
+.cycle-step:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.cycle-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem; height: 1.7rem;
+  border-radius: 50%;
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.85rem;
+  margin-bottom: 0.45rem;
+  background: rgba(245,200,66,0.12);
+  border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold);
+}
+.cycle-step-icon { font-size: 1.9rem; display: block; line-height: 1.2; margin-bottom: 0.3rem; }
+.cycle-step-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.02rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+}
+.cycle-step-hint {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.cycle-step-desc {
+  display: none;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 0.2rem;
+}
+.cycle-step.open .cycle-step-desc { display: block; animation: predictFadeUp 0.3s ease both; }
+.cycle-step.open .cycle-step-hint { display: none; }
+.cycle-step.open { border-color: var(--green); background: rgba(46,204,113,0.06); }
+.cycle-step.open .cycle-step-name { color: var(--green); }
+.cs-ask     .cycle-step-name { color: var(--teal); }
+.cs-imagine .cycle-step-name { color: #b47fff; }
+.cs-plan    .cycle-step-name { color: #7cc8f8; }
+.cs-create  .cycle-step-name { color: var(--gold); }
+.cs-test    .cycle-step-name { color: var(--orange); }
+.cs-improve .cycle-step-name { color: var(--green); }
+.cs-share   .cycle-step-name { color: #ff8fb1; }
+.cycle-complete {
+  display: none;
+  margin-top: 1.3rem;
+  text-align: center;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.35);
+  color: #a8e6c4;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.cycle-complete.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+
+/* ── ORDER-THE-CYCLE BUILDER ── */
+.order-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.8rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+}
+.order-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.15rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+.order-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 1.3rem;
+}
+.order-slots {
+  display: flex;
+  justify-content: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+}
+.order-slot {
+  min-width: 86px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 0 0.6rem;
+}
+.order-slot.filled {
+  border-style: solid;
+  border-color: var(--green);
+  background: rgba(46,204,113,0.1);
+  color: var(--green);
+}
+.order-pool {
+  display: flex;
+  justify-content: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+.order-chip {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  color: var(--text);
+  padding: 0.55rem 1.1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.order-chip:hover:not(:disabled) { border-color: rgba(59,200,232,0.55); background: rgba(59,200,232,0.08); transform: translateY(-2px); }
+.order-chip:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.order-chip.used { opacity: 0.25; cursor: default; transform: none; }
+.order-chip.shake { animation: chipShake 0.35s ease; border-color: var(--red); }
+@keyframes chipShake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+.order-fb {
+  display: none;
+  margin-top: 1.1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+}
+.order-fb.visible { display: block; animation: predictFadeUp 0.35s ease both; }
+.order-fb.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.order-fb.no { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.3);  color: #ecb3b3; }
+
+/* ── ITERATION TIMELINE ── */
+.timeline-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.8rem;
+  max-width: 980px;
+  margin: 0 auto 2rem;
+}
+.timeline-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--iterate);
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+.timeline-track {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+@media (max-width: 860px) { .timeline-track { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 540px) { .timeline-track { grid-template-columns: repeat(2, 1fr); } }
+.timeline-node {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 0.9rem 0.6rem;
+  text-align: center;
+}
+.timeline-node.proto { border-color: var(--constraint-border); background: var(--constraint-dim); }
+.timeline-node.future { border-style: dashed; opacity: 0.7; }
+.tn-icon { font-size: 1.7rem; display: block; line-height: 1.2; margin-bottom: 0.3rem; }
+.tn-name { font-size: 0.78rem; font-weight: 900; color: var(--text); line-height: 1.35; }
+.tn-year { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); }
+.timeline-node.proto .tn-name { color: var(--constraint); }
+.timeline-caption {
+  margin-top: 1.1rem;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.timeline-caption strong { color: var(--iterate); }
+
+/* ── WORKED EXAMPLE (chunked steps) ── */
+.worked-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 980px;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 720px) { .worked-grid { grid-template-columns: 1fr; } }
+.worked-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem;
+}
+.worked-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem; height: 1.7rem;
+  border-radius: 50%;
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  background: rgba(245,200,66,0.12);
+  border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold);
+}
+.worked-head {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.02rem;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+.worked-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.worked-body strong { color: var(--gold); }
+.worked-body .wk-crit { color: var(--criteria); font-weight: 800; }
+.worked-body .wk-cons { color: var(--constraint); font-weight: 800; }
+
+/* ── QUICK RECALL ── */
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+/* ── WRAP-UP BEATS ── */
+.wrapup-beats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+@media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+
+.wrapup-beat {
+  border-radius: 16px;
+  padding: 1.4rem 1.3rem;
+  position: relative;
+}
+.wrapup-beat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.wrapup-beat-1 {
+  background: rgba(245,200,66,0.06);
+  border: 1px solid rgba(245,200,66,0.25);
+}
+.wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+.wrapup-beat-2 {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+}
+.wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+.wrapup-beat-3 {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+
+.wrapup-beat-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+.wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+.wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+
+.wrapup-beat-answer {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+.wrapup-beat-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+.wrapup-behavior-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.wbc {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.22rem 0.65rem;
+  border-radius: 99px;
+  border: 1px solid;
+}
+.wbc-crit { color: var(--criteria);   background: var(--criteria-dim);   border-color: var(--criteria-border);   }
+.wbc-cons { color: var(--constraint); background: var(--constraint-dim); border-color: var(--constraint-border); }
+.wbc-iter { color: var(--iterate);    background: var(--iterate-dim);    border-color: var(--iterate-border);    }
+
+/* ── SUMMARY TABLES ── */
+.summary-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+.summary-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(245,200,66,0.07);
+  padding: 0.8rem 1.2rem;
+  border-bottom: 1px solid rgba(245,200,66,0.25);
+}
+.summary-table td {
+  padding: 0.75rem 1.2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-muted);
+  line-height: 1.6;
+  vertical-align: top;
+}
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table td.term { color: var(--teal); font-weight: 800; white-space: nowrap; }
+</style>
+
+<!-- ── Learning Goals + Glossary Cards ── -->
+<style>
+.goal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+
+/* Glossary cards: click-to-expand only. Hover gives subtle lift feedback
+   but never reveals the definition or changes the card height. */
+.glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+.glossary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem 1.3rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.35rem; }
+.gc-hint {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
+.glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+.glossary-card.open .gc-hint { display: none; }
+.gc-term { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.gc-term::after { content: '▾'; font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
+.glossary-card.open .gc-term::after { content: '▴'; color: var(--gold); }
+.gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+.gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+.gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
+.gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+.gc-gold   { border-top-color: var(--gold);   } .gc-gold .gc-term   { color: var(--gold); }
+.gc-purple { border-top-color: #b47fff;       } .gc-purple .gc-term { color: #b47fff; }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-touchtarget */
+  .mode-btn,
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-touchtarget */
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#engineering">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#eng" class="nav-back">← Engineering</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">📐</span>
+  <span class="hero-float">👟</span>
+  <span class="hero-float">🎮</span>
+  <span class="hero-float">🛠️</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Engineering Design</h1>
+  <p class="hero-sub">The Air Jordan 1 started as a rough prototype. The PlayStation began as a clunky gray box bolted to a CD player. How does a first draft become an icon?</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How do engineers turn a rough first idea into a product millions of people use?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with real prototype mysteries (Air Jordan, PlayStation) before naming any vocabulary. Encountering a genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
+  <span class="ls-badge" data-tip="Criteria, constraints, and iteration are introduced through familiar products before their vocabulary labels appear. Students build understanding, then receive the word that names it. (Willingham, 2009)">🏷️ Label After Learning</span>
+  <span class="ls-badge" data-tip="The design cycle is broken into seven explicit numbered steps, and a fully worked design example is shown before students sort and order on their own. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
+  <span class="ls-badge" data-tip="Students sort criteria from constraints and rebuild the design cycle themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
+  <span class="ls-badge" data-tip="The quiz asks students to apply criteria, constraints, and iteration to brand-new design scenarios rather than recall definitions. Transfer tasks require deeper processing and reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🎯</span>
+        <div class="goal-text">Tell the difference between the criteria a design must meet and the constraints that limit it, for any design problem.</div>
+        <span class="goal-std">6.MS-ETS1-1</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🔄</span>
+        <div class="goal-text">Explain why engineers build prototypes and repeat cycles of designing, testing, and refining instead of building the final product first.</div>
+        <span class="goal-std">6.MS-ETS1-1</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🗣️</span>
+        <div class="goal-text">Walk through the seven steps of the engineering design process and explain what happens at each step.</div>
+        <span class="goal-std">6.MS-ETS1-6(MA)</span>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Tell students the target outcomes before they meet the content.</li>
+            <li>Frame the lesson around distinguishing criteria from constraints and explaining why engineers iterate.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Goal setting</li>
+            <li>Advance organizer</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 1 to 3 (the "explain why engineers iterate instead of building the final product first" goal reaches cause-and-effect reasoning)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Each goal paired with an icon and a standard code</li>
+            <li>Short, plain-language statements</li>
+            <li>One card per goal, no crowding</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards - click to expand only)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-term">Engineering</div>
+        <div class="gc-def">A field that applies scientific principles to designing and constructing.</div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Design</div>
+        <div class="gc-def">The process of planning and building that solves a problem or meets a need.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Criteria</div>
+        <div class="gc-def">The specific requirements that a design must meet. Criteria describe what the design has to do to count as a success.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-term">Constraints</div>
+        <div class="gc-def">The limitations that affect the design process, such as time, money, materials, or size.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Prototype</div>
+        <div class="gc-def">An early model of a design that is tested and refined before the final version is built.</div>
+      </button>
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-term">Iterations</div>
+        <div class="gc-def">The repeated cycles of designing, testing, and refining that make a design better each time through.</div>
+      </button>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Pre-teach the six terms students will reuse throughout the lesson.</li>
+            <li>Separate criteria from constraints early, since the two are the most confused pair in this unit.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Pre-teaching vocabulary</li>
+            <li>Reduced extraneous load</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Understand</li>
+            <li>DOK 1</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Click to reveal, no hover</li>
+            <li>One card open at a time</li>
+            <li>Plain, short definitions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE MYSTERY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="hook" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage · Mystery</span>
+    <h2 class="section-title">Famous Products. Rough First Drafts.</h2>
+    <p class="section-desc">Some of the most famous products in the world did not start out looking famous. They started as clumsy, unfinished first attempts. Click each card to look closer.</p>
+
+    <div class="hook-grid">
+
+      <div class="hook-card c1" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">👟</span>
+        <div class="hook-card-name">The Air Jordan 1</div>
+        <div class="hook-card-observation">
+          Before the Air Jordan 1 hit stores in 1985, Nike built early versions with rough stitching, test materials, and colors that never shipped. The shoe everyone knows came later.
+        </div>
+        <div class="hook-card-question">Why build a "wrong" version of a shoe on purpose?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+      <div class="hook-card c2" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🎮</span>
+        <div class="hook-card-name">The PlayStation</div>
+        <div class="hook-card-observation">
+          In 1991, Sony built a strange gray test console years before any store sold one. The PlayStation 1 didn't launch until 1995, and Sony has rebuilt it again and again ever since: PS2, PS3, PS4, PS5.
+        </div>
+        <div class="hook-card-question">If the PS1 worked, why keep redesigning it for 30 years?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+      <div class="hook-card c3" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🪑</span>
+        <div class="hook-card-name">Everything Around You</div>
+        <div class="hook-card-observation">
+          Your chair, your backpack, your water bottle, your phone: every designed object went through the same hidden journey of early versions, tests, and fixes before it reached you.
+        </div>
+        <div class="hook-card-question">What journey do all of these objects share?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+    </div>
+
+    <div class="observe-row">
+      <div class="observe-card">
+        <span class="observe-icon">💡</span>
+        <span><strong>One clue:</strong> none of these products were designed in a single try. Each one followed the same repeatable process, and that process has a name.</span>
+      </div>
+      <div class="observe-card">
+        <span class="observe-icon">🤔</span>
+        <span>If you had to design a brand new sneaker, what would you do first? Sketch it? Build it? Ask who it's for? Keep your answer in mind.</span>
+      </div>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>The question:</strong> sneakers, game consoles, bridges, and apps are all built using the same step-by-step process. This lesson is about discovering that process and learning to use it yourself.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Open with familiar products that hide a rough first version, creating a question students want answered.</li>
+            <li>Surface the misconception that famous designs arrive perfect on the first try.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Curiosity gap</li>
+            <li>Phenomenon-based learning</li>
+            <li>Prior knowledge activation</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Click to reveal, no hover</li>
+            <li>Large card targets with icon and label</li>
+            <li>Short observation text per card</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1 - WHAT IS ENGINEERING? WHAT IS DESIGN?
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engineering" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore · The Big Idea</span>
+    <h2 class="section-title">Two Words That Build the World</h2>
+    <p class="section-desc">Before we follow a design from sketch to store shelf, we need two key ideas. They sound similar, but they play different roles.</p>
+
+    <div class="name-it teal-it">
+      <div class="name-it-label">Key idea 1</div>
+      <p><strong>Engineering</strong> is a field that applies scientific principles to designing and constructing. Engineers use what scientists discover about forces, materials, electricity, and energy to build things that work in the real world.</p>
+    </div>
+
+    <div class="name-it green-it">
+      <div class="name-it-label">Key idea 2</div>
+      <p><strong>Design</strong> is the process of planning and building that solves a problem or meets a need. Design always starts with a problem: shoes wear out, games are boring, backpacks hurt your shoulders. The design is the answer.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.2rem;">Engineers design solutions everywhere you look:</p>
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">👟</span>Sneakers that cushion a jump</div>
+      <div class="example-chip"><span class="example-chip-icon">🎮</span>Game consoles and controllers</div>
+      <div class="example-chip"><span class="example-chip-icon">🌉</span>Bridges that hold thousands of cars</div>
+      <div class="example-chip"><span class="example-chip-icon">📱</span>Phones that fit in a pocket</div>
+      <div class="example-chip"><span class="example-chip-icon">🚲</span>Bikes, helmets, and skateboards</div>
+      <div class="example-chip"><span class="example-chip-icon">🏫</span>The building you're sitting in</div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>But wait:</strong> a designer can't just build anything they imagine. Every design problem comes with a must-do list and a list of limits.
+      <br><br>
+      Engineers have special names for those two lists. Let's meet them.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Define engineering and design as distinct but linked ideas before the process is introduced.</li>
+            <li>Anchor abstract terms in everyday designed objects students already use.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Concrete to abstract</li>
+            <li>Worked examples</li>
+            <li>Elaboration</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Key terms defined in place</li>
+            <li>Icon-labeled example chips</li>
+            <li>Color coding introduced and reused later</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2 - CRITERIA VS CONSTRAINTS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="rules" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--teal); background: var(--criteria-dim); border-color: var(--criteria-border);">Explore · The Rules of the Game</span>
+    <h2 class="section-title">Criteria vs. Constraints</h2>
+    <p class="section-desc">Every design problem begins with the same question: <em>what are the criteria and constraints?</em> Compare the two cards below. The colors will follow these ideas through the whole lesson.</p>
+
+    <div class="avd-grid">
+
+      <div class="avd-card crit">
+        <div class="avd-title">Criteria</div>
+        <div class="avd-tagline">What the design MUST DO</div>
+        <ul class="avd-list">
+          <li><span class="avd-dot"></span><span>The <strong>specific requirements</strong> that a design must meet</span></li>
+          <li><span class="avd-dot"></span><span>They describe <strong>success</strong>: if the design meets the criteria, it works</span></li>
+          <li><span class="avd-dot"></span><span>Ask: <strong>"What does it have to do?"</strong></span></li>
+          <li><span class="avd-dot"></span><span>Example: a basketball shoe must <strong>grip the court</strong> and <strong>support the ankle</strong></span></li>
+        </ul>
+      </div>
+
+      <div class="avd-card cons">
+        <div class="avd-title">Constraints</div>
+        <div class="avd-tagline">What LIMITS the design</div>
+        <ul class="avd-list">
+          <li><span class="avd-dot"></span><span>The <strong>limitations</strong> that affect the design process</span></li>
+          <li><span class="avd-dot"></span><span>They set <strong>boundaries</strong>: money, time, materials, size, safety rules</span></li>
+          <li><span class="avd-dot"></span><span>Ask: <strong>"What holds the design back?"</strong></span></li>
+          <li><span class="avd-dot"></span><span>Example: the shoe must <strong>cost under $100</strong> to make and <strong>be ready by fall</strong></span></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="question-pause">
+      <span class="question-pause-icon">🧠</span>
+      <span class="question-pause-text"><strong>Memory trick:</strong> <em>Criteria</em> = the checklist the design must <em>complete</em>. <em>Constraints</em> = the chains that hold the design <em>back</em>.</span>
+    </div>
+
+    <!-- INTERACTIVE: SORTER -->
+    <div class="sorter-card">
+      <div class="sorter-title">🎒 You Be the Engineer: Sort the Backpack Brief</div>
+      <p class="sorter-sub">Your design team is building <strong>a new school backpack</strong>. The client sent over six notes. For each one, decide: is it a <strong>criterion</strong> (something the backpack must do) or a <strong>constraint</strong> (a limit on the design)?</p>
+      <div id="sorterItems"></div>
+      <div class="sorter-score" id="sorterScore"></div>
+    </div>
+
+    <div class="bridge-callout orange">
+      <strong>Now you know the rules.</strong> Criteria tell you what winning looks like, and constraints fence in the playing field. Next question: what do engineers actually <em>do</em> with those rules? They follow a cycle.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Make the criteria-versus-constraint distinction concrete with a side-by-side contrast.</li>
+            <li>Have students classify real design notes, the exact skill 6.MS-ETS1-1 asks for.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Comparison and contrast</li>
+            <li>Generation effect</li>
+            <li>Immediate feedback</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 (sorting each statement into criterion or constraint is classification, not recall)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Side-by-side comparison cards</li>
+            <li>Large button targets with keyboard focus styles</li>
+            <li>Feedback explains each answer in place</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN 1 - THE ENGINEERING DESIGN PROCESS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="process" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--green); background: var(--iterate-dim); border-color: var(--iterate-border);">Explore · The Cycle</span>
+    <h2 class="section-title">The Engineering Design Process</h2>
+    <p class="section-desc">Engineers everywhere follow the same seven-step cycle, from sneaker designers to NASA. Click each step to reveal what happens there. Open all seven to complete the cycle.</p>
+
+    <!-- INTERACTIVE: CYCLE EXPLORER -->
+    <div class="cycle-card">
+      <div class="cycle-progress">Steps explored: <strong id="cycleCount">0</strong> / 7</div>
+      <div class="cycle-grid" id="cycleGrid">
+        <button class="cycle-step cs-ask" type="button" aria-expanded="false">
+          <span class="cycle-step-num">1</span>
+          <span class="cycle-step-icon">❓</span>
+          <div class="cycle-step-name">ASK</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc"><strong>Define the problem.</strong> What needs to be solved? Who is it for? What are the criteria and constraints?</div>
+        </button>
+        <button class="cycle-step cs-imagine" type="button" aria-expanded="false">
+          <span class="cycle-step-num">2</span>
+          <span class="cycle-step-icon">💭</span>
+          <div class="cycle-step-name">IMAGINE</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc"><strong>Generate ideas.</strong> Brainstorm lots of possible solutions. No idea is too wild yet.</div>
+        </button>
+        <button class="cycle-step cs-plan" type="button" aria-expanded="false">
+          <span class="cycle-step-num">3</span>
+          <span class="cycle-step-icon">📋</span>
+          <div class="cycle-step-name">PLAN</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc"><strong>Select a solution.</strong> Pick the most promising idea and sketch out how to build it.</div>
+        </button>
+        <button class="cycle-step cs-create" type="button" aria-expanded="false">
+          <span class="cycle-step-num">4</span>
+          <span class="cycle-step-icon">🔨</span>
+          <div class="cycle-step-name">CREATE</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc"><strong>Make the item.</strong> Build a working version of your plan: your prototype.</div>
+        </button>
+        <button class="cycle-step cs-test" type="button" aria-expanded="false">
+          <span class="cycle-step-num">5</span>
+          <span class="cycle-step-icon">🧪</span>
+          <div class="cycle-step-name">TEST</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc"><strong>Evaluate the item.</strong> Try it out. Does it meet the criteria? Does it stay inside the constraints?</div>
+        </button>
+        <button class="cycle-step cs-improve" type="button" aria-expanded="false">
+          <span class="cycle-step-num">6</span>
+          <span class="cycle-step-icon">🔧</span>
+          <div class="cycle-step-name">IMPROVE</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc"><strong>Make any changes.</strong> Fix what failed in testing, then loop back and test again.</div>
+        </button>
+        <button class="cycle-step cs-share" type="button" aria-expanded="false">
+          <span class="cycle-step-num">7</span>
+          <span class="cycle-step-icon">📣</span>
+          <div class="cycle-step-name">SHARE</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc"><strong>Present the results.</strong> Communicate your solution and show how it meets the criteria and constraints.</div>
+        </button>
+      </div>
+      <div class="cycle-complete" id="cycleComplete">🎉 You've explored the whole cycle! Notice the loop in the middle: TEST and IMPROVE feed back into each other. That loop is where great designs are made.</div>
+    </div>
+
+    <div class="question-pause">
+      <span class="question-pause-icon">🔁</span>
+      <span class="question-pause-text"><strong>Important:</strong> this is a cycle, not a straight line. When a test fails, engineers don't quit. They go back to IMPROVE, or even all the way back to IMAGINE, and run the loop again.</span>
+    </div>
+
+    <!-- INTERACTIVE: ORDER BUILDER -->
+    <div class="order-card">
+      <div class="order-title">🧩 Rebuild the Cycle</div>
+      <p class="order-sub">The steps below got scrambled. Click them in the correct order, starting with the step where you define the problem.</p>
+      <div class="order-slots" id="orderSlots"></div>
+      <div class="order-pool" id="orderPool"></div>
+      <div class="order-fb" id="orderFb"></div>
+    </div>
+
+    <div class="bridge-callout green">
+      <strong>So what does step 4, CREATE, actually produce?</strong> Not the final product. Engineers build something rougher first, on purpose. It has a name, and you saw two famous examples at the start of this lesson.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Lay out the seven-step cycle and stress that test and improve form a loop, not a dead end.</li>
+            <li>Counter the idea that engineers try one solution and stop.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Dual coding</li>
+            <li>Productive struggle</li>
+            <li>Misconception checking</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 (reordering the scrambled steps requires reasoning about sequence, not just naming them)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Click to reveal each step, no hover</li>
+            <li>Steps numbered, icon-labeled, and color-coded</li>
+            <li>Order builder gives keyboard focus and clear feedback</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN 2 - PROTOTYPES AND ITERATIONS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="prototype" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--orange); background: var(--constraint-dim); border-color: var(--constraint-border);">Explore · First Drafts</span>
+    <h2 class="section-title">Prototypes and Iterations</h2>
+    <p class="section-desc">Remember the rough Air Jordan and the gray 1991 test console from the start of the lesson? Now you can name what they were.</p>
+
+    <div class="name-it orange-it">
+      <div class="name-it-label">Key idea</div>
+      <p>A <strong>prototype</strong> is an early model of a design that is tested and refined. The Air Jordan 1, 2, and 3 each had prototypes: rough versions built to answer questions like "does it grip?", "does it last?", and "does it look right?" before millions of pairs were made.</p>
+    </div>
+
+    <div class="name-it green-it">
+      <div class="name-it-label">Key idea</div>
+      <p><strong>Iterations</strong> are the repeated cycles of designing, testing, and refining. Each trip around the design cycle is one iteration, and each iteration makes the design a little better.</p>
+    </div>
+
+    <!-- PREDICT BEFORE REVEAL -->
+    <div class="question-pause predict-pause" id="iterPredict">
+      <div class="qp-row">
+        <span class="question-pause-icon">🔮</span>
+        <span class="question-pause-text"><strong>Predict first:</strong> Sony's PlayStation prototype was built in 1991. The PS5 came out in 2020. Counting the prototype, how many major versions do you think Sony built in those 29 years?</span>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn" type="button">2 versions</button>
+        <button class="predict-btn" type="button">4 versions</button>
+        <button class="predict-btn" type="button">6 or more versions</button>
+      </div>
+    </div>
+
+    <div class="predict-gated" data-gate="iterPredict">
+      <div class="timeline-card">
+        <div class="timeline-label">🎮 Iteration in Action: The PlayStation Timeline</div>
+        <div class="timeline-track">
+          <div class="timeline-node proto">
+            <span class="tn-icon">🔧</span>
+            <div class="tn-name">Prototype</div>
+            <div class="tn-year">1991</div>
+          </div>
+          <div class="timeline-node">
+            <span class="tn-icon">🎮</span>
+            <div class="tn-name">PlayStation 1</div>
+            <div class="tn-year">1995</div>
+          </div>
+          <div class="timeline-node">
+            <span class="tn-icon">🎮</span>
+            <div class="tn-name">PlayStation 2</div>
+            <div class="tn-year">2000</div>
+          </div>
+          <div class="timeline-node">
+            <span class="tn-icon">🎮</span>
+            <div class="tn-name">PlayStation 3</div>
+            <div class="tn-year">2006</div>
+          </div>
+          <div class="timeline-node">
+            <span class="tn-icon">🎮</span>
+            <div class="tn-name">PlayStation 4</div>
+            <div class="tn-year">2013</div>
+          </div>
+          <div class="timeline-node">
+            <span class="tn-icon">🎮</span>
+            <div class="tn-name">PlayStation 5</div>
+            <div class="tn-year">2020</div>
+          </div>
+          <div class="timeline-node future">
+            <span class="tn-icon">❓</span>
+            <div class="tn-name">PlayStation 6</div>
+            <div class="tn-year">202?</div>
+          </div>
+        </div>
+        <p class="timeline-caption">Seven versions and counting: <strong>that's iteration</strong>. Each console was designed, tested by millions of players, and refined into the next one. The cycle never really ends.</p>
+      </div>
+
+      <div class="observe-row">
+        <div class="observe-card green-card">
+          <span class="observe-icon">👟</span>
+          <span><strong>Same story at Nike:</strong> Air Jordan 1, then 2, then 3. Each shoe was an iteration that fixed problems and added improvements discovered by testing the one before it.</span>
+        </div>
+        <div class="observe-card orange-card">
+          <span class="observe-icon">⚠️</span>
+          <span><strong>Key insight:</strong> a prototype that fails a test is not a disaster. It's data. Finding a problem in a cheap early model is far better than finding it after a million units ship.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Name the rough early versions from the hook as prototypes and iterations.</li>
+            <li>Reframe a failed test as useful data, directly addressing "failure means the project failed."</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Predict before reveal</li>
+            <li>Dual coding</li>
+            <li>Misconception checking</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Prediction gates the timeline so students commit first</li>
+            <li>Labeled timeline paired with text caption</li>
+            <li>Short, parallel callout cards</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ELABORATE - APPLY IT TO A NEW PROBLEM
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="apply" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore · Your Turn</span>
+    <h2 class="section-title">A Worked Example: The Locker Organizer</h2>
+    <p class="section-desc">Here's the whole process applied to a problem you might actually have: a messy school locker. Read each chunk one at a time and watch how criteria, constraints, prototypes, and iterations all show up.</p>
+
+    <div class="worked-grid">
+      <div class="worked-card">
+        <span class="worked-step">1</span>
+        <div class="worked-head">ASK + IMAGINE</div>
+        <div class="worked-body">The problem: books and supplies avalanche out of the locker every morning. <span class="wk-crit">Criteria:</span> it must hold 5 books, keep small supplies visible, and load in under 10 seconds. <span class="wk-cons">Constraints:</span> it must fit a 12-inch-wide locker, cost under $15, and use no permanent glue. The team brainstorms shelves, hooks, magnetic bins, and hanging pockets.</div>
+      </div>
+      <div class="worked-card">
+        <span class="worked-step">2</span>
+        <div class="worked-head">PLAN + CREATE + TEST</div>
+        <div class="worked-body">The team selects the hanging-pocket idea and sketches it. They build a <strong>prototype</strong> from cardboard and duct tape, then test it: books fit, but the bottom pocket rips on day two. The test <strong>fails one criterion</strong>: it can't hold 5 books.</div>
+      </div>
+      <div class="worked-card">
+        <span class="worked-step">3</span>
+        <div class="worked-head">IMPROVE + SHARE</div>
+        <div class="worked-body">Next <strong>iteration:</strong> reinforce the bottom pocket with fabric. Test again: it holds. Now the team can <strong>share</strong> the design and show the client exactly how it meets every criterion and stays inside every constraint.</div>
+      </div>
+    </div>
+
+    <div class="question-pause">
+      <span class="question-pause-icon">✏️</span>
+      <span class="question-pause-text"><strong>Your turn to think:</strong> pick any object in the room. Name one criterion its designer had to meet and one constraint they had to work within. If you can do that, you're reading the world like an engineer.</span>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>The big picture:</strong> the design process isn't only for companies. Science fair projects, class builds, even reorganizing your room follow the same loop: ask, imagine, plan, create, test, improve, share.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Walk the full cycle through one relatable problem so every term appears together in context.</li>
+            <li>Show a test failing one criterion, then a redesign that fixes it, modeling evidence-based improvement.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Worked example</li>
+            <li>Chunking</li>
+            <li>Transfer</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Process broken into three numbered chunks</li>
+            <li>Criteria and constraints color-coded in the text</li>
+            <li>Closing prompt invites a low-stakes personal example</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+      <div class="qr-sub">Answer from memory. Not graded.</div>
+      <div class="qr-q">Your prototype fails its test. According to the design cycle, what should you do next?</div>
+      <div class="qr-options" id="qr1Opts">
+        <label><input type="radio" name="qr1" value="0"><span>Start completely over with a brand new problem</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Improve the design, then test it again</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Share the results anyway, since the building part is done</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
+      <div class="qr-sub">Answer from memory. Not graded.</div>
+      <div class="qr-q">Why do engineers build a prototype instead of going straight to the final product?</div>
+      <div class="qr-options" id="qr2Opts">
+        <label><input type="radio" name="qr2" value="0"><span>To find and fix problems cheaply before making the real thing</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Because prototypes are higher quality than final products</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Because clients prefer to buy unfinished models</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Give a low-stakes retrieval check before the synthesis section.</li>
+            <li>Target the two ideas most worth strengthening: looping back after a failed test and why prototypes come first.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice</li>
+            <li>Feedback loops</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Apply</li>
+            <li>DOK 1 to 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Ungraded and low stakes</li>
+            <li>Answer explanations provided</li>
+            <li>Retry option with keyboard-accessible radios</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN - WRAP-UP
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="summary" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explain · Wrap-Up</span>
+    <h2 class="section-title">Pulling It All Together</h2>
+    <p class="section-desc">Three beats to remember, then every key term in one table.</p>
+
+    <div class="wrapup-beats" style="margin-bottom: 2.5rem;">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">🔍 The Mystery, Solved</div>
+        <div class="wrapup-beat-answer">First drafts are the plan, not the failure.</div>
+        <div class="wrapup-beat-body">The rough Air Jordan and the gray 1991 console were <strong>prototypes</strong>: early models built to be tested and refined. Famous products look polished because of all the unpolished versions that came first.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">📏 The Rules</div>
+        <div class="wrapup-beat-answer">Every design has a must-do list and limits.</div>
+        <div class="wrapup-beat-body"><strong>Criteria</strong> are the requirements a design must meet. <strong>Constraints</strong> are the limitations that hold it back. Engineers check both every time they test.</div>
+        <div class="wrapup-behavior-chips">
+          <span class="wbc wbc-crit">Criteria = must do</span>
+          <span class="wbc wbc-cons">Constraints = limits</span>
+        </div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">🔁 The Engine</div>
+        <div class="wrapup-beat-answer">Design is a loop, not a line.</div>
+        <div class="wrapup-beat-body">ASK, IMAGINE, PLAN, CREATE, TEST, IMPROVE, SHARE. Each trip around the loop is an <strong>iteration</strong>, and each iteration makes the design better.</div>
+        <div class="wrapup-behavior-chips">
+          <span class="wbc wbc-iter">Iterate = repeat + refine</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr><th>Term</th><th>What It Means</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="term">Engineering</td>
+            <td>A field that applies scientific principles to designing and constructing.</td>
+            <td>Using physics about forces to design a bridge.</td>
+          </tr>
+          <tr>
+            <td class="term">Design</td>
+            <td>The process of planning and building that solves a problem or meets a need.</td>
+            <td>Creating a backpack that stops shoulder pain.</td>
+          </tr>
+          <tr>
+            <td class="term">Criteria</td>
+            <td>The specific requirements that a design must meet.</td>
+            <td>The shoe must grip the court and support the ankle.</td>
+          </tr>
+          <tr>
+            <td class="term">Constraints</td>
+            <td>The limitations that affect the design process.</td>
+            <td>Budget under $15, must fit a 12-inch locker.</td>
+          </tr>
+          <tr>
+            <td class="term">Prototype</td>
+            <td>An early model of a design that is tested and refined.</td>
+            <td>The 1991 gray PlayStation test console.</td>
+          </tr>
+          <tr>
+            <td class="term">Iterations</td>
+            <td>The repeated cycles of designing, testing, and refining.</td>
+            <td>PS1 → PS2 → PS3 → PS4 → PS5, each one improved.</td>
+          </tr>
+          <tr>
+            <td class="term">Design Process</td>
+            <td>The seven-step cycle engineers follow to solve problems.</td>
+            <td>ASK → IMAGINE → PLAN → CREATE → TEST → IMPROVE → SHARE</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bridge-callout green">
+      <strong>Ready to prove it?</strong> The quiz below gives you brand new design problems. Use your criteria-vs-constraints radar and your knowledge of the cycle.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Consolidate the lesson into three big beats and one term-by-term table.</li>
+            <li>Resolve the opening mystery so the phenomenon and the vocabulary close together.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Schema building</li>
+            <li>Coherent narrative</li>
+            <li>Dual coding</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 to 3 (students connect prototype, criteria, constraints, and iteration into one explanation)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Three short beats before the reference table</li>
+            <li>Summary table pairs each term with a meaning and example</li>
+            <li>Consistent color coding from earlier sections</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.quiz-section { background: var(--dark); }
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-styles */
+.quiz-mode-toggle {
+  display: flex; justify-content: center; gap: 0.6rem; margin-bottom: 0.7rem;
+}
+.mode-btn {
+  font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 800;
+  letter-spacing: 0.04em; padding: 0.6rem 1.6rem; border-radius: 99px;
+  cursor: pointer; transition: all 0.2s;
+  background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.16); color: var(--text-muted);
+}
+.mode-btn:hover { border-color: rgba(245,200,66,0.5); }
+.mode-btn.active {
+  background: rgba(245,200,66,0.14); border-color: var(--gold); color: var(--gold);
+}
+.mode-hint { text-align: center; margin-bottom: 1.8rem; min-height: 1.4rem; }
+.mode-hint span { display: none; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+.mode-hint span.visible { display: inline; }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-student-info-styles */
+.student-info-box {
+  background: var(--card); border: 1px solid rgba(245,200,66,0.25);
+  border-radius: 16px; padding: 1.5rem 1.6rem; margin-bottom: 2rem;
+}
+.student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--gold); margin-bottom: 0.2rem; }
+.student-info-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; }
+.info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.9rem; }
+.info-field label {
+  display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem;
+}
+.info-field input, .info-field select {
+  width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px;
+  background: var(--dark2); border: 1.5px solid rgba(255,255,255,0.14);
+  color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 700;
+  outline: none; transition: border-color 0.2s;
+}
+.info-field input:focus, .info-field select:focus { border-color: var(--gold); }
+.info-error { display: none; font-size: 0.74rem; font-weight: 800; color: #e87070; margin-top: 0.25rem; }
+.info-error.show { display: block; }
+  /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
+
+.quiz-progress-sticky { position: sticky; top: 64px; z-index: 50; padding: 0.4rem 0; background: var(--dark); }
+.quiz-progress { display: flex; align-items: center; gap: 0.9rem; }
+.progress-bar { flex: 1; height: 10px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--teal), var(--green)); border-radius: 99px; transition: width 0.3s; }
+.progress-text { font-size: 0.78rem; font-weight: 900; letter-spacing: 0.06em; color: var(--text-muted); white-space: nowrap; }
+
+.quiz-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+  padding: 1.6rem 1.7rem; margin-top: 1.4rem;
+}
+.quiz-header { display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 1rem; }
+.quiz-num {
+  flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%;
+  background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 0.95rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.quiz-question-text { font-family: 'Fredoka One', cursive; font-size: 1.08rem; line-height: 1.45; color: var(--text); padding-top: 0.2rem; }
+.quiz-options { display: grid; gap: 0.55rem; padding-left: 2.9rem; }
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.7rem; text-align: left;
+  background: var(--dark2); border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 0.75rem 0.95rem;
+  font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 600; color: var(--text);
+  line-height: 1.5; cursor: pointer; transition: all 0.2s;
+}
+.quiz-option:hover:not(.disabled) { border-color: rgba(59,200,232,0.55); transform: translateX(3px); }
+.quiz-option.selected { border-color: var(--teal); background: rgba(59,200,232,0.1); }
+.quiz-option.correct { border-color: var(--green); background: rgba(46,204,113,0.12); }
+.quiz-option.incorrect { border-color: var(--red); background: rgba(231,76,60,0.1); }
+.quiz-option.revealed-correct { border-color: rgba(46,204,113,0.6); }
+.quiz-option.disabled { cursor: default; }
+.option-letter {
+  flex-shrink: 0; width: 1.55rem; height: 1.55rem; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.25); font-size: 0.78rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; margin-top: 0.1rem;
+}
+.option-feedback { display: none; margin-top: 0.9rem; padding: 0.8rem 1.05rem 0.8rem 1rem; border-radius: 10px; font-size: 0.88rem; line-height: 1.6; margin-left: 2.9rem; }
+.option-feedback.correct-fb { display: block; background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.option-feedback.incorrect-fb { display: block; background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+
+.quiz-submit-wrap { text-align: center; margin-top: 2rem; }
+.quiz-submit-btn {
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  color: #fff; border: none; padding: 0.95rem 3rem; border-radius: 14px;
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.03em;
+  cursor: pointer; transition: all 0.25s;
+}
+.quiz-submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(46,204,113,0.35); }
+.quiz-submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.score-board {
+  display: none; text-align: center; margin-top: 2.5rem;
+  background: var(--card); border: 1px solid rgba(245,200,66,0.3);
+  border-radius: 20px; padding: 2.2rem 1.8rem;
+}
+.score-board.show { display: block; animation: predictFadeUp 0.4s ease both; }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 3rem; color: var(--gold); margin-bottom: 0.4rem; }
+.score-board p { font-size: 1rem; color: var(--text-muted); margin-bottom: 1.4rem; }
+.mystery-loop {
+  max-width: 620px; margin: 0 auto 1.5rem; text-align: left;
+  background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 12px; padding: 1rem 1.3rem;
+  font-size: 0.9rem; color: var(--text-muted); line-height: 1.65;
+}
+.mystery-loop .ml-label {
+  display: block; font-size: 0.68rem; font-weight: 900;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.4rem;
+}
+.mystery-loop strong { color: var(--gold); }
+
+.score-submitted {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--green); background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.score-error {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  color: #e87070; background: rgba(231,76,60,0.1);
+  border: 1px solid rgba(231,76,60,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.reset-btn {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: #fff; border: none;
+  padding: 0.85rem 2.5rem; border-radius: 12px;
+  font-weight: 800; font-size: 1rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s;
+}
+.reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+@media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .quiz-options { padding-left: 0; }
+  .option-feedback { padding-left: 1rem; margin-left: 0; }
+}
+</style>
+
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate · Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you discovered, including brand new design problems to solve. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-mode-toggle-markup -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="edSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="edSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-mode-toggle-markup -->
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-student-info-markup -->
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="ed-student-name">Your Name</label>
+          <input type="text" id="ed-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="ed-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="ed-teacher-select">Teacher</label>
+          <select id="ed-teacher-select">
+            <option value="">- Select -</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="ed-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="ed-block-select">Block</label>
+          <select id="ed-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="ed-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-student-info-markup -->
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="ed-progress"></div></div>
+        <div class="progress-text" id="ed-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="ed-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:112px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(46,204,113,0.07); border:1px solid rgba(46,204,113,0.25); border-left:4px solid var(--iterate); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: edThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#8be0a8; margin-bottom:0.4rem; }
+      @keyframes edThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="ed-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Engineers don't just pick a design. They defend the choice.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">A team is designing a phone case. Its <strong>criterion</strong>: survive a 2-meter drop. Its <strong>constraint</strong>: cost under $5 to make. Their first prototype survives the drop, but it costs $9. A teammate says, "It passed the drop test, so let's sell it." Make a <strong>claim</strong> about what the team should do next, back it with <strong>evidence</strong> from the design, and explain your <strong>reasoning</strong>. Use the word <strong>iterate</strong>.</p>
+      <textarea class="think-input" id="ed-thinking" placeholder="Write your claim, then your evidence, then your reasoning..." aria-label="Make a claim about what the team should do next, cite evidence from the design, and explain your reasoning"></textarea>
+      <div class="think-model" id="ed-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        <strong>Claim:</strong> The team should not sell the case yet; they should build a new prototype and test it again. <strong>Evidence:</strong> the design has a criterion (survive a 2-meter drop) and a constraint (cost under $5), and the current prototype meets the criterion but breaks the constraint, costing $9 instead of under $5. <strong>Reasoning:</strong> a design succeeds only when it meets its criteria and stays inside its constraints, so passing one test is not enough. A failed prototype is useful data, not a finished product, so the team should <strong>iterate</strong>: redesign with cheaper materials, test the new version, and repeat until the case survives the drop and costs under $5.
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="ed-submit-btn" onclick="edSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score Board -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
+    <div class="score-board" id="ed-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="ed-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
+      <div class="big-score" id="ed-score-num"></div>
+      <p id="ed-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Mystery You Came In With</span>
+        You started this lesson with one question: <strong>"How do engineers turn a rough first idea into a product millions of people use?"</strong> If you can explain criteria, constraints, prototypes, and iteration, you've solved the mystery.
+      </div>
+      <div id="ed-submit-status"></div>
+      <button class="reset-btn" onclick="edResetQuiz()">Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Measure understanding with ten items, including new design problems students have not seen.</li>
+            <li>Offer practice mode for self-check and classroom mode for teacher reporting.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice</li>
+            <li>Transfer</li>
+            <li>Feedback loops</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 1 to 2 (mix of recall and applying criteria-versus-constraint reasoning to fresh scenarios)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Practice mode works independently with no submission</li>
+            <li>Plausible, evenly placed options</li>
+            <li>Progress bar and required fields before classroom submit</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark2); padding-top: 4rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; }
+.continue-intro {
+  text-align: left;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2.4rem 0;
+}
+.continue-intro strong { color: var(--gold); }
+.continue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 0;
+}
+@media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+.cont-card {
+  border-radius: 18px;
+  padding: 1.5rem 1.5rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cont-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.cont-card.inv { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.38); }
+.cont-card.les { background: rgba(245,160,40,0.08);  border: 1px solid rgba(245,160,40,0.35); }
+.cont-card.ext { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
+.cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+.cont-card.les::before { background: linear-gradient(90deg, #f5a028, #f5c842); }
+.cont-card.ext::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+.cont-card.inv:hover { border-color: rgba(59,130,246,0.7);  box-shadow: 0 14px 40px rgba(59,130,246,0.2);  transform: translateY(-4px); }
+.cont-card.les:hover { border-color: rgba(245,160,40,0.65); box-shadow: 0 14px 40px rgba(245,160,40,0.18); transform: translateY(-4px); }
+.cont-card.ext:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
+.cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; }
+.cont-card.inv .cont-icon { background: rgba(59,130,246,0.2);  }
+.cont-card.les .cont-icon { background: rgba(245,160,40,0.18); }
+.cont-card.ext .cont-icon { background: rgba(180,127,255,0.22);}
+.cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
+.cont-card.inv .cont-cat { color: #3B82F6; }
+.cont-card.les .cont-cat { color: #f5a028; }
+.cont-card.ext .cont-cat { color: #b47fff; }
+.cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+.cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+.cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
+.cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
+.cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
+.cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.chal { background: rgba(255,84,112,0.08); border: 1px solid rgba(255,84,112,0.38); }
+.cont-card.chal::before { background: linear-gradient(90deg, #ff8a9c, #ff5470); }
+.cont-card.chal:hover { border-color: rgba(255,84,112,0.7); box-shadow: 0 14px 40px rgba(255,84,112,0.18); transform: translateY(-4px); }
+.cont-card.chal .cont-icon { background: rgba(255,84,112,0.2); }
+.cont-card.chal .cont-cat { color: #ff8095; }
+.cont-card.chal .cont-link { background: rgba(255,84,112,0.1); border-color: rgba(255,84,112,0.3); color: #ff8095; }
+.cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+.cont-body { flex: 1; }
+.coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
+</style>
+
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Engineering design connects to everything you build and test in science class. <strong>Extension challenges:</strong> redesign your own backpack on paper. List 3 criteria and 3 constraints, sketch a prototype, and trade with a partner to "test" each other's designs. Or pick a product you use daily and research how many iterations it went through before the version you own.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-body">
+          <div class="cont-name">More Coming Soon</div>
+          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+          <span class="coming-soon-tag">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Offer hands-on extensions where students run their own design cycle and peer-test a partner.</li>
+            <li>Link forward to lessons that deepen the test, materials, and measurement steps.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Transfer</li>
+            <li>Interest-driven extension</li>
+            <li>Metacognition</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Analyze</li>
+            <li>DOK 2 to 3 (the backpack challenge asks students to set criteria and constraints, prototype, and revise from a partner's test)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Optional and self-paced</li>
+            <li>No penalty for skipping</li>
+            <li>Linked cards are clearly categorized and color-coded</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Strong designs are built on evidence. Here is where these skills carry over.</p>
+    <div class="continue-grid">
+      <a href="lesson_conducting-experiments.html" class="cont-card les">
+        <div class="cont-icon">🔬</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Conducting Experiments</div>
+        <div class="cont-desc">Every prototype you test is a fair test in disguise. Revisit how scientists control variables, run fair tests, and use data to decide what works.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+      <a href="lesson_design-tradeoffs.html" class="cont-card les">
+        <div class="cont-icon">⚖️</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Design Tradeoffs</div>
+        <div class="cont-desc">Once you can run the design process, the hard part begins: no solution wins at everything. See how engineers weigh strength, cost, and safety to choose between competing designs.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+      <a href="challenge_welcome-to-floatia.html" class="cont-card chal">
+        <div class="cont-icon">🛟</div>
+        <div class="cont-cat">Engineering Challenge</div>
+        <div class="cont-name">Welcome to Floatia</div>
+        <div class="cont-desc">Here the design process stops being steps to read and becomes something you do. Floatia asks you to define a problem, build a prototype, test it, and improve it, the whole cycle in your own hands.</div>
+        <span class="cont-link">Take the challenge</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== GLOSSARY CARDS (click to expand only; one open at a time) ===== -->
+<script>
+(function(){
+  var cards = document.querySelectorAll('.glossary-card');
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){
+      var isOpen = card.classList.contains('open');
+      cards.forEach(function(c){
+        c.classList.remove('open');
+        c.setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+})();
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== CRITERIA / CONSTRAINT SORTER ===== -->
+<script>
+(function(){
+  var items = [
+    { text: "It must hold a laptop, three binders, and a lunch box at the same time.",
+      answer: "crit",
+      ok: "Correct! This is a criterion: a specific requirement the backpack must meet to succeed.",
+      no: "This one is a criterion. It describes what the backpack must DO, not a limit on how you can build it." },
+    { text: "The materials budget for each backpack is $20.",
+      answer: "cons",
+      ok: "Correct! Money is a classic constraint: a limitation that affects the design process.",
+      no: "This one is a constraint. A budget doesn't describe what the backpack does; it limits the design choices." },
+    { text: "The zippers must open smoothly with one hand.",
+      answer: "crit",
+      ok: "Correct! A requirement about how the design must perform is a criterion.",
+      no: "This one is a criterion. It's a requirement the design must meet: smooth one-handed zippers." },
+    { text: "The design must be finished in six weeks.",
+      answer: "cons",
+      ok: "Correct! Time is a constraint: it limits the design process without describing what the product does.",
+      no: "This one is a constraint. A deadline limits the design process; it isn't something the backpack itself does." },
+    { text: "Only recycled fabric can be used.",
+      answer: "cons",
+      ok: "Correct! A limit on which materials you may use is a constraint.",
+      no: "This one is a constraint. It restricts your material choices; it doesn't describe a job the backpack performs." },
+    { text: "The straps must not hurt shoulders after a 30-minute walk.",
+      answer: "crit",
+      ok: "Correct! Comfort here is a requirement the design must meet, so it's a criterion.",
+      no: "This one is a criterion. It's a requirement for success: comfortable straps after 30 minutes." }
+  ];
+  var wrap = document.getElementById('sorterItems');
+  var scoreEl = document.getElementById('sorterScore');
+  var doneCount = 0, rightCount = 0;
+
+  items.forEach(function(it, i){
+    var div = document.createElement('div');
+    div.className = 'sorter-item';
+    div.innerHTML =
+      '<div class="sorter-statement">' + (i + 1) + '. ' + it.text + '</div>' +
+      '<div class="sorter-btns">' +
+        '<button class="sorter-btn b-crit" type="button" data-pick="crit">📋 Criterion</button>' +
+        '<button class="sorter-btn b-cons" type="button" data-pick="cons">⛓️ Constraint</button>' +
+      '</div>' +
+      '<div class="sorter-fb"></div>';
+    wrap.appendChild(div);
+
+    var fb = div.querySelector('.sorter-fb');
+    div.querySelectorAll('.sorter-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (div.classList.contains('done')) return;
+        div.classList.add('done');
+        var correct = btn.getAttribute('data-pick') === it.answer;
+        btn.classList.add(correct ? 'picked-right' : 'picked-wrong');
+        div.querySelectorAll('.sorter-btn').forEach(function(b){ b.disabled = true; });
+        fb.className = 'sorter-fb visible ' + (correct ? 'ok' : 'no');
+        fb.textContent = (correct ? '✅ ' : '❌ ') + (correct ? it.ok : it.no);
+        doneCount++;
+        if (correct) rightCount++;
+        if (doneCount === items.length) {
+          scoreEl.className = 'sorter-score visible';
+          scoreEl.textContent = '🏁 Brief sorted: ' + rightCount + ' / ' + items.length + ' correct. ' +
+            (rightCount === items.length
+              ? 'Perfect! Your criteria-vs-constraints radar is fully calibrated.'
+              : 'Review the feedback above: criteria = what it must do, constraints = what limits you.');
+        }
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== DESIGN CYCLE EXPLORER ===== -->
+<script>
+(function(){
+  var steps = document.querySelectorAll('.cycle-step');
+  var countEl = document.getElementById('cycleCount');
+  var completeEl = document.getElementById('cycleComplete');
+  var opened = 0;
+  steps.forEach(function(step){
+    step.addEventListener('click', function(){
+      if (step.classList.contains('open')) return;
+      step.classList.add('open');
+      step.setAttribute('aria-expanded', 'true');
+      opened++;
+      countEl.textContent = opened;
+      if (opened === steps.length) completeEl.classList.add('visible');
+    });
+  });
+})();
+</script>
+
+<!-- ===== ORDER-THE-CYCLE BUILDER ===== -->
+<script>
+(function(){
+  var correct = ['ASK','IMAGINE','PLAN','CREATE','TEST','IMPROVE','SHARE'];
+  var shuffled = ['TEST','SHARE','ASK','IMPROVE','IMAGINE','CREATE','PLAN'];
+  var slotsWrap = document.getElementById('orderSlots');
+  var poolWrap  = document.getElementById('orderPool');
+  var fb = document.getElementById('orderFb');
+  var next = 0;
+
+  correct.forEach(function(_, i){
+    var slot = document.createElement('div');
+    slot.className = 'order-slot';
+    slot.id = 'order-slot-' + i;
+    slot.textContent = i + 1;
+    slotsWrap.appendChild(slot);
+  });
+
+  shuffled.forEach(function(name){
+    var chip = document.createElement('button');
+    chip.className = 'order-chip';
+    chip.type = 'button';
+    chip.textContent = name;
+    chip.addEventListener('click', function(){
+      if (chip.classList.contains('used')) return;
+      if (name === correct[next]) {
+        var slot = document.getElementById('order-slot-' + next);
+        slot.textContent = name;
+        slot.classList.add('filled');
+        chip.classList.add('used');
+        chip.disabled = true;
+        next++;
+        if (next === correct.length) {
+          fb.className = 'order-fb visible ok';
+          fb.textContent = '🎉 Cycle complete! ASK, IMAGINE, PLAN, CREATE, TEST, IMPROVE, SHARE. Say it out loud once; it sticks.';
+        } else {
+          fb.className = 'order-fb';
+          fb.textContent = '';
+        }
+      } else {
+        chip.classList.add('shake');
+        setTimeout(function(){ chip.classList.remove('shake'); }, 380);
+        fb.className = 'order-fb visible no';
+        fb.textContent = 'Not yet. Step ' + (next + 1) + ' comes ' + (next === 0 ? 'first: it\'s where you define the problem.' : 'after ' + correct[next - 1] + '. What would an engineer do next?');
+      }
+    });
+    poolWrap.appendChild(chip);
+  });
+})();
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) {
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = 'Pick an answer first.';
+        return;
+      }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok';
+        fb.textContent = okMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = noMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback';
+      fb.textContent = '';
+      retryBtn.style.display = 'none';
+      checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+
+  wireQR('qr1', 1,
+    'Correct! A failed test sends you to IMPROVE: make changes, then loop back and test again. That loop is one iteration.',
+    'Not quite. The cycle says a failed test leads to IMPROVE: fix what went wrong, then test the improved version again.');
+  wireQR('qr2', 0,
+    'Correct! A prototype is an early model built so problems can be found and fixed cheaply, before the final product is made.',
+    'Not quite. Prototypes are rough on purpose: they exist to reveal problems early, when fixing them is still cheap and easy.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-endpoint */
+const ED_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
+  /* LYFELABZ:V1-ONLY:END legacy-endpoint */
+
+// ── QUIZ STATE ────────────────────────────────────────────────────────
+var edQuizState = { selected: [], submitted: false };
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-state */
+var edQuizMode  = 'practice';
+  /* LYFELABZ:V1-ONLY:END legacy-mode-state */
+
+// ── QUIZ QUESTIONS ────────────────────────────────────────────────────
+var edQuizQuestions = [
+  {
+    q: "Which statement best describes what engineering is?",
+    options: [
+      "A field that applies scientific principles to designing and constructing",
+      "The study of how living things grow and change over time",
+      "The process of selling products to as many customers as possible",
+      "A type of art focused on making objects look beautiful"
+    ],
+    correct: 0,
+    explanation: "Engineering applies scientific principles to designing and constructing. Engineers use science about forces, materials, and energy to plan and build solutions to real problems."
+  },
+  {
+    q: "A team is designing a water bottle for hikers. Which of these is a CONSTRAINT on the design?",
+    options: [
+      "The bottle must keep water cold for 12 hours",
+      "The bottle must fit in a standard backpack side pocket",
+      "The team has only $8 of materials per bottle",
+      "The bottle must be easy to open with gloves on"
+    ],
+    correct: 2,
+    explanation: "A constraint is a limitation that affects the design process. The $8 materials budget limits what the team can build. The other three describe what the bottle must DO, so they are criteria."
+  },
+  {
+    q: "Put the engineering design process in the correct order.",
+    options: [
+      "ASK → IMAGINE → PLAN → CREATE → TEST → IMPROVE → SHARE",
+      "IMAGINE → ASK → CREATE → PLAN → SHARE → TEST → IMPROVE",
+      "PLAN → CREATE → ASK → IMAGINE → IMPROVE → TEST → SHARE",
+      "CREATE → TEST → ASK → PLAN → IMAGINE → SHARE → IMPROVE"
+    ],
+    correct: 0,
+    explanation: "First define the problem (ASK), generate ideas (IMAGINE), select a solution (PLAN), make the item (CREATE), evaluate it (TEST), make changes (IMPROVE), and present the results (SHARE)."
+  },
+  {
+    q: "Nike built rough early versions of the Air Jordan 1 before selling the final shoe. What were those early versions, and why build them?",
+    options: [
+      "Iterations, built to make the shoe more expensive",
+      "Constraints, built to limit how many shoes could be made",
+      "Criteria, built to list the requirements for the shoe",
+      "Prototypes, built to be tested and refined before the final version"
+    ],
+    correct: 3,
+    explanation: "An early model of a design that is tested and refined is a prototype. Building one lets engineers find and fix problems cheaply before committing to the final product."
+  },
+  {
+    q: "Sony released the PS1 in 1995, then the PS2, PS3, PS4, and PS5 over the next 25 years. Each console fixed problems and improved on the last. What does this BEST illustrate?",
+    options: [
+      "Constraints, because each console limited the next one",
+      "Iterations, because Sony repeated cycles of designing, testing, and refining",
+      "Criteria, because each console had to meet new requirements",
+      "Asking, because Sony kept defining brand new problems"
+    ],
+    correct: 1,
+    explanation: "Repeated cycles of designing, testing, and refining are iterations. Each PlayStation generation is one trip around the design cycle, improving on what testing (and millions of players) revealed about the last version."
+  },
+  {
+    q: "What is a criterion in the engineering design process?",
+    options: [
+      "A limit on the time, money, or materials a team can use",
+      "A requirement the design must meet to count as successful",
+      "A rough early model that is built to be tested",
+      "The final step, where the results are shared with others"
+    ],
+    correct: 1,
+    explanation: "A criterion is a requirement a successful design must meet - what it has to DO. A limit on resources is a constraint, and a rough early model is a prototype."
+  },
+  {
+    q: "A team is starting a brand-new design project. What should they do FIRST?",
+    options: [
+      "Build a prototype right away to save time",
+      "Share the idea with the client before planning",
+      "Ask questions to clearly define the problem they are solving",
+      "Test a solution before they have planned one"
+    ],
+    correct: 2,
+    explanation: "The process starts with ASK: defining the problem clearly. You cannot imagine, plan, or build a good solution until you understand exactly what problem you are trying to solve."
+  },
+  {
+    q: "Why is the engineering design process described as a cycle rather than a straight line?",
+    options: [
+      "Because engineers only ever complete it a single time",
+      "Because a failed test sends engineers back to improve or rethink, then try again",
+      "Because the steps can be done in any random order that is convenient",
+      "Because sharing the results is always the very first step"
+    ],
+    correct: 1,
+    explanation: "It is a cycle because testing often reveals problems. When a design fails a test, engineers loop back to IMPROVE (or even IMAGINE) and run through the steps again, getting closer each time."
+  },
+  {
+    q: "A phone case must survive a 2-meter drop AND cost less than $5 to manufacture. Which part is a CONSTRAINT?",
+    options: [
+      "Surviving the 2-meter drop, because that is what the case must do",
+      "Both parts are criteria, since both are requirements",
+      "Costing less than $5 to make, because it limits the team's resources",
+      "Neither part, because phone cases have no constraints"
+    ],
+    correct: 2,
+    explanation: "A constraint is a limit the team must work within, like a budget. The $5 manufacturing limit is a constraint. Surviving the drop is a criterion - something the design must accomplish."
+  },
+  {
+    q: "During TEST, a prototype bridge collapses under the weight it is supposed to hold. What is the best engineering response?",
+    options: [
+      "Abandon the whole project, since the design clearly failed",
+      "Ship the bridge anyway so the team stays on schedule",
+      "Hide the failure so the team still looks successful",
+      "Treat the failure as useful data, improve the design, and test it again"
+    ],
+    correct: 3,
+    explanation: "A failed test is data, not a disaster. Finding the weakness in a cheap prototype is exactly the point - engineers use that information to improve the design and run the cycle again."
+  }
+];
+
+// ── SET QUIZ MODE ─────────────────────────────────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-set-quiz-mode */
+function edSetQuizMode(mode) {
+  edQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+  /* LYFELABZ:V1-ONLY:END legacy-set-quiz-mode */
+
+// ── URL PARAM - auto-set mode on load ─────────────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-init-iife */
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') edSetQuizMode('classroom');
+  else edSetQuizMode('practice');
+})();
+  /* LYFELABZ:V1-ONLY:END legacy-mode-init-iife */
+
+// ── BUILD QUIZ ────────────────────────────────────────────────────────
+function edBuildQuiz() {
+  var container = document.getElementById('ed-quiz-questions');
+  container.innerHTML = '';
+  edQuizState.selected  = new Array(edQuizQuestions.length).fill(null);
+  edQuizState.submitted = false;
+  document.getElementById('ed-submit-btn').disabled = true;
+  edUpdateProgress();
+  var letters = ['A','B','C','D'];
+  edQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="edSelectAnswer(' + qi + ',' + oi + ')" id="ed-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="ed-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+// ── SELECT ANSWER ─────────────────────────────────────────────────────
+function edSelectAnswer(qi, chosenIndex) {
+  if (edQuizState.submitted) return;
+  var prev = edQuizState.selected[qi];
+  if (prev !== null) document.getElementById('ed-q-' + qi + '-' + prev).classList.remove('selected');
+  edQuizState.selected[qi] = chosenIndex;
+  document.getElementById('ed-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  edUpdateProgress();
+  edRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(edQuizState.selected);
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────
+function edUpdateProgress() {
+  var total    = edQuizQuestions.length;
+  var answered = edQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('ed-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('ed-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+// ── VALIDATE STUDENT INFO ─────────────────────────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-validate-student-info */
+function edValidateStudentInfo() {
+  var name    = document.getElementById('ed-student-name').value.trim();
+  var teacher = document.getElementById('ed-teacher-select').value;
+  var block   = document.getElementById('ed-block-select').value;
+  document.getElementById('ed-err-name').classList.toggle('show', !name);
+  document.getElementById('ed-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('ed-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+  /* LYFELABZ:V1-ONLY:END legacy-validate-student-info */
+
+// ── SUBMIT QUIZ ───────────────────────────────────────────────────────
+function edSubmitQuiz() {
+  if (edQuizState.submitted) return;
+  var edAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!edQuizState.selected.every(function (s) { return s !== null; })) return;
+  var edThinkGate = document.getElementById('ed-thinking');
+  if (edThinkGate && !edThinkGate.value.trim()) return;
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-validation-guard */
+  if (edQuizMode === 'classroom') {
+    var info = edValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-validation-guard */
+  edQuizState.submitted = true;
+  document.getElementById('ed-submit-btn').disabled = true;
+
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('ed-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('ed-think-model').classList.add('show');
+
+  var correct = 0;
+  edQuizQuestions.forEach(function (q, qi) {
+    var chosen    = edQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('ed-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('ed-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('ed-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = edQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '🏆 Perfect score! You think like an engineer.'
+    : pct >= 80 ? '🌟 Great work! Review any you missed and you\'re ready for your first design challenge.'
+    : pct >= 60 ? '📚 Solid effort. Go back through the lesson and try again.'
+    : '💪 Keep going; review each section carefully and try again!';
+  document.getElementById('ed-score-num').textContent = score;
+  document.getElementById('ed-score-msg').textContent = msg;
+  var sb = document.getElementById('ed-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
+
+  if (pct === 100) {
+    edQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (edAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by edQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var edReturnCtl = document.getElementById('back-to-assignments');
+    if (edReturnCtl) edReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
+    var edFinalStatus = document.getElementById('ed-submit-status');
+    edFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var edGenericError = 'Submission did not complete. Please refresh and try again.';
+    function edShowSubmitError(msg) {
+      edFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || edGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(edQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        edFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        edShowSubmitError(r.message);
+      } else {
+        edShowSubmitError(null);
+      }
+    }, function () {
+      edShowSubmitError(null);
+    });
+    return;
+  }
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-practice-completion */
+  if (edQuizMode === 'practice') {
+    document.getElementById('ed-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-practice-completion */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-apps-script-submit */
+  var info2 = edValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  var letters = ['A','B','C','D'];
+  var params = new URLSearchParams({ resourceId: 'lesson_engineering-design', grade: '6', teacher: info2.teacher, studentName: info2.name, block: info2.block });
+  edQuizState.selected.forEach(function (chosenIndex, qi) {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
+  fetch(ED_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('ed-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('ed-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('ed-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+  /* LYFELABZ:V1-ONLY:END legacy-apps-script-submit */
+  /* LYFELABZ:V2-ONLY:BEGIN platform-standalone-completion */
+  document.getElementById('ed-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+  /* LYFELABZ:V2-ONLY:END platform-standalone-completion */
+}
+
+// ── RESET QUIZ ────────────────────────────────────────────────────────
+function edResetQuiz() {
+  if (edQuizState.continueTimer) {
+    clearTimeout(edQuizState.continueTimer);
+    edQuizState.continueTimer = null;
+  }
+  document.getElementById('ed-score').classList.remove('show');
+  document.getElementById('ed-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('ed-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('ed-think-model').classList.remove('show');
+  edBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function edRefreshSubmitState() {
+  var quizDone  = edQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('ed-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('ed-submit-btn').disabled = edQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('ed-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', edRefreshSubmitState);
+})();
+
+// ── INIT ──────────────────────────────────────────────────────────────
+edBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

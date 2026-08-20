@@ -1,0 +1,269 @@
+{
+  "activityId": "forms-of-energy",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is the best definition of energy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The ability to cause change or do work"
+        },
+        {
+          "optionId": "B",
+          "text": "A material that all objects are made of"
+        },
+        {
+          "optionId": "C",
+          "text": "A force that only pushes objects downward"
+        },
+        {
+          "optionId": "D",
+          "text": "The temperature of an object"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Energy is the ability to cause change or to do work. It comes in many forms and is measured in joules."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A drawn bow holds energy because the string is pulled back and ready to launch an arrow. What kind of energy is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Kinetic energy, because the bow will move"
+        },
+        {
+          "optionId": "B",
+          "text": "Thermal energy, because the bow is warm"
+        },
+        {
+          "optionId": "C",
+          "text": "Potential energy, stored because of its condition"
+        },
+        {
+          "optionId": "D",
+          "text": "Sound energy, because the string can twang"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Potential energy is stored energy due to position, condition, or chemical makeup. A stretched bow stores potential energy in its bent shape, ready to be used."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Two balls roll across the floor. The amount of kinetic energy each one has depends on what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Only the color of the ball"
+        },
+        {
+          "optionId": "B",
+          "text": "Its mass and its speed"
+        },
+        {
+          "optionId": "C",
+          "text": "Only how high it once was"
+        },
+        {
+          "optionId": "D",
+          "text": "The time of day it is rolling"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Kinetic energy is the energy of motion, and the amount depends on an object's mass and speed. A heavier or faster ball has more kinetic energy."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which unit do scientists use to measure energy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The meter"
+        },
+        {
+          "optionId": "B",
+          "text": "The degree"
+        },
+        {
+          "optionId": "C",
+          "text": "The newton"
+        },
+        {
+          "optionId": "D",
+          "text": "The joule"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Energy is measured in joules, written with the symbol J. Any form of energy can be measured in joules."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Mechanical energy is best described as which of the following?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Energy that travels only through empty space"
+        },
+        {
+          "optionId": "B",
+          "text": "The sum of an object's potential and kinetic energy"
+        },
+        {
+          "optionId": "C",
+          "text": "Energy stored only in the bonds between atoms"
+        },
+        {
+          "optionId": "D",
+          "text": "Energy made only by vibrating particles"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Mechanical energy is the energy of position and motion. It is the sum of an object's potential and kinetic energy."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Why does an object's thermal energy increase as its temperature rises?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Its particles move faster and bump into each other more"
+        },
+        {
+          "optionId": "B",
+          "text": "Its particles stop moving completely"
+        },
+        {
+          "optionId": "C",
+          "text": "It gains new atoms from the air"
+        },
+        {
+          "optionId": "D",
+          "text": "It turns its motion into stored chemical energy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Thermal energy is the total kinetic and potential energy of all the particles in a material. The higher the temperature, the faster the particles move, so the thermal energy is greater."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A battery, a match, and the food you eat all store the same form of energy. Which is it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Sound energy"
+        },
+        {
+          "optionId": "B",
+          "text": "Electromagnetic energy"
+        },
+        {
+          "optionId": "C",
+          "text": "Chemical energy"
+        },
+        {
+          "optionId": "D",
+          "text": "Nuclear energy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Chemical energy is potential energy stored in the bonds between atoms. It is released during chemical reactions, such as a battery working, a match burning, or food breaking down."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "What is happening when energy changes from one form to another?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "An energy transfer of matter"
+        },
+        {
+          "optionId": "B",
+          "text": "A loss of energy from the system"
+        },
+        {
+          "optionId": "C",
+          "text": "A creation of brand new energy"
+        },
+        {
+          "optionId": "D",
+          "text": "An energy transformation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "An energy transformation is when energy changes from one form into another. The amount stays the same; only the form changes."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "The law of conservation of energy states that energy can do which of the following?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Be created whenever it is needed"
+        },
+        {
+          "optionId": "B",
+          "text": "Only change forms, never be created or destroyed"
+        },
+        {
+          "optionId": "C",
+          "text": "Be destroyed when an object stops moving"
+        },
+        {
+          "optionId": "D",
+          "text": "Disappear once it turns into heat"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The law of conservation of energy says energy cannot be created or destroyed. It only changes from one form into another, so the total stays the same."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A roller coaster car races to the bottom of a hill, then slows as it climbs the next one. Which best explains the energy change?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Its energy is destroyed as it slows down"
+        },
+        {
+          "optionId": "B",
+          "text": "It makes new energy to climb the next hill"
+        },
+        {
+          "optionId": "C",
+          "text": "Kinetic energy changes back into potential energy as it rises"
+        },
+        {
+          "optionId": "D",
+          "text": "Its potential energy turns into chemical energy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "As the car climbs, its motion slows and its height grows, so kinetic energy transforms back into potential energy. The total energy stays the same, minus some lost to thermal energy and sound."
+    }
+  ]
+}

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_chemical-reactions.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=chemical-reactions --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -3667,6 +3673,10 @@ function crSelectAnswer(qi, chosenIndex) {
   crUpdateProgress();
   // Submit stays gated on a written explanation too (see crRefreshSubmitState).
   crRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(crQuizState.selected);
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3691,6 +3701,7 @@ function crValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function crSubmitQuiz() {
   if (crQuizState.submitted) return;
+  var crAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!crQuizState.selected.every(function (s) { return s !== null; })) return;
   var crThinkGate = document.getElementById('cr-thinking');
@@ -3744,6 +3755,33 @@ function crSubmitQuiz() {
       var more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (crAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by crQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var crFinalStatus = document.getElementById('cr-submit-status');
+    crFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var crGenericError = 'Submission did not complete. Please refresh and try again.';
+    function crShowSubmitError(msg) {
+      crFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || crGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(crQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        crFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        crShowSubmitError(r.message);
+      } else {
+        crShowSubmitError(null);
+      }
+    }, function () {
+      crShowSubmitError(null);
+    });
+    return;
   }
 
   if (crQuizMode === 'practice') {

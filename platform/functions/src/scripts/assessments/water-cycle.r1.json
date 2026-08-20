@@ -1,0 +1,269 @@
+{
+  "activityId": "water-cycle",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What provides most of the energy that powers the water cycle?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The Sun's heat"
+        },
+        {
+          "optionId": "B",
+          "text": "Earth's magnetic field"
+        },
+        {
+          "optionId": "C",
+          "text": "Heat from Earth's core"
+        },
+        {
+          "optionId": "D",
+          "text": "The light of the Moon"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Energy from the Sun heats liquid water and powers evaporation, which keeps the whole water cycle moving."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Water leaves the ocean's surface and rises into the air. What state change is happening during evaporation?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Liquid water freezes into ice"
+        },
+        {
+          "optionId": "B",
+          "text": "Water vapor cools into liquid"
+        },
+        {
+          "optionId": "C",
+          "text": "Liquid water changes into water vapor"
+        },
+        {
+          "optionId": "D",
+          "text": "Solid ice changes straight into vapor"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Evaporation is when the Sun's heat turns liquid water into water vapor, an invisible gas, that rises into the atmosphere."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Plants release water vapor into the air from inside their cells. What is this process called?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Condensation"
+        },
+        {
+          "optionId": "B",
+          "text": "Transpiration"
+        },
+        {
+          "optionId": "C",
+          "text": "Precipitation"
+        },
+        {
+          "optionId": "D",
+          "text": "Infiltration"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Transpiration is the process of evaporation from inside plant cells into the atmosphere."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Why do clouds form as water vapor rises high into the cold atmosphere?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The vapor is heated and expands"
+        },
+        {
+          "optionId": "B",
+          "text": "Gravity pulls the vapor upward"
+        },
+        {
+          "optionId": "C",
+          "text": "The vapor sinks straight into the soil"
+        },
+        {
+          "optionId": "D",
+          "text": "The vapor cools and condenses into tiny droplets"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "As vapor rises it cools and condenses back into liquid droplets. Billions of droplets together form a cloud."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Rain, snow, sleet, and hail are all forms of what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Precipitation"
+        },
+        {
+          "optionId": "B",
+          "text": "Evaporation"
+        },
+        {
+          "optionId": "C",
+          "text": "Transpiration"
+        },
+        {
+          "optionId": "D",
+          "text": "Runoff"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Precipitation is water that falls from clouds back to Earth when the droplets grow too heavy for gravity to hold up."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "After rain falls on a hillside, water flows downhill into streams and rivers. What is this moving surface water called?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Groundwater"
+        },
+        {
+          "optionId": "B",
+          "text": "Infiltration"
+        },
+        {
+          "optionId": "C",
+          "text": "Runoff"
+        },
+        {
+          "optionId": "D",
+          "text": "Condensation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Runoff is precipitation that flows across the land surface and collects in streams, rivers, and the ocean."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Some rainwater soaks down into the soil and rock instead of flowing across the surface. What is this process called?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Runoff"
+        },
+        {
+          "optionId": "B",
+          "text": "Infiltration"
+        },
+        {
+          "optionId": "C",
+          "text": "Evaporation"
+        },
+        {
+          "optionId": "D",
+          "text": "Transpiration"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Infiltration happens when water soaks down into the soil and rocks below the surface."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Water that soaks into the ground and collects in the spaces between soil and rock is called what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Runoff"
+        },
+        {
+          "optionId": "B",
+          "text": "Water vapor"
+        },
+        {
+          "optionId": "C",
+          "text": "A cloud"
+        },
+        {
+          "optionId": "D",
+          "text": "Groundwater"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Groundwater is water stored underground in pockets and spaces. Most of it eventually returns to the ocean."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Besides the Sun's energy, what force pulls precipitation, runoff, and groundwater back downward?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Gravity"
+        },
+        {
+          "optionId": "B",
+          "text": "Magnetism"
+        },
+        {
+          "optionId": "C",
+          "text": "Friction"
+        },
+        {
+          "optionId": "D",
+          "text": "The Moon's heat"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Gravity pulls water downward, causing precipitation to fall and runoff and groundwater to move toward the ocean."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Why do scientists say the water on Earth is never used up?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "New water is constantly created by clouds"
+        },
+        {
+          "optionId": "B",
+          "text": "Water leaves Earth and is replaced from space"
+        },
+        {
+          "optionId": "C",
+          "text": "The same water is recycled endlessly through the water cycle"
+        },
+        {
+          "optionId": "D",
+          "text": "Plants make brand new water during transpiration"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Water is not created or destroyed. The same water moves endlessly between the ocean, air, land, and living things in the water cycle."
+    }
+  ]
+}

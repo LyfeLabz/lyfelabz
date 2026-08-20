@@ -1,0 +1,269 @@
+{
+  "activityId": "hotspot-volcanoes",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "A hotspot is best described as:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A boundary where two plates collide and one sinks"
+        },
+        {
+          "optionId": "B",
+          "text": "A fixed point in the mantle where heat rises and melts through the crust above"
+        },
+        {
+          "optionId": "C",
+          "text": "A trench where ocean crust is destroyed"
+        },
+        {
+          "optionId": "D",
+          "text": "A crack where a continent is splitting apart"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A hotspot is a point on the crust directly above a fixed mantle plume. Heat rises there and melts through the plate, even in the middle of a plate."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Most of Earth's volcanoes form at plate boundaries. Where do the Hawaiian Islands sit?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Along a deep-sea subduction trench"
+        },
+        {
+          "optionId": "B",
+          "text": "At a divergent mid-ocean ridge"
+        },
+        {
+          "optionId": "C",
+          "text": "On the edge of the Pacific plate"
+        },
+        {
+          "optionId": "D",
+          "text": "In the middle of the Pacific plate"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The Hawaiian Islands sit in the middle of the Pacific plate, far from any boundary. That is what makes them hotspot volcanoes."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "As the Pacific plate moves over the fixed hotspot, what happens to the volcanoes it carries?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Each volcano is carried away from the hotspot and a new one forms, building a chain"
+        },
+        {
+          "optionId": "B",
+          "text": "Every volcano stays over the hotspot and keeps growing taller"
+        },
+        {
+          "optionId": "C",
+          "text": "The volcanoes drag the hotspot along with them"
+        },
+        {
+          "optionId": "D",
+          "text": "The volcanoes sink the moment they form"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The plate moves while the hotspot stays fixed, so each volcano drifts off the heat and a new one grows in its place. Repeated over time, this builds an island chain."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "In a hotspot island chain, which island is the youngest?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The one farthest from the hotspot"
+        },
+        {
+          "optionId": "B",
+          "text": "They are all exactly the same age"
+        },
+        {
+          "optionId": "C",
+          "text": "The one sitting directly over the hotspot"
+        },
+        {
+          "optionId": "D",
+          "text": "The one that has already become a seamount"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "New volcanoes form over the hotspot, so the island sitting over it is the youngest. Islands get older with distance from the hotspot."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "On the Big Island of Hawaii the volcanoes are active, but the islands to the northwest are quiet. Why?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The northwest islands were built by a completely different hotspot"
+        },
+        {
+          "optionId": "B",
+          "text": "The northwest islands have drifted off the hotspot and lost their magma source"
+        },
+        {
+          "optionId": "C",
+          "text": "The northwest islands are actually much younger"
+        },
+        {
+          "optionId": "D",
+          "text": "The hotspot itself slowly moved to the northwest"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The northwest islands have been carried away from the hotspot. Cut off from the plume's magma, their volcanoes went extinct, while the Big Island still sits over the heat."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "The Pacific plate moves toward the northwest, and the islands grow older in that direction. Compared to the oldest islands, where is the hotspot today?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "To the southeast, where the youngest islands and Loihi are"
+        },
+        {
+          "optionId": "B",
+          "text": "To the northwest, beneath the oldest islands"
+        },
+        {
+          "optionId": "C",
+          "text": "Directly under the single oldest island"
+        },
+        {
+          "optionId": "D",
+          "text": "There is no consistent pattern to the island ages"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The youngest, active volcanoes mark the hotspot. Since the plate moves northwest, the hotspot is at the southeast end, near the Big Island and Loihi."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "An underwater mountain that was once a volcanic island above the sea is called a:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Mid-ocean ridge"
+        },
+        {
+          "optionId": "B",
+          "text": "Rift valley"
+        },
+        {
+          "optionId": "C",
+          "text": "Subduction trench"
+        },
+        {
+          "optionId": "D",
+          "text": "Seamount"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A seamount is a submerged, extinct volcanic island. Old hotspot islands sink and become seamounts as the crust they ride on cools and subsides."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Why do old hotspot islands slowly sink below the ocean surface over millions of years?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The hotspot reaches up and pulls them down as it cools"
+        },
+        {
+          "optionId": "B",
+          "text": "As the crust moves away from the hotspot it cools, becomes more dense, and subsides"
+        },
+        {
+          "optionId": "C",
+          "text": "Rising sea levels bury them within a single year"
+        },
+        {
+          "optionId": "D",
+          "text": "Newer islands physically push them underwater"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Crust that moves away from the hotspot cools and grows denser. Denser crust rides lower, so the old islands subside, and erosion wears them down into seamounts."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Loihi (Kamaehuakanaloa) is an undersea volcano just southeast of the Big Island. What does it most likely represent?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The oldest volcano in the entire chain"
+        },
+        {
+          "optionId": "B",
+          "text": "A volcano formed at a subduction zone"
+        },
+        {
+          "optionId": "C",
+          "text": "The next Hawaiian island, now forming over the hotspot"
+        },
+        {
+          "optionId": "D",
+          "text": "A seamount that has finished sinking"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Loihi sits over the hotspot at the southeast end of the chain, so it is the youngest volcano and the likely next Hawaiian island."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "How does a hotspot island chain provide evidence that a tectonic plate has moved?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The line of islands and their ages record the direction and path the plate traveled over the fixed hotspot"
+        },
+        {
+          "optionId": "B",
+          "text": "The islands all erupted at once, proving the plate never moves"
+        },
+        {
+          "optionId": "C",
+          "text": "The islands show that the hotspot moves while the plate stays still"
+        },
+        {
+          "optionId": "D",
+          "text": "The islands prove that volcanoes can only form at plate boundaries"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Because the hotspot stays fixed, the chain records plate motion. The order and ages of the islands trace the direction the plate has traveled."
+    }
+  ]
+}

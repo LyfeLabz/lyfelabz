@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_layers-of-time.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=layers-of-time --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2489,6 +2495,10 @@ function ltSelectAnswer(qi, chosenIndex) {
   // Submit unlocks only when every question is answered AND a written
   // explanation exists (see ltRefreshSubmitState).
   ltRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(ltQuizState.selected);
 }
 
 function ltUpdateProgress() {
@@ -2510,6 +2520,7 @@ function ltValidateStudentInfo() {
 
 function ltSubmitQuiz() {
   if (ltQuizState.submitted) return;
+  var ltAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!ltQuizState.selected.every(s => s !== null)) return;
   const ltThinkGate = document.getElementById('lt-thinking');
@@ -2590,6 +2601,33 @@ function ltSubmitQuiz() {
   }
 
   // ── Practice mode: skip submission ───────────────────────────────
+  if (ltAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by ltQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var ltFinalStatus = document.getElementById('lt-submit-status');
+    ltFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var ltGenericError = 'Submission did not complete. Please refresh and try again.';
+    function ltShowSubmitError(msg) {
+      ltFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ltGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(ltQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        ltFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        ltShowSubmitError(r.message);
+      } else {
+        ltShowSubmitError(null);
+      }
+    }, function () {
+      ltShowSubmitError(null);
+    });
+    return;
+  }
+
   if (ltQuizMode === 'practice') {
     document.getElementById('lt-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';

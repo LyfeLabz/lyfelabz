@@ -1,0 +1,269 @@
+{
+  "activityId": "wave-behavior",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "A student shouts near a canyon wall and hears their own voice return a moment later. Which wave behavior caused the echo?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Reflection: the sound wave bounced back off the surface"
+        },
+        {
+          "optionId": "B",
+          "text": "Absorption: the canyon wall took in the sound energy"
+        },
+        {
+          "optionId": "C",
+          "text": "Transmission: the sound passed through the rock"
+        },
+        {
+          "optionId": "D",
+          "text": "Refraction: the sound bent around the canyon edge"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "When a wave bounces off a surface instead of passing through it or being absorbed, that's reflection. The canyon wall sent the sound energy back toward the student, creating the echo."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A lamp is on inside a house. You're standing outside and can see it clearly through the window. What happened to most of the light waves when they hit the glass?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They were reflected back into the room"
+        },
+        {
+          "optionId": "B",
+          "text": "They were absorbed and converted to heat"
+        },
+        {
+          "optionId": "C",
+          "text": "They were transmitted through the glass and reached your eyes"
+        },
+        {
+          "optionId": "D",
+          "text": "They were stopped by the glass and couldn't continue"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Window glass is transparent; it transmits most light. The wave's energy continued moving through the glass and reached your eyes on the other side. That's transmission."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "A black asphalt parking lot gets very hot on a sunny afternoon, even though no one heated it directly. What happened to much of the light energy from the sun?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It reflected off the asphalt into the surrounding air"
+        },
+        {
+          "optionId": "B",
+          "text": "It was absorbed by the asphalt and converted into thermal energy"
+        },
+        {
+          "optionId": "C",
+          "text": "It transmitted through the asphalt into the ground below"
+        },
+        {
+          "optionId": "D",
+          "text": "It passed along the surface and radiated back out as visible light"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Dark surfaces absorb a large portion of incoming light energy and convert it to thermal energy: heat. That's absorption. The asphalt didn't reflect much (it's not shiny) and nothing passed through it."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "You can see light through a frosted glass shower door, but you can't make out any clear details or shapes. Which word best describes the frosted glass?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Transparent: it fully transmits light"
+        },
+        {
+          "optionId": "B",
+          "text": "Translucent: it partially transmits light, but scatters it"
+        },
+        {
+          "optionId": "C",
+          "text": "Opaque: it blocks all light from passing through"
+        },
+        {
+          "optionId": "D",
+          "text": "Reflective: it sends all light back toward the source"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Translucent materials let some light through, but scatter it, so you see a glow or blur, not a clear image. Transparent means fully clear, and opaque means no light gets through at all."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which type of wave can travel through completely empty space, with no air or matter at all?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Sound waves, because they are produced by vibrating objects"
+        },
+        {
+          "optionId": "B",
+          "text": "Water waves, because they carry large amounts of energy"
+        },
+        {
+          "optionId": "C",
+          "text": "Seismic waves, because they can travel through solid rock"
+        },
+        {
+          "optionId": "D",
+          "text": "Light waves, because they are electromagnetic and need no medium"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Light is an electromagnetic wave; it doesn't need a medium to travel through. Sound, water, and seismic waves are all mechanical waves, which require a medium (like air, water, or rock) to move."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Sunlight hits a frosted window. Some light passes through (but blurry), some glare reflects off the surface, and the glass warms slightly. What does this best show?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Frosted glass only transmits; the blurriness is just how glass works"
+        },
+        {
+          "optionId": "B",
+          "text": "All the light energy must have been reflected, since the image is blurry"
+        },
+        {
+          "optionId": "C",
+          "text": "Real materials can transmit, reflect, and absorb at the same time"
+        },
+        {
+          "optionId": "D",
+          "text": "Wave energy must have been created inside the glass to make it warm"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Most real materials do all three things at once. The frosted glass transmitted some light (blurry), reflected some (glare), and absorbed a small amount (warmth). The difference between materials is the ratio, not which behaviors happen."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Standing in a hallway, you can hear students talking through a closed wooden door, but you cannot see them through it. Which explanation is best?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Sound and light both pass through the door equally; you're just not listening hard enough"
+        },
+        {
+          "optionId": "B",
+          "text": "Sound reflects off the door and bounces to your ear, while light is absorbed completely"
+        },
+        {
+          "optionId": "C",
+          "text": "The door absorbs all wave energy, but your ears are more sensitive than your eyes"
+        },
+        {
+          "optionId": "D",
+          "text": "The door transmits some sound energy but is opaque to light, so light cannot pass through"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Wood is opaque to light; no light transmits through, so you can't see. But wood allows some sound wave energy to transmit through it, so you can hear muffled voices. Some sound energy is also reflected and absorbed by the door. Different materials allow different waves to transmit."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "The Energy Tracker shows window glass splits incoming light: 85% transmitted, 10% reflected, 5% absorbed. What does this data best show?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Most light passes through, but some also reflects and some absorbs"
+        },
+        {
+          "optionId": "B",
+          "text": "Window glass behaves differently for every color of light in the spectrum"
+        },
+        {
+          "optionId": "C",
+          "text": "Only the transmitted light is real; the reflected and absorbed amounts are errors"
+        },
+        {
+          "optionId": "D",
+          "text": "Because most light transmits, none of it can be reflected or absorbed"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Window glass mostly transmits light, which is why it looks clear. But the data also shows it reflects a small amount and absorbs a tiny amount that slightly warms the glass. Real materials almost never do just one thing; what changes is the ratio."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "A flashlight shines directly at a brick wall. No light appears on the other side. What actually happens to the light energy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The wall converts all the light energy into electrical energy"
+        },
+        {
+          "optionId": "B",
+          "text": "All of the light is reflected straight back toward the flashlight"
+        },
+        {
+          "optionId": "C",
+          "text": "The energy reflects off the surface and absorbs into the wall"
+        },
+        {
+          "optionId": "D",
+          "text": "The light energy stops moving when it reaches the wall"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Brick is opaque, so light cannot transmit through. But opaque doesn't mean the energy disappears. Some reflects off the surface (that's why you can see the wall's color), and the rest is absorbed and converted to heat. Energy cannot be created or destroyed."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "The same sound waves and light waves reach a wooden door, a glass window, and a brick wall. Each surface behaves differently. What is the best explanation?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Each material has a different ratio of reflection, absorption, and transmission"
+        },
+        {
+          "optionId": "B",
+          "text": "Sound waves are mechanical, so they can always transmit through solid materials"
+        },
+        {
+          "optionId": "C",
+          "text": "The energy is reflected by all three surfaces equally, just at different angles"
+        },
+        {
+          "optionId": "D",
+          "text": "Only the window transmits anything; the door and wall can only absorb"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "All three surfaces reflect, absorb, and transmit energy, but in different proportions. Window glass mostly transmits light. Wood mostly reflects and absorbs light, but transmits some sound. Brick mostly reflects and absorbs both. The material determines the ratio, not whether each behavior happens at all."
+    }
+  ]
+}

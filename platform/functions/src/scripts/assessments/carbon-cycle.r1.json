@@ -1,0 +1,269 @@
+{
+  "activityId": "carbon-cycle",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is the carbon cycle?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The one-time movement of carbon from rocks into the air"
+        },
+        {
+          "optionId": "B",
+          "text": "The continuous movement of the same carbon atoms among the air, living things, oceans, and rocks"
+        },
+        {
+          "optionId": "C",
+          "text": "The process plants use to make oxygen from sunlight"
+        },
+        {
+          "optionId": "D",
+          "text": "The steady buildup of new carbon atoms made by living things"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Carbon is never created or destroyed. The same carbon atoms keep moving among the air, living things, oceans, and rocks."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "How does carbon get out of the air and into a plant?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Plants absorb it through their roots from the soil"
+        },
+        {
+          "optionId": "B",
+          "text": "Animals breathe it directly into plants"
+        },
+        {
+          "optionId": "C",
+          "text": "Plants take in carbon dioxide during photosynthesis"
+        },
+        {
+          "optionId": "D",
+          "text": "Rain washes it onto the plant's leaves"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "During photosynthesis, plant leaves absorb carbon dioxide from the air and use the carbon to build food."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "During photosynthesis, what does a plant do with carbon?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It removes carbon dioxide from the air and uses it to make food"
+        },
+        {
+          "optionId": "B",
+          "text": "It releases carbon dioxide into the air"
+        },
+        {
+          "optionId": "C",
+          "text": "It turns carbon straight into coal"
+        },
+        {
+          "optionId": "D",
+          "text": "It breaks down dead organisms"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Photosynthesis pulls carbon dioxide out of the air. This is the main way carbon enters the living world."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "When an animal eats a plant, what happens to the carbon in that plant?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It is destroyed"
+        },
+        {
+          "optionId": "B",
+          "text": "It evaporates into the air right away"
+        },
+        {
+          "optionId": "C",
+          "text": "It turns into sunlight"
+        },
+        {
+          "optionId": "D",
+          "text": "Some of it becomes part of the animal's body"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Carbon passes along the food web. When an animal eats a plant, some of the carbon becomes part of the animal's body."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which process returns carbon to the air as living things release energy from their food?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Photosynthesis"
+        },
+        {
+          "optionId": "B",
+          "text": "Cellular respiration"
+        },
+        {
+          "optionId": "C",
+          "text": "Combustion of fossil fuels"
+        },
+        {
+          "optionId": "D",
+          "text": "Dissolving into the ocean"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Cellular respiration releases energy from food and gives off carbon dioxide, returning carbon to the air."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "When plants and animals die, what usually happens to most of the carbon in their bodies?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Decomposers break them down and the carbon returns to the air and soil"
+        },
+        {
+          "optionId": "B",
+          "text": "It instantly turns into coal"
+        },
+        {
+          "optionId": "C",
+          "text": "It is launched into space"
+        },
+        {
+          "optionId": "D",
+          "text": "It stays locked inside the body forever"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Decomposition breaks down dead organisms and returns most of their carbon to the air and soil."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "How did fossil fuels like coal form?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "From volcanic ash that cooled over a few years"
+        },
+        {
+          "optionId": "B",
+          "text": "From ocean water evaporating and leaving carbon behind"
+        },
+        {
+          "optionId": "C",
+          "text": "From organisms that were buried and not fully decomposed over millions of years"
+        },
+        {
+          "optionId": "D",
+          "text": "From carbon dioxide freezing solid underground"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Fossil fuels formed from plants and other organisms that were buried and not fully decomposed over millions of years."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Which of these releases carbon stored underground back into the air quickly?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Photosynthesis in a forest"
+        },
+        {
+          "optionId": "B",
+          "text": "Carbon slowly dissolving in the deep ocean"
+        },
+        {
+          "optionId": "C",
+          "text": "Water soaking into the soil"
+        },
+        {
+          "optionId": "D",
+          "text": "Humans digging up and burning fossil fuels"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Burning fossil fuels (combustion) releases stored carbon quickly. Volcanic eruptions do this too, but rarely."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Besides the rocks and fuels underground, where is most of Earth's carbon stored?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "In the clouds"
+        },
+        {
+          "optionId": "B",
+          "text": "Dissolved in the oceans"
+        },
+        {
+          "optionId": "C",
+          "text": "In the bodies of land animals"
+        },
+        {
+          "optionId": "D",
+          "text": "In bolts of lightning"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The oceans are Earth's largest carbon store after the geosphere. Carbon dioxide dissolves into the water from the air."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Why can scientists say the same carbon atoms are used over and over?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "New carbon is constantly made by the Sun"
+        },
+        {
+          "optionId": "B",
+          "text": "Carbon leaves Earth and is replaced from space"
+        },
+        {
+          "optionId": "C",
+          "text": "Carbon is not created or destroyed; it just keeps moving among the air, living things, oceans, and rocks"
+        },
+        {
+          "optionId": "D",
+          "text": "Plants create brand new carbon during photosynthesis"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Carbon is not created or destroyed. The same atoms cycle endlessly among the air, living things, oceans, and rocks."
+    }
+  ]
+}

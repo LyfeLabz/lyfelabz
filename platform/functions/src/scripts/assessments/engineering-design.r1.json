@@ -1,0 +1,269 @@
+{
+  "activityId": "engineering-design",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes what engineering is?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A field that applies scientific principles to designing and constructing"
+        },
+        {
+          "optionId": "B",
+          "text": "The study of how living things grow and change over time"
+        },
+        {
+          "optionId": "C",
+          "text": "The process of selling products to as many customers as possible"
+        },
+        {
+          "optionId": "D",
+          "text": "A type of art focused on making objects look beautiful"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Engineering applies scientific principles to designing and constructing. Engineers use science about forces, materials, and energy to plan and build solutions to real problems."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A team is designing a water bottle for hikers. Which of these is a CONSTRAINT on the design?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The bottle must keep water cold for 12 hours"
+        },
+        {
+          "optionId": "B",
+          "text": "The bottle must fit in a standard backpack side pocket"
+        },
+        {
+          "optionId": "C",
+          "text": "The team has only $8 of materials per bottle"
+        },
+        {
+          "optionId": "D",
+          "text": "The bottle must be easy to open with gloves on"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A constraint is a limitation that affects the design process. The $8 materials budget limits what the team can build. The other three describe what the bottle must DO, so they are criteria."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Put the engineering design process in the correct order.",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "ASK → IMAGINE → PLAN → CREATE → TEST → IMPROVE → SHARE"
+        },
+        {
+          "optionId": "B",
+          "text": "IMAGINE → ASK → CREATE → PLAN → SHARE → TEST → IMPROVE"
+        },
+        {
+          "optionId": "C",
+          "text": "PLAN → CREATE → ASK → IMAGINE → IMPROVE → TEST → SHARE"
+        },
+        {
+          "optionId": "D",
+          "text": "CREATE → TEST → ASK → PLAN → IMAGINE → SHARE → IMPROVE"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "First define the problem (ASK), generate ideas (IMAGINE), select a solution (PLAN), make the item (CREATE), evaluate it (TEST), make changes (IMPROVE), and present the results (SHARE)."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Nike built rough early versions of the Air Jordan 1 before selling the final shoe. What were those early versions, and why build them?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Iterations, built to make the shoe more expensive"
+        },
+        {
+          "optionId": "B",
+          "text": "Constraints, built to limit how many shoes could be made"
+        },
+        {
+          "optionId": "C",
+          "text": "Criteria, built to list the requirements for the shoe"
+        },
+        {
+          "optionId": "D",
+          "text": "Prototypes, built to be tested and refined before the final version"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "An early model of a design that is tested and refined is a prototype. Building one lets engineers find and fix problems cheaply before committing to the final product."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Sony released the PS1 in 1995, then the PS2, PS3, PS4, and PS5 over the next 25 years. Each console fixed problems and improved on the last. What does this BEST illustrate?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Constraints, because each console limited the next one"
+        },
+        {
+          "optionId": "B",
+          "text": "Iterations, because Sony repeated cycles of designing, testing, and refining"
+        },
+        {
+          "optionId": "C",
+          "text": "Criteria, because each console had to meet new requirements"
+        },
+        {
+          "optionId": "D",
+          "text": "Asking, because Sony kept defining brand new problems"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Repeated cycles of designing, testing, and refining are iterations. Each PlayStation generation is one trip around the design cycle, improving on what testing (and millions of players) revealed about the last version."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What is a criterion in the engineering design process?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A limit on the time, money, or materials a team can use"
+        },
+        {
+          "optionId": "B",
+          "text": "A requirement the design must meet to count as successful"
+        },
+        {
+          "optionId": "C",
+          "text": "A rough early model that is built to be tested"
+        },
+        {
+          "optionId": "D",
+          "text": "The final step, where the results are shared with others"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A criterion is a requirement a successful design must meet - what it has to DO. A limit on resources is a constraint, and a rough early model is a prototype."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A team is starting a brand-new design project. What should they do FIRST?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Build a prototype right away to save time"
+        },
+        {
+          "optionId": "B",
+          "text": "Share the idea with the client before planning"
+        },
+        {
+          "optionId": "C",
+          "text": "Ask questions to clearly define the problem they are solving"
+        },
+        {
+          "optionId": "D",
+          "text": "Test a solution before they have planned one"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The process starts with ASK: defining the problem clearly. You cannot imagine, plan, or build a good solution until you understand exactly what problem you are trying to solve."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Why is the engineering design process described as a cycle rather than a straight line?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Because engineers only ever complete it a single time"
+        },
+        {
+          "optionId": "B",
+          "text": "Because a failed test sends engineers back to improve or rethink, then try again"
+        },
+        {
+          "optionId": "C",
+          "text": "Because the steps can be done in any random order that is convenient"
+        },
+        {
+          "optionId": "D",
+          "text": "Because sharing the results is always the very first step"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "It is a cycle because testing often reveals problems. When a design fails a test, engineers loop back to IMPROVE (or even IMAGINE) and run through the steps again, getting closer each time."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "A phone case must survive a 2-meter drop AND cost less than $5 to manufacture. Which part is a CONSTRAINT?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Surviving the 2-meter drop, because that is what the case must do"
+        },
+        {
+          "optionId": "B",
+          "text": "Both parts are criteria, since both are requirements"
+        },
+        {
+          "optionId": "C",
+          "text": "Costing less than $5 to make, because it limits the team's resources"
+        },
+        {
+          "optionId": "D",
+          "text": "Neither part, because phone cases have no constraints"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A constraint is a limit the team must work within, like a budget. The $5 manufacturing limit is a constraint. Surviving the drop is a criterion - something the design must accomplish."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "During TEST, a prototype bridge collapses under the weight it is supposed to hold. What is the best engineering response?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Abandon the whole project, since the design clearly failed"
+        },
+        {
+          "optionId": "B",
+          "text": "Ship the bridge anyway so the team stays on schedule"
+        },
+        {
+          "optionId": "C",
+          "text": "Hide the failure so the team still looks successful"
+        },
+        {
+          "optionId": "D",
+          "text": "Treat the failure as useful data, improve the design, and test it again"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A failed test is data, not a disaster. Finding the weakness in a cheap prototype is exactly the point - engineers use that information to improve the design and run the cycle again."
+    }
+  ]
+}

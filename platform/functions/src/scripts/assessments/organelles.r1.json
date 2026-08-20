@@ -1,0 +1,269 @@
+{
+  "activityId": "organelles",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which organelle is described as 'the powerhouse of the cell' because it produces energy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Nucleus"
+        },
+        {
+          "optionId": "B",
+          "text": "Ribosome"
+        },
+        {
+          "optionId": "C",
+          "text": "Mitochondria"
+        },
+        {
+          "optionId": "D",
+          "text": "Chloroplast"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The mitochondria produce ATP (energy) for the cell through cellular respiration, it's literally called the powerhouse!"
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "The cell membrane is compared to a toll bridge because it:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Gives the cell its rigid shape"
+        },
+        {
+          "optionId": "B",
+          "text": "Controls what enters and exits the cell"
+        },
+        {
+          "optionId": "C",
+          "text": "Stores water and nutrients"
+        },
+        {
+          "optionId": "D",
+          "text": "Produces proteins"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Like a toll bridge, the cell membrane controls traffic, deciding what can pass into and out of the cell."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which organelle is found in plant cells but NOT in animal cells and is responsible for photosynthesis?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Mitochondria"
+        },
+        {
+          "optionId": "B",
+          "text": "Vacuole"
+        },
+        {
+          "optionId": "C",
+          "text": "Ribosome"
+        },
+        {
+          "optionId": "D",
+          "text": "Chloroplast"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Chloroplasts capture sunlight and convert it to glucose through photosynthesis. They're only found in plant (and algae) cells!"
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "The Golgi bodies are compared to a post office because they:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Generate energy for the cell"
+        },
+        {
+          "optionId": "B",
+          "text": "Break down waste materials"
+        },
+        {
+          "optionId": "C",
+          "text": "Process and package proteins for shipment"
+        },
+        {
+          "optionId": "D",
+          "text": "Control what enters the cell"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Like a post office, Golgi bodies receive proteins from the ER, package them up, and ship them to where they're needed."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "How are vacuoles different in plant cells vs. animal cells?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Plant cells have many small vacuoles; animal cells have one large one"
+        },
+        {
+          "optionId": "B",
+          "text": "Both have the same number"
+        },
+        {
+          "optionId": "C",
+          "text": "Plant cells have one large central vacuole; animal cells have many small ones"
+        },
+        {
+          "optionId": "D",
+          "text": "Neither type of cell has vacuoles"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Plant cells have ONE large central vacuole (think of a big water storage tank). Animal cells have MANY small vacuoles."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Which organelle is compared to 'jelly in a donut' and helps organelles move around inside the cell?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Cell wall"
+        },
+        {
+          "optionId": "B",
+          "text": "Vacuole"
+        },
+        {
+          "optionId": "C",
+          "text": "Nucleus"
+        },
+        {
+          "optionId": "D",
+          "text": "Cytoplasm"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The cytoplasm is the gel-like fluid that fills the cell. Just like jelly lets a donut's filling flow, cytoplasm lets materials move around."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A student says: 'The ribosomes are like the construction crew.' Why is this a good analogy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Because ribosomes build the cell wall"
+        },
+        {
+          "optionId": "B",
+          "text": "Because ribosomes build proteins from DNA instructions"
+        },
+        {
+          "optionId": "C",
+          "text": "Because ribosomes remove waste from the cell"
+        },
+        {
+          "optionId": "D",
+          "text": "Because ribosomes generate energy for the cell"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Construction crews follow blueprints to build things. Ribosomes follow DNA's instructions (via mRNA) to build proteins for the cell."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Which organelle acts as the 'brain' of the cell and houses the cell's DNA?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Mitochondria"
+        },
+        {
+          "optionId": "B",
+          "text": "Ribosome"
+        },
+        {
+          "optionId": "C",
+          "text": "Nucleus"
+        },
+        {
+          "optionId": "D",
+          "text": "Golgi bodies"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The nucleus is the control center; it contains DNA with all the instructions for the cell's functions. Found in both plant and animal cells."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "The lysosomes are described as the cell's waste management system. What do they actually do?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Produce energy for the cell"
+        },
+        {
+          "optionId": "B",
+          "text": "Transport proteins to where they're needed"
+        },
+        {
+          "optionId": "C",
+          "text": "Package proteins and prepare them for export"
+        },
+        {
+          "optionId": "D",
+          "text": "Break down waste and old cell parts"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Lysosomes contain enzymes that break down worn-out cell parts, food particles, and invaders, keeping the cell clean and healthy."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which of the following organelles is found in plant cells but NOT in animal cells?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Mitochondria"
+        },
+        {
+          "optionId": "B",
+          "text": "Ribosomes"
+        },
+        {
+          "optionId": "C",
+          "text": "Cell wall"
+        },
+        {
+          "optionId": "D",
+          "text": "Lysosomes"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The cell wall is a rigid outer layer found only in plant cells; it provides structure and support. Animal cells have a cell membrane but no cell wall."
+    }
+  ]
+}

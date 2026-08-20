@@ -1,0 +1,269 @@
+{
+  "activityId": "technology-and-society",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is a technology?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Any device that runs on electricity"
+        },
+        {
+          "optionId": "B",
+          "text": "Anything designed by people to solve a problem or meet a need"
+        },
+        {
+          "optionId": "C",
+          "text": "Only the newest phones and computers"
+        },
+        {
+          "optionId": "D",
+          "text": "A material that comes directly from nature"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Technology is anything people designed to solve a problem or meet a need. That includes a water filter or a pencil, not just electronics."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Which of these is the best example of a technology?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A river flowing through a valley"
+        },
+        {
+          "optionId": "B",
+          "text": "A thunderstorm"
+        },
+        {
+          "optionId": "C",
+          "text": "A bridge built to cross a river"
+        },
+        {
+          "optionId": "D",
+          "text": "A mountain range"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A bridge was designed by people to solve a problem, crossing a river. Rivers, storms, and mountains form naturally, so they are not technology."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Smartphones let people text, video call, and share photos instantly. This shows that a technology can change",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the weather"
+        },
+        {
+          "optionId": "B",
+          "text": "how people communicate"
+        },
+        {
+          "optionId": "C",
+          "text": "the laws of physics"
+        },
+        {
+          "optionId": "D",
+          "text": "how plants grow"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Instant texting and video calling changed how people communicate, one of the main ways technology reshapes daily life."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Using machines or computers to do work that people once did by hand is called",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "pollution"
+        },
+        {
+          "optionId": "B",
+          "text": "innovation"
+        },
+        {
+          "optionId": "C",
+          "text": "automation"
+        },
+        {
+          "optionId": "D",
+          "text": "a resource"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Automation is using machines or computers to do work people once did by hand. It is one major way technology changes work."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A factory builds a useful new gadget, but making it releases waste into a nearby river. The waste is an example of",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the gadget's intended effect"
+        },
+        {
+          "optionId": "B",
+          "text": "an unintended effect on the environment"
+        },
+        {
+          "optionId": "C",
+          "text": "an innovation"
+        },
+        {
+          "optionId": "D",
+          "text": "the gadget's main purpose"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Polluting the river was not the goal of building the gadget. It is an unintended effect, and it falls on the environment."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Why can a useful technology still create problems?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Useful technologies never cause any harm"
+        },
+        {
+          "optionId": "B",
+          "text": "Its benefits and its costs often come together"
+        },
+        {
+          "optionId": "C",
+          "text": "Problems only happen with broken technology"
+        },
+        {
+          "optionId": "D",
+          "text": "Costs always appear before any benefit"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Most technologies bring benefits and costs at the same time. A technology can be genuinely useful and still cause harm, like a car that helps travel but pollutes."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Plastic is cheap, light, and useful, but it piles up as waste that lasts for centuries. This is an example of a",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "trade-off between a benefit and a cost"
+        },
+        {
+          "optionId": "B",
+          "text": "technology with no downside"
+        },
+        {
+          "optionId": "C",
+          "text": "purely natural material"
+        },
+        {
+          "optionId": "D",
+          "text": "failure of innovation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A trade-off is a benefit gained in exchange for a cost. Plastic's usefulness comes with the cost of long-lasting waste."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "An engineer tests a design, learns from what fails, and redesigns it to work better. This repeating process is",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "pollution"
+        },
+        {
+          "optionId": "B",
+          "text": "automation"
+        },
+        {
+          "optionId": "C",
+          "text": "a boundary"
+        },
+        {
+          "optionId": "D",
+          "text": "innovation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Innovation is improving a technology through repeated cycles of testing and redesign. That is why technologies tend to get better over time."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which best explains why one technology, like the smartphone, changed so many parts of life at once?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Each part of society is completely separate from the others"
+        },
+        {
+          "optionId": "B",
+          "text": "The smartphone was used by only a few people"
+        },
+        {
+          "optionId": "C",
+          "text": "The parts of society are connected, so its effects spread across many of them"
+        },
+        {
+          "optionId": "D",
+          "text": "Technology has no effect on how people live"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Communication, work, health, travel, and the environment are connected parts of society. A useful technology reaches many of them at once."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Building smartphones requires mined metals, and charging them uses electricity. These facts show that technology can affect",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "only the people who own it"
+        },
+        {
+          "optionId": "B",
+          "text": "the environment, through resource and energy use"
+        },
+        {
+          "optionId": "C",
+          "text": "nothing outside the device itself"
+        },
+        {
+          "optionId": "D",
+          "text": "only the way people communicate"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Mining metals and using electricity are environmental effects. A technology that helps people daily can still use resources and energy and create waste."
+    }
+  ]
+}

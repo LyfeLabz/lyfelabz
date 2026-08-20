@@ -1,0 +1,269 @@
+{
+  "activityId": "heat-transfer",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is thermal energy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The average speed of a single particle"
+        },
+        {
+          "optionId": "B",
+          "text": "Only the stored energy in a material"
+        },
+        {
+          "optionId": "C",
+          "text": "The total kinetic and potential energy of all the particles in a material"
+        },
+        {
+          "optionId": "D",
+          "text": "The temperature shown on a thermometer"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Thermal energy is the sum of the kinetic and potential energy of all the particles that make up a material."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Temperature is a measure of which of the following?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The total energy of every particle in an object"
+        },
+        {
+          "optionId": "B",
+          "text": "The average kinetic energy of the particles"
+        },
+        {
+          "optionId": "C",
+          "text": "How much matter an object contains"
+        },
+        {
+          "optionId": "D",
+          "text": "The amount of heat stored in an object"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Temperature represents the average kinetic energy of the particles in a material. It tells you how fast they move on average, not how many there are."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "In what direction does heat always move?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "From a warmer object to a cooler object"
+        },
+        {
+          "optionId": "B",
+          "text": "From a cooler object to a warmer object"
+        },
+        {
+          "optionId": "C",
+          "text": "From the larger object to the smaller object"
+        },
+        {
+          "optionId": "D",
+          "text": "It moves in no particular direction"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Heat is the movement of thermal energy from a warmer object to a cooler one. It keeps flowing until both reach the same temperature."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "You hold a cool square of chocolate and it melts. What best explains why?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Cold energy leaves the chocolate and enters your hand"
+        },
+        {
+          "optionId": "B",
+          "text": "The chocolate creates its own heat and warms up"
+        },
+        {
+          "optionId": "C",
+          "text": "Your hand and the chocolate are exactly the same temperature"
+        },
+        {
+          "optionId": "D",
+          "text": "Thermal energy moves from your warmer hand into the cooler chocolate"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Your hand is warmer, so thermal energy flows from your hand into the cooler chocolate. The added energy speeds up the chocolate's particles until it melts."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which phrase best describes conduction?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Heat carried by a moving liquid or gas"
+        },
+        {
+          "optionId": "B",
+          "text": "The transfer of heat by direct contact"
+        },
+        {
+          "optionId": "C",
+          "text": "Heat that travels as waves through empty space"
+        },
+        {
+          "optionId": "D",
+          "text": "Energy that only the Sun can produce"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Conduction is the transfer of heat by direct contact. Particles collide with their neighbors and pass energy along."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Which material would be the best conductor of heat?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Copper"
+        },
+        {
+          "optionId": "B",
+          "text": "Styrofoam"
+        },
+        {
+          "optionId": "C",
+          "text": "Cork"
+        },
+        {
+          "optionId": "D",
+          "text": "Trapped air"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Most metals are good conductors, and copper is one of the best. Styrofoam, cork, and air are insulators that slow the movement of heat."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Why is a foam cup a good choice for keeping a drink warm?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Foam adds new heat to the drink"
+        },
+        {
+          "optionId": "B",
+          "text": "Foam pulls cold into the drink"
+        },
+        {
+          "optionId": "C",
+          "text": "Foam is an insulator, so it slows the movement of heat"
+        },
+        {
+          "optionId": "D",
+          "text": "Foam is a metal, so heat passes through it quickly"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Foam is an insulator. It slows the transfer of heat out of the drink, so the drink stays warm longer."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A pot of water is heated on a stove. The warm water rises, the cooler water sinks, and a loop forms. Which method is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Conduction"
+        },
+        {
+          "optionId": "B",
+          "text": "Radiation"
+        },
+        {
+          "optionId": "C",
+          "text": "Insulation"
+        },
+        {
+          "optionId": "D",
+          "text": "Convection"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "This is convection, the transfer of heat by the movement of a liquid or gas. Warm fluid rises and cool fluid sinks, forming a loop that carries energy."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which statement about radiation is correct?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It can only happen inside metals"
+        },
+        {
+          "optionId": "B",
+          "text": "It transfers heat as waves and needs no matter to travel"
+        },
+        {
+          "optionId": "C",
+          "text": "It requires particles to touch and collide"
+        },
+        {
+          "optionId": "D",
+          "text": "It only occurs in liquids and gases"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Radiation transfers heat as electromagnetic waves, such as infrared rays. Because it does not need matter, it can cross the empty space between the Sun and Earth."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A camper feels warmth on their face from a campfire several feet away, even without touching it or standing in rising smoke. Which method best explains this warmth?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Conduction, because their face touches the fire"
+        },
+        {
+          "optionId": "B",
+          "text": "Convection, because smoke carries heat to their face"
+        },
+        {
+          "optionId": "C",
+          "text": "Radiation, because the fire sends out waves of energy"
+        },
+        {
+          "optionId": "D",
+          "text": "Insulation, because the air blocks the heat"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The warmth travels as waves of energy from the fire to the camper's face. That is radiation, which moves heat without contact and without a moving fluid reaching them."
+    }
+  ]
+}

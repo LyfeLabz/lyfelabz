@@ -10,6 +10,7 @@ const mockUserRecordDocRef = jest.fn(() => ({
 const mockSchoolGet = jest.fn();
 const mockSchoolDocRef = jest.fn(() => ({ get: mockSchoolGet }));
 
+const mockReadCustomClaims = jest.fn();
 const mockWriteCustomClaims = jest.fn();
 const mockWriteAuditEvent = jest.fn();
 
@@ -31,6 +32,7 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     schoolDocRef: mockSchoolDocRef,
     userRecordDocRef: mockUserRecordDocRef,
+    readCustomClaims: mockReadCustomClaims,
     writeCustomClaims: mockWriteCustomClaims,
     writeAuditEvent: mockWriteAuditEvent,
   };
@@ -117,6 +119,7 @@ describe("studentsCompleteOnboarding", () => {
     mockUserRecordDocRef.mockClear();
     mockSchoolGet.mockReset();
     mockSchoolDocRef.mockClear();
+    mockReadCustomClaims.mockReset();
     mockWriteCustomClaims.mockReset();
     mockWriteAuditEvent.mockReset();
     mockLogInfo.mockReset();
@@ -250,8 +253,16 @@ describe("studentsCompleteOnboarding", () => {
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
-  it("is idempotent: an already-active student with the same schoolId returns alreadyActive without re-writing", async () => {
+  it("is idempotent with healthy claims: an already-active student returns alreadyActive without re-writing and without a district re-derivation", async () => {
     mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    // Claims already match the record: role student, same school, a non-empty
+    // district. This is the steady-state replay - a bounded no-op beyond
+    // reading the caller's own claims.
+    mockReadCustomClaims.mockResolvedValueOnce({
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
 
     const result = await __studentsCompleteOnboardingHandler(makeRequest());
 
@@ -262,10 +273,227 @@ describe("studentsCompleteOnboarding", () => {
       schoolId: "school-123",
       alreadyActive: true,
     });
+    expect(mockReadCustomClaims).toHaveBeenCalledTimes(1);
+    expect(mockReadCustomClaims).toHaveBeenCalledWith("uid-abc");
+    // No re-derivation and no writes when claims are already healthy.
     expect(mockSchoolDocRef).not.toHaveBeenCalled();
     expect(mockUserUpdate).not.toHaveBeenCalled();
     expect(mockWriteCustomClaims).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    // No warn (repair) log on a healthy replay.
+    expect(mockLogWarn).not.toHaveBeenCalled();
+  });
+
+  it("repairs a partial-activation split-brain: active record but missing claims re-asserts the canonical claims on replay", async () => {
+    // Prior attempt left users/{uid} = active but the custom-claims write
+    // failed, so the token carries no authorization. The replay must repair
+    // the claims (deriving districtId from the authoritative school record),
+    // not return success over an unauthorized token.
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    mockReadCustomClaims.mockResolvedValueOnce({}); // claims never landed
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshotExists());
+    mockWriteCustomClaims.mockResolvedValueOnce({
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+
+    const result = await __studentsCompleteOnboardingHandler(makeRequest());
+
+    expect(result).toEqual({
+      uid: "uid-abc",
+      status: "active",
+      role: "student",
+      schoolId: "school-123",
+      alreadyActive: true,
+    });
+    // District is re-derived from the school the record already names; the
+    // canonical claims are re-asserted through the shared helper.
+    expect(mockSchoolDocRef).toHaveBeenCalledWith("school-123");
+    expect(mockWriteCustomClaims).toHaveBeenCalledTimes(1);
+    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
+      uid: "uid-abc",
+      status: "active",
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+    // Repair does NOT re-run the activation update and does NOT emit a second
+    // activation audit event.
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    // The repair is logged as a warning, not a second activation.
+    expect(mockLogWarn).toHaveBeenCalledWith(
+      "students.onboardingClaimsRepaired",
+      { uid: "uid-abc", schoolId: "school-123" },
+    );
+  });
+
+  it("repairs a stale role claim: a non-student role claim on an active student record is repaired to student without escalation", async () => {
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    // The token names a broader role than the record; the record wins and the
+    // repair restores role student. The client cannot broaden the role.
+    mockReadCustomClaims.mockResolvedValueOnce({
+      role: "teacher",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshotExists());
+    mockWriteCustomClaims.mockResolvedValueOnce({});
+
+    const result = await __studentsCompleteOnboardingHandler(makeRequest());
+
+    expect(result.alreadyActive).toBe(true);
+    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
+      uid: "uid-abc",
+      status: "active",
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("repairs a stale school claim: a claim naming a different school is re-asserted from the canonical record, and the client cannot select an alternate school", async () => {
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    // Claims disagree with the record (wrong school). The record schoolId is
+    // canonical; the district is re-derived from the canonical school.
+    mockReadCustomClaims.mockResolvedValueOnce({
+      role: "student",
+      schoolId: "school-stale",
+      districtId: "district-stale",
+    });
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshotExists());
+    mockWriteCustomClaims.mockResolvedValueOnce({});
+
+    const result = await __studentsCompleteOnboardingHandler(makeRequest());
+
+    expect(result.alreadyActive).toBe(true);
+    // Repair uses the RECORD schoolId, not the stale claim value, and
+    // re-derives the district from that canonical school.
+    expect(mockSchoolDocRef).toHaveBeenCalledWith("school-123");
+    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
+      uid: "uid-abc",
+      status: "active",
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it("repairs a stale district claim: a missing districtId re-derives the district server-side from the canonical school", async () => {
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    // Role and school agree, but the district claim is absent (a partial
+    // write). The server re-derives it from the canonical school record.
+    mockReadCustomClaims.mockResolvedValueOnce({
+      role: "student",
+      schoolId: "school-123",
+    });
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshotExists({ districtId: "district-canonical" }),
+    );
+    mockWriteCustomClaims.mockResolvedValueOnce({});
+
+    const result = await __studentsCompleteOnboardingHandler(makeRequest());
+
+    expect(result.alreadyActive).toBe(true);
+    expect(mockSchoolDocRef).toHaveBeenCalledWith("school-123");
+    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
+      uid: "uid-abc",
+      status: "active",
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-canonical",
+    });
+  });
+
+  it("treats a claims read failure conservatively (empty view) and re-asserts claims", async () => {
+    // readCustomClaims resolves to {} on an unreadable claim set; the branch
+    // must fail toward repair rather than trusting unconfirmed state.
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    mockReadCustomClaims.mockResolvedValueOnce({});
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshotExists());
+    mockWriteCustomClaims.mockResolvedValueOnce({});
+
+    await __studentsCompleteOnboardingHandler(makeRequest());
+
+    expect(mockWriteCustomClaims).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails closed during repair when the canonical school is missing, writing no claims and leaving retry possible", async () => {
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    mockReadCustomClaims.mockResolvedValueOnce({}); // needs repair
+    mockSchoolGet.mockResolvedValueOnce({ exists: false, data: () => undefined });
+
+    await expect(
+      __studentsCompleteOnboardingHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "students.schoolNotFound" });
+
+    // No partial claim written; canonical active record untouched, so the
+    // caller re-enters this idempotent branch and can self-heal on retry.
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("fails closed during repair when the canonical school has no district, writing no claims", async () => {
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    mockReadCustomClaims.mockResolvedValueOnce({}); // needs repair
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshotExists({ districtId: undefined }),
+    );
+
+    await expect(
+      __studentsCompleteOnboardingHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("propagates a claim-write failure during repair without falsely reporting success and without a second activation audit", async () => {
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    mockReadCustomClaims.mockResolvedValueOnce({}); // needs repair
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshotExists());
+    const claimsErr = new PlatformError(
+      "claims.writeFailed",
+      "boom",
+      new Error("network"),
+    );
+    mockWriteCustomClaims.mockRejectedValueOnce(claimsErr);
+
+    await expect(
+      __studentsCompleteOnboardingHandler(makeRequest()),
+    ).rejects.toBe(claimsErr);
+    // Canonical active state is not mutated again; no second activation audit.
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("self-heal repair is idempotent: once claims are healthy a subsequent replay writes nothing", async () => {
+    // First call repairs the split-brain.
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    mockReadCustomClaims.mockResolvedValueOnce({});
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshotExists());
+    mockWriteCustomClaims.mockResolvedValueOnce({});
+    await __studentsCompleteOnboardingHandler(makeRequest());
+    expect(mockWriteCustomClaims).toHaveBeenCalledTimes(1);
+
+    // Second call now sees healthy claims and performs no further write.
+    mockUserGet.mockResolvedValueOnce(activeStudentSnapshot());
+    mockReadCustomClaims.mockResolvedValueOnce({
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+    const result = await __studentsCompleteOnboardingHandler(makeRequest());
+
+    expect(result.alreadyActive).toBe(true);
+    expect(mockWriteCustomClaims).toHaveBeenCalledTimes(1); // unchanged
+    expect(mockSchoolDocRef).toHaveBeenCalledTimes(1); // only the repair call
   });
 
   it("rejects an already-active user whose role or schoolId conflicts with the request with students.invalidStatus", async () => {

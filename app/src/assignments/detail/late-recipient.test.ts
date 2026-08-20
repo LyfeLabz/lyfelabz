@@ -132,17 +132,83 @@ describe("late-recipient section - visibility", () => {
     expect(host(mount)).toBeNull();
   });
 
-  test("is absent for a closed assignment even when the seams are wired", async () => {
+  test("renders the calm closed informational note (no actionable Add) when wired for a closed assignment", async () => {
+    // Sprint 28 O5.2: a closed assignment cannot gain recipients (PDR-029j),
+    // so the section renders a calm informational note in place of silent
+    // absence and issues no candidate read.
+    const mount = mkMount();
+    const candidates = candidatesFake([
+      { studentId: "s-a", studentDisplayName: "Ada" },
+    ]);
+    renderAssignmentDetail(
+      mount,
+      baseDeps({
+        loadMetadata: () =>
+          Promise.resolve(freezeMetadata({ status: "closed" })),
+        recipientCandidatesListCallable: candidates.callable,
+        recipientAddCallable: addFake().callable,
+      }),
+    );
+    await flush();
+    await flush();
+    expect(host(mount)).not.toBeNull();
+    const info = mount.querySelector(
+      "[data-testid=assignment-detail-late-recipients-info]",
+    );
+    expect(info?.textContent).toBe(
+      "This assignment is closed. Reopen it to add students.",
+    );
+    expect(info?.getAttribute("role")).toBe("status");
+    expect(info?.getAttribute("aria-live")).toBe("polite");
+    // No actionable Add control and no candidate read for a non-published
+    // assignment.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-late-recipients-add]"),
+    ).toBeNull();
+    expect(candidates.calls.length).toBe(0);
+  });
+
+  test("renders the calm draft informational note (distinct copy) when wired for a draft assignment", async () => {
+    // Sprint 28 O5.2: a draft has no frozen population yet, so the copy
+    // differs from the closed note (publish first, versus reopen first). The
+    // two lifecycle states are never collapsed.
+    const mount = mkMount();
+    const candidates = candidatesFake([
+      { studentId: "s-a", studentDisplayName: "Ada" },
+    ]);
+    renderAssignmentDetail(
+      mount,
+      baseDeps({
+        loadMetadata: () =>
+          Promise.resolve(freezeMetadata({ status: "draft" })),
+        recipientCandidatesListCallable: candidates.callable,
+        recipientAddCallable: addFake().callable,
+      }),
+    );
+    await flush();
+    await flush();
+    const info = mount.querySelector(
+      "[data-testid=assignment-detail-late-recipients-info]",
+    );
+    expect(info?.textContent).toBe(
+      "This assignment is a draft. Publish it before you can add students.",
+    );
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-late-recipients-add]"),
+    ).toBeNull();
+    expect(candidates.calls.length).toBe(0);
+  });
+
+  test("renders no informational note when the seams are not wired (closed surface unchanged)", async () => {
     const mount = mkMount();
     renderAssignmentDetail(
       mount,
       baseDeps({
         loadMetadata: () =>
           Promise.resolve(freezeMetadata({ status: "closed" })),
-        recipientCandidatesListCallable: candidatesFake([]).callable,
-        recipientAddCallable: addFake().callable,
       }),
     );
+    await flush();
     await flush();
     expect(host(mount)).toBeNull();
   });
@@ -446,5 +512,178 @@ describe("late-recipient section - add flow", () => {
         "[data-testid=assignment-detail-late-recipients-empty]",
       )?.textContent,
     ).toBe("Every enrolled student is already assigned.");
+  });
+});
+
+describe("late-recipient section - Sprint 28 O5 confirmation and accessibility", () => {
+  test("O5.1: a successful add surfaces an announced 'Added to assignment.' confirmation", async () => {
+    const mount = mkMount();
+    const fake = candidatesFake([
+      { studentId: "s-a", studentDisplayName: "Ada" },
+      { studentId: "s-b", studentDisplayName: "Ben" },
+    ]);
+    renderAssignmentDetail(
+      mount,
+      baseDeps({
+        recipientCandidatesListCallable: fake.callable,
+        recipientAddCallable: addFake().callable,
+      }),
+    );
+    await flush();
+    // The confirmation is absent before any add.
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-late-recipients-status]",
+      )?.textContent,
+    ).toBe("");
+    fake.set([{ studentId: "s-b", studentDisplayName: "Ben" }]);
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-late-recipients-add]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    const status = mount.querySelector(
+      "[data-testid=assignment-detail-late-recipients-status]",
+    );
+    expect(status?.textContent).toBe("Added to assignment.");
+    expect(status?.getAttribute("role")).toBe("status");
+    expect(status?.getAttribute("aria-live")).toBe("polite");
+  });
+
+  test("O5.1: the confirmation is scoped to the post-add rerender and does not persist through a later rerender", async () => {
+    const mount = mkMount();
+    const fake = candidatesFake([
+      { studentId: "s-a", studentDisplayName: "Ada" },
+    ]);
+    const close = {
+      callable: (input: { assignmentId: string }) =>
+        Promise.resolve({
+          assignmentId: input.assignmentId,
+          status: "closed" as const,
+          alreadyClosed: false,
+        }),
+    };
+    renderAssignmentDetail(
+      mount,
+      baseDeps({
+        recipientCandidatesListCallable: fake.callable,
+        recipientAddCallable: addFake().callable,
+        closeCallable: close.callable,
+      }),
+    );
+    await flush();
+    fake.set([]);
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-late-recipients-add]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-late-recipients-status]",
+      )?.textContent,
+    ).toBe("Added to assignment.");
+    // A subsequent lifecycle transition rerenders the surface; the stale
+    // confirmation must not reappear. Closing moves the section to the calm
+    // closed informational note, which carries no confirmation text.
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-close-action]",
+      )
+      ?.click();
+    const confirm = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-close-confirm]",
+    );
+    confirm?.click();
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-late-recipients-status]",
+      ),
+    ).toBeNull();
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-late-recipients-info]",
+      )?.textContent,
+    ).toBe("This assignment is closed. Reopen it to add students.");
+  });
+
+  test("O5.3: the in-flight state is announced through the live region", async () => {
+    const mount = mkMount();
+    let resolveAdd: () => void = () => undefined;
+    const addCallable: AssignmentsRecipientAddCallable = (input) =>
+      new Promise((resolve) => {
+        resolveAdd = () =>
+          resolve({
+            assignmentId: input.assignmentId,
+            studentId: input.studentId,
+            added: true,
+          });
+      });
+    renderAssignmentDetail(
+      mount,
+      baseDeps({
+        recipientCandidatesListCallable: candidatesFake([
+          { studentId: "s-a", studentDisplayName: "Ada" },
+        ]).callable,
+        recipientAddCallable: addCallable,
+      }),
+    );
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-late-recipients-add]",
+      )
+      ?.click();
+    const status = mount.querySelector(
+      "[data-testid=assignment-detail-late-recipients-status]",
+    );
+    expect(status?.textContent).toBe("Adding...");
+    expect(status?.getAttribute("aria-live")).toBe("polite");
+    resolveAdd();
+    await flush();
+  });
+
+  test("O5.4: a failed add keeps the student eligible, announces the error, and shows no false success", async () => {
+    const mount = mkMount();
+    const fake = candidatesFake([
+      { studentId: "s-a", studentDisplayName: "Ada" },
+    ]);
+    renderAssignmentDetail(
+      mount,
+      baseDeps({
+        recipientCandidatesListCallable: fake.callable,
+        recipientAddCallable: addFake("reject").callable,
+      }),
+    );
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-late-recipients-add]",
+      )
+      ?.click();
+    await flush();
+    // The student remains eligible and the control is re-enabled for retry.
+    const button = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-late-recipients-add]",
+    );
+    expect(button).not.toBeNull();
+    expect(button?.disabled).toBe(false);
+    // The error is announced (role=alert) and no false success is shown.
+    const actionError = mount.querySelector(
+      "[data-testid=assignment-detail-late-recipients-action-error]",
+    );
+    expect(actionError?.getAttribute("role")).toBe("alert");
+    expect((actionError as HTMLElement).hidden).toBe(false);
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-late-recipients-status]",
+      )?.textContent,
+    ).toBe("");
   });
 });

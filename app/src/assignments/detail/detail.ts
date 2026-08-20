@@ -265,6 +265,15 @@ export function renderAssignmentDetail(
     deps.lmsRetry?.initialState ?? null;
   let lmsRetryUi: { kind: "idle" | "pending" } = { kind: "idle" };
 
+  // Sprint 28 O5.1: latched "an add just succeeded" signal, consumed by the
+  // single post-add rerender so the late-recipient panel can surface a calm,
+  // announced "Added to assignment." confirmation. It is reset the moment it
+  // is consumed so a later, unrelated rerender (a lifecycle transition, a
+  // roster refetch) never re-shows a stale confirmation (blueprint §14 R6).
+  // Frozen-recipient semantics are unchanged: this is a presentation-only
+  // signal that never mutates the recipient population.
+  let lateRecipientJustAdded = false;
+
   // Sprint 16 Slice 2: one shared per-render fetch cache backs all
   // Detail sub-panels so `assessmentAssignmentSummary` and
   // `assessmentAttemptsListForClass` each resolve to exactly one
@@ -355,6 +364,10 @@ export function renderAssignmentDetail(
           doc.activeElement === null ||
           doc.activeElement === doc.body;
         readyTitleFocused = true;
+        // Sprint 28 O5.1: consume the latched add-success signal exactly once
+        // for this rerender so the confirmation is scoped to the post-add view.
+        const justAdded = lateRecipientJustAdded;
+        lateRecipientJustAdded = false;
         renderReady(
           doc,
           body,
@@ -373,6 +386,7 @@ export function renderAssignmentDetail(
           publishUi,
           { state: lmsRetryState, ui: lmsRetryUi, seam: deps.lmsRetry },
           shouldFocusTitle,
+          justAdded,
           {
             onCloseRequest: () => {
               openCloseConfirmation(s.metadata);
@@ -413,6 +427,9 @@ export function renderAssignmentDetail(
               // cache-refresh + rerender seam the lifecycle actions use; no
               // student client state is manipulated and no broad reload runs.
               if (state.kind !== "ready") return;
+              // Sprint 28 O5.1: latch the success signal so the single
+              // post-add rerender surfaces the announced confirmation.
+              lateRecipientJustAdded = true;
               refreshDetailCache();
               rerender();
             },
@@ -803,6 +820,10 @@ function renderReady(
     readonly seam: AssignmentLmsRetrySeam | undefined;
   },
   focusTitle: boolean,
+  // Sprint 28 O5.1: true only on the single rerender that immediately follows
+  // a successful late-recipient add, so the panel shows the announced
+  // "Added to assignment." confirmation.
+  justAdded: boolean,
   handlers: {
     readonly onCloseRequest: () => void;
     readonly onLmsRetryRequest: () => void;
@@ -1063,6 +1084,19 @@ function renderReady(
     panel.appendChild(body);
 
     mount.appendChild(panel);
+
+    // Sprint 28 O5.2: a draft has no frozen recipient population yet, so a
+    // late add is impossible (PDR-029j). Render a calm informational note in
+    // place of silent absence, but only when the late-recipient seams are
+    // wired so the pre-Sprint-27 detail surface is unchanged when they are
+    // not. The draft note reads differently from the closed note because the
+    // backend reason differs (publish first, versus reopen first).
+    if (
+      deps.recipientCandidatesListCallable !== undefined &&
+      deps.recipientAddCallable !== undefined
+    ) {
+      renderLateRecipientLifecycleNote(doc, mount, "draft");
+    }
     return;
   }
 
@@ -1104,24 +1138,32 @@ function renderReady(
   // there. When the seams are absent the section is not rendered, so the
   // pre-Sprint-27 detail surface is unchanged.
   if (
-    metadata.status === "published" &&
     shared.recipientCandidatesListCallable !== undefined &&
     deps.recipientAddCallable !== undefined
   ) {
-    const candidatesHost = doc.createElement("section");
-    candidatesHost.className = "shell-assignment-detail-late-recipients";
-    candidatesHost.setAttribute(
-      "data-testid",
-      "assignment-detail-late-recipients-host",
-    );
-    mount.appendChild(candidatesHost);
-    void renderLateRecipientPanel(
-      candidatesHost,
-      metadata,
-      shared.recipientCandidatesListCallable,
-      deps.recipientAddCallable,
-      handlers.onRecipientAdded,
-    );
+    if (metadata.status === "published") {
+      const candidatesHost = doc.createElement("section");
+      candidatesHost.className = "shell-assignment-detail-late-recipients";
+      candidatesHost.setAttribute(
+        "data-testid",
+        "assignment-detail-late-recipients-host",
+      );
+      mount.appendChild(candidatesHost);
+      void renderLateRecipientPanel(
+        candidatesHost,
+        metadata,
+        shared.recipientCandidatesListCallable,
+        deps.recipientAddCallable,
+        handlers.onRecipientAdded,
+        justAdded,
+      );
+    } else if (metadata.status === "closed") {
+      // Sprint 28 O5.2: a closed assignment cannot gain recipients
+      // (PDR-029j). Render a calm informational note in place of silent
+      // absence rather than an actionable Add control that would only fail.
+      // No candidate read is issued for a non-published assignment.
+      renderLateRecipientLifecycleNote(doc, mount, "closed");
+    }
   }
 
   // Sprint 15 Slice 6: per-question factual summary beneath the roster.
@@ -1316,6 +1358,7 @@ async function renderLateRecipientPanel(
   candidatesCallable: AssignmentRecipientCandidatesListCallable,
   addCallable: AssignmentsRecipientAddCallable,
   onAdded: () => void,
+  justAdded: boolean,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -1331,6 +1374,28 @@ async function renderLateRecipientPanel(
   );
   heading.textContent = "Students not yet assigned";
   host.appendChild(heading);
+
+  // Sprint 28 O5.1 / O5.3: one calm, polite live region carries the panel's
+  // action announcements. On the single post-add rerender it opens with the
+  // success confirmation ("Added to assignment."); while an add is in flight
+  // it announces "Adding..."; on failure it is cleared and the separate error
+  // line (role="alert") announces the failure. Using one region for both the
+  // in-flight and success states keeps a screen reader from hearing
+  // overlapping duplicate announcements. The added student disappears from the
+  // list below, so a single generic confirmation stays unambiguous even when
+  // several students were eligible.
+  const statusRegion = doc.createElement("p");
+  statusRegion.className = "shell-assignment-detail-late-recipients-status";
+  statusRegion.setAttribute(
+    "data-testid",
+    "assignment-detail-late-recipients-status",
+  );
+  statusRegion.setAttribute("role", "status");
+  statusRegion.setAttribute("aria-live", "polite");
+  if (justAdded) {
+    statusRegion.textContent = "Added to assignment.";
+  }
+  host.appendChild(statusRegion);
 
   const loading = doc.createElement("p");
   loading.className = "shell-assignment-detail-late-recipients-loading";
@@ -1444,6 +1509,9 @@ async function renderLateRecipientPanel(
       actionError.hidden = true;
       for (const b of addButtons) b.disabled = true;
       add.textContent = "Adding...";
+      // Sprint 28 O5.3: announce the in-flight state to assistive technology.
+      // The button-text change alone is not announced; the live region is.
+      statusRegion.textContent = "Adding...";
       void (async () => {
         try {
           await addCallable({
@@ -1452,13 +1520,17 @@ async function renderLateRecipientPanel(
           });
           // Success (including the idempotent `added: false` replay): refresh
           // the surface so the roster and candidate list both reflect the new
-          // recipient. The rerender tears this panel down, so no local DOM
-          // cleanup is required on the success path.
+          // recipient. The rerender tears this panel down and rebuilds it with
+          // `justAdded` set, which surfaces the announced confirmation, so no
+          // local DOM cleanup is required on the success path.
           onAdded();
         } catch {
           submitting = false;
           for (const b of addButtons) b.disabled = false;
           add.textContent = "Add to assignment";
+          // Clear the in-flight announcement so it does not linger; the error
+          // line (role="alert") carries the failure announcement instead.
+          statusRegion.textContent = "";
           actionError.hidden = false;
           actionError.textContent =
             "We could not add this student. Try again in a moment.";
@@ -1473,6 +1545,57 @@ async function renderLateRecipientPanel(
 
   host.appendChild(list);
   host.appendChild(actionError);
+}
+
+// Sprint 28 O5.2: the calm informational counterpart to the actionable
+// late-recipient panel, rendered for a lifecycle status where a late add is
+// impossible per the canonical backend contract (PDR-029j): a `closed`
+// assignment (reopen it first) and a `draft` assignment (publish it first).
+// The two states carry distinct copy because their backend reasons differ;
+// they are never collapsed. This note issues no candidate read and exposes no
+// Add control, so it never renders an action that would only fail. It reuses
+// the section landmark heading so a teacher who reloads into either state
+// still sees why the "Students not yet assigned" affordance is unavailable.
+function renderLateRecipientLifecycleNote(
+  doc: Document,
+  mount: HTMLElement,
+  status: "closed" | "draft",
+): void {
+  const host = doc.createElement("section");
+  host.className =
+    "shell-assignment-detail-late-recipients shell-assignment-detail-late-recipients-info";
+  host.setAttribute(
+    "data-testid",
+    "assignment-detail-late-recipients-host",
+  );
+
+  const headingId = "assignment-detail-late-recipients-heading";
+  host.setAttribute("aria-labelledby", headingId);
+  const heading = doc.createElement("h3");
+  heading.id = headingId;
+  heading.className = "shell-assignment-detail-late-recipients-heading";
+  heading.setAttribute(
+    "data-testid",
+    "assignment-detail-late-recipients-heading",
+  );
+  heading.textContent = "Students not yet assigned";
+  host.appendChild(heading);
+
+  const note = doc.createElement("p");
+  note.className = "shell-assignment-detail-late-recipients-info-note";
+  note.setAttribute(
+    "data-testid",
+    "assignment-detail-late-recipients-info",
+  );
+  note.setAttribute("role", "status");
+  note.setAttribute("aria-live", "polite");
+  note.textContent =
+    status === "closed"
+      ? "This assignment is closed. Reopen it to add students."
+      : "This assignment is a draft. Publish it before you can add students.";
+  host.appendChild(note);
+
+  mount.appendChild(host);
 }
 
 function appendRosterGroup(

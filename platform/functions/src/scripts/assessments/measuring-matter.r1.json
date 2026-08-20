@@ -1,0 +1,269 @@
+{
+  "activityId": "measuring-matter",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes matter?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Anything that can be seen with your eyes"
+        },
+        {
+          "optionId": "B",
+          "text": "Anything that has mass and takes up space"
+        },
+        {
+          "optionId": "C",
+          "text": "Only solids and liquids, because gases are empty space"
+        },
+        {
+          "optionId": "D",
+          "text": "Anything that sinks in water"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Matter is anything that has mass and takes up space (volume). That includes gases like air - a filled balloon has more mass than an empty one and takes up more space. The most common states of matter are solid, liquid, and gas."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A scientist needs to measure the mass of a mineral sample and the volume of a liquid. Which tools and units should she use?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A ruler for mass in cm³, and a balance for volume in grams"
+        },
+        {
+          "optionId": "B",
+          "text": "A graduated cylinder for both, in milliliters"
+        },
+        {
+          "optionId": "C",
+          "text": "A triple beam balance for mass in grams, and a graduated cylinder for volume in milliliters"
+        },
+        {
+          "optionId": "D",
+          "text": "A triple beam balance for both, in grams"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Mass is measured in grams (g) with a triple beam balance. Liquid volume is measured in milliliters (mL) with a graduated cylinder. A ruler measures the volume of regular solids in cm³ using V = length × width × height."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "A block is 3 cm long, 2 cm wide, and 2 cm tall. What is its volume?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "7 cm³, because 3 + 2 + 2 = 7"
+        },
+        {
+          "optionId": "B",
+          "text": "12 cm³, because 3 × 2 × 2 = 12"
+        },
+        {
+          "optionId": "C",
+          "text": "6 cm³, because 3 × 2 = 6"
+        },
+        {
+          "optionId": "D",
+          "text": "12 mL, because rulers measure in milliliters"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Volume of a rectangular block = length × width × height = 3 × 2 × 2 = 12 cm³. You multiply the dimensions (not add them), and a ruler measurement gives cubic centimeters, not milliliters."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "An object has a mass of 24 g and a volume of 12 cm³. What is its density, and would it sink or float in water (1 g/cm³)?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "2 g/cm³ - it would sink, because its density is greater than water's"
+        },
+        {
+          "optionId": "B",
+          "text": "0.5 g/cm³ - it would float, because its density is less than water's"
+        },
+        {
+          "optionId": "C",
+          "text": "288 g/cm³ - it would sink, because mass times volume is huge"
+        },
+        {
+          "optionId": "D",
+          "text": "12 g/cm³ - it would sink, because volume equals density"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Density = mass ÷ volume = 24 ÷ 12 = 2 g/cm³. Since 2 g/cm³ is greater than water's density of 1 g/cm³, the object sinks. Density is a ratio - you divide, never multiply."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Two balls are exactly the same size. Ball A is solid steel and Ball B is hollow plastic. Why is Ball A so much harder to lift?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Ball A has a bigger volume, so it weighs more"
+        },
+        {
+          "optionId": "B",
+          "text": "Ball A has more matter packed into the same space - a higher density and a greater mass"
+        },
+        {
+          "optionId": "C",
+          "text": "Ball B has more density spread across less mass"
+        },
+        {
+          "optionId": "D",
+          "text": "Same-size objects always have the same mass, so something else must explain it"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The balls have equal volume, but the steel ball contains far more matter, giving it more mass and a much higher density - more matter packed into the same space. That's exactly the bowling ball vs. beach ball mystery from the start of the lesson."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "A balloon is weighed empty, then weighed again after being filled with air. The filled balloon has more mass. What does this show?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Air has volume but no mass at all"
+        },
+        {
+          "optionId": "B",
+          "text": "The balloon rubber got heavier as it stretched"
+        },
+        {
+          "optionId": "C",
+          "text": "Mass was created by the act of blowing it up"
+        },
+        {
+          "optionId": "D",
+          "text": "Air is matter, because it has mass and takes up space"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Air is matter. The filled balloon has more mass because the air inside it has mass, and the air also takes up space (volume). Anything with mass and volume is matter, including gases."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "What does density actually measure?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The total weight of an object sitting on a balance"
+        },
+        {
+          "optionId": "B",
+          "text": "The amount of space an object takes up"
+        },
+        {
+          "optionId": "C",
+          "text": "How much matter is packed into a given amount of space"
+        },
+        {
+          "optionId": "D",
+          "text": "Whether an object is a solid, a liquid, or a gas"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Density is how much matter (mass) is packed into a given volume: D = m ÷ V. It is not the same as mass alone or volume alone - it is the ratio of the two."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A solid object is dropped into water and floats. What must be true about it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Its mass is less than the mass of all the water"
+        },
+        {
+          "optionId": "B",
+          "text": "Its volume is smaller than the container holding the water"
+        },
+        {
+          "optionId": "C",
+          "text": "It has to be hollow somewhere inside"
+        },
+        {
+          "optionId": "D",
+          "text": "Its density is less than the density of water"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Floating and sinking depend on density, not mass alone. An object floats when its density is less than the density of water (1 g/cm³). A huge steel ship floats because its overall density is low."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "How would you best measure the volume of a small, irregularly shaped rock?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Lower it into a graduated cylinder of water and measure how much the water rises"
+        },
+        {
+          "optionId": "B",
+          "text": "Multiply its length, width, and height with a ruler"
+        },
+        {
+          "optionId": "C",
+          "text": "Place it on a triple beam balance and read the grams"
+        },
+        {
+          "optionId": "D",
+          "text": "Estimate it by eye, since irregular shapes cannot be measured"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "An irregular solid has no neat dimensions to multiply, so use water displacement: the rise in water level in a graduated cylinder equals the rock's volume. A balance measures mass, not volume."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Two objects have the same mass, but Object X has a much larger volume than Object Y. Which one has the greater density?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Object X, because it is bigger overall"
+        },
+        {
+          "optionId": "B",
+          "text": "They have equal density because their masses match"
+        },
+        {
+          "optionId": "C",
+          "text": "Object Y, because the same mass is squeezed into a smaller volume"
+        },
+        {
+          "optionId": "D",
+          "text": "Neither - density can only be compared when the masses differ"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Density is mass ÷ volume. With equal mass, the object with the smaller volume (Object Y) packs that mass into less space, so it has the greater density."
+    }
+  ]
+}

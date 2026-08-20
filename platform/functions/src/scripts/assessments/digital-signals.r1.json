@@ -1,0 +1,269 @@
+{
+  "activityId": "digital-signals",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes a digital signal?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A continuous wave that can have any value, like a smooth hill"
+        },
+        {
+          "optionId": "B",
+          "text": "Information encoded in packets of 0s and 1s known as binary code"
+        },
+        {
+          "optionId": "C",
+          "text": "A sound wave that travels through vibrating air particles"
+        },
+        {
+          "optionId": "D",
+          "text": "A signal that can only travel through fiber optic cables"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A digital signal is information encoded into 0s and 1s - binary code. It can travel as wave pulses through electromagnetic waves, wires, or fiber optic cables, then be decoded back into sound, images, or video."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A family in Boston video-calls relatives in Japan, and the call sounds clear. Why do digital signals keep their quality better than analog signals over long distances?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Digital signals travel faster than analog signals, so noise can't catch them"
+        },
+        {
+          "optionId": "B",
+          "text": "Digital signals are louder, so they drown out any interference"
+        },
+        {
+          "optionId": "C",
+          "text": "Digital signals only have two values, so noise can't easily change a 0 into a 1"
+        },
+        {
+          "optionId": "D",
+          "text": "Digital signals avoid noise by traveling only through outer space"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Noise blends into an analog signal and permanently changes it. A digital signal has only two clear levels - 0 and 1 - so even after picking up some noise, each pulse is still obviously a 0 or a 1, and the receiver rebuilds the message perfectly."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Put the transmission process in the correct order.",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Encoder → Transmission → Decoder"
+        },
+        {
+          "optionId": "B",
+          "text": "Decoder → Transmission → Encoder"
+        },
+        {
+          "optionId": "C",
+          "text": "Transmission → Encoder → Decoder"
+        },
+        {
+          "optionId": "D",
+          "text": "Encoder → Decoder → Transmission"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "First the encoder converts sound, images, or text into 0s and 1s. Then transmission sends the encoded information through electromagnetic waves, wires, or fiber optic cables. Finally the decoder converts the binary code back into sound, images, or video."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "In our wave model, a large wave = 1 and a small wave = 0. A signal arrives as: small, small, large, small, small. Using box values 16-8-4-2-1 and the code 1 = a ... 26 = z, what letter is it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "d - the binary is 00100, and 4 is the fourth letter"
+        },
+        {
+          "optionId": "B",
+          "text": "b - the binary is 00010, and 2 is the second letter"
+        },
+        {
+          "optionId": "C",
+          "text": "h - the binary is 01000, and 8 is the eighth letter"
+        },
+        {
+          "optionId": "D",
+          "text": "e - the binary is 00001, and 5 is the fifth letter"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Small, small, large, small, small reads as 0 0 1 0 0. The only 1 sits in the 4 box, so the total is 4 - and the fourth letter of the alphabet is d."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "You speak into your phone during a call. Which part of the system converts your voice into patterns of 0s and 1s?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The decoder, because it changes the signal's form"
+        },
+        {
+          "optionId": "B",
+          "text": "The transmitter, because it sends waves into the air"
+        },
+        {
+          "optionId": "C",
+          "text": "The speaker, because it vibrates to match your voice"
+        },
+        {
+          "optionId": "D",
+          "text": "The encoder, because it converts sound into binary code"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Converting sounds, images, or text INTO binary code is the encoder's job - step 1 of the journey. The decoder does the reverse at the other end, converting binary code back into sound."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What is the job of the encoder in a digital communication system?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It sends the finished signal through the air as radio waves"
+        },
+        {
+          "optionId": "B",
+          "text": "It converts sound, images, or text into binary code (0s and 1s)"
+        },
+        {
+          "optionId": "C",
+          "text": "It turns binary code back into sound you can actually hear"
+        },
+        {
+          "optionId": "D",
+          "text": "It removes any noise the signal picks up along the way"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The encoder is step 1: it converts sound, images, or text INTO binary code. Transmission then carries that code, and the decoder converts it back at the other end."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Which of these is the best example of an ANALOG signal?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A text message stored on a phone as 0s and 1s"
+        },
+        {
+          "optionId": "B",
+          "text": "A photo saved as a digital file"
+        },
+        {
+          "optionId": "C",
+          "text": "Sound waves traveling straight through the air from a person's voice"
+        },
+        {
+          "optionId": "D",
+          "text": "A song streamed to your earbuds over Wi-Fi"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "An analog signal is continuous and can take any value, like sound waves moving through the air. The other three are digital - information stored or sent as 0s and 1s."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Why does a digital signal made of only 0s and 1s resist noise so well?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Because noise cannot travel through wires or cables at all"
+        },
+        {
+          "optionId": "B",
+          "text": "Because each pulse is clearly a 0 or a 1, so small noise does not change which one it is"
+        },
+        {
+          "optionId": "C",
+          "text": "Because digital signals are always louder than the noise around them"
+        },
+        {
+          "optionId": "D",
+          "text": "Because the encoder removes all noise before the signal is sent"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "With only two possible values, a pulse with a little noise added is still obviously a 0 or a 1. The receiver rebuilds the exact message. Analog signals have no such clean levels, so noise blends in permanently."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "In the wave model, a large wave = 1 and a small wave = 0. Using box values 16-8-4-2-1, what number does this signal represent: small, large, small, small, large?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "5, because two of the waves are large"
+        },
+        {
+          "optionId": "B",
+          "text": "17, because the first and last boxes are filled"
+        },
+        {
+          "optionId": "C",
+          "text": "9, because the 8 box and the 1 box are filled"
+        },
+        {
+          "optionId": "D",
+          "text": "18, because the 16 box and the 2 box are filled"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Small, large, small, small, large reads as 0 1 0 0 1. The large waves sit in the 8 box and the 1 box, so 8 + 1 = 9."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Once your voice is encoded into 0s and 1s, how do those bits actually travel to the other phone?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They stay inside your phone and never really move"
+        },
+        {
+          "optionId": "B",
+          "text": "They travel only as sound waves through the open air"
+        },
+        {
+          "optionId": "C",
+          "text": "They are carried by the decoder before they are encoded"
+        },
+        {
+          "optionId": "D",
+          "text": "They ride as wave pulses through electromagnetic waves, wires, or fiber optic cables"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Binary code travels as wave pulses - through electromagnetic waves in the air, electricity in wires, or light in fiber optic cables. That is the transmission step connecting the encoder and the decoder."
+    }
+  ]
+}

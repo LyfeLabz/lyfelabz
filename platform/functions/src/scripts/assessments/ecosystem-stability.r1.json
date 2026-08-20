@@ -1,0 +1,269 @@
+{
+  "activityId": "ecosystem-stability",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What does it mean for an ecosystem to be stable?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Nothing in it ever changes"
+        },
+        {
+          "optionId": "B",
+          "text": "It stays in balance even as its parts change"
+        },
+        {
+          "optionId": "C",
+          "text": "It has only one species"
+        },
+        {
+          "optionId": "D",
+          "text": "It is always growing larger"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Stability is a dynamic balance. Populations rise and fall, but the whole system stays in balance over time."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Which of these is a limiting factor for a population?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The name of the species"
+        },
+        {
+          "optionId": "B",
+          "text": "The color of the soil"
+        },
+        {
+          "optionId": "C",
+          "text": "The age of the ecosystem"
+        },
+        {
+          "optionId": "D",
+          "text": "The amount of available food"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A limiting factor restricts how large a population can grow. Food, water, space, and predators are limiting factors."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "The largest population of a species that an ecosystem can support over time is its...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Carrying capacity"
+        },
+        {
+          "optionId": "B",
+          "text": "Biodiversity"
+        },
+        {
+          "optionId": "C",
+          "text": "Disturbance"
+        },
+        {
+          "optionId": "D",
+          "text": "Trophic cascade"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Carrying capacity is the largest population an ecosystem can support over time, set by its limiting factors."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "In a predator-prey cycle, what usually happens right after the prey population grows large?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The predators all die out"
+        },
+        {
+          "optionId": "B",
+          "text": "The prey leave the ecosystem"
+        },
+        {
+          "optionId": "C",
+          "text": "The predator population grows"
+        },
+        {
+          "optionId": "D",
+          "text": "The ecosystem loses biodiversity"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "When prey are plentiful, predators have more food, so the predator population grows in response."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which of the following is a natural disturbance?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Building a highway"
+        },
+        {
+          "optionId": "B",
+          "text": "A wildfire"
+        },
+        {
+          "optionId": "C",
+          "text": "Dumping pollution"
+        },
+        {
+          "optionId": "D",
+          "text": "Releasing an invasive species"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A wildfire is a natural disturbance. Highways, pollution, and invasive species are human-caused disturbances."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Why can an invasive species harm an ecosystem so easily?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It always eats only plants"
+        },
+        {
+          "optionId": "B",
+          "text": "It cannot reproduce in the new area"
+        },
+        {
+          "optionId": "C",
+          "text": "It makes the soil richer"
+        },
+        {
+          "optionId": "D",
+          "text": "It often has no natural predators there"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "With no natural predators in its new home, an invasive species can spread quickly and crowd out native species."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "What is biodiversity?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The variety of different species in an ecosystem"
+        },
+        {
+          "optionId": "B",
+          "text": "The total number of rocks in an area"
+        },
+        {
+          "optionId": "C",
+          "text": "The amount of sunlight reaching the ground"
+        },
+        {
+          "optionId": "D",
+          "text": "The age of the oldest tree"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Biodiversity is the variety of different species living in an ecosystem."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Why are ecosystems with high biodiversity usually more resilient?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They have fewer species to worry about"
+        },
+        {
+          "optionId": "B",
+          "text": "They never face any disturbances"
+        },
+        {
+          "optionId": "C",
+          "text": "Other species can fill the role of a lost one"
+        },
+        {
+          "optionId": "D",
+          "text": "They do not depend on sunlight"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "With many species doing many jobs, the loss of one can often be covered by another, so the system recovers more easily."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "The wolves in Yellowstone are an example of a keystone species because...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They are the largest animals in the park"
+        },
+        {
+          "optionId": "B",
+          "text": "So many other species depend on their effects"
+        },
+        {
+          "optionId": "C",
+          "text": "They live only near the rivers"
+        },
+        {
+          "optionId": "D",
+          "text": "They eat plants instead of animals"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A keystone species has effects so large that its loss or return reshapes the whole ecosystem, as the wolves did."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "When wolves returned to Yellowstone, the chain of change that spread through the food web is called a...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Trophic cascade"
+        },
+        {
+          "optionId": "B",
+          "text": "Carrying capacity"
+        },
+        {
+          "optionId": "C",
+          "text": "Limiting factor"
+        },
+        {
+          "optionId": "D",
+          "text": "Symbiosis"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A trophic cascade is a chain reaction that spreads through a food web from the top down, as the wolves set off in Yellowstone."
+    }
+  ]
+}

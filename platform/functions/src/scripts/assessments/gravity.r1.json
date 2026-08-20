@@ -1,0 +1,269 @@
+{
+  "activityId": "gravity",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Gravity is best described as a force that...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Always pulls objects with mass toward each other"
+        },
+        {
+          "optionId": "B",
+          "text": "Pushes objects with mass away from each other"
+        },
+        {
+          "optionId": "C",
+          "text": "Pulls some objects and pushes others, depending on their charge"
+        },
+        {
+          "optionId": "D",
+          "text": "Acts only on metal objects, like a magnet"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Gravity is always an attractive force. It only ever pulls objects that have mass toward each other, and it never pushes them apart."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "How does an object's mass affect the strength of its gravitational pull?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "More mass makes the gravitational pull weaker"
+        },
+        {
+          "optionId": "B",
+          "text": "Mass changes the direction of gravity but not its strength"
+        },
+        {
+          "optionId": "C",
+          "text": "More mass makes the gravitational pull stronger"
+        },
+        {
+          "optionId": "D",
+          "text": "Mass has no effect on gravity at all"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "More mass means a stronger gravitational pull. That is why the giant objects in the universe, planets, moons, and stars, are the ones whose gravity we notice."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Two students stand close together. Do they attract each other through gravity?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "No, gravity only works between objects in outer space"
+        },
+        {
+          "optionId": "B",
+          "text": "Yes, but the pull is far too weak to feel because their masses are small"
+        },
+        {
+          "optionId": "C",
+          "text": "No, people do not have any mass for gravity to act on"
+        },
+        {
+          "optionId": "D",
+          "text": "Yes, and they are pulled together hard enough to feel it"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Every object with mass attracts every other object with mass, so the two students do pull on each other. But because their masses are tiny, the force is far too weak to feel."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Why do you feel a pull toward Earth but not toward a parked car right next to you?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Earth is closer to you than the car is"
+        },
+        {
+          "optionId": "B",
+          "text": "The car is made of metal, which blocks gravity"
+        },
+        {
+          "optionId": "C",
+          "text": "Only Earth has gravity; the car has none"
+        },
+        {
+          "optionId": "D",
+          "text": "Earth's mass is enormous, while the car's mass is far too small to produce a pull you can feel"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Gravity becomes noticeable only when at least one object has a very large mass. Earth's mass is enormous, so you feel its pull. The car's mass is far too small to notice."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which observation is the best evidence that gravity is an attractive force?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A magnet picking up paper clips"
+        },
+        {
+          "optionId": "B",
+          "text": "A balloon sticking to a wall after you rub it"
+        },
+        {
+          "optionId": "C",
+          "text": "A dropped ball always falling toward the ground, never upward"
+        },
+        {
+          "optionId": "D",
+          "text": "A compass needle pointing north"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A dropped object always falls toward Earth, never away from it. We have never seen gravity push something away, which is strong evidence that gravity only pulls."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "An astronaut weighs less on the Moon than on Earth. What is the best explanation?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The Moon has less mass than Earth, so its gravitational pull is weaker"
+        },
+        {
+          "optionId": "B",
+          "text": "There is no gravity on the Moon, so weight disappears"
+        },
+        {
+          "optionId": "C",
+          "text": "The astronaut's mass shrinks while on the Moon"
+        },
+        {
+          "optionId": "D",
+          "text": "The Moon pushes the astronaut upward"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The Moon has much less mass than Earth, so it pulls with only about 1/6 the strength. The astronaut's mass stays the same; only the weight changes because the pull is weaker."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Earth's gravity constantly pulls the Moon. Why doesn't the Moon crash into Earth?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Earth's gravity does not reach all the way to the Moon"
+        },
+        {
+          "optionId": "B",
+          "text": "The Moon moves sideways fast enough that it keeps falling around Earth instead of into it"
+        },
+        {
+          "optionId": "C",
+          "text": "The Moon's gravity cancels out Earth's gravity"
+        },
+        {
+          "optionId": "D",
+          "text": "There is no gravity in space to pull the Moon in"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The Moon is always falling toward Earth, but it is also moving sideways very fast. Earth curves away beneath it at the same rate, so it keeps falling around Earth. That is an orbit."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Gravity becomes noticeable only when...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the two objects are touching each other"
+        },
+        {
+          "optionId": "B",
+          "text": "the objects are made of the same material"
+        },
+        {
+          "optionId": "C",
+          "text": "the objects are electrically charged"
+        },
+        {
+          "optionId": "D",
+          "text": "at least one object has a very large mass"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Gravity acts between all objects with mass, but you only notice it when at least one object is very massive, like a planet, moon, or star."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Ocean tides on Earth are caused mainly by...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the Moon's gravity pulling on Earth's water"
+        },
+        {
+          "optionId": "B",
+          "text": "the Sun heating the ocean during the day"
+        },
+        {
+          "optionId": "C",
+          "text": "Earth's magnetic field pushing the water"
+        },
+        {
+          "optionId": "D",
+          "text": "wind pushing waves toward the shore"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Tides are caused mainly by the Moon's gravity tugging on Earth's water. The fact that the Moon can move whole oceans from 240,000 miles away is evidence that large masses pull hard."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A student claims, 'Gravity can push two objects apart.' Which evidence best argues against this claim?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Heavier objects are harder to lift off the ground"
+        },
+        {
+          "optionId": "B",
+          "text": "Astronauts float around inside a spaceship"
+        },
+        {
+          "optionId": "C",
+          "text": "Objects released above the ground always fall down toward Earth, never away from it"
+        },
+        {
+          "optionId": "D",
+          "text": "The Moon stays in orbit around Earth"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "If gravity could push, we would sometimes see objects fly away when released. Instead, dropped objects always fall toward Earth. That consistent evidence shows gravity only pulls."
+    }
+  ]
+}

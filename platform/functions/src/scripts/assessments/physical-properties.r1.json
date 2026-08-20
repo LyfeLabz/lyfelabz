@@ -1,0 +1,269 @@
+{
+  "activityId": "physical-properties",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Two cubes are exactly the same size. Cube X sinks in water; Cube Y floats. What must be true?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Cube X has more matter packed into the same space, so it is denser than water"
+        },
+        {
+          "optionId": "B",
+          "text": "Cube X is heavier, and heavy objects always sink"
+        },
+        {
+          "optionId": "C",
+          "text": "Cube Y is hollow - only hollow objects can float"
+        },
+        {
+          "optionId": "D",
+          "text": "Cube Y is smaller, and small objects always float"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Density is how much matter is packed in a space. Same size means same volume, so the sinker must pack more matter into that space - it is denser than water, while the floater is less dense than water. Weight alone doesn't decide it; remember the giant ship and the tiny coin."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A cereal box measures 8 cm long, 3 cm wide, and 10 cm tall. What is its volume?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "21 cm³ - add the three measurements together"
+        },
+        {
+          "optionId": "B",
+          "text": "240 cm³ - multiply length x width x height"
+        },
+        {
+          "optionId": "C",
+          "text": "80 cm³ - multiply only the two largest numbers"
+        },
+        {
+          "optionId": "D",
+          "text": "It can't be calculated without the water displacement method"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "For regular objects, volume = length x width x height: 8 x 3 x 10 = 240 cm³. Water displacement is only needed for irregular objects with no straight edges to measure."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "A graduated cylinder holds 50 mL of water. After a toy dinosaur is gently dropped in, the water reads 82 mL. What is the dinosaur's volume?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "82 mL - the new water level is the volume"
+        },
+        {
+          "optionId": "B",
+          "text": "132 mL - add the two readings together"
+        },
+        {
+          "optionId": "C",
+          "text": "32 mL - the difference between the levels is the volume"
+        },
+        {
+          "optionId": "D",
+          "text": "50 mL - the starting level is the volume"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The water displacement method: record the starting level, drop the object in, record the new level, and subtract. 82 mL - 50 mL = 32 mL. The dinosaur pushed exactly 32 mL of water out of its way."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Why does a huge steel cargo ship float while a small solid steel coin sinks?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The ship's engines push it up against gravity"
+        },
+        {
+          "optionId": "B",
+          "text": "The ship's hull is full of air, so it pushes aside water that weighs more than the ship does"
+        },
+        {
+          "optionId": "C",
+          "text": "Saltwater can only hold up large objects"
+        },
+        {
+          "optionId": "D",
+          "text": "The coin spins as it falls, which breaks the water's upward force"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Buoyancy is the upward force from the water an object pushes aside. The ship's wide, air-filled hull displaces an enormous weight of water - more than the ship itself weighs - so it floats. The solid coin displaces only a tiny bit of water, far less than its own weight, so it sinks."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "An electrician chooses copper for wiring because electricity flows through it easily, and it can be stretched into long thin wires. Which TWO physical properties is she relying on?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Hardness and magnetism"
+        },
+        {
+          "optionId": "B",
+          "text": "Melting point and flexibility"
+        },
+        {
+          "optionId": "C",
+          "text": "Electrical conductivity and ductility"
+        },
+        {
+          "optionId": "D",
+          "text": "Thermal conductivity and malleability"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Electrical conductivity is how easily electric current flows through a material, and ductility is the ability to be stretched into a thin wire. Both are physical properties - you can observe them without changing what copper is."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What is a physical property?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A characteristic you can observe or measure without changing what the material is"
+        },
+        {
+          "optionId": "B",
+          "text": "A change that creates a brand-new substance with new properties"
+        },
+        {
+          "optionId": "C",
+          "text": "The cost of buying the material at a hardware store"
+        },
+        {
+          "optionId": "D",
+          "text": "A trait that only liquids and gases can ever have"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A physical property is something you can observe or measure - like density, color, hardness, or magnetism - without changing the material into something else. Forming a new substance would be a chemical change instead."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Ice floats on its own liquid water. What does this tell you about ice compared to liquid water?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Ice is heavier than the water sitting beneath it"
+        },
+        {
+          "optionId": "B",
+          "text": "Ice is less dense than liquid water, because its particles lock into a spread-out pattern"
+        },
+        {
+          "optionId": "C",
+          "text": "Ice has no volume at all until it melts back into water"
+        },
+        {
+          "optionId": "D",
+          "text": "Ice is warmer than the liquid water around it"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Floating means less dense. When water freezes, its particles lock into a spread-out crystal pattern, so the same matter takes up more space. That makes ice less dense than liquid water, so it floats."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Why would you use the water displacement method instead of a ruler to measure a volume?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Because rulers cannot measure distances in centimeters at all"
+        },
+        {
+          "optionId": "B",
+          "text": "Because displacement is the only way to find the volume of a cube"
+        },
+        {
+          "optionId": "C",
+          "text": "Because the method works only on objects that already float"
+        },
+        {
+          "optionId": "D",
+          "text": "Because the object has an irregular shape with no straight edges to measure"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A ruler works for regular shapes (length x width x height). For an irregular object like a rock or a toy dinosaur, you drop it in water and measure how much the water rises - that rise is its volume."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "A scientist tests an unknown silvery metal and finds that it is attracted to a magnet. Which physical property did she just observe?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Its density"
+        },
+        {
+          "optionId": "B",
+          "text": "Its melting point"
+        },
+        {
+          "optionId": "C",
+          "text": "Its magnetism"
+        },
+        {
+          "optionId": "D",
+          "text": "Its volume"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Being attracted to a magnet is magnetism, a physical property. Scientists use properties like this to help identify an unknown material without changing it."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A ball of modeling clay sinks, but the same clay shaped into a wide boat floats. Why does the shape change the result?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Changing the shape turns the clay into a brand-new material"
+        },
+        {
+          "optionId": "B",
+          "text": "The boat shape makes the clay weigh less than the ball did"
+        },
+        {
+          "optionId": "C",
+          "text": "Wide shapes are pulled upward by gravity instead of down"
+        },
+        {
+          "optionId": "D",
+          "text": "The boat shape pushes aside more water, so the upward buoyant force is large enough to hold it up"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "It is the same clay and the same weight, so density of the material did not change - but the boat shape spreads out and pushes aside much more water. That extra displaced water creates a larger buoyant force, enough to keep it afloat."
+    }
+  ]
+}

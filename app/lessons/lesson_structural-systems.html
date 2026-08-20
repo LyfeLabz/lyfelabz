@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_structural-systems.html
+Build target: v2
+Regenerate: npm --prefix app run lessons:build -- --only=structural-systems --target=v2
+-->
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_structural-systems.html">
+<meta name="description" content="Explore structural systems: how beams, columns, trusses, foundations, and connections work together to carry loads and resist forces like compression, tension, shear, and torsion. A Grade 7 engineering lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Structural Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --orange:      #e8814a;
+    --green:       #3ddc84;
+    --blue:        #7cc8f8;
+    --red:         #e74c3c;
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 620px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto; padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    font-size: 1rem; color: var(--text-muted); max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout.teal { background: rgba(29,233,182,0.06); border-color: rgba(29,233,182,0.2); border-left-color: var(--teal); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; line-height: 1.25; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── LEARNING GOALS ── */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.3rem; text-align: left; cursor: pointer;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+  .gc-chev { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .glossary-card.open .gc-chev { color: var(--gold); }
+  .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.6rem; }
+  .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+  .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-blue   { border-top-color: var(--blue);   } .gc-blue .gc-term   { color: var(--blue); }
+  .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+  .gc-slate  { border-top-color: var(--accent2);} .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-jump {
+    display: inline-block; margin-top: 0.55rem; font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px dashed rgba(245,200,66,0.5); cursor: pointer;
+  }
+  .gc-jump:hover { border-bottom-style: solid; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAME-IT REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 820px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it.orange-it { border-left-color: var(--orange); }
+  .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label   { color: var(--teal); }
+  .name-it.green-it .name-it-label  { color: var(--green); }
+  .name-it.orange-it .name-it-label { color: var(--orange); }
+  .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .name-it p strong { font-weight: 800; }
+  .name-it.teal-it p strong   { color: var(--teal); }
+  .name-it.green-it p strong  { color: var(--green); }
+  .name-it.orange-it p strong { color: var(--orange); }
+  .name-it.slate-it p strong  { color: var(--accent2); }
+
+  /* ── EXAMPLE GRID ── */
+  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
+  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
+  .example-chip {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
+  }
+  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+  /* ── COMPONENT SELECTOR (interactive system map) ── */
+  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
+  .layer-figure svg { width: 100%; height: auto; display: block; }
+  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-row {
+    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s; position: relative; border: none; text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .layer-row:hover { filter: brightness(1.18); }
+  .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
+  .layer-detail-panel {
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 150px; display: flex; align-items: center;
+  }
+  .ld-inner { width: 100%; }
+  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── TWO-UP COMPARISON ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .crust-card.oceanic .crust-title { color: var(--blue); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--blue); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
+
+  /* ── FIGURE ── */
+  .figure-box {
+    background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
+    border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
+  }
+  .figure-box svg { width: 100%; height: auto; display: block; }
+  .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── QUICK RECALL ── */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* ── WRAP-UP BEATS ── */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+  .wrapup-beat-2 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
+  .wuc-2 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
+  .wuc-3 { color: var(--orange); background: rgba(232,129,74,0.08);  border-color: rgba(232,129,74,0.3); }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted); width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left; color: rgba(232,237,242,0.9); width: 100%; }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+  .mystery-loop strong { color: var(--text); }
+  .ml-label { display: block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem; }
+  .score-submitted { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(29,233,182,0.1); border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .score-error { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .reset-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── GO FURTHER ── */
+  #continue { background: var(--dark); }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+  .continue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+  .connections-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 600px) { .connections-grid { grid-template-columns: 1fr; } }
+  .cont-card { border-radius: 18px; padding: 1.5rem 1.5rem 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+  .cont-card.soon::before { background: linear-gradient(90deg, #7a8fa6, #9fb0c4); }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; background: rgba(122,143,166,0.14); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-muted); }
+  .cont-card.lesson .cont-cat { color: #2dd4bf; }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+  .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+  .cont-status { display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.95rem; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); align-self: flex-start; margin-top: auto; }
+  .cont-card.lesson .cont-status { background: rgba(20,184,166,0.12); border-color: rgba(20,184,166,0.4); color: #2dd4bf; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .name-it.pulsing { animation: vocabPulse 3s ease forwards; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+    nav { padding: 0.85rem 1.2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+  footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+  footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+  footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#eng" class="nav-back">&#8592; Engineering</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#127959;&#65039;</span>
+  <span class="hero-float">&#128739;&#65039;</span>
+  <span class="hero-float">&#127961;&#65039;</span>
+  <span class="hero-float">&#128279;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Structural Systems</h1>
+  <p>A bridge can hold thousands of cars without buckling. A skyscraper stands through wind and storms. Each one is heavy enough to crush itself, yet it does not fall.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How do structures support loads and resist the forces pushing and pulling on them?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">&#128300; Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (a heavy bridge that does not collapse) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking structural ideas into small, sequenced parts keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each component and force with a diagram builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Systems thinking: students trace how components share loads so the whole structure stands, mirroring authentic engineering. (NRC, 2012)">&#128202; Systems Thinking</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">&#127959;&#65039;</span>
+        <div class="goal-text">I can describe how the components of a structural system work together to carry loads.</div>
+        <span class="goal-std">7.MS-ETS3-4(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128230;</span>
+        <div class="goal-text">I can tell the difference between a dead load and a live load and give examples of each.</div>
+        <span class="goal-std">7.MS-ETS3-4(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#8596;&#65039;</span>
+        <div class="goal-text">I can identify compression, tension, shear, and torsion acting on parts of a structure.</div>
+        <span class="goal-std">7.MS-ETS3-4(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128208;</span>
+        <div class="goal-text">I can explain why shapes like triangles and arches make a structure more stable.</div>
+        <span class="goal-std">7.MS-ETS3-4(MA)</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Vocabulary to Know</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Structure</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Something built from connected parts that carries loads and holds its shape, like a bridge or a building.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Component</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">One of the individual parts that make up a structure, such as a beam or a column.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Load</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Any weight or force a structure has to support.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-loads')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Dead Load</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The constant weight of the structure itself, which does not change over time.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-loads')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Live Load</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A changing weight that comes and goes, like people, cars, furniture, or snow.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-loads')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Compression</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A force that squeezes or pushes a material together.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forces')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Tension</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A force that stretches or pulls a material apart.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forces')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Shear</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A force that pushes two parts of a material in opposite directions so they slide past each other.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forces')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Torsion</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A twisting force that turns one end of a material relative to the other.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-forces')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Truss</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A framework of straight parts joined into triangles to make a strong, light structure.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE PHENOMENON
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">Heavy, Yet It Stands</h2>
+    <p class="section-desc">A steel bridge weighs thousands of tons. Pile on rush-hour traffic and it gets heavier still. With that much weight pressing down, you might expect it to sag and snap. Instead it holds.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#127959;&#65039;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>The Bridge That Will Not Fall</h3>
+        <p>Walk across a long bridge and look around. There is no giant solid wall holding it up, just beams, cables, and a few towers reaching toward the sky. The bridge carries its own enormous weight plus every car, truck, and pedestrian on it. Gravity pulls down on all of it, all the time. So why does the bridge not crush itself? Where does all that weight go?</p>
+      </div>
+    </div>
+
+    <!-- Bridge phenomenon image -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A bridge deck held up by towers and cables, with arrows showing the weight of the bridge and traffic traveling down through the structure into the ground">
+        <rect x="0" y="0" width="600" height="300" fill="#0f1a26"/>
+        <!-- water -->
+        <rect x="0" y="235" width="600" height="65" fill="#13283a"/>
+        <!-- towers -->
+        <g fill="#2c3a4a">
+          <rect x="150" y="60" width="16" height="175"/>
+          <rect x="434" y="60" width="16" height="175"/>
+        </g>
+        <!-- deck -->
+        <rect x="40" y="150" width="520" height="14" fill="#3a4a5c"/>
+        <!-- main cables -->
+        <path d="M40,150 Q158,60 158,60 Q300,205 442,60 Q442,60 560,150" fill="none" stroke="#9fb8cc" stroke-width="3"/>
+        <!-- hangers -->
+        <g stroke="#7a8fa6" stroke-width="2">
+          <line x1="100" y1="118" x2="100" y2="150"/>
+          <line x1="240" y1="120" x2="240" y2="150"/>
+          <line x1="300" y1="150" x2="300" y2="150"/>
+          <line x1="360" y1="120" x2="360" y2="150"/>
+          <line x1="500" y1="118" x2="500" y2="150"/>
+        </g>
+        <!-- cars on deck -->
+        <g fill="#1de9b6">
+          <rect x="210" y="138" width="16" height="10" rx="2"/>
+          <rect x="300" y="138" width="16" height="10" rx="2"/>
+          <rect x="380" y="138" width="16" height="10" rx="2"/>
+        </g>
+        <!-- weight arrows down -->
+        <g stroke="#e8814a" stroke-width="3" marker-end="url(#ss-down)">
+          <line x1="260" y1="172" x2="260" y2="205"/>
+          <line x1="340" y1="172" x2="340" y2="205"/>
+        </g>
+        <!-- load into ground at towers -->
+        <g stroke="#f5c842" stroke-width="3" marker-end="url(#ss-down)">
+          <line x1="158" y1="240" x2="158" y2="268"/>
+          <line x1="442" y1="240" x2="442" y2="268"/>
+        </g>
+        <text x="300" y="225" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Weight pushes down</text>
+        <text x="300" y="288" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">Load travels into the ground</text>
+        <defs>
+          <marker id="ss-down" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="context-stroke"/></marker>
+        </defs>
+      </svg>
+      <div class="figure-caption">The weight of the bridge and its traffic, in orange, is carried through cables and towers down into the ground, in gold.</div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-engage">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> A bridge is heavier than any truck on it, yet it does not collapse. What is the best explanation for why it stays up?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>One single beam is strong enough to hold the entire bridge by itself.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The parts work together to spread the weight out and carry it into the ground.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Bridges are too light for gravity to pull on them.</button>
+      </div>
+    </div>
+
+    <div class="name-it slate-it predict-gated" data-gate="qp-engage">
+      <div class="name-it-label">Here's the big idea</div>
+      <p>The best answer is <strong>B</strong>. No single part holds up a bridge. A bridge is a <strong>structural system</strong>, a set of connected parts that share the weight. The load on any one spot is passed along to beams, then to towers and cables, and finally down into the ground. To see how that works, we have to look at the parts of a structure and the forces acting on them. That is exactly where this lesson goes next.</p>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2rem;">
+      <strong>Where we're headed:</strong> First we'll define a structural system. Then we'll meet the parts that carry weight, learn the loads they support, name the forces that push and pull on them, and finally see why certain shapes keep a structure standing.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the unit in a real phenomenon: heavy structures that do not fall.</li><li>Raise a question students will want answered.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete, familiar example</li><li>Short framing text</li><li>Visual anchor</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1: WHAT IS A STRUCTURAL SYSTEM?
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explore" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Structural Systems</span>
+    <h2 class="section-title">A Team of Parts</h2>
+    <p class="section-desc">Before we explain why structures stay up, we need a clear idea of what a structural system is. It is more than a single strong beam.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127959;&#65039;</span>
+        <div class="card-title">Built to Carry Weight</div>
+      </div>
+      <div class="card-body">
+        <p>A single brick can hold a little weight. Stack and connect many bricks, beams, and supports the right way, and together they can hold up an entire building. That teamwork is what makes a structure.</p>
+        <p>A <strong>structural system</strong> is a set of connected parts that work together to carry loads and hold a shape. The parts depend on one another, so the job of staying up is shared, not handed to any single piece.</p>
+      </div>
+    </div>
+
+    <div id="term-structure" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Structure</div>
+      <p>A <strong>structure</strong> is something built from connected parts that carries loads and keeps its shape. Bridges, buildings, towers, and cranes are all structures because their parts work together to support weight instead of acting alone.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.2rem;">Structures are all around us. They come in many shapes, but they share one job: hold up under weight without falling.</p>
+
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">&#127959;&#65039;</span><span>Bridges</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127970;</span><span>Buildings</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128508;</span><span>Towers</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127753;</span><span>Cranes</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127967;&#65039;</span><span>Stadiums</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128739;&#65039;</span><span>Dams</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127906;</span><span>Roof frames</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127905;&#65039;</span><span>Ferris wheels</span></div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The test for a structure:</strong> Ask what holds it up under weight. If many connected parts share the job of carrying loads, you are looking at a structural system, not just one strong object.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Define structural system before naming its parts.</li><li>Establish "shared load" as the core idea.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Prior knowledge activation (stacked bricks)</li><li>Concept formation with varied examples</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday analogy (bricks)</li><li>Wide range of familiar examples</li><li>One plain test for the concept</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: COMPONENTS (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="components" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Components</span>
+    <h2 class="section-title">The Parts That Carry the Load</h2>
+    <p class="section-desc">Engineers describe a structure by breaking it into its components. Most structures share the same kinds of parts. Click a component to see the job it does, using a simple building frame as our example.</p>
+
+    <div class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A simple building frame showing a foundation at the bottom, two vertical columns, horizontal beams, a triangular truss on top, and connection joints where parts meet">
+          <!-- foundation -->
+          <rect x="40" y="200" width="220" height="18" rx="3" fill="rgba(159,184,204,0.35)" stroke="#9fb8cc" stroke-width="2"/>
+          <text x="150" y="213" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#cbd9e6">FOUNDATION</text>
+          <!-- columns -->
+          <rect x="74" y="95" width="12" height="105" fill="rgba(124,200,248,0.5)" stroke="#7cc8f8" stroke-width="2"/>
+          <rect x="214" y="95" width="12" height="105" fill="rgba(124,200,248,0.5)" stroke="#7cc8f8" stroke-width="2"/>
+          <!-- beams -->
+          <rect x="74" y="150" width="152" height="11" fill="rgba(232,129,74,0.5)" stroke="#e8814a" stroke-width="2"/>
+          <rect x="74" y="95" width="152" height="11" fill="rgba(232,129,74,0.5)" stroke="#e8814a" stroke-width="2"/>
+          <!-- truss -->
+          <g fill="none" stroke="#3ddc84" stroke-width="2.5">
+            <path d="M74,95 L150,52 L226,95"/>
+            <path d="M150,52 L150,95"/>
+            <path d="M112,73 L112,95"/>
+            <path d="M188,73 L188,95"/>
+          </g>
+          <text x="150" y="44" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#3ddc84">TRUSS</text>
+          <!-- connections -->
+          <g fill="#f5c842">
+            <circle cx="80" cy="100" r="4.5"/>
+            <circle cx="220" cy="100" r="4.5"/>
+            <circle cx="80" cy="155" r="4.5"/>
+            <circle cx="220" cy="155" r="4.5"/>
+            <circle cx="150" cy="100" r="4.5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(159,184,204,0.28); color: #cbd9e6;" onclick="layerClick(1)">
+            <span>1 &middot; Foundation</span><span class="layer-tag">holds the base</span>
+          </div>
+          <div class="layer-row" style="background: rgba(124,200,248,0.28); color: #aedcff;" onclick="layerClick(2)">
+            <span>2 &middot; Columns</span><span class="layer-tag">carry weight down</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b48c;" onclick="layerClick(3)" id="term-component">
+            <span>3 &middot; Beams</span><span class="layer-tag">span across</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9fe9c0;" onclick="layerClick(4)">
+            <span>4 &middot; Trusses</span><span class="layer-tag">triangles for strength</span>
+          </div>
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f6d56e;" onclick="layerClick(5)">
+            <span>5 &middot; Connections</span><span class="layer-tag">where parts join</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a component</div>
+            <div class="ld-title" id="ld-title">Start with the foundation &#8594;</div>
+            <div class="ld-body" id="ld-body">Every component plays a role in carrying the load. Click any part to see what it does and how it shows up in a building frame.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128279;</span>
+      <div class="callout-body"><strong>A shared job:</strong> Foundations, columns, beams, trusses, and connections appear again and again, whether the structure is a bridge, a tower, or a house. Each part passes the load to the next, so no single piece carries it all.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name the common components of a structure.</li><li>Tie each part to one running example.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the interactive diagram</li><li>Worked example (one structure throughout)</li><li>Chunking the parts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each part, no hover</li><li>Labeled diagram paired with text</li><li>One example carried throughout</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: LOADS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="loads" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Loads</span>
+    <h2 class="section-title">The Weight a Structure Carries</h2>
+    <p class="section-desc">Every structure has to hold up weight. Engineers call any weight or force on a structure a load. Loads come in two main kinds, and a structure must be ready for both.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128230;</span>
+        <div class="card-title">Two Kinds of Weight</div>
+      </div>
+      <div class="card-body">
+        <p>Some of the weight on a structure never changes. The beams, walls, and floors of a building weigh the same today as tomorrow. Other weight comes and goes. People walk in, cars drive across, snow piles up, then melts away.</p>
+        <p>Engineers split these into <strong>dead loads</strong> and <strong>live loads</strong>. A structure must support its own steady weight and still have strength left over for the changing weight it might carry on a busy day.</p>
+      </div>
+    </div>
+
+    <div id="term-loads" class="name-it teal-it">
+      <div class="name-it-label">Key idea: Load</div>
+      <p>A <strong>load</strong> is any weight or force a structure must support. Adding up the loads tells engineers how strong each part needs to be so the structure can hold up safely.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.4rem;">Here is how the two kinds compare.</p>
+
+    <div class="crust-grid">
+      <div class="crust-card oceanic">
+        <div class="crust-title" style="color: var(--blue);">Dead Load</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>The <strong>constant</strong> weight of the structure itself</span></li>
+          <li><span class="crust-dot"></span><span>Does not change from day to day</span></li>
+          <li><span class="crust-dot"></span><span>Examples: beams, columns, walls, the roof</span></li>
+        </ul>
+      </div>
+      <div class="crust-card continental">
+        <div class="crust-title" style="color: var(--orange);">Live Load</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>A <strong>changing</strong> weight that comes and goes</span></li>
+          <li><span class="crust-dot"></span><span>Varies with use, weather, and time</span></li>
+          <li><span class="crust-dot"></span><span>Examples: people, furniture, vehicles, snow</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Snow on a roof (live)</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128101;</span><span>People in a room (live)</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128666;</span><span>Cars on a bridge (live)</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#129521;</span><span>The beams themselves (dead)</span></div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>Why it matters:</strong> A roof that holds its own weight fine can still fail when heavy snow piles on. Engineers design for the live loads a structure might face, not just the dead load it always carries.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce the loads named in the standard.</li><li>Contrast steady weight with changing weight.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Compare and contrast</li><li>Concrete examples for each category</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two short, parallel cards</li><li>Everyday examples</li><li>No calculations required</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: FORCES
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="forces" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Forces</span>
+    <h2 class="section-title">Pushing, Pulling, Sliding, Twisting</h2>
+    <p class="section-desc">When a load presses on a structure, it does not just sit there. The weight creates forces inside every part. There are four main forces a structure must resist.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#8596;&#65039;</span>
+        <div class="card-title">Forces Act Inside Every Part</div>
+      </div>
+      <div class="card-body">
+        <p>Press down on the middle of a ruler held at both ends and the top squeezes together while the bottom stretches apart. The same load creates different forces in different places. A structure has to handle all of them at once.</p>
+        <p>The four forces below show up in bridges, towers, and buildings everywhere. Learn to spot them and you can explain why a part is shaped the way it is.</p>
+      </div>
+    </div>
+
+    <!-- Forces figure -->
+    <div class="figure-box" id="term-forces">
+      <svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four panels showing compression squeezing a bar inward, tension pulling a bar apart, shear pushing two parts in opposite directions, and torsion twisting a bar">
+        <rect x="0" y="0" width="600" height="220" fill="#0f1a26"/>
+        <!-- COMPRESSION -->
+        <g>
+          <rect x="40" y="70" width="80" height="26" rx="3" fill="rgba(61,220,132,0.25)" stroke="#3ddc84" stroke-width="2"/>
+          <line x1="10" y1="83" x2="38" y2="83" stroke="#3ddc84" stroke-width="3" marker-end="url(#fa-green)"/>
+          <line x1="150" y1="83" x2="122" y2="83" stroke="#3ddc84" stroke-width="3" marker-end="url(#fa-green)"/>
+          <text x="80" y="130" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="#3ddc84">COMPRESSION</text>
+          <text x="80" y="148" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#9fb8cc">squeezes together</text>
+        </g>
+        <!-- TENSION -->
+        <g>
+          <rect x="190" y="70" width="80" height="26" rx="3" fill="rgba(124,200,248,0.22)" stroke="#7cc8f8" stroke-width="2"/>
+          <line x1="188" y1="83" x2="160" y2="83" stroke="#7cc8f8" stroke-width="3" marker-end="url(#fa-blue)"/>
+          <line x1="272" y1="83" x2="300" y2="83" stroke="#7cc8f8" stroke-width="3" marker-end="url(#fa-blue)"/>
+          <text x="230" y="130" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="#7cc8f8">TENSION</text>
+          <text x="230" y="148" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#9fb8cc">stretches apart</text>
+        </g>
+        <!-- SHEAR -->
+        <g>
+          <rect x="335" y="70" width="80" height="26" rx="3" fill="rgba(232,129,74,0.22)" stroke="#e8814a" stroke-width="2"/>
+          <line x1="375" y1="70" x2="375" y2="96" stroke="#e8814a" stroke-width="2" stroke-dasharray="3 3"/>
+          <line x1="345" y1="64" x2="405" y2="64" stroke="#e8814a" stroke-width="3" marker-end="url(#fa-orange)"/>
+          <line x1="405" y1="102" x2="345" y2="102" stroke="#e8814a" stroke-width="3" marker-end="url(#fa-orange)"/>
+          <text x="375" y="130" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="#e8814a">SHEAR</text>
+          <text x="375" y="148" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#9fb8cc">slides past</text>
+        </g>
+        <!-- TORSION -->
+        <g>
+          <rect x="480" y="70" width="80" height="26" rx="3" fill="rgba(245,200,66,0.2)" stroke="#f5c842" stroke-width="2"/>
+          <path d="M495,60 A14,14 0 1 1 481,78" fill="none" stroke="#f5c842" stroke-width="3" marker-end="url(#fa-gold)"/>
+          <path d="M545,106 A14,14 0 1 1 559,88" fill="none" stroke="#f5c842" stroke-width="3" marker-end="url(#fa-gold)"/>
+          <text x="520" y="130" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="#f5c842">TORSION</text>
+          <text x="520" y="148" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#9fb8cc">twists</text>
+        </g>
+        <defs>
+          <marker id="fa-green" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#3ddc84"/></marker>
+          <marker id="fa-blue" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7cc8f8"/></marker>
+          <marker id="fa-orange" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e8814a"/></marker>
+          <marker id="fa-gold" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
+        </defs>
+      </svg>
+      <div class="figure-caption">The four forces a structure resists: compression squeezes, tension stretches, shear slides, and torsion twists.</div>
+    </div>
+
+    <div class="crust-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="crust-card" style="background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3);">
+        <div class="crust-title" style="color: var(--green);">Compression</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot" style="background: var(--green);"></span><span>A force that <strong>squeezes</strong> or pushes a material together</span></li>
+          <li><span class="crust-dot" style="background: var(--green);"></span><span>A column under a roof is in compression</span></li>
+        </ul>
+      </div>
+      <div class="crust-card" style="background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3);">
+        <div class="crust-title" style="color: var(--blue);">Tension</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot" style="background: var(--blue);"></span><span>A force that <strong>stretches</strong> or pulls a material apart</span></li>
+          <li><span class="crust-dot" style="background: var(--blue);"></span><span>A bridge cable holding up the deck is in tension</span></li>
+        </ul>
+      </div>
+      <div class="crust-card" style="background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3);">
+        <div class="crust-title" style="color: var(--orange);">Shear</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot" style="background: var(--orange);"></span><span>A force that pushes two parts in <strong>opposite directions</strong> so they slide</span></li>
+          <li><span class="crust-dot" style="background: var(--orange);"></span><span>Scissors cut by creating shear</span></li>
+        </ul>
+      </div>
+      <div class="crust-card" style="background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.3);">
+        <div class="crust-title" style="color: var(--gold);">Torsion</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot" style="background: var(--gold);"></span><span>A <strong>twisting</strong> force that turns one end relative to the other</span></li>
+          <li><span class="crust-dot" style="background: var(--gold);"></span><span>Wind can twist a tall tower with torsion</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>The same load, different forces.</strong> When traffic presses on a bridge, the towers feel compression, the cables feel tension, the bolts can feel shear, and gusting wind can add torsion. One load creates several forces at once, and every part must resist its share.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name the four forces in the standard.</li><li>Connect each force to a real structural part.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the force diagram</li><li>Concrete-to-abstract mapping</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Labeled diagram paired with text</li><li>Four short, parallel cards</li><li>Qualitative only, no math</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: STABILITY AND FAILURE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stability" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Stability &amp; Failure</span>
+    <h2 class="section-title">Why Shape Keeps It Standing</h2>
+    <p class="section-desc">Strong materials are only part of the answer. The shape of a structure decides how well it spreads forces. The right shapes stay stable; the wrong ones can fail.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128208;</span>
+        <div class="card-title">Shapes That Share the Load</div>
+      </div>
+      <div class="card-body">
+        <p>Push on the corner of a square and it folds into a slanted shape. Push on a triangle and it holds, because there is no way to change its angles without bending a side. That is why a <strong>triangle</strong> is the most stable shape in building.</p>
+        <p>An <strong>arch</strong> spreads a downward load outward along its curve and into the ground, so it can carry far more weight than a straight beam. <strong>Cross-bracing</strong> adds diagonal parts that turn weak squares into strong triangles. These shapes do not make the material stronger; they send the forces along better paths.</p>
+      </div>
+    </div>
+
+    <div class="example-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="example-chip"><span class="example-chip-icon">&#128201;</span><span>Triangles hold their shape under load</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127983;</span><span>Arches spread weight out to the sides</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#10060;</span><span>Cross-bracing stiffens walls and towers</span></div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9888;&#65039;</span>
+        <div class="card-title">When Structures Fail</div>
+      </div>
+      <div class="card-body">
+        <p>A structure fails when a force grows larger than a part can resist, or when its shape cannot spread the load. The trouble usually starts at one weak point and then spreads as nearby parts are overloaded.</p>
+        <p>In 1940, the <strong>Tacoma Narrows Bridge</strong> twisted itself apart in the wind because it could not resist torsion. <strong>Overloaded roofs</strong> collapse when heavy snow adds more live load than the beams can hold. A <strong>leaning tower</strong> tilts when its foundation cannot support the weight evenly. Each failure points back to a load or force the structure was not shaped to handle.</p>
+        <div class="callout gold">
+          <span class="callout-icon">&#128161;</span>
+          <div class="callout-body"><strong>Engineers learn from failures:</strong> Every collapse teaches engineers which loads and forces to plan for. Stronger shapes, better foundations, and bracing are added so the next structure can stand where an old one fell.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.4rem;">The same lesson appears across many structures.</p>
+
+    <div class="example-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="example-chip"><span class="example-chip-icon">&#127971;&#65039;</span><span>A wind that twists a bridge apart</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Snow that overloads a flat roof</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128332;</span><span>A weak foundation that tilts a tower</span></div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Connect shape and stability to load paths.</li><li>Use real failures to resolve the phenomenon.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling</li><li>Learning from contrasting cases</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete square-versus-triangle analogy</li><li>Plain causal language</li><li>Famous, memorable examples</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">What makes something a structural system rather than just one strong object?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>It is made of metal</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Connected parts work together to share the load</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>It is taller than a person</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">Snow piling up on a roof is an example of which kind of load?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>A dead load</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>A live load</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>No load at all</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">Why are triangles used so often in trusses and bracing?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>They hold their shape under load instead of folding</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>They are always the cheapest shape to build</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>They look nicer than other shapes</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: PUTTING IT TOGETHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">Why the Bridge Stays Up</h2>
+    <p class="section-desc">You started with a question: why does a heavy bridge not crush itself? Now you can trace the whole answer, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">Parts Share the Job</div>
+        <div class="wrapup-beat-answer">A structure is a system of connected parts.</div>
+        <div class="wrapup-beat-body">Foundations, <strong>columns</strong>, beams, trusses, and connections each carry part of the weight and pass the rest along. No single part holds the bridge up alone.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">Loads Become Forces</div>
+        <div class="wrapup-beat-answer">Weight creates forces the parts must resist.</div>
+        <div class="wrapup-beat-body">The <strong>dead load</strong> and <strong>live load</strong> press on the structure, creating compression, tension, shear, and torsion. Each part is built to handle the force it feels.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">Shape Sends It Down</div>
+        <div class="wrapup-beat-answer">Strong shapes carry the load into the ground.</div>
+        <div class="wrapup-beat-body">Triangles, arches, and bracing spread forces along safe paths down to the <strong>foundation</strong>, so the load finally rests in the earth instead of breaking the structure.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full chain:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Connected parts share the load</span>
+        <span class="wuc wuc-2">Loads create forces</span>
+        <span class="wuc wuc-2">Each part resists its force</span>
+        <span class="wuc wuc-3">Strong shapes spread the load</span>
+        <span class="wuc wuc-3">The weight reaches the ground safely</span>
+      </div>
+      <div style="margin-top: 1rem;">A structure is more than one strong beam. It stays up because its parts work together, each resisting the force it feels and passing the rest along until the load reaches the ground. Describe the components and the forces, and you can explain why almost any structure stands.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you explored, from the parts of a structure to the forces they resist. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
+        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="el-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(29,233,182,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:112px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(29,233,182,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(61,220,132,0.07); border:1px solid rgba(61,220,132,0.25); border-left:4px solid var(--green); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: elThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#8be0a8; margin-bottom:0.4rem; }
+      @keyframes elThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="el-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Engineers don't just name the parts. They trace how a load travels through them.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">A loaded truck drives onto the middle of a bridge, yet the bridge does not crush itself. <strong>Trace the load's path.</strong> Explain how the truck's weight travels from the deck all the way down into the ground. Name at least <strong>two components</strong> the load passes through and at least <strong>one force</strong> (compression, tension, shear, or torsion) that a part has to resist along the way. Use the word <strong>path</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Start where the weight lands, then follow it part by part down to the ground..." aria-label="Trace how the truck's weight travels through the bridge's components and forces down into the ground"></textarea>
+      <div class="think-model" id="el-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        The truck is a <strong>live load</strong> that presses down on the deck. The deck rests on <strong>beams</strong>, which bend and pass the weight sideways to the <strong>columns and towers</strong>. Those columns are squeezed, so they resist <strong>compression</strong>, while the cables holding the deck up are stretched and resist <strong>tension</strong>. Because the parts are connected, they share the load instead of leaving it on any single piece, and strong shapes like triangles and the towers spread the forces along a safe <strong>path</strong> down into the foundation and finally into the ground. The bridge stands because the load never piles up on one part; it keeps moving down that path until the earth holds it.
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score Board -->
+    <div class="score-board" id="el-score" tabindex="-1" role="status" aria-live="polite">
+      <div class="big-score" id="el-score-num"></div>
+      <p id="el-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">&#128269; The Question You Came In With</span>
+        You started this lesson asking: <strong>"How do structures support loads and resist the forces pushing and pulling on them?"</strong> If you can name a structure's components and trace how loads become forces that each part resists, you have answered it.
+      </div>
+      <div id="el-submit-status"></div>
+      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Structural thinking shows up everywhere people build: <strong>suspension bridges</strong>, <strong>skyscrapers</strong>, <strong>stadium roofs</strong>, and <strong>earthquake-resistant buildings</strong> all balance loads against forces. More investigations, simulations, and design challenges are coming soon.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-name">More Coming Soon</div>
+        <div class="cont-desc">This lesson is the anchor for the structural strand of the engineering sequence. Investigations and design challenges that build on loads and forces are coming soon.</div>
+        <span class="cont-status">Coming Soon</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">A structure has to carry its loads without failing. These lessons explain the systems thinking and design choices behind that work.</p>
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_engineering-systems.html" aria-label="Engineering Systems lesson">
+        <div class="cont-icon">&#9881;&#65039;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Engineering Systems</div>
+        <div class="cont-desc">A structure is one kind of engineered system. Trace how loads travel through its connected parts to reach the ground.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_design-tradeoffs.html" aria-label="Design Tradeoffs lesson">
+        <div class="cont-icon">&#9878;&#65039;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Design Tradeoffs</div>
+        <div class="cont-desc">Every structure balances strength, weight, cost, and safety. No design wins on all of them at once.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_innovation-and-sustainability.html" aria-label="Innovation and Sustainability lesson">
+        <div class="cont-icon">&#9851;&#65039;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Innovation and Sustainability</div>
+        <div class="cont-desc">New materials and building methods let engineers make structures stronger while using fewer resources.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (one open at a time, click to reveal) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.glossary-card.open').forEach(function(c){
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded', 'false');
+      var chev = c.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▾';
+    });
+    if (!isOpen) {
+      card.classList.add('open');
+      card.setAttribute('aria-expanded', 'true');
+      var chev = card.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▴';
+    }
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== COMPONENTS INTERACTIVE ===== -->
+<script>
+const layerData = {
+  1: { label: 'Component 1 · Holds the base', title: 'Foundation', body: 'The part that sits in the ground and supports everything above it. The foundation spreads the whole structure’s weight over the soil so the building does not sink or tip. If the foundation is uneven, the structure can lean or crack.' },
+  2: { label: 'Component 2 · Carries weight down', title: 'Columns', body: 'Upright parts that carry weight straight down to the foundation. Columns are squeezed by the load above them, so they are mainly in compression. They are like the legs of a table holding up the top.' },
+  3: { label: 'Component 3 · Spans across', title: 'Beams', body: 'Horizontal parts that span across open space and carry weight to the columns. A beam bends slightly under a load: the top is compressed while the bottom is stretched. Floors and bridge decks rest on beams.' },
+  4: { label: 'Component 4 · Triangles for strength', title: 'Trusses', body: 'A framework of straight parts joined into triangles. Because triangles hold their shape, a truss is very strong for its weight. Roofs, bridges, and cranes use trusses to carry large loads without using heavy solid beams.' },
+  5: { label: 'Component 5 · Where parts join', title: 'Connections', body: 'The joints, bolts, welds, and brackets that hold the parts together. Connections pass the load from one component to the next. A structure is only as strong as its connections, so a failed joint can bring down strong parts around it.' }
+};
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
+    el.style.outlineOffset = '1px';
+  });
+}
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! A structural system is many connected parts that share the load, not just one strong object.',
+    'Not quite. The material or the height does not make it a system. What matters is that connected parts work together to share the load.');
+  wireQR('qr2', 1,
+    'Correct! Snow comes and goes, so it is a live load.',
+    'Not quite. Snow is a changing weight that comes and goes, which makes it a live load. Dead load is the structure’s own steady weight.');
+  wireQR('qr3', 0,
+    'Correct! A triangle holds its shape under load, while a square can fold, so triangles make structures stable.',
+    'Not quite. Triangles are used because they hold their shape under load instead of folding, which keeps a structure stable.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+// Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+
+var elQuizState = { selected: [], submitted: false };
+
+var elQuizQuestions = [
+  {
+    q: "What is a structural system?",
+    options: [
+      "A single beam strong enough to hold any weight",
+      "A set of connected parts that work together to carry loads",
+      "Any object taller than a person",
+      "A pile of building materials kept on a site"
+    ],
+    correct: 1,
+    explanation: "A structural system is a set of connected parts that work together to carry loads and hold a shape. The job of staying up is shared among the parts."
+  },
+  {
+    q: "Which component carries weight straight down to the foundation?",
+    options: ["A column", "A beam", "A cable", "A roof"],
+    correct: 0,
+    explanation: "Columns are upright parts that carry weight straight down to the foundation. They are mainly in compression."
+  },
+  {
+    q: "A horizontal part that spans across open space and carries weight to the columns is called a",
+    options: ["foundation", "connection", "beam", "truss"],
+    correct: 2,
+    explanation: "A beam is a horizontal part that spans across open space and carries weight to the columns. Floors and bridge decks rest on beams."
+  },
+  {
+    q: "The steady weight of a building's own beams, walls, and floors is its",
+    options: ["live load", "dead load", "wind load", "shear force"],
+    correct: 1,
+    explanation: "The dead load is the constant weight of the structure itself. It does not change from day to day."
+  },
+  {
+    q: "Which of these is the best example of a live load?",
+    options: [
+      "The weight of the steel columns",
+      "The concrete foundation",
+      "A crowd of people gathering on a balcony",
+      "The roof panels bolted in place"
+    ],
+    correct: 2,
+    explanation: "A live load is a changing weight that comes and goes. A crowd of people is a live load, while the columns, foundation, and roof are dead load."
+  },
+  {
+    q: "Which force stretches or pulls a material apart?",
+    options: ["Compression", "Shear", "Torsion", "Tension"],
+    correct: 3,
+    explanation: "Tension is a force that stretches or pulls a material apart. A bridge cable holding up the deck is in tension."
+  },
+  {
+    q: "A column under a heavy roof is being squeezed together. This force is",
+    options: ["tension", "torsion", "shear", "compression"],
+    correct: 3,
+    explanation: "Compression is a force that squeezes or pushes a material together. A column under a load is in compression."
+  },
+  {
+    q: "Wind makes a tall tower twist, turning the top relative to the base. This twisting force is",
+    options: ["torsion", "tension", "compression", "a dead load"],
+    correct: 0,
+    explanation: "Torsion is a twisting force that turns one end of a material relative to the other. Wind can twist a tall structure with torsion."
+  },
+  {
+    q: "Why are triangles used so often in bridges and trusses?",
+    options: [
+      "They are always the cheapest shape",
+      "They hold their shape under load instead of folding",
+      "They are the only shape that floats",
+      "They make a structure lighter than any other shape"
+    ],
+    correct: 1,
+    explanation: "A triangle holds its shape under load because its angles cannot change without bending a side. That makes triangles the most stable shape for structures."
+  },
+  {
+    q: "In 1940 the Tacoma Narrows Bridge twisted apart in the wind. This failure happened because the bridge could not resist",
+    options: [
+      "the weight of its own paint",
+      "people walking across it",
+      "torsion, the twisting force from the wind",
+      "the dead load of its towers"
+    ],
+    correct: 2,
+    explanation: "The bridge failed because it could not resist torsion, the twisting force created by the wind. Engineers now design bridges to handle that force."
+  }
+];
+
+
+
+function elBuildQuiz() {
+  var container = document.getElementById('el-quiz-questions');
+  container.innerHTML = '';
+  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
+  elQuizState.submitted = false;
+  document.getElementById('el-submit-btn').disabled = true;
+  elUpdateProgress();
+  var letters = ['A','B','C','D'];
+  elQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function elSelectAnswer(qi, chosenIndex) {
+  if (elQuizState.submitted) return;
+  var prev = elQuizState.selected[qi];
+  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
+  elQuizState.selected[qi] = chosenIndex;
+  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  elUpdateProgress();
+  elRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(elQuizState.selected);
+}
+
+function elUpdateProgress() {
+  var total    = elQuizQuestions.length;
+  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+
+function elSubmitQuiz() {
+  if (elQuizState.submitted) return;
+  var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
+
+  elQuizState.submitted = true;
+  document.getElementById('el-submit-btn').disabled = true;
+
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('el-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('el-think-model').classList.add('show');
+
+  var correct = 0;
+  elQuizQuestions.forEach(function (q, qi) {
+    var chosen    = elQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('el-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = elQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand structural systems cold.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+    : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
+    : '\u{1F4AA} Keep going; review each section carefully and try again!';
+  document.getElementById('el-score-num').textContent = score;
+  document.getElementById('el-score-msg').textContent = msg;
+  var sb = document.getElementById('el-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+
+  if (pct === 100) {
+    elQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (elAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by elQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var elReturnCtl = document.getElementById('back-to-assignments');
+    if (elReturnCtl) elReturnCtl.classList.add('show');
+    var elFinalStatus = document.getElementById('el-submit-status');
+    elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var elGenericError = 'Submission did not complete. Please refresh and try again.';
+    function elShowSubmitError(msg) {
+      elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || elGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(elQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        elFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        elShowSubmitError(r.message);
+      } else {
+        elShowSubmitError(null);
+      }
+    }, function () {
+      elShowSubmitError(null);
+    });
+    return;
+  }
+
+
+  document.getElementById('el-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+}
+
+function elResetQuiz() {
+  if (elQuizState.continueTimer) {
+    clearTimeout(elQuizState.continueTimer);
+    elQuizState.continueTimer = null;
+  }
+  document.getElementById('el-score').classList.remove('show');
+  document.getElementById('el-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('el-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('el-think-model').classList.remove('show');
+  elBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
+})();
+
+elBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

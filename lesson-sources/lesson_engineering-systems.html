@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_engineering-systems.html">
+<meta name="description" content="Explore engineering systems thinking: what a system is, the components that make it up, how those components interact, how models help us understand systems, and why a failure in one part affects everything else. A Grade 7 engineering lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Engineering Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --orange:      #e8814a;
+    --green:       #3ddc84;
+    --blue:        #7cc8f8;
+    --red:         #e74c3c;
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 620px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto; padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    font-size: 1rem; color: var(--text-muted); max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout.teal { background: rgba(29,233,182,0.06); border-color: rgba(29,233,182,0.2); border-left-color: var(--teal); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; line-height: 1.25; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── LEARNING GOALS ── */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.3rem; text-align: left; cursor: pointer;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+  .gc-chev { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .glossary-card.open .gc-chev { color: var(--gold); }
+  .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.6rem; }
+  .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+  .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-blue   { border-top-color: var(--blue);   } .gc-blue .gc-term   { color: var(--blue); }
+  .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+  .gc-slate  { border-top-color: var(--accent2);} .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-jump {
+    display: inline-block; margin-top: 0.55rem; font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px dashed rgba(245,200,66,0.5); cursor: pointer;
+  }
+  .gc-jump:hover { border-bottom-style: solid; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAME-IT REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 820px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it.orange-it { border-left-color: var(--orange); }
+  .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label   { color: var(--teal); }
+  .name-it.green-it .name-it-label  { color: var(--green); }
+  .name-it.orange-it .name-it-label { color: var(--orange); }
+  .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .name-it p strong { font-weight: 800; }
+  .name-it.teal-it p strong   { color: var(--teal); }
+  .name-it.green-it p strong  { color: var(--green); }
+  .name-it.orange-it p strong { color: var(--orange); }
+  .name-it.slate-it p strong  { color: var(--accent2); }
+
+  /* ── EXAMPLE GRID ── */
+  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
+  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
+  .example-chip {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
+  }
+  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+  /* ── COMPONENT SELECTOR (interactive system map) ── */
+  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
+  .layer-figure svg { width: 100%; height: auto; display: block; }
+  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-row {
+    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s; position: relative; border: none; text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .layer-row:hover { filter: brightness(1.18); }
+  .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
+  .layer-detail-panel {
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 150px; display: flex; align-items: center;
+  }
+  .ld-inner { width: 100%; }
+  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── TWO-UP COMPARISON ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .crust-card.oceanic .crust-title { color: var(--blue); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--blue); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
+
+  /* ── FIGURE ── */
+  .figure-box {
+    background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
+    border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
+  }
+  .figure-box svg { width: 100%; height: auto; display: block; }
+  .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── QUICK RECALL ── */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* ── WRAP-UP BEATS ── */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+  .wrapup-beat-2 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
+  .wuc-2 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
+  .wuc-3 { color: var(--orange); background: rgba(232,129,74,0.08);  border-color: rgba(232,129,74,0.3); }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-styles */
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55); background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-student-info-styles */
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent2);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select {
+    width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border); border-radius: 10px; color: var(--text);
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted); width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left; color: rgba(232,237,242,0.9); width: 100%; }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+  .mystery-loop strong { color: var(--text); }
+  .ml-label { display: block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem; }
+  .score-submitted { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(29,233,182,0.1); border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .score-error { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .reset-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── GO FURTHER ── */
+  #continue { background: var(--dark); }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+  .continue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+  .connections-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 600px) { .connections-grid { grid-template-columns: 1fr; } }
+  .cont-card { border-radius: 18px; padding: 1.5rem 1.5rem 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+  .cont-card.soon::before { background: linear-gradient(90deg, #7a8fa6, #9fb0c4); }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; background: rgba(122,143,166,0.14); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-muted); }
+  .cont-card.lesson .cont-cat { color: #2dd4bf; }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+  .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+  .cont-status { display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.95rem; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); align-self: flex-start; margin-top: auto; }
+  .cont-card.lesson .cont-status { background: rgba(20,184,166,0.12); border-color: rgba(20,184,166,0.4); color: #2dd4bf; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .name-it.pulsing { animation: vocabPulse 3s ease forwards; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+    nav { padding: 0.85rem 1.2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+  footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+  footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+  footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-touchtarget */
+  .mode-btn,
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-touchtarget */
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#eng" class="nav-back">&#8592; Engineering</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#128679;</span>
+  <span class="hero-float">&#128661;</span>
+  <span class="hero-float">&#9881;&#65039;</span>
+  <span class="hero-float">&#128737;&#65039;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Engineering Systems</h1>
+  <p>A single traffic light blinks out, and suddenly cars back up for miles in every direction. The problem started at one corner, but the whole city feels it.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How do parts of a system interact, and why do failures in one part affect everything else?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">&#128300; Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (one broken traffic light snarling a whole city) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking systems thinking into small, sequenced parts keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each system component with an interactive diagram builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Systems thinking: students trace how components interact so a change in one ripples through the whole, mirroring authentic engineering. (NRC, 2012)">&#128202; Systems Thinking</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">&#128736;&#65039;</span>
+        <div class="goal-text">I can describe a system in terms of its components and the interactions between them.</div>
+        <span class="goal-std">7.MS-ETS3-5(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128279;</span>
+        <div class="goal-text">I can explain how one component of a system affects the other components it interacts with.</div>
+        <span class="goal-std">7.MS-ETS3-5(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128208;</span>
+        <div class="goal-text">I can use a model to describe the structure and function of a system.</div>
+        <span class="goal-std">7.MS-ETS3-5(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#9888;&#65039;</span>
+        <div class="goal-text">I can predict how a failure in one part of a system spreads to affect the whole system.</div>
+        <span class="goal-std">7.MS-ETS3-5(MA)</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Vocabulary to Know</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">System</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A group of parts that work together to do something. The parts depend on one another.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Component</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">One of the individual parts that make up a system.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Interaction</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The way one component affects another. Interactions connect the parts of a system.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-interaction')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Input</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Something that enters a system, like energy, material, or information.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Output</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Something a system produces or sends out as a result of its work.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Process</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The action inside a system that turns inputs into outputs.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Feedback</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Information about a system's output that is sent back to adjust how the system works.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Boundary</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The line that separates what is inside a system from what is outside it.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Subsystem</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A smaller system that works as one part inside a larger system.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-component')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Model</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A representation of a system, like a diagram or flowchart, used to study how it works.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-models')">See it in the lesson &#8595;</span></div>
+      </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE PHENOMENON
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">One Light, A Whole City</h2>
+    <p class="section-desc">A traffic light is one small device on one street corner. Yet when it stops working at rush hour, the trouble does not stay at that corner. It spreads.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#128679;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>The Ripple From One Corner</h3>
+        <p>A power surge knocks out a single traffic light downtown. Cars that used to flow through now pile up. The backup spills onto the next street, then the next. Buses fall behind schedule. A delivery truck misses its drop-off. Across town, someone is late to work because of a light they never even passed. How can one broken part cause problems so far away from where it failed?</p>
+      </div>
+    </div>
+
+    <!-- City system image -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A city street grid where one broken traffic light at an intersection causes traffic to back up along connected streets">
+        <rect x="0" y="0" width="600" height="300" fill="#0f1a26"/>
+        <!-- roads -->
+        <g stroke="#2c3a4a" stroke-width="26">
+          <line x1="150" y1="0" x2="150" y2="300"/>
+          <line x1="330" y1="0" x2="330" y2="300"/>
+          <line x1="490" y1="0" x2="490" y2="300"/>
+          <line x1="0" y1="90" x2="600" y2="90"/>
+          <line x1="0" y1="210" x2="600" y2="210"/>
+        </g>
+        <!-- flowing cars (teal) -->
+        <g fill="#1de9b6">
+          <rect x="475" y="40" width="14" height="9" rx="2"/>
+          <rect x="491" y="150" width="14" height="9" rx="2"/>
+          <rect x="60" y="84" width="14" height="9" rx="2"/>
+        </g>
+        <!-- backed-up cars (red) near broken light at 330,90 -->
+        <g fill="#e74c3c">
+          <rect x="318" y="120" width="16" height="11" rx="2"/>
+          <rect x="318" y="138" width="16" height="11" rx="2"/>
+          <rect x="318" y="156" width="16" height="11" rx="2"/>
+          <rect x="200" y="78" width="16" height="11" rx="2"/>
+          <rect x="232" y="78" width="16" height="11" rx="2"/>
+          <rect x="264" y="78" width="16" height="11" rx="2"/>
+        </g>
+        <!-- broken light -->
+        <circle cx="330" cy="90" r="15" fill="#1a1410" stroke="#e8814a" stroke-width="3"/>
+        <text x="330" y="95" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#e8814a">&#10007;</text>
+        <text x="330" y="68" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#e8814a">Broken light</text>
+        <text x="120" y="250" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#1de9b6">Traffic still flows</text>
+        <text x="250" y="190" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e74c3c">Backup spreads outward</text>
+      </svg>
+      <div class="figure-caption">One failed component, marked in orange, sends a wave of backed-up traffic, in red, far down the connected streets.</div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-engage">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why can a single broken traffic light cause problems all over the city, far from the corner where it failed?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>The broken part only affects its own corner and nothing else.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The parts of the city are connected, so trouble in one part spreads to others.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Traffic problems happen completely at random.</button>
+      </div>
+    </div>
+
+    <div class="name-it slate-it predict-gated" data-gate="qp-engage">
+      <div class="name-it-label">Here's the big idea</div>
+      <p>The best answer is <strong>B</strong>. A city is not a pile of separate streets. It is a <strong>system</strong> of connected parts. Each intersection passes traffic to the next, so the parts depend on one another. When one part fails, the effect travels along those connections. To understand why failures spread, we have to look at how the parts of a system interact. That is exactly where this lesson goes next.</p>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2rem;">
+      <strong>Where we're headed:</strong> First we'll define what a system actually is. Then we'll break a system into its parts, see how those parts interact, use models to map them, and finally trace what happens when one part fails.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the unit in a real phenomenon: a failure that spreads.</li><li>Raise a question students will want answered.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete, familiar example</li><li>Short framing text</li><li>Visual anchor</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1: WHAT IS A SYSTEM?
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explore" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; What Is a System?</span>
+    <h2 class="section-title">More Than a Pile of Parts</h2>
+    <p class="section-desc">Before we can explain why failures spread, we need a clear idea of what a system is. The word gets used a lot, but it has a precise meaning in engineering.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129513;</span>
+        <div class="card-title">Parts That Work Together</div>
+      </div>
+      <div class="card-body">
+        <p>A pile of bicycle parts on the floor is not a bicycle. The frame, wheels, chain, and pedals only become a bicycle when they are connected so they work together. That connection is what makes a system.</p>
+        <p>A <strong>system</strong> is a group of parts that work together to do something. The parts depend on one another, so what happens to one part can change the others.</p>
+      </div>
+    </div>
+
+    <div id="term-system" class="name-it slate-it">
+      <div class="name-it-label">Key idea: System</div>
+      <p>A <strong>system</strong> is a set of connected parts that work together toward a purpose. The key word is connected. A bicycle, a cell phone, a school, an ecosystem, and a city's transportation network are all systems because their parts interact instead of acting alone.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.2rem;">Systems are everywhere. Some are machines, some are living, and some are made of people and rules. They all share one trait: connected parts working together.</p>
+
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">&#128690;</span><span>Bicycle</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128241;</span><span>Cell phone</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127979;</span><span>School</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127794;</span><span>Ecosystem</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128652;</span><span>Transportation network</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#129728;</span><span>Human body</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#9889;</span><span>Power grid</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127757;</span><span>The internet</span></div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The test for a system:</strong> Ask whether the parts depend on each other. If removing or breaking one part changes how the others behave, you are looking at a system, not just a collection.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Define system before naming its parts.</li><li>Establish "connected parts" as the core idea.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Prior knowledge activation (bicycle parts)</li><li>Concept formation with varied examples</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday analogy (pile of parts)</li><li>Wide range of familiar examples</li><li>One plain test for the concept</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: THE PARTS OF A SYSTEM (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="components" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Components</span>
+    <h2 class="section-title">The Parts of a System</h2>
+    <p class="section-desc">Engineers describe a system by breaking it into its components. Most systems share the same kinds of parts. Click a component to see what it does, using the traffic intersection as our example.</p>
+
+    <div class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A system diagram showing an input arrow entering a process box that produces an output, with a feedback loop returning to the process, all inside a dashed boundary">
+          <!-- boundary -->
+          <rect x="10" y="14" width="280" height="170" rx="14" fill="none" stroke="#9fb8cc" stroke-width="2" stroke-dasharray="6 6"/>
+          <text x="150" y="178" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#9fb8cc">SYSTEM BOUNDARY</text>
+          <!-- input -->
+          <text x="46" y="62" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#7cc8f8">INPUT</text>
+          <path d="M24,80 L96,80" stroke="#7cc8f8" stroke-width="4" marker-end="url(#cah-blue)"/>
+          <!-- process box (subsystem inside) -->
+          <rect x="100" y="55" width="100" height="56" rx="10" fill="rgba(61,220,132,0.12)" stroke="#3ddc84" stroke-width="2"/>
+          <text x="150" y="80" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#3ddc84">PROCESS</text>
+          <text x="150" y="98" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8" font-weight="700" fill="#9fb8cc">(controller)</text>
+          <!-- output -->
+          <text x="252" y="62" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#e8814a">OUTPUT</text>
+          <path d="M204,80 L276,80" stroke="#e8814a" stroke-width="4" marker-end="url(#cah-orange)"/>
+          <!-- feedback loop -->
+          <path d="M240,96 C240,150 150,150 150,118" fill="none" stroke="#f5c842" stroke-width="3" stroke-dasharray="5 4" marker-end="url(#cah-gold)"/>
+          <text x="150" y="158" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#f5c842">FEEDBACK</text>
+          <defs>
+            <marker id="cah-blue" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7cc8f8"/></marker>
+            <marker id="cah-orange" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e8814a"/></marker>
+            <marker id="cah-gold" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
+          </defs>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(124,200,248,0.28); color: #aedcff;" onclick="layerClick(1)" id="term-component">
+            <span>1 &middot; Input</span><span class="layer-tag">what comes in</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9fe9c0;" onclick="layerClick(2)">
+            <span>2 &middot; Process</span><span class="layer-tag">the action inside</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b48c;" onclick="layerClick(3)">
+            <span>3 &middot; Output</span><span class="layer-tag">what comes out</span>
+          </div>
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f6d56e;" onclick="layerClick(4)">
+            <span>4 &middot; Feedback</span><span class="layer-tag">output sent back</span>
+          </div>
+          <div class="layer-row" style="background: rgba(159,184,204,0.28); color: #cbd9e6;" onclick="layerClick(5)">
+            <span>5 &middot; Boundary</span><span class="layer-tag">inside vs outside</span>
+          </div>
+          <div class="layer-row" style="background: rgba(29,233,182,0.24); color: #8df0d8;" onclick="layerClick(6)">
+            <span>6 &middot; Subsystem</span><span class="layer-tag">a system within</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a component</div>
+            <div class="ld-title" id="ld-title">Start with the input &#8594;</div>
+            <div class="ld-body" id="ld-body">Every component plays a role in how a system works. Click any part to see what it does and how it shows up in a traffic intersection.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128279;</span>
+      <div class="callout-body"><strong>A shared pattern:</strong> Inputs, a process, outputs, feedback, a boundary, and subsystems show up again and again, whether the system is a traffic light, a phone, or a living body. Learning these parts lets you describe almost any system.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name the common components of a system.</li><li>Tie each part to one running example.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the interactive diagram</li><li>Worked example (one system throughout)</li><li>Chunking the parts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each part, no hover</li><li>Labeled diagram paired with text</li><li>One example carried throughout</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: INTERACTIONS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="interactions" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Interactions</span>
+    <h2 class="section-title">How the Parts Connect</h2>
+    <p class="section-desc">Knowing the parts is only half the picture. The reason a system behaves like a whole, and not a pile, is that its components interact.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128260;</span>
+        <div class="card-title">One Part Affects Another</div>
+      </div>
+      <div class="card-body">
+        <p>On a bicycle, pushing the pedals turns the chain, the chain turns the rear wheel, and the wheel moves the bike forward. Each part passes its effect to the next. That passing along is an interaction.</p>
+        <p>Because parts interact, a change in one component does not stay put. It travels through the connections to the parts it touches.</p>
+      </div>
+    </div>
+
+    <div id="term-interaction" class="name-it teal-it">
+      <div class="name-it-label">Key idea: Interaction</div>
+      <p>An <strong>interaction</strong> is the way one component affects another. Interactions are the connections that turn separate parts into a working system. Trace the interactions and you can predict how the whole system will behave.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.4rem;">The same idea shows up across very different systems. In each case, one part is affecting another.</p>
+
+    <div class="example-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="example-chip"><span class="example-chip-icon">&#128652;</span><span>One green light changes when the next one turns</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127828;</span><span>A late driver delays every food order behind them</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#9889;</span><span>One overloaded wire trips the circuits next to it</span></div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>The connection is the key.</strong> In the traffic phenomenon, each intersection feeds cars to the next. That interaction is exactly why a problem at one light reaches corners far away. The parts are linked, so the effect travels.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Shift focus from parts to the connections between them.</li><li>Set up why failures spread.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect reasoning</li><li>Transfer across multiple examples</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete bicycle analogy</li><li>Parallel example chips</li><li>Direct link back to the phenomenon</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: MODELS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="models" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Models</span>
+    <h2 class="section-title">Mapping a System</h2>
+    <p class="section-desc">Systems can be large and tangled. To study one without getting lost, engineers build a model. A model is a simplified stand-in that shows the parts and how they connect.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128208;</span>
+        <div class="card-title">Why Build a Model?</div>
+      </div>
+      <div class="card-body">
+        <p>You cannot hold an entire city's traffic in your head at once. A model lets you leave out the details that do not matter and keep the parts and connections that do. With a clear model, you can describe how a system is built and predict how it will behave.</p>
+        <p>A good model answers two questions: what are the parts, and how do they interact? The diagram of input, process, output, and feedback you used earlier was a model.</p>
+      </div>
+    </div>
+
+    <div id="term-models" class="name-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Model</div>
+      <p>A <strong style="color: var(--gold);">model</strong> is a representation of a system used to understand it. A model does not show every detail. It shows the parts and interactions that matter for the question you are asking.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.4rem;">Engineers use several kinds of models. Each one represents the same system in a different way.</p>
+
+    <div class="crust-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="crust-card oceanic">
+        <div class="crust-title" style="color: var(--blue);">Physical Model</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>A real object you can build or touch</span></li>
+          <li><span class="crust-dot"></span><span>Example: a small <strong>model bridge</strong> tested with weights</span></li>
+        </ul>
+      </div>
+      <div class="crust-card continental">
+        <div class="crust-title" style="color: var(--orange);">Diagram Model</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>A labeled drawing of the parts</span></li>
+          <li><span class="crust-dot"></span><span>Example: a <strong>cross-section</strong> of a machine</span></li>
+        </ul>
+      </div>
+      <div class="crust-card oceanic">
+        <div class="crust-title" style="color: var(--blue);">Flowchart</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Boxes and arrows showing order and flow</span></li>
+          <li><span class="crust-dot"></span><span>Example: how <strong>input becomes output</strong></span></li>
+        </ul>
+      </div>
+      <div class="crust-card continental">
+        <div class="crust-title" style="color: var(--orange);">Conceptual Model</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>An idea or rule that explains behavior</span></li>
+          <li><span class="crust-dot"></span><span>Example: "feedback keeps the system <strong>balanced</strong>"</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128269;</span>
+      <div class="callout-body"><strong>Models are tools, not copies:</strong> Every model leaves things out on purpose. A subway map does not show real distances, but it shows the connections you need to ride the train. A useful model keeps what matters and drops the rest.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce models as the tool for the standard.</li><li>Show that one system can be modeled many ways.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Abstraction and representation</li><li>Comparison across model types</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Familiar subway-map analogy</li><li>Four short, parallel cards</li><li>Plain examples for each type</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: STRUCTURE, FUNCTION, AND FAILURE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="failure" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Structure &amp; Failure</span>
+    <h2 class="section-title">When One Part Fails</h2>
+    <p class="section-desc">The way a system's parts are arranged is its structure. What the system does is its function. The two are tied together, which is exactly why a single failure can change everything.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129521;</span>
+        <div class="card-title">Structure Shapes Function</div>
+      </div>
+      <div class="card-body">
+        <p>The arrangement of parts decides what a system can do. The teeth of a zipper are arranged so they interlock, which is why a zipper holds closed. Rearrange those same parts and the function is lost.</p>
+        <p>Because structure and function are linked, the parts are not interchangeable. Some components matter more than others. A part that many others depend on is a part the whole system relies on.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9888;&#65039;</span>
+        <div class="card-title">Failures Travel Through the Connections</div>
+      </div>
+      <div class="card-body">
+        <p>When a component fails, the parts that depend on it lose what it was giving them. Those parts then pass the trouble to the parts that depend on <em>them</em>. The failure travels along the same interactions that normally make the system work.</p>
+        <p>This is the answer to our opening question. The broken traffic light fed cars to the next intersection. With it down, cars pile up, and that backup feeds into the next street, and the next. The more connected a part is, the wider its failure spreads.</p>
+        <div class="callout gold">
+          <span class="callout-icon">&#128161;</span>
+          <div class="callout-body"><strong>Engineers plan for this:</strong> Because failures spread, engineers look for the parts that many others depend on and make those parts stronger, add backups, or design the system so one failure cannot bring down the whole.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.4rem;">The same pattern of a spreading failure appears in many systems.</p>
+
+    <div class="example-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="example-chip"><span class="example-chip-icon">&#128679;</span><span>One stuck light backs up a whole city grid</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128230;</span><span>One closed factory stalls a long supply chain</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127794;</span><span>One missing species disrupts a food web</span></div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Connect structure and function to the spread of failure.</li><li>Resolve the opening phenomenon directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling (failure propagation)</li><li>Transfer across systems</li><li>Closing the curiosity gap</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete zipper analogy</li><li>Plain causal language</li><li>Parallel examples across systems</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">What makes a group of parts a system rather than just a collection?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>The parts are all the same size</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>The parts are connected and depend on one another</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>The parts are stored in the same place</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">In a traffic intersection, the cars arriving are an example of which component?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>An input</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>A boundary</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>A feedback loop</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">Why does a failure in one component affect parts far away from it?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>The failure travels along the interactions that connect the parts</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Distant parts copy whatever the broken part does</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Failures only ever affect one part at a time</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: PUTTING IT TOGETHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">Why the Whole City Felt It</h2>
+    <p class="section-desc">You started with a question: why does one broken traffic light cause problems throughout a whole city? Now you can trace the whole chain, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">It Starts With Connection</div>
+        <div class="wrapup-beat-answer">A city is a system of connected parts.</div>
+        <div class="wrapup-beat-body">A <strong>system</strong> is made of <strong>components</strong> that depend on one another. Each intersection passes traffic to the next, so the parts are linked, not separate.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">Connection Means Spread</div>
+        <div class="wrapup-beat-answer">Because parts interact, a change in one reaches the others.</div>
+        <div class="wrapup-beat-body">An <strong>interaction</strong> passes an effect from one part to another. When a light fails, the backup feeds into the next street through those same connections.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">Models Let Us Plan</div>
+        <div class="wrapup-beat-answer">A model shows the parts so we can predict and prevent failures.</div>
+        <div class="wrapup-beat-body">A <strong>model</strong> maps the components and interactions. Engineers use it to find the parts many others depend on and protect them before they fail.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full chain:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">A system of connected parts</span>
+        <span class="wuc wuc-2">Components interact</span>
+        <span class="wuc wuc-2">A change in one spreads to others</span>
+        <span class="wuc wuc-3">One failure ripples outward</span>
+        <span class="wuc wuc-3">Models help us predict and prevent it</span>
+      </div>
+      <div style="margin-top: 1rem;">A system is more than its parts. Its behavior comes from how those parts interact, which is why a single failure can reach far beyond where it began. Describe the components and their interactions, and you can explain, and even redesign, almost any system.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you explored, from what a system is to why failures spread. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-mode-toggle-markup -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-mode-toggle-markup -->
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-student-info-markup -->
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="el-student-name">Student Name</label>
+          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="el-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-teacher-select">Teacher</label>
+          <select id="el-teacher-select">
+            <option value="">- Select -</option>
+            <option value="mr-kankel">Mr. Kankel</option>
+            <option value="mr-rovner">Mr. Rovner</option>
+          </select>
+          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-block-select">Class Block</label>
+          <select id="el-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A Block</option><option value="B">B Block</option>
+            <option value="C">C Block</option><option value="D">D Block</option>
+            <option value="E">E Block</option><option value="F">F Block</option>
+            <option value="G">G Block</option>
+          </select>
+          <div class="info-error" id="el-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-student-info-markup -->
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
+        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="el-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(29,233,182,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:112px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(29,233,182,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(61,220,132,0.07); border:1px solid rgba(61,220,132,0.25); border-left:4px solid var(--green); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: elThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#8be0a8; margin-bottom:0.4rem; }
+      @keyframes elThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="el-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Engineers don't just name the parts. They can trace how a failure in one part travels through the whole system.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">At rush hour, a single traffic light downtown goes dark. Minutes later, streets far across the city are backed up. <strong>Trace how that one broken part spreads to affect intersections it never touches directly.</strong> Name the parts involved and say why the trouble does not stay at one corner. Use the word <strong>interact</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Start at the broken light, then follow the backup from one intersection to the next..." aria-label="Trace how one broken traffic light spreads to back up intersections across the whole city"></textarea>
+      <div class="think-model" id="el-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        A city's streets are a <strong>system</strong> of connected <strong>components</strong>: each intersection passes cars to the next. When the light goes dark, that one part can no longer do its job, so the cars that were its <strong>input</strong> pile up instead of flowing through as its <strong>output</strong>. Because the intersections <strong>interact</strong>, the next corner loses the flow it depended on, and its backup feeds the corner after that. The failure travels along the very same connections that normally make the system work, which is why streets far from the broken light feel it. The more connected a part is, the wider its failure spreads.
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score Board -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
+    <div class="score-board" id="el-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="el-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
+      <div class="big-score" id="el-score-num"></div>
+      <p id="el-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">&#128269; The Question You Came In With</span>
+        You started this lesson asking: <strong>"How do parts of a system interact, and why do failures in one part affect everything else?"</strong> If you can describe a system's components and trace how a change in one travels through their interactions, you have answered it.
+      </div>
+      <div id="el-submit-status"></div>
+      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Systems thinking is a tool you can point at almost anything: <strong>power grids</strong>, <strong>the internet</strong>, <strong>ecosystems</strong>, <strong>transportation networks</strong>, and <strong>manufacturing systems</strong> all work the same way. More investigations, simulations, and design challenges are coming soon.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-name">More Coming Soon</div>
+        <div class="cont-desc">This lesson is the anchor for the engineering sequence. Investigations and design challenges that build on systems thinking are coming soon.</div>
+        <span class="cont-status">Coming Soon</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Engineering is the work of designing systems whose parts work together. These lessons each look at a different kind of engineered system.</p>
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_structural-systems.html" aria-label="Structural Systems lesson">
+        <div class="cont-icon">&#127959;&#65039;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Structural Systems</div>
+        <div class="cont-desc">A bridge or building is an engineered system. See how its parts share loads so the whole structure stays standing.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_transportation-systems.html" aria-label="Transportation Systems lesson">
+        <div class="cont-icon">&#128646;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Transportation Systems</div>
+        <div class="cont-desc">A transportation network is a large system of interacting parts, so a delay in one place can ripple across the whole map.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_communication-systems.html" aria-label="Communication Systems lesson">
+        <div class="cont-icon">&#128225;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Communication Systems</div>
+        <div class="cont-desc">Phones, radio, and the internet are engineered systems built to move information from one part to another.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (one open at a time, click to reveal) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.glossary-card.open').forEach(function(c){
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded', 'false');
+      var chev = c.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▾';
+    });
+    if (!isOpen) {
+      card.classList.add('open');
+      card.setAttribute('aria-expanded', 'true');
+      var chev = card.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▴';
+    }
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== COMPONENTS INTERACTIVE ===== -->
+<script>
+const layerData = {
+  1: { label: 'Component 1 · What comes in', title: 'Input', body: 'Anything that enters a system: energy, material, or information. At a traffic intersection, the inputs are the cars arriving, the sensors detecting them, and the electricity that powers the lights.' },
+  2: { label: 'Component 2 · The action inside', title: 'Process', body: 'The action that turns inputs into outputs. At the intersection, the controller is the process: it decides which direction gets a green light and for how long.' },
+  3: { label: 'Component 3 · What comes out', title: 'Output', body: 'What the system produces or sends out. The intersection’s output is the pattern of green and red lights, and the flow of cars moving safely through.' },
+  4: { label: 'Component 4 · Output sent back', title: 'Feedback', body: 'Information about the output that is sent back to adjust the system. Sensors report how much traffic is waiting, and the controller uses that feedback to change the timing of the lights.' },
+  5: { label: 'Component 5 · Inside vs outside', title: 'Boundary', body: 'The line that separates what is part of the system from what is not. For this system, the boundary is the intersection itself. The wider road network is outside the boundary but still connected to it.' },
+  6: { label: 'Component 6 · A system within', title: 'Subsystem', body: 'A smaller system that works as one part of a larger one. The single traffic light is a subsystem of the whole city transportation network. Each subsystem can be studied on its own and as part of the bigger system.' }
+};
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
+    el.style.outlineOffset = '1px';
+  });
+}
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! A system is a set of connected parts that depend on one another, not just a collection.',
+    'Not quite. Size and storage do not make a system. What matters is that the parts are connected and depend on one another.');
+  wireQR('qr2', 0,
+    'Correct! Cars arriving enter the system, so they are an input.',
+    'Not quite. Something that enters the system is an input. Cars arriving are inputs to the intersection.');
+  wireQR('qr3', 0,
+    'Correct! The failure travels along the interactions that connect the parts, so it can reach parts far away.',
+    'Not quite. Parts do not copy a broken part. The failure spreads along the interactions that connect the components.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+// Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-endpoint */
+const EL_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
+  /* LYFELABZ:V1-ONLY:END legacy-endpoint */
+
+var elQuizState = { selected: [], submitted: false };
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-state */
+var elQuizMode  = 'practice';
+  /* LYFELABZ:V1-ONLY:END legacy-mode-state */
+
+var elQuizQuestions = [
+  {
+    q: "What is a system?",
+    options: [
+      "A group of parts that work together and depend on one another",
+      "Any large object made of metal",
+      "A single part doing one job by itself",
+      "A list of materials kept in one place"
+    ],
+    correct: 0,
+    explanation: "A system is a group of connected parts that work together toward a purpose. The parts depend on one another, which is what makes it a system instead of a collection."
+  },
+  {
+    q: "A pile of bicycle parts sits on the floor. When does it become a system?",
+    options: [
+      "As soon as all the parts are in the same room",
+      "Only when the parts are painted the same color",
+      "When the parts are connected so they work together",
+      "It is already a system while still in the pile"
+    ],
+    correct: 2,
+    explanation: "The parts become a system only when they are connected so they work together. A disconnected pile is just a collection."
+  },
+  {
+    q: "At a traffic intersection, the electricity and the cars arriving are best described as the system's",
+    options: ["outputs", "inputs", "boundary", "feedback"],
+    correct: 1,
+    explanation: "Inputs are what enter a system, such as energy, material, or information. Electricity and arriving cars enter the intersection, so they are inputs."
+  },
+  {
+    q: "Sensors report how many cars are waiting, and the controller uses that information to change the light timing. This returning information is an example of",
+    options: ["a subsystem", "an input", "feedback", "a boundary"],
+    correct: 2,
+    explanation: "Feedback is information about a system's output that is sent back to adjust how the system works. The sensor reports let the controller adjust the timing."
+  },
+  {
+    q: "A single traffic light is one part of the whole city transportation network. The single light is best described as a",
+    options: ["boundary", "subsystem", "process", "output"],
+    correct: 1,
+    explanation: "A subsystem is a smaller system that works as one part inside a larger system. The traffic light is a subsystem of the city transportation network."
+  },
+  {
+    q: "What is the main reason a change in one component can affect other components?",
+    options: [
+      "The components interact, so effects pass between them",
+      "Components always fail at the same time",
+      "Every component does the exact same job",
+      "Components have no connection to each other"
+    ],
+    correct: 0,
+    explanation: "Components interact, meaning one part affects another. Those interactions are the connections that let a change travel through the system."
+  },
+  {
+    q: "An engineer wants to study a city's traffic without tracking every single car. What tool is most useful?",
+    options: [
+      "A model that shows the parts and how they connect",
+      "A complete copy of every street and car",
+      "A photograph of one intersection",
+      "A list of every driver's name"
+    ],
+    correct: 0,
+    explanation: "A model is a simplified representation that keeps the important parts and interactions and leaves out the rest, which is exactly what the engineer needs."
+  },
+  {
+    q: "Which statement about models is correct?",
+    options: [
+      "A good model includes every detail of the real system",
+      "A model leaves out some details on purpose to focus on what matters",
+      "Models can only ever be physical objects",
+      "A model must look exactly like the real thing"
+    ],
+    correct: 1,
+    explanation: "Models are tools, not copies. A useful model leaves out details that do not matter so it can focus on the parts and interactions that do."
+  },
+  {
+    q: "The teeth of a zipper are arranged so they interlock and hold it closed. This shows that a system's",
+    options: [
+      "function has nothing to do with its parts",
+      "structure, or arrangement of parts, shapes what it can do",
+      "parts can be rearranged with no effect",
+      "boundary decides its color"
+    ],
+    correct: 1,
+    explanation: "Structure is the arrangement of parts, and it shapes function. Rearrange the same zipper teeth and the zipper can no longer do its job."
+  },
+  {
+    q: "Why does one broken traffic light cause problems throughout a whole city?",
+    options: [
+      "Traffic problems happen at random with no cause",
+      "The broken light affects only its own corner",
+      "The parts are connected, so the failure spreads along their interactions",
+      "Every light in the city breaks at the same moment"
+    ],
+    correct: 2,
+    explanation: "The city is a system of connected parts. The broken light backs up the next intersection, which backs up the next, so the failure travels along the interactions that connect the parts."
+  }
+];
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-set-quiz-mode */
+function elSetQuizMode(mode) {
+  elQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+  /* LYFELABZ:V1-ONLY:END legacy-set-quiz-mode */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-init-iife */
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
+  else elSetQuizMode('practice');
+})();
+  /* LYFELABZ:V1-ONLY:END legacy-mode-init-iife */
+
+function elBuildQuiz() {
+  var container = document.getElementById('el-quiz-questions');
+  container.innerHTML = '';
+  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
+  elQuizState.submitted = false;
+  document.getElementById('el-submit-btn').disabled = true;
+  elUpdateProgress();
+  var letters = ['A','B','C','D'];
+  elQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function elSelectAnswer(qi, chosenIndex) {
+  if (elQuizState.submitted) return;
+  var prev = elQuizState.selected[qi];
+  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
+  elQuizState.selected[qi] = chosenIndex;
+  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  elUpdateProgress();
+  elRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(elQuizState.selected);
+}
+
+function elUpdateProgress() {
+  var total    = elQuizQuestions.length;
+  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-validate-student-info */
+function elValidateStudentInfo() {
+  var name    = document.getElementById('el-student-name').value.trim();
+  var teacher = document.getElementById('el-teacher-select').value;
+  var block   = document.getElementById('el-block-select').value;
+  document.getElementById('el-err-name').classList.toggle('show', !name);
+  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('el-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+  /* LYFELABZ:V1-ONLY:END legacy-validate-student-info */
+
+function elSubmitQuiz() {
+  if (elQuizState.submitted) return;
+  var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-validation-guard */
+  if (elQuizMode === 'classroom') {
+    var info = elValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-validation-guard */
+  elQuizState.submitted = true;
+  document.getElementById('el-submit-btn').disabled = true;
+
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('el-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('el-think-model').classList.add('show');
+
+  var correct = 0;
+  elQuizQuestions.forEach(function (q, qi) {
+    var chosen    = elQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('el-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = elQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand systems thinking cold.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+    : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
+    : '\u{1F4AA} Keep going; review each section carefully and try again!';
+  document.getElementById('el-score-num').textContent = score;
+  document.getElementById('el-score-msg').textContent = msg;
+  var sb = document.getElementById('el-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
+
+  if (pct === 100) {
+    elQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (elAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by elQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var elReturnCtl = document.getElementById('back-to-assignments');
+    if (elReturnCtl) elReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
+    var elFinalStatus = document.getElementById('el-submit-status');
+    elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var elGenericError = 'Submission did not complete. Please refresh and try again.';
+    function elShowSubmitError(msg) {
+      elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || elGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(elQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        elFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        elShowSubmitError(r.message);
+      } else {
+        elShowSubmitError(null);
+      }
+    }, function () {
+      elShowSubmitError(null);
+    });
+    return;
+  }
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-practice-completion */
+  if (elQuizMode === 'practice') {
+    document.getElementById('el-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-practice-completion */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-apps-script-submit */
+  var info2 = elValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  var letters = ['A','B','C','D'];
+  var params = new URLSearchParams({ resourceId: 'lesson_engineering-systems', grade: '7', teacher: info2.teacher, studentName: info2.name, block: info2.block });
+  elQuizState.selected.forEach(function (chosenIndex, qi) {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
+  fetch(EL_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('el-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('el-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('el-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+  /* LYFELABZ:V1-ONLY:END legacy-apps-script-submit */
+  /* LYFELABZ:V2-ONLY:BEGIN platform-standalone-completion */
+  document.getElementById('el-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+  /* LYFELABZ:V2-ONLY:END platform-standalone-completion */
+}
+
+function elResetQuiz() {
+  if (elQuizState.continueTimer) {
+    clearTimeout(elQuizState.continueTimer);
+    elQuizState.continueTimer = null;
+  }
+  document.getElementById('el-score').classList.remove('show');
+  document.getElementById('el-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('el-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('el-think-model').classList.remove('show');
+  elBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
+})();
+
+elBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

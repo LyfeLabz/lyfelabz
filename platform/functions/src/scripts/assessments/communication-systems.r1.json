@@ -1,0 +1,269 @@
+{
+  "activityId": "communication-systems",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is the function of a communication system?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "To store electricity until it is needed"
+        },
+        {
+          "optionId": "B",
+          "text": "To carry information from a sender to a receiver"
+        },
+        {
+          "optionId": "C",
+          "text": "To make every message reach the entire world"
+        },
+        {
+          "optionId": "D",
+          "text": "To turn one machine into many machines"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A communication system has one job: to move information from a sender to a receiver. Everything in the system works toward getting the message from one place to another."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "You type a message into your phone to send to a friend. In the communication system, you are the",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "source"
+        },
+        {
+          "optionId": "B",
+          "text": "receiver"
+        },
+        {
+          "optionId": "C",
+          "text": "channel"
+        },
+        {
+          "optionId": "D",
+          "text": "decoder"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The source is where the message begins. You decide what to say and create the message, so you are the source."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which part of a communication system changes a message into a signal that can be sent?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the receiver"
+        },
+        {
+          "optionId": "B",
+          "text": "the storage"
+        },
+        {
+          "optionId": "C",
+          "text": "the encoder"
+        },
+        {
+          "optionId": "D",
+          "text": "the channel"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The encoder changes the message into a signal. Your phone encodes your typed words into a pattern of signals the network can carry."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "After a message has been encoded into a signal, which part sends that signal out across a distance?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the decoder"
+        },
+        {
+          "optionId": "B",
+          "text": "the source"
+        },
+        {
+          "optionId": "C",
+          "text": "the storage"
+        },
+        {
+          "optionId": "D",
+          "text": "the transmitter"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The transmitter sends the signal out across a distance. Your phone's antenna acts as the transmitter, sending the signal toward a cell tower."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Your friend's phone catches the incoming signal carrying your message. Their phone is acting as the",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "encoder"
+        },
+        {
+          "optionId": "B",
+          "text": "receiver"
+        },
+        {
+          "optionId": "C",
+          "text": "source"
+        },
+        {
+          "optionId": "D",
+          "text": "channel"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The receiver picks up the signal at the far end. Your friend's phone catches the signal, so it is the receiver."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What does the decoder do in a communication system?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It turns the signal back into a message a person can understand"
+        },
+        {
+          "optionId": "B",
+          "text": "It creates the original message to be sent"
+        },
+        {
+          "optionId": "C",
+          "text": "It chooses which channel the signal will travel through"
+        },
+        {
+          "optionId": "D",
+          "text": "It deletes the message after it is read"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The decoder changes the signal back into the original message. It rebuilds your words on your friend's screen so they can read them."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Hours after you send a text, your friend opens their phone and reads it again. Which component makes this possible?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the transmitter"
+        },
+        {
+          "optionId": "B",
+          "text": "the encoder"
+        },
+        {
+          "optionId": "C",
+          "text": "storage"
+        },
+        {
+          "optionId": "D",
+          "text": "the source"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Storage holds the message so it can be read or played back later. The saved text stays in the message history for your friend to reopen."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A town needs to warn everyone about a coming storm as fast as possible. Which communication system fits best?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A printed letter mailed to each home"
+        },
+        {
+          "optionId": "B",
+          "text": "A private text sent to one person"
+        },
+        {
+          "optionId": "C",
+          "text": "A face-to-face conversation on one street"
+        },
+        {
+          "optionId": "D",
+          "text": "A radio or television broadcast"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Radio and television are one-way, but they reach thousands of people at the same moment. For a fast, town-wide warning, wide reach matters more than being able to reply."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which situation calls for a two-way communication system?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Announcing the news to a large audience"
+        },
+        {
+          "optionId": "B",
+          "text": "Having a back-and-forth conversation with one person"
+        },
+        {
+          "optionId": "C",
+          "text": "Posting a notice for everyone to read"
+        },
+        {
+          "optionId": "D",
+          "text": "Broadcasting music to many listeners"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Two-way communication lets both people send and receive. A back-and-forth conversation needs each person to reply, so a phone call or text fits."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Why do we still use many different communication systems instead of just one?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Each system has different benefits, so different ones fit different jobs"
+        },
+        {
+          "optionId": "B",
+          "text": "Older systems stopped working completely"
+        },
+        {
+          "optionId": "C",
+          "text": "Every system sends the exact same kind of signal"
+        },
+        {
+          "optionId": "D",
+          "text": "One system can only ever send one message"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "No single system is best at everything. Each has different strengths in speed, reach, direction, storage, and cost, so the best choice depends on the situation."
+    }
+  ]
+}

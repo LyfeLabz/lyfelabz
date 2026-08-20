@@ -1,0 +1,399 @@
+{
+  "activityId": "body-systems",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "A virus destroys the cells lining the small intestine. Which prediction correctly applies the hierarchy of biological organization?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Only the intestine is affected; it is just one organ"
+        },
+        {
+          "optionId": "B",
+          "text": "The digestive system fails, but other body systems are unaffected"
+        },
+        {
+          "optionId": "C",
+          "text": "The digestive system is disrupted, which reduces nutrients reaching the circulatory system"
+        },
+        {
+          "optionId": "D",
+          "text": "All body systems immediately stop functioning"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "When cells fail, the tissue they form breaks down. That damages the organ (small intestine), which disrupts the digestive system, which then starves the circulatory system of nutrients it needs to deliver. This is the hierarchy in action: damage at one level cascades upward."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A student says 'fix the tissue and the organ heals.' Her lab partner says 'you have to fix the cells first.' Who is right?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The first student, organs are more important than the tissues inside them"
+        },
+        {
+          "optionId": "B",
+          "text": "The lab partner, cells build tissues, which build organs; damage at the bottom affects everything above"
+        },
+        {
+          "optionId": "C",
+          "text": "Both are wrong, you can only treat a whole body system at once"
+        },
+        {
+          "optionId": "D",
+          "text": "Neither, the nervous system automatically repairs cellular damage"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The hierarchy runs from smallest to largest: organelles → cells → tissues → organs → body systems. Damage at the bottom cascades upward, broken cells mean broken tissue, which means a failing organ. You cannot fix the top without addressing the foundation."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "During a sprint, a student's heart rate, breathing rate, and muscle contractions all increase at the same time. What does this tell you about the nervous system?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It controls only voluntary muscle movements"
+        },
+        {
+          "optionId": "B",
+          "text": "It coordinates multiple systems simultaneously, acting as the body's master controller"
+        },
+        {
+          "optionId": "C",
+          "text": "It only activates during emergencies"
+        },
+        {
+          "optionId": "D",
+          "text": "It communicates using blood rather than electrical signals"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The nervous system sent signals to the circulatory system (speed up the heart), the respiratory system (breathe faster), and the muscular system (contract harder), all at once. That simultaneous coordination is exactly what makes it the master controller."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "A patient had surgery that removed most of their small intestine. Which prediction about their circulatory system is most likely correct?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Their heart rate would immediately slow down"
+        },
+        {
+          "optionId": "B",
+          "text": "Their blood would carry fewer nutrients to cells throughout the body"
+        },
+        {
+          "optionId": "C",
+          "text": "Their white blood cell count would decrease"
+        },
+        {
+          "optionId": "D",
+          "text": "Their lungs would begin absorbing nutrients instead"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Nutrients are absorbed into the bloodstream through the walls of the small intestine. Without it, the circulatory system has less to deliver, cells throughout the body would receive fewer of the glucose, amino acids, and fatty acids they need to function."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "The excretory system removes three types of waste. Which option correctly matches the type of waste to the organ?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "CO₂ = large intestine; liquid = lungs; solid = bladder"
+        },
+        {
+          "optionId": "B",
+          "text": "Solid = large intestine; liquid = bladder; CO₂ = lungs"
+        },
+        {
+          "optionId": "C",
+          "text": "Solid = bladder; CO₂ = large intestine; liquid = lungs"
+        },
+        {
+          "optionId": "D",
+          "text": "Liquid = stomach; solid = lungs; CO₂ = bladder"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The large intestine removes solid waste, the bladder stores and removes liquid waste (urine), and the lungs exhale gaseous carbon dioxide (CO₂) waste."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Ligaments and tendons are both part of the skeletal system. What is the difference between them?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Ligaments connect bones to muscles; tendons connect bones to bones"
+        },
+        {
+          "optionId": "B",
+          "text": "Ligaments connect bones to bones; tendons connect bones to muscles"
+        },
+        {
+          "optionId": "C",
+          "text": "Both connect muscles to muscles"
+        },
+        {
+          "optionId": "D",
+          "text": "Both connect bones to bones"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Ligaments connect bone to bone at joints. Tendons connect bone to muscle, allowing muscles to pull on bones and create movement."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "An athlete's heart rate jumps from 70 to 160 beats per minute mid-race. Which correctly identifies both the system that triggered this AND the system that benefits most?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Digestive system triggered it; skeletal system benefits"
+        },
+        {
+          "optionId": "B",
+          "text": "Nervous system triggered it; muscular system benefits from increased oxygen delivery"
+        },
+        {
+          "optionId": "C",
+          "text": "Excretory system triggered it; immune system benefits"
+        },
+        {
+          "optionId": "D",
+          "text": "Immune system triggered it; respiratory system benefits"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The nervous system detected the demand for more oxygen and sent signals to speed up the heart. The faster-beating heart pumps more blood, delivering more oxygen to the muscular system, which needs it to keep contracting. This nervous → circulatory → muscular chain is the sprint scenario from the start of this lesson."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A serious infection develops in a patient's foot. Within minutes, white blood cells arrive at the infected site. What does this tell you about how the circulatory and immune systems work together?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The immune system manufactures white blood cells near the site of infection"
+        },
+        {
+          "optionId": "B",
+          "text": "The circulatory system acts as a transport network, delivering immune cells wherever they are needed"
+        },
+        {
+          "optionId": "C",
+          "text": "The circulatory system temporarily becomes part of the immune system during infection"
+        },
+        {
+          "optionId": "D",
+          "text": "White blood cells travel independently through tissue, not through blood vessels"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The speed of the immune response depends entirely on the circulatory system, blood vessels carry white blood cells throughout the body, allowing immune cells to reach any infection site within minutes. Without this transport network, the immune system could not respond quickly."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "If a student's cells are not functioning properly, what else would be affected?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Only their skin would be affected"
+        },
+        {
+          "optionId": "B",
+          "text": "Nothing, all cells work independently"
+        },
+        {
+          "optionId": "C",
+          "text": "Their tissues, organs, and body systems"
+        },
+        {
+          "optionId": "D",
+          "text": "Only their immune system would suffer"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Cells are the foundation of all biological organization. If cells malfunction, the tissues they form can't work, which means organs fail, which causes body systems to break down."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Bone marrow produces blood cells. This means the skeletal system directly supports which two other systems?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Digestive and nervous systems"
+        },
+        {
+          "optionId": "B",
+          "text": "Excretory and respiratory systems"
+        },
+        {
+          "optionId": "C",
+          "text": "Circulatory and immune systems"
+        },
+        {
+          "optionId": "D",
+          "text": "Muscular and respiratory systems"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Bone marrow produces red blood cells (for the circulatory system to carry oxygen) and white blood cells (for the immune system to fight infections)."
+    },
+    {
+      "itemId": "q11",
+      "itemType": "singleChoice",
+      "stem": "Which body system works with BOTH the respiratory system AND the digestive system to deliver what cells need?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Nervous system"
+        },
+        {
+          "optionId": "B",
+          "text": "Excretory system"
+        },
+        {
+          "optionId": "C",
+          "text": "Circulatory system"
+        },
+        {
+          "optionId": "D",
+          "text": "Immune system"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The circulatory system is the great connector; it picks up oxygen from the respiratory system and nutrients from the digestive system, then delivers both to cells throughout the body."
+    },
+    {
+      "itemId": "q12",
+      "itemType": "singleChoice",
+      "stem": "Food travels 9 meters through the digestive tract without you consciously doing anything. Which comparison best explains how this is possible?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Skeletal muscle in the gut works the same way as leg muscles, both are consciously controlled"
+        },
+        {
+          "optionId": "B",
+          "text": "Smooth muscle contracts in automatic waves called peristalsis, unlike skeletal muscle, you have no control over it"
+        },
+        {
+          "optionId": "C",
+          "text": "The nervous system pushes food using electrical signals alone, without any muscle involvement"
+        },
+        {
+          "optionId": "D",
+          "text": "Cardiac muscle in the gut beats rhythmically, the same way it does in the heart"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The digestive tract is lined with smooth muscle, which contracts involuntarily in rhythmic waves, a process called peristalsis. This differs from the skeletal muscles in your arms and legs, which you consciously command. Smooth muscle works automatically, so digestion continues even while you sleep."
+    },
+    {
+      "itemId": "q13",
+      "itemType": "singleChoice",
+      "stem": "A doctor tells a patient: 'Your nervous system is damaged.' The patient asks which other systems will be affected. What is the most accurate answer?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Only the muscular system, nerves exist only to control movement"
+        },
+        {
+          "optionId": "B",
+          "text": "Only the muscular and skeletal systems, nerves only connect to muscles and bones"
+        },
+        {
+          "optionId": "C",
+          "text": "All body systems, the nervous system coordinates every other system in the body"
+        },
+        {
+          "optionId": "D",
+          "text": "Only the circulatory system, nerves primarily regulate the heart"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The nervous system is the body's master controller; it sends signals to the heart (circulatory), lungs (respiratory), muscles (muscular), gut (digestive), kidneys (excretory), and immune cells. Damage to it does not affect just one system; it ripples across all of them."
+    },
+    {
+      "itemId": "q14",
+      "itemType": "singleChoice",
+      "stem": "Why is removing waste important for the body?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It makes room for new organs to grow"
+        },
+        {
+          "optionId": "B",
+          "text": "It helps maintain homeostasis"
+        },
+        {
+          "optionId": "C",
+          "text": "It increases blood pressure"
+        },
+        {
+          "optionId": "D",
+          "text": "It produces more white blood cells"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Waste products are toxic when they build up. Removing them through the excretory system helps the body maintain homeostasis, a stable internal environment that cells need to survive."
+    },
+    {
+      "itemId": "q15",
+      "itemType": "singleChoice",
+      "stem": "A student runs a race. Which THREE systems are most immediately working together to power her muscles?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Immune, digestive, and excretory systems"
+        },
+        {
+          "optionId": "B",
+          "text": "Muscular, circulatory, and respiratory systems"
+        },
+        {
+          "optionId": "C",
+          "text": "Nervous, skeletal, and excretory systems"
+        },
+        {
+          "optionId": "D",
+          "text": "Digestive, immune, and muscular systems"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The muscular system moves her legs. The respiratory system brings in extra oxygen. The circulatory system delivers that oxygen (and removes CO₂) to the working muscles. These three are the core trio for physical activity!"
+    }
+  ]
+}

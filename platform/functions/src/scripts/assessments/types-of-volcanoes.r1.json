@@ -1,0 +1,269 @@
+{
+  "activityId": "types-of-volcanoes",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is melted rock called while it is still inside the Earth?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Lava"
+        },
+        {
+          "optionId": "B",
+          "text": "Magma"
+        },
+        {
+          "optionId": "C",
+          "text": "Pyroclastic"
+        },
+        {
+          "optionId": "D",
+          "text": "Cinder"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Magma is melted rock material inside the Earth that contains dissolved gas. Once it reaches the surface, it is called lava."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "What is melted rock called once it reaches the Earth's surface?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Magma"
+        },
+        {
+          "optionId": "B",
+          "text": "Ash"
+        },
+        {
+          "optionId": "C",
+          "text": "Lava"
+        },
+        {
+          "optionId": "D",
+          "text": "Pyroclastic"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "On the surface, melted rock is called lava. The same material is called magma while it is still underground."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which volcano is the tallest, with steep sides and the most violent, deadly eruptions?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A composite volcano"
+        },
+        {
+          "optionId": "B",
+          "text": "A shield volcano"
+        },
+        {
+          "optionId": "C",
+          "text": "A cinder cone"
+        },
+        {
+          "optionId": "D",
+          "text": "A magma chamber"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Composite volcanoes are the tallest, with steep sides and a broad base. Their thick lava traps gas, making them the most violent and deadly."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Mauna Loa has broad, gently sloping sides and erupts without violent explosions. Which type of volcano is it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A composite volcano"
+        },
+        {
+          "optionId": "B",
+          "text": "A cinder cone"
+        },
+        {
+          "optionId": "C",
+          "text": "A pyroclastic dome"
+        },
+        {
+          "optionId": "D",
+          "text": "A shield volcano"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Mauna Loa is a shield volcano. Thin, runny lava flows out many times and spreads in wide layers, building broad, gentle slopes."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Why does a shield volcano have gentle slopes and calm eruptions?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Its thick, sticky lava traps gas underground"
+        },
+        {
+          "optionId": "B",
+          "text": "Its thin, runny lava flows easily and spreads out"
+        },
+        {
+          "optionId": "C",
+          "text": "It has no magma chamber to feed it"
+        },
+        {
+          "optionId": "D",
+          "text": "It is made only of ash and no lava"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Shield volcanoes are built by thin, low-viscosity lava. Gas escapes easily, so the lava flows quietly and spreads into broad, gentle slopes."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Why do composite volcanoes erupt so violently?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Thick lava traps gas, so pressure builds until it explodes"
+        },
+        {
+          "optionId": "B",
+          "text": "Thin lava lets all the gas escape gently"
+        },
+        {
+          "optionId": "C",
+          "text": "They sit on top of cold, solid rock"
+        },
+        {
+          "optionId": "D",
+          "text": "They are too small to erupt at all"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Composite volcanoes have thick, high-viscosity lava that traps gas. Pressure builds until it bursts free in a violent, explosive eruption."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Which is the smallest type of volcano, usually under 1,000 feet, built from cinders that pile up around a vent?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A shield volcano"
+        },
+        {
+          "optionId": "B",
+          "text": "A composite volcano"
+        },
+        {
+          "optionId": "C",
+          "text": "A cinder cone"
+        },
+        {
+          "optionId": "D",
+          "text": "A magma chamber"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A cinder cone is the smallest volcano, with a very steep cone shape. It is built from small pieces of lava that pile up around the vent."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "How does a cinder cone form?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Runny lava flows out and spreads in wide, flat sheets"
+        },
+        {
+          "optionId": "B",
+          "text": "Thick lava and ash build up in alternating layers over time"
+        },
+        {
+          "optionId": "C",
+          "text": "The magma chamber slowly cools without ever erupting"
+        },
+        {
+          "optionId": "D",
+          "text": "Erupted bits of lava cool in the air and pile up around the vent"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A cinder cone forms when small pieces of lava erupt, cool in the air, and fall back down around the vent, building a steep cone."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "What property of lava best explains the difference between gentle and explosive eruptions?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The color of the lava"
+        },
+        {
+          "optionId": "B",
+          "text": "How thick or thin (viscous) the lava is"
+        },
+        {
+          "optionId": "C",
+          "text": "The time of day the volcano erupts"
+        },
+        {
+          "optionId": "D",
+          "text": "The size of the crater at the top"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Viscosity, how thick or runny the lava is, controls whether gas escapes or gets trapped, which decides if an eruption is gentle or explosive."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Mount St. Helens (a composite volcano) and Mauna Loa (a shield volcano) are both volcanoes, yet they look and erupt very differently. What best explains this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "One is a real volcano and the other is not"
+        },
+        {
+          "optionId": "B",
+          "text": "They are made of completely different elements than rock"
+        },
+        {
+          "optionId": "C",
+          "text": "Differences in lava thickness and trapped gas lead to different eruption styles and shapes"
+        },
+        {
+          "optionId": "D",
+          "text": "Shield volcanoes are younger, so they are unable to explode"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Both are fed by magma, but the viscosity of their lava differs. Thick lava traps gas and builds steep, explosive composite volcanoes; thin lava flows gently and builds broad shield volcanoes."
+    }
+  ]
+}

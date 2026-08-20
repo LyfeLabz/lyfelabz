@@ -1,0 +1,269 @@
+{
+  "activityId": "innovation-and-sustainability",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is an innovation?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A new or improved technology that builds on earlier ideas"
+        },
+        {
+          "optionId": "B",
+          "text": "A technology that never changes once it is built"
+        },
+        {
+          "optionId": "C",
+          "text": "A material that is dug out of the ground"
+        },
+        {
+          "optionId": "D",
+          "text": "A copy of an older tool with no changes"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "An innovation is a new or improved idea, method, or product. Innovations almost always build on the technologies that came before them."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Engineers improve a light bulb by testing a version, finding its weak points, and redesigning it, over and over. This repeating process is called",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "a boundary"
+        },
+        {
+          "optionId": "B",
+          "text": "iteration"
+        },
+        {
+          "optionId": "C",
+          "text": "a resource"
+        },
+        {
+          "optionId": "D",
+          "text": "depletion"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Iteration is repeating a design cycle of testing and redesigning. Each loop produces a slightly better version of the technology."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which of these is the first step in the iteration cycle?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Throwing the design away"
+        },
+        {
+          "optionId": "B",
+          "text": "Selling the product"
+        },
+        {
+          "optionId": "C",
+          "text": "Repeating the cycle forever with no changes"
+        },
+        {
+          "optionId": "D",
+          "text": "Identifying the problem with the current design"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The cycle starts by identifying the problem. Engineers name the weakness before they design and test a solution."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "A water treatment plant is built to give a city clean, safe drinking water. The clean water is an example of",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "an unintended consequence"
+        },
+        {
+          "optionId": "B",
+          "text": "an intended consequence"
+        },
+        {
+          "optionId": "C",
+          "text": "a renewable resource"
+        },
+        {
+          "optionId": "D",
+          "text": "a prototype"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "An intended consequence is a result the technology was designed to produce. Clean water is exactly what the treatment plant was built to create."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Making and throwing away millions of devices creates electronic waste. This is best described as",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "an intended consequence"
+        },
+        {
+          "optionId": "B",
+          "text": "a trade-off the engineers wanted"
+        },
+        {
+          "optionId": "C",
+          "text": "an unintended consequence"
+        },
+        {
+          "optionId": "D",
+          "text": "a renewable resource"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Electronic waste is a side effect no one planned, so it is an unintended consequence, even when the device works as designed."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What does it mean for a technology to be sustainable?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It meets today's needs without using up resources future generations will need"
+        },
+        {
+          "optionId": "B",
+          "text": "It is the cheapest possible option to buy"
+        },
+        {
+          "optionId": "C",
+          "text": "It uses as many resources as possible"
+        },
+        {
+          "optionId": "D",
+          "text": "It can never be changed or improved"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Sustainability means meeting present needs while protecting the resources future generations will rely on, by using resources carefully and creating less waste."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Sunlight and wind are examples of",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "nonrenewable resources"
+        },
+        {
+          "optionId": "B",
+          "text": "unintended consequences"
+        },
+        {
+          "optionId": "C",
+          "text": "renewable resources"
+        },
+        {
+          "optionId": "D",
+          "text": "prototypes"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Renewable resources are replaced by nature quickly. Sunlight and wind keep returning, unlike oil or coal, which do not come back in a human lifetime."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "An LED bulb makes the same brightness as an incandescent bulb but uses about a tenth of the energy. The LED is more",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "wasteful"
+        },
+        {
+          "optionId": "B",
+          "text": "efficient"
+        },
+        {
+          "optionId": "C",
+          "text": "nonrenewable"
+        },
+        {
+          "optionId": "D",
+          "text": "fragile"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Efficiency is how much useful work a technology does for the energy it uses. Doing the same job with far less energy makes the LED more efficient."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "An LED bulb costs more to buy than an old bulb, but it lasts for years and saves energy. Choosing it means weighing cost against savings. This kind of give-and-take is a",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "boundary"
+        },
+        {
+          "optionId": "B",
+          "text": "prototype"
+        },
+        {
+          "optionId": "C",
+          "text": "filament"
+        },
+        {
+          "optionId": "D",
+          "text": "trade-off"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A trade-off means gaining one benefit by giving up another. Engineers weigh the higher upfront cost against the long-term energy savings and lower impact."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "When engineers evaluate a sustainable design, which of these do they need to balance?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Only the cost of the materials"
+        },
+        {
+          "optionId": "B",
+          "text": "Only how fast it can be built"
+        },
+        {
+          "optionId": "C",
+          "text": "Human needs, cost, resources, and environmental impact together"
+        },
+        {
+          "optionId": "D",
+          "text": "Only the color of the product"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Good design balances many factors at once: human needs, cost, available resources, environmental impact, and the needs of future generations."
+    }
+  ]
+}

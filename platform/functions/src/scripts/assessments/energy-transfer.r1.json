@@ -1,0 +1,269 @@
+{
+  "activityId": "energy-transfer",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is kinetic energy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The energy stored in an object because of its height"
+        },
+        {
+          "optionId": "B",
+          "text": "The energy an object has because of its temperature"
+        },
+        {
+          "optionId": "C",
+          "text": "The energy an object has because of its motion"
+        },
+        {
+          "optionId": "D",
+          "text": "The force that holds two objects together"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Kinetic energy is the energy an object has because of its motion. The faster an object moves, the more kinetic energy it has."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "When an object's kinetic energy changes, what must have happened?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The object created new energy on its own"
+        },
+        {
+          "optionId": "B",
+          "text": "Energy was transferred to or from the object"
+        },
+        {
+          "optionId": "C",
+          "text": "The object's mass disappeared"
+        },
+        {
+          "optionId": "D",
+          "text": "Energy was destroyed"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Energy is not created or destroyed. A change in kinetic energy is the sign that energy was transferred to or from the object."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "A pitched baseball leaves the bat faster than it arrived. Where did the extra motion come from?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Energy transferred from the swinging bat to the ball"
+        },
+        {
+          "optionId": "B",
+          "text": "The ball created new energy at the moment of contact"
+        },
+        {
+          "optionId": "C",
+          "text": "The air pushed the ball forward on its own"
+        },
+        {
+          "optionId": "D",
+          "text": "The ball's energy disappeared and then returned"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The swinging bat carries kinetic energy. During the collision, some of that energy transfers to the ball, so the ball speeds up."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "A rolling soccer ball slows down and stops on the grass. What best explains this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The ball simply ran out of its own energy supply"
+        },
+        {
+          "optionId": "B",
+          "text": "Kinetic energy was created by the grass"
+        },
+        {
+          "optionId": "C",
+          "text": "The ball's mass decreased as it rolled"
+        },
+        {
+          "optionId": "D",
+          "text": "Energy transferred from the ball to the ground and air"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The ball slowed, so its kinetic energy decreased. That energy did not vanish; it transferred to the ground and air through friction."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which observation is the best evidence that energy was transferred to an object?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The object stayed exactly the same"
+        },
+        {
+          "optionId": "B",
+          "text": "The object's speed increased"
+        },
+        {
+          "optionId": "C",
+          "text": "The object changed color"
+        },
+        {
+          "optionId": "D",
+          "text": "The object got older over time"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "An increase in speed means an increase in kinetic energy, which is direct evidence that energy was transferred into the object."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Two billiard balls collide. The cue ball slows and the second ball speeds up. This best shows that...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "energy was created in the collision"
+        },
+        {
+          "optionId": "B",
+          "text": "only the cue ball ever had energy"
+        },
+        {
+          "optionId": "C",
+          "text": "energy transferred from the cue ball to the second ball"
+        },
+        {
+          "optionId": "D",
+          "text": "neither ball had any kinetic energy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The cue ball lost kinetic energy (it slowed) and the second ball gained kinetic energy (it sped up). Energy transferred from one to the other."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A skateboarder speeds up while rolling down a ramp. Which claim is best supported by the evidence?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Kinetic energy increased because the speed increased"
+        },
+        {
+          "optionId": "B",
+          "text": "Kinetic energy stayed the same the whole way down"
+        },
+        {
+          "optionId": "C",
+          "text": "Energy was destroyed during the ride"
+        },
+        {
+          "optionId": "D",
+          "text": "The skateboard created brand new energy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The skateboarder's speed increased, so kinetic energy increased. A gain in kinetic energy is evidence that energy was transferred to the skateboarder."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "In the bat-and-ball example, what is the \"system\" scientists choose to study?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Only the baseball by itself"
+        },
+        {
+          "optionId": "B",
+          "text": "Only the bat by itself"
+        },
+        {
+          "optionId": "C",
+          "text": "The crowd watching the game"
+        },
+        {
+          "optionId": "D",
+          "text": "The bat and the baseball studied together"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A system is the group of objects you study together. Here the system is the bat and the ball, which lets you track energy moving from one to the other."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which statement correctly connects force and energy transfer in a collision?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Forces have nothing to do with energy transfer"
+        },
+        {
+          "optionId": "B",
+          "text": "The push between objects during contact transfers energy"
+        },
+        {
+          "optionId": "C",
+          "text": "Energy transfers only when objects never touch"
+        },
+        {
+          "optionId": "D",
+          "text": "A force always destroys kinetic energy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "During a collision the objects push on each other. That force acting during contact is how kinetic energy moves from one object to the other."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A student claims, \"Energy was transferred to the ball.\" What is the strongest evidence for this claim?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The ball is round and white"
+        },
+        {
+          "optionId": "B",
+          "text": "The game was played outdoors"
+        },
+        {
+          "optionId": "C",
+          "text": "The ball's speed changed after contact"
+        },
+        {
+          "optionId": "D",
+          "text": "The bat is made of wood"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A measured change in the ball's speed shows its kinetic energy changed, which is the strongest evidence that energy was transferred to it."
+    }
+  ]
+}

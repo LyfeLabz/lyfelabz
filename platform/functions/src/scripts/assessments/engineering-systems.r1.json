@@ -1,0 +1,269 @@
+{
+  "activityId": "engineering-systems",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is a system?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A group of parts that work together and depend on one another"
+        },
+        {
+          "optionId": "B",
+          "text": "Any large object made of metal"
+        },
+        {
+          "optionId": "C",
+          "text": "A single part doing one job by itself"
+        },
+        {
+          "optionId": "D",
+          "text": "A list of materials kept in one place"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A system is a group of connected parts that work together toward a purpose. The parts depend on one another, which is what makes it a system instead of a collection."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A pile of bicycle parts sits on the floor. When does it become a system?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "As soon as all the parts are in the same room"
+        },
+        {
+          "optionId": "B",
+          "text": "Only when the parts are painted the same color"
+        },
+        {
+          "optionId": "C",
+          "text": "When the parts are connected so they work together"
+        },
+        {
+          "optionId": "D",
+          "text": "It is already a system while still in the pile"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The parts become a system only when they are connected so they work together. A disconnected pile is just a collection."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "At a traffic intersection, the electricity and the cars arriving are best described as the system's",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "outputs"
+        },
+        {
+          "optionId": "B",
+          "text": "inputs"
+        },
+        {
+          "optionId": "C",
+          "text": "boundary"
+        },
+        {
+          "optionId": "D",
+          "text": "feedback"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Inputs are what enter a system, such as energy, material, or information. Electricity and arriving cars enter the intersection, so they are inputs."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Sensors report how many cars are waiting, and the controller uses that information to change the light timing. This returning information is an example of",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "a subsystem"
+        },
+        {
+          "optionId": "B",
+          "text": "an input"
+        },
+        {
+          "optionId": "C",
+          "text": "feedback"
+        },
+        {
+          "optionId": "D",
+          "text": "a boundary"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Feedback is information about a system's output that is sent back to adjust how the system works. The sensor reports let the controller adjust the timing."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A single traffic light is one part of the whole city transportation network. The single light is best described as a",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "boundary"
+        },
+        {
+          "optionId": "B",
+          "text": "subsystem"
+        },
+        {
+          "optionId": "C",
+          "text": "process"
+        },
+        {
+          "optionId": "D",
+          "text": "output"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A subsystem is a smaller system that works as one part inside a larger system. The traffic light is a subsystem of the city transportation network."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What is the main reason a change in one component can affect other components?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The components interact, so effects pass between them"
+        },
+        {
+          "optionId": "B",
+          "text": "Components always fail at the same time"
+        },
+        {
+          "optionId": "C",
+          "text": "Every component does the exact same job"
+        },
+        {
+          "optionId": "D",
+          "text": "Components have no connection to each other"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Components interact, meaning one part affects another. Those interactions are the connections that let a change travel through the system."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "An engineer wants to study a city's traffic without tracking every single car. What tool is most useful?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A model that shows the parts and how they connect"
+        },
+        {
+          "optionId": "B",
+          "text": "A complete copy of every street and car"
+        },
+        {
+          "optionId": "C",
+          "text": "A photograph of one intersection"
+        },
+        {
+          "optionId": "D",
+          "text": "A list of every driver's name"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A model is a simplified representation that keeps the important parts and interactions and leaves out the rest, which is exactly what the engineer needs."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Which statement about models is correct?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A good model includes every detail of the real system"
+        },
+        {
+          "optionId": "B",
+          "text": "A model leaves out some details on purpose to focus on what matters"
+        },
+        {
+          "optionId": "C",
+          "text": "Models can only ever be physical objects"
+        },
+        {
+          "optionId": "D",
+          "text": "A model must look exactly like the real thing"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Models are tools, not copies. A useful model leaves out details that do not matter so it can focus on the parts and interactions that do."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "The teeth of a zipper are arranged so they interlock and hold it closed. This shows that a system's",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "function has nothing to do with its parts"
+        },
+        {
+          "optionId": "B",
+          "text": "structure, or arrangement of parts, shapes what it can do"
+        },
+        {
+          "optionId": "C",
+          "text": "parts can be rearranged with no effect"
+        },
+        {
+          "optionId": "D",
+          "text": "boundary decides its color"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Structure is the arrangement of parts, and it shapes function. Rearrange the same zipper teeth and the zipper can no longer do its job."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Why does one broken traffic light cause problems throughout a whole city?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Traffic problems happen at random with no cause"
+        },
+        {
+          "optionId": "B",
+          "text": "The broken light affects only its own corner"
+        },
+        {
+          "optionId": "C",
+          "text": "The parts are connected, so the failure spreads along their interactions"
+        },
+        {
+          "optionId": "D",
+          "text": "Every light in the city breaks at the same moment"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The city is a system of connected parts. The broken light backs up the next intersection, which backs up the next, so the failure travels along the interactions that connect the parts."
+    }
+  ]
+}

@@ -1,0 +1,269 @@
+{
+  "activityId": "choosing-materials",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which property describes how well a material lets electric current flow through it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Flexibility"
+        },
+        {
+          "optionId": "B",
+          "text": "Hardness"
+        },
+        {
+          "optionId": "C",
+          "text": "Electrical conductivity"
+        },
+        {
+          "optionId": "D",
+          "text": "Melting point"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Electrical conductivity measures how easily electricity flows through a material. Metals conduct well; plastic, wood, and ceramic block current."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "An engineer needs the body of a frying pan to spread heat quickly and evenly. Which property matters most, and which material fits best?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Thermal conductivity, so choose metal"
+        },
+        {
+          "optionId": "B",
+          "text": "Flexibility, so choose plastic"
+        },
+        {
+          "optionId": "C",
+          "text": "Melting point, so choose wood"
+        },
+        {
+          "optionId": "D",
+          "text": "Hardness, so choose ceramic"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The pan's job is to move heat into the food, so thermal conductivity matters most. Metals are excellent heat conductors, which is why pans are metal."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "The same frying pan needs a handle that stays cool to hold. Why is the handle often made of wood or plastic instead of metal?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Wood and plastic are stronger than metal"
+        },
+        {
+          "optionId": "B",
+          "text": "Wood and plastic are poor thermal conductors, so heat does not reach your hand"
+        },
+        {
+          "optionId": "C",
+          "text": "Wood and plastic have higher melting points than metal"
+        },
+        {
+          "optionId": "D",
+          "text": "Metal costs too much to use for a handle"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A cool handle needs low thermal conductivity. Wood and plastic barely carry heat, so it stays in the pan instead of traveling to your hand."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Ductility is the property that lets a material be...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "scratched by a harder material"
+        },
+        {
+          "optionId": "B",
+          "text": "heated until it glows"
+        },
+        {
+          "optionId": "C",
+          "text": "dissolved in water"
+        },
+        {
+          "optionId": "D",
+          "text": "stretched and bent into a new shape without breaking"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Ductility is how much a material can be stretched or bent into a new shape without breaking. Metals are ductile, which is why cans and car bodies are stamped from them."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Plastic is wrapped around the metal core of an electrical wire. What does this best show about choosing materials?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Plastic conducts electricity better than metal"
+        },
+        {
+          "optionId": "B",
+          "text": "The wire would work just as well made entirely of plastic"
+        },
+        {
+          "optionId": "C",
+          "text": "Each part is chosen for a different job: metal carries the current, plastic blocks it to keep you safe"
+        },
+        {
+          "optionId": "D",
+          "text": "Plastic is the strongest material available"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The metal core and plastic coating each do a different job. Metal is chosen because it conducts, plastic because it blocks current and protects the user. Different properties, different jobs."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "A material must line the inside of a 900-degree oven without melting or softening. Which choice fits best?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Plastic, because it is light"
+        },
+        {
+          "optionId": "B",
+          "text": "A ceramic, because it has a very high melting point"
+        },
+        {
+          "optionId": "C",
+          "text": "Wood, because it is easy to shape"
+        },
+        {
+          "optionId": "D",
+          "text": "Rubber, because it is flexible"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Surviving extreme heat depends on melting point. Ceramics have very high melting points and stay solid, which is why ovens and kilns are lined with ceramic."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Diego says steel is \"the best material\" because it is strong. What is the problem with his thinking?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "There is no single best material; the best choice depends on what the part must do"
+        },
+        {
+          "optionId": "B",
+          "text": "Steel is actually the weakest material"
+        },
+        {
+          "optionId": "C",
+          "text": "Aluminum is always better than steel"
+        },
+        {
+          "optionId": "D",
+          "text": "Strength never matters in a design"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "No material is best at everything. The best choice always depends on the job. Steel is great for a chain but too heavy for a whole bike frame."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A bike tire must grip the road and bend on every turn without cracking. Which property matters most, and which material is used?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Hardness, and ceramic"
+        },
+        {
+          "optionId": "B",
+          "text": "Melting point, and metal"
+        },
+        {
+          "optionId": "C",
+          "text": "Electrical conductivity, and copper"
+        },
+        {
+          "optionId": "D",
+          "text": "Flexibility, and rubber, which is a plastic"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A tire flexes constantly, so flexibility matters most. Rubber, a type of plastic, bends over and over without cracking, which is why tires are rubber."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Why are floor tiles usually made from ceramic instead of wood?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Ceramic is cheaper than every other material"
+        },
+        {
+          "optionId": "B",
+          "text": "Ceramic is flexible, so it bounces back"
+        },
+        {
+          "optionId": "C",
+          "text": "Ceramic is hard and resists scratches and wear from foot traffic"
+        },
+        {
+          "optionId": "D",
+          "text": "Ceramic conducts electricity safely"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A busy floor gets scraped all day, so hardness matters most. Ceramic is very hard and resists scratches and dents, while wood is softer and wears down."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "An engineer picks aluminum for a bike frame and rubber for the tires. What best describes how she is thinking?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "She picks the strongest material for every part"
+        },
+        {
+          "optionId": "B",
+          "text": "She matches each part's material to the job that part has to do"
+        },
+        {
+          "optionId": "C",
+          "text": "She picks the cheapest material for every part"
+        },
+        {
+          "optionId": "D",
+          "text": "She uses whatever material is easiest to find"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "This is the core engineering move: match the material to the job. A light aluminum frame and grippy rubber tires each fit what that part needs to do."
+    }
+  ]
+}

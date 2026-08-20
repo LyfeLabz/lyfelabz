@@ -1,0 +1,269 @@
+{
+  "activityId": "introduction-to-electricity",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Electricity is best described as which of the following?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A type of metal found inside wires"
+        },
+        {
+          "optionId": "B",
+          "text": "A liquid that flows out of outlets"
+        },
+        {
+          "optionId": "C",
+          "text": "A form of energy carried by electric charges"
+        },
+        {
+          "optionId": "D",
+          "text": "A kind of light that only appears at night"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Electricity is a form of energy made up of electric charges. Those charges can produce light, heat, or motion."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Which of these is an example of static electricity?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A spark when you touch a doorknob after walking on carpet"
+        },
+        {
+          "optionId": "B",
+          "text": "A lamp glowing while plugged into the wall"
+        },
+        {
+          "optionId": "C",
+          "text": "A refrigerator running in the kitchen"
+        },
+        {
+          "optionId": "D",
+          "text": "A phone charging overnight"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A doorknob spark is static electricity: charge that builds up on a surface and then discharges. The lamp, refrigerator, and charging phone all use current electricity."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "What is the main difference between static and current electricity?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Static electricity can only happen during a thunderstorm outdoors"
+        },
+        {
+          "optionId": "B",
+          "text": "Static charge builds up and stays, while current is charge that flows"
+        },
+        {
+          "optionId": "C",
+          "text": "Current electricity cannot do any useful work"
+        },
+        {
+          "optionId": "D",
+          "text": "They are two names for the exact same thing"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Static electricity is charge that collects and builds up on a surface. Current electricity is charge that flows through a conductor such as wire."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "In an atom, where are the protons and neutrons found?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Orbiting far outside the atom"
+        },
+        {
+          "optionId": "B",
+          "text": "Spread evenly throughout the whole atom"
+        },
+        {
+          "optionId": "C",
+          "text": "Only on the surface of the atom"
+        },
+        {
+          "optionId": "D",
+          "text": "Packed together in the nucleus"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Protons and neutrons sit together in the nucleus at the center of the atom. Electrons orbit around the outside."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which particle in an atom carries a negative charge?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The proton"
+        },
+        {
+          "optionId": "B",
+          "text": "The neutron"
+        },
+        {
+          "optionId": "C",
+          "text": "The electron"
+        },
+        {
+          "optionId": "D",
+          "text": "The nucleus"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The electron has a charge of -1, making it negative. The proton is positive, and the neutron has no charge."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "An atom gains extra electrons. What is its overall charge now?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Negative"
+        },
+        {
+          "optionId": "B",
+          "text": "Positive"
+        },
+        {
+          "optionId": "C",
+          "text": "Still neutral"
+        },
+        {
+          "optionId": "D",
+          "text": "It has no charge at all"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Electrons are negative. Gaining electrons gives the atom more negatives than positives, so its overall charge is negative."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Two objects both have a negative charge. What will the electric force between them do?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Pull them together"
+        },
+        {
+          "optionId": "B",
+          "text": "Push them apart"
+        },
+        {
+          "optionId": "C",
+          "text": "Have no effect at all"
+        },
+        {
+          "optionId": "D",
+          "text": "Turn one of them positive"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Like charges repel. Two negative objects push away from each other."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "According to the law of electric charges, which pair of objects will attract each other?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Two positive objects pushed close together"
+        },
+        {
+          "optionId": "B",
+          "text": "Two negative objects side by side"
+        },
+        {
+          "optionId": "C",
+          "text": "Two objects that both have no charge"
+        },
+        {
+          "optionId": "D",
+          "text": "A positive object and a negative object"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Opposite charges attract. A positive object and a negative object pull toward each other, while like charges repel."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "How does increasing the amount of charge on two objects affect the electric force between them?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It makes the force weaker"
+        },
+        {
+          "optionId": "B",
+          "text": "It has no effect on the force"
+        },
+        {
+          "optionId": "C",
+          "text": "It makes the force stronger"
+        },
+        {
+          "optionId": "D",
+          "text": "It reverses the direction of the force"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The larger the charge on the objects, the stronger the electric force between them. Distance matters too: the closer they are, the stronger the force."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A spark jumps between your hand and a doorknob just before you touch it. What does this show?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Electricity can only move when two objects are touching tightly"
+        },
+        {
+          "optionId": "B",
+          "text": "Charged objects can push or pull across a gap, with no contact"
+        },
+        {
+          "optionId": "C",
+          "text": "The doorknob magically created brand new electrons"
+        },
+        {
+          "optionId": "D",
+          "text": "Static electricity is not real"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The spark crosses the air gap, so charged objects exert a force on each other even when they are not in contact. Lightning is the same effect on a giant scale."
+    }
+  ]
+}

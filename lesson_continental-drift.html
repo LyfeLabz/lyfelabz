@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_continental-drift.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=continental-drift --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2434,6 +2440,10 @@ function cdSelectAnswer(qi, chosenIndex) {
   // Submit unlocks only when every question is answered AND a written
   // explanation exists (see cdRefreshSubmitState).
   cdRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(cdQuizState.selected);
 }
 
 function cdUpdateProgress() {
@@ -2455,6 +2465,7 @@ function cdValidateStudentInfo() {
 
 function cdSubmitQuiz() {
   if (cdQuizState.submitted) return;
+  var cdAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!cdQuizState.selected.every(function(s) { return s !== null; })) return;
   var cdThinkGate = document.getElementById('cd-thinking');
@@ -2529,6 +2540,33 @@ function cdSubmitQuiz() {
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (cdAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by cdQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var cdFinalStatus = document.getElementById('cd-submit-status');
+    cdFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var cdGenericError = 'Submission did not complete. Please refresh and try again.';
+    function cdShowSubmitError(msg) {
+      cdFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || cdGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(cdQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        cdFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        cdShowSubmitError(r.message);
+      } else {
+        cdShowSubmitError(null);
+      }
+    }, function () {
+      cdShowSubmitError(null);
+    });
+    return;
   }
 
   if (cdQuizMode === 'practice') {

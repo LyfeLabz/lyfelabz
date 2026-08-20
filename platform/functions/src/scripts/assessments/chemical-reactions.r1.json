@@ -1,0 +1,269 @@
+{
+  "activityId": "chemical-reactions",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes what happens during a chemical reaction?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A substance changes its shape or state but stays the same substance"
+        },
+        {
+          "optionId": "B",
+          "text": "Bonds are broken and new bonds are formed, creating one or more new substances"
+        },
+        {
+          "optionId": "C",
+          "text": "Atoms are destroyed and replaced with brand-new atoms"
+        },
+        {
+          "optionId": "D",
+          "text": "A substance gets hotter or colder without changing in any other way"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A chemical reaction transforms substances into NEW substances. Bonds between atoms break and new bonds form - the atoms themselves are never created or destroyed, only rearranged."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Why is melting ice NOT a chemical reaction?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Because it happens too slowly to count as a reaction"
+        },
+        {
+          "optionId": "B",
+          "text": "Because the ice absorbs heat instead of releasing it"
+        },
+        {
+          "optionId": "C",
+          "text": "Because no new substance forms - the liquid is still water"
+        },
+        {
+          "optionId": "D",
+          "text": "Because ice has no chemical bonds to break"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The test for a chemical reaction is whether a new substance forms. Melted ice is still water - same molecules, different state. Only the shape and state changed, so it's a physical change."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which observation is the strongest evidence that a chemical reaction has occurred, not just a physical change?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The material was broken into smaller pieces but is otherwise the same"
+        },
+        {
+          "optionId": "B",
+          "text": "A gas, a new color, or a new solid appeared that was not there before"
+        },
+        {
+          "optionId": "C",
+          "text": "The material changed from a liquid to a solid simply by cooling down"
+        },
+        {
+          "optionId": "D",
+          "text": "The material was poured into a differently shaped container"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Signs like bubbling gas, a new color, or a new solid forming are evidence that a brand-new substance was made. Breaking a material, changing its state, or moving it does not make a new substance, so those are physical changes."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "A hand warmer pouch becomes hot and stays warm for hours after you activate it. What does this tell you about the reaction inside?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It is exothermic, because it releases thermal energy into the surroundings"
+        },
+        {
+          "optionId": "B",
+          "text": "It is endothermic, because it pulls heat away from your hand"
+        },
+        {
+          "optionId": "C",
+          "text": "It is only a physical change, because just the temperature changed"
+        },
+        {
+          "optionId": "D",
+          "text": "No energy is being transferred into or out of the pouch at all"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "An exothermic reaction releases thermal energy to its surroundings. The hand warmer feels hot because the reaction inside is sending heat out into your hand and the air around it."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "An athlete squeezes an instant cold pack and it quickly gets icy cold against her skin. What type of reaction is happening inside, and why?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Exothermic, because the pack releases coldness into her skin"
+        },
+        {
+          "optionId": "B",
+          "text": "Exothermic, because the reaction creates heat inside the pack"
+        },
+        {
+          "optionId": "C",
+          "text": "Endothermic, because the reaction absorbs heat from the surroundings, making them colder"
+        },
+        {
+          "optionId": "D",
+          "text": "Endothermic, because the reaction releases energy as light"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "An endothermic reaction absorbs energy from the environment. The reaction inside the pack pulls heat IN from its surroundings - including her skin - so the temperature of the environment decreases. Enter = in!"
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "You combine two clear liquids. Bubbles of gas form and the beaker turns warm. What is the best conclusion?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A chemical reaction is likely, because gas forming and a temperature change are signs a new substance formed"
+        },
+        {
+          "optionId": "B",
+          "text": "It is only a physical change, since both starting materials were liquids"
+        },
+        {
+          "optionId": "C",
+          "text": "Nothing chemical happened, because the mixture did not change color"
+        },
+        {
+          "optionId": "D",
+          "text": "Matter was destroyed, because gas escaped from the beaker"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Gas production and a temperature change are two classic signs that new substances formed. Color change is not required, and matter is never destroyed - the atoms are simply rearranged into new substances, some of which are gases."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Which of these is an example of an exothermic reaction?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "An instant cold pack that chills your skin"
+        },
+        {
+          "optionId": "B",
+          "text": "Ice slowly melting into liquid water"
+        },
+        {
+          "optionId": "C",
+          "text": "A puddle of water evaporating on a hot day"
+        },
+        {
+          "optionId": "D",
+          "text": "Wood burning in a campfire, giving off heat and light"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Exothermic reactions release energy to the surroundings. A burning campfire gives off heat and light. The cold pack is endothermic, and melting and evaporating are physical changes, not reactions."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "During an endothermic reaction, which way does thermal energy move between the reaction and its surroundings?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Energy moves out of the reaction and into the surroundings, warming them"
+        },
+        {
+          "optionId": "B",
+          "text": "Energy moves out of the surroundings and into the reaction, cooling them"
+        },
+        {
+          "optionId": "C",
+          "text": "Energy stays locked inside the reaction and never moves"
+        },
+        {
+          "optionId": "D",
+          "text": "Cold moves out of the reaction and into the surroundings"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Endothermic means energy is absorbed. The reaction pulls thermal energy in from its surroundings, so the surroundings lose heat and cool down. Cold is not a thing that moves; it is just the absence of heat."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Two reactions run side by side. Reaction 1 warms the air around it; Reaction 2 cools the air around it. How should they be classified?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Both are exothermic, since both change the temperature"
+        },
+        {
+          "optionId": "B",
+          "text": "Reaction 1 is endothermic and Reaction 2 is exothermic"
+        },
+        {
+          "optionId": "C",
+          "text": "Reaction 1 is exothermic and Reaction 2 is endothermic"
+        },
+        {
+          "optionId": "D",
+          "text": "Neither can be classified without knowing the exact chemicals"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Watch the surroundings. Reaction 1 warms its surroundings, so it releases energy (exothermic). Reaction 2 cools its surroundings, so it absorbs energy (endothermic)."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A reaction flask feels cold to the touch while the reaction runs. What is happening to the energy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The reaction is making cold and pushing it into the flask"
+        },
+        {
+          "optionId": "B",
+          "text": "The reaction is releasing heat into the room around it"
+        },
+        {
+          "optionId": "C",
+          "text": "No energy is moving into or out of the reaction at all"
+        },
+        {
+          "optionId": "D",
+          "text": "The reaction is absorbing heat from its surroundings, so they cool down"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Cold is not a thing that gets made or moved - it is the absence of heat. The flask feels cold because the endothermic reaction is pulling heat IN from its surroundings, lowering their temperature."
+    }
+  ]
+}

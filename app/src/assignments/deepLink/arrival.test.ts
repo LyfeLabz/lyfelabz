@@ -9,7 +9,11 @@
 import { renderDeepLinkArrival } from "./arrival";
 import type { DeepLinkResolution } from "./types";
 
-const SLUG = "nature-of-waves";
+// After Sprint 28 Phase 5A.1, every assignable lesson is v2-overridden, so a
+// non-overridden slug is needed to exercise the v1 root-path launch assertions
+// below. ragebaiting is a real but gated (non-surfaceable) lesson that is
+// intentionally absent from LESSON_LAUNCH_OVERRIDES, so it stays on the v1 path.
+const SLUG = "ragebaiting";
 const ASSIGNMENT_ID = "assign-1";
 
 function makeMount(): HTMLElement {

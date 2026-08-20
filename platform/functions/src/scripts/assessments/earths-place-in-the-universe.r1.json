@@ -1,0 +1,269 @@
+{
+  "activityId": "earths-place-in-the-universe",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which list shows the correct order from smallest to largest?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Milky Way, universe, solar system, Earth"
+        },
+        {
+          "optionId": "B",
+          "text": "Solar system, Earth, universe, Milky Way"
+        },
+        {
+          "optionId": "C",
+          "text": "Earth, solar system, Milky Way, universe"
+        },
+        {
+          "optionId": "D",
+          "text": "Universe, Milky Way, solar system, Earth"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "From smallest to largest: Earth sits inside the solar system, the solar system sits inside the Milky Way, and the Milky Way is one of billions of galaxies inside the universe."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "When you look up at the night sky, almost every star you see is part of what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A different galaxy far away"
+        },
+        {
+          "optionId": "B",
+          "text": "Our own galaxy, the Milky Way"
+        },
+        {
+          "optionId": "C",
+          "text": "The Sun's surface"
+        },
+        {
+          "optionId": "D",
+          "text": "The Andromeda galaxy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Nearly every star you can see with your eyes belongs to our own galaxy, the Milky Way. The night sky is a view from inside our galaxy."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "What is the Milky Way?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The solar system that contains Earth"
+        },
+        {
+          "optionId": "B",
+          "text": "Another name for the entire universe"
+        },
+        {
+          "optionId": "C",
+          "text": "A single, very large star"
+        },
+        {
+          "optionId": "D",
+          "text": "The galaxy that contains our solar system"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The Milky Way is our home galaxy. It contains our solar system plus hundreds of billions of other stars."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which statement about our Sun is correct?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It is one ordinary star among hundreds of billions in the Milky Way"
+        },
+        {
+          "optionId": "B",
+          "text": "It is the largest star in the entire universe"
+        },
+        {
+          "optionId": "C",
+          "text": "It is the exact center of the universe"
+        },
+        {
+          "optionId": "D",
+          "text": "It is the only star in the Milky Way"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The Sun is one ordinary star among the hundreds of billions in the Milky Way. It looks huge and bright to us only because it is so close."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "The Milky Way is best described as which of these?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The only galaxy that exists"
+        },
+        {
+          "optionId": "B",
+          "text": "The exact center of the universe"
+        },
+        {
+          "optionId": "C",
+          "text": "One of billions of galaxies in the universe"
+        },
+        {
+          "optionId": "D",
+          "text": "A small group of nearby planets"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The Milky Way is one of billions of galaxies scattered across the universe. It is not the only galaxy, and it is not the center of anything."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What is a galaxy?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A single planet and its moons"
+        },
+        {
+          "optionId": "B",
+          "text": "An enormous collection of stars, gas, and dust held together by gravity"
+        },
+        {
+          "optionId": "C",
+          "text": "The curved path a planet takes around a star"
+        },
+        {
+          "optionId": "D",
+          "text": "A tool scientists use to measure distance"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A galaxy is an enormous collection of stars, gas, and dust held together by gravity. A single galaxy can hold hundreds of billions of stars."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Why do scientists use models, like a zoom-out diagram, to show Earth's place in the universe?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Because the universe is actually very small"
+        },
+        {
+          "optionId": "B",
+          "text": "Because models are always perfectly exact copies"
+        },
+        {
+          "optionId": "C",
+          "text": "Because photographs of space are not allowed"
+        },
+        {
+          "optionId": "D",
+          "text": "Because the real distances are far too large to show at true size"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Space is far too large to draw at true size, so scientists use models and scale to help us picture where Earth fits."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A light-year is a measure of what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Distance, how far light travels in one year"
+        },
+        {
+          "optionId": "B",
+          "text": "How old a star is"
+        },
+        {
+          "optionId": "C",
+          "text": "The time it takes Earth to orbit the Sun"
+        },
+        {
+          "optionId": "D",
+          "text": "How bright a galaxy is"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A light-year is a distance, not a time. It is how far light travels in one year. Scientists use it because space is far too big to measure in miles."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Space is full of galaxies, yet the night sky looks mostly dark and empty. Why?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "There are only a few galaxies in the universe"
+        },
+        {
+          "optionId": "B",
+          "text": "Galaxies do not give off any light"
+        },
+        {
+          "optionId": "C",
+          "text": "Most galaxies are so far away that their light is too faint to see without telescopes"
+        },
+        {
+          "optionId": "D",
+          "text": "The Moon hides the other galaxies from view"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Space is not empty. The galaxies are real and enormous, but they are so far away that their light is too faint for our eyes without powerful telescopes."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes where Earth fits in the universe?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Earth is the center of the Milky Way"
+        },
+        {
+          "optionId": "B",
+          "text": "Earth is one planet in the solar system, which is part of the Milky Way, which is one of billions of galaxies"
+        },
+        {
+          "optionId": "C",
+          "text": "Earth is the largest object in the solar system"
+        },
+        {
+          "optionId": "D",
+          "text": "Earth sits outside the Milky Way"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Earth is one planet in the solar system, the solar system is one part of the Milky Way, and the Milky Way is one of billions of galaxies in the universe. That is the whole nested model."
+    }
+  ]
+}

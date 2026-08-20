@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_engineering-design.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=engineering-design --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -3340,6 +3346,10 @@ function edSelectAnswer(qi, chosenIndex) {
   document.getElementById('ed-q-' + qi + '-' + chosenIndex).classList.add('selected');
   edUpdateProgress();
   edRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(edQuizState.selected);
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3364,6 +3374,7 @@ function edValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function edSubmitQuiz() {
   if (edQuizState.submitted) return;
+  var edAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!edQuizState.selected.every(function (s) { return s !== null; })) return;
   var edThinkGate = document.getElementById('ed-thinking');
@@ -3420,6 +3431,33 @@ function edSubmitQuiz() {
       var more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (edAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by edQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var edFinalStatus = document.getElementById('ed-submit-status');
+    edFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var edGenericError = 'Submission did not complete. Please refresh and try again.';
+    function edShowSubmitError(msg) {
+      edFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || edGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(edQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        edFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        edShowSubmitError(r.message);
+      } else {
+        edShowSubmitError(null);
+      }
+    }, function () {
+      edShowSubmitError(null);
+    });
+    return;
   }
 
   if (edQuizMode === 'practice') {

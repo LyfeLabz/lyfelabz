@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_hotspot-volcanoes.html
+Build target: v2
+Regenerate: npm --prefix app run lessons:build -- --only=hotspot-volcanoes --target=v2
+-->
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_hotspot-volcanoes.html">
+<meta name="description" content="Discover hotspot volcanoes: how a fixed mantle plume melts through the middle of a moving plate to build a chain of volcanic islands like Hawaii, why the islands get younger toward the hotspot, and how old islands cool and sink into seamounts. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Hotspot Volcanoes</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --orange:      #e8814a;
+    --green:       #3ddc84;
+    --blue:        #7cc8f8;
+    --red:         #e74c3c;
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 620px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+  /* ── EDUCATOR MODE NOTES ── */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; margin: 2rem auto 0; padding: 1.4rem 1.8rem 1.6rem;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.18);
+    border-left: 4px solid var(--accent2); border-radius: 16px; max-width: 900px;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+    color: rgba(232,237,242,0.5); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto; padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    font-size: 1rem; color: var(--text-muted); max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout.teal { background: rgba(29,233,182,0.06); border-color: rgba(29,233,182,0.2); border-left-color: var(--teal); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; line-height: 1.25; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── LEARNING GOALS ── */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.3rem; text-align: left; cursor: pointer;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+  .gc-chev { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .glossary-card.open .gc-chev { color: var(--gold); }
+  .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.6rem; }
+  .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+  .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-blue   { border-top-color: var(--blue);   } .gc-blue .gc-term   { color: var(--blue); }
+  .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+  .gc-slate  { border-top-color: var(--accent2);} .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-jump {
+    display: inline-block; margin-top: 0.55rem; font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px dashed rgba(245,200,66,0.5); cursor: pointer;
+  }
+  .gc-jump:hover { border-bottom-style: solid; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAME-IT REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 820px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it.orange-it { border-left-color: var(--orange); }
+  .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label   { color: var(--teal); }
+  .name-it.green-it .name-it-label  { color: var(--green); }
+  .name-it.orange-it .name-it-label { color: var(--orange); }
+  .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .name-it p strong { font-weight: 800; }
+  .name-it.teal-it p strong   { color: var(--teal); }
+  .name-it.green-it p strong  { color: var(--green); }
+  .name-it.orange-it p strong { color: var(--orange); }
+  .name-it.slate-it p strong  { color: var(--accent2); }
+
+  /* ── EXAMPLE GRID ── */
+  .example-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
+  @media (max-width: 700px) { .example-grid { grid-template-columns: 1fr; } }
+  .example-chip {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
+  }
+  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+  /* ── STAGE / SELECTOR (interactive) ── */
+  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .layer-figure { flex: 0 0 auto; width: 340px; max-width: 100%; margin: 0 auto; }
+  .layer-figure svg { width: 100%; height: auto; display: block; }
+  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-row {
+    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s; position: relative; border: none; text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .layer-row:hover { filter: brightness(1.18); }
+  .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
+  .layer-detail-panel {
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 150px; display: flex; align-items: center;
+  }
+  .ld-inner { width: 100%; }
+  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── FORMATION COMPARISON ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 720px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.6rem 1.5rem; }
+  .crust-card.boundary { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
+  .crust-card.rift     { background: rgba(61,220,132,0.06);  border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.spot     { background: rgba(245,200,66,0.07);   border: 1px solid rgba(245,200,66,0.35); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .crust-card.boundary .crust-title { color: var(--blue); }
+  .crust-card.rift .crust-title { color: var(--green); }
+  .crust-card.spot .crust-title { color: var(--gold); }
+  .crust-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+  .crust-card p strong { color: var(--text); }
+  .crust-where { display: inline-block; margin-top: 0.8rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.22rem 0.7rem; border-radius: 99px; }
+  .crust-card.boundary .crust-where { color: var(--blue); background: rgba(124,200,248,0.1); border: 1px solid rgba(124,200,248,0.3); }
+  .crust-card.rift .crust-where { color: var(--green); background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.spot .crust-where { color: var(--gold); background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.35); }
+
+  /* ── DIAGRAM FIGURE ── */
+  .figure-box {
+    background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
+    border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
+  }
+  .figure-box svg { width: 100%; height: auto; display: block; }
+  .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── QUICK RECALL ── */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* ── WRAP-UP BEATS ── */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+  .wrapup-beat-2 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
+  .wuc-2 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
+  .wuc-3 { color: var(--orange); background: rgba(232,129,74,0.08);  border-color: rgba(232,129,74,0.3); }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted); width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left; color: rgba(232,237,242,0.9); width: 100%; }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+  .mystery-loop strong { color: var(--text); }
+  .ml-label { display: block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem; }
+  .score-submitted { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(29,233,182,0.1); border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .score-error { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .reset-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── GO FURTHER ── */
+  #continue { background: var(--dark); }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+  .continue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+  .connections-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 600px) { .connections-grid { grid-template-columns: 1fr; } }
+  .cont-card { border-radius: 18px; padding: 1.5rem 1.5rem 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+  .cont-card.soon::before { background: linear-gradient(90deg, #7a8fa6, #9fb0c4); }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; background: rgba(122,143,166,0.14); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-muted); }
+  .cont-card.lesson .cont-cat { color: #2dd4bf; }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+  .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+  .cont-status { display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.95rem; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); align-self: flex-start; margin-top: auto; }
+  .cont-card.lesson .cont-status { background: rgba(20,184,166,0.12); border-color: rgba(20,184,166,0.4); color: #2dd4bf; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .name-it.pulsing { animation: vocabPulse 3s ease forwards; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+    nav { padding: 0.85rem 1.2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+  footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+  footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+  footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#127755;</span>
+  <span class="hero-float">&#127965;&#65039;</span>
+  <span class="hero-float">&#127754;</span>
+  <span class="hero-float">&#128293;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Hotspot Volcanoes</h1>
+  <p>Most volcanoes erupt along the cracked edges of plates. But a chain of volcanoes runs straight across the middle of the Pacific Ocean, thousands of miles from any boundary.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How can a chain of volcanoes form in the middle of a plate?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">&#128300; Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real puzzle (a chain of volcanoes in the middle of the Pacific) before naming any vocabulary. A genuine mystery activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into how volcanoes form, what a hotspot is, the moving conveyor belt, and the island life cycle keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of plumes, island chains, and seamounts builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat to a plume, a plume to volcanoes, and plate motion to a chain of islands, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">&#127755;</span>
+        <div class="goal-text">I can describe how a hotspot forms a volcano in the middle of a tectonic plate.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127965;&#65039;</span>
+        <div class="goal-text">I can explain how plate motion over a fixed hotspot creates a chain of volcanic islands.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#9203;</span>
+        <div class="goal-text">I can predict the relative ages of islands in a hotspot chain from their positions.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127754;</span>
+        <div class="goal-text">I can explain why old volcanic islands cool, sink, and become seamounts.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Vocabulary to Know</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Hotspot</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A fixed point in the mantle where heat rises and melts through the crust above, even in the middle of a plate.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-hotspot')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Mantle Plume</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A column of extremely hot rock that rises from deep in the mantle toward the surface.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-hotspot')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Magma</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Molten rock beneath Earth's surface. It feeds a volcano when it reaches the crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-hotspot')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Hotspot Volcano</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A volcano that forms over a hotspot in the middle of a plate, not at a plate boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-hotspot')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Island Chain</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A line of volcanic islands built as a plate slowly moves over a fixed hotspot.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-chain')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A large slab of Earth's rigid outer shell that moves slowly over the softer mantle below.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-chain')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Seamount</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An underwater mountain that was once a volcanic island before it sank below the surface.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-stages')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Subsidence</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The slow sinking of crust as it moves away from a hotspot, cools, and becomes more dense.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-stages')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Extinct Volcano</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A volcano that has moved off its magma source and will not erupt again.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-stages')">See it in the lesson &#8595;</span></div>
+      </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE PHENOMENON
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">Volcanoes in the Wrong Place</h2>
+    <p class="section-desc">Almost all of Earth's volcanoes line up along the edges of tectonic plates, where the crust cracks, melts, and slips. The Hawaiian Islands break that rule. They sit alone in the middle of the Pacific, far from any boundary.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>The Hawaiian Islands</h3>
+        <p>The Hawaiian Islands are a chain of volcanoes in the middle of the Pacific Ocean, thousands of miles from the nearest plate boundary. Stranger still, the islands are not all the same age. The southeast end is young and erupting, while the islands to the northwest are old and quiet. Why would a line of volcanoes form in the middle of a plate, and why is one end so much older than the other?</p>
+      </div>
+    </div>
+
+    <!-- Phenomenon figure: chain in the middle of the plate -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized map of the Pacific Ocean with a line of volcanic islands in the center, getting older toward the northwest and younger toward the southeast">
+        <rect x="20" y="20" width="560" height="240" rx="16" fill="#0e2230"/>
+        <!-- plate edges far away -->
+        <path d="M30,60 C120,80 130,200 40,240" fill="none" stroke="rgba(159,184,204,0.35)" stroke-width="2.5" stroke-dasharray="7 7"/>
+        <path d="M570,55 C500,90 500,200 560,245" fill="none" stroke="rgba(159,184,204,0.35)" stroke-width="2.5" stroke-dasharray="7 7"/>
+        <text x="48" y="45" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">plate edge</text>
+        <text x="512" y="42" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">plate edge</text>
+        <!-- island chain across the middle -->
+        <g>
+          <circle cx="150" cy="110" r="6" fill="#7a8fa6"/>
+          <circle cx="225" cy="135" r="8" fill="#8aa0b6"/>
+          <circle cx="300" cy="158" r="10" fill="#9fb8cc"/>
+          <circle cx="375" cy="178" r="13" fill="#e8814a"/>
+          <circle cx="445" cy="198" r="16" fill="#f5c842"/>
+        </g>
+        <text x="150" y="92" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">oldest</text>
+        <text x="445" y="226" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#f5c842">youngest &amp; erupting</text>
+        <text x="118" y="250" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">&#8592; Northwest</text>
+        <text x="402" y="250" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">Southeast &#8594;</text>
+      </svg>
+      <div class="figure-caption">A line of volcanoes in the middle of the Pacific. The islands get younger and more active toward the southeast.</div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-engage">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why would a chain of volcanoes form in the middle of a plate, with one end older than the other?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>A plate boundary secretly runs right through the islands.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>A fixed source of heat in the mantle melts through the moving plate, leaving a trail of volcanoes behind.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>All of the islands erupted at the same moment in a straight line.</button>
+      </div>
+    </div>
+
+    <div class="name-it slate-it predict-gated" data-gate="qp-engage">
+      <div class="name-it-label">Here's the big idea</div>
+      <p>The best answer is <strong>B</strong>. Deep below Hawaii is a fixed source of heat called a hotspot. It melts through the plate above and builds a volcano. But the plate keeps moving, so the old volcano is carried away and a new one forms over the hotspot. Over millions of years this leaves a trail, which is why the islands line up and grow older toward the northwest. The rest of this lesson explains exactly how that works.</p>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2rem;">
+      <strong>Where we're headed:</strong> First we'll see the few ways volcanoes form, and why Hawaii does not fit the usual pattern. Then we'll meet the hotspot, watch the plate build a chain as it moves, and follow the life of a single island from birth to seamount.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a genuine anomaly students can see on a map.</li><li>Create the curiosity gap the rest of the lesson resolves.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Real-world phenomenon students can look up on any map</li><li>Prediction question is low stakes and ungraded</li><li>Answer is revealed immediately, no waiting</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1: WHERE VOLCANOES FORM
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explore" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Puzzle</span>
+    <h2 class="section-title">Three Ways to Build a Volcano</h2>
+    <p class="section-desc">Volcanism is mostly focused at plate margins, the edges where plates meet. But not every volcano sits at a boundary. There are three main ways magma reaches the surface, and only one of them explains Hawaii.</p>
+
+    <div id="term-types" class="crust-grid">
+      <div class="crust-card boundary">
+        <div class="crust-title">Subduction</div>
+        <p>At a <strong>convergent boundary</strong>, one plate sinks beneath another. The sinking plate melts and the magma rises to feed volcanoes, like the ones around the Pacific Ring of Fire.</p>
+        <span class="crust-where">At plate edges</span>
+      </div>
+      <div class="crust-card rift">
+        <div class="crust-title">Rifting</div>
+        <p>At a <strong>divergent boundary</strong>, two plates pull apart. Magma rises into the gap and erupts, building new crust along mid-ocean ridges and rift valleys.</p>
+        <span class="crust-where">At plate edges</span>
+      </div>
+      <div class="crust-card spot">
+        <div class="crust-title">Hotspots</div>
+        <p>A few volcanoes form far from any edge. Heat rises from deep in the mantle and melts through the <strong>middle of a plate</strong>. This is what built Hawaii.</p>
+        <span class="crust-where">Middle of a plate</span>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#127757;</span>
+      <div class="callout-body"><strong>The odd one out:</strong> subduction and rifting both happen at plate boundaries, so their volcanoes line up along the edges. Hotspot volcanoes are different. They appear in the middle of a plate, which is exactly why the Hawaiian Islands looked so out of place.</div>
+    </div>
+
+    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
+      <strong>The question that remains:</strong> if there is no boundary under Hawaii to crack and melt the crust, what is providing the heat? The answer comes from far below the plate.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Establish the three ways volcanoes form so hotspots stand out as the exception.</li><li>Build the contrast that makes the Hawaiian anomaly make sense.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast (three formation types)</li><li>Categorization before deep-dive</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Three parallel cards, each self-contained</li><li>Location label on each card reduces confusion</li><li>Misconception alert: students may think all volcanoes are at boundaries</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: WHAT IS A HOTSPOT
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="hotspot-sec" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Source</span>
+    <h2 class="section-title">A Hidden Plume of Heat</h2>
+    <p class="section-desc">The heat under Hawaii does not come from the edges of the plate. It comes from deep inside the mantle, rising in a narrow column that stays in roughly the same place for millions of years.</p>
+
+    <div id="term-hotspot" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128293;</span>
+        <div class="card-title">Plume, Hotspot, Volcano</div>
+      </div>
+      <div class="card-body">
+        <p>Deep in the mantle, a tall column of extremely hot rock rises slowly toward the surface. This column is a <span class="vocab">mantle plume</span>. The plume stays fixed in place while the plate slides over the top of it.</p>
+        <p>The point on the crust right above the plume is a <span class="vocab">hotspot</span>. Heat from the mantle, and some <span class="vocab">magma</span>, rises to the hotspot and melts through the plate above. When that magma breaks the surface, it builds a <span class="vocab">hotspot volcano</span>.</p>
+        <p>The Hawaiian Islands are classic hotspot volcanoes. They formed where a mantle plume punched through the middle of the Pacific plate, far from any boundary.</p>
+      </div>
+    </div>
+
+    <!-- Plume cross-section figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cross section showing a mantle plume rising from deep in the mantle to a hotspot, which melts through the plate and feeds a volcano at the surface">
+        <!-- mantle -->
+        <rect x="20" y="20" width="560" height="260" rx="12" fill="#7a3a2a" opacity="0.85"/>
+        <rect x="20" y="20" width="560" height="260" rx="12" fill="url(#mantleGrad)"/>
+        <defs>
+          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.08"/>
+          </linearGradient>
+          <marker id="upArrow" markerWidth="9" markerHeight="9" refX="4.5" refY="2" orient="auto"><path d="M4.5,0 L9,8 L0,8 Z" fill="#ffd27a"/></marker>
+        </defs>
+        <!-- ocean -->
+        <rect x="20" y="20" width="560" height="48" fill="#1e4258" opacity="0.85"/>
+        <text x="540" y="40" text-anchor="end" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fcbe0">ocean</text>
+        <!-- plate / crust -->
+        <rect x="20" y="62" width="560" height="22" fill="#6a7d52"/>
+        <text x="40" y="78" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#1a1f14">tectonic plate (crust)</text>
+        <!-- plume column -->
+        <path d="M285,260 C275,180 290,140 295,92 L305,92 C310,140 325,180 315,260 Z" fill="#ffce6a" opacity="0.75"/>
+        <line x1="300" y1="250" x2="300" y2="120" stroke="#ffd27a" stroke-width="3" marker-end="url(#upArrow)"/>
+        <text x="300" y="275" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">mantle plume rises</text>
+        <!-- hotspot marker -->
+        <circle cx="300" cy="73" r="9" fill="#e74c3c"/>
+        <text x="332" y="77" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#ffb0a0">hotspot</text>
+        <!-- volcano on surface -->
+        <path d="M270,62 L300,26 L330,62 Z" fill="#8a9a6a"/>
+        <path d="M291,40 L300,26 L309,40 Z" fill="#e8814a"/>
+        <text x="300" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#f5c842">volcano</text>
+      </svg>
+      <div class="figure-caption">A fixed mantle plume rises to a hotspot, melts through the plate, and feeds a volcano at the surface.</div>
+    </div>
+
+    <div class="name-it gold-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Hotspot</div>
+      <p>A <strong style="color: var(--gold);">hotspot</strong> is a point on the crust directly above a hot plume in the mantle. Because the plume stays fixed while the plate moves, the hotspot acts like a torch held still under a sheet of moving paper. It keeps burning through in the same spot, even as the surface above it slides by.</p>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce the mantle plume as the heat source beneath the hotspot.</li><li>Establish that the plume is fixed while the plate above it moves.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Concrete analogy (torch held under moving paper)</li><li>Labeled cross-section supports dual coding</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Diagram paired with labeled text description</li><li>Short, parallel definitions for plume and hotspot</li><li>Misconception alert: the hotspot does not move; the plate moves over it</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: THE MOVING PLATE BUILDS A CHAIN
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="chain-sec" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Conveyor Belt</span>
+    <h2 class="section-title">One Hotspot, Many Islands</h2>
+    <p class="section-desc">If the hotspot stays put and the plate moves, a single volcano cannot stay over the heat forever. That simple fact is what turns one hotspot into a whole chain of islands.</p>
+
+    <div id="term-chain" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127965;&#65039;</span>
+        <div class="card-title">A Trail of Volcanoes</div>
+      </div>
+      <div class="card-body">
+        <p>The <span class="vocab">tectonic plate</span> moves over the fixed hotspot, so each volcano is slowly carried away from its heat source. As one volcano drifts off the hotspot, a brand new one starts to grow in its place. Repeat this for millions of years and you build an <span class="vocab">island chain</span>.</p>
+        <p>This gives the chain a clear age pattern. <strong>The islands get younger the closer you are to the hotspot.</strong> The island sitting over the hotspot right now is the youngest, and the islands far away are the oldest.</p>
+        <p>The Pacific plate is moving toward the northwest. That is why the Hawaiian Islands have active volcanoes on the southeast end, near the hotspot, and older, quiet islands stretching to the northwest.</p>
+      </div>
+    </div>
+
+    <!-- Conveyor figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A plate moving northwest over a fixed hotspot builds a row of volcanoes that get older with distance from the hotspot">
+        <rect x="20" y="20" width="560" height="240" rx="12" fill="#0e2230"/>
+        <!-- ocean band -->
+        <rect x="20" y="120" width="560" height="60" fill="#1e4258" opacity="0.7"/>
+        <!-- plate -->
+        <rect x="20" y="178" width="560" height="62" fill="#6a7d52"/>
+        <text x="40" y="232" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#1a1f14">tectonic plate</text>
+        <!-- plate motion arrow -->
+        <line x1="430" y1="46" x2="150" y2="46" stroke="#dfe7ee" stroke-width="3" marker-end="url(#mvArrow)"/>
+        <defs><marker id="mvArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#dfe7ee"/></marker></defs>
+        <text x="290" y="38" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#dfe7ee">plate moves northwest &#8594;</text>
+        <!-- volcanoes: oldest left (eroded, low), youngest right over hotspot (tall, erupting) -->
+        <path d="M95,178 L120,150 L145,178 Z" fill="#566b7e"/>
+        <path d="M185,178 L215,140 L245,178 Z" fill="#6b7e92"/>
+        <path d="M285,178 L320,120 L355,178 Z" fill="#8a9a6a"/>
+        <path d="M395,178 L440,96 L485,178 Z" fill="#8a9a6a"/>
+        <path d="M430,118 L440,96 L450,118 Z" fill="#e8814a"/>
+        <!-- hotspot + plume under the youngest -->
+        <circle cx="440" cy="178" r="8" fill="#e74c3c"/>
+        <line x1="440" y1="258" x2="440" y2="190" stroke="#ffd27a" stroke-width="4"/>
+        <text x="440" y="274" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#ffce8a">fixed hotspot</text>
+        <!-- age labels -->
+        <text x="120" y="142" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">oldest</text>
+        <text x="440" y="88" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#f5c842">youngest</text>
+      </svg>
+      <div class="figure-caption">The hotspot stays still while the plate slides over it, leaving a row of volcanoes that ages with distance from the heat.</div>
+    </div>
+
+    <div id="term-chain-name" class="name-it green-it">
+      <div class="name-it-label">Key idea: Island Chain</div>
+      <p>An <strong>island chain</strong> is a line of volcanic islands built one after another as a plate moves over a single hotspot. Reading the chain is like reading tree rings. The order and ages of the islands record the direction the plate has traveled, which makes the chain real evidence of plate motion.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#129517;</span>
+      <div class="callout-body"><strong>Think of it this way:</strong> hold a candle still and pull a sheet of paper slowly across the flame. The flame stays in one place, but it scorches a line of marks across the moving paper. The hotspot is the flame, the plate is the paper, and the islands are the marks.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show how a fixed hotspot and a moving plate together produce a chain with an age pattern.</li><li>Give students the reasoning tool to predict island ages from position.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Causal reasoning (fixed source + moving plate = chain)</li><li>Candle-and-paper analogy makes the mechanism concrete</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Diagram with directional arrow reinforces the age pattern</li><li>Familiar analogy before technical description</li><li>Pacing tip: ask students to point to the youngest island before revealing the answer</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: THE LIFE OF A HOTSPOT ISLAND (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stages-sec" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Life Cycle</span>
+    <h2 class="section-title">Birth, Drift, and Sinking</h2>
+    <p class="section-desc">Follow a single Hawaiian volcano from the moment it is born over the hotspot to the day it disappears beneath the waves. Open each stage to see what happens and where it is happening in Hawaii right now.</p>
+
+    <div id="term-stages" class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 280 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four stages of a hotspot island: a new volcano forming under the sea, an active island over the hotspot, an extinct island carried away, and an old island sunk into a seamount">
+          <!-- water -->
+          <rect x="10" y="10" width="260" height="300" rx="10" fill="#0e2230"/>
+          <rect x="10" y="40" width="260" height="270" fill="#1e4258" opacity="0.55"/>
+          <line x1="10" y1="40" x2="270" y2="40" stroke="#9fcbe0" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+          <text x="20" y="32" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#9fcbe0">sea level</text>
+          <!-- plate -->
+          <rect x="10" y="250" width="260" height="60" fill="#6a7d52"/>
+          <!-- Stage 4: seamount (far left, fully submerged) -->
+          <path d="M30,250 L55,200 L80,250 Z" fill="#566b7e"/>
+          <text x="55" y="270" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="#9fb8cc">4</text>
+          <!-- Stage 3: extinct island (low, just above water) -->
+          <path d="M95,250 L125,150 L155,250 Z" fill="#6b7e92"/>
+          <text x="125" y="270" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="#cfe0ee">3</text>
+          <!-- Stage 2: active island (tall, over hotspot) -->
+          <path d="M160,250 L200,70 L240,250 Z" fill="#8a9a6a"/>
+          <path d="M190,110 L200,70 L210,110 Z" fill="#e8814a"/>
+          <text x="182" y="270" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="#1a1f14">2</text>
+          <!-- Stage 1: Loihi (small, submerged, right of hotspot) -->
+          <path d="M230,250 L248,212 L266,250 Z" fill="#7a8a5a"/>
+          <text x="248" y="244" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="#dfe7ee">1</text>
+          <!-- hotspot + plume under stage 2 -->
+          <circle cx="200" cy="250" r="7" fill="#e74c3c"/>
+          <line x1="200" y1="308" x2="200" y2="258" stroke="#ffd27a" stroke-width="4"/>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="stageClick(1)">
+            <span>1 &middot; Birth</span><span class="layer-tag">a new volcano rises</span>
+          </div>
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d98a;" onclick="stageClick(2)">
+            <span>2 &middot; Active</span><span class="layer-tag">sits over the hotspot</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="stageClick(3)">
+            <span>3 &middot; Extinct</span><span class="layer-tag">carried off the hotspot</span>
+          </div>
+          <div class="layer-row" style="background: rgba(122,143,166,0.3); color: #c4d3e0;" onclick="stageClick(4)">
+            <span>4 &middot; Seamount</span><span class="layer-tag">cooled and sunk</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="st-label">Open a stage</div>
+            <div class="ld-title" id="st-title">The life of an island &#8594;</div>
+            <div class="ld-body" id="st-body">Every Hawaiian island travels the same path, from a young volcano over the hotspot to an old mountain beneath the sea. Open any stage to follow one island through its life.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout teal">
+      <span class="callout-icon">&#127754;</span>
+      <div class="callout-body"><strong>Why the chain sinks:</strong> as crust moves away from the hotspot it ages, cools, and becomes more dense. Denser crust rides lower, so the old islands slowly subside. Add millions of years of erosion and an island that once towered above the sea ends up as a seamount hidden below it.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Follow a single island through its full life cycle to show the mechanism at human scale.</li><li>Introduce subsidence and seamounts as the natural end of every hotspot island.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Sequential narrative (birth to seamount)</li><li>Interactive click-to-reveal keeps students active</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Labeled cross-section shows all four stages at once</li><li>One stage at a time in the detail panel reduces overload</li><li>Real Hawaiian examples (Loihi, Maui, Kauai) ground the stages</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">The Hawaiian Islands sit in the middle of the Pacific plate, far from any boundary. What melts through the crust to form them?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>A subduction trench at the plate edge</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>A hotspot fed by a rising mantle plume</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>A transform fault sliding sideways</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">In a hotspot island chain, which island is the youngest?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>The one farthest from the hotspot</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>The one sitting directly over the hotspot</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>They are all exactly the same age</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">Old Hawaiian islands slowly sink and become seamounts. Why?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>As the crust moves away from the hotspot it cools, grows more dense, and subsides</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>The hotspot reaches up and drags them under</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Ocean waves erode them away in just a few years</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: PUTTING IT TOGETHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explain" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">From Deep Plume to Island Trail</h2>
+    <p class="section-desc">You started with a puzzle: why does a chain of volcanoes cross the middle of the Pacific, with one end older than the other? Now you can trace the whole chain of cause and effect, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">It Starts With a Plume</div>
+        <div class="wrapup-beat-answer">A fixed plume of heat melts through the middle of the plate.</div>
+        <div class="wrapup-beat-body">A <strong>mantle plume</strong> rises to a <strong>hotspot</strong> and feeds a volcano, even though there is no plate boundary anywhere nearby.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">The Plate Keeps Moving</div>
+        <div class="wrapup-beat-answer">Plate motion carries each volcano off the hotspot and a new one forms.</div>
+        <div class="wrapup-beat-body">Because the plate slides while the hotspot stays put, the volcanoes line up into an <strong>island chain</strong> that grows younger toward the hotspot.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">Old Islands Sink</div>
+        <div class="wrapup-beat-answer">As the crust ages it cools, becomes dense, and subsides into seamounts.</div>
+        <div class="wrapup-beat-body">The oldest islands lose their magma source, go <strong>extinct</strong>, and slowly sink below the sea. Loihi, southeast of Hawaii, is the next island rising.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full chain:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Heat rises as a mantle plume</span>
+        <span class="wuc wuc-1">Hotspot melts through the plate</span>
+        <span class="wuc wuc-2">Plate moves over the fixed hotspot</span>
+        <span class="wuc wuc-2">Volcanoes line up youngest to oldest</span>
+        <span class="wuc wuc-3">Old islands cool and sink to seamounts</span>
+      </div>
+      <div style="margin-top: 1rem;">Hawaii is not in the wrong place after all. A fixed hotspot and a moving plate worked together over millions of years to build a chain of islands. That chain is a record of how Earth's surface has changed, from a single volcano to a trail stretching across the Pacific.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full sequence</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you explored, from the mantle plume to the island chain and the life of a seamount. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
+        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="el-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes elThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(159,184,204,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--accent2); box-shadow:0 0 0 3px rgba(122,143,166,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-actions { margin-top:0.9rem; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(29,233,182,0.07); border:1px solid rgba(29,233,182,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: elThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="el-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In two or three sentences, explain how a chain of volcanoes can form in the middle of a plate, and why one end is older than the other. Trace the chain in order, from the heat below to the sinking island. Use the word <strong>hotspot</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Write your explanation here..." aria-label="Explain how a chain of volcanoes can form in the middle of a plate and why one end is older"></textarea>
+      <div class="think-model" id="el-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        A fixed <strong>hotspot</strong> fed by a rising mantle plume melts through the middle of the plate and builds a volcano. Because the plate keeps moving while the hotspot stays put, each volcano is carried away and a new one grows in its place, leaving a chain that grows younger toward the hotspot. As the old islands drift off the heat they cool, grow dense, and slowly sink into seamounts. If your sentences follow the chain from the fixed hotspot to the moving plate to the aging, sinking islands, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student building the causal chain in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Cause and effect: tracing the fixed hotspot to the moving plate to the sinking island in order</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two or three sentence response, not an essay</li><li>Keyword scaffold ("hotspot")</li><li>Model answer to compare against</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score Board -->
+    <div class="score-board" id="el-score" tabindex="-1" role="status" aria-live="polite">
+      <div class="big-score" id="el-score-num"></div>
+      <p id="el-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">&#128269; The Question You Came In With</span>
+        You started this lesson asking: <strong>"How can a chain of volcanoes form in the middle of a plate?"</strong> If you can trace a mantle plume to a hotspot, a moving plate to an island chain, and an aging island to a seamount, you have answered it.
+      </div>
+      <div id="el-submit-status"></div>
+      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>mantle plumes</strong>, the moving <strong>tectonic plates</strong> that carry islands away, and the <strong>seamounts</strong> that mark where old volcanoes once stood. More investigations, simulations, and challenges are coming soon.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-name">More Coming Soon</div>
+        <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+        <span class="cont-status">Coming Soon</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Hotspots build volcanoes in the middle of plates. These lessons explain how that is possible.</p>
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_earths-layers.html" aria-label="Earth's Layers lesson">
+        <div class="cont-icon">🌍</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Earth's Layers</div>
+        <div class="cont-desc">A hotspot is a plume of heat rising from deep in the mantle. Revisit the interior to see where that heat comes from.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_types-of-volcanoes.html" aria-label="Types of Volcanoes lesson">
+        <div class="cont-icon">🌋</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Types of Volcanoes</div>
+        <div class="cont-desc">Hotspot volcanoes still build cones and broad shields. Compare how their shapes form and erupt.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_plate-tectonics.html" aria-label="Plate Tectonics lesson">
+        <div class="cont-icon">🧩</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Plate Tectonics</div>
+        <div class="cont-desc">A hotspot stays put while the plate slides over it, leaving a trail of islands. See the plate motion that creates the chain.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (one open at a time, click to reveal) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.glossary-card.open').forEach(function(c){
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded', 'false');
+      var chev = c.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▾';
+    });
+    if (!isOpen) {
+      card.classList.add('open');
+      card.setAttribute('aria-expanded', 'true');
+      var chev = card.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▴';
+    }
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== HOTSPOT ISLAND STAGES INTERACTIVE ===== -->
+<script>
+const stageData = {
+  1: { label: 'Stage 1 · A new island is born', title: 'Birth Over the Hotspot', body: 'Magma from the plume builds a brand new volcano on the seafloor. At first it is hidden under the ocean. Just southeast of the Big Island, an undersea volcano called Loihi (also named Kamaehuakanaloa) is growing over the hotspot right now. One day it may rise tall enough to become the next Hawaiian island.' },
+  2: { label: 'Stage 2 · Sitting over the hotspot', title: 'An Active Island', body: 'The volcano sits directly over the hotspot, so the plume keeps feeding it magma. Its volcanoes erupt and the island grows tall above the sea. The Big Island of Hawaii is at this stage now, with active volcanoes like Kilauea and Mauna Loa.' },
+  3: { label: 'Stage 3 · Carried off the hotspot', title: 'Cut Off and Extinct', body: 'The moving plate carries the island away from the fixed hotspot. With no magma source left, its volcanoes stop erupting and the island goes extinct. The older islands northwest of Hawaii, such as Oahu and Kauai, have already drifted past this point.' },
+  4: { label: 'Stage 4 · Cooled and sunk', title: 'A Submerged Seamount', body: 'As the crust moves farther from the hotspot it cools, becomes more dense, and slowly subsides. Erosion wears the old island down, and over millions of years it sinks below the waves to become a seamount, an underwater mountain that was once an island.' }
+};
+function stageClick(n) {
+  const d = stageData[n];
+  document.getElementById('st-label').textContent = d.label;
+  document.getElementById('st-title').textContent = d.title;
+  document.getElementById('st-body').textContent  = d.body;
+  document.querySelectorAll('#term-stages .layer-row').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
+    el.style.outlineOffset = '1px';
+  });
+}
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! A mantle plume rises to a hotspot and melts through the middle of the plate, with no boundary needed.',
+    'Not quite. There is no boundary under Hawaii. The heat comes from a hotspot fed by a rising mantle plume.');
+  wireQR('qr2', 1,
+    'Correct! The island sitting over the hotspot is the youngest, because that is where new volcanoes are forming.',
+    'Not quite. New volcanoes form over the hotspot, so the island over the hotspot is the youngest, not the oldest.');
+  wireQR('qr3', 0,
+    'Correct! Moving away from the hotspot, the crust cools and grows denser, so it rides lower and subsides into a seamount.',
+    'Not quite. The hotspot does not pull islands down, and erosion takes millions of years. The crust cools, grows dense, and subsides.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+// Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+
+var elQuizState = { selected: [], submitted: false };
+
+var elQuizQuestions = [
+  {
+    q: "A hotspot is best described as:",
+    options: [
+      "A boundary where two plates collide and one sinks",
+      "A fixed point in the mantle where heat rises and melts through the crust above",
+      "A trench where ocean crust is destroyed",
+      "A crack where a continent is splitting apart"
+    ],
+    correct: 1,
+    explanation: "A hotspot is a point on the crust directly above a fixed mantle plume. Heat rises there and melts through the plate, even in the middle of a plate."
+  },
+  {
+    q: "Most of Earth's volcanoes form at plate boundaries. Where do the Hawaiian Islands sit?",
+    options: [
+      "Along a deep-sea subduction trench",
+      "At a divergent mid-ocean ridge",
+      "On the edge of the Pacific plate",
+      "In the middle of the Pacific plate"
+    ],
+    correct: 3,
+    explanation: "The Hawaiian Islands sit in the middle of the Pacific plate, far from any boundary. That is what makes them hotspot volcanoes."
+  },
+  {
+    q: "As the Pacific plate moves over the fixed hotspot, what happens to the volcanoes it carries?",
+    options: [
+      "Each volcano is carried away from the hotspot and a new one forms, building a chain",
+      "Every volcano stays over the hotspot and keeps growing taller",
+      "The volcanoes drag the hotspot along with them",
+      "The volcanoes sink the moment they form"
+    ],
+    correct: 0,
+    explanation: "The plate moves while the hotspot stays fixed, so each volcano drifts off the heat and a new one grows in its place. Repeated over time, this builds an island chain."
+  },
+  {
+    q: "In a hotspot island chain, which island is the youngest?",
+    options: [
+      "The one farthest from the hotspot",
+      "They are all exactly the same age",
+      "The one sitting directly over the hotspot",
+      "The one that has already become a seamount"
+    ],
+    correct: 2,
+    explanation: "New volcanoes form over the hotspot, so the island sitting over it is the youngest. Islands get older with distance from the hotspot."
+  },
+  {
+    q: "On the Big Island of Hawaii the volcanoes are active, but the islands to the northwest are quiet. Why?",
+    options: [
+      "The northwest islands were built by a completely different hotspot",
+      "The northwest islands have drifted off the hotspot and lost their magma source",
+      "The northwest islands are actually much younger",
+      "The hotspot itself slowly moved to the northwest"
+    ],
+    correct: 1,
+    explanation: "The northwest islands have been carried away from the hotspot. Cut off from the plume's magma, their volcanoes went extinct, while the Big Island still sits over the heat."
+  },
+  {
+    q: "The Pacific plate moves toward the northwest, and the islands grow older in that direction. Compared to the oldest islands, where is the hotspot today?",
+    options: [
+      "To the southeast, where the youngest islands and Loihi are",
+      "To the northwest, beneath the oldest islands",
+      "Directly under the single oldest island",
+      "There is no consistent pattern to the island ages"
+    ],
+    correct: 0,
+    explanation: "The youngest, active volcanoes mark the hotspot. Since the plate moves northwest, the hotspot is at the southeast end, near the Big Island and Loihi."
+  },
+  {
+    q: "An underwater mountain that was once a volcanic island above the sea is called a:",
+    options: [
+      "Mid-ocean ridge",
+      "Rift valley",
+      "Subduction trench",
+      "Seamount"
+    ],
+    correct: 3,
+    explanation: "A seamount is a submerged, extinct volcanic island. Old hotspot islands sink and become seamounts as the crust they ride on cools and subsides."
+  },
+  {
+    q: "Why do old hotspot islands slowly sink below the ocean surface over millions of years?",
+    options: [
+      "The hotspot reaches up and pulls them down as it cools",
+      "As the crust moves away from the hotspot it cools, becomes more dense, and subsides",
+      "Rising sea levels bury them within a single year",
+      "Newer islands physically push them underwater"
+    ],
+    correct: 1,
+    explanation: "Crust that moves away from the hotspot cools and grows denser. Denser crust rides lower, so the old islands subside, and erosion wears them down into seamounts."
+  },
+  {
+    q: "Loihi (Kamaehuakanaloa) is an undersea volcano just southeast of the Big Island. What does it most likely represent?",
+    options: [
+      "The oldest volcano in the entire chain",
+      "A volcano formed at a subduction zone",
+      "The next Hawaiian island, now forming over the hotspot",
+      "A seamount that has finished sinking"
+    ],
+    correct: 2,
+    explanation: "Loihi sits over the hotspot at the southeast end of the chain, so it is the youngest volcano and the likely next Hawaiian island."
+  },
+  {
+    q: "How does a hotspot island chain provide evidence that a tectonic plate has moved?",
+    options: [
+      "The line of islands and their ages record the direction and path the plate traveled over the fixed hotspot",
+      "The islands all erupted at once, proving the plate never moves",
+      "The islands show that the hotspot moves while the plate stays still",
+      "The islands prove that volcanoes can only form at plate boundaries"
+    ],
+    correct: 0,
+    explanation: "Because the hotspot stays fixed, the chain records plate motion. The order and ages of the islands trace the direction the plate has traveled."
+  }
+];
+
+
+
+function elBuildQuiz() {
+  var container = document.getElementById('el-quiz-questions');
+  container.innerHTML = '';
+  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
+  elQuizState.submitted = false;
+  document.getElementById('el-submit-btn').disabled = true;
+  elUpdateProgress();
+  var letters = ['A','B','C','D'];
+  elQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function elSelectAnswer(qi, chosenIndex) {
+  if (elQuizState.submitted) return;
+  var prev = elQuizState.selected[qi];
+  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
+  elQuizState.selected[qi] = chosenIndex;
+  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  elUpdateProgress();
+  elRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(elQuizState.selected);
+}
+
+function elUpdateProgress() {
+  var total    = elQuizQuestions.length;
+  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+
+function elSubmitQuiz() {
+  if (elQuizState.submitted) return;
+  var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
+  elQuizState.submitted = true;
+  document.getElementById('el-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('el-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('el-think-model').classList.add('show');
+  var correct = 0;
+  elQuizQuestions.forEach(function (q, qi) {
+    var chosen    = elQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('el-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = elQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand hotspot volcanoes cold.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+    : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
+    : '\u{1F4AA} Keep going; review each section carefully and try again!';
+  document.getElementById('el-score-num').textContent = score;
+  document.getElementById('el-score-msg').textContent = msg;
+  var sb = document.getElementById('el-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+
+  if (pct === 100) {
+    elQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (elAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by elQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var elReturnCtl = document.getElementById('back-to-assignments');
+    if (elReturnCtl) elReturnCtl.classList.add('show');
+    var elFinalStatus = document.getElementById('el-submit-status');
+    elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var elGenericError = 'Submission did not complete. Please refresh and try again.';
+    function elShowSubmitError(msg) {
+      elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || elGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(elQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        elFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        elShowSubmitError(r.message);
+      } else {
+        elShowSubmitError(null);
+      }
+    }, function () {
+      elShowSubmitError(null);
+    });
+    return;
+  }
+
+
+  document.getElementById('el-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+}
+
+function elResetQuiz() {
+  if (elQuizState.continueTimer) {
+    clearTimeout(elQuizState.continueTimer);
+    elQuizState.continueTimer = null;
+  }
+  document.getElementById('el-score').classList.remove('show');
+  document.getElementById('el-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('el-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('el-think-model').classList.remove('show');
+  elBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
+})();
+
+elBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

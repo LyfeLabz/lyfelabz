@@ -557,6 +557,26 @@
   .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
   .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome. The chrome is the sticky nav (top:0, ~64px)
+     plus the sticky quiz-progress bar (top:64px, ~46px) = ~110px, so a
+     120px margin lands the score just below it with a small gap. At the
+     600px phone breakpoint the nav is ~52px and the progress bar moves to
+     top:52px, so the stack is ~98px and 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
   .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
   .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
   .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
@@ -1690,7 +1710,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <!-- Score Board -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
     <div class="score-board" id="el-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="el-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
       <div class="big-score" id="el-score-num"></div>
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
@@ -1699,6 +1724,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -2195,6 +2223,12 @@ function elSubmitQuiz() {
   var sb = document.getElementById('el-score');
   sb.classList.add('show');
   sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results region after the offset scroll
+  // owns the viewport position. preventScroll keeps the scroll-margin-top
+  // landing intact so focus does not tug the page back under the chrome.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
 
   if (pct === 100) {
     elQuizState.continueTimer = setTimeout(function () {
@@ -2209,6 +2243,13 @@ function elSubmitQuiz() {
     // facing feedback is unchanged. Duplicate clicks are guarded by
     // elQuizState.submitted; finalize itself is idempotent on the
     // runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the assignment-context return control so the
+    // student has an in-product route back to /app/ (My Assignments)
+    // without relying on browser Back.
+    var elReturnCtl = document.getElementById('back-to-assignments');
+    if (elReturnCtl) elReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
     var elFinalStatus = document.getElementById('el-submit-status');
     elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
     // Defensive terminal-state handler. finalize is contracted to resolve

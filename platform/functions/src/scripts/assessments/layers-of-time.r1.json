@@ -1,0 +1,269 @@
+{
+  "activityId": "layers-of-time",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which type of rock is most likely to contain fossils?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Igneous rock, because it forms from cooled magma"
+        },
+        {
+          "optionId": "B",
+          "text": "Metamorphic rock, because it forms under pressure"
+        },
+        {
+          "optionId": "C",
+          "text": "Sedimentary rock, because organisms get buried in layers"
+        },
+        {
+          "optionId": "D",
+          "text": "All rock types contain the same number of fossils"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Sedimentary rock forms when layers of sediment pile up and compact over time. Organisms that die and get buried in sediment can be preserved as fossils. Igneous and metamorphic rocks form under conditions (extreme heat or pressure) that would destroy any organism."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "A geologist finds rock layers that are tilted at a sharp angle instead of lying flat. What does this most likely tell her?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The layers were deposited at an angle to begin with"
+        },
+        {
+          "optionId": "B",
+          "text": "Something moved the layers after they were formed, like tectonic forces"
+        },
+        {
+          "optionId": "C",
+          "text": "The layers are all the same age since they're in the same location"
+        },
+        {
+          "optionId": "D",
+          "text": "Tilted layers are always the oldest layers in a sequence"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The principle of Original Horizontality tells us sediment always deposits in flat, horizontal layers. If layers are tilted or folded, it means some geological force (like tectonic movement or an earthquake) disturbed them after they formed."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "In an undisturbed sequence of rock layers, which layer is the oldest?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The top layer"
+        },
+        {
+          "optionId": "B",
+          "text": "The middle layer"
+        },
+        {
+          "optionId": "C",
+          "text": "The bottom layer"
+        },
+        {
+          "optionId": "D",
+          "text": "Age cannot be determined from position alone"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Superposition tells us that in undisturbed rock layers, the bottom layer was deposited first and is therefore the oldest. Each layer on top formed later. This is one of the most fundamental principles in reading the rock record."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "A vein of igneous rock cuts through several layers of sedimentary rock. What can scientists conclude?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The igneous rock is older than the sedimentary layers it cuts through"
+        },
+        {
+          "optionId": "B",
+          "text": "The igneous rock is the same age as the surrounding layers"
+        },
+        {
+          "optionId": "C",
+          "text": "The igneous rock is younger than the layers it cuts through"
+        },
+        {
+          "optionId": "D",
+          "text": "Igneous rock always forms before sedimentary rock nearby"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Cross-Cutting Relationships: anything that cuts through existing rock must be younger than what it cuts. The magma that formed the igneous vein had to intrude into rock that was already there, so the surrounding sedimentary layers are older."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "What makes a fossil useful as an \"index fossil\"?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Lived for millions of years across many regions"
+        },
+        {
+          "optionId": "B",
+          "text": "Lived briefly but spread across the whole globe"
+        },
+        {
+          "optionId": "C",
+          "text": "Found only in one specific location on Earth"
+        },
+        {
+          "optionId": "D",
+          "text": "Always found at the bottom of any rock sequence"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A good index fossil comes from a species that (1) existed for a short, specific time period (so finding it precisely dates that layer) and (2) was widespread across the globe, so it can be used to match and compare layers at different locations around the world."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What is the difference between weathering and erosion?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Weathering moves rock; erosion breaks it down in place"
+        },
+        {
+          "optionId": "B",
+          "text": "Weathering breaks rock apart; erosion carries those pieces away"
+        },
+        {
+          "optionId": "C",
+          "text": "They are the same process, just with different names"
+        },
+        {
+          "optionId": "D",
+          "text": "Weathering only happens in deserts; erosion only happens near water"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Weathering breaks rock down into smaller pieces (in place), while erosion picks up those pieces and transports them somewhere else, by water, wind, or ice. Both are needed to create the sediment that eventually becomes sedimentary rock."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A scientist says \"Layer A is older than Layer B.\" This is an example of which type of dating?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Absolute dating, because it uses a comparison"
+        },
+        {
+          "optionId": "B",
+          "text": "Relative dating; it orders events without giving exact ages"
+        },
+        {
+          "optionId": "C",
+          "text": "Index fossil dating, because it involves fossils"
+        },
+        {
+          "optionId": "D",
+          "text": "Radiometric dating, because it uses radioactive elements"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Relative dating determines the order of events (which came first) without giving an exact age in years. Saying \"Layer A is older than Layer B\" is relative dating. Absolute dating would say \"Layer A is 250 million years old.\""
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Metamorphic rock forms when existing rock is changed by:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Rapid cooling after a volcanic eruption"
+        },
+        {
+          "optionId": "B",
+          "text": "Sediment piling up and being compressed over millions of years"
+        },
+        {
+          "optionId": "C",
+          "text": "Intense heat and pressure deep underground; without melting"
+        },
+        {
+          "optionId": "D",
+          "text": "Erosion and deposition at the bottom of a river"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Metamorphic rock forms when other rocks are subjected to intense heat and pressure deep underground. Crucially, the rock does not melt, if it melted, it would eventually become igneous rock. The heat and pressure transform the existing minerals into something new."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Rock strata are most commonly made of which rock type?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Igneous rock"
+        },
+        {
+          "optionId": "B",
+          "text": "Metamorphic rock"
+        },
+        {
+          "optionId": "C",
+          "text": "Sedimentary rock"
+        },
+        {
+          "optionId": "D",
+          "text": "All three types form equally"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Rock strata (layers) are made of sedimentary rock. Sedimentary rock forms in layers by definition, sediment builds up over time in horizontal sheets, and each layer represents a different period. Igneous rock can appear as intrusions cutting through strata, but the layers themselves are sedimentary."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Small pieces of an older rock type are found trapped inside a younger layer of sedimentary rock. What principle explains this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Superposition, older layers always lie below younger ones"
+        },
+        {
+          "optionId": "B",
+          "text": "Cross-Cutting Relationships, intruding features are always younger"
+        },
+        {
+          "optionId": "C",
+          "text": "Inclusions, trapped pieces are older than the rock around them"
+        },
+        {
+          "optionId": "D",
+          "text": "Original Horizontality, sediment always deposits in flat layers"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Inclusions are pieces of one rock type found inside another. Because they had to exist before the surrounding rock formed around them, inclusions are always older than the layer they are found within. It's one of four key principles scientists use to read the rock record."
+    }
+  ]
+}

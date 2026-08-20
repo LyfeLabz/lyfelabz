@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_wave-behavior.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=wave-behavior --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -3486,6 +3492,10 @@ function wbSelectAnswer(qi, chosenIndex) {
   document.getElementById('wb-q-' + qi + '-' + chosenIndex).classList.add('selected');
   wbUpdateProgress();
   wbRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(wbQuizState.selected);
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3510,6 +3520,7 @@ function wbValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function wbSubmitQuiz() {
   if (wbQuizState.submitted) return;
+  var wbAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!wbQuizState.selected.every(function (s) { return s !== null; })) return;
   var wbThinkGate = document.getElementById('wb-thinking');
@@ -3563,6 +3574,33 @@ function wbSubmitQuiz() {
       var more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (wbAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by wbQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var wbFinalStatus = document.getElementById('wb-submit-status');
+    wbFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var wbGenericError = 'Submission did not complete. Please refresh and try again.';
+    function wbShowSubmitError(msg) {
+      wbFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || wbGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(wbQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        wbFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        wbShowSubmitError(r.message);
+      } else {
+        wbShowSubmitError(null);
+      }
+    }, function () {
+      wbShowSubmitError(null);
+    });
+    return;
   }
 
   if (wbQuizMode === 'practice') {

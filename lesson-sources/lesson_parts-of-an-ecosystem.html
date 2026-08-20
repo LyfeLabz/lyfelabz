@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_parts-of-an-ecosystem.html">
+<meta name="description" content="Explore the parts of an ecosystem: biotic and abiotic factors, the levels of organization from organism to biome, habitat and niche, and how species interact through predation, symbiosis, and competition. A Grade 7 science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Parts of an Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --orange:      #e8814a;
+    --green:       #3ddc84;
+    --blue:        #7cc8f8;
+    --red:         #e74c3c;
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 620px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto; padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    font-size: 1rem; color: var(--text-muted); max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout.teal { background: rgba(29,233,182,0.06); border-color: rgba(29,233,182,0.2); border-left-color: var(--teal); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; line-height: 1.25; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── LEARNING GOALS ── */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.3rem; text-align: left; cursor: pointer;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+  .gc-chev { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .glossary-card.open .gc-chev { color: var(--gold); }
+  .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.6rem; }
+  .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+  .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-blue   { border-top-color: var(--blue);   } .gc-blue .gc-term   { color: var(--blue); }
+  .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+  .gc-slate  { border-top-color: var(--accent2);} .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-jump {
+    display: inline-block; margin-top: 0.55rem; font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px dashed rgba(245,200,66,0.5); cursor: pointer;
+  }
+  .gc-jump:hover { border-bottom-style: solid; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAME-IT REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 820px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it.orange-it { border-left-color: var(--orange); }
+  .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it.blue-it { border-left-color: var(--blue); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label   { color: var(--teal); }
+  .name-it.green-it .name-it-label  { color: var(--green); }
+  .name-it.orange-it .name-it-label { color: var(--orange); }
+  .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it.blue-it .name-it-label   { color: var(--blue); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .name-it p strong { font-weight: 800; }
+  .name-it.teal-it p strong   { color: var(--teal); }
+  .name-it.green-it p strong  { color: var(--green); }
+  .name-it.orange-it p strong { color: var(--orange); }
+  .name-it.slate-it p strong  { color: var(--accent2); }
+  .name-it.blue-it p strong   { color: var(--blue); }
+
+  /* ── COMPARISON GRID ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.8rem; }
+  .crust-card.oceanic .crust-title { color: var(--green); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--green); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
+
+  /* ── STAGE SELECTOR (interactive levels of organization) ── */
+  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
+  .layer-figure svg { width: 100%; height: auto; display: block; }
+  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-row {
+    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s; position: relative; border: none; text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .layer-row:hover { filter: brightness(1.18); }
+  .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
+  .layer-detail-panel {
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 150px; display: flex; align-items: center;
+  }
+  .ld-inner { width: 100%; }
+  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── FIGURE ── */
+  .figure-box {
+    background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
+    border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
+  }
+  .figure-box svg { width: 100%; height: auto; display: block; }
+  .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── QUICK RECALL ── */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* ── WRAP-UP BEATS ── */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--green), rgba(61,220,132,0.3)); }
+  .wrapup-beat-2 { background: rgba(232,129,74,0.05); border: 1px solid rgba(232,129,74,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+  .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--green); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--orange); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--green);  background: rgba(61,220,132,0.08); border-color: rgba(61,220,132,0.3); }
+  .wuc-2 { color: var(--orange); background: rgba(232,129,74,0.08); border-color: rgba(232,129,74,0.3); }
+  .wuc-3 { color: var(--blue);   background: rgba(124,200,248,0.08); border-color: rgba(124,200,248,0.3); }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-styles */
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55); background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-student-info-styles */
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent2);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select {
+    width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border); border-radius: 10px; color: var(--text);
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted); width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left; color: rgba(232,237,242,0.9); width: 100%; }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+  .mystery-loop strong { color: var(--text); }
+  .ml-label { display: block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem; }
+  .score-submitted { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(29,233,182,0.1); border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .score-error { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .reset-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── GO FURTHER ── */
+  #continue { background: var(--dark); }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+  .continue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+  .connections-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0; }
+  @media (max-width: 600px) { .connections-grid { grid-template-columns: 1fr; } }
+  .cont-card { border-radius: 18px; padding: 1.5rem 1.5rem 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+  .cont-card.soon::before { background: linear-gradient(90deg, #7a8fa6, #9fb0c4); }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; background: rgba(122,143,166,0.14); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-muted); }
+  .cont-card.lesson .cont-cat { color: #2dd4bf; }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+  .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+  .cont-status { display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.95rem; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); align-self: flex-start; margin-top: auto; }
+  .cont-card.lesson .cont-status { background: rgba(20,184,166,0.12); border-color: rgba(20,184,166,0.4); color: #2dd4bf; }
+  .cont-card.inv { background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.35); }
+  .cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+  .cont-card.inv:hover { border-color: rgba(59,130,246,0.6); box-shadow: 0 14px 40px rgba(59,130,246,0.15); transform: translateY(-4px); }
+  .cont-card.inv .cont-icon { background: rgba(59,130,246,0.18); }
+  .cont-card.inv .cont-cat { color: #3B82F6; }
+  .cont-card.inv .cont-status { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3); color: #3B82F6; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .name-it.pulsing { animation: vocabPulse 3s ease forwards; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+    nav { padding: 0.85rem 1.2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+  footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+  footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+  footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-touchtarget */
+  .mode-btn,
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-touchtarget */
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#bio" class="nav-back">&#8592; Life Science</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#127807;</span>
+  <span class="hero-float">&#129422;</span>
+  <span class="hero-float">&#129419;</span>
+  <span class="hero-float">&#127797;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Parts of an Ecosystem</h1>
+  <p>A Joshua tree can only be pollinated by one kind of moth, and that moth can only raise its young inside a Joshua tree. Neither one survives without the other. An ecosystem is full of connections like this, between living things and the nonliving world around them.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How do the living and nonliving parts of an ecosystem depend on one another?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">&#128300; Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (a tree and a moth that cannot survive apart) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: breaking the ecosystem into small, ordered parts keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of levels of organization and species interactions builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Systems thinking: students trace how living and nonliving parts of an ecosystem interact, mirroring authentic science. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">&#127757;</span>
+        <div class="goal-text">I can describe the living (biotic) and nonliving (abiotic) parts of an ecosystem.</div>
+        <span class="goal-std">7.MS-LS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128207;</span>
+        <div class="goal-text">I can order the levels of organization from a single organism up to a biome.</div>
+        <span class="goal-std">7.MS-LS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#129309;</span>
+        <div class="goal-text">I can compare how species interact through predation, symbiosis, and competition.</div>
+        <span class="goal-std">7.MS-LS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127968;</span>
+        <div class="goal-text">I can explain how an organism's habitat and niche shape its role in an ecosystem.</div>
+        <span class="goal-std">7.MS-LS2-2</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Vocabulary to Know</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Ecosystem</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">All of the living and nonliving parts of the environment in a given area.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-ecosystem')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Biome</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A large geographic area on Earth that contains ecosystems with similar living and nonliving features.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-biome')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Biotic</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The living or once-living parts of an environment, such as plants, animals, and fungi.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-biotic')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Abiotic</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The nonliving parts of an environment, such as water, sunlight, soil, and temperature.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-biotic')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Organism</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A single living thing, such as one coyote, one cactus, or one mushroom.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Habitat</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The place within an ecosystem that gives an organism the food, shelter, and conditions it needs to survive. It is the organism's home.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-habitat')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Niche</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The role a species plays in its environment, including how it gets food, finds shelter, and meets its needs.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-niche')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Species</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A group of organisms that can mate and produce fertile offspring. They are the same type of organism.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Population</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">All the organisms of the same species living in the same area at the same time.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-levels')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Community</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">All of the different populations living together in an ecosystem at the same time.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-levels')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Symbiosis</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A close, long-term relationship between two species. The three types are mutualism, commensalism, and parasitism.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-symbiosis')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Predation</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An interaction in which one organism, the predator, feeds on another organism, its prey.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-predation')">See it in the lesson &#8595;</span></div>
+      </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE PHENOMENON
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">A Tree and a Moth That Need Each Other</h2>
+    <p class="section-desc">In Joshua Tree National Park, the desert looks empty at first. But every living thing there is tied to the others and to the nonliving world around it. One pair shows this better than any other.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#127807;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>Partners for Survival</h3>
+        <p>The Joshua tree can only be pollinated by the yucca moth. The yucca moth can only lay its eggs inside a Joshua tree flower, where its young will feed. If one disappears, so does the other. Around them, coyotes hunt jackrabbits, lizards hide under rocks from the Sun, and roots reach for scarce water. Why are the living things in one place so tied to each other and to the nonliving world?</p>
+      </div>
+    </div>
+
+    <!-- Desert ecosystem scene -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A desert ecosystem scene showing the Sun, a Joshua tree, a cactus, rocky soil, a lizard, and a coyote, with labels marking living parts and nonliving parts">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1d2c44"/>
+            <stop offset="100%" stop-color="#33415c"/>
+          </linearGradient>
+          <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#9c7a4a"/>
+            <stop offset="100%" stop-color="#735636"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="600" height="220" fill="url(#sky)"/>
+        <rect x="0" y="220" width="600" height="80" fill="url(#sand)"/>
+        <!-- sun -->
+        <circle cx="535" cy="55" r="26" fill="#f5c842"/>
+        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+          <line x1="535" y1="15" x2="535" y2="4"/><line x1="535" y1="95" x2="535" y2="106"/>
+          <line x1="495" y1="55" x2="484" y2="55"/><line x1="575" y1="55" x2="586" y2="55"/>
+          <line x1="506" y1="26" x2="498" y2="18"/><line x1="564" y1="84" x2="572" y2="92"/>
+        </g>
+        <text x="535" y="135" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">Sun (abiotic)</text>
+        <!-- joshua tree -->
+        <rect x="150" y="150" width="14" height="72" fill="#6b4a2a"/>
+        <rect x="120" y="160" width="40" height="11" fill="#6b4a2a"/>
+        <rect x="156" y="135" width="38" height="11" fill="#6b4a2a"/>
+        <g fill="#3ddc84">
+          <polygon points="112,160 124,150 124,170"/>
+          <polygon points="200,140 188,131 188,151"/>
+          <polygon points="157,128 145,135 169,135"/>
+        </g>
+        <text x="160" y="245" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Joshua tree (biotic)</text>
+        <!-- cactus -->
+        <rect x="300" y="178" width="13" height="44" rx="6" fill="#2fae6a"/>
+        <rect x="288" y="190" width="11" height="9" rx="4" fill="#2fae6a"/>
+        <rect x="314" y="186" width="11" height="9" rx="4" fill="#2fae6a"/>
+        <text x="306" y="245" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#2fae6a">Cactus</text>
+        <!-- rock -->
+        <ellipse cx="400" cy="232" rx="30" ry="16" fill="#5a5347"/>
+        <text x="400" y="270" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#c9bfa8">Rock &amp; soil (abiotic)</text>
+        <!-- lizard -->
+        <ellipse cx="392" cy="222" rx="13" ry="5" fill="#e8c14a"/><circle cx="404" cy="220" r="4" fill="#e8c14a"/>
+        <!-- coyote -->
+        <ellipse cx="470" cy="208" rx="22" ry="11" fill="#b88a55"/><circle cx="490" cy="198" r="9" fill="#b88a55"/>
+        <polygon points="486,191 484,182 491,189" fill="#b88a55"/><polygon points="494,191 497,182 498,190" fill="#b88a55"/>
+        <text x="472" y="245" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#d8a86a">Coyote (biotic)</text>
+      </svg>
+      <div class="figure-caption">A desert ecosystem holds living parts (biotic) like the Joshua tree, cactus, lizard, and coyote, plus nonliving parts (abiotic) like sunlight, rock, soil, and water.</div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-engage">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why does the Joshua tree survive only where the yucca moth also lives?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>The two species depend on each other, so each one needs the other to survive.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The moth scares away animals that would eat the tree.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>The tree and the moth happen to like the same temperature.</button>
+      </div>
+    </div>
+
+    <div class="name-it slate-it predict-gated" data-gate="qp-engage">
+      <div class="name-it-label">Here's the big idea</div>
+      <p>The best answer is <strong>A</strong>. The Joshua tree needs the moth to move its pollen, and the moth needs the tree as a place to raise its young. This is one kind of close relationship between species. An ecosystem is built from many such connections, between living things and between living things and the nonliving world. To understand them, we first have to name the parts of an ecosystem.</p>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2rem;">
+      <strong>Where we're headed:</strong> First we'll sort an ecosystem into its living and nonliving parts. Then we'll zoom out through the levels of organization, look at where and how each organism lives, and finally study the ways species interact.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a striking real relationship.</li><li>Raise a question students will want answered.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete, labeled example</li><li>Short framing text</li><li>Visual anchor</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1: BIOTIC AND ABIOTIC
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explore" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Living and Nonliving</span>
+    <h2 class="section-title">The Two Kinds of Parts</h2>
+    <p class="section-desc">Every ecosystem is made of two kinds of parts. Some parts are alive or were once alive. The rest were never alive at all. Both kinds matter.</p>
+
+    <div id="term-ecosystem" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127757;</span>
+        <div class="card-title">What Is an Ecosystem?</div>
+      </div>
+      <div class="card-body">
+        <p>An <span class="vocab">ecosystem</span> is all of the living and nonliving parts of the environment in a given area. A pond, a forest, and a stretch of desert are all ecosystems.</p>
+        <p>The living parts and the nonliving parts are always interacting. A plant needs sunlight and water. An animal needs other living things to eat and a place to shelter. Change one part and the others feel it.</p>
+      </div>
+    </div>
+
+    <div id="term-biotic" class="crust-grid">
+      <div class="crust-card oceanic">
+        <div class="crust-title">&#127807; Biotic Factors (Living)</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>The <strong>living or once-living</strong> parts of an environment</span></li>
+          <li><span class="crust-dot"></span><span>Includes plants, animals, fungi, and microbes</span></li>
+          <li><span class="crust-dot"></span><span>Examples: Joshua tree, coyote, lizard, cactus</span></li>
+        </ul>
+      </div>
+      <div class="crust-card continental">
+        <div class="crust-title">&#128167; Abiotic Factors (Nonliving)</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>The <strong>nonliving</strong> parts of an environment</span></li>
+          <li><span class="crust-dot"></span><span>Things that were never alive</span></li>
+          <li><span class="crust-dot"></span><span>Examples: sunlight, water, soil, rock, temperature</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="term-biome" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Ecosystem vs Biome</div>
+      <p>An <strong>ecosystem</strong> is the living and nonliving parts of one area. A <strong>biome</strong> is much larger. It is a geographic region on Earth that contains many ecosystems with similar living and nonliving features. A desert is a biome, and Joshua Tree National Park is one ecosystem inside it.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Biotic and abiotic factors are not separate. A drop in rainfall (abiotic) can shrink the plant population (biotic), which then leaves less food for animals. The parts of an ecosystem are connected.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Define ecosystem and sort it into biotic and abiotic parts.</li><li>Separate ecosystem from the larger biome.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Categorization</li><li>Comparison and contrast</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two short, parallel cards</li><li>Plain living vs nonliving framing</li><li>Key terms in bold</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: LEVELS OF ORGANIZATION (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="journey" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Zooming Out</span>
+    <h2 class="section-title">Levels of Organization</h2>
+    <p class="section-desc">Scientists study living things at different scales. Starting from one organism, each level adds more, until we reach a whole biome. Click a level to zoom out one step.</p>
+
+    <div id="term-levels" class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nested boxes showing the levels of organization: a single organism inside a population, inside a community, inside an ecosystem, inside a biome">
+          <rect x="0" y="0" width="320" height="300" fill="#13283c"/>
+          <!-- biome -->
+          <rect x="14" y="14" width="292" height="272" rx="10" fill="none" stroke="#9fb8cc" stroke-width="2"/>
+          <text x="160" y="32" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Biome</text>
+          <!-- ecosystem -->
+          <rect x="36" y="44" width="248" height="222" rx="9" fill="none" stroke="#7cc8f8" stroke-width="2"/>
+          <text x="160" y="61" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Ecosystem</text>
+          <!-- community -->
+          <rect x="58" y="74" width="204" height="172" rx="8" fill="none" stroke="#1de9b6" stroke-width="2"/>
+          <text x="160" y="91" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#1de9b6">Community</text>
+          <!-- population -->
+          <rect x="82" y="104" width="156" height="122" rx="8" fill="none" stroke="#3ddc84" stroke-width="2"/>
+          <text x="160" y="121" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Population</text>
+          <!-- organisms (coyotes) -->
+          <g fill="#e8814a">
+            <ellipse cx="130" cy="165" rx="13" ry="7"/><circle cx="142" cy="159" r="5"/>
+            <ellipse cx="180" cy="190" rx="13" ry="7"/><circle cx="192" cy="184" r="5"/>
+            <ellipse cx="150" cy="205" rx="13" ry="7"/><circle cx="162" cy="199" r="5"/>
+          </g>
+          <text x="160" y="240" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Organisms</text>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(1)">
+            <span>1 &middot; Organism</span><span class="layer-tag">one living thing</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(2)">
+            <span>2 &middot; Population</span><span class="layer-tag">same species</span>
+          </div>
+          <div class="layer-row" style="background: rgba(29,233,182,0.24); color: #8ef0db;" onclick="layerClick(3)">
+            <span>3 &middot; Community</span><span class="layer-tag">many species</span>
+          </div>
+          <div class="layer-row" style="background: rgba(124,200,248,0.24); color: #aed8f8;" onclick="layerClick(4)">
+            <span>4 &middot; Ecosystem</span><span class="layer-tag">living + nonliving</span>
+          </div>
+          <div class="layer-row" style="background: rgba(159,184,204,0.26); color: #c4d6e6;" onclick="layerClick(5)">
+            <span>5 &middot; Biome</span><span class="layer-tag">a whole region</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a level</div>
+            <div class="ld-title" id="ld-title">Start with one organism &#8594;</div>
+            <div class="ld-body" id="ld-body">Each level adds more living things or more of the environment. Click any level to zoom out one step and see what it includes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128207;</span>
+      <div class="callout-body"><strong>Smallest to largest:</strong> organism, then population, then community, then ecosystem, then biome. Each level contains everything from the level before it, plus more.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Order the levels of organization from small to large.</li><li>Show each level nested inside the next.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the nested diagram</li><li>Sequencing and hierarchy</li><li>Chunking</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each level, no hover</li><li>Labeled diagram paired with text</li><li>Numbered, ordered levels</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: HABITAT AND NICHE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="into" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Home and Role</span>
+    <h2 class="section-title">Where It Lives, What It Does</h2>
+    <p class="section-desc">Each species fits into its ecosystem in two ways. There is the place it lives, and there is the job it does. These are not the same thing.</p>
+
+    <div id="term-habitat" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127968;</span>
+        <div class="card-title">Habitat: The Home</div>
+      </div>
+      <div class="card-body">
+        <p>A <span class="vocab">habitat</span> is the place within an ecosystem that gives an organism the biotic and abiotic factors it needs to survive and reproduce. It is the organism's home.</p>
+        <p>A coyote's habitat provides shelter among rocks and brush, prey to hunt, and water to drink. If the habitat cannot meet those needs, the organism cannot live there.</p>
+      </div>
+    </div>
+
+    <div id="term-niche" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Niche</div>
+      <p>A <strong>niche</strong> is the role a species plays in its environment. It is the way a species interacts with biotic and abiotic factors to get food, find shelter, and meet its needs. If a habitat is an organism's address, its niche is its job.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129422;</span>
+        <div class="card-title">Same Habitat, Different Niche</div>
+      </div>
+      <div class="card-body">
+        <p>Two species can share a habitat but fill different niches. A hawk and a lizard might both live among the same rocks, but the hawk hunts from the air during the day while the lizard hunts insects close to the ground.</p>
+        <p>Because their niches differ, they do not need the exact same resources at the same time, so they can share the same space.</p>
+      </div>
+    </div>
+
+    <div class="callout teal">
+      <span class="callout-icon">&#128205;</span>
+      <div class="callout-body"><strong>Address vs job:</strong> Habitat answers "where does it live?" Niche answers "what does it do and how does it survive?" Every species has both.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Separate where an organism lives from what it does.</li><li>Address a common habitat and niche mix-up.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Analogy (address vs job)</li><li>Comparison and contrast</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Concrete desert examples</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: PREDATION AND COMPETITION
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="out" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Interactions</span>
+    <h2 class="section-title">Predation and Competition</h2>
+    <p class="section-desc">Organisms in an ecosystem are always interacting. Two of the most common interactions are predation and competition. Both affect how many of each species can survive.</p>
+
+    <div id="term-predation" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129419;</span>
+        <div class="card-title">Predation</div>
+      </div>
+      <div class="card-body">
+        <p><span class="vocab">Predation</span> is an interaction in which one organism, the predator, feeds on another organism, its prey. A coyote hunting a jackrabbit is predation.</p>
+        <p>Predation keeps prey populations in check. When prey are plentiful, predators have more food and their numbers can rise. When prey become scarce, predator numbers fall.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9876;&#65039;</span>
+        <div class="card-title">Competition</div>
+      </div>
+      <div class="card-body">
+        <p><strong>Competition</strong> is an interaction in which two or more organisms need the same resource at the same time. They might compete for food, water, space, or sunlight.</p>
+        <p>Competition can happen within one species, such as two coyotes after the same rabbit. It can also happen between species, such as a coyote and a hawk hunting the same small animals.</p>
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Why it matters:</strong> Predation and competition both limit how large a population can grow. There is only so much food, water, and space, so not every organism can survive. This keeps an ecosystem in balance.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce predation and competition as core interactions.</li><li>Connect interactions to population size.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect reasoning</li><li>Within vs between species contrast</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Familiar predator and prey examples</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: SYMBIOSIS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="storage" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Symbiosis</span>
+    <h2 class="section-title">Close, Long-Term Relationships</h2>
+    <p class="section-desc">Some species live in a close relationship for a long time. We call this symbiosis. It comes in three types, sorted by who benefits and who is harmed.</p>
+
+    <div id="term-symbiosis" class="name-it gold" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Symbiosis</div>
+      <p><strong style="color: var(--gold);">Symbiosis</strong> is a close, long-term relationship between two species that usually involves an exchange of food or energy. The three major types are mutualism, commensalism, and parasitism.</p>
+    </div>
+
+    <!-- Symbiosis figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three types of symbiosis. Mutualism: both species benefit, shown plus and plus. Commensalism: one benefits and one is unaffected, shown plus and zero. Parasitism: one benefits and one is harmed, shown plus and minus.">
+        <rect x="0" y="0" width="600" height="230" fill="#0f1c2b"/>
+        <!-- mutualism -->
+        <rect x="20" y="30" width="170" height="170" rx="14" fill="rgba(61,220,132,0.08)" stroke="#3ddc84" stroke-width="2"/>
+        <text x="105" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#3ddc84">Mutualism</text>
+        <text x="105" y="120" text-anchor="middle" font-family="Nunito,sans-serif" font-size="34" font-weight="900" fill="#3ddc84">+ / +</text>
+        <text x="105" y="165" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#a8e6c4">Both species benefit</text>
+        <!-- commensalism -->
+        <rect x="215" y="30" width="170" height="170" rx="14" fill="rgba(124,200,248,0.08)" stroke="#7cc8f8" stroke-width="2"/>
+        <text x="300" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#7cc8f8">Commensalism</text>
+        <text x="300" y="120" text-anchor="middle" font-family="Nunito,sans-serif" font-size="34" font-weight="900" fill="#7cc8f8">+ / 0</text>
+        <text x="300" y="165" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#bfe0fa">One benefits, one unaffected</text>
+        <!-- parasitism -->
+        <rect x="410" y="30" width="170" height="170" rx="14" fill="rgba(231,76,60,0.08)" stroke="#e74c3c" stroke-width="2"/>
+        <text x="495" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#ec8a82">Parasitism</text>
+        <text x="495" y="120" text-anchor="middle" font-family="Nunito,sans-serif" font-size="34" font-weight="900" fill="#ec8a82">+ / &#8211;</text>
+        <text x="495" y="165" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#f0b3ad">One benefits, one is harmed</text>
+      </svg>
+      <div class="figure-caption">A plus means a species benefits, a zero means it is unaffected, and a minus means it is harmed.</div>
+    </div>
+
+    <div class="crust-grid" style="grid-template-columns: 1fr;">
+      <div class="content-card" style="margin-bottom:0;">
+        <div class="card-header">
+          <span class="card-icon">&#129309;</span>
+          <div class="card-title">The Three Types</div>
+        </div>
+        <div class="card-body">
+          <p><strong>Mutualism:</strong> both species benefit. The Joshua tree and the yucca moth are a classic example. The tree gets pollinated and the moth gets a place to raise its young.</p>
+          <p><strong>Commensalism:</strong> one species benefits and the other is neither helped nor harmed. A bird building a nest in a tree gets shelter, while the tree is unaffected.</p>
+          <p><strong>Parasitism:</strong> one species benefits and the other is harmed. A tick feeds on a deer. The tick (the parasite) benefits, and the deer (the host) is harmed.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>Back to the puzzle:</strong> The Joshua tree and the yucca moth are in a mutualism. Each one benefits, and neither can survive without the other. That is why the tree only lives where the moth lives too.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Define symbiosis and its three types.</li><li>Answer the opening phenomenon directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the plus and minus chart</li><li>Categorization by who benefits</li><li>Worked examples</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key term defined in place</li><li>Plus, zero, and minus shown visually</li><li>One example per type</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Which of these is an abiotic factor in a desert ecosystem?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>A coyote</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Sunlight</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>A cactus</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">All the coyotes living in one area at the same time make up a what?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Population</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Community</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Biome</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">In a relationship where both species benefit, the symbiosis is called what?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>Parasitism</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Commensalism</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Mutualism</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: PUTTING IT TOGETHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">An Ecosystem Is a Web of Parts</h2>
+    <p class="section-desc">You started with a question: how do the living and nonliving parts of an ecosystem depend on one another? Now you can put the whole picture together.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">The Parts</div>
+        <div class="wrapup-beat-answer">Living and nonliving, at every scale.</div>
+        <div class="wrapup-beat-body">An <strong>ecosystem</strong> holds <strong>biotic</strong> and <strong>abiotic</strong> factors. Zooming out gives the levels of organization: organism, <strong>population</strong>, <strong>community</strong>, ecosystem, <strong>biome</strong>.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">The Roles</div>
+        <div class="wrapup-beat-answer">Each species has a home and a job.</div>
+        <div class="wrapup-beat-body">A species lives in its <strong>habitat</strong> and fills its <strong>niche</strong>. Two species can share a habitat as long as their niches differ.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">The Interactions</div>
+        <div class="wrapup-beat-answer">Species shape one another.</div>
+        <div class="wrapup-beat-body">Through <strong>predation</strong>, <strong>competition</strong>, and <strong>symbiosis</strong>, species depend on and limit each other, keeping the ecosystem in balance.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full picture:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Biotic and abiotic parts</span>
+        <span class="wuc wuc-1">Organism to biome</span>
+        <span class="wuc wuc-2">Habitat and niche</span>
+        <span class="wuc wuc-3">Predation and competition</span>
+        <span class="wuc wuc-3">Symbiosis: + / +, + / 0, + / &#8211;</span>
+      </div>
+      <div style="margin-top: 1rem;">An ecosystem is not a list of separate parts. It is a web of connections. Living things depend on the nonliving world for sunlight, water, and shelter, and they depend on each other through hunting, competing, and partnering. Change one part and the rest of the web feels it. That is why the Joshua tree cannot live without its moth.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the parts into one connected system.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you explored, from biotic and abiotic factors to the three types of symbiosis. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-mode-toggle-markup -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-mode-toggle-markup -->
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-student-info-markup -->
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="el-student-name">Student Name</label>
+          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="el-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-teacher-select">Teacher</label>
+          <select id="el-teacher-select">
+            <option value="">- Select -</option>
+            <option value="mr-kankel">Mr. Kankel</option>
+            <option value="mr-rovner">Mr. Rovner</option>
+          </select>
+          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-block-select">Class Block</label>
+          <select id="el-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A Block</option><option value="B">B Block</option>
+            <option value="C">C Block</option><option value="D">D Block</option>
+            <option value="E">E Block</option><option value="F">F Block</option>
+            <option value="G">G Block</option>
+          </select>
+          <div class="info-error" id="el-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-student-info-markup -->
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
+        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="el-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes elThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(29,233,182,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(29,233,182,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(29,233,182,0.07); border:1px solid rgba(29,233,182,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: elThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="el-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one or two sentences, explain how a change in one part of an ecosystem can affect the other parts. Follow the change from one part to the next, not just a list of parts. Use the word <strong>depend</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Write your explanation here..." aria-label="Explain how a change in one part of an ecosystem affects the other parts"></textarea>
+      <div class="think-model" id="el-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        Every part of an ecosystem is connected, so a change in one part ripples out to the others. Less rainfall (abiotic) leaves fewer plants (biotic), which means less food for the animals that <strong>depend</strong> on them, and fewer of those animals means less food for their predators. Living things depend on the nonliving world and on each other, so no part stands alone. If your sentence follows one change from part to part, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student constructing the central idea in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Systems thinking: tracing a change through connected parts</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sentence-length response, not an essay</li><li>Keyword scaffold ("depend")</li><li>Model answer to compare against</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score Board -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
+    <div class="score-board" id="el-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="el-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
+      <div class="big-score" id="el-score-num"></div>
+      <p id="el-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">&#128269; The Question You Came In With</span>
+        You started this lesson asking: <strong>"How do the living and nonliving parts of an ecosystem depend on one another?"</strong> If you can name the biotic and abiotic parts, place an organism in its levels of organization, tell a habitat from a niche, and sort interactions into predation, competition, and the three types of symbiosis, you have answered it.
+      </div>
+      <div id="el-submit-status"></div>
+      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>biotic and abiotic factors</strong>, <strong>habitat and niche</strong>, and the ways species interact through <strong>predation, symbiosis, and competition</strong>.</p>
+    <div class="continue-grid">
+      <a class="cont-card inv" href="investigation_population-patterns.html" aria-label="Population Patterns investigation">
+        <div class="cont-icon">&#128202;</div>
+        <div class="cont-cat">Investigation</div>
+        <div class="cont-name">Population Patterns</div>
+        <div class="cont-desc">Analyze real population data from Isle Royale, the boreal forest, and Yellowstone to find evidence for how resource availability shapes populations over time.</div>
+        <span class="cont-status">Investigate</span>
+      </a>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Every ecosystem runs on the same parts working together. These lessons show what those parts do.</p>
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_photosynthesis.html" aria-label="Photosynthesis lesson">
+        <div class="cont-icon">&#127811;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Photosynthesis</div>
+        <div class="cont-desc">Producers are the foundation of every ecosystem. See how they use sunlight to make the food that feeds everything else.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_energy-flow.html" aria-label="Energy Flow lesson">
+        <div class="cont-icon">&#128267;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Energy Flow</div>
+        <div class="cont-desc">The parts of an ecosystem are linked by who eats whom. Follow the energy as it passes from producers to consumers to decomposers.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_ecosystem-stability.html" aria-label="Ecosystem Stability lesson">
+        <div class="cont-icon">&#9878;&#65039;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Ecosystem Stability</div>
+        <div class="cont-desc">The more variety of living and nonliving parts an ecosystem has, the better it can stay balanced when conditions change.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (one open at a time, click to reveal) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.glossary-card.open').forEach(function(c){
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded', 'false');
+      var chev = c.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▾';
+    });
+    if (!isOpen) {
+      card.classList.add('open');
+      card.setAttribute('aria-expanded', 'true');
+      var chev = card.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▴';
+    }
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== LEVELS OF ORGANIZATION INTERACTIVE ===== -->
+<script>
+const layerData = {
+  1: { label: 'Level 1 · Smallest', title: 'Organism', body: 'An organism is a single living thing, such as one coyote. It is the smallest level of organization in an ecosystem.' },
+  2: { label: 'Level 2 · Same species', title: 'Population', body: 'A population is all the organisms of the same species living in the same area at the same time, such as all the coyotes in Joshua Tree National Park.' },
+  3: { label: 'Level 3 · Many species', title: 'Community', body: 'A community is all the different populations living together in an area, such as the coyotes, jackrabbits, lizards, and Joshua trees all in one place.' },
+  4: { label: 'Level 4 · Living + nonliving', title: 'Ecosystem', body: 'An ecosystem adds the nonliving world to the community. It is all the living and nonliving parts of an area, including the sunlight, water, soil, and rock.' },
+  5: { label: 'Level 5 · Largest', title: 'Biome', body: 'A biome is a large geographic region that contains many ecosystems with similar living and nonliving features. The desert is a biome.' }
+};
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
+    el.style.outlineOffset = '1px';
+  });
+}
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! Sunlight is nonliving, so it is an abiotic factor.',
+    'Not quite. A coyote and a cactus are living. Sunlight is the nonliving, abiotic factor.');
+  wireQR('qr2', 0,
+    'Correct! All the members of one species in an area at one time form a population.',
+    'Not quite. One species in one area is a population. A community has many species.');
+  wireQR('qr3', 2,
+    'Correct! When both species benefit, the relationship is mutualism.',
+    'Not quite. When both species benefit, it is mutualism.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+// Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-endpoint */
+const EL_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
+  /* LYFELABZ:V1-ONLY:END legacy-endpoint */
+
+var elQuizState = { selected: [], submitted: false };
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-state */
+var elQuizMode  = 'practice';
+  /* LYFELABZ:V1-ONLY:END legacy-mode-state */
+
+var elQuizQuestions = [
+  {
+    q: "What is an ecosystem?",
+    options: [
+      "Only the animals that live in an area",
+      "A single species and its offspring",
+      "All the living and nonliving parts of an area",
+      "A large region with many different climates"
+    ],
+    correct: 2,
+    explanation: "An ecosystem is all of the living (biotic) and nonliving (abiotic) parts of the environment in a given area."
+  },
+  {
+    q: "Which of the following is a biotic factor?",
+    options: [
+      "A lizard",
+      "Sunlight",
+      "Soil",
+      "Temperature"
+    ],
+    correct: 0,
+    explanation: "Biotic factors are living or once-living. A lizard is alive. Sunlight, soil, and temperature are abiotic."
+  },
+  {
+    q: "Which of these would be an abiotic factor in a pond?",
+    options: [
+      "The fish",
+      "The algae",
+      "The frogs",
+      "The water temperature"
+    ],
+    correct: 3,
+    explanation: "Abiotic factors are nonliving. Water temperature is nonliving, while fish, algae, and frogs are all living."
+  },
+  {
+    q: "Which level of organization is the smallest?",
+    options: [
+      "A community",
+      "A single organism",
+      "A population",
+      "An ecosystem"
+    ],
+    correct: 1,
+    explanation: "A single organism is the smallest level. From there it builds up to population, community, ecosystem, and biome."
+  },
+  {
+    q: "All of the different populations living together in one area make up a what?",
+    options: [
+      "A species",
+      "A biome",
+      "A community",
+      "A habitat"
+    ],
+    correct: 2,
+    explanation: "A community is all the populations of different species living together in the same area at the same time."
+  },
+  {
+    q: "A coyote's habitat is best described as its what?",
+    options: [
+      "Home, the place that meets its needs",
+      "Job, the role it plays in the ecosystem",
+      "Group of the same species",
+      "Close partner species"
+    ],
+    correct: 0,
+    explanation: "A habitat is the place where an organism lives and finds what it needs. Its role or job is its niche."
+  },
+  {
+    q: "A coyote hunts and eats a jackrabbit. This interaction is an example of what?",
+    options: [
+      "Mutualism",
+      "Competition",
+      "Commensalism",
+      "Predation"
+    ],
+    correct: 3,
+    explanation: "Predation is when one organism, the predator, feeds on another organism, its prey. The coyote is the predator."
+  },
+  {
+    q: "The Joshua tree and the yucca moth both benefit from their relationship. What type of symbiosis is this?",
+    options: [
+      "Parasitism",
+      "Mutualism",
+      "Competition",
+      "Predation"
+    ],
+    correct: 1,
+    explanation: "When both species benefit from a close, long-term relationship, the symbiosis is mutualism."
+  },
+  {
+    q: "A tick feeds on a deer, harming the deer while the tick benefits. This is an example of what?",
+    options: [
+      "Mutualism",
+      "Commensalism",
+      "Parasitism",
+      "Competition"
+    ],
+    correct: 2,
+    explanation: "In parasitism, one species (the parasite) benefits while the other (the host) is harmed. The tick harms the deer."
+  },
+  {
+    q: "Two coyotes both try to catch the same jackrabbit. This interaction is an example of what?",
+    options: [
+      "Competition",
+      "Mutualism",
+      "Commensalism",
+      "Predation"
+    ],
+    correct: 0,
+    explanation: "Competition happens when two or more organisms need the same resource at the same time, such as the same prey."
+  }
+];
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-set-quiz-mode */
+function elSetQuizMode(mode) {
+  elQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+  /* LYFELABZ:V1-ONLY:END legacy-set-quiz-mode */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-init-iife */
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
+  else elSetQuizMode('practice');
+})();
+  /* LYFELABZ:V1-ONLY:END legacy-mode-init-iife */
+
+function elBuildQuiz() {
+  var container = document.getElementById('el-quiz-questions');
+  container.innerHTML = '';
+  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
+  elQuizState.submitted = false;
+  document.getElementById('el-submit-btn').disabled = true;
+  elUpdateProgress();
+  var letters = ['A','B','C','D'];
+  elQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function elSelectAnswer(qi, chosenIndex) {
+  if (elQuizState.submitted) return;
+  var prev = elQuizState.selected[qi];
+  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
+  elQuizState.selected[qi] = chosenIndex;
+  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  elUpdateProgress();
+  elRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(elQuizState.selected);
+}
+
+function elUpdateProgress() {
+  var total    = elQuizQuestions.length;
+  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-validate-student-info */
+function elValidateStudentInfo() {
+  var name    = document.getElementById('el-student-name').value.trim();
+  var teacher = document.getElementById('el-teacher-select').value;
+  var block   = document.getElementById('el-block-select').value;
+  document.getElementById('el-err-name').classList.toggle('show', !name);
+  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('el-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+  /* LYFELABZ:V1-ONLY:END legacy-validate-student-info */
+
+function elSubmitQuiz() {
+  if (elQuizState.submitted) return;
+  var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-validation-guard */
+  if (elQuizMode === 'classroom') {
+    var info = elValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-validation-guard */
+  elQuizState.submitted = true;
+  document.getElementById('el-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('el-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('el-think-model').classList.add('show');
+  var correct = 0;
+  elQuizQuestions.forEach(function (q, qi) {
+    var chosen    = elQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('el-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = elQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand the parts of an ecosystem cold.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+    : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
+    : '\u{1F4AA} Keep going; review each section carefully and try again!';
+  document.getElementById('el-score-num').textContent = score;
+  document.getElementById('el-score-msg').textContent = msg;
+  var sb = document.getElementById('el-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
+
+  if (pct === 100) {
+    elQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (elAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by elQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var elReturnCtl = document.getElementById('back-to-assignments');
+    if (elReturnCtl) elReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
+    var elFinalStatus = document.getElementById('el-submit-status');
+    elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var elGenericError = 'Submission did not complete. Please refresh and try again.';
+    function elShowSubmitError(msg) {
+      elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || elGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(elQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        elFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        elShowSubmitError(r.message);
+      } else {
+        elShowSubmitError(null);
+      }
+    }, function () {
+      elShowSubmitError(null);
+    });
+    return;
+  }
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-practice-completion */
+  if (elQuizMode === 'practice') {
+    document.getElementById('el-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-practice-completion */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-apps-script-submit */
+  var info2 = elValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  var letters = ['A','B','C','D'];
+  var params = new URLSearchParams({ resourceId: 'lesson_parts-of-an-ecosystem', grade: '7', teacher: info2.teacher, studentName: info2.name, block: info2.block });
+  elQuizState.selected.forEach(function (idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
+  fetch(EL_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('el-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('el-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('el-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+  /* LYFELABZ:V1-ONLY:END legacy-apps-script-submit */
+  /* LYFELABZ:V2-ONLY:BEGIN platform-standalone-completion */
+  document.getElementById('el-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+  /* LYFELABZ:V2-ONLY:END platform-standalone-completion */
+}
+
+function elResetQuiz() {
+  if (elQuizState.continueTimer) {
+    clearTimeout(elQuizState.continueTimer);
+    elQuizState.continueTimer = null;
+  }
+  document.getElementById('el-score').classList.remove('show');
+  document.getElementById('el-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('el-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('el-think-model').classList.remove('show');
+  elBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
+})();
+
+elBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

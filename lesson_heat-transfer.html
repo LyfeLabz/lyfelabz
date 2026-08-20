@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_heat-transfer.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=heat-transfer --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2011,6 +2017,10 @@ function htSelectAnswer(qi, chosenIndex) {
   document.getElementById('ht-q-' + qi + '-' + chosenIndex).classList.add('selected');
   htUpdateProgress();
   htRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(htQuizState.selected);
 }
 
 function htUpdateProgress() {
@@ -2032,6 +2042,7 @@ function htValidateStudentInfo() {
 
 function htSubmitQuiz() {
   if (htQuizState.submitted) return;
+  var htAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!htQuizState.selected.every(function (s) { return s !== null; })) return;
   var htThinkGate = document.getElementById('ht-thinking');
@@ -2085,6 +2096,33 @@ function htSubmitQuiz() {
       var more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (htAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by htQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var htFinalStatus = document.getElementById('ht-submit-status');
+    htFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var htGenericError = 'Submission did not complete. Please refresh and try again.';
+    function htShowSubmitError(msg) {
+      htFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || htGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(htQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        htFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        htShowSubmitError(r.message);
+      } else {
+        htShowSubmitError(null);
+      }
+    }, function () {
+      htShowSubmitError(null);
+    });
+    return;
   }
 
   if (htQuizMode === 'practice') {

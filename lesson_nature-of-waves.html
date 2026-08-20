@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_nature-of-waves.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=nature-of-waves --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -5447,16 +5453,12 @@ const nwQuizQuestions = [
       <line x1="20" y1="85" x2="440" y2="85" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="5,4"/>
       <path d="M 20 85 C 70 15, 130 15, 180 85 C 230 155, 290 155, 340 85 C 380 35, 420 35, 440 65"
             fill="none" stroke="#3bc8e8" stroke-width="3" stroke-linecap="round"/>
-      <!-- A: crest -->
       <circle cx="100" cy="22" r="10" fill="rgba(245,200,66,0.2)" stroke="var(--gold)" stroke-width="2"/>
       <text x="100" y="14" text-anchor="middle" font-family="Fredoka One" font-size="18" fill="var(--gold)">A</text>
-      <!-- B: resting line -->
       <circle cx="250" cy="85" r="10" fill="rgba(245,200,66,0.2)" stroke="var(--gold)" stroke-width="2"/>
       <text x="250" y="77" text-anchor="middle" font-family="Fredoka One" font-size="18" fill="var(--gold)">B</text>
-      <!-- C: trough -->
       <circle cx="260" cy="148" r="10" fill="rgba(245,200,66,0.2)" stroke="var(--gold)" stroke-width="2"/>
       <text x="260" y="170" text-anchor="middle" font-family="Fredoka One" font-size="18" fill="var(--gold)">C</text>
-      <!-- D: midway -->
       <circle cx="400" cy="42" r="10" fill="rgba(245,200,66,0.2)" stroke="var(--gold)" stroke-width="2"/>
       <text x="400" y="34" text-anchor="middle" font-family="Fredoka One" font-size="18" fill="var(--gold)">D</text>
     </svg>`,
@@ -5509,14 +5511,12 @@ const nwQuizQuestions = [
     // Q9 - amplitude and energy
     q: "Compare these two waves. Wave X and Wave Y have the same wavelength but different heights. What does that tell you?",
     visual: `<svg viewBox="0 0 460 200" xmlns="http://www.w3.org/2000/svg" aria-label="Two waves stacked. Wave X is small in height. Wave Y is much taller. Both have the same horizontal spacing between peaks.">
-      <!-- Wave X (small amplitude) -->
       <g>
         <line x1="20" y1="50" x2="440" y2="50" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4"/>
         <path d="M 20 50 C 60 30, 100 30, 140 50 C 180 70, 220 70, 260 50 C 300 30, 340 30, 380 50 C 420 70, 440 70, 440 50"
               fill="none" stroke="#3bc8e8" stroke-width="2.5" stroke-linecap="round"/>
         <text x="20" y="20" font-family="Fredoka One" font-size="14" fill="var(--text)">Wave X</text>
       </g>
-      <!-- Wave Y (large amplitude, same wavelength) -->
       <g transform="translate(0, 100)">
         <line x1="20" y1="50" x2="440" y2="50" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4"/>
         <path d="M 20 50 C 60 5, 100 5, 140 50 C 180 95, 220 95, 260 50 C 300 5, 340 5, 380 50 C 420 95, 440 95, 440 50"
@@ -5620,6 +5620,10 @@ function nwSelectAnswer(qi, chosenIndex) {
   document.getElementById(`nw-q-${qi}-${chosenIndex}`).classList.add('selected');
   nwUpdateProgress();
   nwRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(nwQuizState.selected);
 }
 
 // ── PROGRESS BAR ──────────────────────────────────────────────────────
@@ -5644,6 +5648,7 @@ function nwValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function nwSubmitQuiz() {
   if (nwQuizState.submitted) return;
+  var nwAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!nwQuizState.selected.every(s => s !== null)) return;
   const nwThinkGate = document.getElementById('nw-thinking');
@@ -5705,6 +5710,33 @@ function nwSubmitQuiz() {
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (nwAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by nwQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var nwFinalStatus = document.getElementById('nw-submit-status');
+    nwFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var nwGenericError = 'Submission did not complete. Please refresh and try again.';
+    function nwShowSubmitError(msg) {
+      nwFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || nwGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(nwQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        nwFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        nwShowSubmitError(r.message);
+      } else {
+        nwShowSubmitError(null);
+      }
+    }, function () {
+      nwShowSubmitError(null);
+    });
+    return;
   }
 
   if (nwQuizMode === 'practice') {

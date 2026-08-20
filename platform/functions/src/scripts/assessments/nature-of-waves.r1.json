@@ -1,0 +1,269 @@
+{
+  "activityId": "nature-of-waves",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "A duck floats on a pond. A wave passes underneath. What happens to the duck?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The duck rides the wave to the other side of the pond"
+        },
+        {
+          "optionId": "B",
+          "text": "The duck bobs up and down, mostly staying in the same place"
+        },
+        {
+          "optionId": "C",
+          "text": "The duck sinks until the wave passes"
+        },
+        {
+          "optionId": "D",
+          "text": "The duck is pushed sideways by the moving water"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The wave carries energy across the pond, but the water itself (and the duck on top of it) mostly stays put. The duck only rises and falls."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "When a wave travels across the ocean, what is actually moving from one place to another?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Water molecules, traveling all the way to shore"
+        },
+        {
+          "optionId": "B",
+          "text": "Energy, while the water mostly stays in place"
+        },
+        {
+          "optionId": "C",
+          "text": "Air, pushed by the wind"
+        },
+        {
+          "optionId": "D",
+          "text": "Both energy and water, in equal amounts"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Waves transfer energy without transporting matter. The water particles vibrate up and down, but the energy is what travels across the ocean."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Two astronauts float in space inches apart. One shouts. Why can't the other one hear it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Their helmets block all sound"
+        },
+        {
+          "optionId": "B",
+          "text": "Sound is an electromagnetic wave and travels too slowly"
+        },
+        {
+          "optionId": "C",
+          "text": "Sound is a mechanical wave and needs a medium, there's no air in space"
+        },
+        {
+          "optionId": "D",
+          "text": "Sound only works for distances under a meter"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Sound is a mechanical wave, so it needs a medium (like air) to travel through. Space is a vacuum, no medium, no sound."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which of the following can travel through completely empty space?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Sound waves from a speaker"
+        },
+        {
+          "optionId": "B",
+          "text": "Ocean waves"
+        },
+        {
+          "optionId": "C",
+          "text": "Visible light from the Sun"
+        },
+        {
+          "optionId": "D",
+          "text": "A stadium wave"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Visible light is an electromagnetic wave; it doesn't need a medium. That's why sunlight can cross 93 million miles of empty space to reach Earth in about 8 minutes."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Look at the wave below. Which letter points to the <strong>trough</strong>?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Point A, the highest part of the wave"
+        },
+        {
+          "optionId": "B",
+          "text": "Point B, the calm middle line"
+        },
+        {
+          "optionId": "C",
+          "text": "Point C, the lowest part of the wave"
+        },
+        {
+          "optionId": "D",
+          "text": "Point D, somewhere between the peak and the line"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Point C is at the very bottom of a dip, that's the trough. Point A marks a crest (highest point), B sits on the resting line, and D is somewhere between."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "What is the resting position of a wave?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The peak of the wave"
+        },
+        {
+          "optionId": "B",
+          "text": "The point where the wave stops moving"
+        },
+        {
+          "optionId": "C",
+          "text": "The calm middle line that the wave rises above and dips below"
+        },
+        {
+          "optionId": "D",
+          "text": "The same thing as the wavelength"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The resting position is the level the wave would sit at if it weren't moving. Crests rise above it, troughs dip below it."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Wave X has peaks that are very close together. Wave Y has peaks that are far apart. What can you say about their wavelengths?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Wave X has a longer wavelength than Wave Y"
+        },
+        {
+          "optionId": "B",
+          "text": "Wave X has a shorter wavelength than Wave Y"
+        },
+        {
+          "optionId": "C",
+          "text": "Both waves have the same wavelength"
+        },
+        {
+          "optionId": "D",
+          "text": "You need to know the heights to compare wavelengths"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Wavelength is the distance from one peak to the next. Peaks close together = short wavelength. Peaks far apart = long wavelength. The height (amplitude) doesn't matter, wavelength is measured side-to-side."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "What does the frequency of a wave tell you?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "How tall the wave is"
+        },
+        {
+          "optionId": "B",
+          "text": "How far apart the peaks are"
+        },
+        {
+          "optionId": "C",
+          "text": "How many crests pass a point each second"
+        },
+        {
+          "optionId": "D",
+          "text": "How fast the wave is moving"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Frequency counts how many wave crests pass a fixed point in one second. It's measured in Hertz (Hz). It's about how often something happens, not how the wave looks."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Compare these two waves. Wave X and Wave Y have the same wavelength but different heights. What does that tell you?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Wave X has a higher frequency than Wave Y"
+        },
+        {
+          "optionId": "B",
+          "text": "Wave X carries more energy than Wave Y"
+        },
+        {
+          "optionId": "C",
+          "text": "Wave Y carries more energy than Wave X"
+        },
+        {
+          "optionId": "D",
+          "text": "Both waves carry the same amount of energy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Wave Y has a much larger amplitude, and larger amplitude means more energy. The wavelengths are identical, so frequency is the same; only the amplitude (and therefore the energy) differs."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "If an electromagnetic wave has a shorter wavelength than another, what else is true about it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It has a lower frequency and less energy"
+        },
+        {
+          "optionId": "B",
+          "text": "It has a higher frequency and more energy"
+        },
+        {
+          "optionId": "C",
+          "text": "Its frequency stays the same"
+        },
+        {
+          "optionId": "D",
+          "text": "It has a smaller amplitude"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Wavelength and frequency are inversely linked. Shorter wavelength means more crests pass each second, higher frequency. For EM waves, higher frequency also means more energy. That's why gamma rays (very short wavelength) carry far more energy than radio waves (very long wavelength)."
+    }
+  ]
+}

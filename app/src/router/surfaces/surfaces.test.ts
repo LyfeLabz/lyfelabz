@@ -873,10 +873,10 @@ describe("active student surface (Slice 4 assignment discovery)", () => {
       ),
     );
     expect(launches[0].getAttribute("data-assignment-launch-url")).toBe(
-      "/lesson_what-is-life.html?assignment=assign-1",
+      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
     );
     expect(launches[1].getAttribute("data-assignment-launch-url")).toBe(
-      "/lesson_cell-types.html?assignment=assign-2",
+      "/app/lessons/lesson_cell-types.html?assignment=assign-2",
     );
   });
 
@@ -936,7 +936,7 @@ describe("active student surface (Slice 4 assignment discovery)", () => {
     );
     expect(launches).toHaveLength(1);
     expect(launches[0].getAttribute("data-assignment-launch-url")).toBe(
-      "/lesson_what-is-life.html?assignment=assign-1",
+      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
     );
   });
 
@@ -960,7 +960,7 @@ describe("active student surface (Slice 4 assignment discovery)", () => {
       ?.click();
     expect(onLaunchAssignment).toHaveBeenCalledTimes(1);
     expect(onLaunchAssignment).toHaveBeenCalledWith(
-      "/lesson_what-is-life.html?assignment=assign-1",
+      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
     );
     // The callable is invoked exactly once (the initial discovery
     // fetch). No attempt-retrieval, session-begin, autosave, or
@@ -1250,12 +1250,12 @@ describe("active student surface (Sprint 27 My Results + status + navigation)", 
     );
     expect(improve).not.toBeNull();
     expect(improve?.getAttribute("data-assignment-launch-url")).toBe(
-      "/lesson_what-is-life.html?assignment=assign-1",
+      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
     );
     improve?.click();
     expect(onLaunchAssignment).toHaveBeenCalledTimes(1);
     expect(onLaunchAssignment).toHaveBeenCalledWith(
-      "/lesson_what-is-life.html?assignment=assign-1",
+      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
     );
   });
 

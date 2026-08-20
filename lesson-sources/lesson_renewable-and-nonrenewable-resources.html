@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_renewable-and-nonrenewable-resources.html">
+<meta name="description" content="Explore renewable and nonrenewable resources: why fossil fuels and nuclear fuel run out, how solar, wind, geothermal, biomass, and hydroelectric energy are replenished, and why the rate of use compared to the rate of replacement decides whether a resource lasts. A Grade 7 science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Renewable and Nonrenewable Resources</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --orange:      #e8814a;
+    --green:       #3ddc84;
+    --blue:        #7cc8f8;
+    --red:         #e74c3c;
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 620px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto; padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    font-size: 1rem; color: var(--text-muted); max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout.teal { background: rgba(29,233,182,0.06); border-color: rgba(29,233,182,0.2); border-left-color: var(--teal); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; line-height: 1.25; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── LEARNING GOALS ── */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.3rem; text-align: left; cursor: pointer;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+  .gc-chev { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .glossary-card.open .gc-chev { color: var(--gold); }
+  .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.6rem; }
+  .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+  .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-blue   { border-top-color: var(--blue);   } .gc-blue .gc-term   { color: var(--blue); }
+  .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+  .gc-slate  { border-top-color: var(--accent2);} .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-jump {
+    display: inline-block; margin-top: 0.55rem; font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px dashed rgba(245,200,66,0.5); cursor: pointer;
+  }
+  .gc-jump:hover { border-bottom-style: solid; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAME-IT REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 820px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it.orange-it { border-left-color: var(--orange); }
+  .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it.blue-it { border-left-color: var(--blue); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label   { color: var(--teal); }
+  .name-it.green-it .name-it-label  { color: var(--green); }
+  .name-it.orange-it .name-it-label { color: var(--orange); }
+  .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it.blue-it .name-it-label   { color: var(--blue); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .name-it p strong { font-weight: 800; }
+  .name-it.teal-it p strong   { color: var(--teal); }
+  .name-it.green-it p strong  { color: var(--green); }
+  .name-it.orange-it p strong { color: var(--orange); }
+  .name-it.slate-it p strong  { color: var(--accent2); }
+  .name-it.blue-it p strong   { color: var(--blue); }
+
+  /* ── COMPARISON GRID ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.8rem; }
+  .crust-card.oceanic .crust-title { color: var(--green); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--green); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
+
+  /* ── STAGE SELECTOR (interactive resource explorer) ── */
+  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
+  .layer-figure svg { width: 100%; height: auto; display: block; }
+  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-row {
+    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s; position: relative; border: none; text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .layer-row:hover { filter: brightness(1.18); }
+  .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
+  .layer-detail-panel {
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 150px; display: flex; align-items: center;
+  }
+  .ld-inner { width: 100%; }
+  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── FIGURE ── */
+  .figure-box {
+    background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
+    border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
+  }
+  .figure-box svg { width: 100%; height: auto; display: block; }
+  .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── QUICK RECALL ── */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* ── WRAP-UP BEATS ── */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--green), rgba(61,220,132,0.3)); }
+  .wrapup-beat-2 { background: rgba(232,129,74,0.05); border: 1px solid rgba(232,129,74,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+  .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--green); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--orange); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--green);  background: rgba(61,220,132,0.08); border-color: rgba(61,220,132,0.3); }
+  .wuc-2 { color: var(--orange); background: rgba(232,129,74,0.08); border-color: rgba(232,129,74,0.3); }
+  .wuc-3 { color: var(--blue);   background: rgba(124,200,248,0.08); border-color: rgba(124,200,248,0.3); }
+
+  /* ── CHOICE SORT (lower vs higher impact) ── */
+  .choice-prompt { font-weight: 800; color: var(--text); margin: 1.4rem 0 0.5rem; font-size: 0.97rem; }
+  .choice-prompt:first-of-type { margin-top: 0; }
+  .choice-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin: 0 0 0.4rem; }
+  @media (max-width: 560px) { .choice-pair { grid-template-columns: 1fr; } }
+  .choice-pair.done .predict-btn { cursor: default; opacity: 1; }
+  .predict-btn.choice-correct { border-color: var(--green); background: rgba(61,220,132,0.16); color: #9ff0c0; }
+  .predict-btn.choice-wrong { border-color: var(--red); background: rgba(231,76,60,0.12); color: #f0b0b0; }
+  .choice-fb { display: none; margin: 0 0 1.2rem; padding: 0.6rem 0.95rem; border-radius: 8px; font-size: 0.86rem; line-height: 1.55; background: rgba(122,143,166,0.08); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .choice-fb.visible { display: block; animation: predictFadeUp 0.3s ease both; }
+
+  /* ── ARGUMENT SCAFFOLD ── */
+  .arg-frame { display: grid; gap: 0.9rem; margin: 1.6rem 0 0; }
+  .arg-step { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent2); border-radius: 12px; padding: 1rem 1.3rem; }
+  .arg-step-label { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.35rem; }
+  .arg-step p { font-size: 0.92rem; color: rgba(232,237,242,0.82); line-height: 1.6; }
+  .arg-step p em { color: rgba(159,184,204,0.85); font-style: italic; }
+  .arg-textarea { width: 100%; margin-top: 1.2rem; min-height: 120px; padding: 0.9rem 1.1rem; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem; line-height: 1.6; resize: vertical; }
+  .arg-textarea:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-styles */
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55); background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-student-info-styles */
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent2);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select {
+    width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border); border-radius: 10px; color: var(--text);
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted); width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left; color: rgba(232,237,242,0.9); width: 100%; }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+  .mystery-loop strong { color: var(--text); }
+  .ml-label { display: block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem; }
+  .score-submitted { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(29,233,182,0.1); border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .score-error { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .reset-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── GO FURTHER ── */
+  #continue { background: var(--dark); }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+  .continue-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; margin-top: 0; }
+  .cont-card { border-radius: 18px; padding: 1.6rem 1.7rem; display: flex; align-items: flex-start; gap: 1.2rem; position: relative; overflow: hidden; }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+  .cont-card.lesson { background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3); text-decoration: none; color: inherit; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+  .cont-card.lesson:hover { border-color: rgba(159,184,204,0.6); box-shadow: 0 14px 40px rgba(122,143,166,0.18); transform: translateY(-4px); }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; background: rgba(122,143,166,0.14); }
+  .cont-card.lesson .cont-icon { background: rgba(122,143,166,0.2); }
+  .cont-body { flex: 1; }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; margin-bottom: 0.3rem; }
+  .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; }
+  .coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .name-it.pulsing { animation: vocabPulse 3s ease forwards; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+    nav { padding: 0.85rem 1.2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+  footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+  footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+  footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-touchtarget */
+  .mode-btn,
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-touchtarget */
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#9728;&#65039;</span>
+  <span class="hero-float">&#127788;</span>
+  <span class="hero-float">&#9889;</span>
+  <span class="hero-float">&#128293;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Renewable and Nonrenewable Resources</h1>
+  <p>The lights in your school stay on all day. The energy behind them might come from coal that took millions of years to form, or from sunlight that arrived this morning. One of those sources is shrinking. The other arrives free, every single day.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">Why do some energy resources run out while others keep coming back?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">&#128300; Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (two power sources, one that runs out and one that does not) before naming any vocabulary. A genuine puzzle activates curiosity. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: sorting resources into two clear groups and small chunks keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each resource with diagrams and a timescale figure builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Systems thinking: students compare the rate a resource is used with the rate it is replaced, the core idea behind sustainability. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">&#9889;</span>
+        <div class="goal-text">I can describe the difference between renewable and nonrenewable resources, and explain how a growing population increases the demand for them.</div>
+        <span class="goal-std">7.MS-ESS3-4</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128101;</span>
+        <div class="goal-text">I can explain how per-capita consumption changes how many resources people use.</div>
+        <span class="goal-std">7.MS-ESS3-4</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#9728;&#65039;</span>
+        <div class="goal-text">I can give examples of technologies that reduce the environmental impact of resource use.</div>
+        <span class="goal-std">7.MS-ESS3-4</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#9878;&#65039;</span>
+        <div class="goal-text">I can construct an argument supported by evidence for the choices that reduce resource consumption the most.</div>
+        <span class="goal-std">7.MS-ESS3-4</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Vocabulary to Know</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Natural Resource</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Anything from the Earth that people use, such as water, soil, minerals, or fuels.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-resource')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Nonrenewable Resource</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A resource that cannot be remade or regrown as fast as people use it.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-nonrenewable')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Renewable Resource</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A resource that can be replenished in a short period of time.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-renewable')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Fossil Fuel</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A fuel such as coal, petroleum, or natural gas, formed from buried remains of ancient living things.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-fossilfuel')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Nuclear Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy released when uranium atoms are split apart in a process called fission.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-nuclear')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Solar Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy that comes from the Sun.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Wind Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy captured from moving air.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Geothermal Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy that comes from the heat inside the Earth.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Biomass</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy released by burning organic or once-living matter, such as wood.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Hydroelectric</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy captured from the flow of moving water, often at a dam.</div>
+      </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE PHENOMENON
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">Two Ways to Power a City</h2>
+    <p class="section-desc">A coal power plant and a solar farm can both light up the same city. But they get their energy in very different ways, and only one of them can run out.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#9889;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>One Source Shrinks, One Does Not</h3>
+        <p>The coal plant burns coal that formed underground over hundreds of millions of years. Once a chunk of coal is burned, it is gone, and the Earth will not make more for a very long time. The solar farm uses sunlight that pours onto the panels new every day. Both make electricity right now, but one supply keeps shrinking while the other keeps arriving. Why?</p>
+      </div>
+    </div>
+
+    <!-- Two-source scene -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="On the left a coal power plant burns fuel dug from underground, with a smokestack. On the right a solar panel collects sunlight from the Sun. Both send electricity to a city in the middle.">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#16314a"/>
+            <stop offset="100%" stop-color="#1d3a52"/>
+          </linearGradient>
+          <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a4a2c"/>
+            <stop offset="100%" stop-color="#2a3320"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="600" height="225" fill="url(#sky)"/>
+        <rect x="0" y="225" width="600" height="75" fill="url(#ground)"/>
+
+        <!-- coal plant (left) -->
+        <rect x="55" y="150" width="90" height="75" fill="#4a5260"/>
+        <rect x="70" y="110" width="18" height="45" fill="#5a6472"/>
+        <ellipse cx="79" cy="100" rx="16" ry="9" fill="#7a8492" opacity="0.7"/>
+        <ellipse cx="92" cy="84" rx="20" ry="11" fill="#7a8492" opacity="0.5"/>
+        <text x="100" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Coal plant</text>
+        <text x="100" y="272" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="#9fb8cc">nonrenewable</text>
+
+        <!-- sun + solar (right) -->
+        <circle cx="540" cy="55" r="22" fill="#f5c842"/>
+        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+          <line x1="540" y1="20" x2="540" y2="11"/><line x1="540" y1="90" x2="540" y2="99"/>
+          <line x1="505" y1="55" x2="496" y2="55"/><line x1="575" y1="55" x2="584" y2="55"/>
+        </g>
+        <g transform="translate(470,170)">
+          <rect x="0" y="0" width="64" height="38" fill="#1d3a5a" stroke="#7cc8f8" stroke-width="2"/>
+          <line x1="16" y1="0" x2="16" y2="38" stroke="#7cc8f8" stroke-width="1"/>
+          <line x1="32" y1="0" x2="32" y2="38" stroke="#7cc8f8" stroke-width="1"/>
+          <line x1="48" y1="0" x2="48" y2="38" stroke="#7cc8f8" stroke-width="1"/>
+          <rect x="29" y="38" width="6" height="17" fill="#6b7280"/>
+        </g>
+        <text x="502" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Solar farm</text>
+        <text x="502" y="272" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="#9fb8cc">renewable</text>
+
+        <!-- city (center) -->
+        <rect x="270" y="160" width="22" height="65" fill="#37506a"/>
+        <rect x="296" y="140" width="26" height="85" fill="#41607f"/>
+        <rect x="326" y="172" width="20" height="53" fill="#37506a"/>
+        <rect x="276" y="170" width="6" height="8" fill="#f5c842"/><rect x="276" y="188" width="6" height="8" fill="#f5c842"/>
+        <rect x="303" y="152" width="6" height="8" fill="#f5c842"/><rect x="303" y="172" width="6" height="8" fill="#f5c842"/>
+        <text x="308" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">City</text>
+
+        <!-- arrows to city -->
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9fb8cc"/></marker>
+        </defs>
+        <line x1="150" y1="180" x2="262" y2="180" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)" stroke-dasharray="6 4"/>
+        <line x1="464" y1="185" x2="356" y2="182" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)" stroke-dasharray="6 4"/>
+      </svg>
+      <div class="figure-caption">Both power sources light the same city. The coal supply shrinks each time it is burned. The sunlight keeps arriving.</div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-engage">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why will the coal eventually run out while the sunlight does not?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>Coal is simply harder to dig up than sunlight is to catch.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Coal takes millions of years to form, but sunlight arrives new every day.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Solar farms are always bigger than coal mines.</button>
+      </div>
+    </div>
+
+    <div class="name-it slate-it predict-gated" data-gate="qp-engage">
+      <div class="name-it-label">Here's the big idea</div>
+      <p>The best answer is <strong>B</strong>. What matters is how fast a resource forms compared to how fast we use it. Coal forms over hundreds of millions of years, far slower than we burn it, so the supply keeps shrinking. Sunlight is replaced as fast as we use it, so it never runs out. That single idea, the rate of use compared to the rate of replacement, is what sorts every resource into two groups.</p>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2rem;">
+      <strong>Where we're headed:</strong> First we'll meet the two groups of resources, the ones that run out and the ones that come back. Then we'll look closely at the nonrenewable fuels, explore the renewable sources one by one, and finish with the key idea that decides which group a resource belongs in.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a familiar phenomenon: two power sources, one that runs out.</li><li>Raise a question students will want answered.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1: TWO GROUPS OF RESOURCES
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explore" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Two Groups</span>
+    <h2 class="section-title">Resources That Run Out, and Resources That Return</h2>
+    <p class="section-desc">People use the Earth for almost everything: the fuel in cars, the electricity in homes, the water we drink. All of these come from natural resources. Those resources fall into two groups.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127757;</span>
+        <div class="card-title">What Is a Natural Resource?</div>
+      </div>
+      <div class="card-body">
+        <p id="term-resource">A <span class="vocab">natural resource</span> is anything from the Earth that people use, such as water, soil, minerals, sunlight, or fuels. Some of these are replaced quickly. Others take so long to form that, once used, they are gone for a very long time.</p>
+        <p>The difference between the two groups is not how useful they are. It is how fast they are replaced compared to how fast we use them.</p>
+      </div>
+    </div>
+
+    <div class="crust-grid">
+      <div class="crust-card continental">
+        <div class="crust-title">&#128293; Nonrenewable Resources</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Cannot be remade as fast as we <strong>use them up</strong></span></li>
+          <li><span class="crust-dot"></span><span>Take <strong>millions of years</strong> to form or are limited in amount</span></li>
+          <li><span class="crust-dot"></span><span>Examples: coal, petroleum, natural gas, nuclear fuel</span></li>
+        </ul>
+      </div>
+      <div class="crust-card oceanic">
+        <div class="crust-title">&#9728;&#65039; Renewable Resources</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Can be <strong>replenished in a short period of time</strong></span></li>
+          <li><span class="crust-dot"></span><span>Replaced as fast as, or faster than, we use them</span></li>
+          <li><span class="crust-dot"></span><span>Examples: solar, wind, geothermal, biomass, water</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="term-nonrenewable" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Nonrenewable Resource</div>
+      <p>A <strong>nonrenewable resource</strong> is a natural resource that cannot be remade or regrown at a scale comparable to how fast it is used. Once it is used up, the Earth cannot replace it within a human lifetime.</p>
+    </div>
+
+    <div id="term-renewable" class="name-it green-it">
+      <div class="name-it-label">Key idea: Renewable Resource</div>
+      <p>A <strong>renewable resource</strong> is a natural resource that can be replenished in a short period of time. As long as it keeps being replaced as fast as we use it, it will not run out.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> A resource is nonrenewable not because it is rare, but because we use it far faster than nature can replace it. A resource is renewable when nature keeps up.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Establish the two groups before studying examples.</li><li>Define the sorting rule: rate of use vs rate of replacement.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Comparison and contrast</li><li>Categorization</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two short, parallel comparison cards</li><li>Plain "run out vs return" framing</li><li>Key terms in bold</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: NONRENEWABLE FUELS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="journey" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Nonrenewable</span>
+    <h2 class="section-title">The Fuels That Run Out</h2>
+    <p class="section-desc">Most of the energy people use today comes from nonrenewable resources. Two main kinds power the modern world: fossil fuels and nuclear fuel.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9935;</span>
+        <div class="card-title">Coal, Petroleum, and Natural Gas</div>
+      </div>
+      <div class="card-body">
+        <p id="term-fossilfuel">Coal, petroleum (oil), and natural gas are called <span class="vocab">fossil fuels</span>. They formed from the buried remains of plants and tiny living things that died hundreds of millions of years ago. Heat and pressure deep underground slowly turned those remains into fuel.</p>
+        <p>Because that process takes so long, fossil fuels cannot be replenished in a short period of time. When we burn them faster than the Earth can make more, the supply keeps shrinking.</p>
+      </div>
+    </div>
+
+    <div class="figure-box">
+      <svg viewBox="0 0 600 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cross section of the ground. Ancient plants and tiny sea creatures are buried under layers of rock. Over millions of years, heat and pressure turn the remains into coal, oil, and natural gas deep underground.">
+        <rect x="0" y="0" width="600" height="60" fill="#1d3a52"/>
+        <rect x="0" y="60" width="600" height="45" fill="#5a4a36"/>
+        <rect x="0" y="105" width="600" height="45" fill="#6b5640"/>
+        <rect x="0" y="150" width="600" height="45" fill="#4a3c2c"/>
+        <rect x="0" y="195" width="600" height="35" fill="#352b20"/>
+        <!-- surface plants -->
+        <g stroke="#3ddc84" stroke-width="3" stroke-linecap="round">
+          <line x1="60" y1="60" x2="60" y2="40"/><line x1="68" y1="60" x2="73" y2="42"/><line x1="52" y1="60" x2="47" y2="42"/>
+        </g>
+        <text x="60" y="30" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#3ddc84">ancient life</text>
+        <!-- buried remains -->
+        <ellipse cx="180" cy="125" rx="22" ry="8" fill="#2a2018"/>
+        <ellipse cx="320" cy="170" rx="26" ry="9" fill="#15110c"/>
+        <ellipse cx="460" cy="120" rx="20" ry="7" fill="#2a2018"/>
+        <!-- labels -->
+        <text x="180" y="128" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#c9a06a">oil &amp; gas</text>
+        <text x="320" y="173" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">coal</text>
+        <!-- time arrow -->
+        <defs>
+          <marker id="tm" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
+        </defs>
+        <line x1="60" y1="55" x2="320" y2="160" stroke="#f5c842" stroke-width="2.5" marker-end="url(#tm)" stroke-dasharray="5 4"/>
+        <text x="200" y="100" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">hundreds of millions of years</text>
+      </svg>
+      <div class="figure-caption">Fossil fuels form when buried remains of ancient life are slowly changed by heat and pressure over hundreds of millions of years.</div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9883;&#65039;</span>
+        <div class="card-title">Nuclear Energy</div>
+      </div>
+      <div class="card-body">
+        <p id="term-nuclear"><span class="vocab">Nuclear energy</span> is released when atoms of uranium are split apart in a process called fission. A small amount of uranium can release a large amount of energy, which is used to make electricity.</p>
+        <p>Nuclear energy is also nonrenewable. Uranium is a metal mined from the ground, and there is only a limited amount. Once the uranium is used, it is gone.</p>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#9888;&#65039;</span>
+      <div class="callout-body"><strong>Different fuels, same problem:</strong> Fossil fuels and nuclear fuel work in completely different ways, but both are nonrenewable. Each comes from a limited supply that the Earth cannot replace as fast as we use it.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Examine the main nonrenewable fuels.</li><li>Show why slow formation makes them run out.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the cross-section</li><li>Cause-and-effect (slow formation to limited supply)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Labeled diagram paired with text</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: RENEWABLE RESOURCES (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="into" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Renewable</span>
+    <h2 class="section-title">The Sources That Come Back</h2>
+    <p class="section-desc">Renewable resources are replenished in a short period of time, so they do not run out the way fuels do. Click each source to see where its energy comes from and why it keeps returning.</p>
+
+    <div class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A landscape with five renewable energy sources: the Sun for solar, a wind turbine, steam rising from the ground for geothermal, a plant for biomass, and flowing water at a dam.">
+          <rect x="0" y="0" width="320" height="280" fill="#13283c"/>
+          <rect x="0" y="210" width="320" height="70" fill="#3a4a2c"/>
+          <!-- sun (solar) -->
+          <circle cx="48" cy="44" r="20" fill="#f5c842"/>
+          <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+            <line x1="48" y1="14" x2="48" y2="6"/><line x1="48" y1="74" x2="48" y2="82"/>
+            <line x1="18" y1="44" x2="10" y2="44"/><line x1="78" y1="44" x2="86" y2="44"/>
+          </g>
+          <text x="48" y="100" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#f5c842">1 Solar</text>
+          <!-- wind turbine -->
+          <line x1="130" y1="210" x2="130" y2="120" stroke="#cfd8e0" stroke-width="4"/>
+          <g stroke="#cfd8e0" stroke-width="4" stroke-linecap="round">
+            <line x1="130" y1="120" x2="130" y2="96"/><line x1="130" y1="120" x2="151" y2="132"/><line x1="130" y1="120" x2="109" y2="132"/>
+          </g>
+          <circle cx="130" cy="120" r="4" fill="#7cc8f8"/>
+          <text x="130" y="225" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#7cc8f8">2 Wind</text>
+          <!-- geothermal steam -->
+          <path d="M205,210 q-6,-16 4,-26 q-8,-14 4,-26" fill="none" stroke="#b8ccd8" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+          <ellipse cx="207" cy="210" rx="14" ry="5" fill="#5a4636"/>
+          <text x="207" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8.5" font-weight="800" fill="#b8ccd8">3 Geothermal</text>
+          <!-- biomass plant/flame -->
+          <rect x="256" y="190" width="5" height="20" fill="#6b4a2a"/>
+          <circle cx="258" cy="182" r="12" fill="#3ddc84"/>
+          <path d="M278,210 q4,-12 -2,-18 q10,4 6,18 Z" fill="#e8814a"/>
+          <text x="262" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#3ddc84">4 Biomass</text>
+          <!-- dam / water -->
+          <rect x="0" y="232" width="120" height="48" fill="#1d3a5a"/>
+          <rect x="118" y="232" width="14" height="48" fill="#6b7280"/>
+          <path d="M132,244 q14,4 28,0" fill="none" stroke="#7cc8f8" stroke-width="3" stroke-linecap="round"/>
+          <text x="60" y="264" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#7cc8f8">5 Water</text>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d27a;" onclick="layerClick(1)">
+            <span>1 &middot; Solar</span><span class="layer-tag">the Sun</span>
+          </div>
+          <div class="layer-row" style="background: rgba(124,200,248,0.24); color: #a8d8fa;" onclick="layerClick(2)">
+            <span>2 &middot; Wind</span><span class="layer-tag">moving air</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(3)">
+            <span>3 &middot; Geothermal</span><span class="layer-tag">Earth's heat</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(4)">
+            <span>4 &middot; Biomass</span><span class="layer-tag">burning matter</span>
+          </div>
+          <div class="layer-row" style="background: rgba(29,233,182,0.24); color: #8ef0db;" onclick="layerClick(5)">
+            <span>5 &middot; Hydroelectric</span><span class="layer-tag">flowing water</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a source</div>
+            <div class="ld-title" id="ld-title">Start with Solar &#8594;</div>
+            <div class="ld-body" id="ld-body">Each renewable source draws on something nature keeps replacing. Click any source to see where its energy comes from and why it does not run out.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout teal">
+      <span class="callout-icon">&#9851;</span>
+      <div class="callout-body"><strong>Why they keep coming back:</strong> The Sun keeps shining, the wind keeps blowing, the Earth stays hot, plants keep growing, and the water cycle keeps moving water. Because these are replaced as fast as we use them, they are renewable.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Survey the five main renewable sources.</li><li>Tie each to the natural process that replaces it.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the interactive diagram</li><li>Click to reveal one source at a time</li><li>Pattern recognition (each is continually replaced)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each source, no hover</li><li>Labeled diagram paired with text</li><li>Numbered, ordered sources</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: RATE OF USE VS RATE OF REPLACEMENT
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="storage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Deciding Idea</span>
+    <h2 class="section-title">It All Comes Down to Time</h2>
+    <p class="section-desc">What really separates the two groups is a race between two rates: how fast we use a resource, and how fast nature replaces it. That race decides whether a resource runs out.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9201;&#65039;</span>
+        <div class="card-title">A Race Between Two Rates</div>
+      </div>
+      <div class="card-body">
+        <p>Every resource is being used and replaced at the same time. If nature replaces it as fast as we use it, the supply holds steady, and the resource is renewable.</p>
+        <p>If we use it much faster than nature can replace it, the supply keeps shrinking, and the resource is nonrenewable. Coal forms over hundreds of millions of years, but we burn it in seconds, so the supply cannot keep up.</p>
+      </div>
+    </div>
+
+    <!-- Timescale comparison figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two timelines. The nonrenewable bar shows a resource that takes hundreds of millions of years to replace, far longer than the moment it is used. The renewable bar shows a resource replaced about as fast as it is used.">
+        <rect x="0" y="0" width="560" height="250" fill="#0f1c2b"/>
+        <!-- nonrenewable -->
+        <text x="30" y="50" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#e8814a">Nonrenewable</text>
+        <text x="30" y="70" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#9fb8cc">used fast, replaced slowly</text>
+        <rect x="30" y="82" width="20" height="22" fill="#e74c3c"/>
+        <text x="30" y="122" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="#9fb8cc">used now</text>
+        <rect x="60" y="82" width="470" height="22" fill="#5a4636"/>
+        <text x="295" y="98" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#f0c89a">replacement takes hundreds of millions of years</text>
+        <!-- renewable -->
+        <text x="30" y="160" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#3ddc84">Renewable</text>
+        <text x="30" y="180" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#9fb8cc">used and replaced at about the same speed</text>
+        <rect x="30" y="192" width="20" height="22" fill="#1de9b6"/>
+        <text x="30" y="232" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="#9fb8cc">used now</text>
+        <rect x="60" y="192" width="24" height="22" fill="#2e6b4f"/>
+        <text x="150" y="208" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#7df0b4">replaced almost as fast</text>
+      </svg>
+      <div class="figure-caption">A resource runs out when the time to replace it is far longer than the time to use it. When the two are close, the resource keeps returning.</div>
+    </div>
+
+    <div class="name-it gold" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: The Deciding Question</div>
+      <p>To sort any resource, ask one question: <strong style="color: var(--gold);">Is it replaced as fast as we use it?</strong> If yes, it is renewable. If it takes far longer to replace than to use, it is nonrenewable.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128202;</span>
+      <div class="callout-body"><strong>Back to the puzzle:</strong> The coal plant burns fuel that nature replaces over hundreds of millions of years, so its supply shrinks. The solar farm uses sunlight that arrives new each day, so it never runs out. Same city, two very different races against time.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name the underlying rule behind both groups.</li><li>Answer the opening phenomenon directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the timeline figure</li><li>Cause-and-effect (rate mismatch to running out)</li><li>Single transferable rule</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key idea stated as one question</li><li>Side-by-side timelines</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: WHY RESOURCE USE MATTERS (population + per-capita)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="impact" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Why It Matters</span>
+    <h2 class="section-title">Why Does Resource Use Matter?</h2>
+    <p class="section-desc">Knowing which resources run out is only half the picture. How many people use those resources, and how much each person uses, decides how much pressure we put on the environment. Driving question: why does the way humans use resources affect the environment?</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128101;</span>
+        <div class="card-title">More People, More Demand</div>
+      </div>
+      <div class="card-body">
+        <p>Earth's human population keeps growing. More people need more food, more clean water, more energy, and more materials to build homes and make products. As the number of people rises, the total demand for natural resources rises with it.</p>
+        <p>That demand has effects we can see. Meeting it means more farming, more mining, more drilling, and more waste, all of which change the air, water, and ecosystems around us. Even renewable resources can be strained if a growing population uses them faster than nature replaces them.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9878;&#65039;</span>
+        <div class="card-title">Different Lifestyles, Different Amounts</div>
+      </div>
+      <div class="card-body">
+        <p>Two people can use very different amounts of resources. <span class="vocab">Per-capita consumption</span> means the amount of resources one person uses. A household in a large home with two large vehicles uses more energy and materials than a household in a small home that bikes and walks.</p>
+        <p>The same pattern shows up in everyday products. Single-use plastics are made, used once, and thrown away. Reusable products are used many times before they wear out. The choices people make every day add up to how many resources they consume.</p>
+      </div>
+    </div>
+
+    <div class="name-it slate-it">
+      <div class="name-it-label">Key idea: Total Resource Demand</div>
+      <p>Total resource demand depends on <strong>two things at once</strong>: the number of people, and how much each person uses. Both a growing population and rising per-capita consumption push demand up, and more demand means more impact on the environment.</p>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#127757;</span>
+      <div class="callout-body"><strong>The connection:</strong> The way humans use resources affects the environment because every unit of food, water, energy, and material has to come from somewhere. When demand climbs, so does the strain on the Earth's air, water, land, and living things.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce population growth and per-capita consumption as drivers of demand.</li><li>Set up the human-impact argument of 7.MS-ESS3-4.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect reasoning</li><li>Systems thinking (demand to impact)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday, nonpolitical examples</li><li>Key term defined in place</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 6: HOW TECHNOLOGY REDUCES IMPACTS (+ choice-sort interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="solutions" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Solutions</span>
+    <h2 class="section-title">How Can Technology Reduce Impacts?</h2>
+    <p class="section-desc">If demand drives impact, then technologies and choices that lower demand can reduce that impact. These solutions fall into three groups. Each one comes with tradeoffs, so people weigh costs and benefits using evidence.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9889;</span>
+        <div class="card-title">Cleaner Energy</div>
+      </div>
+      <div class="card-body">
+        <p>Renewable energy technologies make electricity without burning fossil fuels. Solar panels capture sunlight, wind turbines capture moving air, and hydroelectric dams capture flowing water. Using these in place of coal or gas reduces how much nonrenewable fuel we take from the Earth.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128161;</span>
+        <div class="card-title">Greater Efficiency</div>
+      </div>
+      <div class="card-body">
+        <p>Efficient technologies do the same job using less energy. An LED bulb produces the same light as an old incandescent bulb while using a fraction of the energy. Energy-efficient appliances and electric vehicles also do more with less. Using less energy for the same task means fewer resources are consumed.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9851;</span>
+        <div class="card-title">Conservation</div>
+      </div>
+      <div class="card-body">
+        <p>Conservation means using less and reusing more. Recycling turns used materials into new products instead of new raw materials. Reusable bottles and bags replace single-use items. Water-saving technologies, such as low-flow fixtures, cut how much water we use. Each choice lowers demand on natural resources.</p>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#9888;&#65039;</span>
+      <div class="callout-body"><strong>Every solution has tradeoffs:</strong> Solar panels need materials and space to build, and electric vehicles need batteries. People weigh the costs and benefits using evidence, rather than assuming any one choice is perfect.</div>
+    </div>
+
+    <!-- Choice-sort interactive -->
+    <div class="content-card" style="margin-top: 1.5rem;">
+      <div class="card-header">
+        <span class="card-icon">&#129513;</span>
+        <div class="card-title">Try It: Which Choice Reduces Resource Use the Most?</div>
+      </div>
+      <div class="card-body">
+        <p>For each pair, choose the option with the <strong>lower impact</strong>, the one that reduces resource consumption the most. You will get feedback right away.</p>
+      </div>
+
+      <div class="choice-prompt">1. Drinking water at school all year</div>
+      <div class="choice-pair">
+        <button class="predict-btn" data-lower="1" onclick="elChoicePick(this)">A reusable water bottle refilled each day</button>
+        <button class="predict-btn" data-lower="0" onclick="elChoicePick(this)">A new disposable plastic bottle each day</button>
+      </div>
+      <div class="choice-fb" data-why="A reusable bottle is made once and refilled many times, while a new disposable bottle uses new plastic and creates waste every single day."></div>
+
+      <div class="choice-prompt">2. Lighting a bedroom</div>
+      <div class="choice-pair">
+        <button class="predict-btn" data-lower="0" onclick="elChoicePick(this)">An old incandescent bulb</button>
+        <button class="predict-btn" data-lower="1" onclick="elChoicePick(this)">An LED bulb</button>
+      </div>
+      <div class="choice-fb" data-why="An LED bulb gives the same light using far less energy than an incandescent bulb, so it consumes fewer resources for the same job."></div>
+
+      <div class="choice-prompt">3. Going somewhere a few blocks away</div>
+      <div class="choice-pair">
+        <button class="predict-btn" data-lower="1" onclick="elChoicePick(this)">Riding a bike</button>
+        <button class="predict-btn" data-lower="0" onclick="elChoicePick(this)">Taking a short car trip</button>
+      </div>
+      <div class="choice-fb" data-why="Riding a bike a short distance uses no fuel, while a short car trip burns gasoline, a nonrenewable resource."></div>
+
+      <div class="choice-prompt">4. Lights in a room no one is using</div>
+      <div class="choice-pair">
+        <button class="predict-btn" data-lower="0" onclick="elChoicePick(this)">Leaving the lights on</button>
+        <button class="predict-btn" data-lower="1" onclick="elChoicePick(this)">Turning the lights off</button>
+      </div>
+      <div class="choice-fb" data-why="Turning off lights you are not using saves electricity, while leaving them on wastes energy for no benefit."></div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show technologies and choices that mitigate resource impact.</li><li>Let students compare options and get immediate feedback.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Active comparison and decision making</li><li>Immediate corrective feedback</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to choose, no hover</li><li>Plain paired choices</li><li>Tradeoffs stated, not advocacy</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: MAKING EVIDENCE-BASED CHOICES (argument, ESS3-4)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="argument" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Build an Argument</span>
+    <h2 class="section-title">Making Evidence-Based Choices</h2>
+    <p class="section-desc">Scientists answer questions like this by constructing an argument: a claim backed by evidence and reasoning. Use what you learned to build one.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#127961;&#65039;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Your Task</div>
+        <h3>A Town Wants to Reduce Its Impact</h3>
+        <p>A growing town wants to lower the impact of its rising population and resource use on the environment. Town leaders are weighing four strategies. Which would help the most? Build an argument supported by evidence.</p>
+      </div>
+    </div>
+
+    <div class="goal-grid">
+      <div class="goal-card" style="border-left-color: var(--green);">
+        <span class="goal-icon">&#9728;&#65039;</span>
+        <div class="goal-text">Switch to renewable energy</div>
+        <p style="font-size:0.86rem; color: rgba(232,237,242,0.7); line-height:1.55; margin:0;">Evidence: solar and wind make electricity without using up fossil fuels, lowering nonrenewable resource use.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--blue);">
+        <span class="goal-icon">&#127970;</span>
+        <div class="goal-text">Build energy-efficient buildings</div>
+        <p style="font-size:0.86rem; color: rgba(232,237,242,0.7); line-height:1.55; margin:0;">Evidence: efficient lighting, heating, and appliances do the same jobs while using less energy.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--teal);">
+        <span class="goal-icon">&#9851;</span>
+        <div class="goal-text">Start a recycling program</div>
+        <p style="font-size:0.86rem; color: rgba(232,237,242,0.7); line-height:1.55; margin:0;">Evidence: recycling reuses materials, so fewer new raw materials must be mined or harvested.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--accent2);">
+        <span class="goal-icon">&#128167;</span>
+        <div class="goal-text">Add water conservation</div>
+        <p style="font-size:0.86rem; color: rgba(232,237,242,0.7); line-height:1.55; margin:0;">Evidence: low-flow fixtures and leak repairs reduce how much fresh water the town uses.</p>
+      </div>
+    </div>
+
+    <div class="arg-frame">
+      <div class="arg-step">
+        <div class="arg-step-label">1 &middot; Claim</div>
+        <p>State which strategies you think would help the town the most. <em>The town should ___ because ___.</em></p>
+      </div>
+      <div class="arg-step">
+        <div class="arg-step-label">2 &middot; Evidence</div>
+        <p>Give facts from the lesson that support your claim. <em>Evidence from the lesson shows that ___.</em></p>
+      </div>
+      <div class="arg-step">
+        <div class="arg-step-label">3 &middot; Reasoning</div>
+        <p>Explain how your evidence connects population, consumption, and resource use. <em>This reduces the town's impact because ___.</em></p>
+      </div>
+    </div>
+
+    <textarea class="arg-textarea" placeholder="Write your argument here: claim, then evidence, then reasoning." aria-label="Write your evidence-based argument"></textarea>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#9878;&#65039;</span>
+      <div class="callout-body"><strong>What you just did:</strong> You constructed an argument supported by evidence that human activities and technologies can reduce the impact of a growing population and rising consumption on the environment. That is the exact thinking scientists and engineers use to plan for the future.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Have students construct an evidence-based argument, the core verb of 7.MS-ESS3-4.</li><li>Apply the lesson to a real decision.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Claim-evidence-reasoning scaffold</li><li>Transfer to a new context</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3 to 4</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sentence starters lower the writing barrier</li><li>Evidence supplied for each option</li><li>Resizable response box</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Which type of resource cannot be replaced as quickly as we use it?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>A nonrenewable resource</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>A renewable resource</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>An endless resource</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">Which of these is a renewable resource?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Coal</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Solar energy</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Petroleum</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">Why are fossil fuels nonrenewable?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>They take millions of years to form</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>They are made fresh each year</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>They come directly from the Sun</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: PUTTING IT TOGETHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explain" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">Why Some Run Out and Some Return</h2>
+    <p class="section-desc">You started with a question: why do some energy resources run out while others keep coming back? Now you can explain it, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">The Ones That Run Out</div>
+        <div class="wrapup-beat-answer">Nonrenewable resources form too slowly.</div>
+        <div class="wrapup-beat-body"><strong>Fossil fuels</strong> take hundreds of millions of years to form, and <strong>nuclear fuel</strong> comes from a limited supply of uranium. We use them far faster than they are replaced.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">The Ones That Return</div>
+        <div class="wrapup-beat-answer">Renewable resources are replaced quickly.</div>
+        <div class="wrapup-beat-body"><strong>Solar, wind, geothermal, biomass,</strong> and <strong>hydroelectric</strong> draw on processes nature keeps repeating, so they are replenished about as fast as we use them.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">The Deciding Idea</div>
+        <div class="wrapup-beat-answer">It is a race between two rates.</div>
+        <div class="wrapup-beat-body">Compare the rate we use a resource with the rate nature replaces it. If replacement keeps up, the resource lasts. If it cannot, the supply runs out.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full idea:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-2">Nonrenewable: used faster than replaced</span>
+        <span class="wuc wuc-2">Fossil fuels and nuclear fuel</span>
+        <span class="wuc wuc-1">Renewable: replaced as fast as used</span>
+        <span class="wuc wuc-1">Solar, wind, geothermal, biomass, water</span>
+        <span class="wuc wuc-3">Ask: is it replaced as fast as we use it?</span>
+      </div>
+      <div style="margin-top: 1rem;">A resource is not nonrenewable because it is rare. It is nonrenewable because nature replaces it far slower than we use it. That is why a coal plant's supply shrinks while a solar farm's never does.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the groups into one cause-and-effect idea.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you explored, from fossil fuels and renewable sources to population, consumption, and evidence-based solutions. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-mode-toggle-markup -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-mode-toggle-markup -->
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-student-info-markup -->
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="el-student-name">Student Name</label>
+          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="el-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-teacher-select">Teacher</label>
+          <select id="el-teacher-select">
+            <option value="">- Select -</option>
+            <option value="mr-kankel">Mr. Kankel</option>
+            <option value="mr-rovner">Mr. Rovner</option>
+          </select>
+          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-block-select">Class Block</label>
+          <select id="el-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A Block</option><option value="B">B Block</option>
+            <option value="C">C Block</option><option value="D">D Block</option>
+            <option value="E">E Block</option><option value="F">F Block</option>
+            <option value="G">G Block</option>
+          </select>
+          <div class="info-error" id="el-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-student-info-markup -->
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
+        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="el-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes elThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(159,184,204,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--accent2); box-shadow:0 0 0 3px rgba(122,143,166,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(29,233,182,0.07); border:1px solid rgba(29,233,182,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: elThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="el-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one or two sentences, explain why a nonrenewable resource like coal eventually runs out while a renewable resource like sunlight does not. Compare the rate a resource is used with the rate nature replaces it, not just where it comes from. Use the word <strong>rate</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Write your explanation here..." aria-label="Explain why coal runs out while sunlight does not, comparing the rate of use with the rate of replacement"></textarea>
+      <div class="think-model" id="el-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        A resource runs out when we use it far faster than nature can replace it. Coal took millions of years to form, so we burn it at a much higher <strong>rate</strong> than it is made, and the supply shrinks. Sunlight arrives new every day at about the same <strong>rate</strong> we use it, so it keeps coming back. Whether a resource is renewable depends on the rate of use compared with the rate of replacement, not on how big the supply looks.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student constructing the rate comparison in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Systems thinking: rate of use compared with rate of replacement</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sentence-length response, not an essay</li><li>Keyword scaffold ("rate")</li><li>Model answer to compare against</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score Board -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
+    <div class="score-board" id="el-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="el-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
+      <div class="big-score" id="el-score-num"></div>
+      <p id="el-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">&#128269; The Question You Came In With</span>
+        You started this lesson asking: <strong>"Why do some energy resources run out while others keep coming back?"</strong> If you can explain that nonrenewable resources like fossil fuels and nuclear fuel are used far faster than nature replaces them, while renewable resources like solar and wind are replenished about as fast as we use them, you have answered it.
+      </div>
+      <div id="el-submit-status"></div>
+      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>fossil fuels</strong>, <strong>renewable energy sources</strong>, and how the rate of use compared to the rate of replacement decides whether a resource lasts. More investigations, simulations, and challenges are coming soon.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-body">
+          <div class="cont-name">More Coming Soon</div>
+          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+          <span class="coming-soon-tag">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">The resources we power our lives with connect to energy itself, the carbon cycle, and the choices that shape the planet. These lessons show how.</p>
+    <div class="continue-grid">
+
+      <a class="cont-card lesson" href="lesson_forms-of-energy.html" aria-label="Forms of Energy lesson">
+        <div class="cont-icon">&#128267;</div>
+        <div class="cont-body">
+          <div class="cont-name">Forms of Energy</div>
+          <div class="cont-desc">Before a fuel, a sunbeam, or a gust of wind becomes electricity, it is energy in one form. Knowing those forms shows you what each resource actually stores.</div>
+        </div>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_energy-transfer.html" aria-label="Energy Transfer lesson">
+        <div class="cont-icon">&#128165;</div>
+        <div class="cont-body">
+          <div class="cont-name">Energy Transfer</div>
+          <div class="cont-desc">A power plant or a solar panel is really a chain of energy moving from one place to another. See how that transfer turns a resource into usable power.</div>
+        </div>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_carbon-cycle.html" aria-label="The Carbon Cycle lesson">
+        <div class="cont-icon">&#9851;&#65039;</div>
+        <div class="cont-body">
+          <div class="cont-name">The Carbon Cycle</div>
+          <div class="cont-desc">Coal, oil, and gas hold carbon that took millions of years to bury. See where that carbon goes once we burn nonrenewable fuels to release it.</div>
+        </div>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_human-impacts.html" aria-label="Human Impacts on Ecosystems lesson">
+        <div class="cont-icon">&#127981;</div>
+        <div class="cont-body">
+          <div class="cont-name">Human Impacts on Ecosystems</div>
+          <div class="cont-desc">Which resources we use, and how fast, is one of the biggest choices shaping the planet. See how those choices ripple out through living systems.</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (one open at a time, click to reveal) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.glossary-card.open').forEach(function(c){
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded', 'false');
+      var chev = c.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▾';
+    });
+    if (!isOpen) {
+      card.classList.add('open');
+      card.setAttribute('aria-expanded', 'true');
+      var chev = card.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▴';
+    }
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== RENEWABLE SOURCES INTERACTIVE ===== -->
+<script>
+const layerData = {
+  1: { label: 'Source 1 · Solar', title: 'Solar Energy', body: 'Solar energy comes from the Sun. Panels capture sunlight and turn it into electricity. It is renewable because the Sun keeps shining and the sunlight arrives new every single day.' },
+  2: { label: 'Source 2 · Wind', title: 'Wind Energy', body: 'Wind energy comes from moving air. Turbines spin as the wind pushes their blades, generating electricity. It is renewable because the Sun keeps heating the air unevenly, so the wind keeps blowing.' },
+  3: { label: 'Source 3 · Geothermal', title: 'Geothermal Energy', body: 'Geothermal energy comes from the heat inside the Earth. That heat warms water into steam that can spin turbines. It is renewable because the Earth stays hot, so the heat keeps being supplied.' },
+  4: { label: 'Source 4 · Biomass', title: 'Biomass', body: 'Biomass is energy released by burning organic or once-living matter, such as wood or crop waste. It is renewable because new plants can grow back in a short period of time to replace what is used.' },
+  5: { label: 'Source 5 · Hydroelectric', title: 'Hydroelectric Energy', body: 'Hydroelectric energy comes from the flow of moving water, often at a dam. Falling water spins turbines to make electricity. It is renewable because the water cycle keeps refilling the rivers and reservoirs.' }
+};
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
+    el.style.outlineOffset = '1px';
+  });
+}
+</script>
+
+<!-- ===== CHOICE SORT (lower vs higher impact) ===== -->
+<script>
+function elChoicePick(btn) {
+  var pair = btn.closest('.choice-pair');
+  if (pair.classList.contains('done')) return;
+  pair.classList.add('done');
+  var picked = btn.getAttribute('data-lower') === '1';
+  pair.querySelectorAll('.predict-btn').forEach(function (b) {
+    b.disabled = true;
+    if (b.getAttribute('data-lower') === '1') b.classList.add('choice-correct');
+    else b.classList.add('choice-wrong');
+  });
+  var fb = pair.nextElementSibling;
+  if (fb && fb.classList.contains('choice-fb')) {
+    fb.classList.add('visible');
+    fb.innerHTML = (picked ? '✅ Correct. ' : '❌ That is the higher-impact choice. ') + fb.getAttribute('data-why');
+  }
+}
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 0,
+    'Correct! A nonrenewable resource is used faster than it can be replaced.',
+    'Not quite. A resource that cannot be replaced as fast as we use it is nonrenewable.');
+  wireQR('qr2', 1,
+    'Correct! Solar energy comes from the Sun and is replenished every day, so it is renewable.',
+    'Not quite. Coal and petroleum are nonrenewable. Solar energy is the renewable choice.');
+  wireQR('qr3', 0,
+    'Correct! Fossil fuels take millions of years to form, far longer than we use them.',
+    'Not quite. Fossil fuels are nonrenewable because they take millions of years to form.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+// Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-endpoint */
+const EL_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
+  /* LYFELABZ:V1-ONLY:END legacy-endpoint */
+
+var elQuizState = { selected: [], submitted: false };
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-state */
+var elQuizMode  = 'practice';
+  /* LYFELABZ:V1-ONLY:END legacy-mode-state */
+
+var elQuizQuestions = [
+  {
+    q: "A natural resource that cannot be replaced as fast as people use it is called what?",
+    options: [
+      "A renewable resource",
+      "A nonrenewable resource",
+      "An endless resource",
+      "A living resource"
+    ],
+    correct: 1,
+    explanation: "A nonrenewable resource cannot be remade or regrown as fast as we use it, so the supply runs out."
+  },
+  {
+    q: "Why are fossil fuels considered nonrenewable?",
+    options: [
+      "Living plants make new ones every year",
+      "They can be remade in just a few weeks",
+      "They take millions of years to form, far longer than we use them",
+      "They are made directly out of sunlight"
+    ],
+    correct: 2,
+    explanation: "Fossil fuels take hundreds of millions of years to form. We burn them far faster than the Earth can replace them."
+  },
+  {
+    q: "Which energy resource uses uranium and is nonrenewable because the uranium gets used up?",
+    options: [
+      "Nuclear energy",
+      "Solar energy",
+      "Wind energy",
+      "Geothermal energy"
+    ],
+    correct: 0,
+    explanation: "Nuclear energy splits uranium atoms in fission. Uranium is mined and limited, so once it is used it is gone."
+  },
+  {
+    q: "Which of these is a renewable resource?",
+    options: [
+      "Coal",
+      "Natural gas",
+      "Petroleum",
+      "Wind"
+    ],
+    correct: 3,
+    explanation: "Wind is renewable because the Sun keeps heating the air and the wind keeps blowing. The others are fossil fuels."
+  },
+  {
+    q: "A hydroelectric dam is considered a renewable resource because...",
+    options: [
+      "the water flow is constantly refilled by the water cycle",
+      "the concrete dam itself never wears out",
+      "it has no effect on the river around it",
+      "the water can only be used a single time"
+    ],
+    correct: 0,
+    explanation: "Hydroelectric energy uses flowing water, and the water cycle keeps refilling the rivers, so the source returns."
+  },
+  {
+    q: "As the human population grows, the total demand for natural resources usually...",
+    options: [
+      "stays exactly the same",
+      "decreases",
+      "disappears",
+      "increases"
+    ],
+    correct: 3,
+    explanation: "More people need more food, water, energy, and materials, so the total demand for natural resources rises."
+  },
+  {
+    q: "What does per-capita consumption describe?",
+    options: [
+      "the total number of people on Earth",
+      "the amount of resources one person uses",
+      "the age of a natural resource",
+      "the speed a resource forms underground"
+    ],
+    correct: 1,
+    explanation: "Per-capita consumption is the amount of resources a single person uses, which varies with lifestyle and choices."
+  },
+  {
+    q: "Which change would reduce the energy used for lighting the most?",
+    options: [
+      "leaving the lights on all day",
+      "using larger incandescent bulbs",
+      "replacing incandescent bulbs with LED bulbs",
+      "adding more incandescent bulbs"
+    ],
+    correct: 2,
+    explanation: "LED bulbs produce the same light using far less energy, so they cut the resources needed for lighting."
+  },
+  {
+    q: "Which is the best example of conserving resources?",
+    options: [
+      "recycling materials instead of using new ones",
+      "throwing reusable items in the trash",
+      "using a new disposable cup every time",
+      "leaving the water running while brushing"
+    ],
+    correct: 0,
+    explanation: "Recycling reuses materials so fewer new raw materials must be mined or harvested, which conserves resources."
+  },
+  {
+    q: "A town claims switching to solar and wind power will lower its environmental impact. Which evidence best supports that claim?",
+    options: [
+      "Wind turbines can be very tall",
+      "Many towns already have power lines",
+      "Solar and wind make electricity without using up fossil fuels",
+      "Solar panels are usually a dark color"
+    ],
+    correct: 2,
+    explanation: "Evidence must connect to the claim. Solar and wind generate electricity without burning nonrenewable fossil fuels, which lowers impact."
+  }
+];
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-set-quiz-mode */
+function elSetQuizMode(mode) {
+  elQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+  /* LYFELABZ:V1-ONLY:END legacy-set-quiz-mode */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-init-iife */
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
+  else elSetQuizMode('practice');
+})();
+  /* LYFELABZ:V1-ONLY:END legacy-mode-init-iife */
+
+function elBuildQuiz() {
+  var container = document.getElementById('el-quiz-questions');
+  container.innerHTML = '';
+  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
+  elQuizState.submitted = false;
+  document.getElementById('el-submit-btn').disabled = true;
+  elUpdateProgress();
+  var letters = ['A','B','C','D'];
+  elQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function elSelectAnswer(qi, chosenIndex) {
+  if (elQuizState.submitted) return;
+  var prev = elQuizState.selected[qi];
+  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
+  elQuizState.selected[qi] = chosenIndex;
+  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  elUpdateProgress();
+  elRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(elQuizState.selected);
+}
+
+function elUpdateProgress() {
+  var total    = elQuizQuestions.length;
+  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-validate-student-info */
+function elValidateStudentInfo() {
+  var name    = document.getElementById('el-student-name').value.trim();
+  var teacher = document.getElementById('el-teacher-select').value;
+  var block   = document.getElementById('el-block-select').value;
+  document.getElementById('el-err-name').classList.toggle('show', !name);
+  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('el-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+  /* LYFELABZ:V1-ONLY:END legacy-validate-student-info */
+
+function elSubmitQuiz() {
+  if (elQuizState.submitted) return;
+  var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-validation-guard */
+  if (elQuizMode === 'classroom') {
+    var info = elValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-validation-guard */
+  elQuizState.submitted = true;
+  document.getElementById('el-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('el-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('el-think-model').classList.add('show');
+  var correct = 0;
+  elQuizQuestions.forEach(function (q, qi) {
+    var chosen    = elQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('el-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = elQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand renewable and nonrenewable resources cold.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+    : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
+    : '\u{1F4AA} Keep going; review each section carefully and try again!';
+  document.getElementById('el-score-num').textContent = score;
+  document.getElementById('el-score-msg').textContent = msg;
+  var sb = document.getElementById('el-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
+
+  if (pct === 100) {
+    elQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (elAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by elQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var elReturnCtl = document.getElementById('back-to-assignments');
+    if (elReturnCtl) elReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
+    var elFinalStatus = document.getElementById('el-submit-status');
+    elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var elGenericError = 'Submission did not complete. Please refresh and try again.';
+    function elShowSubmitError(msg) {
+      elFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || elGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(elQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        elFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        elShowSubmitError(r.message);
+      } else {
+        elShowSubmitError(null);
+      }
+    }, function () {
+      elShowSubmitError(null);
+    });
+    return;
+  }
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-practice-completion */
+  if (elQuizMode === 'practice') {
+    document.getElementById('el-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-practice-completion */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-apps-script-submit */
+  var info2 = elValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  var letters = ['A','B','C','D'];
+  var params = new URLSearchParams({ resourceId: 'lesson_renewable-and-nonrenewable-resources', grade: '7', teacher: info2.teacher, studentName: info2.name, block: info2.block });
+  elQuizState.selected.forEach(function (idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
+  fetch(EL_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('el-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('el-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('el-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+  /* LYFELABZ:V1-ONLY:END legacy-apps-script-submit */
+  /* LYFELABZ:V2-ONLY:BEGIN platform-standalone-completion */
+  document.getElementById('el-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+  /* LYFELABZ:V2-ONLY:END platform-standalone-completion */
+}
+
+function elResetQuiz() {
+  if (elQuizState.continueTimer) {
+    clearTimeout(elQuizState.continueTimer);
+    elQuizState.continueTimer = null;
+  }
+  document.getElementById('el-score').classList.remove('show');
+  document.getElementById('el-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('el-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('el-think-model').classList.remove('show');
+  elBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
+})();
+
+elBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

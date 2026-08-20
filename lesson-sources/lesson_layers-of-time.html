@@ -1,0 +1,2843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_layers-of-time.html">
+<meta name="description" content="Read Earth's history through rock layers. This interactive lesson covers superposition, relative dating, and index fossils for Grade 6 Earth science.">
+<title>LyfeLabz | Layers of Time</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+    --red:         #e74c3c;
+    --green:       #2ecc71;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 600px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto;
+    padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06);
+    border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2);
+    border-radius: 14px;
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout em { color: var(--accent2); font-style: normal; font-weight: 700; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── ROCK TYPE CARDS ── */
+  .rock-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem; margin: 1.5rem 0;
+  }
+  @media (max-width: 800px) { .rock-grid { grid-template-columns: 1fr; } }
+  .rock-card {
+    border-radius: 16px; padding: 1.5rem; border: 1px solid; position: relative; overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .rock-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+  .rock-card.sedimentary { background: rgba(180,140,90,0.08);  border-color: rgba(180,140,90,0.3);  }
+  .rock-card.igneous     { background: rgba(200,80,60,0.08);   border-color: rgba(200,80,60,0.3);   }
+  .rock-card.metamorphic { background: rgba(122,143,166,0.08); border-color: rgba(122,143,166,0.3); }
+  .rock-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .rock-card.sedimentary::before { background: linear-gradient(90deg, #b48c5a, #d4a96a); }
+  .rock-card.igneous::before     { background: linear-gradient(90deg, #c84c3c, #e8704e); }
+  .rock-card.metamorphic::before { background: linear-gradient(90deg, #7a8fa6, #9fb8cc); }
+  .rock-emoji { font-size: 2.2rem; margin-bottom: 0.6rem; display: block; }
+  .rock-name { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .rock-card.sedimentary .rock-name { color: #d4a96a; }
+  .rock-card.igneous     .rock-name { color: #e8704e; }
+  .rock-card.metamorphic .rock-name { color: #9fb8cc; }
+  .rock-how { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.7rem; border-radius: 99px; display: inline-block; margin-bottom: 0.8rem; }
+  .rock-card.sedimentary .rock-how { background: rgba(180,140,90,0.15);  color: #d4a96a; border: 1px solid rgba(180,140,90,0.35); }
+  .rock-card.igneous     .rock-how { background: rgba(200,80,60,0.12);   color: #e8704e; border: 1px solid rgba(200,80,60,0.35); }
+  .rock-card.metamorphic .rock-how { background: rgba(122,143,166,0.12); color: #9fb8cc; border: 1px solid rgba(122,143,166,0.35); }
+  .rock-desc { font-size: 0.88rem; color: rgba(232,237,242,0.8); line-height: 1.65; }
+  .rock-fact { font-size: 0.8rem; color: rgba(232,237,242,0.55); margin-top: 0.6rem; font-style: italic; }
+
+  /* ── PRINCIPLES GRID ── */
+  .principles-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem; margin-top: 1.5rem;
+  }
+  @media (max-width: 700px) { .principles-grid { grid-template-columns: 1fr; } }
+  .principle-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 1.4rem 1.6rem; border-left: 4px solid;
+    transition: transform 0.2s;
+  }
+  .principle-card:hover { transform: translateY(-3px); }
+  .principle-card.p1 { border-left-color: #9fb8cc; }
+  .principle-card.p2 { border-left-color: #d4a96a; }
+  .principle-card.p3 { border-left-color: #9fb8cc; }
+  .principle-card.p4 { border-left-color: #d4a96a; }
+  .principle-term { font-family: 'Fredoka One', cursive; font-size: 1.1rem; margin-bottom: 0.4rem; }
+  .p1 .principle-term { color: #9fb8cc; }
+  .p2 .principle-term { color: #d4a96a; }
+  .p3 .principle-term { color: #9fb8cc; }
+  .p4 .principle-term { color: #d4a96a; }
+  .principle-def { font-size: 0.88rem; color: rgba(232,237,242,0.82); line-height: 1.65; }
+  .principle-key { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.5rem; opacity: 0.6; }
+
+  /* ── STRATA DIAGRAM ── */
+  .strata-wrap {
+    display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0;
+  }
+  .strata-diagram { flex: 0 0 auto; width: 220px; }
+  .strata-layer {
+    width: 100%; padding: 0.75rem 1.1rem; margin-bottom: 3px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.82rem; font-weight: 700; border-radius: 4px; cursor: pointer;
+    transition: filter 0.2s; position: relative;
+  }
+  .strata-layer:hover { filter: brightness(1.15); }
+  .strata-layer .layer-age { opacity: 0.7; font-size: 0.7rem; }
+  .strata-detail-panel {
+    flex: 1; min-width: 220px;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 160px; display: flex; align-items: center;
+  }
+  .sd-inner { width: 100%; }
+  .sd-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .sd-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .sd-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+
+  /* Student info box */
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-student-info-styles */
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem;
+    border-top: 3px solid var(--accent2);
+  }
+  .student-info-title {
+    font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields {
+    display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem;
+  }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label {
+    display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem;
+  }
+  .info-field input,
+  .info-field select {
+    width: 100%; padding: 0.7rem 1rem;
+    background: rgba(255,255,255,0.04); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus,
+  .info-field select:focus {
+    outline: none; border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(122,143,166,0.15);
+  }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
+
+  /* Quiz cards */
+  .quiz-progress-sticky {
+    position: sticky; top: 64px; z-index: 100;
+    background: var(--dark2); padding: 0.85rem 0 0.75rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num {
+    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted);
+    width: 2rem; height: 2rem; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border);
+    cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02);
+    font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+    text-align: left; color: rgba(232,237,242,0.9); width: 100%;
+  }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback {
+    display: none; font-size: 0.85rem; margin-top: 0.8rem;
+    padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700;
+  }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+
+  /* Submit + Score */
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px;
+    font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: all 0.25s; letter-spacing: 0.04em;
+  }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .score-board {
+    scroll-margin-top: 90px;
+    display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3);
+    border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem;
+    box-shadow: 0 0 24px rgba(122,143,166,0.08);
+  }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .score-submitted {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal); background: rgba(29,233,182,0.1);
+    border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem;
+    border-radius: 99px; margin-bottom: 1.5rem;
+  }
+  .score-error {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; font-weight: 800;
+    color: #e87070; background: rgba(231,76,60,0.1);
+    border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem;
+    border-radius: 99px; margin-bottom: 1.5rem;
+  }
+  .reset-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px;
+    font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── QUIZ MODE TOGGLE ── */
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-styles */
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55);
+    background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5;
+    border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .mode-hint {
+    text-align: center; font-size: 0.82rem; font-weight: 700;
+    color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem;
+    letter-spacing: 0.01em;
+  }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
+
+  /* ── CONTINUE ── */
+  #continue { background: var(--dark2); }
+  .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
+  .cont-card {
+    border-radius: 18px; padding: 1.6rem 1.5rem;
+    transition: transform 0.25s, box-shadow 0.25s;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative; overflow: hidden;
+  }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.sim  { background: rgba(245,160,40,0.08); border: 1px solid rgba(245,160,40,0.35); }
+  .cont-card.game { background: rgba(61,220,132,0.1);  border: 1px solid rgba(61,220,132,0.35); }
+  .cont-card.ext  { background: rgba(180,127,255,0.1); border: 1px solid rgba(180,127,255,0.35);}
+  .cont-card.sim::before  { background: linear-gradient(90deg, #f5a028, #f5c842); }
+  .cont-card.game::before { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
+  .cont-card.ext::before  { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+  .cont-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+  .cont-card.sim:hover  { border-color: rgba(245,160,40,0.5);  box-shadow: 0 6px 20px rgba(245,160,40,0.08); }
+  .cont-card.game:hover { border-color: rgba(61,220,132,0.5);  box-shadow: 0 6px 20px rgba(61,220,132,0.08); }
+  .cont-card.ext:hover  { border-color: rgba(180,127,255,0.5); box-shadow: 0 6px 20px rgba(180,127,255,0.08); }
+  .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .cont-card.sim  .cont-icon { background: rgba(245,160,40,0.18); }
+  .cont-card.game .cont-icon { background: rgba(61,220,132,0.18); }
+  .cont-card.ext  .cont-icon { background: rgba(180,127,255,0.2); }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .cont-desc { font-size: 0.86rem; color: rgba(232,237,242,0.82); line-height: 1.6; flex: 1; }
+  .coming-soon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 0.2rem 0.7rem; border-radius: 99px;
+    border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted);
+    background: rgba(122,143,166,0.06); margin-top: 0.2rem;
+  }
+  .cont-link {
+    display: inline-flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    text-decoration: none; padding: 0.4rem 1rem;
+    border-radius: 99px; border: 1px solid; transition: all 0.2s;
+    white-space: nowrap; align-self: flex-start; margin-top: auto;
+  }
+  .cont-card.game .cont-link { background: rgba(61,220,132,0.1); border-color: rgba(61,220,132,0.3); color: #3ddc84; }
+  .cont-card.sim  .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5a028; }
+  .cont-card.sim:hover .cont-link { background: rgba(245,160,40,0.2); border-color: rgba(245,160,40,0.55); color: #f5c842; }
+  .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2); border-color: rgba(61,220,132,0.55); }
+  a.cont-card { text-decoration: none; cursor: pointer; }
+
+  /* ── KEY CONCEPTS ── */
+  #concepts { background: var(--dark); }
+  .concepts-hint {
+    font-size: 0.78rem; color: rgba(122,143,166,0.7);
+    display: flex; align-items: center; gap: 0.35rem;
+    margin-top: 1rem; margin-bottom: 0.6rem;
+  }
+  .concepts-grid { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+  .concept-tag {
+    font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px;
+    border: 1px solid; cursor: pointer; transition: all 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+  .ct-slate  { color: #9fb8cc; background: rgba(122,143,166,0.1);  border-color: rgba(122,143,166,0.35); }
+  .ct-brown  { color: #d4a96a; background: rgba(180,140,90,0.1);   border-color: rgba(180,140,90,0.35);  }
+  .ct-red    { color: #e8a090; background: rgba(200,80,60,0.1);    border-color: rgba(200,80,60,0.35);   }
+  .ct-green  { color: #3ddc84; background: rgba(61,220,132,0.08);  border-color: rgba(61,220,132,0.3);   }
+  .ct-teal   { color: #1de9b6; background: rgba(29,233,182,0.08);  border-color: rgba(29,233,182,0.3);   }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  @keyframes termPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 6px; }
+    15%  { background: rgba(159,184,204,0.26); box-shadow: 0 0 0 6px rgba(159,184,204,0.18); border-radius: 6px; }
+    55%  { background: rgba(159,184,204,0.16); box-shadow: 0 0 0 9px rgba(159,184,204,0.08); border-radius: 6px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 6px; }
+  }
+  .vocab.pulsing        { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .principle-term.pulsing,
+  .rock-name.pulsing,
+  .sd-title.pulsing     { animation: termPulse 3s ease forwards; padding: 0 5px; margin: 0 -5px; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-touchtarget */
+  .mode-btn,
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-touchtarget */
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#lesson">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#geo" class="nav-back">← Earth &amp; Space</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">🪨</span>
+  <span class="hero-float">🦕</span>
+  <span class="hero-float">⛰️</span>
+  <span class="hero-float">🌋</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Layers of Time</h1>
+  <p>Beneath your feet is a record of everything Earth has ever been, billions of years of history written in stone.</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">If rock layers can't talk, how do scientists figure out what happened (and when) just by looking at them?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Phenomenon-first learning activates curiosity before instruction begins, students are more likely to retain content they felt motivated to learn.">🔍 Phenomenon-First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking content into digestible sections prevents working memory overload. (Sweller et al., 2019)">🧠 Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing vocabulary with interactive diagrams builds multiple memory pathways for better retrieval. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes quiz questions improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">✅ Retrieval Practice</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GOLD-STANDARD SECTIONS: LEARNING GOALS + KEY VOCABULARY
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* Learning Goals */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+  }
+
+  /* Key Vocabulary (glossary cards) */
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent2);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-slate  { border-top-color: var(--accent2); } .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-teal   { border-top-color: var(--teal); }    .gc-teal .gc-term   { color: var(--teal); }
+  .gc-gold   { border-top-color: var(--gold); }    .gc-gold .gc-term   { color: var(--gold); }
+  .gc-green  { border-top-color: var(--green); }   .gc-green .gc-term  { color: var(--green); }
+  .gc-red    { border-top-color: var(--red); }     .gc-red .gc-term    { color: #e8836f; }
+  .gc-brown  { border-top-color: #c49a6c; }        .gc-brown .gc-term  { color: #d0a878; }
+
+  /* Quick Recall cards */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* Explain wrap-up beats */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(196,154,108,0.07); border: 1px solid rgba(196,154,108,0.28); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, #c49a6c, rgba(196,154,108,0.3)); }
+  .wrapup-beat-2 { background: rgba(159,184,204,0.05); border: 1px solid rgba(159,184,204,0.22); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+  .wrapup-beat-3 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, var(--teal), var(--green)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: #d0a878; }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--accent2); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: #d0a878;     background: rgba(196,154,108,0.08); border-color: rgba(196,154,108,0.3); }
+  .wuc-2 { color: var(--accent2); background: rgba(159,184,204,0.08); border-color: rgba(159,184,204,0.3); }
+  .wuc-3 { color: var(--teal); background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
+</style>
+
+<!-- LEARNING GOALS -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🪨</span>
+        <div class="goal-text">I can explain how the three rock types form and how the rock cycle connects them.</div>
+        <span class="goal-std">6.MS-ESS1-4</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">⬇️</span>
+        <div class="goal-text">I can use superposition and cross-cutting relationships to order rock layers from oldest to youngest.</div>
+        <span class="goal-std">6.MS-ESS1-4</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">💨</span>
+        <div class="goal-text">I can describe how weathering and erosion build the sediment that becomes sedimentary rock.</div>
+        <span class="goal-std">6.MS-ESS1-4</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🦕</span>
+        <div class="goal-text">I can explain how index fossils and dating methods reveal the age of rock layers.</div>
+        <span class="goal-std">6.MS-ESS1-4</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY VOCABULARY -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-brown" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Sedimentary Rock</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Rock formed when sediment piles up in layers and is compacted by pressure over time. The best natural recorder of fossils.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-sedimentary')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Igneous Rock</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Rock formed when melted rock (magma or lava) cools and hardens, either underground or on the surface.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-igneous')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Metamorphic Rock</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Rock formed when existing rock is changed by intense heat and pressure deep underground, without fully melting.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-metamorphic')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-brown" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Weathering</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The breakdown of rock into smaller pieces by wind, rain, ice, or temperature changes. It happens in place.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-weathering')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Erosion</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The movement of broken rock pieces to a new place by water, wind, or ice, where they are deposited.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-erosion')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Rock Strata</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Layers of sedimentary rock stacked on each other, each recording the environment of the time it formed.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-strata')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-brown" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Superposition</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">In undisturbed layers, the bottom layer is the oldest and the top layer is the youngest.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('term-superposition')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Original Horizontality</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Sediment layers are always deposited flat. Tilted or bent layers were moved after they formed.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('term-horizontality')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cross-Cutting Relationships</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">When a fault or intrusion cuts through rock layers, the thing that cuts is always younger than the layers it cuts.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('term-crosscutting')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Inclusions</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Pieces of one rock trapped inside another. The trapped pieces are older than the rock around them.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('term-inclusions')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Index Fossils</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Fossils from species that lived a short time but spread worldwide, used to date the rock layer they appear in.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-index')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Relative Dating</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Working out whether a layer is older or younger than another, the sequence, not the exact age.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-relative')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Absolute Dating</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Finding the actual age of rock in years, often by measuring radioactive decay.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-absolute')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
+<!-- ── MICROPASS 1: INVESTIGATION HOOK ── -->
+<style>
+  .inv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .inv-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .inv-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .inv-question {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .inv-visual {
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.25);
+  }
+  .inv-nudge {
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(159,184,204,0.4);
+    text-align: center;
+  }
+  .inv-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .inv-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.35;
+  }
+  .inv-btn:hover:not(.locked) {
+    border-color: rgba(159,184,204,0.5);
+    background: rgba(159,184,204,0.07);
+  }
+  .inv-btn.correct {
+    border-color: var(--green);
+    background: rgba(46,204,113,0.12);
+    color: var(--green);
+  }
+  .inv-btn.incorrect {
+    border-color: rgba(231,76,60,0.45);
+    background: rgba(231,76,60,0.06);
+    color: rgba(231,76,60,0.8);
+  }
+  .inv-btn.locked { pointer-events: none; }
+  .inv-feedback {
+    display: none;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    background: rgba(122,143,166,0.06);
+    border-left: 3px solid var(--accent2);
+  }
+  .inv-feedback.show { display: block; }
+  .inv-feedback strong { color: var(--text); }
+</style>
+
+<section id="hook" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Investigation</span>
+    <h2 class="section-title">Can You Read the Rocks?</h2>
+    <p class="section-desc">Before we explain anything, look at these three formations and trust your instincts. What do you notice?</p>
+
+    <!-- REASONING MOMENT: Rock record prediction -->
+    <style>
+      .predict-card {
+        background: rgba(180,140,90,0.06);
+        border: 1px solid rgba(180,140,90,0.25);
+        border-left: 4px solid rgba(195,158,95,0.55);
+        border-radius: 18px;
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+      }
+      .predict-pill {
+        display: inline-block; font-size: 0.7rem; font-weight: 900;
+        letter-spacing: 0.14em; text-transform: uppercase;
+        color: #d4a96a; background: rgba(180,140,90,0.12);
+        border: 1px solid rgba(180,140,90,0.35); padding: 0.22rem 0.85rem;
+        border-radius: 99px; margin-bottom: 0.9rem;
+      }
+      .predict-q {
+        font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+        color: var(--text); line-height: 1.4; margin-bottom: 1rem;
+      }
+      .apply-options { display: flex; flex-direction: column; gap: 0.65rem; }
+      .apply-opt {
+        text-align: left; background: rgba(122,143,166,0.06);
+        border: 1px solid rgba(122,143,166,0.22); border-radius: 10px;
+        padding: 0.75rem 1.1rem; color: rgba(232,237,242,0.88);
+        font-family: 'Nunito', sans-serif; font-size: 0.93rem; font-weight: 600;
+        line-height: 1.5; cursor: pointer; transition: background 0.18s, border-color 0.18s;
+      }
+      .apply-opt:hover:not(:disabled) { background: rgba(122,143,166,0.13); border-color: rgba(122,143,166,0.45); }
+      .apply-opt:disabled { cursor: default; }
+      .apply-opt.ao-correct { background: rgba(46,204,113,0.1); border-color: rgba(46,204,113,0.55); color: #2ecc71; font-weight: 800; }
+      .apply-opt.ao-incorrect { background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.35); color: rgba(232,237,242,0.45); }
+      .apply-feedback {
+        margin-top: 1rem; font-size: 0.9rem; line-height: 1.65;
+        color: rgba(232,237,242,0.8); display: none;
+        background: rgba(122,143,166,0.06); border-left: 3px solid var(--accent2);
+        border-radius: 0 8px 8px 0; padding: 0.75rem 1rem;
+      }
+      .apply-feedback.show { display: block; }
+    </style>
+    <script>
+    var lotHookPredicted = false;
+    function lotHookPick(btn, isCorrect) {
+      if (lotHookPredicted) return;
+      lotHookPredicted = true;
+      var card = document.getElementById('predict-record');
+      var opts = card.querySelectorAll('.apply-opt');
+      opts.forEach(function(o) { o.disabled = true; o.classList.add('ao-incorrect'); });
+      btn.classList.remove('ao-incorrect');
+      btn.classList.add(isCorrect ? 'ao-correct' : 'ao-incorrect');
+      document.getElementById('lot-hook-feedback').classList.add('show');
+    }
+    </script>
+
+    <div class="predict-card" id="predict-record" style="max-width:680px;">
+      <div class="predict-pill">Make a Prediction</div>
+      <div class="predict-q">You are about to study rock layers with no dates written on them. Before you look, predict: can scientists work out the order of events just by looking at the rock?</div>
+      <div class="apply-options">
+        <button class="apply-opt" onclick="lotHookPick(this, false)">A, No, without labels or dates there is no way to tell what came first</button>
+        <button class="apply-opt" onclick="lotHookPick(this, true)">B, Yes, the position and shape of the layers follow rules that reveal their order</button>
+        <button class="apply-opt" onclick="lotHookPick(this, false)">C, Only if someone was there to watch the rock form</button>
+      </div>
+      <div class="apply-feedback" id="lot-hook-feedback">
+        Geologists choose option B. Rock layers follow a few reliable rules, and those rules let scientists reconstruct the order of events without any dates written down. The three formations below are your first chance to test those rules yourself.
+      </div>
+    </div>
+
+    <div class="inv-grid">
+
+      <!-- CARD 1: Superposition -->
+      <div class="inv-card">
+        <div class="inv-question">In this undisturbed stack, which layer formed first?</div>
+        <div class="inv-visual">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Undisturbed horizontal rock layers stacked top to bottom: Layer A, Layer B, Layer C, Layer D.">
+            <defs>
+              <pattern id="g1" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect x="10" y="8"   width="260" height="30" rx="2" fill="rgba(160,170,200,0.28)" stroke="rgba(160,170,200,0.45)" stroke-width="1"/>
+            <rect x="10" y="8"   width="260" height="30" fill="url(#g1)"/>
+            <text x="22" y="28" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+            <rect x="10" y="40"  width="260" height="30" rx="2" fill="rgba(180,145,90,0.32)"  stroke="rgba(180,145,90,0.5)"   stroke-width="1"/>
+            <rect x="10" y="40"  width="260" height="30" fill="url(#g1)"/>
+            <text x="22" y="60" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+            <rect x="10" y="72"  width="260" height="30" rx="2" fill="rgba(140,110,75,0.38)"  stroke="rgba(140,110,75,0.58)"  stroke-width="1"/>
+            <rect x="10" y="72"  width="260" height="30" fill="url(#g1)"/>
+            <text x="22" y="92" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+            <rect x="10" y="104" width="260" height="36" rx="2" fill="rgba(90,70,55,0.48)"    stroke="rgba(90,70,55,0.68)"    stroke-width="1"/>
+            <rect x="10" y="104" width="260" height="36" fill="url(#g1)"/>
+            <text x="22" y="127" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer D</text>
+          </svg>
+        </div>
+        <div class="inv-choices">
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','1')">Layer A</button>
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','1')">Layer B</button>
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','1')">Layer C</button>
+          <button class="inv-btn" onclick="invAnswer(this,'right','1')">Layer D</button>
+        </div>
+        <div class="inv-feedback" id="inv-fb-1"><strong>Superposition:</strong> Sediment piles on top of what's already there. Layer D settled first, everything above it came later. In undisturbed rock, bottom = oldest, top = youngest.</div>
+      </div>
+
+      <!-- CARD 2: Cross-Cutting Relationships -->
+      <div class="inv-card">
+        <div class="inv-question">An igneous rock punched through these layers after they formed. Is it older or younger than the layers it cut?</div>
+        <div class="inv-visual">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Four horizontal rock layers A through D with a vertical igneous intrusion cutting through every layer.">
+            <defs>
+              <pattern id="g2" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect x="10" y="8"   width="260" height="30" rx="2" fill="rgba(160,170,200,0.28)" stroke="rgba(160,170,200,0.45)" stroke-width="1"/>
+            <rect x="10" y="8"   width="260" height="30" fill="url(#g2)"/>
+            <text x="22" y="28" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+            <rect x="10" y="40"  width="260" height="30" rx="2" fill="rgba(180,145,90,0.32)"  stroke="rgba(180,145,90,0.5)"   stroke-width="1"/>
+            <rect x="10" y="40"  width="260" height="30" fill="url(#g2)"/>
+            <text x="22" y="60" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+            <rect x="10" y="72"  width="260" height="30" rx="2" fill="rgba(140,110,75,0.38)"  stroke="rgba(140,110,75,0.58)"  stroke-width="1"/>
+            <rect x="10" y="72"  width="260" height="30" fill="url(#g2)"/>
+            <text x="22" y="92" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+            <rect x="10" y="104" width="260" height="36" rx="2" fill="rgba(90,70,55,0.48)"    stroke="rgba(90,70,55,0.68)"    stroke-width="1"/>
+            <rect x="10" y="104" width="260" height="36" fill="url(#g2)"/>
+            <text x="22" y="127" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer D</text>
+            <!-- Igneous intrusion -->
+            <rect x="178" y="8"  width="26" height="132" rx="2" fill="rgba(220,95,45,0.14)"/>
+            <rect x="182" y="8"  width="18" height="132" rx="2" fill="rgba(210,85,38,0.86)"/>
+            <!-- Glow -->
+            <rect x="176" y="8"  width="28" height="132" rx="3" fill="rgba(240,120,60,0.1)"/>
+            <!-- Label -->
+            <line x1="191" y1="56" x2="220" y2="44" stroke="rgba(230,140,75,0.65)" stroke-width="1.2"/>
+            <text x="222" y="42"  font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="rgba(235,145,80,1)">Igneous</text>
+            <text x="222" y="54"  font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="rgba(235,145,80,1)">intrusion</text>
+          </svg>
+        </div>
+        <div class="inv-choices">
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','2')">Older than the layers</button>
+          <button class="inv-btn" onclick="invAnswer(this,'right','2')">Younger than the layers</button>
+        </div>
+        <div class="inv-feedback" id="inv-fb-2"><strong>Cross-Cutting Relationships:</strong> The intrusion had to push through layers that were already there. You can't cut through something that doesn't exist yet. Whatever cuts through is always younger than what it cuts.</div>
+      </div>
+
+      <!-- CARD 3: Original Horizontality -->
+      <div class="inv-card">
+        <div class="inv-question">These rock layers are tilted at a steep angle. What does that tell you?</div>
+        <div class="inv-visual">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Rock layers A through D tilted at a steep angle rather than lying flat.">
+            <clipPath id="inv3-clip">
+              <rect x="0" y="0" width="280" height="148"/>
+            </clipPath>
+            <g clip-path="url(#inv3-clip)" transform="rotate(-28, 140, 74)">
+              <rect x="-30" y="6"   width="340" height="30" rx="2" fill="rgba(160,170,200,0.28)" stroke="rgba(160,170,200,0.45)" stroke-width="1"/>
+              <text x="20"  y="26"  font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+              <rect x="-30" y="38"  width="340" height="30" rx="2" fill="rgba(180,145,90,0.32)"  stroke="rgba(180,145,90,0.5)"   stroke-width="1"/>
+              <text x="20"  y="58"  font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+              <rect x="-30" y="70"  width="340" height="30" rx="2" fill="rgba(140,110,75,0.38)"  stroke="rgba(140,110,75,0.58)"  stroke-width="1"/>
+              <text x="20"  y="90"  font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+              <rect x="-30" y="102" width="340" height="36" rx="2" fill="rgba(90,70,55,0.48)"    stroke="rgba(90,70,55,0.68)"    stroke-width="1"/>
+              <text x="20"  y="125" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer D</text>
+            </g>
+          </svg>
+        </div>
+        <div class="inv-choices">
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','3')">They formed at an angle</button>
+          <button class="inv-btn" onclick="invAnswer(this,'right','3')">Something moved them</button>
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','3')">Wind eroded them</button>
+        </div>
+        <div class="inv-feedback" id="inv-fb-3"><strong>Original Horizontality:</strong> Sediment always settles flat, gravity pulls it level. If layers are tilted, they formed horizontal first. Something moved them later: tectonic pressure, an earthquake, or land shifting over millions of years.</div>
+      </div>
+
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a real puzzle: reading rock formations.</li><li>Ask students to commit to a prediction before any explanation.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Predict before explain</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Visual diagrams support each question</li><li>Choices lock after one pick</li><li>Immediate, plain feedback</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+function invAnswer(btn, result, cardNum) {
+  const card = btn.closest('.inv-card');
+  card.querySelectorAll('.inv-btn').forEach(b => b.classList.add('locked'));
+  btn.classList.add(result === 'right' ? 'correct' : 'incorrect');
+  document.getElementById('inv-fb-' + cardNum).classList.add('show');
+}
+</script>
+
+<!-- ── MICROPASS 2: BRIDGE CALLOUT ── -->
+<div style="background: var(--dark2); padding: 0 2rem 3rem;">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div class="bridge-callout">
+      You just made predictions using nothing but observation. That's exactly what geologists do. Now let's understand the <strong>actual processes</strong> that create those patterns.
+    </div>
+  </div>
+</div>
+
+<!-- LESSON NOTES -->
+<section id="lesson">
+  <div class="container">
+    <span class="section-label">Explore &middot; Formation</span>
+    <h2 class="section-title">From Sediment to Stone</h2>
+    <p class="section-desc">Those patterns you just noticed (flat layers, tilted layers, things that cut through) all come from how rocks form in the first place.</p>
+
+    <!-- Phenomenon card -->
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">🏜️</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>The Grand Canyon: Earth's Autobiography</h3>
+        <p>The Grand Canyon is over a mile deep, and each layer of rock is a page in Earth's history. The very bottom layers are nearly 2 billion years old. The Colorado River didn't build the canyon; it just carved through rock that was already there, revealing what had been buried for hundreds of millions of years. Standing at the rim, you're looking back in time.</p>
+      </div>
+    </div>
+
+    <!-- Rock Types -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">🪨</span>
+        <div class="card-title">The Three Types of Rock</div>
+      </div>
+      <div class="card-body">
+        <p>All rocks on Earth fit into one of three categories based on <em>how they formed</em>. Understanding this is the key to reading Earth's history.</p>
+        <div class="rock-grid">
+          <div class="rock-card sedimentary">
+            <span class="rock-emoji">🐚</span>
+            <div class="rock-name" id="vocab-sedimentary">Sedimentary</div>
+            <div class="rock-how">Layers &amp; pressure</div>
+            <p class="rock-desc">Formed when small pieces of rock, minerals, and dead organisms pile up in layers over time. Pressure from above slowly compacts them into solid rock.</p>
+            <p class="rock-fact">★ Most fossils are found in sedimentary rock, it's the best natural recorder of life.</p>
+          </div>
+          <div class="rock-card igneous">
+            <span class="rock-emoji">🌋</span>
+            <div class="rock-name" id="vocab-igneous">Igneous</div>
+            <div class="rock-how">Melted &amp; cooled</div>
+            <p class="rock-desc">Formed when melted rock (magma underground, lava above ground) cools and hardens. Can form inside Earth or on the surface after a volcanic eruption.</p>
+            <p class="rock-fact">★ Igneous rock can be used to determine the age of surrounding layers, a geologic clock.</p>
+          </div>
+          <div class="rock-card metamorphic">
+            <span class="rock-emoji">💎</span>
+            <div class="rock-name" id="vocab-metamorphic">Metamorphic</div>
+            <div class="rock-how">Heat &amp; pressure</div>
+            <p class="rock-desc">Formed when existing rocks are changed by intense heat and pressure deep underground; without actually melting. The rock transforms into something new.</p>
+            <p class="rock-fact">★ Diamonds are minerals (not rocks), but they form the same way, under extreme pressure.</p>
+          </div>
+        </div>
+        <div class="callout slate" id="vocab-rockcycle">
+          <span class="callout-icon">🔄</span>
+          <div class="callout-body"><strong>The Rock Cycle:</strong> No rock type is permanent. Sedimentary rock can be buried and become metamorphic. Metamorphic rock can melt and become igneous. Igneous rock can weather and erode into sediment. It's a continuous cycle that has been running for billions of years.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weathering & Erosion -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">💨</span>
+        <div class="card-title">Weathering &amp; Erosion</div>
+      </div>
+      <div class="card-body">
+        <p><span class="vocab" id="vocab-weathering" title="Weathering: the physical or chemical breakdown of rock into smaller pieces by wind, rain, ice, or temperature changes">Weathering</span> is the breakdown of rock into smaller pieces. Wind, rain, freezing and thawing temperatures, and even plant roots can crack and crumble rock over time. Weathering happens <em>in place</em>, the rock breaks apart but doesn't go anywhere yet.</p>
+        <p><span class="vocab" id="vocab-erosion" title="Erosion: the movement of broken rock pieces by water, wind, or ice to a new location where they are deposited">Erosion</span> is when those broken pieces get picked up and carried somewhere else, by rivers, wind, glaciers, or ocean waves. When the moving water or wind slows down, the sediment drops and begins to pile up.</p>
+        <div class="callout teal">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>Key difference:</strong> Weathering <em>breaks</em> rock. Erosion <em>moves</em> it. Both are needed to create the sediment that eventually becomes sedimentary rock.</div>
+        </div>
+        <div class="callout gold" id="vocab-magma">
+          <span class="callout-icon">⏳</span>
+          <div class="callout-body"><strong>Heat &amp; Pressure deep underground</strong> add two more geological forces. Heat from deep inside the Earth drives metamorphic rock formation. Pressure from kilometers of rock above compacts sediment and transforms minerals into new rock.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Explain how sediment becomes layered rock before naming the reading rules.</li><li>Ground the patterns students noticed in a cause.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling</li><li>Dual coding with diagrams</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday process described in steps</li><li>Diagram paired with text</li><li>Key terms defined in place</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRIDGE -->
+<div style="background: var(--dark); padding: 0 2rem;">
+  <div style="max-width: 1100px; margin: 0 auto; padding: 0 0 2.5rem;">
+    <div class="bridge-callout">
+      Sedimentary rock is the key. Because it forms in slow, predictable layers, it preserves a sequence, oldest at the bottom, newest at the top. Scientists figured out that if you understand <em>how</em> rocks form, you can use that knowledge to read <em>when</em> they formed. That's what the next four principles are all about.
+    </div>
+  </div>
+</div>
+
+<!-- PRINCIPLES SECTION -->
+<section id="principles" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Reading the Record</span>
+    <h2 class="section-title">Reading the Rock Record</h2>
+    <p class="section-desc">You made predictions about all three of these in the Investigation. Here's what each one is actually called, and why it works.</p>
+
+    <!-- Strata interactive -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">📚</span>
+        <div class="card-title">Rock Strata, Layers of Earth's History</div>
+      </div>
+      <div class="card-body">
+        <p><span class="vocab" id="vocab-strata" title="Rock strata: layers of sedimentary rock, each representing a different period of Earth's history">Rock strata</span> are layers of sedimentary rock stacked on top of each other. Each layer records the environment that existed when it formed, the organisms that lived, the climate, even the events like volcanic eruptions.</p>
+
+        <div class="strata-wrap">
+          <div class="strata-diagram">
+            <div class="strata-layer" style="background: rgba(180,180,200,0.18); color: #c8cce0;" onclick="strataClick(1)">
+              <span>Top Layer</span><span class="layer-age">Youngest</span>
+            </div>
+            <div class="strata-layer" style="background: rgba(180,150,100,0.22); color: #d4b880;" onclick="strataClick(2)">
+              <span>Layer B</span><span class="layer-age">Newer</span>
+            </div>
+            <div class="strata-layer" style="background: rgba(140,110,80,0.25); color: #c4a070;" onclick="strataClick(3)">
+              <span>Layer C</span><span class="layer-age">Older</span>
+            </div>
+            <div class="strata-layer" style="background: rgba(100,130,160,0.25); color: #8aabb8;" onclick="strataClick(4)">
+              <span>Layer D</span><span class="layer-age">Even Older</span>
+            </div>
+            <div class="strata-layer" style="background: rgba(80,60,50,0.35); color: #a08878;" onclick="strataClick(5)">
+              <span>Bottom Layer</span><span class="layer-age">Oldest</span>
+            </div>
+          </div>
+          <div class="strata-detail-panel">
+            <div class="sd-inner">
+              <div class="sd-label" id="sd-label">Click a layer</div>
+              <div class="sd-title" id="sd-title">Select any layer →</div>
+              <div class="sd-body" id="sd-body">Each layer of rock has a story to tell. Click one to find out what it reveals about that moment in Earth's history.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Four principles -->
+    <!-- CONCEPTUAL SVG: Superposition + Cross-Cutting -->
+    <div style="margin: 2rem 0 1.8rem;">
+      <svg viewBox="0 0 740 295" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Two-panel diagram summarizing Superposition (older layers lie below younger ones) and Cross-Cutting Relationships (features that cut across rock layers are younger than the layers they cut).">
+        <defs>
+          <pattern id="grain" x="0" y="0" width="40" height="8" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="4" x2="40" y2="4" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          </pattern>
+        </defs>
+
+        <!-- ── LEFT PANEL: SUPERPOSITION ── -->
+        <text x="176" y="20" text-anchor="middle" font-family="Fredoka One, cursive" font-size="13" fill="#9fb8cc" letter-spacing="0.5">SUPERPOSITION</text>
+
+        <!-- TIME arrow -->
+        <line x1="12" y1="255" x2="12" y2="44" stroke="rgba(159,184,204,0.35)" stroke-width="1.5"/>
+        <polygon points="12,38 8,50 16,50" fill="rgba(159,184,204,0.55)"/>
+        <text x="12" y="274" text-anchor="middle" font-family="Nunito, sans-serif" font-size="9" fill="rgba(159,184,204,0.45)" letter-spacing="1">TIME</text>
+
+        <!-- Layer A - Youngest -->
+        <rect x="22" y="34" width="308" height="44" rx="2" fill="rgba(160,170,200,0.25)" stroke="rgba(160,170,200,0.4)" stroke-width="1"/>
+        <rect x="22" y="34" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="61" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+        <text x="235" y="61" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(100,210,160,0.85)">&#9664; Youngest</text>
+
+        <!-- Layer B -->
+        <rect x="22" y="78" width="308" height="44" rx="2" fill="rgba(180,145,90,0.3)" stroke="rgba(180,145,90,0.5)" stroke-width="1"/>
+        <rect x="22" y="78" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="105" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+
+        <!-- Layer C -->
+        <rect x="22" y="122" width="308" height="44" rx="2" fill="rgba(150,115,75,0.35)" stroke="rgba(150,115,75,0.55)" stroke-width="1"/>
+        <rect x="22" y="122" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="149" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+
+        <!-- Layer D -->
+        <rect x="22" y="166" width="308" height="44" rx="2" fill="rgba(90,120,155,0.3)" stroke="rgba(90,120,155,0.5)" stroke-width="1"/>
+        <rect x="22" y="166" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="193" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#80a8c0">Layer D</text>
+
+        <!-- Layer E - Oldest -->
+        <rect x="22" y="210" width="308" height="44" rx="2" fill="rgba(90,70,55,0.4)" stroke="rgba(90,70,55,0.6)" stroke-width="1"/>
+        <rect x="22" y="210" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="237" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer E</text>
+        <text x="235" y="237" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(210,140,100,0.85)">&#9664; Oldest</text>
+
+        <!-- Rule -->
+        <text x="176" y="272" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(159,184,204,0.5)" letter-spacing="0.2">Bottom = Oldest · Top = Youngest</text>
+
+        <!-- Divider -->
+        <line x1="370" y1="26" x2="370" y2="265" stroke="rgba(122,143,166,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+
+        <!-- ── RIGHT PANEL: CROSS-CUTTING ── -->
+        <text x="564" y="20" text-anchor="middle" font-family="Fredoka One, cursive" font-size="13" fill="#9fb8cc" letter-spacing="0.5">CROSS-CUTTING</text>
+
+        <!-- Same 5 layers -->
+        <rect x="410" y="34" width="308" height="44" rx="2" fill="rgba(160,170,200,0.25)" stroke="rgba(160,170,200,0.4)" stroke-width="1"/>
+        <rect x="410" y="34" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="61" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+
+        <rect x="410" y="78" width="308" height="44" rx="2" fill="rgba(180,145,90,0.3)" stroke="rgba(180,145,90,0.5)" stroke-width="1"/>
+        <rect x="410" y="78" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="105" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+
+        <rect x="410" y="122" width="308" height="44" rx="2" fill="rgba(150,115,75,0.35)" stroke="rgba(150,115,75,0.55)" stroke-width="1"/>
+        <rect x="410" y="122" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="149" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+
+        <rect x="410" y="166" width="308" height="44" rx="2" fill="rgba(90,120,155,0.3)" stroke="rgba(90,120,155,0.5)" stroke-width="1"/>
+        <rect x="410" y="166" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="193" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#80a8c0">Layer D</text>
+
+        <rect x="410" y="210" width="308" height="44" rx="2" fill="rgba(90,70,55,0.4)" stroke="rgba(90,70,55,0.6)" stroke-width="1"/>
+        <rect x="410" y="210" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="237" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer E</text>
+
+        <!-- Igneous intrusion: vertical dike through all layers A–E -->
+        <rect x="586" y="34" width="22" height="220" rx="2" fill="rgba(220,95,45,0.15)"/>
+        <rect x="590" y="34" width="14" height="220" rx="2" fill="rgba(220,95,45,0.82)"/>
+        <rect x="590" y="34" width="14" height="220" rx="2" fill="rgba(255,160,80,0.18)"/>
+
+        <!-- Intrusion label with leader line -->
+        <line x1="604" y1="115" x2="636" y2="100" stroke="rgba(220,120,55,0.6)" stroke-width="1.2"/>
+        <text x="638" y="97" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(230,140,75,0.95)">Igneous</text>
+        <text x="638" y="109" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(230,140,75,0.95)">intrusion</text>
+
+        <!-- Rule -->
+        <text x="564" y="284" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(159,184,204,0.5)" letter-spacing="0.2">The cutter is always younger</text>
+      </svg>
+    </div>
+
+    <!-- Four principles -->
+    <div class="principles-grid">
+      <div class="principle-card p1">
+        <div class="principle-term" id="term-horizontality">Original Horizontality</div>
+        <div class="principle-def">Sediment layers are always deposited flat and horizontal. If you see tilted or bent layers, something moved them after they formed, like an earthquake or tectonic pressure.</div>
+        <div class="principle-key">⚖️ Flat = undisturbed</div>
+      </div>
+      <div class="principle-card p2">
+        <div class="principle-term" id="term-superposition">Superposition</div>
+        <div class="principle-def">In undisturbed rock layers, the <em>bottom</em> layer is the oldest and the <em>top</em> layer is the youngest. Think of it like a stack of newspapers: the one on the bottom was delivered first.</div>
+        <div class="principle-key">⬇️ Older at bottom, newer at top</div>
+      </div>
+      <div class="principle-card p3">
+        <div class="principle-term" id="term-crosscutting">Cross-Cutting Relationships</div>
+        <div class="principle-def">When a fault line or magma intrusion cuts through existing rock layers, the thing that cuts is always <em>younger</em> than the layers it cuts through. It had to exist after the rock in order to cut it.</div>
+        <div class="principle-key">✂️ Cutters are always younger</div>
+      </div>
+      <div class="principle-card p4">
+        <div class="principle-term" id="term-inclusions">Inclusions</div>
+        <div class="principle-def">Sometimes pieces of one rock type are found inside another. Those trapped pieces must be <em>older</em> than the rock around them; they had to exist first, before the surrounding rock formed around them.</div>
+        <div class="principle-key">🧩 Pieces inside are older</div>
+      </div>
+    </div>
+
+    <!-- Index Fossils & Dating -->
+    <div class="content-card" style="margin-top: 1.5rem;">
+      <div class="card-header">
+        <span class="card-icon">🦕</span>
+        <div class="card-title">Index Fossils &amp; Dating Methods</div>
+      </div>
+      <div class="card-body">
+        <p><span class="vocab" id="vocab-index" title="Index fossils: fossils from species that lived for a short, well-defined time period but were found worldwide, used to date rock layers">Index fossils</span> are like timestamps in the rock record: from species that lived for a short, well-defined window of time and were found all over Earth. Find one, and you know exactly which period that layer is from, anywhere on the planet.</p>
+        <p>Scientists use two types of dating to figure out how old rock layers are. They answer different questions, and geologists often use both together.</p>
+        <style>
+          .compare-table { width:100%; border-collapse:collapse; border-radius:14px; overflow:hidden; margin-top:1.2rem; }
+          .compare-table th { background:rgba(122,143,166,0.1); padding:0.85rem 1.2rem; text-align:left; font-weight:800; font-size:0.9rem; }
+          .compare-table td { padding:0.8rem 1.2rem; border-bottom:1px solid var(--border); font-size:0.92rem; color:var(--text-muted); }
+          .compare-table tr:last-child td { border-bottom:none; }
+          .compare-table tr:nth-child(even) td { background:rgba(255,255,255,0.018); }
+          .compare-table td:first-child { color:var(--text); font-weight:700; }
+        </style>
+        <table class="compare-table" style="margin-top:1.2rem;">
+          <thead>
+            <tr>
+              <th></th>
+              <th id="vocab-relative" style="color:var(--accent2);">Relative Dating</th>
+              <th id="vocab-absolute" style="color:var(--teal);">Absolute Dating</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>What it tells you</td>
+              <td>Which layer is <em>older or younger</em>, the sequence, not the age</td>
+              <td>The <em>actual age in years</em>, a number</td>
+            </tr>
+            <tr>
+              <td>Tools used</td>
+              <td>Superposition, cross-cutting, index fossils</td>
+              <td>Radioactive decay (uranium-lead)</td>
+            </tr>
+            <tr>
+              <td>Everyday equivalent</td>
+              <td>"You are younger than me"</td>
+              <td>"You are 12 years old"</td>
+            </tr>
+            <tr>
+              <td>Limitation</td>
+              <td>Can't say <em>how many years</em> ago something happened</td>
+              <td>Requires the right minerals to be present in the rock</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name and explain the rules that let scientists read the rock record.</li><li>Connect each rule back to a pattern students already predicted.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Worked examples</li><li>Comparison and elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One principle at a time</li><li>Interactive strata paired with plain definitions</li><li>Short, focused explanations</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUICK RECALL -->
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Why is sedimentary rock the best recorder of Earth's history?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>It forms in slow, predictable layers that pile up over time</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>It is the hardest of the three rock types</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>It only forms during volcanic eruptions</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">In an undisturbed stack of rock layers, which layer formed first?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>The top layer, because it is closest to the surface</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>The bottom layer, because of superposition</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>The middle layer, because it is protected</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">A band of hardened magma cuts straight through five rock layers. How old is it compared to those layers?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>Younger than every layer it cuts through</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Older than every layer it cuts through</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>The same age as the bottom layer</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPLAIN -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">How Scientists Read the Rocks</h2>
+    <p class="section-desc">You started with a question: if rock layers can't talk, how do scientists figure out what happened, and when, just by looking at them? Here is the whole chain, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">Rocks Form in Order</div>
+        <div class="wrapup-beat-answer">Sediment settles in flat layers, oldest on the bottom.</div>
+        <div class="wrapup-beat-body">Because of <strong>original horizontality</strong>, layers start out flat. Because of <strong>superposition</strong>, each new layer lands on top, so the sequence runs from oldest at the bottom to youngest at the top.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">Later Events Leave Marks</div>
+        <div class="wrapup-beat-answer">Cuts, tilts, and trapped pieces reveal what came after.</div>
+        <div class="wrapup-beat-body">A fault or magma <strong>cross-cutting</strong> the layers had to form after them. Tilted layers were moved later. <strong>Inclusions</strong> trapped inside a rock are older than the rock around them. Each clue adds to the order of events.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">Fossils and Decay Give Dates</div>
+        <div class="wrapup-beat-answer">Index fossils and radioactive decay turn sequence into age.</div>
+        <div class="wrapup-beat-body"><strong>Relative dating</strong> uses these clues and <strong>index fossils</strong> to order layers. <strong>Absolute dating</strong> measures radioactive decay to give an actual age in years. Together they tell the full story.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full chain:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Sediment piles up in flat layers</span>
+        <span class="wuc wuc-1">Bottom is oldest, top is youngest</span>
+        <span class="wuc wuc-2">Cuts and tilts mark later events</span>
+        <span class="wuc wuc-3">Index fossils order the layers</span>
+        <span class="wuc wuc-3">Radioactive decay gives an age</span>
+      </div>
+      <div style="margin-top: 1rem;">Rock layers really do keep a record. Read in the right order, with the right tools, they reveal both what happened and when, billions of years of Earth's history written in stone.</div>
+    </div>
+
+    <div class="callout gold" style="max-width:760px; margin-top: 2.5rem;">
+      <span class="callout-icon">💭</span>
+      <div class="callout-body">
+        <strong>Think About It:</strong> Scientists had access to rock strata for thousands of years before anyone formally described superposition. What do you think made it so hard to see something that now seems obvious? What had to change, in tools, in thinking, or in the questions people were asking?
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the reading rules into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Layers of Time Quiz</h2>
+    <p class="section-desc">10 questions on rock types, geological processes, and reading the rock record. Fill in your info below before you begin, your score will be sent to your teacher when you submit.</p>
+
+    <!-- Quiz Mode Toggle -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-mode-toggle-markup -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice" onclick="ltSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="ltSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice" class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-mode-toggle-markup -->
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-student-info-markup -->
+    <!-- Student Info Box -->
+    <div class="student-info-box" id="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="lt-student-name">Your Name</label>
+          <input type="text" id="lt-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="lt-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="lt-teacher-select">Teacher</label>
+          <select id="lt-teacher-select">
+            <option value="">- Select -</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="lt-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="lt-block-select">Block</label>
+          <select id="lt-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="lt-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-student-info-markup -->
+
+    <!-- Progress (sticky) -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="lt-progress"></div></div>
+        <div class="progress-text" id="lt-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div id="lt-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(159,184,204,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:112px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--accent2); box-shadow:0 0 0 3px rgba(122,143,166,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(29,233,182,0.07); border:1px solid rgba(29,233,182,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: ltThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#7fe9cf; margin-bottom:0.4rem; }
+      @keyframes ltThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="lt-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">A geologist finds flat sedimentary layers with an igneous band cutting straight through all of them. Make a <strong>claim</strong> about the order they formed in, back it with <strong>evidence</strong> from the rock, and explain your <strong>reasoning</strong>. Use the term <strong>cross-cutting</strong>.</p>
+      <textarea class="think-input" id="lt-thinking" placeholder="Write your claim, then your evidence, then your reasoning..." aria-label="Make a claim about the order the rock formed in, cite your evidence, and explain your reasoning"></textarea>
+      <div class="think-model" id="lt-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        <strong>Claim:</strong> the sedimentary layers formed first, oldest on the bottom, and the igneous band formed last. <strong>Evidence:</strong> by superposition the bottom layer is the oldest, and by <strong>cross-cutting</strong> the igneous band slices through every layer. <strong>Reasoning:</strong> sediment piles up from the bottom, and something can only cut through rock that is already there, so the cutter has to be younger than every layer it crosses. If your answer makes a claim, names the rule as evidence, and explains why the rule works, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student constructing an evidence-based explanation, not selecting one.</li><li>Give the one place where the student reasons from clues to a conclusion.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Claim, evidence, reasoning</li><li>Generation effect and self-explanation</li><li>Model answer for ungraded self-check</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Short claim, evidence, reasoning keeps the writing load low</li><li>Model answer provided to self-check against</li><li>Submitted with the quiz, never scored separately</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="lt-submit-btn" onclick="ltSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- Score -->
+    <style>
+      .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+      .mystery-loop strong { color: var(--text); }
+      .mystery-loop .ml-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
+    <div class="score-board" id="lt-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="lt-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
+      <div class="big-score" id="lt-score-num"></div>
+      <p id="lt-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Question You Came In With</span>
+        You started this lesson asking: <strong>"If rock layers can't talk, how do scientists figure out what happened, and when, just by looking at them?"</strong> The rock follows a few reliable rules, superposition, cross-cutting, original horizontality, and inclusions, and index fossils and radioactive decay turn that order into an age. Read in the right order, the layers tell the whole story.
+      </div>
+      <div id="lt-submit-status"></div>
+      <button class="reset-btn" onclick="ltResetQuiz()">Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTINUE / EXTENSIONS -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">The lesson is just the beginning, go deeper, test your skills, or see how it all connects.</p>
+    <div class="continue-grid">
+      <a href="extension_fossil-hunt.html" class="cont-card ext">
+        <div class="cont-icon">🦴</div>
+        <div class="cont-name">Fossil Hunt</div>
+        <div class="cont-desc">Apply what you learned about index fossils to match rock layers and determine their relative ages across multiple locations.</div>
+        <span class="cont-link">Play</span>
+      </a>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Rock layers store evidence about Earth's past. Here are the ideas that record helps explain.</p>
+    <div class="continue-grid">
+
+      <a class="cont-card lesson" href="lesson_biological-evolution.html" aria-label="Biological Evolution lesson">
+        <div class="cont-icon">🧬</div>
+        <div class="cont-name">Biological Evolution</div>
+        <div class="cont-desc">The fossils trapped in these rock layers are evidence that species have changed over time. See how scientists read that record of ancient life.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_continental-drift.html" aria-label="Continental Drift lesson">
+        <div class="cont-icon">🧩</div>
+        <div class="cont-name">Continental Drift</div>
+        <div class="cont-desc">The same rock layers and fossils show up on continents now separated by oceans. See how that evidence revealed the continents were once joined.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- ─── SCRIPTS ─────────────────────────────────────────────────────── -->
+
+<!-- Educator Mode / STEM Toggle (matches site-wide pattern) -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- Strata interactive diagram -->
+<script>
+const strataData = {
+  1: {
+    label: 'Top Layer, Newest',
+    title: 'Most Recent Sediment',
+    body: 'The top layer is always the youngest in an undisturbed sequence. This is the principle of Superposition. This layer represents what was being deposited most recently, maybe just thousands of years ago. You might find younger fossils here, like those of mammals or early humans.'
+  },
+  2: {
+    label: 'Layer B, Relatively New',
+    title: 'Shallow Sea Deposits',
+    body: 'This layer might contain limestone formed from ancient shell deposits, or sandstone from a beach or riverbed. Index fossils in this layer can tell scientists exactly which period of Earth\'s history it represents, like matching a fingerprint.'
+  },
+  3: {
+    label: 'Layer C, Middle Age',
+    title: 'Evidence of Change',
+    body: 'If this layer contains ash or igneous rock, scientists can use radiometric dating to get an absolute age, an actual number in years. Layers above and below this igneous marker can then be dated relative to it.'
+  },
+  4: {
+    label: 'Layer D, Much Older',
+    title: 'Ancient Environment',
+    body: 'Deeper layers contain records of environments that no longer exist. You might find fossils of species long extinct, or minerals that only form under conditions very different from today. The change between layers shows how Earth\'s environment shifted over time.'
+  },
+  5: {
+    label: 'Bottom Layer, Oldest',
+    title: 'The Deepest Record',
+    body: 'The bottom layer is the oldest. In some locations like the Grand Canyon, the bottom layers are nearly 2 billion years old. These deep ancient rocks may be so changed by heat and pressure over time that they have become metamorphic rock, the original sedimentary structure is long gone.'
+  }
+};
+
+function strataClick(n) {
+  const d = strataData[n];
+  document.getElementById('sd-label').textContent = d.label;
+  document.getElementById('sd-title').textContent = d.title;
+  document.getElementById('sd-body').textContent  = d.body;
+  // highlight active layer
+  document.querySelectorAll('.strata-layer').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.7)' : 'none';
+  });
+}
+</script>
+
+<!-- Vocab pill jump + pulse -->
+<script>
+function vocabJump(targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+
+  // Walk up to find the nearest card/section container to use as the scroll anchor,
+  // so we land just above the card rather than tight on the term itself.
+  const card = el.closest('.content-card, .rock-card, .principle-card, .callout, .strata-detail-panel, section')
+             || el;
+
+  // Offset: nav (~64px) + sticky progress bar (~56px) + breathing room (28px)
+  const offsetAbove = 148;
+  const top = card.getBoundingClientRect().top + window.scrollY - offsetAbove;
+  window.scrollTo({ top, behavior: 'smooth' });
+
+  // Wait for scroll to settle then pulse the specific term element
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth; // force reflow to restart animation
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 600);
+}
+</script>
+
+<!-- Quick Recall wiring -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 0,
+    'Correct! Sedimentary rock forms in slow, predictable layers, so it preserves a sequence and the fossils inside it.',
+    'Not quite. Sedimentary rock is the best recorder because it forms in slow layers that pile up over time, trapping fossils as they go.');
+  wireQR('qr2', 1,
+    'Correct! By superposition, the bottom layer of an undisturbed stack is the oldest, so it formed first.',
+    'Not quite. In undisturbed layers, the bottom layer is the oldest, so it formed first. That is superposition.');
+  wireQR('qr3', 0,
+    'Correct! By cross-cutting relationships, anything that cuts through layers had to form after them, so it is younger.',
+    'Not quite. The magma had to cut through layers that were already there, so it is younger than every layer it cuts.');
+})();
+</script>
+
+<script>
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-endpoint */
+const LT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
+  /* LYFELABZ:V1-ONLY:END legacy-endpoint */
+</script>
+
+<!-- Quiz Logic -->
+<script>
+const ltQuizQuestions = [
+    {
+      q: 'Which type of rock is most likely to contain fossils?',
+      options: [
+        'Igneous rock, because it forms from cooled magma',
+        'Metamorphic rock, because it forms under pressure',
+        'Sedimentary rock, because organisms get buried in layers',
+        'All rock types contain the same number of fossils'
+      ],
+      correct: 2,
+      explanation: 'Sedimentary rock forms when layers of sediment pile up and compact over time. Organisms that die and get buried in sediment can be preserved as fossils. Igneous and metamorphic rocks form under conditions (extreme heat or pressure) that would destroy any organism.'
+    },
+    {
+      q: 'A geologist finds rock layers that are tilted at a sharp angle instead of lying flat. What does this most likely tell her?',
+      options: [
+        'The layers were deposited at an angle to begin with',
+        'Something moved the layers after they were formed, like tectonic forces',
+        'The layers are all the same age since they\'re in the same location',
+        'Tilted layers are always the oldest layers in a sequence'
+      ],
+      correct: 1,
+      explanation: 'The principle of Original Horizontality tells us sediment always deposits in flat, horizontal layers. If layers are tilted or folded, it means some geological force (like tectonic movement or an earthquake) disturbed them after they formed.'
+    },
+    {
+      q: 'In an undisturbed sequence of rock layers, which layer is the oldest?',
+      options: [
+        'The top layer',
+        'The middle layer',
+        'The bottom layer',
+        'Age cannot be determined from position alone'
+      ],
+      correct: 2,
+      explanation: 'Superposition tells us that in undisturbed rock layers, the bottom layer was deposited first and is therefore the oldest. Each layer on top formed later. This is one of the most fundamental principles in reading the rock record.'
+    },
+    {
+      q: 'A vein of igneous rock cuts through several layers of sedimentary rock. What can scientists conclude?',
+      options: [
+        'The igneous rock is older than the sedimentary layers it cuts through',
+        'The igneous rock is the same age as the surrounding layers',
+        'The igneous rock is younger than the layers it cuts through',
+        'Igneous rock always forms before sedimentary rock nearby'
+      ],
+      correct: 2,
+      explanation: 'Cross-Cutting Relationships: anything that cuts through existing rock must be younger than what it cuts. The magma that formed the igneous vein had to intrude into rock that was already there, so the surrounding sedimentary layers are older.'
+    },
+    {
+      q: 'What makes a fossil useful as an "index fossil"?',
+      options: [
+        'Lived for millions of years across many regions',
+        'Lived briefly but spread across the whole globe',
+        'Found only in one specific location on Earth',
+        'Always found at the bottom of any rock sequence'
+      ],
+      correct: 1,
+      explanation: 'A good index fossil comes from a species that (1) existed for a short, specific time period (so finding it precisely dates that layer) and (2) was widespread across the globe, so it can be used to match and compare layers at different locations around the world.'
+    },
+    {
+      q: 'What is the difference between weathering and erosion?',
+      options: [
+        'Weathering moves rock; erosion breaks it down in place',
+        'Weathering breaks rock apart; erosion carries those pieces away',
+        'They are the same process, just with different names',
+        'Weathering only happens in deserts; erosion only happens near water'
+      ],
+      correct: 1,
+      explanation: 'Weathering breaks rock down into smaller pieces (in place), while erosion picks up those pieces and transports them somewhere else, by water, wind, or ice. Both are needed to create the sediment that eventually becomes sedimentary rock.'
+    },
+    {
+      q: 'A scientist says "Layer A is older than Layer B." This is an example of which type of dating?',
+      options: [
+        'Absolute dating, because it uses a comparison',
+        'Relative dating; it orders events without giving exact ages',
+        'Index fossil dating, because it involves fossils',
+        'Radiometric dating, because it uses radioactive elements'
+      ],
+      correct: 1,
+      explanation: 'Relative dating determines the order of events (which came first) without giving an exact age in years. Saying "Layer A is older than Layer B" is relative dating. Absolute dating would say "Layer A is 250 million years old."'
+    },
+    {
+      q: 'Metamorphic rock forms when existing rock is changed by:',
+      options: [
+        'Rapid cooling after a volcanic eruption',
+        'Sediment piling up and being compressed over millions of years',
+        'Intense heat and pressure deep underground; without melting',
+        'Erosion and deposition at the bottom of a river'
+      ],
+      correct: 2,
+      explanation: 'Metamorphic rock forms when other rocks are subjected to intense heat and pressure deep underground. Crucially, the rock does not melt, if it melted, it would eventually become igneous rock. The heat and pressure transform the existing minerals into something new.'
+    },
+    {
+      q: 'Rock strata are most commonly made of which rock type?',
+      options: [
+        'Igneous rock',
+        'Metamorphic rock',
+        'Sedimentary rock',
+        'All three types form equally'
+      ],
+      correct: 2,
+      explanation: 'Rock strata (layers) are made of sedimentary rock. Sedimentary rock forms in layers by definition, sediment builds up over time in horizontal sheets, and each layer represents a different period. Igneous rock can appear as intrusions cutting through strata, but the layers themselves are sedimentary.'
+    },
+    {
+      q: 'Small pieces of an older rock type are found trapped inside a younger layer of sedimentary rock. What principle explains this?',
+      options: [
+        'Superposition, older layers always lie below younger ones',
+        'Cross-Cutting Relationships, intruding features are always younger',
+        'Inclusions, trapped pieces are older than the rock around them',
+        'Original Horizontality, sediment always deposits in flat layers'
+      ],
+      correct: 2,
+      explanation: 'Inclusions are pieces of one rock type found inside another. Because they had to exist before the surrounding rock formed around them, inclusions are always older than the layer they are found within. It\'s one of four key principles scientists use to read the rock record.'
+    }
+];
+
+// selected[qi] = chosen option index, or null
+const ltQuizState = { selected: [], submitted: false };
+
+// ── QUIZ MODE ────────────────────────────────────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-state */
+let ltQuizMode = 'practice';
+  /* LYFELABZ:V1-ONLY:END legacy-mode-state */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-set-quiz-mode */
+function ltSetQuizMode(mode) {
+  ltQuizMode = mode;
+  const infoBox       = document.getElementById('student-info-box');
+  const btnPractice   = document.getElementById('btn-practice');
+  const btnClassroom  = document.getElementById('btn-classroom');
+  const hintPractice  = document.getElementById('hint-practice');
+  const hintClassroom = document.getElementById('hint-classroom');
+
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+  /* LYFELABZ:V1-ONLY:END legacy-set-quiz-mode */
+
+// ── URL PARAM - auto-set mode on load ────────────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-init-iife */
+(function () {
+  const params    = new URLSearchParams(window.location.search);
+  const modeParam = params.get('mode');
+  if (modeParam === 'classroom') {
+    ltSetQuizMode('classroom');
+  } else {
+    ltSetQuizMode('practice');
+  }
+})();
+  /* LYFELABZ:V1-ONLY:END legacy-mode-init-iife */
+
+function ltBuildQuiz() {
+  const container = document.getElementById('lt-quiz-questions');
+  container.innerHTML = '';
+  ltQuizState.selected  = new Array(ltQuizQuestions.length).fill(null);
+  ltQuizState.submitted = false;
+  document.getElementById('lt-submit-btn').disabled = true;
+  ltUpdateProgress();
+
+  ltQuizQuestions.forEach((q, qi) => {
+    const letters = ['A','B','C','D'];
+    const optionsHTML = q.options.map((opt, oi) => `
+      <button class="quiz-option" onclick="ltSelectAnswer(${qi}, ${oi})" id="lt-q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
+      </button>`).join('');
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.id = `lt-q-card-${qi}`;
+    card.innerHTML = `
+      <div class="quiz-header">
+        <div class="quiz-num">${qi + 1}</div>
+        <div class="quiz-question-text">${q.q}</div>
+      </div>
+      <div class="quiz-options">${optionsHTML}</div>
+      <div class="option-feedback" id="lt-feedback-${qi}"></div>`;
+    container.appendChild(card);
+  });
+}
+
+function ltSelectAnswer(qi, chosenIndex) {
+  // Block changes after submission
+  if (ltQuizState.submitted) return;
+
+  const prev = ltQuizState.selected[qi];
+
+  // Clear previous selection highlight on this question
+  if (prev !== null) {
+    document.getElementById(`lt-q-${qi}-${prev}`).classList.remove('selected');
+  }
+
+  // Record and highlight new selection
+  ltQuizState.selected[qi] = chosenIndex;
+  document.getElementById(`lt-q-${qi}-${chosenIndex}`).classList.add('selected');
+
+  ltUpdateProgress();
+
+  // Submit unlocks only when every question is answered AND a written
+  // explanation exists (see ltRefreshSubmitState).
+  ltRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(ltQuizState.selected);
+}
+
+function ltUpdateProgress() {
+  const total    = ltQuizQuestions.length;
+  const answered = ltQuizState.selected.filter(s => s !== null).length;
+  document.getElementById('lt-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('lt-progress-text').textContent = `${answered} / ${total} selected`;
+}
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-validate-student-info */
+function ltValidateStudentInfo() {
+  const name    = document.getElementById('lt-student-name').value.trim();
+  const teacher = document.getElementById('lt-teacher-select').value;
+  const block   = document.getElementById('lt-block-select').value;
+  document.getElementById('lt-err-name').classList.toggle('show', !name);
+  document.getElementById('lt-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('lt-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name, teacher, block };
+}
+  /* LYFELABZ:V1-ONLY:END legacy-validate-student-info */
+
+function ltSubmitQuiz() {
+  if (ltQuizState.submitted) return;
+  var ltAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!ltQuizState.selected.every(s => s !== null)) return;
+  const ltThinkGate = document.getElementById('lt-thinking');
+  if (ltThinkGate && !ltThinkGate.value.trim()) return;
+
+  // ── Classroom mode: validate student info first ──────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-validation-guard */
+  if (ltQuizMode === 'classroom') {
+    const { valid } = ltValidateStudentInfo();
+    if (!valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-validation-guard */
+
+  ltQuizState.submitted = true;
+  document.getElementById('lt-submit-btn').disabled = true;
+
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  const thinkInput = document.getElementById('lt-thinking');
+  const thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('lt-think-model').classList.add('show');
+
+  let correct = 0;
+
+  // Reveal correct/incorrect on every question, show feedback
+  ltQuizQuestions.forEach((q, qi) => {
+    const chosen = ltQuizState.selected[qi];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+
+    // Lock all options
+    q.options.forEach((_, oi) => {
+      const btn = document.getElementById(`lt-q-${qi}-${oi}`);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+
+    // Mark chosen answer
+    document.getElementById(`lt-q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+
+    // Show feedback
+    const fb = document.getElementById(`lt-feedback-${qi}`);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+
+  // Score board
+  const total = ltQuizQuestions.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = `${correct}/${total}`;
+  const msg   = pct === 100 ? '🏆 Perfect score! You\'ve mastered the rock record!'
+    : pct >= 80 ? '🌟 Great work! You clearly know your layers, review any you missed.'
+    : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
+    : '💪 Keep going, review each section carefully. You\'ve got this!';
+
+  document.getElementById('lt-score-num').textContent = score;
+  document.getElementById('lt-score-msg').textContent = msg;
+  const sb = document.getElementById('lt-score');
+  sb.classList.add('show');
+  // Reveal the full results panel below the sticky nav so score, feedback,
+  // submission status, and Try Again are all visible at once. The panel's
+  // scroll-margin-top keeps it clear of the sticky navigation.
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
+
+  // A perfect score is a natural cue to keep learning, so after a brief pause
+  // (leaving the score fully visible) we glide into the More section, landing
+  // at the exact destination the More nav button uses. Anything below 100%
+  // stays put at the results panel, where the student can review the feedback
+  // and reach Try Again without the page moving on its own.
+  if (pct === 100) {
+    ltQuizState.continueTimer = setTimeout(() => {
+      const more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  // ── Practice mode: skip submission ───────────────────────────────
+  if (ltAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by ltQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var ltReturnCtl = document.getElementById('back-to-assignments');
+    if (ltReturnCtl) ltReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
+    var ltFinalStatus = document.getElementById('lt-submit-status');
+    ltFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var ltGenericError = 'Submission did not complete. Please refresh and try again.';
+    function ltShowSubmitError(msg) {
+      ltFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ltGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(ltQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        ltFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        ltShowSubmitError(r.message);
+      } else {
+        ltShowSubmitError(null);
+      }
+    }, function () {
+      ltShowSubmitError(null);
+    });
+    return;
+  }
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-practice-completion */
+  if (ltQuizMode === 'practice') {
+    document.getElementById('lt-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
+    return;
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-practice-completion */
+
+  // ── Classroom mode: send to Google Sheet ─────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-apps-script-submit */
+  const { name, teacher, block } = ltValidateStudentInfo();
+  const teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  const letters = ['A','B','C','D'];
+  const params = new URLSearchParams({ resourceId: 'lesson_layers-of-time', grade: '6', teacher, studentName: name, block });
+  ltQuizState.selected.forEach((chosenIndex, qi) => {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
+  fetch(LT_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('lt-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('lt-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('lt-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+  /* LYFELABZ:V1-ONLY:END legacy-apps-script-submit */
+  /* LYFELABZ:V2-ONLY:BEGIN platform-standalone-completion */
+  document.getElementById('lt-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+  /* LYFELABZ:V2-ONLY:END platform-standalone-completion */
+}
+
+function ltResetQuiz() {
+  // Cancel any pending auto-scroll so the page never jumps after a reset.
+  if (ltQuizState.continueTimer) {
+    clearTimeout(ltQuizState.continueTimer);
+    ltQuizState.continueTimer = null;
+  }
+  document.getElementById('lt-score').classList.remove('show');
+  document.getElementById('lt-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  const thinkInput = document.getElementById('lt-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('lt-think-model').classList.remove('show');
+  ltBuildQuiz();
+  // Return the student to the quiz's natural beginning. Reuse the Quiz nav
+  // link's target so there is only one canonical quiz destination, and scroll
+  // there directly (rather than re-clicking the link, which does nothing when
+  // the URL hash is already #quiz). scroll-margin-top keeps it clear of the
+  // sticky nav, matching where the Quiz nav lands.
+  const quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function ltRefreshSubmitState() {
+  const quizDone  = ltQuizState.selected.every(s => s !== null);
+  const thinkEl   = document.getElementById('lt-thinking');
+  const thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('lt-submit-btn').disabled = ltQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  const thinkEl = document.getElementById('lt-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', ltRefreshSubmitState);
+})();
+
+ltBuildQuiz();
+</script>
+
+<!-- Starfield - cool slate/blue tones -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2, a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(180,200,220,${alpha})`; ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize(); requestAnimationFrame(draw);
+</script>
+
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</main>
+</body>
+</html>

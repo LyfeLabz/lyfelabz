@@ -1,0 +1,269 @@
+{
+  "activityId": "renewable-and-nonrenewable-resources",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "A natural resource that cannot be replaced as fast as people use it is called what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A renewable resource"
+        },
+        {
+          "optionId": "B",
+          "text": "A nonrenewable resource"
+        },
+        {
+          "optionId": "C",
+          "text": "An endless resource"
+        },
+        {
+          "optionId": "D",
+          "text": "A living resource"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A nonrenewable resource cannot be remade or regrown as fast as we use it, so the supply runs out."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Why are fossil fuels considered nonrenewable?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Living plants make new ones every year"
+        },
+        {
+          "optionId": "B",
+          "text": "They can be remade in just a few weeks"
+        },
+        {
+          "optionId": "C",
+          "text": "They take millions of years to form, far longer than we use them"
+        },
+        {
+          "optionId": "D",
+          "text": "They are made directly out of sunlight"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Fossil fuels take hundreds of millions of years to form. We burn them far faster than the Earth can replace them."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which energy resource uses uranium and is nonrenewable because the uranium gets used up?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Nuclear energy"
+        },
+        {
+          "optionId": "B",
+          "text": "Solar energy"
+        },
+        {
+          "optionId": "C",
+          "text": "Wind energy"
+        },
+        {
+          "optionId": "D",
+          "text": "Geothermal energy"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Nuclear energy splits uranium atoms in fission. Uranium is mined and limited, so once it is used it is gone."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which of these is a renewable resource?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Coal"
+        },
+        {
+          "optionId": "B",
+          "text": "Natural gas"
+        },
+        {
+          "optionId": "C",
+          "text": "Petroleum"
+        },
+        {
+          "optionId": "D",
+          "text": "Wind"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Wind is renewable because the Sun keeps heating the air and the wind keeps blowing. The others are fossil fuels."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A hydroelectric dam is considered a renewable resource because...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the water flow is constantly refilled by the water cycle"
+        },
+        {
+          "optionId": "B",
+          "text": "the concrete dam itself never wears out"
+        },
+        {
+          "optionId": "C",
+          "text": "it has no effect on the river around it"
+        },
+        {
+          "optionId": "D",
+          "text": "the water can only be used a single time"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Hydroelectric energy uses flowing water, and the water cycle keeps refilling the rivers, so the source returns."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "As the human population grows, the total demand for natural resources usually...",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "stays exactly the same"
+        },
+        {
+          "optionId": "B",
+          "text": "decreases"
+        },
+        {
+          "optionId": "C",
+          "text": "disappears"
+        },
+        {
+          "optionId": "D",
+          "text": "increases"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "More people need more food, water, energy, and materials, so the total demand for natural resources rises."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "What does per-capita consumption describe?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "the total number of people on Earth"
+        },
+        {
+          "optionId": "B",
+          "text": "the amount of resources one person uses"
+        },
+        {
+          "optionId": "C",
+          "text": "the age of a natural resource"
+        },
+        {
+          "optionId": "D",
+          "text": "the speed a resource forms underground"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Per-capita consumption is the amount of resources a single person uses, which varies with lifestyle and choices."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Which change would reduce the energy used for lighting the most?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "leaving the lights on all day"
+        },
+        {
+          "optionId": "B",
+          "text": "using larger incandescent bulbs"
+        },
+        {
+          "optionId": "C",
+          "text": "replacing incandescent bulbs with LED bulbs"
+        },
+        {
+          "optionId": "D",
+          "text": "adding more incandescent bulbs"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "LED bulbs produce the same light using far less energy, so they cut the resources needed for lighting."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Which is the best example of conserving resources?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "recycling materials instead of using new ones"
+        },
+        {
+          "optionId": "B",
+          "text": "throwing reusable items in the trash"
+        },
+        {
+          "optionId": "C",
+          "text": "using a new disposable cup every time"
+        },
+        {
+          "optionId": "D",
+          "text": "leaving the water running while brushing"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Recycling reuses materials so fewer new raw materials must be mined or harvested, which conserves resources."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A town claims switching to solar and wind power will lower its environmental impact. Which evidence best supports that claim?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Wind turbines can be very tall"
+        },
+        {
+          "optionId": "B",
+          "text": "Many towns already have power lines"
+        },
+        {
+          "optionId": "C",
+          "text": "Solar and wind make electricity without using up fossil fuels"
+        },
+        {
+          "optionId": "D",
+          "text": "Solar panels are usually a dark color"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Evidence must connect to the claim. Solar and wind generate electricity without burning nonrenewable fossil fuels, which lowers impact."
+    }
+  ]
+}

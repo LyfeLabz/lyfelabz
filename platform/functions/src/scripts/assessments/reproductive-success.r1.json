@@ -1,0 +1,269 @@
+{
+  "activityId": "reproductive-success",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "A peacock spreads its colorful tail feathers when a female is nearby. What type of behavior is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A nest-building behavior"
+        },
+        {
+          "optionId": "B",
+          "text": "A mating display"
+        },
+        {
+          "optionId": "C",
+          "text": "A way to find food"
+        },
+        {
+          "optionId": "D",
+          "text": "A method of camouflage"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Spreading colorful feathers to be noticed and chosen by a mate is a mating display."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Why do hummingbird-pollinated flowers often have bright red colors?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Bright color attracts pollinators that carry pollen between flowers"
+        },
+        {
+          "optionId": "B",
+          "text": "Bright color scares away all insects"
+        },
+        {
+          "optionId": "C",
+          "text": "Color makes the flower taste better"
+        },
+        {
+          "optionId": "D",
+          "text": "Color blocks sunlight from reaching the seeds"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Birds see red well, so a bright red flower attracts the pollinator that carries its pollen, which helps seeds form."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Why do maple seeds have thin, wing-like structures that make them spin as they fall?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "To attract bees to the seed"
+        },
+        {
+          "optionId": "B",
+          "text": "To make the tree grow taller"
+        },
+        {
+          "optionId": "C",
+          "text": "To help the seeds travel far from the parent tree on the wind"
+        },
+        {
+          "optionId": "D",
+          "text": "To store extra water for the seed"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The spinning wing helps the seed glide on the wind. This is seed dispersal, spreading seeds away from the parent so more can grow."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "How does parental care increase reproductive success?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It makes the parents grow much larger"
+        },
+        {
+          "optionId": "B",
+          "text": "It changes the weather around the nest"
+        },
+        {
+          "optionId": "C",
+          "text": "It removes the need to find a mate"
+        },
+        {
+          "optionId": "D",
+          "text": "It raises the chance that offspring survive to reproduce"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Protecting and feeding young means more of them survive long enough to grow up and reproduce."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Burrs have tiny hooks that stick to the fur of passing animals. What does this structure help the plant do?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Attract pollinators with a sweet scent"
+        },
+        {
+          "optionId": "B",
+          "text": "Spread its seeds to new places"
+        },
+        {
+          "optionId": "C",
+          "text": "Make food from sunlight"
+        },
+        {
+          "optionId": "D",
+          "text": "Stay warm during the winter"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Hooks let the seed hitch a ride on an animal's fur, dispersing it far from the parent plant."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Emperor penguins take turns balancing their egg on their feet to keep it warm through the freezing winter. This is an example of:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Parental care"
+        },
+        {
+          "optionId": "B",
+          "text": "A mating display"
+        },
+        {
+          "optionId": "C",
+          "text": "Seed dispersal"
+        },
+        {
+          "optionId": "D",
+          "text": "Pollination"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Protecting an egg so the chick survives is parental care, a behavior that raises reproductive success."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A male cardinal sings loudly from the edge of an area and chases off other males. What behavior is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Parental care"
+        },
+        {
+          "optionId": "B",
+          "text": "Pollination"
+        },
+        {
+          "optionId": "C",
+          "text": "Territorial behavior"
+        },
+        {
+          "optionId": "D",
+          "text": "Camouflage"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Defending an area that holds food and nesting space is territorial behavior. It protects the resources needed to raise young."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Which statement best uses evidence to explain why a flower produces sweet nectar?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Nectar has no role in reproduction"
+        },
+        {
+          "optionId": "B",
+          "text": "Nectar attracts pollinators, which carry pollen and increase the chance that seeds form"
+        },
+        {
+          "optionId": "C",
+          "text": "Nectar makes the flower heavier so it falls to the ground"
+        },
+        {
+          "optionId": "D",
+          "text": "Nectar cools the plant on hot days"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Nectar rewards pollinators for visiting. As they feed, they move pollen between flowers, which raises the chance of pollination and seeds."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "A peacock's large tail takes energy to grow and makes the bird easier for predators to see. Why has this trait continued over many generations?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The tail helps the peacock fly faster"
+        },
+        {
+          "optionId": "B",
+          "text": "The tail keeps the bird warm"
+        },
+        {
+          "optionId": "C",
+          "text": "The tail has no effect on survival or reproduction"
+        },
+        {
+          "optionId": "D",
+          "text": "Peahens choose mates with impressive tails, so those males reproduce more"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A costly trait can persist if it raises reproductive success. Peahens favor large, bright tails, so those males leave more offspring and the trait is passed on."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which pair correctly matches a strategy used by animals with one used by plants?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Courtship displays in animals; colorful flowers in plants"
+        },
+        {
+          "optionId": "B",
+          "text": "Photosynthesis in animals; nest building in plants"
+        },
+        {
+          "optionId": "C",
+          "text": "Pollination in animals; territorial songs in plants"
+        },
+        {
+          "optionId": "D",
+          "text": "Seed dispersal in animals; mating dances in plants"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Animals use behaviors like courtship displays, and plants use structures like colorful flowers. Both raise the chance of successful reproduction."
+    }
+  ]
+}

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_body-systems.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=body-systems --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2773,6 +2779,10 @@ function bsSelectAnswer(qi, chosenIndex) {
   document.getElementById(`bs-q-${qi}-${chosenIndex}`).classList.add('selected');
   bsUpdateProgress();
   bsRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(bsQuizState.selected);
 }
 
 function bsUpdateProgress() {
@@ -2794,6 +2804,7 @@ function bsValidateStudentInfo() {
 
 function bsSubmitQuiz() {
   if (bsQuizState.submitted) return;
+  var bsAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
 
   // Require every quiz item answered and a written explanation before submitting.
   if (!bsQuizState.selected.every(s => s !== null)) return;
@@ -2861,6 +2872,33 @@ function bsSubmitQuiz() {
   }
 
   // ── Practice mode: skip submission ─────────────────────
+  if (bsAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by bsQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var bsFinalStatus = document.getElementById('bs-submit-status');
+    bsFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var bsGenericError = 'Submission did not complete. Please refresh and try again.';
+    function bsShowSubmitError(msg) {
+      bsFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || bsGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(bsQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        bsFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        bsShowSubmitError(r.message);
+      } else {
+        bsShowSubmitError(null);
+      }
+    }, function () {
+      bsShowSubmitError(null);
+    });
+    return;
+  }
+
   if (bsQuizMode === 'practice') {
     document.getElementById('bs-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';

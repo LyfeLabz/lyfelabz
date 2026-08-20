@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_energy-transfer.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=energy-transfer --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2066,6 +2072,10 @@ function etSelectAnswer(qi, chosenIndex) {
   document.getElementById('et-q-' + qi + '-' + chosenIndex).classList.add('selected');
   etUpdateProgress();
   etRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(etQuizState.selected);
 }
 
 function etUpdateProgress() {
@@ -2087,6 +2097,7 @@ function etValidateStudentInfo() {
 
 function etSubmitQuiz() {
   if (etQuizState.submitted) return;
+  var etAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!etQuizState.selected.every(function (s) { return s !== null; })) return;
   var etThinkGate = document.getElementById('et-thinking');
@@ -2140,6 +2151,33 @@ function etSubmitQuiz() {
       var more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (etAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by etQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var etFinalStatus = document.getElementById('et-submit-status');
+    etFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var etGenericError = 'Submission did not complete. Please refresh and try again.';
+    function etShowSubmitError(msg) {
+      etFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || etGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(etQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        etFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        etShowSubmitError(r.message);
+      } else {
+        etShowSubmitError(null);
+      }
+    }, function () {
+      etShowSubmitError(null);
+    });
+    return;
   }
 
   if (etQuizMode === 'practice') {

@@ -1,0 +1,2745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_organelles.html">
+<meta name="description" content="Learn the structure and function of cell organelles in this interactive Grade 6 biology lesson. Explore the nucleus, mitochondria, chloroplasts, and more.">
+<title>LyfeLabz | Cell Organelles</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  html { font-size: 18px; }
+  :root {
+    --green: #2ecc71;
+    --green-dark: #27ae60;
+    --blue: #3498db;
+    --blue-dark: #2980b9;
+    --teal: #1abc9c;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --yellow: #f1c40f;
+    --gold: #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --dark: #1a2535;
+    --dark2: #243447;
+    --card: #1e2f42;
+    --text: #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--green); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(52,152,219,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(26,188,156,0.08) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45);
+    color: #f5c842;
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .btn {
+    display: inline-block;
+    padding: 0.85rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.25s;
+    cursor: pointer;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--teal));
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(52,152,219,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(52,152,219,0.45); }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.2);
+    color: var(--text);
+  }
+  .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+  .hero-cells {
+    position: absolute;
+    font-size: 2.5rem;
+    opacity: 0.08;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .hero-cells:nth-child(1) { top: 10%; left: 8%; animation-delay: 0s; }
+  .hero-cells:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-cells:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-cells:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: rgba(52,152,219,0.1);
+    border: 1px solid rgba(52,152,219,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    max-width: 680px;
+    margin-bottom: 3rem;
+  }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+
+  /* ===== ORGANELLES ===== */
+  #organelles { background: var(--dark2); }
+  .org-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .org-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .org-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+  .org-emoji { font-size: 2.2rem; margin-bottom: 0.8rem; display: block; }
+  .org-name { font-weight: 900; font-size: 1.1rem; margin-bottom: 0.4rem; }
+  .org-function { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.8rem; }
+  .org-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .tag-plant { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+  .tag-animal { background: rgba(52,152,219,0.15); color: var(--blue); border: 1px solid rgba(52,152,219,0.3); }
+  .tag-no { background: rgba(231,76,60,0.1); color: #e57575; border: 1px solid rgba(231,76,60,0.2); }
+
+  .org-card:nth-child(1)  { --accent: #3498db; }
+  .org-card:nth-child(2)  { --accent: #27ae60; }
+  .org-card:nth-child(3)  { --accent: #9b59b6; }
+  .org-card:nth-child(4)  { --accent: #1abc9c; }
+  .org-card:nth-child(5)  { --accent: #e74c3c; }
+  .org-card:nth-child(6)  { --accent: #e67e22; }
+  .org-card:nth-child(7)  { --accent: #2ecc71; }
+  .org-card:nth-child(8)  { --accent: #3498db; }
+  .org-card:nth-child(9)  { --accent: #e74c3c; }
+  .org-card:nth-child(10) { --accent: #9b59b6; }
+  .org-card:nth-child(11) { --accent: #f1c40f; }
+  .org-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent, var(--blue));
+  }
+  .org-card:hover { border-color: var(--accent, var(--blue)); }
+
+  /* ===== ORG GROUPS ===== */
+  .org-group { margin-bottom: 3.5rem; }
+  .org-group:last-child { margin-bottom: 0; }
+  .org-group-pill {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.85rem;
+    border-radius: 99px;
+    margin-bottom: 0.5rem;
+  }
+  .org-group-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 0.35rem;
+  }
+  .org-group-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 1.4rem;
+    max-width: 680px;
+    line-height: 1.65;
+  }
+
+  /* ===== CITY ANALOGY ===== */
+  .city-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  .city-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem;
+    transition: all 0.3s;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .city-card:hover { transform: translateY(-3px); border-color: rgba(52,152,219,0.4); }
+  .city-icon-box {
+    font-size: 2rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: rgba(52,152,219,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .city-content h3 { font-weight: 900; font-size: 1rem; margin-bottom: 0.2rem; color: var(--text); }
+  .city-content .city-analog {
+    font-size: 0.82rem;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .city-content p { font-size: 0.88rem; color: var(--text-muted); }
+
+  /* ===== PLANT vs ANIMAL COMPARISON ===== */
+  .plant-diff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+    margin-top: 2.5rem;
+  }
+  .plant-diff-card {
+    background: rgba(46,204,113,0.06);
+    border: 1px solid rgba(46,204,113,0.22);
+    border-top: 3px solid var(--green);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .plant-diff-icon { font-size: 1.8rem; margin-bottom: 0.6rem; display: block; }
+  .plant-diff-name { font-weight: 900; font-size: 1rem; margin-bottom: 0.4rem; color: var(--green); }
+  .plant-diff-text { font-size: 0.87rem; color: var(--text-muted); line-height: 1.65; }
+
+  /* ===== SECTION BRIDGES ===== */
+  .section-bridge {
+    margin-top: 3rem;
+    padding: 1rem 1.5rem;
+    border-left: 3px solid rgba(255,255,255,0.07);
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    font-style: italic;
+    line-height: 1.75;
+    max-width: 640px;
+  }
+  .section-bridge strong { color: var(--text); font-style: normal; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 2.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── PREDICTION REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 760px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label { color: var(--teal); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; margin: 0; }
+  .name-it p strong { font-weight: 800; }
+
+  /* ===== QUIZ ===== */
+  .quiz-section { background: var(--dark2); }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: var(--text-muted);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .quiz-question-text { font-weight: 800; font-size: 1rem; }
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    padding-left: 3rem;
+  }
+  .quiz-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1.2rem;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.02);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Nunito', sans-serif;
+    text-align: left;
+    color: var(--text);
+    width: 100%;
+  }
+  .quiz-option:hover:not(.selected):not(.disabled) {
+    border-color: rgba(52,152,219,0.5);
+    background: rgba(52,152,219,0.06);
+  }
+  .quiz-option.correct { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red) !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback {
+    display: none;
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    padding-left: 3rem;
+    font-weight: 700;
+  }
+  .option-feedback.correct-fb { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 1.2rem;
+  }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--teal));
+    border-radius: 99px;
+    transition: width 0.4s;
+    width: 0%;
+  }
+  .progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 60px; text-align: right; }
+  .score-board {
+    scroll-margin-top: 90px;
+    display: none;
+    background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(26,188,156,0.05));
+    border: 2px solid rgba(52,152,219,0.3);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .score-board .big-score {
+    font-family: 'Fredoka One', cursive;
+    font-size: 4rem;
+    color: var(--teal);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .reset-btn {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: #fff;
+    border: none;
+    padding: 0.85rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: all 0.25s;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+  }
+
+  /* ── QUIZ MODE TOGGLE ── */
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-styles */
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55);
+    background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5;
+    border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint {
+    text-align: center; font-size: 0.82rem; font-weight: 700;
+    color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem;
+    letter-spacing: 0.01em;
+  }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
+     ~46px = ~110px; 120px lands the score just below it). At the 600px
+     phone breakpoint the stack is ~98px, so 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* LYFELABZ:V2-ONLY:END o2-results-style */
+  /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  /* LYFELABZ:V2-ONLY:END o3-return-style */
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
+</style>
+<style>
+/* ── Learning Science Badges (inline) ── */
+/* ── Visibility gate, hidden until body.ls-active is set ─────────
+   The session-check script (injected into every content page) adds
+   body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
+   Educators toggle this from the index or Learning Science page.
+   Default: hidden. Closing the browser tab resets to hidden.
+   ─────────────────────────────────────────────────────────────────*/
+.ls-focus {
+  display: none;          /* hidden by default */
+}
+
+body.ls-active .ls-focus {
+  /* ── Centered card - sits between hero and first content section ── */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+
+  /* Centered, max-width container */
+  width: fit-content;
+  max-width: 760px;
+  margin: 1.6rem auto;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+
+  /* Softly bordered teal-tinted card */
+  background: rgba(59, 200, 232, 0.05);
+  border: 1px solid rgba(59, 200, 232, 0.2);
+  border-radius: 16px;
+
+  /* Gentle entrance when mode is toggled on mid-session */
+  animation: lsFadeIn 0.35s ease both;
+}
+
+@keyframes lsFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section label ───────────────────────────────────────────────── */
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59, 200, 232, 0.75);
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Individual badge ────────────────────────────────────────────── */
+.ls-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  cursor: default;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  overflow: visible;
+}
+
+.ls-badge:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ── Tooltip (CSS-only, data-tip attribute) ──────────────────────── */
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::after {
+  opacity: 1;
+}
+
+/* ── Tooltip arrow ───────────────────────────────────────────────── */
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::before {
+  opacity: 1;
+}
+
+/* ── Responsive: hide tooltip below 480px (touch devices) ─────────  */
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before {
+    display: none;
+  }
+  body.ls-active .ls-focus {
+    max-width: calc(100% - 2.4rem);
+    padding: 0.75rem 1rem;
+    gap: 0.4rem 0.5rem;
+  }
+}
+</style>
+
+<style>
+/* ── Instructional Design note · Educator Mode ──
+   Reusable teacher-facing panel. Hidden for students; revealed only when
+   Educator Mode is on (body.ls-active). */
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid #9fb8cc; border-radius: 14px;
+  animation: lsFadeIn 0.35s ease both;
+}
+.edu-note-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+}
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+}
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
+</style>
+
+<style>
+/* ── Driving Question ── */
+.driving-question {
+  max-width: 760px; margin: 1.6rem auto 0; padding: 1.1rem 1.6rem;
+  background: rgba(59,200,232,0.06); border: 1px solid rgba(59,200,232,0.22);
+  border-left: 4px solid #3bc8e8; border-radius: 14px;
+  display: flex; align-items: flex-start; gap: 0.85rem; box-sizing: border-box;
+}
+.dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+.dq-body { flex: 1; }
+.dq-label {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(59,200,232,0.75); margin-bottom: 0.3rem;
+}
+.dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── CONTINUE ── */
+  .quiz-option.selected  { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-student-info-styles */
+  .student-info-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--green); }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select { width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(46,204,113,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #1e2f42; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(46,204,113,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-submitted { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  .score-error { font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: pointer; transition: all 0.2s; display: inline-block; }
+  .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+  .ct-green  { color: #2ecc71; background: rgba(46,204,113,0.08);  border-color: rgba(46,204,113,0.3); }
+  .ct-teal   { color: #1abc9c; background: rgba(26,188,156,0.08);  border-color: rgba(26,188,156,0.3); }
+  .ct-blue   { color: #7cc8f8; background: rgba(41,140,212,0.1);   border-color: rgba(41,140,212,0.3); }
+  .ct-purple { color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3); }
+  .ct-amber  { color: #f5a028; background: rgba(245,160,40,0.08);  border-color: rgba(245,160,40,0.3); }
+  @keyframes orgPulse { 0% { background: rgba(46,204,113,0); box-shadow: none; border-radius: 12px; } 20% { background: rgba(46,204,113,0.22); box-shadow: 0 0 0 6px rgba(46,204,113,0.14); border-radius: 12px; } 60% { background: rgba(46,204,113,0.11); box-shadow: 0 0 0 9px rgba(46,204,113,0.07); border-radius: 12px; } 100% { background: rgba(46,204,113,0); box-shadow: none; border-radius: 12px; } }
+  .org-card.pulsing { animation: orgPulse 3s ease forwards; }
+
+  #continue { background: var(--dark2); }
+  .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
+  .cont-card {
+    border-radius: 18px; padding: 1.6rem; display: flex; flex-direction: column; gap: 0.7rem;
+    text-decoration: none; position: relative; overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .cont-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .cont-card.ext  { background: rgba(180,127,255,0.12); border: 1px solid rgba(180,127,255,0.35); }
+  .cont-card.game { background: rgba(61,220,132,0.1);  border: 1px solid rgba(61,220,132,0.35); }
+  .cont-card.map  { background: rgba(196,138,78,0.1);  border: 1px solid rgba(196,138,78,0.35); }
+  .cont-card.ext::before  { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+  .cont-card.game::before { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
+  .cont-card.map::before  { background: linear-gradient(90deg, #c48a4e, #f5c842); }
+  .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .cont-card.ext:hover  { border-color: rgba(180,127,255,0.6); box-shadow: 0 14px 40px rgba(180,127,255,0.15); }
+  .cont-card.game:hover { border-color: rgba(61,220,132,0.6);  box-shadow: 0 14px 40px rgba(61,220,132,0.12); }
+  .cont-card.map:hover  { border-color: rgba(196,138,78,0.6);  box-shadow: 0 14px 40px rgba(196,138,78,0.12); }
+  .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .cont-card.ext  .cont-icon { background: rgba(180,127,255,0.2); }
+  .cont-card.game .cont-icon { background: rgba(61,220,132,0.18); }
+  .cont-card.map  .cont-icon { background: rgba(196,138,78,0.18); }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .cont-desc { font-size: 0.86rem; color: rgba(240,228,200,0.82); line-height: 1.6; flex: 1; }
+
+  .cont-link {
+    display: inline-flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    text-decoration: none; padding: 0.4rem 1rem;
+    border-radius: 99px; border: 1px solid; transition: all 0.2s;
+    white-space: nowrap; align-self: flex-start; margin-top: auto;
+  }
+  .cont-card.ext  .cont-link { background: rgba(180,127,255,0.12); border-color: rgba(180,127,255,0.3);  color: #b47fff; }
+  .cont-card.game .cont-link { background: rgba(61,220,132,0.1);   border-color: rgba(61,220,132,0.3);   color: #3ddc84; }
+  .cont-card.map  .cont-link { background: rgba(59,200,232,0.12);  border-color: rgba(59,200,232,0.45);  color: #3bc8e8; }
+  .cont-card.ext:hover  .cont-link { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); }
+  .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55); }
+  .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);  }
+.cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55);  color: #3ddc84; }
+  .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);   color: #3bc8e8; }
+
+  /* ===== CONNECTIONS ===== */
+  #connections { background: rgba(20,28,42,0.6); padding-top: 3.5rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.06); }
+  .connections-intro {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 720px;
+    margin: 0 auto 2rem 0;
+  }
+  .connections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    margin-top: 1.5rem;
+  }
+  @media (max-width: 600px) {
+    .connections-grid { grid-template-columns: 1fr; }
+  }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-card.lesson .cont-link { background: rgba(20,184,166,0.1); border-color: rgba(20,184,166,0.3); color: #2dd4bf; }
+  .cont-card.lesson:hover .cont-link { background: rgba(20,184,166,0.2); border-color: rgba(20,184,166,0.55); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-touchtarget */
+  .mode-btn,
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-touchtarget */
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#city">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#bio" class="nav-back">← Life Science</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-cells">🧫</span>
+  <span class="hero-cells">🔬</span>
+  <span class="hero-cells">🏭</span>
+  <span class="hero-cells">⚡</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Cell Organelles</h1>
+  <p>Every living cell is running right now, building proteins, producing energy, managing waste. Something inside is doing all of it. In this lesson, you'll find out what.</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">If a cell is the smallest unit of life, what's keeping it alive on the inside?</div>
+    </div>
+  </div>
+
+</header>
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Familiar analogies scaffold understanding of new concepts by leveraging existing knowledge structures. (Vendetti et al., 2015)">🔗 Analogical Reasoning</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. (Dunlosky et al., 2013)">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">🧠 Retrieval Practice</span>
+</div>
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 1.6rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card, #1a2436);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-left: 4px solid var(--gold, #f5c842);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+</style>
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🔬</span>
+        <div class="goal-text">Identify the main organelles in a cell and describe what each one does.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🏙️</span>
+        <div class="goal-text">Use the cell-city analogy to model how organelles work together.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🌿</span>
+        <div class="goal-text">Compare the organelles found in plant cells and animal cells.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🧠</span>
+        <div class="goal-text">Explain how the nucleus directs the cell using its DNA instructions.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name the four organelle outcomes students should reach.</li><li>Set the target before any content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Standard tagged on every goal</li><li>Two-column cards, short lines</li><li>High-contrast text</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card, #1a2436);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: 3px solid #7cc8f8;
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text, #e8eef7);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold, #f5c842); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted, #8aa0bd); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted, #c5d3e6); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold, #f5c842); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-blue   { border-top-color: #7cc8f8; } .gc-blue .gc-term   { color: #7cc8f8; }
+  .gc-green  { border-top-color: var(--green, #2ecc71); } .gc-green .gc-term  { color: var(--green, #2ecc71); }
+  .gc-purple { border-top-color: #b47fff; } .gc-purple .gc-term { color: #b47fff; }
+  .gc-orange { border-top-color: var(--orange, #e67e22); } .gc-orange .gc-term { color: var(--orange, #e67e22); }
+</style>
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Choose a card to see what each word means.</p>
+
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cell Membrane</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Surrounds the cell and controls what enters and leaves it.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-membrane')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cell Wall</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A rigid outer layer that supports and shapes plant cells. Found in plant cells only.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-wall')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cytoplasm</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The gel-like fluid that fills the cell and lets organelles move around.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-cytoplasm')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Nucleus</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Holds the cell's DNA, the instructions for everything the cell builds. The control center.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-nucleus')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Mitochondria</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The powerhouse that releases energy (ATP) for the cell.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-mitochondria')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Chloroplasts</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Capture sunlight and make food through photosynthesis. Found in plant cells only.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-chloroplasts')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Ribosomes</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Build proteins using instructions from the nucleus.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-ribosomes')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Rough Endoplasmic Reticulum</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Makes and transports proteins through the cell.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-er')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Golgi Bodies</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Package and ship proteins to where they are needed.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-golgi')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Vacuoles</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Store water and nutrients. Plants have one large vacuole; animals have many small ones.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-vacuoles')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Lysosomes</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Break down waste and keep the cell clean.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-lysosomes')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load every organelle name before the reading.</li><li>Lower the term barrier so meaning comes first.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Jump link to where the term appears</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
+<!-- HOOK -->
+<section id="hook" style="background: var(--dark2);">
+  <div class="container" style="text-align: center;">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">Something's Running This Cell</h2>
+    <p class="section-desc" style="margin: 0 auto 3rem;">
+      You already know a cell is the smallest unit of life. But life isn't passive, a cell is constantly building proteins, generating energy, cleaning out waste, reading its own DNA. Something inside is doing all of it. That something has a name.
+    </p>
+
+    <svg viewBox="0 0 700 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:700px;display:block;margin:0 auto;" aria-hidden="true">
+      <defs>
+        <radialGradient id="cytoplasm-grad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(52,152,219,0.07)"/>
+          <stop offset="100%" stop-color="rgba(26,188,156,0.02)"/>
+        </radialGradient>
+        <filter id="softglow">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Cell membrane -->
+      <ellipse cx="350" cy="165" rx="330" ry="148" fill="url(#cytoplasm-grad)" stroke="#1abc9c" stroke-width="2.5" opacity="0.9"/>
+      <ellipse cx="350" cy="165" rx="330" ry="148" fill="none" stroke="#1abc9c" stroke-width="8" opacity="0.07"/>
+
+      <!-- Nucleus -->
+      <ellipse cx="300" cy="162" rx="72" ry="56" fill="rgba(52,152,219,0.18)" stroke="#3498db" stroke-width="1.8" filter="url(#softglow)"/>
+      <text x="300" y="170" text-anchor="middle" font-family="Fredoka One, cursive" font-size="26" fill="#5ab5f5" opacity="0.95">?</text>
+
+      <!-- Mitochondrion top-right -->
+      <ellipse cx="492" cy="108" rx="40" ry="19" fill="rgba(230,126,34,0.2)" stroke="#e67e22" stroke-width="1.6" transform="rotate(-25,492,108)"/>
+      <text x="493" y="114" text-anchor="middle" font-family="Fredoka One, cursive" font-size="17" fill="#e67e22" transform="rotate(-25,492,108)">?</text>
+
+      <!-- Mitochondrion bottom-left -->
+      <ellipse cx="168" cy="215" rx="34" ry="16" fill="rgba(230,126,34,0.18)" stroke="#e67e22" stroke-width="1.5" transform="rotate(20,168,215)"/>
+      <text x="169" y="221" text-anchor="middle" font-family="Fredoka One, cursive" font-size="15" fill="#e67e22" transform="rotate(20,168,215)">?</text>
+
+      <!-- Chloroplast -->
+      <ellipse cx="507" cy="224" rx="36" ry="17" fill="rgba(46,204,113,0.2)" stroke="#2ecc71" stroke-width="1.5" transform="rotate(8,507,224)"/>
+      <text x="508" y="230" text-anchor="middle" font-family="Fredoka One, cursive" font-size="15" fill="#2ecc71" transform="rotate(8,507,224)">?</text>
+
+      <!-- Vacuole -->
+      <ellipse cx="442" cy="183" rx="27" ry="25" fill="rgba(155,89,182,0.18)" stroke="#9b59b6" stroke-width="1.5"/>
+      <text x="442" y="190" text-anchor="middle" font-family="Fredoka One, cursive" font-size="16" fill="#b47fff">?</text>
+
+      <!-- Golgi (stacked arcs) -->
+      <path d="M195,143 Q228,134 239,143" stroke="#f5c842" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M192,152 Q228,142 243,152" stroke="#f5c842" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.75"/>
+      <path d="M195,161 Q228,150 241,161" stroke="#f5c842" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
+      <text x="218" y="180" text-anchor="middle" font-family="Fredoka One, cursive" font-size="14" fill="#f5c842">?</text>
+
+      <!-- Ribosomes (dots near ER) -->
+      <circle cx="382" cy="110" r="5" fill="#1abc9c" opacity="0.7"/>
+      <circle cx="397" cy="123" r="5" fill="#1abc9c" opacity="0.7"/>
+      <circle cx="368" cy="125" r="4" fill="#1abc9c" opacity="0.55"/>
+      <circle cx="411" cy="106" r="4" fill="#1abc9c" opacity="0.55"/>
+
+      <!-- Lysosome -->
+      <circle cx="562" cy="167" r="18" fill="rgba(231,76,60,0.17)" stroke="#e74c3c" stroke-width="1.5"/>
+      <text x="562" y="173" text-anchor="middle" font-family="Fredoka One, cursive" font-size="15" fill="#e87070">?</text>
+
+
+    </svg>
+
+    <p style="font-size:0.92rem;color:var(--text-muted);margin-top:1.8rem;max-width:580px;margin-left:auto;margin-right:auto;line-height:1.75;">
+      Every structure marked <strong style="color:var(--text);">?</strong> inside this cell is running right now. Each one has a specific job, and without any single one of them, the cell would fail. Scroll down to find out what each one does and why it matters.
+    </p>
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-organelles">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> This cell is building proteins, making energy, and reading its own DNA all at once. Which part do you think directs the others, telling them what to build and when?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>The mitochondria, because they supply the energy.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The nucleus, because it holds the cell's DNA instructions.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>The cell membrane, because it controls what gets in.</button>
+      </div>
+    </div>
+
+    <div class="name-it teal-it predict-gated" data-gate="qp-organelles">
+      <div class="name-it-label">Here's the idea</div>
+      <p>The best answer is <strong>B</strong>. The nucleus holds the cell's DNA, the master instructions every other part follows. But it cannot run the cell alone. Energy, transport, storage, and cleanup each need their own specialized part. Next you will meet all of them, starting with a city that works exactly the same way.</p>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Open with a working cell where every part is still unnamed.</li><li>Prompt a prediction about which structure matters most.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Labeled diagram paired with text</li><li>Prediction prompt set off in its own card</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CELL CITY ANALOGY -->
+<section id="city" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Cell City</span>
+    <h2 class="section-title">The Cell is a City</h2>
+    <p class="section-desc">Before naming every organelle, here's a framework that will make them stick. A cell and a city solve the same problem: how do you keep a complex system running when every part depends on every other part? Find the city job first, then the organelle names will follow naturally.</p>
+    <div class="city-grid">
+      <div class="city-card">
+        <div class="city-icon-box">🏛️</div>
+        <div class="city-content">
+          <div class="city-analog">Nucleus → City Hall / Mayor's Office</div>
+          <h3>The Control Center</h3>
+          <p>Just as the Mayor's Office issues laws and decisions that guide the whole city, the <strong>nucleus</strong> contains the DNA "rulebook" that tells every organelle what to do.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🚦</div>
+        <div class="city-content">
+          <div class="city-analog">Cell Membrane → City Border Control</div>
+          <h3>The Gatekeeper</h3>
+          <p>Border control decides who and what enters or leaves the city. The <strong>cell membrane</strong> does the same, carefully regulating what passes in and out of the cell.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🧱</div>
+        <div class="city-content">
+          <div class="city-analog">Cell Wall → City Walls / Fortification</div>
+          <h3>The Protective Structure</h3>
+          <p>Ancient city walls kept the city standing tall and protected. The <strong>cell wall</strong> gives plant cells rigid structure and protection (only in plant cities!).</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">⚡</div>
+        <div class="city-content">
+          <div class="city-analog">Mitochondria → Power Plant</div>
+          <h3>The Energy Source</h3>
+          <p>No city runs without electricity. The <strong>mitochondria</strong> generate ATP energy to power all of the cell's activities, just like a power station keeps the lights on.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🏭</div>
+        <div class="city-content">
+          <div class="city-analog">Ribosomes → Manufacturing Factories</div>
+          <h3>The Builders</h3>
+          <p>Factories follow blueprints from headquarters to manufacture products. <strong>Ribosomes</strong> read instructions from the nucleus (DNA) to build proteins the cell needs.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🚇</div>
+        <div class="city-content">
+          <div class="city-analog">Rough ER → Transit System</div>
+          <h3>The Transport Network</h3>
+          <p>A city's subway and road system moves people and goods around. The <strong>rough endoplasmic reticulum</strong> is the cell's highway, transporting proteins where they need to go.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">📮</div>
+        <div class="city-content">
+          <div class="city-analog">Golgi Bodies → Post Office / Shipping Center</div>
+          <h3>The Packaging &amp; Delivery Hub</h3>
+          <p>The post office sorts, packages, and ships mail. <strong>Golgi bodies</strong> receive proteins from the ER, package them up, and ship them to the right destination inside or outside the cell.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">☀️</div>
+        <div class="city-content">
+          <div class="city-analog">Chloroplasts → Solar Farm</div>
+          <h3>The Renewable Energy Source</h3>
+          <p>Solar panels collect sunlight and convert it to usable energy. <strong>Chloroplasts</strong> do the exact same thing for plant cells through photosynthesis.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🏊</div>
+        <div class="city-content">
+          <div class="city-analog">Vacuoles → Reservoir / Water Tower</div>
+          <h3>Storage &amp; Water Supply</h3>
+          <p>A city reservoir stores water for when citizens need it. <strong>Vacuoles</strong> store water, nutrients, and waste, plant cells have one giant central reservoir; animal cells have many smaller ones.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🗑️</div>
+        <div class="city-content">
+          <div class="city-analog">Lysosomes → Sanitation Department</div>
+          <h3>Waste Management</h3>
+          <p>Every city needs garbage trucks and waste processing. <strong>Lysosomes</strong> are the cell's clean-up crew, breaking down waste, worn-out parts, and invaders to keep the cell healthy.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🌊</div>
+        <div class="city-content">
+          <div class="city-analog">Cytoplasm → City Streets &amp; Water Supply</div>
+          <h3>The Medium Everything Moves Through</h3>
+          <p>Streets connect every part of a city. The <strong>cytoplasm</strong> is the gel-like fluid that all organelles are suspended in; it lets nutrients and materials move freely from place to place.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-bridge">
+      Now that you have the framework, let's name every organelle and see exactly what it does, you already know its city equivalent.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Map each organelle's job onto a familiar city role first.</li><li>Build a framework before the formal names arrive.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Analogical reasoning</li><li>Concrete to abstract</li><li>Elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday analogy named on each card</li><li>Key terms bolded in place</li><li>Parallel card structure</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ORGANELLES REFERENCE SECTION -->
+<section id="organelles" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Meet the Organelles</span>
+    <h2 class="section-title">Cell Organelles</h2>
+    <p class="section-desc">Every one of those <strong style="color:var(--text);">?</strong> structures has a name and a job. Organelles are specialized parts inside a cell, each one doing something the cell can't survive without.</p>
+
+    <div class="name-it">
+      <div class="name-it-label">KEY IDEA: Division of Labor</div>
+      <p>A cell stays alive because no single part does everything. The work is split among <strong>specialized organelles</strong>, each built for one job, and every part depends on the others. That shared workload is what keeps the whole cell running.</p>
+    </div>
+
+    <!-- GROUP 1: Boundary & Structure -->
+    <div class="org-group">
+      <span class="org-group-pill" style="background:rgba(26,188,156,0.12);color:#1abc9c;border:1px solid rgba(26,188,156,0.3);">Boundary &amp; Structure</span>
+      <div class="org-group-title">What defines and holds the cell together</div>
+      <p class="org-group-desc">These organelles form the cell's physical boundaries and create the fluid environment that all other organelles live and move in.</p>
+      <div class="org-grid">
+        <div class="org-card" id="org-membrane">
+          <span class="org-emoji">🚦</span>
+          <div class="org-name">Cell Membrane</div>
+          <div class="org-function">Surrounds the cell and controls what enters and exits. Like a <strong>toll bridge</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-animal">🐾 Animal ✓</span>
+          </div>
+        </div>
+        <div class="org-card" id="org-wall">
+          <span class="org-emoji">🏰</span>
+          <div class="org-name">Cell Wall</div>
+          <div class="org-function">Rigid outer layer that supports plant cells, letting them stand tall. Like a <strong>castle wall</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-no">🐾 Animal ✗</span>
+          </div>
+        </div>
+        <div class="org-card" id="org-cytoplasm">
+          <span class="org-emoji">🍩</span>
+          <div class="org-name">Cytoplasm</div>
+          <div class="org-function">Gel-like substance filling the cell, allowing organelles and materials to move. Like <strong>jelly in a donut</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-animal">🐾 Animal ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP 2: Control Center -->
+    <div class="org-group">
+      <span class="org-group-pill" style="background:rgba(52,152,219,0.12);color:#3498db;border:1px solid rgba(52,152,219,0.3);">Control Center</span>
+      <div class="org-group-title">Where the cell's instructions come from</div>
+      <p class="org-group-desc">This organelle contains the DNA, the master blueprint for everything the cell builds and does. Everything else in the cell answers to it.</p>
+      <div class="org-grid">
+        <div class="org-card" id="org-nucleus">
+          <span class="org-emoji">🧠</span>
+          <div class="org-name">Nucleus</div>
+          <div class="org-function">Houses DNA with instructions for making proteins. The <strong>brain</strong> of the cell.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-animal">🐾 Animal ✓</span>
+          </div>
+        </div>
+      </div>
+      <div class="name-it">
+        <div class="name-it-label">KEY IDEA: The Control Center</div>
+        <p>The nucleus holds the cell's <strong>DNA</strong>, the master instructions for everything the cell builds. Every other organelle carries out a job, but the plan they follow starts here. Damage the instructions and the whole city loses its blueprint.</p>
+      </div>
+    </div>
+
+    <!-- GROUP 3: Energy -->
+    <div class="org-group">
+      <span class="org-group-pill" style="background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.3);">Energy</span>
+      <div class="org-group-title">Where the cell gets its power</div>
+      <p class="org-group-desc">Energy doesn't appear automatically, these organelles capture or convert it. One works in both plant and animal cells; the other only in plants.</p>
+      <div class="org-grid">
+        <div class="org-card" id="org-mitochondria">
+          <span class="org-emoji">⚡</span>
+          <div class="org-name">Mitochondria</div>
+          <div class="org-function">The powerhouse that produces energy (ATP) for the cell. Like a <strong>power plant</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-animal">🐾 Animal ✓</span>
+          </div>
+        </div>
+        <div class="org-card" id="org-chloroplasts">
+          <span class="org-emoji">☀️</span>
+          <div class="org-name">Chloroplasts</div>
+          <div class="org-function">Convert sunlight into energy through photosynthesis. Like a <strong>solar panel</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-no">🐾 Animal ✗</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP 4: Build & Ship -->
+    <div class="org-group">
+      <span class="org-group-pill" style="background:rgba(245,200,66,0.1);color:#f5c842;border:1px solid rgba(245,200,66,0.3);">Build &amp; Ship</span>
+      <div class="org-group-title">The cell's protein production line</div>
+      <p class="org-group-desc">These three organelles work as a team in sequence: build proteins from DNA instructions, transport them through the cell, then package and deliver them.</p>
+      <div class="org-grid">
+        <div class="org-card" id="org-ribosomes">
+          <span class="org-emoji">🏗️</span>
+          <div class="org-name">Ribosomes</div>
+          <div class="org-function">Take instructions from the nucleus and create proteins. Like a <strong>construction site</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-animal">🐾 Animal ✓</span>
+          </div>
+        </div>
+        <div class="org-card" id="org-er">
+          <span class="org-emoji">🚇</span>
+          <div class="org-name">Rough Endoplasmic Reticulum</div>
+          <div class="org-function">Makes and transports proteins through the cell. Like <strong>Boston's T</strong> (subway system).</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-animal">🐾 Animal ✓</span>
+          </div>
+        </div>
+        <div class="org-card" id="org-golgi">
+          <span class="org-emoji">📦</span>
+          <div class="org-name">Golgi Bodies</div>
+          <div class="org-function">Process and package proteins for shipment outside the cell. Like the <strong>post office</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-animal">🐾 Animal ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP 5: Storage & Cleanup -->
+    <div class="org-group">
+      <span class="org-group-pill" style="background:rgba(155,89,182,0.12);color:#9b59b6;border:1px solid rgba(155,89,182,0.3);">Storage &amp; Cleanup</span>
+      <div class="org-group-title">Keeping the cell stocked and clean</div>
+      <p class="org-group-desc">These organelles manage what the cell holds onto and what it breaks down and removes, keeping the cell's internal environment healthy.</p>
+      <div class="org-grid">
+        <div class="org-card" id="org-vacuoles">
+          <span class="org-emoji">🪣</span>
+          <div class="org-name">Vacuoles</div>
+          <div class="org-function">Store water and nutrients. Plants have <strong>one large</strong> central vacuole; animals have <strong>many small</strong> ones. Like a <strong>water tank</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant, One large</span>
+            <span class="tag tag-animal">🐾 Animal, Many small</span>
+          </div>
+        </div>
+        <div class="org-card" id="org-lysosomes">
+          <span class="org-emoji">🚛</span>
+          <div class="org-name">Lysosomes</div>
+          <div class="org-function">Waste management system of the cell, breaks down waste and keeps the cell clean. Like a <strong>garbage truck</strong>.</div>
+          <div class="org-tags">
+            <span class="tag tag-plant">🌿 Plant ✓</span>
+            <span class="tag tag-animal">🐾 Animal ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-bridge">
+      You now know what every organelle does, and can match each one to its city job. One question remains: do plant and animal cells share the exact same set of organelles?
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name each organelle and pair it with its function.</li><li>Group them by shared job so they are not a flat list.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Chunking</li><li>Pattern recognition</li><li>Elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sorted into labeled function groups</li><li>Plant and animal tags on each card</li><li>Short function statements</li></ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL (retrieval checkpoint between Explore and Explain)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Pull this idea back from memory before we compare plant and animal cells.</p>
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Which organelle captures sunlight and makes food, and is found only in plant cells?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Chloroplasts</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Mitochondria</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Ribosomes</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pull one organelle fact back from memory mid-lesson.</li><li>Lock in the plant-only idea before the compare section.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback with explanation</li><li>Try again with no penalty</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* Quick Recall checkpoint - pattern reused from lesson_cell-types.html */
+(function(){
+  const opts = document.getElementById('qr1Opts');
+  const fb = document.getElementById('qr1Feedback');
+  const checkBtn = document.getElementById('qr1Check');
+  const retryBtn = document.getElementById('qr1Retry');
+  const correctIdx = 0;
+  const okMsg = 'Correct. Chloroplasts carry out photosynthesis, and only plant cells have them.';
+  const noMsg = 'Not quite. Mitochondria release energy and ribosomes build proteins in both cell types. Chloroplasts capture sunlight and are found only in plant cells.';
+
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) {
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = 'Pick an answer first.';
+      return;
+    }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'qr-feedback visible ok';
+      fb.textContent = okMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = noMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'inline-flex';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'qr-feedback';
+    fb.textContent = '';
+    retryBtn.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    opts.querySelector('input').focus();
+  });
+})();
+</script>
+
+
+<!-- PLANT VS ANIMAL COMPARISON -->
+<section id="plant-vs-animal" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Plant vs Animal Cells</span>
+    <h2 class="section-title">Plant Cell vs. Animal Cell</h2>
+    <p class="section-desc">Both are eukaryotic cells with a nucleus and shared organelles; but they're not identical. Study the diagram below. The green labels mark something specific, what do you notice about which cell has them?</p>
+
+    <svg viewBox="0 0 860 385" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin:0 auto;overflow:visible;" aria-hidden="true">
+      <defs>
+        <radialGradient id="animal-fill" cx="40%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="rgba(52,152,219,0.09)"/>
+          <stop offset="100%" stop-color="rgba(26,188,156,0.03)"/>
+        </radialGradient>
+        <radialGradient id="plant-fill" cx="30%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="rgba(46,204,113,0.07)"/>
+          <stop offset="100%" stop-color="rgba(26,188,156,0.03)"/>
+        </radialGradient>
+        <filter id="cmpglow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- ── ANIMAL CELL ─────────────────────────────── -->
+      <text x="195" y="22" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="800" letter-spacing="1.5" fill="rgba(232,244,248,0.55)">ANIMAL CELL</text>
+
+      <!-- Cell membrane -->
+      <ellipse cx="195" cy="205" rx="168" ry="152" fill="url(#animal-fill)" stroke="#1abc9c" stroke-width="2"/>
+
+      <!-- Nucleus -->
+      <ellipse cx="178" cy="194" rx="57" ry="45" fill="rgba(52,152,219,0.22)" stroke="#3498db" stroke-width="1.6" filter="url(#cmpglow)"/>
+      <circle cx="170" cy="192" r="13" fill="rgba(52,152,219,0.45)"/>
+
+      <!-- Mitochondria -->
+      <ellipse cx="288" cy="117" rx="33" ry="14" fill="rgba(230,126,34,0.22)" stroke="#e67e22" stroke-width="1.5" transform="rotate(-25,288,117)"/>
+      <ellipse cx="93" cy="272" rx="27" ry="12" fill="rgba(230,126,34,0.2)" stroke="#e67e22" stroke-width="1.4" transform="rotate(18,93,272)"/>
+
+      <!-- Lysosomes -->
+      <circle cx="302" cy="230" r="17" fill="rgba(231,76,60,0.2)" stroke="#e74c3c" stroke-width="1.4"/>
+      <circle cx="252" cy="308" r="12" fill="rgba(231,76,60,0.17)" stroke="#e74c3c" stroke-width="1.3"/>
+
+      <!-- Small vacuoles -->
+      <ellipse cx="118" cy="118" rx="19" ry="17" fill="rgba(155,89,182,0.14)" stroke="#9b59b6" stroke-width="1.3"/>
+      <ellipse cx="292" cy="288" rx="13" ry="12" fill="rgba(155,89,182,0.12)" stroke="#9b59b6" stroke-width="1.2"/>
+
+      <!-- Ribosomes -->
+      <circle cx="232" cy="107" r="4" fill="#1abc9c" opacity="0.65"/>
+      <circle cx="248" cy="120" r="4" fill="#1abc9c" opacity="0.65"/>
+      <circle cx="120" cy="256" r="3.5" fill="#1abc9c" opacity="0.55"/>
+      <circle cx="142" cy="165" r="3.5" fill="#1abc9c" opacity="0.55"/>
+
+      <!-- Animal Cell labels -->
+      <line x1="330" y1="168" x2="358" y2="150" stroke="rgba(26,188,156,0.4)" stroke-width="1"/>
+      <text x="361" y="147" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#1abc9c">Cell Membrane</text>
+
+      <line x1="120" y1="194" x2="82" y2="194" stroke="rgba(52,152,219,0.45)" stroke-width="1"/>
+      <text x="8" y="190" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#5ab5f5">Nucleus</text>
+
+      <line x1="288" y1="102" x2="288" y2="75" stroke="rgba(230,126,34,0.45)" stroke-width="1"/>
+      <text x="253" y="71" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#e67e22">Mitochondria</text>
+
+      <line x1="320" y1="230" x2="358" y2="230" stroke="rgba(231,76,60,0.45)" stroke-width="1"/>
+      <text x="361" y="234" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#e87070">Lysosomes</text>
+
+      <!-- ── DIVIDER ──────────────────────────────────── -->
+      <line x1="420" y1="30" x2="420" y2="360" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+      <!-- ── PLANT CELL ───────────────────────────────── -->
+      <text x="649" y="22" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="800" letter-spacing="1.5" fill="rgba(232,244,248,0.55)">PLANT CELL</text>
+
+      <!-- Cell wall -->
+      <rect x="441" y="33" width="416" height="326" rx="11" fill="none" stroke="#2ecc71" stroke-width="4" opacity="0.5"/>
+
+      <!-- Cell membrane (just inside) -->
+      <rect x="455" y="47" width="388" height="298" rx="7" fill="url(#plant-fill)" stroke="#1abc9c" stroke-width="1.6"/>
+
+      <!-- Large central vacuole -->
+      <ellipse cx="669" cy="224" rx="117" ry="112" fill="rgba(155,89,182,0.18)" stroke="#9b59b6" stroke-width="1.8"/>
+      <text x="669" y="220" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9.5" font-weight="800" fill="rgba(180,127,255,0.65)" letter-spacing="0.5">CENTRAL</text>
+      <text x="669" y="234" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9.5" font-weight="800" fill="rgba(180,127,255,0.65)" letter-spacing="0.5">VACUOLE</text>
+
+      <!-- Nucleus (offset, vacuole dominates center) -->
+      <ellipse cx="545" cy="150" rx="50" ry="40" fill="rgba(52,152,219,0.22)" stroke="#3498db" stroke-width="1.6" filter="url(#cmpglow)"/>
+      <circle cx="538" cy="148" r="11" fill="rgba(52,152,219,0.45)"/>
+
+      <!-- Chloroplasts -->
+      <ellipse cx="518" cy="253" rx="34" ry="15" fill="rgba(46,204,113,0.32)" stroke="#2ecc71" stroke-width="1.8" transform="rotate(8,518,253)" filter="url(#cmpglow)"/>
+      <ellipse cx="518" cy="253" rx="20" ry="8" fill="rgba(46,204,113,0.5)" transform="rotate(8,518,253)"/>
+
+      <ellipse cx="502" cy="188" rx="29" ry="13" fill="rgba(46,204,113,0.3)" stroke="#2ecc71" stroke-width="1.6" transform="rotate(-5,502,188)" filter="url(#cmpglow)"/>
+      <ellipse cx="502" cy="188" rx="17" ry="7" fill="rgba(46,204,113,0.5)" transform="rotate(-5,502,188)"/>
+
+      <!-- Mitochondrion -->
+      <ellipse cx="808" cy="136" rx="28" ry="12" fill="rgba(230,126,34,0.22)" stroke="#e67e22" stroke-width="1.4" transform="rotate(-20,808,136)"/>
+
+      <!-- Ribosomes -->
+      <circle cx="470" cy="110" r="4" fill="#1abc9c" opacity="0.6"/>
+      <circle cx="484" cy="123" r="3.5" fill="#1abc9c" opacity="0.6"/>
+
+      <!-- Plant Cell labels -->
+      <!-- Cell wall (plant only - green) -->
+      <line x1="560" y1="33" x2="560" y2="10" stroke="rgba(46,204,113,0.5)" stroke-width="1"/>
+      <text x="453" y="8" font-family="Nunito,sans-serif" font-size="10.5" font-weight="800" fill="#2ecc71">Cell Wall (plant only)</text>
+
+      <!-- Nucleus -->
+      <line x1="594" y1="148" x2="632" y2="90" stroke="rgba(52,152,219,0.45)" stroke-width="1"/>
+      <text x="634" y="87" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#5ab5f5">Nucleus</text>
+
+      <!-- Chloroplasts (plant only - green) -->
+      <line x1="487" y1="253" x2="447" y2="298" stroke="rgba(46,204,113,0.5)" stroke-width="1"/>
+      <text x="425" y="312" font-family="Nunito,sans-serif" font-size="10.5" font-weight="800" fill="#2ecc71">Chloroplasts</text>
+      <text x="428" y="325" font-family="Nunito,sans-serif" font-size="9.5" font-weight="700" fill="rgba(46,204,113,0.6)">(plant only)</text>
+
+      <!-- Central vacuole (plant only - purple) -->
+      <line x1="786" y1="224" x2="822" y2="224" stroke="rgba(155,89,182,0.5)" stroke-width="1"/>
+      <text x="825" y="218" font-family="Nunito,sans-serif" font-size="10.5" font-weight="800" fill="#b47fff">Large Central</text>
+      <text x="825" y="231" font-family="Nunito,sans-serif" font-size="10.5" font-weight="800" fill="#b47fff">Vacuole</text>
+      <text x="825" y="244" font-family="Nunito,sans-serif" font-size="9.5" font-weight="700" fill="rgba(155,89,182,0.6)">(plant only)</text>
+
+      <!-- Cell membrane (plant) -->
+      <line x1="455" y1="196" x2="431" y2="196" stroke="rgba(26,188,156,0.4)" stroke-width="1"/>
+      <text x="360" y="191" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#1abc9c">Cell</text>
+      <text x="360" y="203" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#1abc9c">Membrane</text>
+    </svg>
+
+    <p style="font-size:0.82rem;color:var(--text-muted);text-align:center;margin-top:1.2rem;">Green labels = structures found <strong style="color:#2ecc71;">only in plant cells</strong>.</p>
+
+    <div style="margin:2.2rem auto;max-width:700px;padding:1.2rem 1.8rem;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.25);border-left:4px solid var(--green);border-radius:14px;font-size:0.97rem;color:var(--text-muted);">
+      Three structures appear in the plant cell that the animal cell is missing: the <strong style="color:var(--green);">Cell Wall</strong>, the <strong style="color:var(--green);">Chloroplasts</strong>, and the <strong style="color:var(--green);">Large Central Vacuole</strong>. Each one exists because plants solve a problem animals don't have to, here's how.
+    </div>
+
+    <!-- 3 plant-only difference cards -->
+    <div class="plant-diff-grid">
+      <div class="plant-diff-card">
+        <span class="plant-diff-icon">🏰</span>
+        <div class="plant-diff-name">Cell Wall</div>
+        <p class="plant-diff-text">A rigid outer layer outside the cell membrane. Gives plant cells a boxy, fixed shape and structural support. Animal cells have only the flexible membrane.</p>
+      </div>
+      <div class="plant-diff-card">
+        <span class="plant-diff-icon">☀️</span>
+        <div class="plant-diff-name">Chloroplasts</div>
+        <p class="plant-diff-text">Capture sunlight and convert it to glucose through photosynthesis. Plants make their own food, animal cells cannot, so they have no chloroplasts.</p>
+      </div>
+      <div class="plant-diff-card">
+        <span class="plant-diff-icon">🪣</span>
+        <div class="plant-diff-name">Large Central Vacuole</div>
+        <p class="plant-diff-text">One giant storage space that takes up most of the plant cell's interior. Stores water and helps maintain the cell's rigid shape. Animal cells have many tiny vacuoles instead.</p>
+      </div>
+    </div>
+
+    <div class="section-bridge">
+      You now know each organelle and what separates plant cells from animal cells. If any term still feels shaky, the vocabulary cards near the top of the lesson are there to help. Time to put it all together in the quiz.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Resolve why plant cells carry three organelles animal cells lack.</li><li>Tie each difference to a problem plants must solve.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast</li><li>Cause-and-effect modeling</li><li>Dual coding</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Side-by-side labeled diagram</li><li>Color key for plant-only parts</li><li>Parallel difference cards</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- QUIZ -->
+<section id="quiz" class="quiz-section" style="background:var(--dark); padding:5rem 2rem;">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Cell Organelles Quiz</h2>
+    <p class="section-desc">10 questions on cell organelles and their functions. Fill in your info below, your score will be sent to your teacher when you submit.</p>
+
+    <!-- Quiz Mode Toggle -->
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-mode-toggle-markup -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice" onclick="ogSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="ogSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice" class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-mode-toggle-markup -->
+
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN legacy-student-info-markup -->
+    <div class="student-info-box" id="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="og-student-name">Your Name</label>
+          <input type="text" id="og-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="og-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="og-teacher-select">Teacher</label>
+          <select id="og-teacher-select">
+            <option value="">- Select -</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="og-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="og-block-select">Block</label>
+          <select id="og-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="og-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+    <!-- LYFELABZ:V1-ONLY:END legacy-student-info-markup -->
+
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="og-progress"></div></div>
+        <div class="progress-text" id="og-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <div id="og-quiz-questions"></div>
+
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes ogThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(155,89,182,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:#9b59b6; box-shadow:0 0 0 3px rgba(155,89,182,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-actions { margin-top:0.9rem; }
+      .think-reveal-btn { font-family:'Nunito', sans-serif; font-size:0.85rem; font-weight:900; letter-spacing:0.04em; border-radius:99px; padding:0.55rem 1.3rem; cursor:pointer; background:transparent; color:#c89be0; border:1px solid rgba(155,89,182,0.5); transition:transform 0.15s; }
+      .think-reveal-btn:hover { transform:translateY(-1px); }
+      .think-reveal-btn:focus-visible { outline:2px solid #9b59b6; outline-offset:2px; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(155,89,182,0.07); border:1px solid rgba(155,89,182,0.25); border-left:4px solid #9b59b6; font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: ogThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#c89be0; margin-bottom:0.4rem; }
+      .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+      .mystery-loop strong { color: var(--text); }
+      .mystery-loop .ml-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="og-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one or two sentences, explain what keeps a cell alive on the inside. Describe how the organelles work together, not just what one of them does. Use the word <strong>specialized</strong>.</p>
+      <textarea class="think-input" id="og-thinking" placeholder="Write your explanation here..." aria-label="Explain what keeps a cell alive on the inside"></textarea>
+      <div class="think-model" id="og-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        A cell stays alive because its work is divided among <strong>specialized</strong> organelles that depend on one another, the nucleus directs with DNA, mitochondria supply energy, ribosomes build proteins, and the rest transport, store, and clean up, so no single part keeps the cell alive on its own. If your sentence shows the parts working together as a team, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student constructing the central idea in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Systems thinking: parts working together</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Short response keeps the writing load low</li><li>Model answer provided to self-check against</li><li>Submitted with the quiz, never scored separately</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="og-submit-btn" onclick="ogSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <!-- LYFELABZ:V1-ONLY:BEGIN o2-results-region-v1 -->
+    <div class="score-board" id="og-score">
+    <!-- LYFELABZ:V1-ONLY:END o2-results-region-v1 -->
+    <!-- LYFELABZ:V2-ONLY:BEGIN o2-results-region-v2 -->
+    <div class="score-board" id="og-score" tabindex="-1" role="status" aria-live="polite">
+    <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
+      <div class="big-score" id="og-score-num"></div>
+      <p id="og-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Question You Came In With</span>
+        You started this lesson asking: <strong>"If a cell is the smallest unit of life, what's keeping it alive on the inside?"</strong> The answer is teamwork. A cell runs on a division of labor: the nucleus holds the instructions, mitochondria supply the energy, ribosomes build the proteins, and every other organelle handles transport, storage, or cleanup. No single part keeps the cell alive, the <strong>specialized</strong> parts working together do. If you can say that, you have answered it.
+      </div>
+      <div id="og-submit-status"></div>
+      <button class="reset-btn" onclick="ogResetQuiz()">🔄 Try Again</button>
+      <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
+      <!-- LYFELABZ:V2-ONLY:END o3-return-markup -->
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Measure recall and function-matching across all organelles.</li><li>Give one graded checkpoint with optional teacher reporting.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice mode runs with no submission</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CONTINUE LEARNING -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro" style="white-space:nowrap; max-width:none;">The lesson is just the beginning, go deeper, test your skills, or see how it all connects.</p>
+    <div class="continue-grid" style="text-align:left;">
+      <a href="investigation_protein-pathway.html" class="cont-card inv">
+        <div class="cont-icon">🔭</div>
+        <div class="cont-name">Protein Pathway</div>
+        <div class="cont-desc">Follow a protein from DNA to ribosome to final destination in this extension.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+      <a href="extension_neuron-explorer.html" class="cont-card ext">
+        <div class="cont-icon">🧠</div>
+        <div class="cont-name">Neuron Explorer</div>
+        <div class="cont-desc">Take the organelle lens and apply it to the most specialised cell: the neuron.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer optional next steps that reuse the organelle lens.</li><li>Extend to a specialized cell and applied practice.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>No penalty for skipping</li><li>Clear card labels and actions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="connections-intro">If the inside of a cell caught your attention, here are related ideas worth exploring.</p>
+
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_cell-types.html" aria-label="Cell Types lesson">
+        <div class="cont-icon">🦠</div>
+        <div class="cont-name">Cell Types</div>
+        <div class="cont-desc">Step back out to see how whole cells specialize for different jobs, and why life evolved two very different cell designs.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_body-systems.html" aria-label="Body Systems lesson">
+        <div class="cont-icon">🫀</div>
+        <div class="cont-name">Body Systems</div>
+        <div class="cont-desc">See how specialized cells team up into tissues, organs, and the systems that keep a whole organism alive.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<script>
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-endpoint */
+const OG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
+  /* LYFELABZ:V1-ONLY:END legacy-endpoint */
+
+const ogQuizQuestions = [
+  { q: "Which organelle is described as 'the powerhouse of the cell' because it produces energy?", options: ["Nucleus","Ribosome","Mitochondria","Chloroplast"], correct: 2, explanation: "The mitochondria produce ATP (energy) for the cell through cellular respiration, it's literally called the powerhouse!" },
+  { q: "The cell membrane is compared to a toll bridge because it:", options: ["Gives the cell its rigid shape","Controls what enters and exits the cell","Stores water and nutrients","Produces proteins"], correct: 1, explanation: "Like a toll bridge, the cell membrane controls traffic, deciding what can pass into and out of the cell." },
+  { q: "Which organelle is found in plant cells but NOT in animal cells and is responsible for photosynthesis?", options: ["Mitochondria","Vacuole","Ribosome","Chloroplast"], correct: 3, explanation: "Chloroplasts capture sunlight and convert it to glucose through photosynthesis. They're only found in plant (and algae) cells!" },
+  { q: "The Golgi bodies are compared to a post office because they:", options: ["Generate energy for the cell","Break down waste materials","Process and package proteins for shipment","Control what enters the cell"], correct: 2, explanation: "Like a post office, Golgi bodies receive proteins from the ER, package them up, and ship them to where they're needed." },
+  { q: "How are vacuoles different in plant cells vs. animal cells?", options: ["Plant cells have many small vacuoles; animal cells have one large one","Both have the same number","Plant cells have one large central vacuole; animal cells have many small ones","Neither type of cell has vacuoles"], correct: 2, explanation: "Plant cells have ONE large central vacuole (think of a big water storage tank). Animal cells have MANY small vacuoles." },
+  { q: "Which organelle is compared to 'jelly in a donut' and helps organelles move around inside the cell?", options: ["Cell wall","Vacuole","Nucleus","Cytoplasm"], correct: 3, explanation: "The cytoplasm is the gel-like fluid that fills the cell. Just like jelly lets a donut's filling flow, cytoplasm lets materials move around." },
+  { q: "A student says: 'The ribosomes are like the construction crew.' Why is this a good analogy?", options: ["Because ribosomes build the cell wall","Because ribosomes build proteins from DNA instructions","Because ribosomes remove waste from the cell","Because ribosomes generate energy for the cell"], correct: 1, explanation: "Construction crews follow blueprints to build things. Ribosomes follow DNA's instructions (via mRNA) to build proteins for the cell." },
+  { q: "Which organelle acts as the 'brain' of the cell and houses the cell's DNA?", options: ["Mitochondria","Ribosome","Nucleus","Golgi bodies"], correct: 2, explanation: "The nucleus is the control center; it contains DNA with all the instructions for the cell's functions. Found in both plant and animal cells." },
+  { q: "The lysosomes are described as the cell's waste management system. What do they actually do?", options: ["Produce energy for the cell","Transport proteins to where they're needed","Package proteins and prepare them for export","Break down waste and old cell parts"], correct: 3, explanation: "Lysosomes contain enzymes that break down worn-out cell parts, food particles, and invaders, keeping the cell clean and healthy." },
+  { q: "Which of the following organelles is found in plant cells but NOT in animal cells?", options: ["Mitochondria","Ribosomes","Cell wall","Lysosomes"], correct: 2, explanation: "The cell wall is a rigid outer layer found only in plant cells; it provides structure and support. Animal cells have a cell membrane but no cell wall." }
+];
+
+const ogQuizState = { selected: [], submitted: false };
+
+
+// ── QUIZ MODE ────────────────────────────────────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-state */
+let ogQuizMode = 'practice';
+  /* LYFELABZ:V1-ONLY:END legacy-mode-state */
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-set-quiz-mode */
+function ogSetQuizMode(mode) {
+  ogQuizMode = mode;
+  const infoBox       = document.getElementById('student-info-box');
+  const btnPractice   = document.getElementById('btn-practice');
+  const btnClassroom  = document.getElementById('btn-classroom');
+  const hintPractice  = document.getElementById('hint-practice');
+  const hintClassroom = document.getElementById('hint-classroom');
+
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+  /* LYFELABZ:V1-ONLY:END legacy-set-quiz-mode */
+
+// ── URL PARAM - auto-set mode on load ────────────────────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-mode-init-iife */
+(function () {
+  const params    = new URLSearchParams(window.location.search);
+  const modeParam = params.get('mode');
+  if (modeParam === 'classroom') {
+    ogSetQuizMode('classroom');
+  } else {
+    ogSetQuizMode('practice');
+  }
+})();
+  /* LYFELABZ:V1-ONLY:END legacy-mode-init-iife */
+
+function ogBuildQuiz() {
+  const container = document.getElementById('og-quiz-questions');
+  container.innerHTML = '';
+  ogQuizState.selected  = new Array(ogQuizQuestions.length).fill(null);
+  ogQuizState.submitted = false;
+  document.getElementById('og-submit-btn').disabled = true;
+  ogUpdateProgress();
+  ogQuizQuestions.forEach((q, qi) => {
+    const letters = ['A','B','C','D'];
+    const optionsHTML = q.options.map((opt, oi) => `
+      <button class="quiz-option" onclick="ogSelectAnswer(${qi}, ${oi})" id="og-q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
+      </button>`).join('');
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = `
+      <div class="quiz-header">
+        <div class="quiz-num">${qi + 1}</div>
+        <div class="quiz-question-text">${q.q}</div>
+      </div>
+      <div class="quiz-options">${optionsHTML}</div>
+      <div class="option-feedback" id="og-feedback-${qi}"></div>`;
+    container.appendChild(card);
+  });
+}
+
+function ogSelectAnswer(qi, chosenIndex) {
+  if (ogQuizState.submitted) return;
+  const prev = ogQuizState.selected[qi];
+  if (prev !== null) document.getElementById(`og-q-${qi}-${prev}`).classList.remove('selected');
+  ogQuizState.selected[qi] = chosenIndex;
+  document.getElementById(`og-q-${qi}-${chosenIndex}`).classList.add('selected');
+  ogUpdateProgress();
+  ogRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(ogQuizState.selected);
+}
+
+function ogUpdateProgress() {
+  const total    = ogQuizQuestions.length;
+  const answered = ogQuizState.selected.filter(s => s !== null).length;
+  document.getElementById('og-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('og-progress-text').textContent = `${answered} / ${total} selected`;
+}
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-validate-student-info */
+function ogValidateStudentInfo() {
+  const name    = document.getElementById('og-student-name').value.trim();
+  const teacher = document.getElementById('og-teacher-select').value;
+  const block   = document.getElementById('og-block-select').value;
+  document.getElementById('og-err-name').classList.toggle('show', !name);
+  document.getElementById('og-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('og-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name, teacher, block };
+}
+  /* LYFELABZ:V1-ONLY:END legacy-validate-student-info */
+
+function ogSubmitQuiz() {
+  if (ogQuizState.submitted) return;
+  var ogAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
+
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!ogQuizState.selected.every(s => s !== null)) return;
+  const ogThinkGate = document.getElementById('og-thinking');
+  if (ogThinkGate && !ogThinkGate.value.trim()) return;
+
+  // ── Classroom mode: validate student info first ──────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-classroom-validation-guard */
+  if (ogQuizMode === 'classroom') {
+    const { valid } = ogValidateStudentInfo();
+    if (!valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-classroom-validation-guard */
+
+  ogQuizState.submitted = true;
+  document.getElementById('og-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  const thinkInput = document.getElementById('og-thinking');
+  const thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('og-think-model').classList.add('show');
+  let correct = 0;
+  ogQuizQuestions.forEach((q, qi) => {
+    const chosen = ogQuizState.selected[qi];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach((_, oi) => {
+      const btn = document.getElementById(`og-q-${qi}-${oi}`);
+      btn.classList.add('disabled'); btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById(`og-q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`og-feedback-${qi}`);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  const total = ogQuizQuestions.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = `${correct}/${total}`;
+  const msg   = pct === 100 ? '🏆 Perfect score! You know every organelle and its job!'
+    : pct >= 80 ? '🌟 Great work! You really know your organelles. Review any you missed.'
+    : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
+    : '💪 Keep going, review each organelle carefully. You\'ve got this!';
+  document.getElementById('og-score-num').textContent = score;
+  document.getElementById('og-score-msg').textContent = msg;
+  const sb = document.getElementById('og-score');
+  sb.classList.add('show');
+  // Reveal the full results panel below the sticky nav so score, feedback,
+  // submission status, and Try Again are all visible at once. The panel's
+  // scroll-margin-top keeps it clear of the sticky navigation.
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* LYFELABZ:V2-ONLY:BEGIN o2-results-focus */
+  // Sprint 28 O2. Move focus to the results after the offset scroll owns
+  // the viewport. preventScroll keeps the scroll-margin-top landing intact.
+  sb.focus({ preventScroll: true });
+  /* LYFELABZ:V2-ONLY:END o2-results-focus */
+
+  // A perfect score is a natural cue to keep learning, so after a brief pause
+  // (leaving the score fully visible) we glide into the More section, landing
+  // at the exact destination the More nav button uses. Anything below 100%
+  // stays put at the results panel, where the student can review the feedback
+  // and reach Try Again without the page moving on its own.
+  if (pct === 100) {
+    ogQuizState.continueTimer = setTimeout(() => {
+      const more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  // ── Practice mode: skip submission ─────────────────────
+  if (ogAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by ogQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    /* LYFELABZ:V2-ONLY:BEGIN o3-return-reveal */
+    // Sprint 28 O3. Reveal the return control so the student has an
+    // in-product route back to /app/ (My Assignments).
+    var ogReturnCtl = document.getElementById('back-to-assignments');
+    if (ogReturnCtl) ogReturnCtl.classList.add('show');
+    /* LYFELABZ:V2-ONLY:END o3-return-reveal */
+    var ogFinalStatus = document.getElementById('og-submit-status');
+    ogFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var ogGenericError = 'Submission did not complete. Please refresh and try again.';
+    function ogShowSubmitError(msg) {
+      ogFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ogGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(ogQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        ogFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        ogShowSubmitError(r.message);
+      } else {
+        ogShowSubmitError(null);
+      }
+    }, function () {
+      ogShowSubmitError(null);
+    });
+    return;
+  }
+
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-practice-completion */
+  if (ogQuizMode === 'practice') {
+    document.getElementById('og-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
+    return;
+  }
+  /* LYFELABZ:V1-ONLY:END legacy-practice-completion */
+
+  // ── Classroom mode: send to Google Sheet ─────────────────
+  /* LYFELABZ:V1-ONLY:BEGIN legacy-apps-script-submit */
+  const { name, teacher, block } = ogValidateStudentInfo();
+  const teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  const letters = ['A','B','C','D'];
+  const params = new URLSearchParams({ resourceId: 'lesson_organelles', grade: '6', teacher, studentName: name, block });
+  ogQuizState.selected.forEach((chosenIndex, qi) => {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
+  fetch(OG_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('og-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('og-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('og-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+  /* LYFELABZ:V1-ONLY:END legacy-apps-script-submit */
+  /* LYFELABZ:V2-ONLY:BEGIN platform-standalone-completion */
+  document.getElementById('og-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
+  /* LYFELABZ:V2-ONLY:END platform-standalone-completion */
+}
+
+function ogResetQuiz() {
+  // Cancel any pending auto-scroll so the page never jumps after a reset.
+  if (ogQuizState.continueTimer) {
+    clearTimeout(ogQuizState.continueTimer);
+    ogQuizState.continueTimer = null;
+  }
+  document.getElementById('og-score').classList.remove('show');
+  document.getElementById('og-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  const thinkInput = document.getElementById('og-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('og-think-model').classList.remove('show');
+  ogBuildQuiz();
+  // Return the student to the quiz's natural beginning. Reuse the Quiz nav
+  // link's target so there is only one canonical quiz destination, and scroll
+  // there directly (rather than re-clicking the link, which does nothing when
+  // the URL hash is already #quiz). scroll-margin-top keeps it clear of the
+  // sticky nav, matching where the Quiz nav lands.
+  const quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function vocabJump(targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 120;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 600);
+}
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function ogRefreshSubmitState() {
+  const quizDone  = ogQuizState.selected.every(s => s !== null);
+  const thinkEl   = document.getElementById('og-thinking');
+  const thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('og-submit-btn').disabled = ogQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  const thinkEl = document.getElementById('og-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', ogRefreshSubmitState);
+})();
+
+ogBuildQuiz();
+</script>
+<script>
+if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');
+</script>
+<script>
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2, a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2 });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`; ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize(); requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+</main>
+</body>
+</html>

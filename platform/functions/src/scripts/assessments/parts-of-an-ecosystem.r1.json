@@ -1,0 +1,269 @@
+{
+  "activityId": "parts-of-an-ecosystem",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is an ecosystem?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Only the animals that live in an area"
+        },
+        {
+          "optionId": "B",
+          "text": "A single species and its offspring"
+        },
+        {
+          "optionId": "C",
+          "text": "All the living and nonliving parts of an area"
+        },
+        {
+          "optionId": "D",
+          "text": "A large region with many different climates"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "An ecosystem is all of the living (biotic) and nonliving (abiotic) parts of the environment in a given area."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Which of the following is a biotic factor?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A lizard"
+        },
+        {
+          "optionId": "B",
+          "text": "Sunlight"
+        },
+        {
+          "optionId": "C",
+          "text": "Soil"
+        },
+        {
+          "optionId": "D",
+          "text": "Temperature"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Biotic factors are living or once-living. A lizard is alive. Sunlight, soil, and temperature are abiotic."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which of these would be an abiotic factor in a pond?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The fish"
+        },
+        {
+          "optionId": "B",
+          "text": "The algae"
+        },
+        {
+          "optionId": "C",
+          "text": "The frogs"
+        },
+        {
+          "optionId": "D",
+          "text": "The water temperature"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Abiotic factors are nonliving. Water temperature is nonliving, while fish, algae, and frogs are all living."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Which level of organization is the smallest?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A community"
+        },
+        {
+          "optionId": "B",
+          "text": "A single organism"
+        },
+        {
+          "optionId": "C",
+          "text": "A population"
+        },
+        {
+          "optionId": "D",
+          "text": "An ecosystem"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A single organism is the smallest level. From there it builds up to population, community, ecosystem, and biome."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "All of the different populations living together in one area make up a what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A species"
+        },
+        {
+          "optionId": "B",
+          "text": "A biome"
+        },
+        {
+          "optionId": "C",
+          "text": "A community"
+        },
+        {
+          "optionId": "D",
+          "text": "A habitat"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "A community is all the populations of different species living together in the same area at the same time."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "A coyote's habitat is best described as its what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Home, the place that meets its needs"
+        },
+        {
+          "optionId": "B",
+          "text": "Job, the role it plays in the ecosystem"
+        },
+        {
+          "optionId": "C",
+          "text": "Group of the same species"
+        },
+        {
+          "optionId": "D",
+          "text": "Close partner species"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A habitat is the place where an organism lives and finds what it needs. Its role or job is its niche."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "A coyote hunts and eats a jackrabbit. This interaction is an example of what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Mutualism"
+        },
+        {
+          "optionId": "B",
+          "text": "Competition"
+        },
+        {
+          "optionId": "C",
+          "text": "Commensalism"
+        },
+        {
+          "optionId": "D",
+          "text": "Predation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Predation is when one organism, the predator, feeds on another organism, its prey. The coyote is the predator."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "The Joshua tree and the yucca moth both benefit from their relationship. What type of symbiosis is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Parasitism"
+        },
+        {
+          "optionId": "B",
+          "text": "Mutualism"
+        },
+        {
+          "optionId": "C",
+          "text": "Competition"
+        },
+        {
+          "optionId": "D",
+          "text": "Predation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "When both species benefit from a close, long-term relationship, the symbiosis is mutualism."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "A tick feeds on a deer, harming the deer while the tick benefits. This is an example of what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Mutualism"
+        },
+        {
+          "optionId": "B",
+          "text": "Commensalism"
+        },
+        {
+          "optionId": "C",
+          "text": "Parasitism"
+        },
+        {
+          "optionId": "D",
+          "text": "Competition"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "In parasitism, one species (the parasite) benefits while the other (the host) is harmed. The tick harms the deer."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Two coyotes both try to catch the same jackrabbit. This interaction is an example of what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Competition"
+        },
+        {
+          "optionId": "B",
+          "text": "Mutualism"
+        },
+        {
+          "optionId": "C",
+          "text": "Commensalism"
+        },
+        {
+          "optionId": "D",
+          "text": "Predation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Competition happens when two or more organisms need the same resource at the same time, such as the same prey."
+    }
+  ]
+}

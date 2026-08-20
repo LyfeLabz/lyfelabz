@@ -1,0 +1,269 @@
+{
+  "activityId": "continental-drift",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What does the theory of continental drift propose?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "That continents slowly changed shape as oceans became smaller over time"
+        },
+        {
+          "optionId": "B",
+          "text": "That continents were once joined as Pangaea and later drifted apart"
+        },
+        {
+          "optionId": "C",
+          "text": "That mountains formed as ocean plates collided and pushed land upward"
+        },
+        {
+          "optionId": "D",
+          "text": "That continents stayed fixed while oceans and land changed around them"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Continental drift proposes that Earth's continents were once joined in one supercontinent called Pangaea and have since slowly moved apart over hundreds of millions of years. This theory was first proposed by Alfred Wegener in 1912."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Who proposed the theory of continental drift, and in what year?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Charles Darwin, in the year 1859"
+        },
+        {
+          "optionId": "B",
+          "text": "Albert Einstein, in the year 1905"
+        },
+        {
+          "optionId": "C",
+          "text": "Alfred Wegener, in the year 1912"
+        },
+        {
+          "optionId": "D",
+          "text": "Isaac Newton, in the year 1687"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Alfred Wegener, a German scientist and meteorologist, proposed the theory of continental drift in 1912. His first clue was that the coastlines of South America and Africa appeared to fit together like puzzle pieces."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "What was the very first observation that led Wegener to propose continental drift?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "He discovered coal deposits on the continent of Antarctica"
+        },
+        {
+          "optionId": "B",
+          "text": "He found matching fossils on continents far apart from each other"
+        },
+        {
+          "optionId": "C",
+          "text": "He noticed coastlines that looked like puzzle pieces fitting together"
+        },
+        {
+          "optionId": "D",
+          "text": "He measured mountain ranges that matched across the Atlantic Ocean"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Wegener's original observation was simple: the eastern coastline of South America and the western coastline of Africa looked like matching pieces of a torn photograph. This observation motivated him to search for additional supporting evidence."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Mesosaurus fossils are found in both South America and Africa. Why does this support continental drift?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Mesosaurus was a strong swimmer that crossed oceans between continents"
+        },
+        {
+          "optionId": "B",
+          "text": "Mesosaurus was a flying reptile that traveled over very long distances"
+        },
+        {
+          "optionId": "C",
+          "text": "Mesosaurus was a freshwater reptile that could not cross saltwater"
+        },
+        {
+          "optionId": "D",
+          "text": "Mesosaurus fossils appeared worldwide so these locations were not unusual"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Mesosaurus was a freshwater reptile; it lived in rivers and lakes, not the ocean. It physically could not have swum across thousands of miles of saltwater. The only way to explain identical Mesosaurus fossils on both continents is that South America and Africa were once connected."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Glossopteris plant fossils are found across South America, Africa, Antarctica, India, and Australia. What does this best support?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "These continents had similar climates so the same plant evolved separately"
+        },
+        {
+          "optionId": "B",
+          "text": "Glossopteris seeds were light enough to travel across oceans by wind"
+        },
+        {
+          "optionId": "C",
+          "text": "These continents were once connected so the plant spread across them"
+        },
+        {
+          "optionId": "D",
+          "text": "Scientists made an error when identifying these fossils as one species"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Glossopteris had heavy seeds that could not float or be carried by wind across thousands of miles of ocean. Finding it on five separate continents is only explainable if those continents were once joined, allowing the plant to spread across them as a continuous landmass."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "The Appalachian Mountains in North America match mountain ranges in Africa, Greenland, and Scandinavia in both rock type and age. What does this best suggest?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Mountain ranges formed in matching pairs on opposite sides of oceans"
+        },
+        {
+          "optionId": "B",
+          "text": "These continents were connected and the mountains formed one long range"
+        },
+        {
+          "optionId": "C",
+          "text": "Wind and ocean currents moved rocks between North America and Africa"
+        },
+        {
+          "optionId": "D",
+          "text": "One volcanic event formed identical mountains on several continents"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Finding mountains of the same rock type and age on continents separated by an ocean is strong evidence of past connection. When you reconstruct Pangaea, these mountain chains line up into one continuous range; they were formed as one, and were split when the continents drifted apart."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Large coal deposits have been found in Antarctica. Coal forms only in warm, tropical environments. What does this suggest?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Coal can form in both cold climates and warm climates on Earth"
+        },
+        {
+          "optionId": "B",
+          "text": "Antarctica stayed cold while tropical plants somehow lived there anyway"
+        },
+        {
+          "optionId": "C",
+          "text": "Antarctica was near the tropics and later drifted toward the pole"
+        },
+        {
+          "optionId": "D",
+          "text": "Scientists made a mistake when identifying the material as real coal"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Coal forms from plant material that built up in warm, swampy environments. Finding coal in Antarctica means Antarctica once had the warm, tropical conditions needed for lush forests. This makes sense only if Antarctica has moved from a warmer location to its current polar position over millions of years."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "What are glacial striations?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Rock deposits created by warm tropical rain and repeated flooding"
+        },
+        {
+          "optionId": "B",
+          "text": "Scratches and grooves carved into bedrock by slowly moving glaciers"
+        },
+        {
+          "optionId": "C",
+          "text": "Patterns in rock layers caused by earthquakes and volcanic eruptions"
+        },
+        {
+          "optionId": "D",
+          "text": "Fossil impressions left by ancient sea creatures on ocean floors"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Glacial striations are parallel scratches and grooves carved into bedrock by the enormous weight and slow movement of glaciers dragging across the rock. Finding glacial striations on rocks in warm regions like South America, Africa, and India is evidence that glaciers once covered those areas."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Why was Wegener's theory of continental drift initially rejected by most scientists when he proposed it in 1912?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The fossil evidence he presented was later shown to be incorrect"
+        },
+        {
+          "optionId": "B",
+          "text": "His map of Pangaea showed continent shapes that were clearly wrong"
+        },
+        {
+          "optionId": "C",
+          "text": "There was no mechanism explaining how continents could move through rock"
+        },
+        {
+          "optionId": "D",
+          "text": "Other scientists had proved continents were permanently fixed in place"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Wegener's evidence was actually solid, but scientists could not accept the theory because he had no mechanism, no physical explanation for how something as massive as a continent could move through Earth's crust. Without that explanation, most geologists rejected the idea, even though the evidence was compelling."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which later discovery finally provided the missing explanation for how continents can move?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The discovery of index fossils used for dating layers of rock"
+        },
+        {
+          "optionId": "B",
+          "text": "The discovery that Earth's crust is made of slowly moving plates"
+        },
+        {
+          "optionId": "C",
+          "text": "The discovery of coal deposits in Antarctica showing climate change"
+        },
+        {
+          "optionId": "D",
+          "text": "The invention of radiometric dating for measuring ages of rocks"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "In the 1950s and 1960s, scientists mapping the ocean floor discovered that Earth's crust is broken into large sections called tectonic plates. These plates float on hot, solid rock that slowly flows like thick putty, not liquid magma, and move slowly over time. This discovery (plate tectonics) provided exactly the physical mechanism that Wegener's theory had been missing."
+    }
+  ]
+}

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+GENERATED FILE. DO NOT EDIT DIRECTLY.
+Canonical source: lesson-sources/lesson_types-of-volcanoes.html
+Build target: v1
+Regenerate: npm --prefix app run lessons:build -- --only=types-of-volcanoes --target=v1
+-->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -2042,6 +2048,10 @@ function vcSelectAnswer(qi, chosenIndex) {
   document.getElementById('vc-q-' + qi + '-' + chosenIndex).classList.add('selected');
   vcUpdateProgress();
   vcRefreshSubmitState();
+  // Sprint 17. The shared lessonQuiz adapter is inert in standalone
+  // practice and only forwards to the certified backend when the page
+  // was opened from the assignment launcher.
+  window.lyfelabz.lessonQuiz.autosave(vcQuizState.selected);
 }
 
 function vcUpdateProgress() {
@@ -2063,6 +2073,7 @@ function vcValidateStudentInfo() {
 
 function vcSubmitQuiz() {
   if (vcQuizState.submitted) return;
+  var vcAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
   // Require every quiz item answered and a written explanation before submitting.
   if (!vcQuizState.selected.every(function (s) { return s !== null; })) return;
   var vcThinkGate = document.getElementById('vc-thinking');
@@ -2116,6 +2127,33 @@ function vcSubmitQuiz() {
       var more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
+  }
+
+  if (vcAssigned) {
+    // Assignment context. The certified backend re-scores from the paired
+    // answer key; local scoring above is preserved for student feedback.
+    // Duplicate clicks are guarded by vcQuizState.submitted; finalize is
+    // idempotent on the runtime side via a per-runtime idempotency key.
+    var vcFinalStatus = document.getElementById('vc-submit-status');
+    vcFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
+    // Defensive terminal-state handler so the UI is always truthful even if
+    // finalize resolves null or rejects unexpectedly.
+    var vcGenericError = 'Submission did not complete. Please refresh and try again.';
+    function vcShowSubmitError(msg) {
+      vcFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || vcGenericError) + '</div>';
+    }
+    window.lyfelabz.lessonQuiz.finalize(vcQuizState.selected).then(function (r) {
+      if (r && r.ok) {
+        vcFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
+      } else if (r) {
+        vcShowSubmitError(r.message);
+      } else {
+        vcShowSubmitError(null);
+      }
+    }, function () {
+      vcShowSubmitError(null);
+    });
+    return;
   }
 
   if (vcQuizMode === 'practice') {

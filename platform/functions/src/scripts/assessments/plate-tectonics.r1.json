@@ -1,0 +1,269 @@
+{
+  "activityId": "plate-tectonics",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Isaac Newton; Gondwana"
+        },
+        {
+          "optionId": "B",
+          "text": "Alfred Wegener; Pangaea"
+        },
+        {
+          "optionId": "C",
+          "text": "Charles Darwin; Laurasia"
+        },
+        {
+          "optionId": "D",
+          "text": "Alfred Wegener; Atlantis"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The seeds were too heavy to drift across an ocean and the animals could not swim that far"
+        },
+        {
+          "optionId": "B",
+          "text": "Glossopteris still grows on every continent today"
+        },
+        {
+          "optionId": "C",
+          "text": "Fossils can float across oceans on currents"
+        },
+        {
+          "optionId": "D",
+          "text": "The plant only grew in freezing climates"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Convection cells"
+        },
+        {
+          "optionId": "B",
+          "text": "Rift valleys"
+        },
+        {
+          "optionId": "C",
+          "text": "Tectonic plates"
+        },
+        {
+          "optionId": "D",
+          "text": "Continental shelves"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The pull of ocean tides"
+        },
+        {
+          "optionId": "B",
+          "text": "The spinning of the inner core"
+        },
+        {
+          "optionId": "C",
+          "text": "Wind and weather at the surface"
+        },
+        {
+          "optionId": "D",
+          "text": "Convection currents in the mantle"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "At a divergent boundary two plates move apart. What happens in the gap between them?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Rising magma fills the gap and cools into new crust"
+        },
+        {
+          "optionId": "B",
+          "text": "One plate sinks beneath the other"
+        },
+        {
+          "optionId": "C",
+          "text": "The plates grind past each other"
+        },
+        {
+          "optionId": "D",
+          "text": "A deep ocean trench forms"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Subduction pulling the crust down"
+        },
+        {
+          "optionId": "B",
+          "text": "Seafloor spreading at a divergent boundary"
+        },
+        {
+          "optionId": "C",
+          "text": "A transform fault sliding sideways"
+        },
+        {
+          "optionId": "D",
+          "text": "Weathering of the ocean floor"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Spreading, building a rift valley"
+        },
+        {
+          "optionId": "B",
+          "text": "Erosion, building canyons"
+        },
+        {
+          "optionId": "C",
+          "text": "Subduction, building volcanoes and island arcs"
+        },
+        {
+          "optionId": "D",
+          "text": "Drifting, building flat plains"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Continental crust is too dense to rise"
+        },
+        {
+          "optionId": "B",
+          "text": "One of the plates melted completely"
+        },
+        {
+          "optionId": "C",
+          "text": "The boundary is actually a transform boundary"
+        },
+        {
+          "optionId": "D",
+          "text": "Neither plate is dense enough to sink, so they push each other up"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A transform boundary known for earthquakes"
+        },
+        {
+          "optionId": "B",
+          "text": "A divergent boundary known for new seafloor"
+        },
+        {
+          "optionId": "C",
+          "text": "A convergent boundary known for volcanoes"
+        },
+        {
+          "optionId": "D",
+          "text": "A boundary known for building island arcs"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They follow ocean currents around the globe"
+        },
+        {
+          "optionId": "B",
+          "text": "They line up along the edges of the tectonic plates"
+        },
+        {
+          "optionId": "C",
+          "text": "They appear wherever the crust is thickest"
+        },
+        {
+          "optionId": "D",
+          "text": "They are spread evenly but only reported in cities"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    }
+  ]
+}

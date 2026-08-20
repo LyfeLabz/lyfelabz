@@ -1,0 +1,269 @@
+{
+  "activityId": "sun-earth-moon",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What best describes a 'system' in science?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A group of interacting parts that affect each other"
+        },
+        {
+          "optionId": "B",
+          "text": "A machine or piece of technology"
+        },
+        {
+          "optionId": "C",
+          "text": "A single planet traveling around the Sun"
+        },
+        {
+          "optionId": "D",
+          "text": "A force that holds objects in place"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "A system is a group of parts that interact with and affect each other. The Sun, Earth, and Moon form one system, connected by gravity and motion, changing one part affects the others."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "What is gravity?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The speed at which Earth spins on its axis"
+        },
+        {
+          "optionId": "B",
+          "text": "The curved path Earth travels around the Sun"
+        },
+        {
+          "optionId": "C",
+          "text": "A pulling force between any two objects with mass"
+        },
+        {
+          "optionId": "D",
+          "text": "Heat and light energy released by the Sun"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Gravity is an invisible pulling force between any two objects that have mass. It always pulls toward the center of a massive object, Earth's gravity keeps the Moon in orbit, and the Sun's gravity keeps Earth in orbit."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "What keeps Earth moving in a curved orbit instead of flying off in a straight line?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Earth's spin on its own tilted axis"
+        },
+        {
+          "optionId": "B",
+          "text": "The Moon's gravitational pull on Earth"
+        },
+        {
+          "optionId": "C",
+          "text": "The Sun's gravitational pull on Earth"
+        },
+        {
+          "optionId": "D",
+          "text": "Earth's magnetic field curving its path"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The Sun's gravity continuously bends Earth's straight-line motion into a curved orbit. Without the Sun's gravity, Earth would fly off into space. Without Earth's forward speed, it would fall into the Sun."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "How long does it take Earth to complete one full revolution around the Sun?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "About 24 hours"
+        },
+        {
+          "optionId": "B",
+          "text": "About 27–29 days"
+        },
+        {
+          "optionId": "C",
+          "text": "About 10 years"
+        },
+        {
+          "optionId": "D",
+          "text": "About 365.25 days"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "One full revolution (Earth's complete trip around the Sun) takes about 365.25 days, which equals one Earth year. The extra 0.25 day is why we add a Leap Day every four years."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "What is Earth's only natural satellite?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The Sun"
+        },
+        {
+          "optionId": "B",
+          "text": "Mars"
+        },
+        {
+          "optionId": "C",
+          "text": "The International Space Station"
+        },
+        {
+          "optionId": "D",
+          "text": "The Moon"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The Moon is Earth's only natural satellite. It orbits Earth about every 27–29 days, held in place by Earth's gravity. The International Space Station is an artificial satellite, built by humans."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Approximately how long does it take the Moon to orbit Earth once?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "About 27–29 days"
+        },
+        {
+          "optionId": "B",
+          "text": "About 24 hours"
+        },
+        {
+          "optionId": "C",
+          "text": "About 365.25 days"
+        },
+        {
+          "optionId": "D",
+          "text": "About 6 months"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The Moon completes one full orbit around Earth in about 27–29 days, roughly one month. This is also where the word 'month' originally comes from."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "What does the term 'rotation' mean?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Traveling in an orbit around another object"
+        },
+        {
+          "optionId": "B",
+          "text": "Spinning on an internal axis"
+        },
+        {
+          "optionId": "C",
+          "text": "The gravitational force between two objects"
+        },
+        {
+          "optionId": "D",
+          "text": "Moving in a single direction without stopping"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Rotation means spinning on an internal axis. Earth rotates once every 24 hours on an imaginary line running through its North and South Poles, creating our cycle of day and night."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "How does an object's mass affect the strength of its gravitational pull?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "More mass makes gravity weaker"
+        },
+        {
+          "optionId": "B",
+          "text": "Mass has no effect on gravity"
+        },
+        {
+          "optionId": "C",
+          "text": "More mass makes gravity stronger"
+        },
+        {
+          "optionId": "D",
+          "text": "Only distance, not mass, determines gravity"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "More mass = stronger gravitational pull. The Sun's enormous mass gives it enough gravity to hold all 8 planets in orbit. The Moon's smaller mass gives it only 1/6 of Earth's surface gravity."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Approximately how many Earths could fit inside the Sun?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "About 10,000"
+        },
+        {
+          "optionId": "B",
+          "text": "About 1 million"
+        },
+        {
+          "optionId": "C",
+          "text": "About 100"
+        },
+        {
+          "optionId": "D",
+          "text": "About 1 billion"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "About 1 million Earths could fit inside the Sun. The Sun is about 110 times the diameter of Earth. Most diagrams cannot show the true scale, the differences in size are far too extreme to fit on one page."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Scientists use models to study the Sun-Earth-Moon system. Why are models necessary?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Models are always perfectly accurate replicas"
+        },
+        {
+          "optionId": "B",
+          "text": "Gravity cannot be shown in diagrams"
+        },
+        {
+          "optionId": "C",
+          "text": "Earth's orbit is too small to measure otherwise"
+        },
+        {
+          "optionId": "D",
+          "text": "The objects are too large and distant to observe directly"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "A model is a simplified way to represent something too big, fast, or far away to see directly. Orbit diagrams and scale models let scientists visualize patterns and make predictions about the Sun-Earth-Moon system."
+    }
+  ]
+}

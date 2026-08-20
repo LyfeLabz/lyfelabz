@@ -1,0 +1,269 @@
+{
+  "activityId": "earthquakes",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What is an earthquake?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The slow weathering of rock at the surface"
+        },
+        {
+          "optionId": "B",
+          "text": "The shaking of the ground from a sudden release of energy in Earth's crust"
+        },
+        {
+          "optionId": "C",
+          "text": "A crack that forms only at ancient fault lines"
+        },
+        {
+          "optionId": "D",
+          "text": "The melting of rock deep inside the mantle"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "An earthquake is the shaking of the ground caused by a sudden release of energy that has built up in Earth's crust."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Stressed rock bends for years, then fractures and snaps back toward its original shape. What is this process called?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Elastic rebound"
+        },
+        {
+          "optionId": "B",
+          "text": "Differentiation"
+        },
+        {
+          "optionId": "C",
+          "text": "Convection"
+        },
+        {
+          "optionId": "D",
+          "text": "Erosion"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Elastic rebound is when stressed rock releases its stored energy, fractures, and returns toward its original shape. That released energy causes the shaking."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Where does the energy that an earthquake releases come from?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Heat from the Sun warming the surface"
+        },
+        {
+          "optionId": "B",
+          "text": "Rain soaking into the soil"
+        },
+        {
+          "optionId": "C",
+          "text": "Stress that slowly builds up in rock as plates move"
+        },
+        {
+          "optionId": "D",
+          "text": "The pull of the Moon's gravity"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Moving plates put stress on rock along faults. The rock bends and stores energy over time, sometimes for hundreds of years, until it fractures."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "What is the focus of an earthquake?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The point on the surface where shaking is strongest"
+        },
+        {
+          "optionId": "B",
+          "text": "The fastest seismic wave"
+        },
+        {
+          "optionId": "C",
+          "text": "The instrument that records the quake"
+        },
+        {
+          "optionId": "D",
+          "text": "The point inside Earth where the earthquake begins"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "The focus is the point inside Earth where an earthquake begins and the stored energy is first released."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "A news report gives the location of an earthquake on a map. Which point is it most likely describing?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The epicenter, on the surface above the focus"
+        },
+        {
+          "optionId": "B",
+          "text": "The focus, deep underground"
+        },
+        {
+          "optionId": "C",
+          "text": "The fault zone in the mantle"
+        },
+        {
+          "optionId": "D",
+          "text": "The magnitude scale reading"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The epicenter is the point on the surface directly above the focus. Because it is a surface location, it is the point people can mark on a map."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "A reverse fault forms where one block of rock is pushed up and over another. At which plate boundary does this happen?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A transform boundary"
+        },
+        {
+          "optionId": "B",
+          "text": "A divergent boundary"
+        },
+        {
+          "optionId": "C",
+          "text": "A convergent boundary"
+        },
+        {
+          "optionId": "D",
+          "text": "It does not happen at any boundary"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Reverse faults form at convergent boundaries, where plates push together and the squeezing force drives one block up over the other."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "At a transform boundary, plates slide horizontally past each other. Which type of fault does this create?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A normal fault"
+        },
+        {
+          "optionId": "B",
+          "text": "A strike-slip fault"
+        },
+        {
+          "optionId": "C",
+          "text": "A reverse fault"
+        },
+        {
+          "optionId": "D",
+          "text": "No fault at all"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "A strike-slip fault forms at a transform boundary, where blocks of rock grind sideways past each other instead of moving up or down."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Which statement correctly compares P waves and S waves?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "S waves are faster and travel through liquids"
+        },
+        {
+          "optionId": "B",
+          "text": "P waves and S waves are exactly the same"
+        },
+        {
+          "optionId": "C",
+          "text": "P waves travel through solids only"
+        },
+        {
+          "optionId": "D",
+          "text": "P waves are faster and can travel through solids, liquids, and gases"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "P waves are the fastest seismic waves and travel through solids, liquids, and gases. S waves are slower and travel through solids only."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Two earthquakes have the same magnitude, but one causes far more damage. What best explains the difference?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The more damaging quake had a higher intensity because of where it struck"
+        },
+        {
+          "optionId": "B",
+          "text": "Magnitude and damage are always identical"
+        },
+        {
+          "optionId": "C",
+          "text": "The less damaging quake had a higher magnitude"
+        },
+        {
+          "optionId": "D",
+          "text": "Intensity measures the strength of the quake itself"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Magnitude measures the strength of the quake, while intensity measures its effects on people and places. The same magnitude can cause very different intensity depending on where it hits."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which sequence correctly traces how stored energy becomes shaking at the surface?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Seismic waves form first, then stress builds, then rock bends"
+        },
+        {
+          "optionId": "B",
+          "text": "Stress bends rock, the rock rebounds at the focus, and seismic waves shake the surface"
+        },
+        {
+          "optionId": "C",
+          "text": "The epicenter releases energy that travels down to the focus"
+        },
+        {
+          "optionId": "D",
+          "text": "Rain weakens rock, which then melts and erupts"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Stress slowly bends rock and stores energy. The rock fractures and rebounds at the focus, releasing energy as seismic waves that travel out and shake the surface near the epicenter."
+    }
+  ]
+}

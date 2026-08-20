@@ -6,8 +6,13 @@ const mkItem = (
 ): AssignmentsListForStudentItem =>
   Object.freeze({
     assignmentId: "assign-1",
-    lessonSlug: "what-is-life",
-    title: "What is life?",
+    // After Sprint 28 Phase 5A.1, every assignable lesson (all 49) is
+    // v2-overridden, so there is no assignable lesson left on the v1 path.
+    // ragebaiting is a real but gated (non-surfaceable, non-assignable)
+    // lesson that is intentionally absent from LESSON_LAUNCH_OVERRIDES, so it
+    // exercises the launcher's v1 fallback for any non-overridden slug.
+    lessonSlug: "ragebaiting",
+    title: "Ragebaiting",
     status: "published" as const,
     publishedAt: 1_700_000_000_000,
     ...overrides,
@@ -16,7 +21,7 @@ const mkItem = (
 describe("buildAssignmentLaunchUrl", () => {
   test("uses the canonical lesson URL and encodes only the assignmentId", () => {
     const url = buildAssignmentLaunchUrl(mkItem());
-    expect(url).toBe("/lesson_what-is-life.html?assignment=assign-1");
+    expect(url).toBe("/lesson_ragebaiting.html?assignment=assign-1");
   });
 
   test("percent-encodes reserved characters in assignmentId", () => {
@@ -24,7 +29,7 @@ describe("buildAssignmentLaunchUrl", () => {
       mkItem({ assignmentId: "a b&c?d#e/f=g" }),
     );
     expect(url).toBe(
-      `/lesson_what-is-life.html?assignment=${encodeURIComponent("a b&c?d#e/f=g")}`,
+      `/lesson_ragebaiting.html?assignment=${encodeURIComponent("a b&c?d#e/f=g")}`,
     );
   });
 
@@ -81,10 +86,13 @@ describe("buildAssignmentLaunchUrl", () => {
     expect(url).toBe("/app/lessons/lesson_earths-layers.html?assignment=asg-42");
   });
 
-  test("non-piloted lessons still resolve to the v1 root-level path", () => {
+  test("non-overridden lessons still resolve to the v1 root-level path", () => {
+    // With all 49 assignable lessons v2-overridden after Phase 5A.1, the
+    // gated (non-surfaceable) ragebaiting lesson is the canonical
+    // non-overridden example that exercises the launcher's v1 fallback.
     const url = buildAssignmentLaunchUrl(
-      mkItem({ lessonSlug: "cell-types", assignmentId: "asg-7" }),
+      mkItem({ lessonSlug: "ragebaiting", assignmentId: "asg-7" }),
     );
-    expect(url).toBe("/lesson_cell-types.html?assignment=asg-7");
+    expect(url).toBe("/lesson_ragebaiting.html?assignment=asg-7");
   });
 });

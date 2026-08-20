@@ -1,0 +1,269 @@
+{
+  "activityId": "weathering-and-erosion",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What does weathering do to rocks?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It moves rock from one place to another"
+        },
+        {
+          "optionId": "B",
+          "text": "It lays down sediment in new locations"
+        },
+        {
+          "optionId": "C",
+          "text": "It breaks rocks and minerals down at or near Earth's surface"
+        },
+        {
+          "optionId": "D",
+          "text": "It melts rock into magma deep underground"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Weathering includes the processes at or near Earth's surface that cause rocks and minerals to break down. It breaks rock apart but does not move it."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Which process removes weathered material and transports it to a new location?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Erosion"
+        },
+        {
+          "optionId": "B",
+          "text": "Deposition"
+        },
+        {
+          "optionId": "C",
+          "text": "Oxidation"
+        },
+        {
+          "optionId": "D",
+          "text": "Ice wedging"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Erosion is the removing of Earth materials from their original site through movement and transport. Wind, water, ice, and gravity do the carrying."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "A river slows down and drops the sand it was carrying onto a riverbank. What is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Weathering"
+        },
+        {
+          "optionId": "B",
+          "text": "Abrasion"
+        },
+        {
+          "optionId": "C",
+          "text": "Erosion"
+        },
+        {
+          "optionId": "D",
+          "text": "Deposition"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Deposition is the laying down of sediment. When a carrier like flowing water slows down, it can no longer hold the sediment, so the material settles."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "How is physical weathering different from chemical weathering?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Physical weathering changes the minerals into new substances"
+        },
+        {
+          "optionId": "B",
+          "text": "Physical weathering breaks rock into smaller pieces without changing its composition"
+        },
+        {
+          "optionId": "C",
+          "text": "Physical weathering only happens deep underground"
+        },
+        {
+          "optionId": "D",
+          "text": "Physical weathering melts the rock into liquid"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Physical weathering breaks rock into smaller pieces without altering its composition. Chemical weathering changes what the rock is made of."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Water seeps into a crack in a rock, freezes overnight, expands, and widens the crack. What process is this?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Oxidation"
+        },
+        {
+          "optionId": "B",
+          "text": "Dissolving"
+        },
+        {
+          "optionId": "C",
+          "text": "Ice wedging"
+        },
+        {
+          "optionId": "D",
+          "text": "Deposition"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Ice wedging is the cracking of rock by the expansion of water as it freezes in crevices and cracks. It is a kind of physical weathering."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Tree roots grow into a crack and slowly force the rock sections apart. This is an example of:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "physical weathering by plant growth"
+        },
+        {
+          "optionId": "B",
+          "text": "chemical weathering by dissolving"
+        },
+        {
+          "optionId": "C",
+          "text": "deposition by gravity"
+        },
+        {
+          "optionId": "D",
+          "text": "oxidation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "As roots grow into cracks and increase in size, they force the rock apart. The rock is broken without changing composition, so this is physical weathering."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Wind-blown sand strikes a rock surface and wears tiny pieces off it over time. What is this process called?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Ice wedging"
+        },
+        {
+          "optionId": "B",
+          "text": "Abrasion"
+        },
+        {
+          "optionId": "C",
+          "text": "Oxidation"
+        },
+        {
+          "optionId": "D",
+          "text": "Dissolving"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Abrasion happens when moving sediments break off pieces from a rock surface they strike. The sediments can be moved by wind or water."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Acidic water dissolves minerals in limestone, leaving cavities that can form stalactites and stalagmites. This is an example of:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "physical weathering"
+        },
+        {
+          "optionId": "B",
+          "text": "erosion"
+        },
+        {
+          "optionId": "C",
+          "text": "deposition"
+        },
+        {
+          "optionId": "D",
+          "text": "chemical weathering"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Water containing acid from dissolved carbon dioxide breaks down minerals in the rock, leaving cavities. Because the minerals change, this is chemical weathering."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Iron-rich minerals in a rock combine with oxygen and turn into a softer, rust-colored mineral. What is this process?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Oxidation"
+        },
+        {
+          "optionId": "B",
+          "text": "Ice wedging"
+        },
+        {
+          "optionId": "C",
+          "text": "Abrasion"
+        },
+        {
+          "optionId": "D",
+          "text": "Deposition"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Oxidation, or rusting, is when minerals combine with oxygen to form new minerals that are not as hard. They are then worn away more easily by physical weathering."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which sequence correctly shows how the surface is reshaped over time?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Erosion breaks rock down, then weathering melts it"
+        },
+        {
+          "optionId": "B",
+          "text": "Weathering breaks rock down, erosion moves the pieces, and deposition drops them in a new place"
+        },
+        {
+          "optionId": "C",
+          "text": "Deposition breaks rock down, then weathering carries it away"
+        },
+        {
+          "optionId": "D",
+          "text": "Weathering and erosion both only build mountains taller"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Weathering breaks rock into sediment, erosion transports that sediment, and deposition lays it down somewhere new. Together they constantly reshape Earth's surface."
+    }
+  ]
+}

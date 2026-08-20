@@ -1,0 +1,269 @@
+{
+  "activityId": "photosynthesis",
+  "revisionOrdinal": 1,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "sprint-28-phase-5b",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "In a chemical reaction, the reactants are the:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "raw materials that go in"
+        },
+        {
+          "optionId": "B",
+          "text": "substances that come out"
+        },
+        {
+          "optionId": "C",
+          "text": "leftover heat and light"
+        },
+        {
+          "optionId": "D",
+          "text": "tools used to mix it"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Reactants are the raw materials that go into a reaction. The substances that come out are the products."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Which pair lists the products of photosynthesis?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Carbon dioxide and water"
+        },
+        {
+          "optionId": "B",
+          "text": "Sunlight and carbon dioxide"
+        },
+        {
+          "optionId": "C",
+          "text": "Glucose and oxygen"
+        },
+        {
+          "optionId": "D",
+          "text": "Water and minerals"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The products of photosynthesis are glucose and oxygen. Carbon dioxide and water are reactants."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "What does a plant need to take IN to carry out photosynthesis?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Glucose, oxygen, and heat"
+        },
+        {
+          "optionId": "B",
+          "text": "Sunlight, carbon dioxide, and water"
+        },
+        {
+          "optionId": "C",
+          "text": "Oxygen, glucose, and minerals"
+        },
+        {
+          "optionId": "D",
+          "text": "Nitrogen, water, and sugar"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The reactants of photosynthesis are sunlight, carbon dioxide, and water."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "In which cell structure does photosynthesis take place?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The nucleus"
+        },
+        {
+          "optionId": "B",
+          "text": "The vacuole"
+        },
+        {
+          "optionId": "C",
+          "text": "The chloroplast"
+        },
+        {
+          "optionId": "D",
+          "text": "The cell wall"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Photosynthesis takes place in the chloroplast, which holds the green pigment chlorophyll."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which part of the chloroplast captures the energy in sunlight?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Glucose"
+        },
+        {
+          "optionId": "B",
+          "text": "The stomata"
+        },
+        {
+          "optionId": "C",
+          "text": "The xylem"
+        },
+        {
+          "optionId": "D",
+          "text": "Chlorophyll, the green pigment"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Chlorophyll is the green pigment inside chloroplasts that captures light energy. It also makes leaves look green."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Carbon dioxide enters a leaf mainly through tiny openings called:",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "stomata"
+        },
+        {
+          "optionId": "B",
+          "text": "chloroplasts"
+        },
+        {
+          "optionId": "C",
+          "text": "roots"
+        },
+        {
+          "optionId": "D",
+          "text": "veins"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Stomata are tiny openings, mostly on the underside of a leaf, that let carbon dioxide in and oxygen out."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "How does water get from the soil to the leaves?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It forms inside the leaf from sunlight"
+        },
+        {
+          "optionId": "B",
+          "text": "It travels up from the roots through the xylem"
+        },
+        {
+          "optionId": "C",
+          "text": "It enters the leaf through the stomata"
+        },
+        {
+          "optionId": "D",
+          "text": "It is carried upward by oxygen"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Water is absorbed by the roots and rises to the leaves through tubes called xylem."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "What is glucose, and why does the plant make it?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "A waste gas the plant must release"
+        },
+        {
+          "optionId": "B",
+          "text": "A mineral the plant pulls from the soil"
+        },
+        {
+          "optionId": "C",
+          "text": "The green pigment that traps light"
+        },
+        {
+          "optionId": "D",
+          "text": "A sugar that stores the energy the plant captured"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Glucose is a sugar that stores the captured energy. The plant uses it to live, grow, and build new material."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "A tree grows heavier as it grows, but the soil loses almost no weight. Where does most of the new mass come from?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "From minerals taken out of the soil"
+        },
+        {
+          "optionId": "B",
+          "text": "From sunlight turning directly into wood"
+        },
+        {
+          "optionId": "C",
+          "text": "From carbon dioxide in the air and from water"
+        },
+        {
+          "optionId": "D",
+          "text": "From oxygen the tree takes in"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Most of a plant's mass comes from carbon in carbon dioxide, combined with water, built into glucose and then wood."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "What is the main role of photosynthesis for living things?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It captures light energy and stores it as chemical energy in food"
+        },
+        {
+          "optionId": "B",
+          "text": "It breaks down glucose to release stored energy"
+        },
+        {
+          "optionId": "C",
+          "text": "It returns dead matter to the soil as nutrients"
+        },
+        {
+          "optionId": "D",
+          "text": "It removes every bit of carbon dioxide from the air"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Photosynthesis captures light energy and stores it as chemical energy in glucose, which feeds almost all other life."
+    }
+  ]
+}
