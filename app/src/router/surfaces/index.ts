@@ -1164,6 +1164,18 @@ function renderAssignmentsList(
     if (statusByAssignment !== null) {
       const aggregate = statusByAssignment.get(item.assignmentId);
       const status: StudentStatusKey = aggregate ? aggregate.status : "ready";
+      // Sprint 28.5B (B4): flag strongly-completed work (a best score that
+      // derives Well Done! or Perfect Score) so the stylesheet can quiet the
+      // card and let the eye settle on unfinished work first. This is
+      // presentation only: the card stays visible, its title/status/label
+      // and accessible name are unchanged, its Open assignment control and
+      // launch URL are unchanged, and no authorization, lifecycle, or backend
+      // state is affected. Only rendered when the caller-scoped results read
+      // succeeded (status is known); a degraded launch-only card is never
+      // marked complete.
+      if (status === "perfect" || status === "wellDone") {
+        li.setAttribute("data-complete", "true");
+      }
       li.appendChild(renderStatusChip(doc, status, "assignments-item-status"));
     }
 

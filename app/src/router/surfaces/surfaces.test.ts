@@ -1311,6 +1311,46 @@ describe("active student surface (Sprint 27 My Results + status + navigation)", 
     expect(statuses[1]).toContain("Ready to Begin");
   });
 
+  test("Sprint 28.5B (B4): completed work (Well Done!/Perfect) is flagged data-complete; actionable work is not, and every card stays visible and launchable", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([
+        okItem({ assignmentId: "assign-perfect", title: "Perfect one" }),
+        okItem({ assignmentId: "assign-welldone", title: "Well done one" }),
+        okItem({ assignmentId: "assign-improving", title: "Improving one" }),
+        okItem({ assignmentId: "assign-ready", title: "Not started one" }),
+      ]),
+      studentResultsList: resultsSeam([
+        okAttempt({ assignmentId: "assign-perfect", score: 10, maxScore: 10, percentage: 100 }),
+        okAttempt({ assignmentId: "assign-welldone", score: 9, maxScore: 10, percentage: 90 }),
+        okAttempt({ assignmentId: "assign-improving", score: 5, maxScore: 10, percentage: 50 }),
+        // assign-ready has no completed attempt -> derives Ready to Begin.
+      ]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+
+    const items = Array.from(
+      mount.querySelectorAll<HTMLElement>("[data-testid=assignments-item]"),
+    );
+    // All four cards remain present (no hiding/collapsing/removal).
+    expect(items).toHaveLength(4);
+    // Well Done! and Perfect Score recede; Improving and Ready to Begin do not.
+    const complete = items.map((li) => li.getAttribute("data-complete"));
+    expect(complete).toEqual(["true", "true", null, null]);
+    // Every card - completed included - keeps a working Open assignment
+    // control with its exact label and a launch URL.
+    for (const li of items) {
+      const launch = li.querySelector<HTMLButtonElement>(
+        "[data-testid=assignments-launch]",
+      );
+      expect(launch).not.toBeNull();
+      expect(launch?.textContent).toBe("Open assignment");
+      expect(launch?.getAttribute("data-assignment-launch-url")).toBeTruthy();
+    }
+  });
+
   test("My Assignments renders without status when the results read fails (no mislabeling)", async () => {
     const { deps } = makeDeps({
       studentAssignmentsList: assignmentsSeam([okItem()]),

@@ -1801,7 +1801,8 @@
   body:not(:has(#app-root > .shell-header)) [data-testid=check-status],
   body:not(:has(#app-root > .shell-header)) [data-testid=retry],
   body:not(:has(#app-root > .shell-header)) [data-testid=refresh],
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-retry] {
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-retry],
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-retry] {
     display: inline-block;
     margin-top: 1rem;
     padding: 0.7rem 1.4rem;
@@ -1831,7 +1832,9 @@
   body:not(:has(#app-root > .shell-header)) [data-testid=refresh]:hover:not(:disabled),
   body:not(:has(#app-root > .shell-header)) [data-testid=refresh]:focus-visible:not(:disabled),
   body:not(:has(#app-root > .shell-header)) [data-testid=assignments-retry]:hover:not(:disabled),
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-retry]:focus-visible:not(:disabled) {
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-retry]:focus-visible:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-retry]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-retry]:focus-visible:not(:disabled) {
     background: var(--tw-primary-strong);
     border-color: var(--tw-primary-strong);
     outline: none;
@@ -1872,7 +1875,17 @@
     color: var(--tw-ink);
     outline: none;
   }
-  body:not(:has(#app-root > .shell-header)) [data-testid=error-banner] {
+  /* Sprint 28.5B (B5): the student assignment/results error renderers call
+     renderErrorBanner (which stamps data-testid="error-banner", the callout
+     hook) and then overwrite the testid with assignments-error / results-error
+     for their retry tests. That overwrite dropped the red-callout styling, so
+     the error read as plain muted text. Widen the selector to the two student
+     variants so both error surfaces show the intended callout. role="alert"
+     semantics, the retry buttons, and the assignments-error / results-error
+     testids the tests assert on are all unchanged. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=error-banner],
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-error],
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-error] {
     background: var(--tw-callout-error-bg);
     border: 1px solid var(--tw-callout-error-edge);
     color: var(--tw-callout-error-ink);
@@ -1931,6 +1944,216 @@
     font-size: 0.8rem;
     color: var(--tw-ink-muted);
   }
+
+  /* =====================================================================
+     Sprint 28.5B - Student Workspace polish (My Assignments / My Results)
+     =====================================================================
+     A single scoped presentation layer over the certified student surface
+     (makeActiveStudentSurface). It reuses the existing auth-card tokens,
+     colors, spacing, radii, and typography; it introduces no second design
+     system, no gamification, and no new domain data, and it changes no
+     behavior, label, launch URL, authorization, lifecycle, or accessibility
+     semantic. Every rule is gated by the auth-card scope AND a student-only
+     hook (the tablist, the assignment/result lists, the cards, and the status
+     chip), so no teacher-workspace control and no sibling auth-card surface
+     (signed-out / provisioned / pending / error / admin) is affected. */
+
+  /* B2 - Tablist selected state. Give My Assignments / My Results an obvious
+     selected cue that never relies on color alone: the selected tab carries a
+     filled wash, a heavier ink, and a solid accent underline bar; the
+     unselected tab stays quiet. All ARIA (role=tab, aria-selected, roving
+     tabindex, Arrow/Home/End) is owned by the JS and untouched. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 1.25rem 0 0.25rem;
+    border-bottom: 1px solid var(--tw-hairline);
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab] {
+    margin: 0;
+    margin-bottom: -1px;
+    padding: 0.55rem 1rem;
+    background: transparent;
+    color: var(--tw-ink-muted);
+    border: 1px solid transparent;
+    border-bottom: 3px solid transparent;
+    border-top-left-radius: var(--tw-radius-control);
+    border-top-right-radius: var(--tw-radius-control);
+    font-weight: 600;
+    min-height: 44px;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab]:hover {
+    color: var(--tw-ink);
+    background: var(--tw-nav-wash);
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab][aria-selected=true] {
+    color: var(--tw-nav-edge);
+    background: var(--tw-nav-wash);
+    border-bottom-color: var(--tw-nav-edge);
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab]:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+    border-radius: var(--tw-radius-control);
+  }
+
+  /* B3 - Assignment / result cards. Remove the default <ul> disc bullets and
+     40px indent and turn each item into one discrete, left-aligned card in the
+     existing card language (surface, hairline border, card radius, soft
+     shadow). The list stays a semantic <ul>/<li>; only its presentation
+     changes. Vertical stacking of title -> status -> action avoids the
+     status/button collision the audit found at tablet width. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-list],
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-list] {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: left;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item],
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-item] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.9rem 1rem;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow: 0 1px 2px rgba(28, 39, 51, 0.04);
+  }
+
+  /* B4 - Title hierarchy. The per-card <h2> defaults to page-headline size and
+     weight, so every card competed as a headline and none won. Calm it to a
+     scannable card title that sits below the page welcome. Heading semantics,
+     the aria-labelledby wiring, and the data-testid are unchanged. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item-title],
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-item-title] {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    color: var(--tw-ink);
+  }
+
+  /* B4 - My Results supporting lines. Best score is the answer the student
+     came for; attempt count is secondary context. Both drop the auth-card
+     paragraph centering/margins inside the card. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-best-score] {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--tw-ink-soft);
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-attempt-count] {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--tw-ink-muted);
+  }
+
+  /* B4 - Status chip. A restrained pill. Status is still carried by the
+     visible text label + glyph (the glyph is aria-hidden), never by color
+     alone. Tones are muted and drawn from existing badge/callout tokens - not
+     a bright status rainbow: an inviting teal for Ready to Begin, neutral for
+     Improving, and one soft-success family for the two done states (which the
+     ● / ★ glyph and "Well Done!" / "Perfect Score" text distinguish). */
+  body:not(:has(#app-root > .shell-header)) .student-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--tw-radius-pill);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    background: var(--tw-badge-neutral-bg);
+    color: var(--tw-ink-soft);
+    border: 1px solid transparent;
+  }
+  body:not(:has(#app-root > .shell-header)) .student-status[data-status=ready] {
+    background: var(--tw-nav-wash);
+    color: var(--tw-nav-edge);
+    border-color: var(--tw-toggle-active-edge);
+  }
+  body:not(:has(#app-root > .shell-header)) .student-status[data-status=improving] {
+    background: var(--tw-badge-neutral-bg);
+    color: var(--tw-ink-soft);
+  }
+  body:not(:has(#app-root > .shell-header)) .student-status[data-status=wellDone],
+  body:not(:has(#app-root > .shell-header)) .student-status[data-status=perfect] {
+    background: var(--tw-callout-success-bg);
+    color: var(--tw-callout-success-ink);
+    border-color: var(--tw-callout-success-edge);
+  }
+
+  /* B1 - Primary action. Open assignment / Improve My Score were raw OS
+     buttons while only the rare error-recovery button was styled, which
+     inverted the hierarchy. Give the everyday action the LyfeLabz primary
+     treatment (filled green pill, 44px touch target, visible focus ring) sized
+     for a card rather than the full-width page hero. Labels, testids, launch
+     URLs, and click behavior are unchanged. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch],
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-improve] {
+    align-self: flex-start;
+    margin: 0.15rem 0 0;
+    padding: 0.55rem 1.1rem;
+    background: var(--tw-primary);
+    color: #fff;
+    border: 1px solid var(--tw-primary);
+    border-radius: var(--tw-radius-control);
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    box-shadow: 0 1px 2px rgba(23, 90, 49, 0.22);
+    transition: background 0.15s ease, border-color 0.15s ease,
+                box-shadow 0.15s ease;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch]:focus-visible:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-improve]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=results-improve]:focus-visible:not(:disabled) {
+    background: var(--tw-primary-strong);
+    border-color: var(--tw-primary-strong);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(31, 107, 61, 0.28);
+  }
+
+  /* B4 - Quiet completed work (My Assignments only). A card whose best score
+     already reads Well Done! or Perfect Score recedes so the eye lands on
+     unfinished work first. Presentation only: the card stays visible, the
+     title and status stay readable (no color-only signal, no
+     accessibility-eroding opacity fade), and the Open assignment control stays
+     present and operable - it simply drops to a quieter secondary (outline)
+     treatment. Completion is also carried by the status chip's text + glyph,
+     so it is never signaled by the quieting alone. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] {
+    background: var(--tw-surface-alt);
+    box-shadow: none;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] [data-testid=assignments-item-title] {
+    color: var(--tw-ink-soft);
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] [data-testid=assignments-launch] {
+    background: transparent;
+    color: var(--tw-nav-edge);
+    border-color: var(--tw-nav-edge);
+    box-shadow: none;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] [data-testid=assignments-launch]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] [data-testid=assignments-launch]:focus-visible:not(:disabled) {
+    background: var(--tw-nav-wash);
+    color: var(--tw-nav-edge);
+    border-color: var(--tw-nav-edge);
+    box-shadow: 0 0 0 3px rgba(26, 95, 111, 0.20);
+  }
+
   @media (max-width: 480px) {
     body:not(:has(#app-root > .shell-header)) #app-root {
       padding: 1.75rem 1.25rem 1.5rem;
@@ -1938,6 +2161,21 @@
       border-radius: 8px;
     }
     .auth-brand { font-size: 1.4rem; }
+    /* Tabs split the row evenly so they never wrap on a narrow phone. */
+    body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] {
+      gap: 0;
+    }
+    body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab] {
+      flex: 1 1 0;
+      text-align: center;
+      padding: 0.55rem 0.5rem;
+    }
+    /* Full-width card actions for a comfortable tap target. */
+    body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch],
+    body:not(:has(#app-root > .shell-header)) [data-testid=results-improve] {
+      align-self: stretch;
+      text-align: center;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     body:not(:has(#app-root > .shell-header)) [data-testid=google-signin],
