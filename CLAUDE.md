@@ -1,347 +1,117 @@
 # LYFELABZ CLAUDE.md
 
-# LESSON BUILD ARCHITECTURE
-
-Sprint 18 introduced a deterministic lesson build system. One canonical
-instructional source produces two generated delivery outputs.
-
-Applies today to: Earth's Layers only. Do not extend to other lessons
-without an explicit sprint direction.
-
-## Canonical source
-
-Canonical lesson sources live under `lesson-sources/`. This directory
-is excluded from Firebase Hosting via `hosting.ignore` and is never
-served. It is not a public URL, has no canonical link, and is not
-listed in the sitemap.
-
-Direct edits to canonical sources are the only instructional edits
-that propagate to both v1 and v2. Every instructional change goes
-through the source.
-
-## Generated artifacts
-
-* v1 public artifact: `lesson_<slug>.html` at the repo root. Preserves
-  the current public URL. Retains Practice/Classroom toggle, student
-  info form, teacher/block selectors, legacy Apps Script submission
-  path, and every existing v1 behavior.
-* v2 authenticated artifact: `app/lessons/lesson_<slug>.html`. Contains
-  no legacy classroom architecture. Consumes identity and assignment
-  context only from the authenticated platform and the certified
-  assessment runtime.
-
-Every artifact begins with a `<!-- GENERATED FILE. -->` notice
-immediately after the doctype. Direct edits to generated artifacts are
-prohibited and are caught by `lessons:verify` in CI.
-
-## Marker grammar (context-strict)
-
-HTML top level:
-
-```
-<!-- LYFELABZ:V1-ONLY:BEGIN label -->
-<!-- LYFELABZ:V1-ONLY:END label -->
-```
-
-Inside `<script>` blocks:
-
-```
-/* LYFELABZ:V1-ONLY:BEGIN label */
-/* LYFELABZ:V1-ONLY:END label */
-```
-
-Inside `<style>` blocks: same as `<script>` (block-comment grammar).
-
-Equivalent `V2-ONLY` markers exist. Markers must occupy standalone
-lines with only leading/trailing whitespace. The scanner rejects:
-
-* wrong marker syntax for context
-* nested regions
-* overlapping regions
-* cross-context regions
-* duplicate labels
-* undeclared labels (unknown labels)
-* unbalanced markers
-* mismatched labels
-* mismatched targets
-* markers found inside JS strings, template literals, or regex literals
-* HTML-style comments inside `<script>` or `<style>`
-
-## Declarative lesson config
-
-Every configured lesson lives at
-`app/scripts/lessonBuilder/lessons/<slug>.cjs` and declares its paths,
-required labels, expected contexts, required signatures, prohibited
-signatures, shared signatures, generated notice text, and
-instructional-equivalence exclusions. The builder engine is generic;
-no lesson identity leaks into the engine.
-
-## Build + verify
-
-* `npm --prefix app run lessons:build` builds every configured lesson
-  (both targets) into their committed artifact paths, atomically via a
-  PID-suffixed tmp sibling.
-* `npm --prefix app run lessons:verify` rebuilds every configured
-  lesson in memory and compares to the committed artifact. It writes
-  nothing. Fails fast on any drift.
-* `lessons:verify` is part of the app validation chain
-  (`npm --prefix app run verify`).
-
-## Instructional-equivalence contract
-
-Every build compares a normalized instructional contract between v1
-and v2 outputs. Compared fields: titles, headings, learning goals,
-vocabulary (every glossary-card: order, term, definition,
-aria-expanded, aria-label, role, id, sorted classList), image and
-SVG accessibility, Show Your Thinking, quiz questions, option
-ordering, correct-answer indices, explanations, scoring messages,
-More Learning (every cont-card: order, tag, href, aria-label, name,
-description, category, status, sorted classList), Connections (same
-per-card shape), key interactive IDs, scroll targets and scroll
-destinations (each `.scrollIntoView` call as
-`{function, target, kind}`, with variable-bound receivers resolved
-back to their `getElementById` id or `querySelector` href), runtime
-include, and lesson-quiz call sites.
-
-Lesson-specific minimums (e.g. the Earth's Layers pilot's expected
-vocabulary, Connections, and scroll-target counts) live in the
-lesson's config file under `pilotContractMinimums`, not in the
-generic engine.
-
-Only explicitly declared delivery differences (per
-`equivalenceExclusions` in the lesson config) are excluded from the
-contract.
-
-## Launcher
-
-The Sprint 17 launcher URL contract is `/lesson_<slug>.html?assignment=<id>`.
-Sprint 18 introduced a narrow data-driven override at
-`app/src/assignments/studentList/launchOverrides.ts`. Slugs present in
-the override table launch to the override path (e.g. Earth's Layers
-launches to `/app/lessons/lesson_earths-layers.html`). Every non-listed
-slug launches to the v1 URL byte-for-byte identical to Sprint 17.
-
-Add a slug to the override table only after that lesson's v2 artifact
-has passed the full build, legacy-absence, instructional-equivalence,
-and runtime-integration checks.
+Governing rules for LyfeLabz development. These instructions override default
+behavior. Content standards live here; current platform architecture is routed
+(see START HERE).
 
 ---
 
-# PRESERVATION MODE
+# START HERE (context routing)
 
-The repository is in preservation mode.
+For current platform architecture, begin with
+`docs/platform/CURRENT_PLATFORM_STATE.md`. It defines the currently certified
+state and routes to the canonical subsystem docs (identity, security rules,
+LMS/Classroom, deep links, assessment, data model). Do not reconstruct current
+architecture by reading `SPRINT_*` history.
 
-Allowed changes:
+Read historical `SPRINT_*` / certification docs only for: rationale,
+certification evidence, regression investigation, conflict resolution, or
+previously tested behavior.
 
-* bugs
-* scientific inaccuracies
-* broken links
-* engagement improvements
-* accessibility improvements
-* consistency repairs
+Working policy (efficiency never overrides correctness):
 
-Do not redesign existing lessons unless explicitly requested.
-
-No opportunistic cleanup.
-
----
-
-# REPOSITORY HARDENING RULE
-
-During the Repository Hardening phase, consistency takes priority over introducing new features. Prefer repository-wide patterns over one-off fixes, preserve instructional behavior, and defer feature development until hardening is complete.
-
----
-
-# REPOSITORY HARDENING PASS 5 (REPOSITORY CLEANUP & DEPLOYMENT READINESS)
-
-## Final SVG Accessibility Review
-
-During Repository Hardening Pass 3, any SVG lacking explicit accessibility attributes was conservatively marked as decorative using:
-
-`aria-hidden="true"`
-
-This was the correct repository-wide hardening decision because it avoided inventing instructional descriptions during a mechanical accessibility sweep.
-
-During Repository Hardening Pass 5, perform one final content-level accessibility review of those SVGs.
-
-Determine whether any SVG currently marked as decorative actually conveys meaningful scientific or engineering information.
-
-For each SVG reviewed:
-
-- If it is purely decorative, retain `aria-hidden="true"`.
-
-- If it communicates instructional content, replace the decorative designation with:
-
-  - `role="img"`
-
-  - a concise educational `aria-label`
-
-Descriptions should:
-
-- explain only the instructional purpose of the graphic
-
-- avoid describing artistic style or appearance
-
-- remain concise and objective
-
-This review should be treated as editorial verification rather than a repository-wide mechanical accessibility change.
-
-The final Pass 5 report should include:
-
-- total SVGs reviewed
-
-- decorative SVGs retained
-
-- instructional SVGs upgraded
-
-- files modified
-
-- representative examples
-
-This review should be completed before Repository Hardening is declared complete and before the repository is considered deployment-ready.
+1. Start with files named in the task.
+2. Search (`rg`) before opening more files; read targeted line ranges of large
+   files rather than whole 2k–4k-line files.
+3. Expand context only when evidence or architecture requires it.
+4. Do not reread unchanged files without a concrete reason.
+5. Prefer compact command output: `git status --short`; `git --no-pager diff
+   --stat` before a targeted `git --no-pager diff -- <path>`; `git --no-pager
+   log --oneline -n 20`.
+6. Report passing tests as compact counts/suites; retain complete failure
+   output (names, diffs, stack, exit codes). Do not dump green output.
+7. For architecture/security work (auth, rules, OAuth, deep links, publication,
+   scoring), read the full relevant contract; correctness beats token savings.
 
 ---
 
-# CANONICAL LESSON ARCHITECTURE RULE
+# REPOSITORY GOVERNANCE
 
-Every instructional lesson should implement the complete canonical lesson architecture unless there is a documented pedagogical reason for an intentional exception.
+**Commits.** Do not auto-commit. The user performs all Git commits. Do not push
+or deploy unless explicitly asked.
 
-Repository Hardening assumes lesson architecture is complete and standardizes implementation rather than adding missing instructional components.
+**Preservation mode.** The instructional architecture is considered complete.
+Allowed changes: bug fixes, scientific-accuracy fixes, broken links, engagement
+improvements, accessibility improvements, consistency repairs. Do not redesign
+existing lessons unless explicitly requested. No opportunistic or unrelated
+cleanup.
 
-When architectural differences are discovered during Repository Hardening, they should be documented and deferred to a Canonical Lesson Architecture phase unless they are simple implementation inconsistencies.
+**Consistency over novelty.** Prefer repository-wide patterns over one-off
+fixes. During hardening, consistency takes priority over new features; defer
+feature development until hardening is complete. Individual lessons do not
+introduce new instructional components, visual patterns, or architectural
+variations without a documented repository-level reason. Preserve existing
+canonical implementations; do not introduce new design systems.
 
----
+**Canonical lesson architecture.** Every instructional lesson should implement
+the complete canonical lesson architecture unless there is a documented
+pedagogical reason for an intentional exception. Architecture is defined by
+educational function, not identical HTML. A well-designed intentional structure
+that accomplishes the same instructional purpose is acceptable; prefer
+architectural equivalence over unnecessary structural rewrites. Document
+discovered architectural differences and defer them rather than forcing
+rewrites.
 
-# CANONICAL ARCHITECTURE CLARIFICATION
-
-Canonical lesson architecture is defined by educational function rather than identical implementation.
-
-A lesson does not need to use identical HTML components if it already accomplishes the same instructional purpose through a well-designed, intentional structure.
-
-Repository consistency should preserve effective instructional design whenever possible rather than forcing identical implementations.
-
-During future hardening work, architectural equivalence should be preferred over unnecessary structural rewrites.
-
----
-
-# MORE LEARNING EDITORIAL STANDARD
-
-The More Learning introduction should briefly preview the scientific ideas students are about to explore rather than serving as generic transition text.
-
-When appropriate, naturally introduce two to three meaningful scientific concepts drawn directly from the linked learning experiences.
-
-Use the existing gold emphasis through the canonical implementation:
-
-```css
-.continue-intro strong {
-    color: var(--gold);
-}
-```
-
-Preserve lesson tone.
-
-Avoid emphasizing verbs.
-
-Avoid emphasizing navigation language.
-
-Avoid emphasizing generic boilerplate.
-
-Encourage curiosity and exploration rather than simply announcing additional resources.
-
----
-
-# REPOSITORY STATUS
-
-The instructional architecture of LyfeLabz is considered complete.
-
-Repository Hardening Passes 0 through 2 established the canonical instructional architecture, canonical visual language, editorial standards, and repository-wide implementation patterns.
-
-Future repository work should assume these standards unless a deliberate repository-wide decision is made to evolve them.
-
-Individual lessons should not introduce new instructional components, visual patterns, or architectural variations without a documented repository-level reason.
-
-Preserve existing canonical implementations whenever possible.
-
-Favor repository-wide consistency over one-off improvements.
+**Operating discipline.** Investigate before changing architecture. Do not
+silently weaken tests. Do not casually replace repository conventions. Treat
+security-sensitive behavior carefully and use current canonical docs for
+architecture. Standards drive curriculum; slide decks are source material, not
+the curriculum. Build slowly; favor maintainability. The best lesson is the one
+students can successfully learn from, not the one with the most features.
 
 ---
 
 # STYLE
 
-No em dashes.
-
-Prefer short paragraphs.
-
-Match existing LyfeLabz spacing, colors, typography, cards, and interactions.
-
-Do not introduce new design systems.
-
-When editing, imitate neighboring lessons.
+- **No em dashes** anywhere. Use a spaced hyphen (` - `). This is the single
+  authoritative statement of the rule; other sections reference it.
+- Short paragraphs.
+- Match existing LyfeLabz spacing, colors, typography, cards, and interactions.
+- When editing, imitate neighboring lessons. Do not introduce new design
+  systems.
 
 ---
 
-# STUDENT LANGUAGE
+# LESSON BUILD ARCHITECTURE
 
-Throughout LyfeLabz, prefer language that speaks directly to students.
+A deterministic build turns one canonical instructional source into two
+generated delivery outputs. Applies today only to lessons with a config under
+`app/scripts/lessonBuilder/lessons/`; do not extend it without explicit sprint
+direction.
 
-Avoid teacher-facing terminology whenever a student-centered alternative exists.
+Non-negotiable invariants:
 
-Good:
+- **Edit the canonical source in `lesson-sources/`, never the generated
+  artifacts.** Every instructional change goes through the source so both
+  outputs regenerate. `lesson-sources/` is never served (excluded from Hosting,
+  not in the sitemap).
+- Two generated outputs: **v1 public** `lesson_<slug>.html` at the repo root
+  (preserves the public URL and all legacy v1/classroom behavior); **v2
+  authenticated** `app/lessons/lesson_<slug>.html` (no legacy classroom;
+  consumes platform identity + the certified assessment runtime).
+- Generated artifacts begin with `<!-- GENERATED FILE. -->`. Direct edits to
+  them are prohibited and caught by `lessons:verify` in CI.
+- Markers gate `V1-ONLY` / `V2-ONLY` regions inside the source and are
+  context-strict (HTML vs `<script>`/`<style>`).
+- Build: `npm --prefix app run lessons:build`. Verify:
+  `npm --prefix app run lessons:verify` (rebuilds in memory, fails on drift;
+  part of `npm --prefix app run verify`). A build compares a normalized
+  instructional-equivalence contract between v1 and v2.
 
-* Explore
-* More
-* Connections
-
-Avoid:
-
-* Goals
-* Recall
-* 5Ws
-* Learning Targets
-
-This is the canonical voice standard. Navigation, section labels, and homepage cards all defer to it.
-
----
-
-# COPY STANDARD: CONCEPT CARD LABELS
-
-For explanatory concept cards, use `KEY IDEA: [TERM]` instead of `NAME IT: [TERM]`.
-
-Explanatory cards define or explain a concept; they do not ask students to do anything.
-
-Use `NAME IT` only when students are literally identifying, labeling, classifying, or naming something.
-
----
-
-# GOLD STANDARDS
-
-Grade 6 lesson structure:
-
-* What Is Life
-* Nature of Waves
-* Wave Behavior
-* Digital Signals
-
-Grade 7 lesson structure:
-
-* Earth's Layers
-
-Future Grade 7 lessons should imitate Earth's Layers.
-
----
-
-# CORE BEFORE EXTENSIONS
-
-Build in this order:
-
-1. Core lesson
-2. Refinement
-3. Investigations
-4. Simulations
-5. Games
-6. Extensions
-
-Do not add games, investigations, simulations, or extensions during initial lesson construction.
+Detailed marker syntax, the scanner rejection list, the config schema, the full
+equivalence field list, and the launcher-override contract are in
+`app/scripts/lessonBuilder/LESSON_BUILD_REFERENCE.md`. Read it before editing
+markers, a lesson config, the equivalence logic, or the launcher table.
 
 ---
 
@@ -359,556 +129,269 @@ Do not add games, investigations, simulations, or extensions during initial less
 
 Keep this order unless explicitly instructed otherwise.
 
+**Lesson ending.** Every lesson ends with: Quiz, then More Learning, then
+Connections. The earlier "Go Further" stage is expressed as More Learning
+followed by Connections.
+
+**Build order.** Core lesson, then refinement, investigations, simulations,
+games, extensions. Do not add games, investigations, simulations, or extensions
+during initial lesson construction.
+
 ---
 
-# STANDARDS PRESENTATION
+# STUDENT LANGUAGE
 
-Standards are never displayed as standalone banners.
+Speak directly to students. Avoid teacher-facing terminology when a
+student-centered alternative exists. This is the canonical voice standard;
+navigation, section labels, and homepage cards defer to it.
 
-All instructional page types use the canonical beneath-hero implementation. The required block is:
+- Prefer: Explore, More, Connections.
+- Avoid: Goals, Recall, 5Ws, Learning Targets.
 
-* Learning Science Focus (`.ls-focus`)
+---
 
-This applies to every instructional page type, including:
+# VOCABULARY
 
-* Lessons
-* Investigations
-* Extensions
-* Simulations
-* Engineering Challenges
-* Hidden World pages
-* Games
-* Any future instructional page type
+Vocabulary sections are visually and behaviorally identical across LyfeLabz
+unless there is a clear instructional reason to differ.
 
-## MA STE Standards (`.stem-focus`)
+- Use collapsible vocabulary cards. Only one card open at a time.
+- Right-aligned chevron: `▾` closed, `▴` open.
+- Section introduction is exactly: `Choose a card to see what each word means.`
+  Do not create alternate phrasings.
+- No helper text ("Click or tap to reveal", "In this lesson", or similar). The
+  interaction is communicated through button styling, hover/focus states, the
+  chevron, and the reveal animation only.
+- Cards open/close on click/tap, support keyboard navigation, and update
+  `aria-expanded`.
+- Do not create alternate vocabulary-card implementations without a compelling
+  instructional need.
 
-`.stem-focus` is an additional, optional beneath-hero block. It currently appears on supporting page types (investigations, simulations, games, systems, diseases, extensions) and may remain there.
+---
 
-`.stem-focus` is intentionally NOT present on the 50 core lessons, which remain `.ls-focus`-only. Do not migrate `.stem-focus` into lessons during Repository Hardening. It would only become universal if we later make a deliberate decision to standardize it across every lesson.
+# CONCEPT CARD LABELS
 
-Do not introduce new standards presentation styles.
+- Explanatory cards that define or explain a concept use `KEY IDEA: [TERM]`.
+- Use `NAME IT: [TERM]` only when students literally identify, label, classify,
+  or name something.
 
-The canonical beneath-hero implementation is now the permanent LyfeLabz standard.
+---
+
+# QUIZ RULES
+
+- 10 questions, mixing DOK 1 and DOK 2.
+- Provide answer explanations.
+- Use the existing classroom-mode architecture; do not invent new submission
+  systems. Practice mode must work independently.
+- Favor conceptual understanding over trivia; use plausible distractors.
+- Avoid longest-answer bias: correct answers vary in length; the most detailed
+  answer is not repeatedly correct.
+- Distribute correct answer positions (A, B, C, D) evenly.
+- Avoid "all of the above" / "none of the above" unless necessary.
+
+---
+
+# CONNECTIONS
+
+**Purpose:** reveal how scientific ideas relate and help students discover
+conceptually related lessons. Connections contain only lesson cards (never
+investigations, simulations, extensions, or games).
+
+Connections are **not** navigation: not a checklist, not a progression tracker,
+not "Next Lesson" / "Previous Lesson" / "You might also like". Avoid generic
+wording ("Learn more about", "Continue with", "Next, study", "Explore this
+topic"). Every card should reveal a scientific relationship and make a curious
+student want to click it.
+
+Each card answers one of:
+
+1. **What caused this?** (an earlier idea leads to this lesson)
+2. **What does this explain?** (another lesson explains what students just
+   learned)
+3. **Where does this idea lead?** (this lesson is the foundation for a larger
+   concept)
+
+Example (cause): "Continental Drift introduced the evidence. Plate Tectonics
+explains the mechanism."
+
+**Placeholder.** Every lesson includes a Connections section. If relationships
+are not yet designed, use the standard placeholder titled **Related lessons
+coming soon.** Do not invent curriculum relationships to populate the section;
+the architecture exists before the relationships are defined.
+
+Bridge connections (linking two conceptual narratives) are encouraged but never
+receive separate headings or visual treatment. A lesson is the student's home
+base; Connections invite exploration without implying a required progression.
+
+---
+
+# MORE LEARNING
+
+**Purpose:** help students go deeper into the current lesson. Contains only
+investigations, simulations, extensions, and games. Never place
+lesson-to-lesson navigation here (that is Connections).
+
+Games appear in More Learning but are excluded from the formal LyfeLabz
+curriculum. Do not invent decisions about extensions/simulations that are not
+finalized.
+
+**Editorial standard.** The More Learning introduction previews the scientific
+ideas students are about to explore rather than serving as generic transition
+text. Where appropriate, naturally introduce two to three meaningful scientific
+concepts drawn from the linked experiences, using the canonical gold emphasis
+(`.continue-intro strong { color: var(--gold); }`). Emphasize concepts, not
+verbs, navigation language, or boilerplate. Encourage curiosity, not a mere
+announcement of resources.
 
 ---
 
 # STICKY NAVIGATION
 
 The sticky navigation is a student quick-return menu, not a table of contents.
-
-Its purpose is to help students quickly return to the parts of a lesson they are most likely to revisit while learning or studying.
-
-Use student-facing language only. See STUDENT LANGUAGE.
-
-Do not expose teacher-facing instructional terminology.
-
-Never include navigation items such as:
-
-* Goals
-* Recall
-* Review Previous Learning
-* 5Ws
-* Learning Targets
-* Individual Explore subsections
-
-The standard sticky navigation order is:
-
-* Vocab
-* Explore
-* Quiz
-* More
-* Connections
-
-The Explore link always points to the lesson's first true Explore-phase section.
-
----
-
-# LESSON ENDING STANDARD
-
-Every lesson ends with:
-
-1. Quiz
-2. More Learning
-3. Connections
-
-Maintain this order consistently.
-
-This formalizes the closing of a lesson. The earlier "Go Further" stage is now expressed as More Learning followed by Connections.
-
----
-
-# MORE LEARNING
-
-Purpose:
-
-Help students go deeper into the current lesson.
-
-Contains only:
-
-* Investigations
-* Simulations
-* Extensions
-* Games
-
-Never place lesson-to-lesson navigation inside More Learning.
-
----
-
-# CONNECTIONS
-
-Purpose:
-
-Help students discover conceptually related lessons.
-
-Connections are not:
-
-* a checklist
-* a progression tracker
-* "Next Lesson"
-* "Previous Lesson"
-
-They simply reveal how scientific ideas relate.
-
-Connections contain only lesson cards.
-
-Never include investigations, simulations, extensions, or games.
-
-## Placeholder Connections
-
-Every lesson should include a Connections section.
-
-If curriculum relationships have not yet been designed, include the standard placeholder.
-
-Placeholder title:
-
-**Related lessons coming soon.**
-
-Do not invent curriculum relationships simply to populate the section.
-
-The architecture should exist before the relationships are defined.
-
-## Connections Philosophy
-
-Connections exist to reveal relationships, not provide navigation.
-
-A Connections card should help students understand how scientific ideas fit together.
-
-The purpose is not to say:
-
-* Learn more about...
-* Continue with...
-* Next lesson...
-* You might also like...
-
-Instead, every Connections card should answer one of these questions:
-
-### 1. What caused this?
-
-Show how an earlier scientific idea leads naturally to the current lesson.
-
-Example:
-
-> Continental Drift introduced the evidence.
-> Plate Tectonics explains the mechanism.
-
-### 2. What does this explain?
-
-Show how another lesson helps explain something students just learned.
-
-Example:
-
-> Plate Tectonics explains why Wegener's observations were correct.
-
-### 3. Where does this idea lead?
-
-Show how today's lesson becomes the foundation for a larger scientific concept.
-
-Example:
-
-> Reproductive success provides the mechanism that allows natural selection to occur.
-
-## Writing Principles
-
-Connections should create curiosity.
-
-Students should finish reading a Connections card thinking:
-
-> "I want to understand that."
-
-Avoid generic wording such as:
-
-* Learn more about...
-* Continue with...
-* Next, study...
-* Explore this topic...
-
-Instead, reveal the scientific relationship between the two lessons.
-
-Connections should strengthen the student's mental model of science as one interconnected story rather than a sequence of isolated lessons.
-
-A lesson is the student's home base.
-
-Connections invite exploration and always provide an easy path back to that home base.
-
-They should never function as a checklist or imply a required progression.
-
-When writing a new Connections card, ask:
-
-* Does this reveal a meaningful scientific relationship?
-* Would a curious middle school student naturally want to click it?
-* Does this strengthen the overall narrative of the curriculum?
-
-If the answer is no, rewrite the card until it does.
-
----
-
-# VOCABULARY RULES
-
-Use collapsible vocabulary cards.
-
-Only one card open at a time.
-
-Use right-aligned:
-
-▾ closed
-
-▴ open
-
-No "Click or tap" text.
-
-No "In this lesson" text.
-
-## Vocabulary Standards
-
-Vocabulary sections should be visually and behaviorally identical across LyfeLabz unless there is a clear instructional reason to differ.
-
-This is the canonical standard for all current and future lessons.
-
-### Section Introduction
-
-Every vocabulary section should begin with exactly:
-
-> Choose a card to see what each word means.
-
-Do not create alternate phrasings.
-
-### Vocabulary Cards
-
-Vocabulary cards should not include instructional helper text such as:
-
-* Click to reveal
-* Click or tap to reveal
-* Tap to reveal
-* Click for definition
-* or similar wording.
-
-The interaction should be communicated entirely through the component itself:
-
-* button styling
-* hover/focus states
-* chevron indicator
-* reveal animation
-
-Avoid redundant instructional text.
-
-### Interaction
-
-Vocabulary cards should:
-
-* open and close on click/tap
-* support keyboard navigation
-* update `aria-expanded`
-* allow only one card to be open at a time
-* use the standard LyfeLabz chevron affordance
-
-Do not create alternate vocabulary card implementations unless there is a compelling instructional need.
-
----
-
-# QUIZ RULES
-
-Use 10 questions.
-
-Mix DOK 1 and DOK 2.
-
-Provide answer explanations.
-
-Use existing classroom mode architecture.
-
-Do not invent new submission systems.
-
-Practice mode must work independently.
-
-Avoid longest-answer bias.
-
-Correct answers should vary in length.
-
-Avoid making the most detailed answer the correct answer repeatedly.
-
-Distribute answer positions (A, B, C, D) evenly.
-
-Use plausible distractors.
-
-Avoid "all of the above" and "none of the above" unless necessary.
-
-Favor conceptual understanding over trivia.
-
----
-
-# GRADE 6 CLASSROOM MODE
-
-Teachers:
-
-* Mr. Brown
-* Ms. Gay
-
-Blocks:
-
-A-G
-
-Require:
-
-* student name
-* teacher
-* block
-
-before submission.
-
----
-
-# GRADE 7 CLASSROOM MODE
-
-Teachers:
-
-* Mr. Kankel
-* Mr. Rovner
-
-Blocks:
-
-A-G
-
-Require:
-
-* student name
-* teacher
-* block
-
-before submission.
-
----
-
-# FILE NAMING
-
-Use:
-
-lesson_
-game_
-extension_
-investigation_
-simulation_
-
-Do not mass rename existing files.
-
-If a true cross-grade collision occurs:
-
-{type}_g{grade}_{topic}.html
-
-Examples:
-
-lesson_g7_earths-layers.html
-
-lesson_g8_earths-layers.html
-
-Avoid unnecessary renaming.
-
-Use `g{grade}` (for example `g7`), never a bare number, so it is not read as a lesson number.
-
-## Safe-rename checklist
-
-A rename only happens as a deliberate, redirect-backed change. This is a flat static
-site on GitHub Pages (custom domain via CNAME) with no server-side redirects, so a
-renamed file 404s its old public URL unless a stub is left behind. When a rename is
-warranted, update all of:
-
-1. The file's own `<link rel="canonical">`.
-2. Its entry in `sitemap.xml`.
-3. Every inbound link (index.html catalog, sibling Go Further / continue cards, nav).
-4. A meta-refresh stub left at the old filename to redirect the old URL.
-
----
-
-# INDEX RULES
-
-Do not edit index.html during lesson construction.
-
-Add cards only after a complete unit is built.
-
-Update index in batches.
-
-Lessons should be built so they can later be surfaced through:
-
-* All
-* Grade 6
-* Grade 7
-* Grade 8
-
-without structural changes.
+Use student-facing language only (see STUDENT LANGUAGE). Never expose
+teacher-facing terms (Goals, Recall, Review Previous Learning, 5Ws, Learning
+Targets, or individual Explore subsections).
+
+Standard order: Vocab, Explore, Quiz, More, Connections. The Explore link always
+points to the lesson's first true Explore-phase section.
 
 ---
 
 # HOMEPAGE LESSON CARDS
 
-Lesson cards should communicate the lesson's central scientific question or purpose, not simply list vocabulary.
+Lesson cards communicate the lesson's central scientific question or purpose,
+not a vocabulary list. Ask: what scientific question will this lesson help
+students answer? Neighboring cards within a narrative communicate clearly
+different purposes.
 
-Ask:
+Do not edit `index.html` during lesson construction; add cards in batches only
+after a complete unit is built. Lessons are built so they can later be surfaced
+through All / Grade 6 / Grade 7 / Grade 8 without structural changes.
 
-> What scientific question will this lesson help students answer?
+---
 
-Avoid vocabulary lists whenever possible.
+# STANDARDS PRESENTATION
 
-Within a conceptual narrative, neighboring lesson cards should communicate clearly different purposes.
+Standards are never displayed as standalone banners. Every instructional page
+type (lessons, investigations, extensions, simulations, engineering challenges,
+Hidden World pages, games, and future types) uses the canonical beneath-hero
+block **Learning Science Focus** (`.ls-focus`).
+
+**MA STE Standards (`.stem-focus`)** is an additional, optional beneath-hero
+block. It currently appears on supporting page types (investigations,
+simulations, games, systems, diseases, extensions) and may remain there. It is
+intentionally NOT on the 50 core lessons, which remain `.ls-focus`-only. Do not
+migrate `.stem-focus` into lessons. Do not introduce new standards-presentation
+styles.
 
 ---
 
 # SCIENCE
 
-Use only:
+- Use only the Massachusetts 2016 STE Framework and the source slide decks.
+  Slide decks are source material, not the curriculum.
+- Remove Grade 6 leftovers, Grade 8 content, high-school details, and COVID
+  filler.
+- Prioritize conceptual understanding; avoid unnecessary jargon; prefer models
+  and cause-and-effect explanations.
 
-* Massachusetts 2016 STE Framework
-* source slide decks
-
-Slide decks are source material, not the curriculum.
-
-Remove:
-
-* Grade 6 leftovers
-* Grade 8 content
-* high school details
-* COVID filler
-
-Prioritize conceptual understanding.
-
-Avoid unnecessary jargon.
-
-Prefer models and cause-and-effect explanations.
-
----
-
-# SUPPORTING CONCEPT PRINCIPLE
-
-Standards drive the curriculum.
-
-However, supporting concepts needed to understand a standard are not prohibited simply because they formally appear in another grade.
-
-Students often require ideas that lie outside the exact wording of the performance expectation in order to understand the phenomenon being studied.
-
-Examples:
-
-* Moon phases require understanding rotation, revolution, and orbital motion.
-* Eclipses require understanding relative positions and gravity.
-* Chemical reactions may require qualitative discussion of atoms rearranging.
-* Electricity may reference magnetic and gravitational fields.
-* Earth systems may require concepts that extend beyond the exact wording of the standard.
-
-## Teach liberally.
-
-Lessons may include supporting concepts beyond the exact wording of the performance expectation when those concepts are necessary for conceptual understanding.
-
-## Badge conservatively.
-
-Badges should represent only the standards whose performance expectations are intentionally addressed and assessed.
-
-Mentioning a concept does not mean a lesson claims mastery of that standard.
-
-Supporting content is not curriculum contamination.
-
-Curriculum contamination occurs only when:
-
-* a lesson intentionally teaches and assesses another grade's performance expectation, or
-* a lesson claims another grade's badge.
-
-Judge lessons by what students are expected to demonstrate, not by every idea mentioned.
-
-Avoid removing useful scaffolding simply because it appears elsewhere in the framework.
+**Supporting concepts.** Teach liberally: a lesson may include supporting
+concepts beyond the exact wording of the performance expectation when they are
+necessary for conceptual understanding (e.g., moon phases needing rotation and
+orbital motion). Badge conservatively: badges represent only the standards whose
+performance expectations are intentionally addressed and assessed. Mentioning a
+concept does not claim mastery. Curriculum contamination occurs only when a
+lesson intentionally teaches and assesses another grade's performance
+expectation, or claims another grade's badge. Judge lessons by what students are
+expected to demonstrate; do not remove useful scaffolding just because it
+appears elsewhere in the framework.
 
 ---
 
 # ACCESSIBILITY
 
-Responsive design required.
+Responsive design required. Large click targets. Short paragraphs. High
+contrast. Mobile friendly. Avoid information overload. One vocabulary card open
+at a time.
 
-Large click targets.
+**SVG accessibility.** Decorative SVGs use `aria-hidden="true"`. An SVG that
+communicates scientific or engineering information uses `role="img"` with a
+concise educational `aria-label` that explains only the instructional purpose
+of the graphic (not its artistic style or appearance).
 
-Short paragraphs.
+**Canonical responsive breakpoints.** Three: 480px (single-column phone), 720px
+(tablet portrait / split-screen Chromebook), 960px (tablet landscape / small
+laptop). Two supporting queries: `@media (pointer: coarse)` (touch-target
+minimums) and `@media (orientation: landscape) and (max-width: 950px)`
+(notch-clearing padding). Existing per-lesson breakpoints are preserved; do not
+rewrite the repository to converge. New responsive rules adopt the canonical
+values.
 
-High contrast.
-
-Mobile friendly.
-
-Avoid information overload.
-
-One vocabulary card open at a time.
-
----
-
-# CANONICAL RESPONSIVE BREAKPOINTS
-
-Repository Hardening Pass 4 established a shared vocabulary for future mobile work.
-
-Three canonical breakpoints:
-
-* 480px, single-column phone
-* 720px, tablet portrait and split-screen Chromebook
-* 960px, tablet landscape and small laptop
-
-Two supporting queries:
-
-* `@media (pointer: coarse)`, touch-target minimums
-* `@media (orientation: landscape) and (max-width: 950px)`, notch-clearing padding on iPhone landscape
-
-Existing per-lesson breakpoints (380, 540, 600, 640, 700, 720, 760, 860) are preserved.
-
-Do not rewrite the repository to converge on the canonical breakpoints.
-
-New responsive rules should adopt the canonical values. Existing rules migrate gradually during unrelated future edits.
+**Canonical mobile stylesheet.** Every page loads a shared
+`<style id="mobile-canonical">` block immediately after
+`<style id="a11y-canonical">`. It owns safe-area padding, coarse-pointer
+touch-target minimums, tap-highlight normalization, the `.table-scroll` utility,
+and sticky quiz-progress offset behavior. Do not duplicate this behavior with
+page-specific rules; extend the canonical block for repository-wide changes.
 
 ---
 
-# CANONICAL MOBILE STYLESHEET
+# FILE NAMING
 
-Every page in the repository loads a shared `<style id="mobile-canonical">` block immediately after `<style id="a11y-canonical">`.
+Use prefixes: `lesson_`, `game_`, `extension_`, `investigation_`, `simulation_`.
+Do not mass rename existing files. Avoid unnecessary renaming.
 
-This block owns:
+If a true cross-grade collision occurs, use `{type}_g{grade}_{topic}.html` (for
+example `lesson_g7_earths-layers.html`). Use `g{grade}` (e.g. `g7`), never a
+bare number, so it is not read as a lesson number.
 
-* safe-area padding for notched devices
-* touch-target minimums on coarse-pointer devices
-* tap-highlight normalization
-* the `.table-scroll` utility for wide tables
-* sticky quiz progress offset behavior
+**Safe-rename checklist.** This is a flat static site on GitHub Pages / Firebase
+Hosting (custom domain via CNAME) with no server-side redirects, so a renamed
+file 404s its old URL unless a stub is left behind. A rename is a deliberate,
+redirect-backed change that updates all of:
 
-Do not add page-specific mobile rules that duplicate canonical behavior.
+1. The file's own `<link rel="canonical">`.
+2. Its entry in `sitemap.xml`.
+3. Every inbound link (index.html catalog, sibling Go Further / continue cards,
+   nav).
+4. A meta-refresh stub left at the old filename to redirect the old URL.
 
-If new mobile behavior needs to apply repository-wide, extend the canonical block rather than adding one-off implementations.
+Lesson identifiers derived from filenames are referenced by assignments and
+submissions; treat the safe-rename checklist as authoritative.
 
 ---
 
-# GRADE 7 ARCHITECTURE
+# CLASSROOM MODE (legacy v1)
 
-Theme:
+v1 lessons require student name, teacher, and block before submission, using the
+existing classroom-mode architecture.
 
-Systems and Cycles
+- **Grade 6:** teachers Mr. Brown, Ms. Gay. Blocks A-G.
+- **Grade 7:** teachers Mr. Kankel, Mr. Rovner. Blocks A-G.
 
-Unit order:
+---
 
-1. Earth Systems
-2. Water Systems
-3. Human Impacts
-4. Ecosystems
-5. Ecosystem Stability
-6. Energy Systems
-7. Engineering Systems
+# GOLD STANDARDS AND GRADE 7 ARCHITECTURE
 
-Build lessons before extensions.
+Grade 6 gold-standard lesson structure: What Is Life, Nature of Waves, Wave
+Behavior, Digital Signals. Grade 7 gold standard: Earth's Layers. Future Grade 7
+lessons imitate Earth's Layers.
+
+Grade 7 theme: Systems and Cycles. Unit order: Earth Systems, Water Systems,
+Human Impacts, Ecosystems, Ecosystem Stability, Energy Systems, Engineering
+Systems. Build lessons before extensions.
+
+---
+
+# NARRATIVE PHILOSOPHY
+
+LyfeLabz is organized around conceptual narratives, not traditional units.
+Lessons are the home base; narratives connect related scientific ideas.
+Connections encourage students to revisit and explore related lessons without a
+sense of required progression. Bridge connections that naturally join two
+narratives are encouraged but never receive separate headings or visual
+treatment; students should experience a connected curriculum without noticing
+any special distinction.
 
 ---
 
@@ -916,60 +399,7 @@ Build lessons before extensions.
 
 After every change:
 
-Verify in browser.
-
-Check console errors.
-
-Test interactions.
-
-Confirm responsive behavior.
-
-Search for em dashes.
-
-Report exactly what changed.
-
-Do not claim verification that was not performed.
-
----
-
-# NARRATIVE PHILOSOPHY
-
-LyfeLabz is organized around conceptual narratives, not traditional units.
-
-Lessons are the home base.
-
-Narratives connect related scientific ideas.
-
-Connections should encourage students to:
-
-* revisit ideas
-* connect concepts
-* explore related lessons
-
-without creating a sense of required progression.
-
-Bridge connections are encouraged when they naturally connect two conceptual narratives.
-
-Bridge connections should never receive separate headings or visual treatment.
-
-Students should experience a connected curriculum without being aware of any special distinction.
-
----
-
-# PHILOSOPHY
-
-Standards drive curriculum.
-
-Slide decks are source material, not the curriculum.
-
-Preserve creativity.
-
-Favor consistency over novelty.
-
-Build slowly.
-
-Avoid unnecessary complexity.
-
-The best lesson is not the one with the most features.
-
-The best lesson is the one students can successfully learn from.
+- Verify in the browser; check console errors; test interactions; confirm
+  responsive behavior.
+- Sweep for em dashes (see STYLE) and replace any with a spaced hyphen.
+- Report exactly what changed. Do not claim verification that was not performed.
