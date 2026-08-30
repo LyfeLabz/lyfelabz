@@ -28,6 +28,14 @@
     ],
     "rewrites": [
       {
+        "source": "/privacy",
+        "destination": "/about_privacy.html"
+      },
+      {
+        "source": "/terms",
+        "destination": "/about_terms.html"
+      },
+      {
         "source": "/app/**",
         "destination": "/app/index.html"
       }

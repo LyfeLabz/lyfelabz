@@ -74,6 +74,40 @@ export function renderReturnLink(mount: HTMLElement): HTMLAnchorElement {
   return a;
 }
 
+// Sprint 29B: quiet tertiary legal links for the unauthenticated
+// authentication surface. Rendered as a contentinfo footer so the Privacy
+// Policy and Terms of Use are reachable from the /app sign-in entry point
+// (and by a Google OAuth reviewer) without touching the locked Teacher
+// Workspace navigation or shell footer. The links point to the stable
+// public routes served by Firebase Hosting (/privacy, /terms).
+export function renderLegalLinks(mount: HTMLElement): HTMLElement {
+  const nav = doc(mount).createElement("nav");
+  nav.className = "auth-legal-links";
+  nav.setAttribute("aria-label", "Legal");
+  nav.setAttribute("data-testid", "legal-links");
+
+  const privacy = doc(mount).createElement("a");
+  privacy.href = "/privacy";
+  privacy.textContent = "Privacy Policy";
+  privacy.setAttribute("data-testid", "legal-privacy");
+  nav.appendChild(privacy);
+
+  const sep = doc(mount).createElement("span");
+  sep.setAttribute("aria-hidden", "true");
+  sep.className = "auth-legal-sep";
+  sep.textContent = " · ";
+  nav.appendChild(sep);
+
+  const terms = doc(mount).createElement("a");
+  terms.href = "/terms";
+  terms.textContent = "Terms of Use";
+  terms.setAttribute("data-testid", "legal-terms");
+  nav.appendChild(terms);
+
+  mount.appendChild(nav);
+  return nav;
+}
+
 export function renderSignOut(
   mount: HTMLElement,
   onSignOut: OnSignOut,

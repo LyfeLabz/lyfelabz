@@ -4,7 +4,7 @@
   "generatedBy": "app/scripts/build-curriculum-manifest.cjs",
   "canonicalSource": "index.html",
   "canonicalSourceRelativeToApp": "../index.html",
-  "canonicalSourceSha256": "20a1ad33e6f71787ce099b06fbe6f783d1b97e1351c9bcdc6db6f5f21b60d546",
+  "canonicalSourceSha256": "a2e30af8d603dd77b22fa2dc9335c308d9f2668e32d7e9d604105390ffc59183",
   "doNotEditByHand": "This file is generated from the root canonical index.html. Do not edit by hand. Regenerate with `npm run curriculum:build` inside app/.",
   "totals": {
     "unitCount": 50,

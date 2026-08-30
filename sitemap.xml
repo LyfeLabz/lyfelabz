@@ -599,8 +599,14 @@
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://lyfelabz.com/about_privacy.html</loc>
-    <lastmod>2026-05-01</lastmod>
+    <loc>https://lyfelabz.com/privacy</loc>
+    <lastmod>2026-08-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://lyfelabz.com/terms</loc>
+    <lastmod>2026-08-30</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

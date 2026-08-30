@@ -97,6 +97,24 @@ describe("signed-out surface", () => {
     expect(mount.querySelector("[data-testid=sign-out]")).toBeNull();
   });
 
+  // Sprint 29B: the sign-in surface is the shared /app entry point (and the
+  // page a Google OAuth reviewer lands on), so it carries the quiet Privacy
+  // Policy + Terms of Use links to the stable public legal routes.
+  test("renders quiet Privacy Policy and Terms of Use links to the public legal routes", () => {
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.unauthenticated(freeze<Session>({ kind: "unauthenticated" }), mount);
+    const privacy = mount.querySelector<HTMLAnchorElement>(
+      "[data-testid=legal-privacy]",
+    );
+    const terms = mount.querySelector<HTMLAnchorElement>(
+      "[data-testid=legal-terms]",
+    );
+    expect(privacy?.getAttribute("href")).toBe("/privacy");
+    expect(terms?.getAttribute("href")).toBe("/terms");
+  });
+
   test("clicking the sign-in button calls onSignIn exactly once and does not call bootstrap directly", async () => {
     const { deps, spies } = makeDeps();
     const table = createRouteTable(deps);

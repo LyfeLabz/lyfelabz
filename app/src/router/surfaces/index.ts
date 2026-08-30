@@ -38,6 +38,7 @@ import {
   renderErrorBanner,
   renderHeader,
   renderHeadline,
+  renderLegalLinks,
   renderLoadingIndicator,
   renderParagraph,
   renderPrimaryButton,
@@ -196,6 +197,11 @@ export const makeSignedOutSurface =
     );
     btn.setAttribute("aria-label", "Continue with Google");
     renderReturnLink(mount);
+    // Sprint 29B: quiet Privacy Policy + Terms of Use links on the sign-in
+    // surface (the shared teacher/student entry point). This is the /app
+    // legal-link integration; the locked Teacher Workspace navigation and the
+    // no-links shell footer are intentionally left unchanged.
+    renderLegalLinks(mount);
   };
 
 function describeSignInError(err: unknown): string {
