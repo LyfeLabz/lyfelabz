@@ -243,6 +243,176 @@ describe("provisioned surface", () => {
   });
 });
 
+// Sprint 29F: the provisioned onboarding surface presents Teacher and Student
+// as distinct role choices and reveals only the selected workflow. These tests
+// pin the progressive-disclosure behavior, the LyfeLabz header, and the
+// accessibility state on the role controls. The workflow-wiring tests above and
+// below (which interact with the forms directly) continue to pass because both
+// sections remain in the DOM; they are simply hidden until a role is chosen.
+describe("provisioned surface - role selector (Sprint 29F)", () => {
+  const provSession = (): Session =>
+    freeze<Session>({ kind: "provisioned", uid: "u1" });
+
+  const render = (): HTMLElement => {
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    return mount;
+  };
+
+  test("renders the LyfeLabz onboarding header and welcome headline", () => {
+    const mount = render();
+    expect(mount.querySelector(".auth-brand")?.textContent).toBe("LYFELABZ");
+    expect(mount.querySelector("h1")?.textContent).toBe("Welcome to LyfeLabz.");
+  });
+
+  test("renders Teacher and Student role choices with the shortened labels", () => {
+    const mount = render();
+    const teacherChoice = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=role-choice-teacher]",
+    );
+    const studentChoice = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=role-choice-student]",
+    );
+    expect(teacherChoice).not.toBeNull();
+    expect(studentChoice).not.toBeNull();
+    expect(
+      teacherChoice?.querySelector(".role-choice-title")?.textContent,
+    ).toBe("Teacher");
+    expect(
+      studentChoice?.querySelector(".role-choice-title")?.textContent,
+    ).toBe("Student");
+    // The first-person role-card wording was removed.
+    expect(mount.textContent).not.toContain("I am a teacher.");
+    expect(mount.textContent).not.toContain("I am a student.");
+    // Tightened instruction copy.
+    expect(mount.textContent).toContain(
+      "Choose how you'll use LyfeLabz to continue.",
+    );
+  });
+
+  test("initial state hides both complete workflows", () => {
+    const mount = render();
+    const teacher = mount.querySelector<HTMLElement>(
+      "[data-testid=teacher-section]",
+    );
+    const student = mount.querySelector<HTMLElement>(
+      "[data-testid=student-section]",
+    );
+    expect(teacher?.hidden).toBe(true);
+    expect(student?.hidden).toBe(true);
+    expect(
+      mount.querySelector<HTMLButtonElement>(
+        "[data-testid=role-choice-teacher]",
+      )?.getAttribute("aria-expanded"),
+    ).toBe("false");
+    expect(
+      mount.querySelector<HTMLButtonElement>(
+        "[data-testid=role-choice-student]",
+      )?.getAttribute("aria-expanded"),
+    ).toBe("false");
+  });
+
+  test("selecting Teacher reveals the teacher workflow and hides the student workflow", () => {
+    const mount = render();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-teacher]")
+      ?.click();
+    const teacher = mount.querySelector<HTMLElement>(
+      "[data-testid=teacher-section]",
+    );
+    const student = mount.querySelector<HTMLElement>(
+      "[data-testid=student-section]",
+    );
+    expect(teacher?.hidden).toBe(false);
+    expect(student?.hidden).toBe(true);
+    // Teacher verification controls are reachable once revealed.
+    expect(mount.querySelector("[data-testid=display-name]")).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=request-verification]"),
+    ).not.toBeNull();
+  });
+
+  test("selecting Student reveals the student workflow and hides the teacher workflow", () => {
+    const mount = render();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-student]")
+      ?.click();
+    const teacher = mount.querySelector<HTMLElement>(
+      "[data-testid=teacher-section]",
+    );
+    const student = mount.querySelector<HTMLElement>(
+      "[data-testid=student-section]",
+    );
+    expect(student?.hidden).toBe(false);
+    expect(teacher?.hidden).toBe(true);
+    // Both enrollment mechanisms remain available under Student.
+    expect(mount.querySelector("[data-testid=join-code]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=join-class]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=lms-onboarding]")).not.toBeNull();
+  });
+
+  test("switching roles without reload hides the previously shown workflow and updates aria state", () => {
+    const mount = render();
+    const teacherChoice = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=role-choice-teacher]",
+    );
+    const studentChoice = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=role-choice-student]",
+    );
+    const teacher = mount.querySelector<HTMLElement>(
+      "[data-testid=teacher-section]",
+    );
+    const student = mount.querySelector<HTMLElement>(
+      "[data-testid=student-section]",
+    );
+    teacherChoice?.click();
+    expect(teacher?.hidden).toBe(false);
+    expect(student?.hidden).toBe(true);
+    expect(teacherChoice?.getAttribute("aria-expanded")).toBe("true");
+    expect(teacherChoice?.getAttribute("aria-pressed")).toBe("true");
+    studentChoice?.click();
+    expect(student?.hidden).toBe(false);
+    expect(teacher?.hidden).toBe(true);
+    expect(studentChoice?.getAttribute("aria-expanded")).toBe("true");
+    expect(teacherChoice?.getAttribute("aria-expanded")).toBe("false");
+    expect(teacherChoice?.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  test("role choices are semantic buttons that control their region", () => {
+    const mount = render();
+    const teacherChoice = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=role-choice-teacher]",
+    );
+    const teacher = mount.querySelector<HTMLElement>(
+      "[data-testid=teacher-section]",
+    );
+    expect(teacherChoice?.tagName).toBe("BUTTON");
+    expect(teacherChoice?.getAttribute("aria-controls")).toBe(teacher?.id);
+    expect(teacher?.getAttribute("role")).toBe("region");
+  });
+
+  test("switching roles preserves fields the learner already typed", () => {
+    const mount = render();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-teacher]")
+      ?.click();
+    (mount.querySelector("[data-testid=display-name]") as HTMLInputElement).value =
+      "Ada";
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-student]")
+      ?.click();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-teacher]")
+      ?.click();
+    expect(
+      (mount.querySelector("[data-testid=display-name]") as HTMLInputElement)
+        .value,
+    ).toBe("Ada");
+  });
+});
+
 describe("provisioned surface - student branch", () => {
   const provSession = (): Session =>
     freeze<Session>({ kind: "provisioned", uid: "u1" });
@@ -459,7 +629,7 @@ describe("provisioned surface - Google Classroom (LMS) branch", () => {
   const provSession = (): Session =>
     freeze<Session>({ kind: "provisioned", uid: "u1" });
 
-  test("renders the Google Classroom affordance alongside the manual join-code form", () => {
+  test("renders the Google Classroom affordance as a distinct enrollment method", () => {
     const { deps } = makeDeps();
     const table = createRouteTable(deps);
     const mount = mkMount();
@@ -467,9 +637,10 @@ describe("provisioned surface - Google Classroom (LMS) branch", () => {
     // Manual path preserved.
     expect(mount.querySelector("[data-testid=join-class]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=join-code]")).not.toBeNull();
-    // New LMS affordance present.
+    // LMS affordance present, now as its own method choice + action.
     expect(mount.querySelector("[data-testid=lms-onboarding]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=lms-divider]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=method-choice-google]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=method-choice-code]")).not.toBeNull();
   });
 
   test("on click with no typed name, calls the LMS callable once with an empty payload and schedules a refresh", async () => {
@@ -671,6 +842,150 @@ describe("provisioned surface - Google Classroom (LMS) branch", () => {
     await Promise.resolve();
     expect(spies.refresh).toHaveBeenCalledTimes(1);
     jest.useRealTimers();
+  });
+});
+
+// Sprint 29F: inside the selected Student workflow, a secondary
+// enrollment-method selector (Class code vs Google Classroom) reveals only
+// the chosen method's action. Manual and LMS callable wiring are unchanged.
+describe("provisioned surface - Student enrollment method (Sprint 29F)", () => {
+  const provSession = (): Session =>
+    freeze<Session>({ kind: "provisioned", uid: "u1" });
+
+  const renderStudent = (): HTMLElement => {
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    // Reveal the Student workflow first (primary role choice).
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-student]")
+      ?.click();
+    return mount;
+  };
+
+  const el = (mount: HTMLElement, id: string): HTMLElement | null =>
+    mount.querySelector<HTMLElement>(`[data-testid=${id}]`);
+
+  test("Student workflow exposes both enrollment-method choices", () => {
+    const mount = renderStudent();
+    expect(el(mount, "student-section")?.hidden).toBe(false);
+    expect(el(mount, "method-choice-code")).not.toBeNull();
+    expect(el(mount, "method-choice-google")).not.toBeNull();
+  });
+
+  test("defaults to Class code and does not show both method actions at once", () => {
+    const mount = renderStudent();
+    expect(el(mount, "method-code")?.hidden).toBe(false);
+    expect(el(mount, "method-google")?.hidden).toBe(true);
+    // aria reflects the default selection.
+    expect(
+      el(mount, "method-choice-code")?.getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(
+      el(mount, "method-choice-google")?.getAttribute("aria-expanded"),
+    ).toBe("false");
+  });
+
+  test("Class code method reveals name, join code, hint, and Join class", () => {
+    const mount = renderStudent();
+    const code = el(mount, "method-code")!;
+    expect(code.querySelector("[data-testid=student-display-name]")).not.toBeNull();
+    expect(code.querySelector("[data-testid=join-code]")).not.toBeNull();
+    expect(code.querySelector("#join-code-hint")).not.toBeNull();
+    expect(code.querySelector("[data-testid=join-class]")).not.toBeNull();
+  });
+
+  test("selecting Google Classroom reveals only the LMS action", () => {
+    const mount = renderStudent();
+    el(mount, "method-choice-google")?.click();
+    expect(el(mount, "method-google")?.hidden).toBe(false);
+    expect(el(mount, "method-code")?.hidden).toBe(true);
+    const google = el(mount, "method-google")!;
+    expect(google.querySelector("[data-testid=lms-onboarding]")).not.toBeNull();
+    expect(
+      el(mount, "method-choice-google")?.getAttribute("aria-pressed"),
+    ).toBe("true");
+  });
+
+  test("switching methods works without reload and updates aria state", () => {
+    const mount = renderStudent();
+    el(mount, "method-choice-google")?.click();
+    expect(el(mount, "method-google")?.hidden).toBe(false);
+    el(mount, "method-choice-code")?.click();
+    expect(el(mount, "method-code")?.hidden).toBe(false);
+    expect(el(mount, "method-google")?.hidden).toBe(true);
+    expect(
+      el(mount, "method-choice-code")?.getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      el(mount, "method-choice-google")?.getAttribute("aria-pressed"),
+    ).toBe("false");
+  });
+
+  test("typed class-code values survive switching method away and back", () => {
+    const mount = renderStudent();
+    (el(mount, "student-display-name") as HTMLInputElement).value = "Ada";
+    (el(mount, "join-code") as HTMLInputElement).value = "ABCD1234";
+    el(mount, "method-choice-google")?.click();
+    el(mount, "method-choice-code")?.click();
+    expect((el(mount, "student-display-name") as HTMLInputElement).value).toBe(
+      "Ada",
+    );
+    expect((el(mount, "join-code") as HTMLInputElement).value).toBe("ABCD1234");
+  });
+
+  test("method choices are semantic buttons that control their panels", () => {
+    const mount = renderStudent();
+    const codeChoice = el(mount, "method-choice-code") as HTMLButtonElement;
+    const googleChoice = el(mount, "method-choice-google") as HTMLButtonElement;
+    expect(codeChoice.tagName).toBe("BUTTON");
+    expect(googleChoice.tagName).toBe("BUTTON");
+    expect(codeChoice.getAttribute("aria-controls")).toBe(el(mount, "method-code")?.id);
+    expect(googleChoice.getAttribute("aria-controls")).toBe(
+      el(mount, "method-google")?.id,
+    );
+  });
+
+  test("manual join callable wiring is unchanged under the Class code method", async () => {
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-student]")
+      ?.click();
+    (mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement).value =
+      "Ada";
+    (mount.querySelector("[data-testid=join-code]") as HTMLInputElement).value =
+      "ABCD1234";
+    mount.querySelector<HTMLButtonElement>("[data-testid=join-class]")?.click();
+    await flush();
+    expect(spies.studentOnboarding).toHaveBeenCalledTimes(1);
+    expect(spies.studentOnboarding).toHaveBeenCalledWith({
+      displayName: "Ada",
+      joinCode: "ABCD1234",
+    });
+    expect(spies.studentLmsOnboarding).not.toHaveBeenCalled();
+  });
+
+  test("Google Classroom callable wiring is unchanged under the Google method", async () => {
+    const { deps, spies } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.provisioned(provSession(), mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-student]")
+      ?.click();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=method-choice-google]")
+      ?.click();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=lms-onboarding]")
+      ?.click();
+    await flush();
+    expect(spies.studentLmsOnboarding).toHaveBeenCalledTimes(1);
+    expect(spies.studentOnboarding).not.toHaveBeenCalled();
   });
 });
 

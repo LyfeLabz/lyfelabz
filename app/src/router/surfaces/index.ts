@@ -231,26 +231,104 @@ export const makeProvisionedSurface =
     renderHeadline(mount, "Welcome to LyfeLabz.");
     renderParagraph(
       mount,
-      "Your account has been created. Choose the option below that describes you.",
+      "Choose how you'll use LyfeLabz to continue.",
     );
+
+    // ------------------------------------------------------------
+    // Role selector (Sprint 29F onboarding UX correction).
+    //
+    // The two role workflows below (teacher verification, student
+    // enrollment) are each preserved verbatim, including every existing
+    // data-testid and callable wiring. What changed is presentation: on
+    // arrival neither complete form is shown. The learner first picks a
+    // role from two substantial, keyboard-operable controls, and only the
+    // selected workflow is revealed. Selection is reflected with
+    // aria-expanded and aria-pressed (not color alone), and focus moves
+    // into the revealed region so assistive technology announces the new
+    // content. Switching roles hides the previous workflow without a
+    // reload and without clearing any fields the learner already typed.
+    // ------------------------------------------------------------
+    const TEACHER_SECTION_ID = "onboarding-teacher-section";
+    const STUDENT_SECTION_ID = "onboarding-student-section";
+
+    const roleSelector = doc.createElement("div");
+    roleSelector.className = "role-selector";
+    roleSelector.setAttribute("role", "group");
+    roleSelector.setAttribute("aria-label", "Choose your role");
+    roleSelector.setAttribute("data-testid", "role-selector");
+
+    const makeRoleChoice = (
+      testId: string,
+      controls: string,
+      title: string,
+      description: string,
+    ): HTMLButtonElement => {
+      const choice = doc.createElement("button");
+      choice.type = "button";
+      choice.className = "role-choice";
+      choice.setAttribute("data-testid", testId);
+      choice.setAttribute("aria-controls", controls);
+      choice.setAttribute("aria-expanded", "false");
+      choice.setAttribute("aria-pressed", "false");
+      const titleEl = doc.createElement("span");
+      titleEl.className = "role-choice-title";
+      titleEl.textContent = title;
+      const descEl = doc.createElement("span");
+      descEl.className = "role-choice-desc";
+      descEl.textContent = description;
+      choice.appendChild(titleEl);
+      choice.appendChild(descEl);
+      roleSelector.appendChild(choice);
+      return choice;
+    };
+
+    const teacherChoice = makeRoleChoice(
+      "role-choice-teacher",
+      TEACHER_SECTION_ID,
+      "Teacher",
+      "Verify your school to create and assign lessons.",
+    );
+    const studentChoice = makeRoleChoice(
+      "role-choice-student",
+      STUDENT_SECTION_ID,
+      "Student",
+      "Join your class with a code or Google Classroom.",
+    );
+    mount.appendChild(roleSelector);
 
     // ------------------------------------------------------------
     // Teacher path (preserved verbatim). Existing test IDs stay put.
     // ------------------------------------------------------------
     const teacherSection = doc.createElement("section");
     teacherSection.setAttribute("data-testid", "teacher-section");
-    teacherSection.className = "shell-section";
+    teacherSection.className = "shell-section workflow-panel";
+    teacherSection.id = TEACHER_SECTION_ID;
+    teacherSection.hidden = true;
+    teacherSection.setAttribute("role", "region");
+    teacherSection.setAttribute("aria-labelledby", "onboarding-teacher-heading");
+
+    // Left context column: heading + explanatory copy. Kept narrow so it
+    // does not consume the full width above the fields.
+    const teacherContext = doc.createElement("div");
+    teacherContext.className = "workflow-context";
     const teacherHead = doc.createElement("h2");
-    teacherHead.textContent = "I am a teacher.";
-    teacherSection.appendChild(teacherHead);
+    teacherHead.id = "onboarding-teacher-heading";
+    teacherHead.textContent = "Teacher verification";
+    teacherContext.appendChild(teacherHead);
     const teacherIntro = doc.createElement("p");
     teacherIntro.textContent =
-      "A LyfeLabz administrator will verify that you teach at your school. Verification usually takes one school day.";
-    teacherSection.appendChild(teacherIntro);
+      "A LyfeLabz administrator will verify that you teach at your school, usually within one school day.";
+    teacherContext.appendChild(teacherIntro);
+    teacherSection.appendChild(teacherContext);
+
+    // Right action column: the two fields sit side by side on desktop, then
+    // the submit control beneath them.
+    const teacherAction = doc.createElement("div");
+    teacherAction.className = "workflow-action";
 
     const form = doc.createElement("form");
     form.setAttribute("data-testid", "verification-form");
-    form.className = "shell-form";
+    form.className = "shell-form workflow-fields";
 
     const nameLabel = doc.createElement("label");
     nameLabel.textContent = "Your name";
@@ -271,14 +349,14 @@ export const makeProvisionedSurface =
 
     form.appendChild(nameLabel);
     form.appendChild(schoolLabel);
-    teacherSection.appendChild(form);
+    teacherAction.appendChild(form);
 
     const teacherErrorHost = doc.createElement("div");
     teacherErrorHost.setAttribute("data-testid", "teacher-error-host");
-    teacherSection.appendChild(teacherErrorHost);
+    teacherAction.appendChild(teacherErrorHost);
 
     const teacherBtn = renderPrimaryButton(
-      teacherSection,
+      teacherAction,
       "Request Verification",
       async () => {
         const displayName = nameInput.value.trim();
@@ -314,8 +392,9 @@ export const makeProvisionedSurface =
     const teacherBannerMirror = doc.createElement("div");
     teacherBannerMirror.setAttribute("data-testid", "teacher-error-mirror");
     teacherBannerMirror.style.display = "none";
-    teacherSection.appendChild(teacherBannerMirror);
+    teacherAction.appendChild(teacherBannerMirror);
 
+    teacherSection.appendChild(teacherAction);
     mount.appendChild(teacherSection);
 
     // ------------------------------------------------------------
@@ -323,18 +402,74 @@ export const makeProvisionedSurface =
     // ------------------------------------------------------------
     const studentSection = doc.createElement("section");
     studentSection.setAttribute("data-testid", "student-section");
-    studentSection.className = "shell-section";
+    studentSection.className = "shell-section workflow-panel";
+    studentSection.id = STUDENT_SECTION_ID;
+    studentSection.hidden = true;
+    studentSection.setAttribute("role", "region");
+    studentSection.setAttribute("aria-labelledby", "onboarding-student-heading");
+
+    const studentContext = doc.createElement("div");
+    studentContext.className = "workflow-context";
     const studentHead = doc.createElement("h2");
-    studentHead.textContent = "I am a student.";
-    studentSection.appendChild(studentHead);
-    const studentIntro = doc.createElement("p");
-    studentIntro.textContent =
-      "Enter your name and the class join code your teacher shared with you. If your teacher uses Google Classroom, use the Google Classroom option below instead.";
-    studentSection.appendChild(studentIntro);
+    studentHead.id = "onboarding-student-heading";
+    studentHead.textContent = "Join your class";
+    studentContext.appendChild(studentHead);
+    // The Class code / Google Classroom selector directly below the heading
+    // already communicates the choice, so no intro sentence is needed here.
+    studentSection.appendChild(studentContext);
+
+    const studentAction = doc.createElement("div");
+    studentAction.className = "workflow-action";
+
+    // Secondary enrollment-method selector, subordinate to the primary
+    // Teacher/Student choice. A student joins one of two ways: a class code
+    // or Google Classroom. Only the selected method's action is revealed;
+    // selecting a method never triggers enrollment.
+    const methodSelector = doc.createElement("div");
+    methodSelector.className = "method-selector";
+    methodSelector.setAttribute("role", "group");
+    methodSelector.setAttribute("aria-label", "Choose how you were invited");
+    methodSelector.setAttribute("data-testid", "method-selector");
+
+    const makeMethodChoice = (
+      testId: string,
+      controls: string,
+      label: string,
+    ): HTMLButtonElement => {
+      const b = doc.createElement("button");
+      b.type = "button";
+      b.className = "method-choice";
+      b.setAttribute("data-testid", testId);
+      b.setAttribute("aria-controls", controls);
+      b.setAttribute("aria-expanded", "false");
+      b.setAttribute("aria-pressed", "false");
+      b.textContent = label;
+      methodSelector.appendChild(b);
+      return b;
+    };
+    const codeMethodChoice = makeMethodChoice(
+      "method-choice-code",
+      "student-code-method",
+      "Class code",
+    );
+    const googleMethodChoice = makeMethodChoice(
+      "method-choice-google",
+      "student-google-method",
+      "Google Classroom",
+    );
+    studentAction.appendChild(methodSelector);
+
+    // Class code method panel.
+    const codeMethod = doc.createElement("div");
+    codeMethod.className = "method-panel";
+    codeMethod.id = "student-code-method";
+    codeMethod.setAttribute("role", "group");
+    codeMethod.setAttribute("aria-label", "Class code");
+    codeMethod.setAttribute("data-testid", "method-code");
 
     const studentForm = doc.createElement("form");
     studentForm.setAttribute("data-testid", "student-form");
-    studentForm.className = "shell-form";
+    studentForm.className = "shell-form workflow-fields";
 
     const sNameLabel = doc.createElement("label");
     sNameLabel.textContent = "Your name";
@@ -367,20 +502,19 @@ export const makeProvisionedSurface =
     const codeHint = doc.createElement("span");
     codeHint.id = "join-code-hint";
     codeHint.className = "shell-small";
-    codeHint.textContent =
-      "Eight characters, made from the digits 0-9 and the letters A-F.";
+    codeHint.textContent = "8 characters: 0-9 and A-F.";
     codeLabel.appendChild(codeHint);
 
     studentForm.appendChild(sNameLabel);
     studentForm.appendChild(codeLabel);
-    studentSection.appendChild(studentForm);
+    codeMethod.appendChild(studentForm);
 
     const studentErrorHost = doc.createElement("div");
     studentErrorHost.setAttribute("data-testid", "student-error-host");
-    studentSection.appendChild(studentErrorHost);
+    codeMethod.appendChild(studentErrorHost);
 
     const studentBtn = renderPrimaryButton(
-      studentSection,
+      codeMethod,
       "Join class",
       async () => {
         const displayName = sNameInput.value.trim();
@@ -436,29 +570,37 @@ export const makeProvisionedSurface =
       "join-class",
     );
     studentBtn.setAttribute("aria-label", "Join class");
+    studentAction.appendChild(codeMethod);
 
     // ------------------------------------------------------------
-    // Google Classroom (LMS) path. A distinct affordance beneath the
-    // manual join-code form. The two trust boundaries stay separate: the
-    // manual path requires a valid join code; the LMS path requires a
-    // server-confirmed LMS enrollment and asserts nothing about roster,
-    // class, school, or Google identity. The student never types or
-    // selects a class or a school here. Errors render into a dedicated
-    // host so the manual and LMS flows never contaminate each other.
+    // Google Classroom (LMS) method panel. The two trust boundaries stay
+    // separate: the manual path requires a valid join code; the LMS path
+    // requires a server-confirmed LMS enrollment and asserts nothing about
+    // roster, class, school, or Google identity. The student never types or
+    // selects a class or a school here. Errors render into a dedicated host
+    // so the manual and LMS flows never contaminate each other.
     // ------------------------------------------------------------
-    const lmsDivider = doc.createElement("p");
-    lmsDivider.className = "shell-small";
-    lmsDivider.setAttribute("data-testid", "lms-divider");
-    lmsDivider.textContent = "Or, if your teacher uses Google Classroom:";
-    studentSection.appendChild(lmsDivider);
+    const googleMethod = doc.createElement("div");
+    googleMethod.className = "method-panel";
+    googleMethod.id = "student-google-method";
+    googleMethod.setAttribute("role", "group");
+    googleMethod.setAttribute("aria-label", "Google Classroom");
+    googleMethod.setAttribute("data-testid", "method-google");
+    googleMethod.hidden = true;
+
+    const lmsDesc = doc.createElement("p");
+    lmsDesc.className = "method-desc";
+    lmsDesc.setAttribute("data-testid", "lms-desc");
+    lmsDesc.textContent = "Join using your school Google account.";
+    googleMethod.appendChild(lmsDesc);
 
     const lmsErrorHost = doc.createElement("div");
     lmsErrorHost.setAttribute("data-testid", "lms-error-host");
-    studentSection.appendChild(lmsErrorHost);
+    googleMethod.appendChild(lmsErrorHost);
 
     const lmsBtn = renderPrimaryButton(
-      studentSection,
-      "I'm in a Google Classroom class",
+      googleMethod,
+      "Continue with Google Classroom",
       async () => {
         clear(lmsErrorHost);
         if (typeof deps.onStudentLmsOnboarding !== "function") {
@@ -485,15 +627,84 @@ export const makeProvisionedSurface =
             void deps.onRefreshSession();
           }, TRANSITION_MESSAGE_MS);
         } catch (err) {
-          clearButtonPending(lmsBtn, "I'm in a Google Classroom class");
+          clearButtonPending(lmsBtn, "Continue with Google Classroom");
           renderErrorBanner(lmsErrorHost, describeLmsOnboardingError(err));
         }
       },
       "lms-onboarding",
     );
-    lmsBtn.setAttribute("aria-label", "I'm in a Google Classroom class");
+    lmsBtn.setAttribute("aria-label", "Continue with Google Classroom");
+    studentAction.appendChild(googleMethod);
 
+    // Enrollment-method progressive disclosure. Default to Class code (the
+    // primary manual path) so a student with a code needs no extra click.
+    // Selecting a method reveals only that method's action, updates aria and
+    // selected state, and never triggers enrollment. Typed manual values are
+    // preserved when switching away and back because the fields are only
+    // hidden, never rebuilt.
+    let studentMethod: "code" | "google" = "code";
+    const selectMethod = (method: "code" | "google", moveFocus: boolean): void => {
+      const codeActive = method === "code";
+      studentMethod = method;
+      codeMethod.hidden = !codeActive;
+      googleMethod.hidden = codeActive;
+      codeMethodChoice.setAttribute("aria-expanded", String(codeActive));
+      codeMethodChoice.setAttribute("aria-pressed", String(codeActive));
+      googleMethodChoice.setAttribute("aria-expanded", String(!codeActive));
+      googleMethodChoice.setAttribute("aria-pressed", String(!codeActive));
+      codeMethodChoice.classList.toggle("is-selected", codeActive);
+      googleMethodChoice.classList.toggle("is-selected", !codeActive);
+      if (moveFocus) {
+        const target = codeActive ? sNameInput : lmsBtn;
+        try {
+          target.focus();
+        } catch {
+          // ignored
+        }
+      }
+    };
+    selectMethod("code", false);
+    codeMethodChoice.addEventListener("click", () => selectMethod("code", true));
+    googleMethodChoice.addEventListener("click", () =>
+      selectMethod("google", true),
+    );
+
+    studentSection.appendChild(studentAction);
     mount.appendChild(studentSection);
+
+    // Reveal exactly one workflow and reflect selection state. Fields are
+    // never cleared on switch, so a learner who typed a name before
+    // changing their mind does not lose it.
+    const selectRole = (role: "teacher" | "student"): void => {
+      const teacherActive = role === "teacher";
+      teacherSection.hidden = !teacherActive;
+      studentSection.hidden = teacherActive;
+      teacherChoice.setAttribute("aria-expanded", String(teacherActive));
+      studentChoice.setAttribute("aria-expanded", String(!teacherActive));
+      teacherChoice.setAttribute("aria-pressed", String(teacherActive));
+      studentChoice.setAttribute("aria-pressed", String(!teacherActive));
+      teacherChoice.classList.toggle("is-selected", teacherActive);
+      studentChoice.classList.toggle("is-selected", !teacherActive);
+      // Move focus to the first control of the revealed workflow (not the
+      // region container). This takes keyboard and screen-reader users
+      // straight to the form the labelled region announces, and avoids
+      // drawing a focus outline around the entire panel. For Student, the
+      // target depends on the active enrollment method so focus never lands
+      // on a hidden field. Best-effort; never throws in a non-focusable
+      // test environment.
+      const firstField = teacherActive
+        ? nameInput
+        : studentMethod === "code"
+          ? sNameInput
+          : lmsBtn;
+      try {
+        firstField.focus();
+      } catch {
+        // ignored
+      }
+    };
+    teacherChoice.addEventListener("click", () => selectRole("teacher"));
+    studentChoice.addEventListener("click", () => selectRole("student"));
 
     renderSignOut(mount, deps.onSignOut);
   };
