@@ -1,0 +1,603 @@
+---
+permalink: /terms
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/terms">
+<meta name="description" content="LyfeLabz Terms of Use. The rules for using the LyfeLabz middle school science platform, including accounts, classroom use, Google Classroom integration, and acceptable use.">
+<title>LyfeLabz | Terms of Use</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  html { font-size: 18px; }
+  :root {
+    --green: #2ecc71;
+    --gold:  #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --dark:  #1a2535;
+    --dark2: #243447;
+    --card:  #1e2f42;
+    --text:  #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .nav-back:hover { opacity: 0.8; }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.06) 0%, transparent 65%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.35);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.4rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    margin-bottom: 0.8rem;
+    background: linear-gradient(135deg, #fff 40%, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    position: relative;
+  }
+
+  /* ===== CONTENT ===== */
+  .content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+  }
+
+  .policy-section {
+    margin-bottom: 3rem;
+  }
+
+  .section-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.08);
+    border: 1px solid rgba(245,200,66,0.25);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+    margin-bottom: 0.9rem;
+  }
+
+  h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .policy-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+  }
+
+  .policy-card h3 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.02rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 1.4rem 0 0.5rem;
+    letter-spacing: 0.01em;
+  }
+  .policy-card h3:first-child { margin-top: 0; }
+
+  .policy-card p {
+    color: var(--text-muted);
+    font-size: 0.97rem;
+    margin-bottom: 1rem;
+    line-height: 1.75;
+  }
+  .policy-card p:last-child { margin-bottom: 0; }
+
+  .policy-card p strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .policy-list {
+    list-style: none;
+    margin: 0.5rem 0 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .policy-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .policy-list li::before {
+    content: '▸';
+    color: var(--gold);
+    font-size: 0.75rem;
+    margin-top: 0.3rem;
+    flex-shrink: 0;
+  }
+  .policy-list li strong { color: var(--text); font-weight: 700; }
+
+  .contact-block {
+    background: linear-gradient(135deg, rgba(245,200,66,0.07) 0%, rgba(52,152,219,0.04) 100%);
+    border: 1px solid rgba(245,200,66,0.25);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    text-align: center;
+  }
+  .contact-block p {
+    color: var(--text-muted);
+    font-size: 0.97rem;
+    margin-bottom: 0.8rem;
+  }
+
+  @media (max-width: 600px) {
+    .policy-card { padding: 1.5rem; }
+    .contact-block { padding: 1.5rem; }
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
+</style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .mode-btn,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <a href="index.html" class="nav-back">← Learning Hub</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">LyfeLabz · Legal</div>
+  <h1>Terms of Use</h1>
+  <p>Effective Date: August 30, 2026</p>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- INTRO / ACCEPTANCE -->
+  <div class="policy-section">
+    <div class="policy-card">
+      <p>These Terms of Use ("Terms") apply to the LyfeLabz website and platform ("LyfeLabz"). LyfeLabz is a middle school science learning platform. By using LyfeLabz, you agree to these Terms. If you do not agree, please do not use the platform.</p>
+      <p>Anyone can read the public science lessons without an account. Signing in and using classroom features means you also accept the additional responsibilities described below. This page is written to be clear and proportional to a small educational platform.</p>
+    </div>
+  </div>
+
+  <!-- EDUCATIONAL PURPOSE -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🎯 Purpose</div>
+    <h2>Educational Purpose</h2>
+    <div class="policy-card">
+      <p>LyfeLabz is provided for educational use by students, teachers, and the curious public. The lessons and tools are meant to support science learning. LyfeLabz is not a substitute for a school's official record system, and it is not intended for any use beyond learning and teaching.</p>
+    </div>
+  </div>
+
+  <!-- ACCOUNTS -->
+  <div class="policy-section">
+    <div class="section-eyebrow">👤 Accounts</div>
+    <h2>Accounts and Responsibilities</h2>
+    <div class="policy-card">
+      <p>Signing in uses Google Sign-In. When you sign in, you agree to:</p>
+      <ul class="policy-list">
+        <li>Provide accurate information, such as your name.</li>
+        <li>Use your own Google account and keep it secure.</li>
+        <li>Use LyfeLabz only for its intended educational purpose.</li>
+      </ul>
+      <p><strong>Teachers:</strong> teacher features require verification that you teach at your school. You are responsible for how you set up classes, whom you enroll, and the assignments you publish.</p>
+      <p><strong>Students:</strong> you use LyfeLabz as directed by your teacher and school. Join a class only when your teacher asks you to.</p>
+    </div>
+  </div>
+
+  <!-- TEACHER-AUTHORIZED STUDENT USE -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🏫 Classroom Use</div>
+    <h2>Teacher-Authorized and Student Use</h2>
+    <div class="policy-card">
+      <p>Classroom features are intended to be used under the direction of a teacher and school. Teachers and schools are responsible for having the appropriate permission to enroll students and for following their own policies and applicable laws when using LyfeLabz with students.</p>
+      <p>A student is added to a class either by a class join code the teacher shares or through a class imported from Google Classroom. Students should not attempt to join a class they were not invited to.</p>
+    </div>
+  </div>
+
+  <!-- ACCEPTABLE USE -->
+  <div class="policy-section">
+    <div class="section-eyebrow">✅ Acceptable Use</div>
+    <h2>Acceptable Use</h2>
+    <div class="policy-card">
+      <p>When using LyfeLabz, you agree not to:</p>
+      <ul class="policy-list">
+        <li>Break the law or use LyfeLabz to harm, harass, or impersonate others.</li>
+        <li>Try to access another person's account, class, or results.</li>
+        <li>Attempt to disrupt, overload, reverse engineer, or gain unauthorized access to the platform or its data.</li>
+        <li>Interfere with the security features of the platform, including how assignments, results, and answer keys are protected.</li>
+        <li>Use LyfeLabz to store or share content that is unlawful, harmful, or inappropriate for a school setting.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- GOOGLE CLASSROOM -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🎓 Google Classroom</div>
+    <h2>Google Classroom Integration</h2>
+    <div class="policy-card">
+      <p>Teachers may choose to connect Google Classroom to import classes and publish assignments. By connecting, you authorize LyfeLabz to read your class list and the rosters of classes you import, and, when you publish, to create an assignment in your own class.</p>
+      <p>LyfeLabz never posts to the class stream, never messages anyone, and never sends grades or scores back into Google Classroom. You can disconnect or revoke LyfeLabz's access at any time from your Google Account. Your use of Google Classroom is also governed by Google's own terms. See the
+        <a href="/privacy" style="color:var(--gold);">Privacy Policy</a> for exactly what data is accessed and how it is handled.</p>
+    </div>
+  </div>
+
+  <!-- INTELLECTUAL PROPERTY -->
+  <div class="policy-section">
+    <div class="section-eyebrow">📚 Content</div>
+    <h2>Intellectual Property</h2>
+    <div class="policy-card">
+      <p>The LyfeLabz lessons, text, graphics, design, and platform are the property of LyfeLabz and its owner, or are used with permission, and are protected by applicable law. You may use the lessons for personal learning and classroom teaching. You may not copy, republish, sell, or redistribute LyfeLabz content as your own or for commercial purposes without permission.</p>
+    </div>
+  </div>
+
+  <!-- USER-PROVIDED CONTENT -->
+  <div class="policy-section">
+    <div class="section-eyebrow">✍️ Your Content</div>
+    <h2>Classroom and User-Provided Content</h2>
+    <div class="policy-card">
+      <p>Some features let teachers and students enter information, such as a class name, a display name, or quiz responses. You are responsible for the content you enter, and you agree it is appropriate for a school setting and that you have the right to provide it. LyfeLabz uses this content only to operate the classroom features described in the Privacy Policy.</p>
+    </div>
+  </div>
+
+  <!-- AVAILABILITY -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🔧 Availability</div>
+    <h2>Service Availability and Changes</h2>
+    <div class="policy-card">
+      <p>LyfeLabz is offered as an evolving educational platform. Features may be added, changed, or removed, and the service may occasionally be unavailable for maintenance or for reasons outside LyfeLabz's control. LyfeLabz does not guarantee that the platform will always be available or error free.</p>
+    </div>
+  </div>
+
+  <!-- DISCLAIMERS -->
+  <div class="policy-section">
+    <div class="section-eyebrow">⚠️ Disclaimers</div>
+    <h2>Disclaimers</h2>
+    <div class="policy-card">
+      <p>LyfeLabz is provided "as is" and "as available", for educational purposes. While LyfeLabz works to keep content accurate and the platform reliable, it does not warrant that the content is complete or error free, or that the service will meet every need. Teachers should review content for suitability for their own classroom.</p>
+    </div>
+  </div>
+
+  <!-- LIMITATION -->
+  <div class="policy-section">
+    <div class="section-eyebrow">⚖️ Limitations</div>
+    <h2>Limitation of Liability</h2>
+    <div class="policy-card">
+      <p>LyfeLabz is offered for educational use. To the extent permitted by applicable law, LyfeLabz is not responsible for indirect or incidental losses arising from the use of, or inability to use, the platform. Nothing in these Terms limits any rights that cannot be limited by law.</p>
+    </div>
+  </div>
+
+  <!-- TERMINATION -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🚪 Access</div>
+    <h2>Termination and Access Restrictions</h2>
+    <div class="policy-card">
+      <p>LyfeLabz may suspend or restrict access to an account that misuses the platform, violates these Terms, or poses a risk to other users or to the security of the service. Teachers and schools may stop using LyfeLabz at any time. Ending use does not remove obligations that already applied while using the platform.</p>
+    </div>
+  </div>
+
+  <!-- CHANGES -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🔄 Changes</div>
+    <h2>Changes to These Terms</h2>
+    <div class="policy-card">
+      <p>LyfeLabz may update these Terms as the platform changes. When it does, the effective date at the top of this page is updated. Continuing to use LyfeLabz after an update means you accept the updated Terms.</p>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="policy-section">
+    <div class="section-eyebrow">✉️ Contact</div>
+    <h2>Contact</h2>
+    <div class="contact-block">
+      <p>For questions about these Terms, contact <strong>LyfeLabz</strong> at:</p>
+      <p><a href="mailto:privacy@lyfelabz.com" style="color:var(--gold);font-weight:800;">privacy@lyfelabz.com</a></p>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/terms">Terms of Use</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+<script>
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = document.body.scrollHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / 5000);
+  for (let i = 0; i < count; i++) {
+    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2, a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2 });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`; ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize(); requestAnimationFrame(draw);
+</script>
+</main>
+</body>
+</html>

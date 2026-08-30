@@ -26,15 +26,19 @@
       "LyfeLabz_GScript_v2.js",
       "LyfeLabz_GScript_v2_test.js"
     ],
-    "rewrites": [
+    "redirects": [
       {
         "source": "/privacy",
-        "destination": "/about_privacy.html"
+        "destination": "https://lyfelabz.com/privacy",
+        "type": 301
       },
       {
         "source": "/terms",
-        "destination": "/about_terms.html"
-      },
+        "destination": "https://lyfelabz.com/terms",
+        "type": 301
+      }
+    ],
+    "rewrites": [
       {
         "source": "/app/**",
         "destination": "/app/index.html"
