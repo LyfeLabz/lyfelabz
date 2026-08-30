@@ -1,6 +1,7 @@
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertTeacherPilotAllowlisted,
   platformCallable,
   PlatformError,
   log,
@@ -194,6 +195,20 @@ async function teachersApproveVerificationHandler(
       "Approval target must have a schoolId recorded.",
     );
   }
+
+  // Sprint 29C - pilot allowlist guardrail (belt-and-suspenders).
+  //
+  // Even after a Platform Administrator authorizes this approval, teacher
+  // activation is refused unless the target's server-trusted email is a
+  // member of the pilot allowlist. The email is read from the authoritative
+  // `users/{uid}` record (populated by `authOnUserCreate` from the
+  // Google/Firebase Auth identity), never from the caller's request payload,
+  // so allowlist membership cannot be spoofed by a client. This check runs
+  // BEFORE any status update, claims write, or audit event, so a refusal
+  // leaves no partial activation: `users/{uid}.status` is unchanged and no
+  // teacher claims are issued. The admin approval above remains the primary
+  // authorization; this is a second, independent gate.
+  await assertTeacherPilotAllowlisted(target.email);
 
   const schoolId = target.schoolId;
   const districtId = await resolveSchoolDistrictId(schoolId);

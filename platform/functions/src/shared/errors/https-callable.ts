@@ -67,6 +67,11 @@ const PERMISSION_SUFFIXES = [
   ".forbidden",
   ".notOwned",
   ".notEnrolled",
+  // Sprint 29C - teacher pilot allowlist refusal. An authorization denial,
+  // so it maps to `permission-denied` rather than the `failed-precondition`
+  // fallback. The paired message is intentionally non-secret and never
+  // names allowlist membership.
+  ".pilotNotAllowlisted",
 ];
 
 const NOT_FOUND_SUFFIXES = [

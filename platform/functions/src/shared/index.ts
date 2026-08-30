@@ -11,6 +11,13 @@ export {
   type WriteCustomClaimsInput,
 } from "./auth/claims";
 export {
+  PLATFORM_CONFIG_COLLECTION,
+  TEACHER_PILOT_ALLOWLIST_DOC_ID,
+  assertTeacherPilotAllowlisted,
+  normalizeEmail,
+  type TeacherPilotAllowlistDoc,
+} from "./config/teacher-pilot-allowlist";
+export {
   requireDistrictContext,
   type DistrictClaimToken,
   type DistrictContext,

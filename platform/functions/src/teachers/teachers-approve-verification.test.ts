@@ -12,6 +12,7 @@ const mockSchoolDocRef = jest.fn(() => ({ get: mockSchoolGet }));
 
 const mockWriteCustomClaims = jest.fn();
 const mockWriteAuditEvent = jest.fn();
+const mockAssertTeacherPilotAllowlisted = jest.fn();
 
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
@@ -33,6 +34,7 @@ jest.mock("../shared", () => {
     userRecordDocRef: mockUserRecordDocRef,
     writeCustomClaims: mockWriteCustomClaims,
     writeAuditEvent: mockWriteAuditEvent,
+    assertTeacherPilotAllowlisted: mockAssertTeacherPilotAllowlisted,
   };
 });
 
@@ -82,7 +84,9 @@ function makeRequest(
   };
 }
 
-function pendingTeacherSnapshot(overrides: { schoolId?: string } = {}) {
+function pendingTeacherSnapshot(
+  overrides: { schoolId?: string; email?: string } = {},
+) {
   return {
     exists: true,
     data: () => ({
@@ -92,6 +96,7 @@ function pendingTeacherSnapshot(overrides: { schoolId?: string } = {}) {
       role: "teacher",
       schoolId: overrides.schoolId ?? "school-123",
       displayName: "Test Teacher",
+      email: overrides.email ?? "pilot.teacher@example.org",
     }),
   };
 }
@@ -106,6 +111,7 @@ function activeTeacherSnapshot(overrides: { schoolId?: string } = {}) {
       role: "teacher",
       schoolId: overrides.schoolId ?? "school-123",
       displayName: "Test Teacher",
+      email: "pilot.teacher@example.org",
     }),
   };
 }
@@ -119,6 +125,10 @@ describe("teachersApproveVerification", () => {
     mockSchoolDocRef.mockClear();
     mockWriteCustomClaims.mockReset();
     mockWriteAuditEvent.mockReset();
+    mockAssertTeacherPilotAllowlisted.mockReset();
+    // Default: the target is a member of the pilot allowlist. Individual
+    // tests override this to exercise the refusal path.
+    mockAssertTeacherPilotAllowlisted.mockResolvedValue(undefined);
     mockLogInfo.mockReset();
     mockLogWarn.mockReset();
     mockLogError.mockReset();
@@ -454,6 +464,99 @@ describe("teachersApproveVerification", () => {
     await expect(
       __teachersApproveVerificationHandler(makeRequest()),
     ).rejects.toBe(auditErr);
+  });
+
+  // -------------------- Sprint 29C: pilot allowlist guardrail --------------------
+
+  it("checks the pilot allowlist with the target's server-trusted email before any mutation", async () => {
+    mockUserGet.mockResolvedValueOnce(
+      pendingTeacherSnapshot({ email: "Pilot.Teacher@Example.org" }),
+    );
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
+    mockUserUpdate.mockResolvedValueOnce(undefined);
+    mockWriteCustomClaims.mockResolvedValueOnce({
+      role: "teacher",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+    await __teachersApproveVerificationHandler(makeRequest());
+
+    expect(mockAssertTeacherPilotAllowlisted).toHaveBeenCalledTimes(1);
+    // The email is read from the authoritative user record, not the request.
+    expect(mockAssertTeacherPilotAllowlisted).toHaveBeenCalledWith(
+      "Pilot.Teacher@Example.org",
+    );
+  });
+
+  it("refuses activation atomically when the target is not on the pilot allowlist", async () => {
+    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    const notAllowlisted = new PlatformError(
+      "teachers.pilotNotAllowlisted",
+      "This account is not authorized for the teacher pilot.",
+    );
+    mockAssertTeacherPilotAllowlisted.mockRejectedValueOnce(notAllowlisted);
+
+    await expect(
+      __teachersApproveVerificationHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "teachers.pilotNotAllowlisted" });
+
+    // No teacher status/claims/audit mutation on the refusal path.
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("does not consult the allowlist when the caller is not a platformAdministrator", async () => {
+    await expect(
+      __teachersApproveVerificationHandler(
+        makeRequest({ token: { role: "teacher" } }),
+      ),
+    ).rejects.toMatchObject({ code: "teachers.unauthorized" });
+
+    // The admin role check is still the primary gate: allowlist membership
+    // never lets a non-administrator activate a teacher.
+    expect(mockAssertTeacherPilotAllowlisted).not.toHaveBeenCalled();
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+  });
+
+  it("ignores a client-supplied email and matches only the server record email", async () => {
+    mockUserGet.mockResolvedValueOnce(
+      pendingTeacherSnapshot({ email: "server.trusted@example.org" }),
+    );
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
+    mockUserUpdate.mockResolvedValueOnce(undefined);
+    mockWriteCustomClaims.mockResolvedValueOnce({
+      role: "teacher",
+      schoolId: "school-123",
+      districtId: "district-abc",
+    });
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+    await __teachersApproveVerificationHandler(
+      makeRequest({
+        data: {
+          targetUid: "uid-teacher",
+          email: "attacker.spoofed@example.org",
+        },
+      }),
+    );
+
+    expect(mockAssertTeacherPilotAllowlisted).toHaveBeenCalledWith(
+      "server.trusted@example.org",
+    );
+  });
+
+  it("does not consult the allowlist for an already-active teacher (idempotent replay)", async () => {
+    mockUserGet.mockResolvedValueOnce(activeTeacherSnapshot());
+
+    const result = await __teachersApproveVerificationHandler(makeRequest());
+
+    expect(result.alreadyActive).toBe(true);
+    expect(mockAssertTeacherPilotAllowlisted).not.toHaveBeenCalled();
+    expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
   it("rejects an invalid targetUid with teachers.invalidTargetUid", async () => {

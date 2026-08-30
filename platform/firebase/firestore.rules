@@ -576,6 +576,28 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- platformConfig/{configId} ----------
+    //
+    // Sprint 29C - Teacher Pilot Authorization Guardrail.
+    //
+    // Server-only platform configuration. The
+    // `platformConfig/teacherPilotAllowlist` document holds the pilot
+    // allowlist of permitted teacher emails; the body is sensitive (it is
+    // the private roster of the initial pilot) and confers authorization,
+    // so every client role is denied every operation. The sole reader is
+    // the `teachersApproveVerification` callable, which runs under Admin
+    // SDK authority and bypasses Rules; membership is edited by an
+    // Admin-credentialed operator (Console or an ADC-authenticated script),
+    // never from a client.
+    //
+    // This block uses an explicit `allow read, write: if false;` pattern
+    // (mirroring `assessmentAnswerKeys`, `externalIdentities`, and
+    // `auditEvents`) so the server-only intent is documented at the surface
+    // and cannot be relaxed by a broader accidental edit.
+    match /platformConfig/{configId} {
+      allow read, write: if false;
+    }
+
     // ---------- Terminal default-deny ----------
     match /{document=**} {
       allow read, write: if false;

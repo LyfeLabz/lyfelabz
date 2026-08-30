@@ -75,6 +75,7 @@ Test/build entry points:
 - **Account lifecycle** (`status` on `users/{uid}`): `provisioned` → `pendingVerification` (teachers only) → `active`. `awaitingFirstSignIn` is a **roster-level** placeholder state, not a user state. Suspension/archival are reserved states.
 - **Two identity families:** teacher and student. Neither silently becomes the other.
 - **Teacher verification** is the gate to any teacher capability. Preferred path: a one-time, institution-bound **verification code** (single-use, expiring, district+school-bound). Fallback: **Request Teacher Access** (Platform Administrator approve/deny). Personal Google accounts are refused for teacher onboarding (`auth.activationRejected`, no state change). Unverified teachers cannot create classes, import, mint join codes, view rosters, or read student data.
+- **Pilot allowlist guardrail (Sprint 29C, pilot-release control).** A narrow, server-side, belt-and-suspenders gate at the approval boundary: `teachersApproveVerification` refuses activation unless the target's server-trusted email (read from `users/{uid}`, never the request payload) is a member of the `platformConfig/teacherPilotAllowlist` document. Admin approval remains the primary mechanism; both are required. The allowlist document is denied to every client role at the Rules layer, so pilot emails never reach a client. The check precedes every write, so a non-allowlisted approval fails atomically (`teachers.pilotNotAllowlisted`, no status/claims mutation). Membership is a Firestore data edit needing no redeploy. See `TEACHER_PILOT_ALLOWLIST.md`.
 - **Canonical session bootstrap** (one per surface, no ad-hoc re-derivation): Firebase Auth → custom claims (after forced token refresh) → one self-read of `users/{uid}` → authorization posture → school context → one immutable **Canonical Session Object**. On claims/record disagreement, **the Firestore record wins**.
 - **Onboarding claims self-heal:** the onboarding callables (`students-complete-onboarding`, `students-complete-lms-onboarding`) idempotently re-assert `role`/`schoolId`/`districtId` from the authoritative record if missing or stale, failing closed (no partial writes).
 - **Return-to-location:** authentication becomes required only when a capability needs identity; after sign-in the user returns to where they were.
@@ -200,6 +201,7 @@ Read this document first, then route to the single strongest canonical source fo
 | If working on… | Read (canonical) |
 | --- | --- |
 | Identity, onboarding, verification, roster authority, sessions bootstrap | `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` |
+| Teacher pilot allowlist guardrail (pilot-release control) | `TEACHER_PILOT_ALLOWLIST.md` |
 | Firestore Security Rules, rule invariants | `LYFELABZ_FIREBASE_SECURITY_MODEL.md` (+ `platform/firebase/` rules & tests) |
 | Firestore collections, document shapes, identifiers | `LYFELABZ_FIRESTORE_DATA_MODEL.md` |
 | Composite indexes, query strategy | `LYFELABZ_FIRESTORE_QUERY_AND_INDEX_STRATEGY.md` |
