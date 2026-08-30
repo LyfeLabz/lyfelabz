@@ -747,348 +747,92 @@ describe("active teacher surface (Step 5 shell)", () => {
       }),
       mount,
     );
-    // Step 5 replaces the minimal Step 4 surface with the shell. The
-    // welcome message is now an h2; product brand is the h1.
+    // Step 5 replaces the minimal Step 4 surface with the shell. Product
+    // brand is the h1. Sprint 28.6D: Classes is the default landing
+    // surface, so its headline is the h2 and sign-out lives in the header.
     expect(mount.querySelector("h1")?.textContent).toBe("LYFELABZ");
-    expect(mount.querySelector("h2")?.textContent).toBe("Welcome, Ada.");
-    expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
+    expect(mount.querySelector("h2")?.textContent).toBe("Classes");
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
+    // The return-to-lessons control lives on the Curriculum surface; it is
+    // reachable from the primary navigation.
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
+      ?.click();
+    expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
     // Opaque schoolId is never rendered in the shell (spec §7.2).
     expect(mount.textContent).not.toContain("s1");
   });
 });
 
-describe("active student surface (Slice 3 landing)", () => {
-  test("welcomes the verified active student by displayName and preserves sign-out plus return-to-lessons", () => {
-    const { deps } = makeDeps();
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(
-      freeze<Session>({
-        kind: "activeStudent",
-        uid: "u1",
-        schoolId: "s1",
-        displayName: "Ben",
-      }),
-      mount,
-    );
-    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ben.");
-    expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
-    expect(mount.querySelector<HTMLAnchorElement>("[data-testid=return-link]")?.getAttribute("href")).toBe("/");
-    // Opaque identifiers must never leak into the rendered surface.
-    expect(mount.textContent).not.toContain("s1");
-    expect(mount.textContent).not.toContain("u1");
-    // Slice 4 must not render the teacher shell for a student.
-    expect(mount.textContent).not.toContain("LyfeLabz Teacher Platform");
+// -----------------------------------------------------------------------------
+// Sprint 28.6G - Student My Science
+// -----------------------------------------------------------------------------
+// The former two-surface split (My Assignments / My Results) is consolidated
+// into a single domain-grouped landing. These fixtures use real curriculum
+// manifest slugs so getUnitBySlug / TOPIC_LABEL resolve to the canonical
+// domain and title.
+const studentSession = () =>
+  freeze<Session>({
+    kind: "activeStudent",
+    uid: "u1",
+    schoolId: "s1",
+    displayName: "Ben",
   });
 
-  test("refuses to render for any session kind other than activeStudent (no fallback to student for unknown state)", () => {
-    const { deps } = makeDeps();
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    // Direct invocation with a non-student session (defensive: dispatch
-    // would never route here, but the surface must not render either).
-    table.activeStudent(
-      freeze<Session>({ kind: "unauthenticated" }),
-      mount,
-    );
-    expect(mount.querySelector("h1")).toBeNull();
-    expect(mount.querySelector("[data-testid=sign-out]")).toBeNull();
-  });
-
-  test("sign-out on the student landing surface calls onSignOut exactly once", () => {
-    const { deps, spies } = makeDeps();
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(
-      freeze<Session>({
-        kind: "activeStudent",
-        uid: "u1",
-        schoolId: "s1",
-        displayName: "Ben",
-      }),
-      mount,
-    );
-    mount.querySelector<HTMLButtonElement>("[data-testid=sign-out]")?.click();
-    expect(spies.signOut).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe("active student surface (Slice 4 assignment discovery)", () => {
-  const studentSession = () =>
-    freeze<Session>({
-      kind: "activeStudent",
-      uid: "u1",
-      schoolId: "s1",
-      displayName: "Ben",
-    });
-
-  const okItem = (over: Record<string, unknown> = {}) =>
-    ({
-      assignmentId: "assign-1",
-      lessonSlug: "what-is-life",
-      title: "What is life?",
-      status: "published" as const,
-      publishedAt: 1_700_000_000_000,
-      ...over,
-    }) as const;
-
-  test("renders the loading indicator while the callable is in flight", () => {
-    const { deps } = makeDeps({
-      studentAssignmentsList: () => () => new Promise(() => undefined),
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    expect(mount.querySelector("[data-testid=loading-indicator]")).not.toBeNull();
-    // Header, welcome, return link, and sign-out remain present through
-    // every state so the calm-software conventions never disappear.
-    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ben.");
-    expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
-  });
-
-  test("populated state calls the callable with no arguments and renders one item per assignment", async () => {
-    const callable = jest.fn(() =>
-      Promise.resolve({
-        items: Object.freeze([okItem(), okItem({ assignmentId: "assign-2", lessonSlug: "cell-types", title: "Cell Types" })]) as ReadonlyArray<ReturnType<typeof okItem>>,
-      }),
-    );
-    const { deps } = makeDeps({ studentAssignmentsList: () => callable });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    await flush();
-    expect(callable).toHaveBeenCalledTimes(1);
-    expect(callable).toHaveBeenCalledWith();
-    const items = mount.querySelectorAll("[data-testid=assignments-item]");
-    expect(items).toHaveLength(2);
-    const titles = Array.from(
-      mount.querySelectorAll("[data-testid=assignments-item-title]"),
-    ).map((el) => el.textContent);
-    expect(titles).toEqual(["What is life?", "Cell Types"]);
-    const launches = Array.from(
-      mount.querySelectorAll<HTMLButtonElement>(
-        "[data-testid=assignments-launch]",
-      ),
-    );
-    expect(launches[0].getAttribute("data-assignment-launch-url")).toBe(
-      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
-    );
-    expect(launches[1].getAttribute("data-assignment-launch-url")).toBe(
-      "/app/lessons/lesson_cell-types.html?assignment=assign-2",
-    );
-  });
-
-  test("empty state renders when the callable returns no items", async () => {
-    const { deps } = makeDeps({
-      studentAssignmentsList: () => () =>
-        Promise.resolve({ items: Object.freeze([]) as ReadonlyArray<never> }),
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    await flush();
-    expect(mount.querySelector("[data-testid=assignments-empty]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=assignments-list]")).toBeNull();
-  });
-
-  test("error state renders a recoverable banner and a retry that re-invokes the callable", async () => {
-    let call = 0;
-    const callable = jest.fn(() => {
-      call += 1;
-      return call === 1
-        ? Promise.reject(new Error("boom"))
-        : Promise.resolve({ items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>> });
-    });
-    const { deps } = makeDeps({ studentAssignmentsList: () => callable });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    await flush();
-    expect(mount.querySelector("[data-testid=assignments-error]")).not.toBeNull();
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=assignments-retry]")
-      ?.click();
-    await flush();
-    expect(callable).toHaveBeenCalledTimes(2);
-    expect(mount.querySelector("[data-testid=assignments-list]")).not.toBeNull();
-  });
-
-  test("malformed items are dropped and the surface never renders a launch button without a valid URL", async () => {
-    const { deps } = makeDeps({
-      studentAssignmentsList: () => () =>
-        Promise.resolve({
-          items: Object.freeze([
-            okItem(),
-            { ...okItem({ assignmentId: "assign-2" }), lessonSlug: "" },
-          ]) as ReadonlyArray<ReturnType<typeof okItem>>,
-        }),
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    await flush();
-    const items = mount.querySelectorAll("[data-testid=assignments-item]");
-    expect(items).toHaveLength(1);
-    const launches = mount.querySelectorAll<HTMLButtonElement>(
-      "[data-testid=assignments-launch]",
-    );
-    expect(launches).toHaveLength(1);
-    expect(launches[0].getAttribute("data-assignment-launch-url")).toBe(
-      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
-    );
-  });
-
-  test("clicking a launch button invokes onLaunchAssignment with the canonical URL and never begins a session", async () => {
-    const onLaunchAssignment = jest.fn();
-    const callable = jest.fn(() =>
-      Promise.resolve({
-        items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>>,
-      }),
-    );
-    const { deps } = makeDeps({
-      studentAssignmentsList: () => callable,
-      onLaunchAssignment,
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=assignments-launch]")
-      ?.click();
-    expect(onLaunchAssignment).toHaveBeenCalledTimes(1);
-    expect(onLaunchAssignment).toHaveBeenCalledWith(
-      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
-    );
-    // The callable is invoked exactly once (the initial discovery
-    // fetch). No attempt-retrieval, session-begin, autosave, or
-    // finalize call is issued by the launcher; Slice 5 owns those.
-    expect(callable).toHaveBeenCalledTimes(1);
-  });
-
-  test("launch URL exposes no identity beyond the assignmentId", async () => {
-    const callable = jest.fn(() =>
-      Promise.resolve({
-        items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>>,
-      }),
-    );
-    const { deps } = makeDeps({ studentAssignmentsList: () => callable });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    await flush();
-    const url =
-      mount
-        .querySelector<HTMLButtonElement>("[data-testid=assignments-launch]")
-        ?.getAttribute("data-assignment-launch-url") ?? "";
-    for (const forbidden of [
-      "u1",
-      "s1",
-      "uid=",
-      "schoolId=",
-      "districtId=",
-      "teacherId=",
-      "classId=",
-      "recipient=",
-      "session=",
-      "token=",
-      "score=",
-    ]) {
-      expect(url).not.toContain(forbidden);
-    }
-  });
-
-  test("titles are inserted via textContent so HTML from the callable cannot render", async () => {
-    const callable = () =>
-      Promise.resolve({
-        items: Object.freeze([
-          okItem({ title: "<img src=x onerror=alert(1)>" }),
-        ]) as ReadonlyArray<ReturnType<typeof okItem>>,
-      });
-    const { deps } = makeDeps({ studentAssignmentsList: () => callable });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    await flush();
-    const title = mount.querySelector(
-      "[data-testid=assignments-item-title]",
-    );
-    expect(title?.textContent).toBe("<img src=x onerror=alert(1)>");
-    expect(title?.querySelector("img")).toBeNull();
-  });
-
-  test("missing callable seam falls back to the empty state and does not throw", () => {
-    // No studentAssignmentsList override; the default deps omit the
-    // seam entirely (matches the entry-point behavior before the
-    // active-student branch of `rerun` has resolved).
-    const { deps } = makeDeps();
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    expect(() => table.activeStudent(studentSession(), mount)).not.toThrow();
-    expect(mount.querySelector("[data-testid=assignments-empty]")).not.toBeNull();
-  });
-
-  test("does not render the teacher shell for a student", async () => {
-    const { deps } = makeDeps({
-      studentAssignmentsList: () => () =>
-        Promise.resolve({
-          items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>>,
-        }),
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    await flush();
-    expect(mount.textContent).not.toContain("LyfeLabz Teacher Platform");
-  });
-});
-
-describe("active student surface (Sprint 27 My Results + status + navigation)", () => {
-  const studentSession = () =>
-    freeze<Session>({
-      kind: "activeStudent",
-      uid: "u1",
-      schoolId: "s1",
-      displayName: "Ben",
-    });
-
-  const okItem = (over: Record<string, unknown> = {}) =>
-    ({
-      assignmentId: "assign-1",
-      lessonSlug: "what-is-life",
-      title: "What is life?",
-      status: "published" as const,
-      publishedAt: 1_700_000_000_000,
-      ...over,
-    }) as const;
-
-  const okAttempt = (over: Record<string, unknown> = {}) => ({
-    attemptId: "at-1",
+// Default fixture is a life-science lesson. The stored assignment title is
+// intentionally different from the canonical manifest title so the
+// canonical-title contract is observable.
+const okItem = (over: Record<string, unknown> = {}) =>
+  ({
     assignmentId: "assign-1",
-    attemptNumber: 1,
-    score: 8,
-    maxScore: 10,
-    percentage: 80,
-    submittedAt: 1_000,
+    lessonSlug: "what-is-life",
+    title: "What is life? - Check for Understanding",
+    status: "published" as const,
+    publishedAt: 1_700_000_000_000,
     ...over,
-  });
+  }) as const;
 
-  // Getter seams matching SurfaceDeps.studentAssignmentsList /
-  // studentResultsList: `() => callable | null`.
-  const assignmentsSeam =
-    (items: ReadonlyArray<ReturnType<typeof okItem>>) => () => () =>
-      Promise.resolve({ items: Object.freeze(items) as ReadonlyArray<ReturnType<typeof okItem>> });
-  const resultsSeam =
-    (attempts: ReadonlyArray<ReturnType<typeof okAttempt>>) => () => () =>
-      Promise.resolve({ attempts: Object.freeze(attempts) });
+const okAttempt = (over: Record<string, unknown> = {}) => ({
+  attemptId: "at-1",
+  assignmentId: "assign-1",
+  attemptNumber: 1,
+  score: 9,
+  maxScore: 10,
+  percentage: 90,
+  submittedAt: 1_000,
+  ...over,
+});
 
-  const goResults = (mount: HTMLElement): void => {
-    mount.querySelector<HTMLButtonElement>("[data-testid=nav-results]")?.click();
-  };
+const assignmentsSeam =
+  (items: ReadonlyArray<ReturnType<typeof okItem>>) => () => () =>
+    Promise.resolve({
+      items: Object.freeze(items) as ReadonlyArray<ReturnType<typeof okItem>>,
+    });
+const resultsSeam =
+  (attempts: ReadonlyArray<ReturnType<typeof okAttempt>>) => () => () =>
+    Promise.resolve({ attempts: Object.freeze(attempts) });
 
-  test("renders the two-surface identity menu as an accessible tablist", () => {
+const domainHeadings = (mount: HTMLElement): Array<string | null> =>
+  Array.from(
+    mount.querySelectorAll("[data-testid=my-science-domain-heading]"),
+  ).map((e) => e.textContent);
+
+const cardsInDomain = (mount: HTMLElement, domain: string): HTMLElement[] => {
+  const sec = mount.querySelector(
+    `[data-testid=my-science-domain][data-domain=${domain}]`,
+  );
+  return sec
+    ? Array.from(sec.querySelectorAll<HTMLElement>("[data-testid=my-science-card]"))
+    : [];
+};
+const cardTitles = (cards: HTMLElement[]): Array<string | null> =>
+  cards.map(
+    (c) =>
+      c.querySelector("[data-testid=my-science-card-title]")?.textContent ?? null,
+  );
+
+describe("My Science (28.6G) - information architecture", () => {
+  test("lands on My Science with a minimal header (brand, safe name, Log out) and no teacher / My Assignments / My Results navigation", () => {
     const { deps } = makeDeps({
       studentAssignmentsList: assignmentsSeam([okItem()]),
       studentResultsList: resultsSeam([]),
@@ -1096,19 +840,184 @@ describe("active student surface (Sprint 27 My Results + status + navigation)", 
     const table = createRouteTable(deps);
     const mount = mkMount();
     table.activeStudent(studentSession(), mount);
-    const nav = mount.querySelector("[data-testid=student-nav]");
-    expect(nav?.getAttribute("role")).toBe("tablist");
-    const assignmentsTab = mount.querySelector("[data-testid=nav-assignments]");
-    const resultsTab = mount.querySelector("[data-testid=nav-results]");
-    expect(assignmentsTab?.getAttribute("role")).toBe("tab");
-    expect(resultsTab?.getAttribute("role")).toBe("tab");
-    // Default selection is My Assignments; selection is exposed via
-    // aria-selected, not color alone.
-    expect(assignmentsTab?.getAttribute("aria-selected")).toBe("true");
-    expect(resultsTab?.getAttribute("aria-selected")).toBe("false");
+
+    // A. My Science is the landing (single h1).
+    expect(mount.querySelector("h1")?.textContent).toBe("My Science");
+    // Minimal header: wordmark, the safe display name, and Log out only.
+    const header = mount.querySelector("[data-testid=student-header]");
+    expect(header).not.toBeNull();
+    expect(header?.querySelector(".auth-brand")?.textContent).toBe("LYFELABZ");
+    expect(
+      header?.querySelector("[data-testid=student-name]")?.textContent,
+    ).toBe("Ben");
+    expect(header?.querySelector("[data-testid=sign-out]")).not.toBeNull();
+
+    // The old two-surface menu is gone (no tablist, no My Results tab).
+    expect(mount.querySelector("[data-testid=student-nav]")).toBeNull();
+    expect(mount.querySelector("[data-testid=nav-assignments]")).toBeNull();
+    expect(mount.querySelector("[data-testid=nav-results]")).toBeNull();
+    expect(mount.querySelector("[role=tablist]")).toBeNull();
+    // No teacher workspace chrome for a student.
+    expect(mount.querySelector(".shell-header")).toBeNull();
+    expect(mount.textContent).not.toContain("LyfeLabz Teacher Platform");
+
+    // Opaque identifiers must never leak into the rendered surface.
+    expect(mount.textContent).not.toContain("s1");
+    expect(mount.textContent).not.toContain("u1");
   });
 
-  test("navigates from My Assignments to My Results and back", async () => {
+  test("refuses to render for any session kind other than activeStudent", () => {
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(freeze<Session>({ kind: "unauthenticated" }), mount);
+    expect(mount.querySelector("h1")).toBeNull();
+    expect(mount.querySelector("[data-testid=sign-out]")).toBeNull();
+  });
+
+  test("Log out calls onSignOut exactly once", () => {
+    const { deps, spies } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    mount.querySelector<HTMLButtonElement>("[data-testid=sign-out]")?.click();
+    expect(spies.signOut).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("My Science (28.6G) - domain grouping & canonical titles", () => {
+  test("groups assignments under canonical domains in the locked order; empty domains are omitted", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([
+        okItem({ assignmentId: "a-life", lessonSlug: "what-is-life" }),
+        okItem({ assignmentId: "a-earth", lessonSlug: "layers-of-time" }),
+        okItem({ assignmentId: "a-tech", lessonSlug: "conducting-experiments" }),
+        okItem({ assignmentId: "a-phys", lessonSlug: "measuring-matter" }),
+      ]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    // Locked order (Blueprint section 15), using the canonical manifest labels.
+    expect(domainHeadings(mount)).toEqual([
+      "Earth & Space",
+      "Life Science",
+      "Physical Science",
+      "Tech & Engineering",
+    ]);
+    expect(cardsInDomain(mount, "earth-space")).toHaveLength(1);
+    expect(cardsInDomain(mount, "life-science")).toHaveLength(1);
+    expect(cardsInDomain(mount, "physical-science")).toHaveLength(1);
+    expect(cardsInDomain(mount, "tech-engineering")).toHaveLength(1);
+  });
+
+  test("only domains that have work are rendered", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([
+        okItem({ assignmentId: "a-life", lessonSlug: "what-is-life" }),
+        okItem({ assignmentId: "a-tech", lessonSlug: "engineering-design" }),
+      ]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(domainHeadings(mount)).toEqual(["Life Science", "Tech & Engineering"]);
+    expect(
+      mount.querySelector("[data-domain=earth-space]"),
+    ).toBeNull();
+    expect(mount.querySelector("[data-domain=physical-science]")).toBeNull();
+  });
+
+  test("card uses the canonical curriculum lesson title (never the stored title, never a regex-stripped suffix)", async () => {
+    const stored = "Earth's Layers - Check for Understanding";
+    const item = okItem({ lessonSlug: "layers-of-time", title: stored });
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([item]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const title = mount.querySelector(
+      "[data-testid=my-science-card-title]",
+    )?.textContent;
+    // Canonical manifest title for layers-of-time.
+    expect(title).toBe("Layers of Time");
+    // The stored suffix is neither displayed nor stripped-to-a-guess.
+    expect(mount.textContent).not.toContain("Check for Understanding");
+    // The stored assignment record is never mutated by rendering.
+    expect(item.title).toBe(stored);
+  });
+
+  test("an unknown lessonSlug falls back to the stored assignment title in the trailing Other group", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([
+        okItem({ assignmentId: "a-life", lessonSlug: "what-is-life" }),
+        okItem({
+          assignmentId: "a-ghost",
+          lessonSlug: "no-such-lesson-slug",
+          title: "Legacy Assignment",
+        }),
+      ]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    // Other is the last group; the malformed card is never dropped.
+    expect(domainHeadings(mount)).toEqual(["Life Science", "Other"]);
+    expect(cardTitles(cardsInDomain(mount, "other"))).toEqual([
+      "Legacy Assignment",
+    ]);
+  });
+
+  test("a gated lesson never appears in a student science domain (falls to Other)", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([
+        okItem({ assignmentId: "a-gated", lessonSlug: "ragebaiting" }),
+      ]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelector("[data-domain=life-science]")).toBeNull();
+    expect(mount.querySelector("[data-domain=other]")).not.toBeNull();
+  });
+});
+
+describe("My Science (28.6G) - status, results & ordering", () => {
+  test("unfinished card is prominent (first), shows Ready to Begin and Open assignment, with no score", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]");
+    expect(card?.getAttribute("data-complete")).toBeNull();
+    expect(
+      card?.querySelector("[data-testid=my-science-card-status]")?.textContent,
+    ).toContain("Ready to Begin");
+    expect(card?.querySelector("[data-testid=my-science-card-score]")).toBeNull();
+    expect(
+      card?.querySelector("[data-testid=assignments-launch]"),
+    ).not.toBeNull();
+  });
+
+  test("completed card integrates the result (status, best percentage + raw score, attempt count) and stays launchable", async () => {
     const { deps } = makeDeps({
       studentAssignmentsList: assignmentsSeam([okItem()]),
       studentResultsList: resultsSeam([okAttempt()]),
@@ -1117,241 +1026,183 @@ describe("active student surface (Sprint 27 My Results + status + navigation)", 
     const mount = mkMount();
     table.activeStudent(studentSession(), mount);
     await flush();
-    expect(mount.querySelector("[data-testid=assignments-list]")).not.toBeNull();
-
-    goResults(mount);
-    await flush();
-    expect(mount.querySelector("[data-testid=results-list]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=assignments-list]")).toBeNull();
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]");
+    expect(card?.getAttribute("data-complete")).toBe("true");
+    // Sprint 28.6H (Finding 17): objective status only - "Completed" (no
+    // subjective "Well Done!"); the score carries the performance.
     expect(
-      mount.querySelector("[data-testid=nav-results]")?.getAttribute("aria-selected"),
-    ).toBe("true");
-
-    mount.querySelector<HTMLButtonElement>("[data-testid=nav-assignments]")?.click();
-    await flush();
-    expect(mount.querySelector("[data-testid=assignments-list]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=results-list]")).toBeNull();
+      card?.querySelector("[data-testid=my-science-card-status]")?.textContent,
+    ).toContain("Completed");
+    const score = card?.querySelector(
+      "[data-testid=my-science-card-score]",
+    )?.textContent;
+    expect(score).toContain("90%");
+    expect(score).toContain("9/10");
+    expect(
+      card?.querySelector("[data-testid=my-science-card-attempts]")?.textContent,
+    ).toBe("1 attempt");
+    // Completed work stays re-launchable (Improve My Score is folded into the
+    // one Open assignment control).
+    expect(
+      card?.querySelector("[data-testid=assignments-launch]"),
+    ).not.toBeNull();
   });
 
-  test("My Results shows a loading indicator while the read is in flight", () => {
+  test("best score uses the certified best-attempt selection across repeated attempts", async () => {
     const { deps } = makeDeps({
       studentAssignmentsList: assignmentsSeam([okItem()]),
-      studentResultsList: () => () => new Promise(() => undefined),
+      studentResultsList: resultsSeam([
+        okAttempt({ attemptId: "at-1", attemptNumber: 1, score: 6, maxScore: 10, percentage: 60 }),
+        okAttempt({ attemptId: "at-2", attemptNumber: 2, score: 10, maxScore: 10, percentage: 100 }),
+      ]),
     });
     const table = createRouteTable(deps);
     const mount = mkMount();
     table.activeStudent(studentSession(), mount);
-    goResults(mount);
-    expect(mount.querySelector("[data-testid=loading-indicator]")).not.toBeNull();
+    await flush();
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]");
+    // Objective status (Finding 17): "Completed", not "Perfect Score".
+    expect(
+      card?.querySelector("[data-testid=my-science-card-status]")?.textContent,
+    ).toContain("Completed");
+    expect(
+      card?.querySelector("[data-testid=my-science-card-score]")?.textContent,
+    ).toContain("100%");
+    expect(
+      card?.querySelector("[data-testid=my-science-card-attempts]")?.textContent,
+    ).toBe("2 attempts");
   });
 
-  test("My Results empty state when there are no completed attempts", async () => {
+  test("within a domain, unfinished sorts before completed, then newest published first", async () => {
     const { deps } = makeDeps({
-      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentAssignmentsList: assignmentsSeam([
+        okItem({ assignmentId: "a-done", lessonSlug: "what-is-life", publishedAt: 100 }),
+        okItem({ assignmentId: "a-mid", lessonSlug: "cell-types", publishedAt: 200 }),
+        okItem({ assignmentId: "a-new", lessonSlug: "organelles", publishedAt: 300 }),
+      ]),
+      studentResultsList: resultsSeam([
+        okAttempt({ assignmentId: "a-done", score: 8, maxScore: 10, percentage: 80 }),
+      ]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    // Unfinished newest-first, then the completed one last.
+    expect(cardTitles(cardsInDomain(mount, "life-science"))).toEqual([
+      "Cell Organelles",
+      "Cell Types",
+      "What Is Life?",
+    ]);
+  });
+
+  test("completed work whose assignment is no longer listed stays visible in Other with its result and no launch control", async () => {
+    const { deps } = makeDeps({
+      // No published assignment for the completed attempt (e.g. closed after
+      // the student finished).
+      studentAssignmentsList: assignmentsSeam([]),
+      studentResultsList: resultsSeam([
+        okAttempt({ attemptId: "g-1", assignmentId: "assign-ghost", score: 8, maxScore: 10, percentage: 80 }),
+      ]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const card = mount.querySelector<HTMLElement>(
+      "[data-domain=other] [data-testid=my-science-card]",
+    );
+    expect(
+      card?.querySelector("[data-testid=my-science-card-title]")?.textContent,
+    ).toBe("Assignment no longer listed");
+    // The result is preserved...
+    expect(
+      card?.querySelector("[data-testid=my-science-card-score]")?.textContent,
+    ).toContain("80%");
+    // ...but there is no re-launch control (closed / no live assignment).
+    expect(card?.querySelector("[data-testid=assignments-launch]")).toBeNull();
+    // The internal id must never become the label.
+    expect(mount.textContent).not.toContain("assign-ghost");
+  });
+
+  test("an assignment appears in exactly one domain (no duplication)", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem({ lessonSlug: "layers-of-time" })]),
       studentResultsList: resultsSeam([]),
     });
     const table = createRouteTable(deps);
     const mount = mkMount();
     table.activeStudent(studentSession(), mount);
-    goResults(mount);
     await flush();
-    const empty = mount.querySelector("[data-testid=results-empty]");
-    expect(empty?.textContent).toBe("You have not completed any assignments yet.");
+    expect(mount.querySelectorAll("[data-testid=my-science-card]")).toHaveLength(1);
   });
+});
 
-  test("My Results empty state when the results seam is missing (no throw)", async () => {
+describe("My Science (28.6G) - empty / loading / error / read-only / a11y", () => {
+  test("empty state when the student has no assignments and no results", async () => {
     const { deps } = makeDeps({
-      studentAssignmentsList: assignmentsSeam([okItem()]),
-      // no studentResultsList
+      studentAssignmentsList: assignmentsSeam([]),
+      studentResultsList: resultsSeam([]),
     });
     const table = createRouteTable(deps);
     const mount = mkMount();
     table.activeStudent(studentSession(), mount);
-    expect(() => goResults(mount)).not.toThrow();
     await flush();
-    expect(mount.querySelector("[data-testid=results-empty]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=my-science-empty]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=my-science-domain]")).toBeNull();
   });
 
-  test("My Results error state renders a recoverable banner and a retry that re-invokes", async () => {
+  test("missing assignments seam falls back to the empty state without throwing", () => {
+    const { deps } = makeDeps();
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    expect(() => table.activeStudent(studentSession(), mount)).not.toThrow();
+    expect(mount.querySelector("[data-testid=my-science-empty]")).not.toBeNull();
+  });
+
+  test("loading state shows while the read is in flight and never flashes the empty state", () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => () => new Promise(() => undefined),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    expect(mount.querySelector("[data-testid=loading-indicator]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=my-science-empty]")).toBeNull();
+    expect(mount.querySelector("h1")?.textContent).toBe("My Science");
+  });
+
+  test("error state when the primary assignments read fails; a retry re-invokes and recovers", async () => {
     let call = 0;
-    const resultsCallable = jest.fn(() => {
+    const callable = jest.fn(() => {
       call += 1;
       return call === 1
-        ? Promise.reject(new Error("boom"))
-        : Promise.resolve({ attempts: Object.freeze([okAttempt()]) });
+        ? Promise.reject(new Error("firebase/internal boom"))
+        : Promise.resolve({
+            items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>>,
+          });
     });
     const { deps } = makeDeps({
-      studentAssignmentsList: assignmentsSeam([okItem()]),
-      studentResultsList: () => resultsCallable,
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    // Navigate to My Results before the first read settles so the results
-    // view shares the same in-flight (rejecting) read the default view
-    // started for status decoration. On My Assignments that failure
-    // degrades silently; on My Results it surfaces the recoverable error.
-    goResults(mount);
-    await flush();
-    expect(mount.querySelector("[data-testid=results-error]")).not.toBeNull();
-    mount.querySelector<HTMLButtonElement>("[data-testid=results-retry]")?.click();
-    await flush();
-    expect(mount.querySelector("[data-testid=results-list]")).not.toBeNull();
-  });
-
-  test("My Results shows best score, attempt count, and the Perfect Score status", async () => {
-    const resultsCallable = jest.fn(() =>
-      Promise.resolve({
-        attempts: Object.freeze([
-          okAttempt({ attemptId: "at-1", attemptNumber: 1, score: 6, maxScore: 10, percentage: 60 }),
-          okAttempt({ attemptId: "at-2", attemptNumber: 2, score: 10, maxScore: 10, percentage: 100 }),
-        ]),
-      }),
-    );
-    const { deps } = makeDeps({
-      studentAssignmentsList: assignmentsSeam([okItem()]),
-      studentResultsList: () => resultsCallable,
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    goResults(mount);
-    await flush();
-    expect(resultsCallable).toHaveBeenCalledWith();
-    expect(mount.querySelectorAll("[data-testid=results-item]")).toHaveLength(1);
-    expect(
-      mount.querySelector("[data-testid=results-best-score]")?.textContent,
-    ).toBe("Best score: 10 / 10");
-    expect(
-      mount.querySelector("[data-testid=results-attempt-count]")?.textContent,
-    ).toBe("2 attempts completed");
-    // Status conveyed by visible label text, never color alone.
-    expect(
-      mount.querySelector("[data-testid=results-status]")?.textContent,
-    ).toContain("Perfect Score");
-    // A perfect best offers no Improve My Score control.
-    expect(mount.querySelector("[data-testid=results-improve]")).toBeNull();
-  });
-
-  test("Improve My Score is offered on a less-than-perfect best and reuses the launch path", async () => {
-    const onLaunchAssignment = jest.fn();
-    const { deps } = makeDeps({
-      studentAssignmentsList: assignmentsSeam([okItem()]),
-      studentResultsList: resultsSeam([okAttempt({ score: 8, maxScore: 10, percentage: 80 })]),
-      onLaunchAssignment,
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    goResults(mount);
-    await flush();
-    const improve = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=results-improve]",
-    );
-    expect(improve).not.toBeNull();
-    expect(improve?.getAttribute("data-assignment-launch-url")).toBe(
-      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
-    );
-    improve?.click();
-    expect(onLaunchAssignment).toHaveBeenCalledTimes(1);
-    expect(onLaunchAssignment).toHaveBeenCalledWith(
-      "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
-    );
-  });
-
-  test("fallback historical item: an attempt whose assignment is no longer listed shows a safe label and no Improve My Score (fail closed)", async () => {
-    const { deps } = makeDeps({
-      // The current assignment list does NOT contain assign-ghost.
-      studentAssignmentsList: assignmentsSeam([okItem()]),
-      studentResultsList: resultsSeam([
-        okAttempt({
-          attemptId: "ghost-1",
-          assignmentId: "assign-ghost",
-          score: 8,
-          maxScore: 10,
-          percentage: 80,
-        }),
-      ]),
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
-    goResults(mount);
-    await flush();
-    const titles = Array.from(
-      mount.querySelectorAll("[data-testid=results-item-title]"),
-    ).map((el) => el.textContent);
-    expect(titles).toEqual(["Assignment no longer listed"]);
-    // The internal id must not become the primary label.
-    expect(mount.textContent).not.toContain("assign-ghost");
-    // Even though the best is less than perfect, no launchable target
-    // exists, so Improve My Score is withheld (fail closed).
-    expect(mount.querySelector("[data-testid=results-improve]")).toBeNull();
-  });
-
-  test("My Assignments shows status once results are wired: derived for attempted, Ready to Begin for unattempted", async () => {
-    const { deps } = makeDeps({
-      studentAssignmentsList: assignmentsSeam([
-        okItem(),
-        okItem({ assignmentId: "assign-2", lessonSlug: "cell-types", title: "Cell Types" }),
-      ]),
-      studentResultsList: resultsSeam([
-        okAttempt({ assignmentId: "assign-1", score: 10, maxScore: 10, percentage: 100 }),
-      ]),
+      studentAssignmentsList: () => callable,
+      studentResultsList: resultsSeam([]),
     });
     const table = createRouteTable(deps);
     const mount = mkMount();
     table.activeStudent(studentSession(), mount);
     await flush();
-    const statuses = Array.from(
-      mount.querySelectorAll("[data-testid=assignments-item-status]"),
-    ).map((el) => el.textContent);
-    expect(statuses).toHaveLength(2);
-    expect(statuses[0]).toContain("Perfect Score");
-    expect(statuses[1]).toContain("Ready to Begin");
-  });
-
-  test("Sprint 28.5B (B4): completed work (Well Done!/Perfect) is flagged data-complete; actionable work is not, and every card stays visible and launchable", async () => {
-    const { deps } = makeDeps({
-      studentAssignmentsList: assignmentsSeam([
-        okItem({ assignmentId: "assign-perfect", title: "Perfect one" }),
-        okItem({ assignmentId: "assign-welldone", title: "Well done one" }),
-        okItem({ assignmentId: "assign-improving", title: "Improving one" }),
-        okItem({ assignmentId: "assign-ready", title: "Not started one" }),
-      ]),
-      studentResultsList: resultsSeam([
-        okAttempt({ assignmentId: "assign-perfect", score: 10, maxScore: 10, percentage: 100 }),
-        okAttempt({ assignmentId: "assign-welldone", score: 9, maxScore: 10, percentage: 90 }),
-        okAttempt({ assignmentId: "assign-improving", score: 5, maxScore: 10, percentage: 50 }),
-        // assign-ready has no completed attempt -> derives Ready to Begin.
-      ]),
-    });
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.activeStudent(studentSession(), mount);
+    const err = mount.querySelector("[data-testid=assignments-error]");
+    expect(err).not.toBeNull();
+    // No raw Firebase / callable detail leaks into the message.
+    expect(err?.textContent ?? "").not.toContain("firebase");
+    expect(err?.textContent ?? "").not.toContain("boom");
+    mount.querySelector<HTMLButtonElement>("[data-testid=assignments-retry]")?.click();
     await flush();
-
-    const items = Array.from(
-      mount.querySelectorAll<HTMLElement>("[data-testid=assignments-item]"),
-    );
-    // All four cards remain present (no hiding/collapsing/removal).
-    expect(items).toHaveLength(4);
-    // Well Done! and Perfect Score recede; Improving and Ready to Begin do not.
-    const complete = items.map((li) => li.getAttribute("data-complete"));
-    expect(complete).toEqual(["true", "true", null, null]);
-    // Every card - completed included - keeps a working Open assignment
-    // control with its exact label and a launch URL.
-    for (const li of items) {
-      const launch = li.querySelector<HTMLButtonElement>(
-        "[data-testid=assignments-launch]",
-      );
-      expect(launch).not.toBeNull();
-      expect(launch?.textContent).toBe("Open assignment");
-      expect(launch?.getAttribute("data-assignment-launch-url")).toBeTruthy();
-    }
+    expect(callable).toHaveBeenCalledTimes(2);
+    expect(mount.querySelector("[data-testid=my-science-card]")).not.toBeNull();
   });
 
-  test("My Assignments renders without status when the results read fails (no mislabeling)", async () => {
+  test("a results-read failure degrades gracefully: assignments still render and launch, with no misleading status", async () => {
     const { deps } = makeDeps({
       studentAssignmentsList: assignmentsSeam([okItem()]),
       studentResultsList: () => () => Promise.reject(new Error("results down")),
@@ -1360,10 +1211,95 @@ describe("active student surface (Sprint 27 My Results + status + navigation)", 
     const mount = mkMount();
     table.activeStudent(studentSession(), mount);
     await flush();
-    // The assignment still renders and is launchable; no status chip is
-    // shown rather than a misleading Ready to Begin.
-    expect(mount.querySelector("[data-testid=assignments-item]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=assignments-item-status]")).toBeNull();
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]");
+    expect(card).not.toBeNull();
+    expect(card?.querySelector("[data-testid=assignments-launch]")).not.toBeNull();
+    // No status chip rather than a misleading Ready to Begin / completed state.
+    expect(
+      card?.querySelector("[data-testid=my-science-card-status]"),
+    ).toBeNull();
+  });
+
+  test("rendering My Science is read-only: only the two read callables run, and nothing launches or mutates", async () => {
+    const assignments = jest.fn(() =>
+      Promise.resolve({
+        items: Object.freeze([okItem()]) as ReadonlyArray<ReturnType<typeof okItem>>,
+      }),
+    );
+    const results = jest.fn(() => Promise.resolve({ attempts: Object.freeze([]) }));
+    const onLaunchAssignment = jest.fn();
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => assignments,
+      studentResultsList: () => results,
+      onLaunchAssignment,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(assignments).toHaveBeenCalledTimes(1);
+    expect(results).toHaveBeenCalledTimes(1);
+    // Simply rendering the surface never begins a session / attempt.
+    expect(onLaunchAssignment).not.toHaveBeenCalled();
+  });
+
+  test("Open assignment launches via the certified launcher URL and exposes no identity beyond the assignmentId", async () => {
+    const onLaunchAssignment = jest.fn();
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem()]),
+      studentResultsList: resultsSeam([]),
+      onLaunchAssignment,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignments-launch]",
+    );
+    const url = btn?.getAttribute("data-assignment-launch-url") ?? "";
+    expect(url).toBe("/app/lessons/lesson_what-is-life.html?assignment=assign-1");
+    for (const forbidden of ["u1", "s1", "uid=", "schoolId=", "session=", "token=", "score="]) {
+      expect(url).not.toContain(forbidden);
+    }
+    btn?.click();
+    expect(onLaunchAssignment).toHaveBeenCalledTimes(1);
+    expect(onLaunchAssignment).toHaveBeenCalledWith(url);
+    // The launch button's accessible name includes the lesson title.
+    expect(btn?.getAttribute("aria-label")).toBe("Open assignment: What Is Life?");
+  });
+
+  test("heading hierarchy is h1 My Science -> h2 domain -> h3 card title", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem({ lessonSlug: "what-is-life" })]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelector("h1")?.textContent).toBe("My Science");
+    const h2 = mount.querySelector("[data-testid=my-science-domain-heading]");
+    expect(h2?.tagName).toBe("H2");
+    const h3 = mount.querySelector("[data-testid=my-science-card-title]");
+    expect(h3?.tagName).toBe("H3");
+  });
+
+  test("titles are inserted via textContent so HTML from the callable cannot render", async () => {
+    const { deps } = makeDeps({
+      // Unknown slug so the stored (hostile) title is used as the fallback.
+      studentAssignmentsList: assignmentsSeam([
+        okItem({ lessonSlug: "no-such-slug", title: "<img src=x onerror=alert(1)>" }),
+      ]),
+      studentResultsList: resultsSeam([]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const title = mount.querySelector("[data-testid=my-science-card-title]");
+    expect(title?.textContent).toBe("<img src=x onerror=alert(1)>");
+    expect(title?.querySelector("img")).toBeNull();
   });
 });
 

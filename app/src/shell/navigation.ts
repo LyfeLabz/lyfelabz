@@ -1,20 +1,21 @@
 // Persistent teacher-workspace navigation. Sprint 6C established the
 // permanent left-side panel defined in TEACHER_EXPERIENCE_PHILOSOPHY.md
-// §3.3. The panel contains, in order: LYFELABZ, Curriculum, Classes,
-// Present Mode, Settings. Sprint 6F promoted Present Mode to a real
-// workspace destination. Sprint 6H promotes Settings from a disabled
-// coming-soon placeholder to a real workspace destination that renders
-// a foundation state through the shared workspace outlet. Every
-// permanent left-side navigation item is now an available workspace
-// destination.
+// §3.3. Sprint 28.6D performs the teacher information-architecture
+// transition (Blueprint §4): the panel now contains, in order, LYFELABZ,
+// Classes, Curriculum, Settings. Classes is the operational home and the
+// default landing surface; the LYFELABZ brand item lands on Classes.
+// Present Mode leaves the primary navigation - its former "show students
+// the lesson" purpose is met faithfully by lesson Preview - and the
+// `presentMode` surface module plus `app/src/presentMode/*` remain
+// dormant in the tree (not deleted) for a future genuine
+// classroom-presentation tool.
 
 // The workspace-surface keys are the identities of the outlet regions
 // that renderNavigation can activate. LYFELABZ is a brand item that
-// activates the Curriculum surface; it is not a surface identity.
+// activates the Classes surface; it is not a surface identity.
 export type WorkspaceSurfaceKey =
   | "curriculum"
   | "classes"
-  | "present-mode"
   | "settings";
 
 export type NavigationItemKey = "lyfelabz" | WorkspaceSurfaceKey;
@@ -44,8 +45,6 @@ const NAV_ICON_PATHS: Readonly<Record<WorkspaceSurfaceKey, string>> =
       "M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5V4.5Z M4 19.5A2.5 2.5 0 0 1 6.5 17H20",
     classes:
       "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
-    "present-mode":
-      "M2 3h20v14H2z M8 21h8 M12 17v4",
     settings:
       "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z",
   });
@@ -80,15 +79,8 @@ export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = Object.freeze([
     key: "lyfelabz" as const,
     label: "Workspace",
     available: true,
-    targetSurface: "curriculum" as const,
+    targetSurface: "classes" as const,
     variant: "brand" as const,
-  }),
-  Object.freeze({
-    key: "curriculum" as const,
-    label: "Curriculum",
-    available: true,
-    targetSurface: "curriculum" as const,
-    variant: "item" as const,
   }),
   Object.freeze({
     key: "classes" as const,
@@ -98,10 +90,10 @@ export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = Object.freeze([
     variant: "item" as const,
   }),
   Object.freeze({
-    key: "present-mode" as const,
-    label: "Present Mode",
+    key: "curriculum" as const,
+    label: "Curriculum",
     available: true,
-    targetSurface: "present-mode" as const,
+    targetSurface: "curriculum" as const,
     variant: "item" as const,
   }),
   Object.freeze({
@@ -121,7 +113,7 @@ export type NavigationRenderInput = {
 export function renderNavigation(
   mount: HTMLElement,
   input: NavigationRenderInput = {
-    activeKey: "curriculum",
+    activeKey: "classes",
     onSelect: () => undefined,
   },
 ): HTMLElement {

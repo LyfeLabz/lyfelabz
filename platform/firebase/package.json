@@ -5,7 +5,10 @@
   "description": "LyfeLabz Firebase configuration and Firestore Rules tests.",
   "scripts": {
     "test:rules": "firebase emulators:exec --only firestore \"jest\"",
-    "test:rules:watch": "firebase emulators:exec --only firestore \"jest --watch\""
+    "test:rules:watch": "firebase emulators:exec --only firestore \"jest --watch\"",
+    "ux-review": "bash ../../scripts/ux-review/start.sh",
+    "ux-review:reseed": "bash ../../scripts/ux-review/reseed.sh",
+    "ux-review:stop": "bash ../../scripts/ux-review/stop.sh"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.4",

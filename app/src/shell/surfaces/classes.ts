@@ -11,26 +11,39 @@ import type {
 import type {
   ImportController,
   ImportFromClassroomDeps,
-  ImportStage,
   ImportState,
 } from "../../classes/importFromClassroom";
 import { createImportFromClassroom } from "../../classes/importFromClassroom";
 import type { IntegrationsLmsClass } from "../../settings/integrations/types";
-import type {
-  TeacherDefaultGrade,
-  UpdateTeacherDefaultGrade,
-} from "../../teacherPreferences/types";
+import type { TeacherDefaultGrade } from "../../teacherPreferences/types";
 import { isTeacherDefaultGrade } from "../../teacherPreferences/types";
-import {
-  renderSnapshotSurface,
-  type SnapshotPreview,
-} from "./snapshot";
+// Sprint 28.6H.3 (Task B1): Overview/Snapshot is removed from the class
+// workspace, so `renderSnapshotSurface` is no longer mounted here. The
+// `SnapshotPreview` type is retained on the deps contract (dormant) so the
+// shell wiring stays intact; the surface module itself is left dormant in the
+// tree (not deleted), mirroring the Present Mode disposition.
+import type { SnapshotPreview } from "./snapshot";
 // Sprint 25 certification (B2) fix: after any class mutation on this
 // surface, drop the Curriculum surface's module-scoped class cache so
 // the Assign dialog cannot keep serving the pre-mutation class list. The
 // two sibling surfaces already flow through the shared shell; this direct
 // import mirrors the existing sibling import of `./snapshot`.
 import { invalidateCurriculumClassCache } from "./curriculum";
+import type {
+  CurriculumAssignmentDetailSeam,
+  AssignmentDetailOpenOptions,
+} from "./curriculum";
+import type { WorkspaceSurfaceKey } from "../navigation";
+// Sprint 28.6C: the class-scoped Assignments section reuses the certified
+// Active Assignments renderer (flat, filtered by classId) rather than
+// duplicating an assignment-row implementation. Curriculum keeps mounting the
+// same renderer in its accordion form until 28.6D removes it from Curriculum.
+import {
+  renderActiveAssignmentsSection,
+  isRenderableCard,
+} from "./shared/activeAssignments";
+import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
+import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
 // the authenticated teacher. See SPRINT_6B_SPECIFICATION.md §6.
@@ -55,7 +68,47 @@ type ActiveTeacher = Extract<Session, { kind: "activeTeacher" }>;
 // It is not a peer of Snapshot / Roster in the class navigation; it
 // replaces both until the class becomes active. Snapshot and Roster
 // are unreachable for a needsSetup class.
-export type ClassWorkspaceTab = "snapshot" | "roster" | "setup";
+//
+// Sprint 28.6C: the class workspace becomes the conceptual Overview /
+// Assignments / Students structure. The internal tab keys are kept stable
+// (`snapshot` = Overview, `roster` = Students) so the certified switcher
+// testids and their tests are preserved; `assignments` is the new
+// class-scoped operational section. Only the visible labels change.
+export type ClassWorkspaceTab =
+  | "snapshot"
+  | "assignments"
+  | "roster"
+  | "setup";
+
+// Sprint 28.6C: shell-owned return location so the teacher lands back in a
+// class's Assignments section after returning from Assignment Detail. See
+// shell.ts `classesReturn`.
+export type ClassWorkspaceReturn = {
+  readonly classId: string;
+  readonly tab: ClassWorkspaceTab;
+};
+
+// Sprint 28.6F: which class-management control the Classes surface should
+// open on its next mount. Settings' "Classes & Google Classroom" section
+// sets this (via the shell opener) and navigates to Classes, so the two
+// entry points drive one workflow implementation. `"create"` opens the
+// Create LyfeLabz Class form; `"import"` reveals and focuses the Import
+// entry point (the teacher confirms with one click so the OAuth pop-up
+// stays inside a user gesture). Consumed exactly once per navigation.
+export type ClassManagementIntent = "create" | "import";
+
+// Sprint 28.6C: class-assignment wiring shared by the class card (count) and
+// the class workspace Assignments section. `enabled` is false in harnesses
+// with no assignment seam, in which case counts read 0 and the Assignments
+// section shows its calm empty state.
+type ClassAssignmentsView = {
+  readonly enabled: boolean;
+  readonly count: (classId: string) => number;
+  readonly listRegistry: () => ReadonlyArray<AssignmentDetailMetadata>;
+  readonly open: (classId: string, assignmentId: string) => void;
+  readonly summaryCallable: AssignmentSummaryCallable | null;
+  readonly onGoToCurriculum: (() => void) | null;
+};
 
 // Optional snapshot preview data. When null (production default), the
 // Snapshot surface renders the certified no-data state. When present,
@@ -78,21 +131,6 @@ export type ClassesSurfaceDeps = {
   // orchestration callable is introduced; this seam bundles the
   // certified callables already wired at the entry point.
   readonly importFromClassroom?: ImportFromClassroomDeps | null;
-  // Sprint 24B Phase 2B.2: teacher `defaultGrade` convenience
-  // preference. When present, the Manual Create form seeds its grade
-  // select from this value instead of the hard-coded default. When
-  // null (no preference or read failure) the form falls back to the
-  // pre-Phase 2B.2 seed of "7" (retirement of the hard-coded default
-  // is deferred to Phase 2B.4 per Reader Audit §5 C12).
-  readonly defaultGrade?: TeacherDefaultGrade | null;
-  // Sprint 24B Phase 2B.2: best-effort preference-update seam invoked
-  // after a successful Manual Create submission. Called with the
-  // teacher-selected grade so a later Manual Create pre-fills the same
-  // grade ("most recently confirmed grade wins"). The update is
-  // fire-and-forget; a rejection is swallowed so class creation
-  // cannot be undone or surfaced as an error because of a preference
-  // storage failure.
-  readonly updateDefaultGrade?: UpdateTeacherDefaultGrade | null;
   // Sprint 24B Phase 2B.4: certified `classesActivate` seam consumed
   // by the imported-class setup form. Null when not wired (test
   // harnesses that do not exercise activation); in that case the setup
@@ -117,18 +155,45 @@ export type ClassesSurfaceDeps = {
   // the automatic initial sync is skipped without altering activation
   // behavior.
   readonly syncRoster?: SyncRoster | null;
+  // Sprint 28.6C: the session-scoped teacher assignment-detail seam (the same
+  // one Curriculum uses). The Classes surface reads `list()` - already
+  // hydrated once from `assignmentsTeacherList`, which carries `classId` - to
+  // group per-class assignment counts and to render each class's Assignments
+  // section, and calls `open()` to reach the existing Assignment Detail. It
+  // never enumerates classes, never fans out per class, and adds no callable.
+  // Null in harnesses that do not exercise assignments.
+  readonly assignmentDetail?: CurriculumAssignmentDetailSeam | null;
+  // Sprint 28.6C: certified `assessmentAssignmentSummary` seam passed through
+  // to the class Assignments section for the same per-card progress line
+  // Curriculum shows. Optional; when null no progress line is rendered.
+  readonly assignmentSummary?: AssignmentSummaryCallable | null;
+  // Sprint 28.6C: bounded intra-shell navigation seam. Used to route the empty
+  // Assignments state to Curriculum and to return to Classes after Assignment
+  // Detail. Null in harnesses that do not exercise those paths.
+  readonly navigateToSurface?: ((surface: WorkspaceSurfaceKey) => void) | null;
+  // Sprint 28.6C: shell-owned class-workspace return-location seam (see
+  // shell.ts). Read once on mount to re-land in the class Assignments section
+  // after Assignment Detail; written just before opening Detail.
+  readonly getClassesReturn?: (() => ClassWorkspaceReturn | null) | null;
+  readonly setClassesReturn?:
+    | ((loc: ClassWorkspaceReturn | null) => void)
+    | null;
+  // Sprint 28.6F: class-management intent one-shot (see shell.ts). Read once
+  // on mount so a Settings "Import" / "Create" choice opens the matching
+  // control here (the SAME workflow the `+ Add a class` entry uses); cleared
+  // immediately after consumption. Absent in harnesses that do not exercise it.
+  readonly getClassManagementIntent?:
+    | (() => ClassManagementIntent | null)
+    | null;
+  readonly setClassManagementIntent?:
+    | ((intent: ClassManagementIntent | null) => void)
+    | null;
 };
 
-// Every arm of `ClassSummary["status"]` must have a label. The
-// `needsSetup` label lands here in Phase 2B.1; the "Finish setting up
-// this class" affordance and the workspace-hosted setup form are
-// deferred to Phase 2B.4. See docs/platform/SPRINT_24B_PHASE_2B_READER_AUDIT.md §5 C6.
-const STATUS_LABEL: Readonly<Record<ClassSummary["status"], string>> =
-  Object.freeze({
-    active: "Active",
-    archived: "Archived",
-    needsSetup: "Setup needed",
-  });
+// Sprint 28.6H (Finding 2): the class-card status label map was removed with
+// the Active badge (see renderClassCard). Snapshot/Overview keeps its own
+// status labelling where meaningful; the everyday class card no longer repeats
+// the class status. Backend class-status semantics are unchanged.
 
 type CreateFormState = {
   readonly title: string;
@@ -138,9 +203,9 @@ type CreateFormState = {
   readonly error: string | null;
 };
 
-// Phase 2B.4: setup form state for the imported-class workspace. Grade
-// may prefill from the teacher's saved defaultGrade when present; the
-// teacher may always override it. Block never prefills.
+// Setup form state for the imported-class workspace. Grade and block both
+// begin empty; the teacher chooses them for this class before activation
+// (Sprint 28.6F removed the teacher-level grade seed, Blueprint §14).
 type SetupFormState = {
   readonly grade: string;
   readonly block: string;
@@ -166,27 +231,23 @@ type ClassesState =
       readonly setupForm: SetupFormState | null;
     };
 
-// Phase 2B.4: retire the hard-coded Grade 7 fallback. When no
-// preference is present, grade begins empty and the teacher must
-// choose explicitly. Block always begins empty; there is no
-// `defaultBlock` at any layer (ADR §12).
-const emptyForm = (seedGrade: TeacherDefaultGrade | null): CreateFormState =>
+// Grade/block always begin empty; the teacher must choose explicitly for
+// every class. Sprint 28.6F removed the global teacher `defaultGrade`
+// preference that previously seeded these (Blueprint §14): a class derives
+// its grade only from its own create/setup flow, never from a teacher-level
+// default. There is no `defaultBlock` at any layer (ADR §12).
+const emptyForm = (): CreateFormState =>
   Object.freeze({
     title: "",
-    grade: seedGrade !== null && isTeacherDefaultGrade(seedGrade) ? seedGrade : "",
+    grade: "",
     block: "",
     submitting: false,
     error: null,
   });
 
-// Phase 2B.4: initial setup-form state. Grade prefills from the saved
-// preference when it is a valid closed-set value; otherwise it begins
-// empty and the teacher must choose. Block always begins empty.
-const emptySetupForm = (
-  seedGrade: TeacherDefaultGrade | null,
-): SetupFormState =>
+const emptySetupForm = (): SetupFormState =>
   Object.freeze({
-    grade: seedGrade !== null && isTeacherDefaultGrade(seedGrade) ? seedGrade : "",
+    grade: "",
     block: "",
     submitting: false,
     error: null,
@@ -198,13 +259,68 @@ export function renderClassesSurface(
   deps: ClassesSurfaceDeps,
 ): void {
   const doc = mount.ownerDocument;
-  const preview = deps.snapshotPreview ?? null;
+  // Sprint 28.6H.3 (Task B1): `deps.snapshotPreview` is dormant (Overview
+  // removed); it is intentionally not read here anymore.
   const createClass = deps.createClass ?? null;
   const importDeps = deps.importFromClassroom ?? null;
-  const defaultGrade: TeacherDefaultGrade | null = deps.defaultGrade ?? null;
-  const updateDefaultGrade = deps.updateDefaultGrade ?? null;
   const activateClass = deps.activateClass ?? null;
   const syncRoster = deps.syncRoster ?? null;
+  const assignmentDetail = deps.assignmentDetail ?? null;
+  const assignmentSummary = deps.assignmentSummary ?? null;
+  const navigateToSurface = deps.navigateToSurface ?? null;
+  const getClassesReturn = deps.getClassesReturn ?? null;
+  const setClassesReturn = deps.setClassesReturn ?? null;
+  const getClassManagementIntent = deps.getClassManagementIntent ?? null;
+  const setClassManagementIntent = deps.setClassManagementIntent ?? null;
+
+  // Sprint 28.6C: the whole-teacher assignment registry, already hydrated once
+  // from `assignmentsTeacherList` (which carries `classId`). Reading it is a
+  // pure in-memory grouping - never a per-class call, never an N+1 read.
+  const listAllAssignments = (): ReadonlyArray<AssignmentDetailMetadata> =>
+    assignmentDetail?.list?.() ?? [];
+
+  // Sprint 28.6C: the count shown on a class card is exactly the set of
+  // assignments reachable through that class's Assignments section - published
+  // and closed (drafts are never surfaced). Same predicate the class
+  // Assignments section applies, so the card count and the section can never
+  // disagree, and another class's assignments can never inflate it.
+  const countClassAssignments = (classId: string): number => {
+    let n = 0;
+    for (const meta of listAllAssignments()) {
+      if (meta.classId === classId && isRenderableCard(meta)) n += 1;
+    }
+    return n;
+  };
+
+  // Sprint 28.6C: open the existing Assignment Detail from the class-centered
+  // workflow. Records the return location on the shell so the Back control (and
+  // returning nav) re-lands in this class's Assignments section rather than
+  // stranding the teacher in Curriculum; supplies a "Back to class" label. When
+  // the seam is absent (harness) the row action is simply inert.
+  const openClassAssignment = (classId: string, assignmentId: string): void => {
+    if (assignmentDetail === null) return;
+    setClassesReturn?.({ classId, tab: "assignments" });
+    const options: AssignmentDetailOpenOptions = {
+      backLabel: "Back to class",
+      onBack: () => {
+        navigateToSurface?.("classes");
+      },
+    };
+    assignmentDetail.open(assignmentId, options);
+  };
+
+  // Sprint 28.6C: the single bundle of class-assignment wiring threaded to the
+  // class card (count) and the class workspace (Assignments section). Grouping
+  // it keeps the two renderers' signatures from growing per field.
+  const assignmentsView: ClassAssignmentsView = {
+    enabled: assignmentDetail !== null,
+    count: countClassAssignments,
+    listRegistry: listAllAssignments,
+    open: openClassAssignment,
+    summaryCallable: assignmentSummary,
+    onGoToCurriculum:
+      navigateToSurface !== null ? () => navigateToSurface("curriculum") : null,
+  };
 
   // Sprint 24B Phase 2B.8. Per-class roster-sync UI state. Ephemeral to
   // this surface mount; not persisted to Firestore. Keyed by classId.
@@ -226,12 +342,29 @@ export function renderClassesSurface(
       };
   const rosterSyncByClass: Map<string, RosterSyncEntry> = new Map();
 
+  // Sprint 28.6H (Finding 1): whether the minimized "+ Add class" disclosure is
+  // revealed in a populated Classes list. Closure-scoped (not part of the
+  // discriminated state) so it survives every list-state reconstruction the
+  // import/create flow performs; the discriminated state rebuilds would
+  // otherwise drop it and snap the panel shut mid-workflow. Ignored in the
+  // zero-class state, where the Import / Create workflow is always prominent.
+  // Sprint 28.6H.6 (Part F/G): which class-source TASK the teacher chose, so the
+  // routed task surface shows ONLY that task (create form OR Google Classroom
+  // import), never the alternative path. Set from the one-shot Settings intent
+  // and from an in-surface Create/Import choice; cleared when a task is
+  // cancelled. `null` means the (zero-class) decision surface, which offers both.
+  let listAddMode: ClassManagementIntent | null = null;
+
   const getRosterSyncEntry = (classId: string): RosterSyncEntry =>
     rosterSyncByClass.get(classId) ?? { status: "idle" };
 
   const isSyncInFlight = (classId: string): boolean =>
     getRosterSyncEntry(classId).status === "syncing";
 
+  // Sprint 28.6H.3 (Task B3/C4): the automatic post-activation roster sync for
+  // a newly-activated LMS-linked class is preserved (backend behavior
+  // unchanged). Its manual counterpart and status panel moved to Settings →
+  // Class Management; the class workspace no longer renders roster-sync UI.
   const runRosterSync = (classId: string): void => {
     if (syncRoster === null) return;
     if (isSyncInFlight(classId)) return;
@@ -294,7 +427,6 @@ export function renderClassesSurface(
           mount,
           s.classes,
           onOpenClass,
-          createClass !== null,
           s.form,
           s.lastCreated,
           onStartCreate,
@@ -309,6 +441,10 @@ export function renderClassesSurface(
           onCancelImport,
           onRetryImport,
           onOpenClass,
+          listAddMode,
+          navigateToSurface !== null
+            ? () => navigateToSurface("settings")
+            : null,
         );
         return;
       case "workspace": {
@@ -329,7 +465,6 @@ export function renderClassesSurface(
           mount,
           summary,
           s.tab,
-          preview,
           onSelectTab,
           onBackToList,
           s.setupForm,
@@ -337,11 +472,7 @@ export function renderClassesSurface(
           onSubmitSetup,
           onCancelSetup,
           activateClass !== null,
-          {
-            available: syncRoster !== null,
-            entry: getRosterSyncEntry(summary.id),
-            onSyncClick: () => runRosterSync(summary.id),
-          },
+          assignmentsView,
         );
         return;
       }
@@ -353,26 +484,33 @@ export function renderClassesSurface(
 
   const onOpenClass = (classId: string): void => {
     if (state.kind !== "list") return;
+    // Opening a class leaves any focused class-source task.
+    listAddMode = null;
     const summary = state.classes.find((c) => c.id === classId);
     // Phase 2B.4: a needsSetup class opens directly on the setup form.
-    // Snapshot and Roster are unreachable until activation completes.
+    // Assignments and Students are unreachable until activation completes.
     const isNeedsSetup = summary?.status === "needsSetup";
+    // Sprint 28.6H.3 (Task B2): an active class opens directly on Assignments
+    // ("what is happening with my students" is the everyday question), not the
+    // removed Overview. Overview/Snapshot is no longer a reachable tab.
     state = {
       kind: "workspace",
       classes: state.classes,
       selectedId: classId,
-      tab: isNeedsSetup ? "setup" : "snapshot",
-      setupForm: isNeedsSetup ? emptySetupForm(defaultGrade) : null,
+      tab: isNeedsSetup ? "setup" : "assignments",
+      setupForm: isNeedsSetup ? emptySetupForm() : null,
     };
     rerender();
   };
 
   const onStartCreate = (): void => {
     if (state.kind !== "list") return;
+    // Sprint 28.6H.6 (Part F): entering the focused manual-create task.
+    listAddMode = "create";
     state = {
       kind: "list",
       classes: state.classes,
-      form: emptyForm(defaultGrade),
+      form: emptyForm(),
       lastCreated: null,
       importState: state.importState,
     };
@@ -381,6 +519,12 @@ export function renderClassesSurface(
 
   const onCancelCreate = (): void => {
     if (state.kind !== "list") return;
+    // Sprint 28.6H.6 (Part F5): Cancel returns to the Settings -> Class
+    // Management decision surface (the administrative home for choosing a class
+    // source) when the surface-navigation seam is wired; the create draft is
+    // cleared either way. Without the seam (some harnesses) it falls back to the
+    // in-Classes decision state.
+    listAddMode = null;
     state = {
       kind: "list",
       classes: state.classes,
@@ -388,6 +532,10 @@ export function renderClassesSurface(
       lastCreated: state.lastCreated,
       importState: state.importState,
     };
+    if (navigateToSurface !== null) {
+      navigateToSurface("settings");
+      return;
+    }
     rerender();
   };
 
@@ -437,6 +585,9 @@ export function renderClassesSurface(
     };
     rerender();
     if (next.kind === "linked") {
+      // Sprint 28.6H.8: the import succeeded - leave the focused import task so
+      // a later return to the list shows the operational landing, not the task.
+      listAddMode = null;
       const targetClassId = next.classId;
       // Phase 2B.4: the linked class is a `needsSetup` class. Refresh
       // the list so the new row is present, then open the workspace
@@ -452,7 +603,7 @@ export function renderClassesSurface(
             classes,
             selectedId: targetClassId,
             tab: "setup",
-            setupForm: emptySetupForm(defaultGrade),
+            setupForm: emptySetupForm(),
           };
           rerender();
         })
@@ -478,6 +629,8 @@ export function renderClassesSurface(
   const onStartImport = (): void => {
     const controller = ensureImportController();
     if (controller === null) return;
+    // Sprint 28.6H.6 (Part G): entering the focused Google Classroom import task.
+    listAddMode = "import";
     void controller.start();
   };
 
@@ -487,20 +640,27 @@ export function renderClassesSurface(
   };
 
   const onCancelImport = (): void => {
-    if (importController === null) {
-      if (state.kind === "list") {
-        state = {
-          kind: "list",
-          classes: state.classes,
-          form: state.form,
-          lastCreated: state.lastCreated,
-          importState: idleImportState(),
-        };
-        rerender();
-      }
+    // Sprint 28.6H.6 (Part G): leaving the focused import task returns to the
+    // Settings -> Class Management decision surface (symmetric with create).
+    // The in-flight import controller is still aborted first so no OAuth/import
+    // work is left running; existing import semantics are unchanged.
+    listAddMode = null;
+    if (importController !== null) {
+      importController.cancel();
+    } else if (state.kind === "list") {
+      state = {
+        kind: "list",
+        classes: state.classes,
+        form: state.form,
+        lastCreated: state.lastCreated,
+        importState: idleImportState(),
+      };
+    }
+    if (navigateToSurface !== null) {
+      navigateToSurface("settings");
       return;
     }
-    importController.cancel();
+    rerender();
   };
 
   const onRetryImport = (): void => {
@@ -577,20 +737,10 @@ export function renderClassesSurface(
         // has already navigated away from the Classes surface.
         invalidateCurriculumClassCache();
         if (!mount.isConnected) return;
-        // Phase 2B.2: best-effort preference update. Fire-and-forget.
-        // A failure here must never surface an error to the teacher and
-        // must never undo the successful class creation. The next
-        // Manual Create simply falls back to the prior preference (or
-        // to no preference).
-        if (
-          updateDefaultGrade !== null &&
-          (grade === "6" || grade === "7" || grade === "8")
-        ) {
-          const submittedGrade = grade as TeacherDefaultGrade;
-          void updateDefaultGrade(submittedGrade).catch(() => {
-            // Swallowed by design.
-          });
-        }
+        // Sprint 28.6H.8: the create succeeded - leave the focused create task
+        // so the operational landing (with the new class + its join code)
+        // renders, not the task surface.
+        listAddMode = null;
         void deps
           .listClasses(session.uid)
           .then((classes) => {
@@ -640,13 +790,15 @@ export function renderClassesSurface(
       classes: state.classes,
       selectedId: state.selectedId,
       tab,
-      setupForm: tab === "setup" ? (state.setupForm ?? emptySetupForm(defaultGrade)) : null,
+      setupForm: tab === "setup" ? (state.setupForm ?? emptySetupForm()) : null,
     };
     rerender();
   };
 
   const onBackToList = (): void => {
     if (state.kind !== "workspace") return;
+    // Returning to the operational Classes landing leaves any class-source task.
+    listAddMode = null;
     state = {
       kind: "list",
       classes: state.classes,
@@ -745,16 +897,11 @@ export function renderClassesSurface(
         // a later Assign open re-fetches the now-active class.
         invalidateCurriculumClassCache();
         if (!mount.isConnected) return;
-        // Phase 2B.4: best-effort defaultGrade preference update.
-        // Activation has already succeeded; a preference failure must
-        // never surface an error or block navigation.
-        if (updateDefaultGrade !== null) {
-          void updateDefaultGrade(submittedGrade).catch(() => {
-            // Swallowed by design.
-          });
-        }
         // Refresh the class list so the newly active class carries its
-        // atomic grade / block / joinCode, then navigate to Snapshot.
+        // atomic grade / block / joinCode, then land on the class default.
+        // Sprint 28.6H.3 (Task B1/B2): Overview/Snapshot is removed, so a
+        // just-activated class opens directly on Assignments like every other
+        // active class.
         void deps
           .listClasses(session.uid)
           .then((classes) => {
@@ -763,7 +910,7 @@ export function renderClassesSurface(
               kind: "workspace",
               classes,
               selectedId: classId,
-              tab: "snapshot",
+              tab: "assignments",
               setupForm: null,
             };
             // Sprint 24B Phase 2B.8. Automatic initial roster sync for
@@ -828,20 +975,113 @@ export function renderClassesSurface(
     .listClasses(session.uid)
     .then((classes) => {
       if (!mount.isConnected) return;
+      // Sprint 28.6C: one-shot return-context restore. When the teacher just
+      // came back from Assignment Detail opened inside a class, re-land in that
+      // class's recorded section (Assignments) instead of the class list. The
+      // location is consumed exactly once; any later Classes visit shows the
+      // list. Only active classes restore into the workspace; a class that has
+      // since been removed or reverted to needsSetup falls back to the list.
+      const restore = getClassesReturn?.() ?? null;
+      if (restore !== null) {
+        setClassesReturn?.(null);
+        const target = classes.find(
+          (c) => c.id === restore.classId && c.status === "active",
+        );
+        if (target !== undefined) {
+          state = {
+            kind: "workspace",
+            classes,
+            selectedId: restore.classId,
+            // Sprint 28.6H.3 (Task B1/B2): Overview/Snapshot is removed; any
+            // stale restore target (setup or the retired snapshot) re-lands on
+            // Assignments, the class default.
+            tab:
+              restore.tab === "assignments" || restore.tab === "roster"
+                ? restore.tab
+                : "assignments",
+            setupForm: null,
+          };
+          rerender();
+          return;
+        }
+      }
+      // Sprint 28.6F: one-shot class-management intent. When the teacher chose
+      // Import / Create from Settings' "Classes & Google Classroom" section,
+      // the shell recorded the intent and routed here; open the matching
+      // control in the SAME `+ Add a class` workflow. Consumed exactly once;
+      // any later Classes visit shows the plain list. Only honored when the
+      // corresponding workflow is actually wired (createClass / import).
+      const intent = getClassManagementIntent?.() ?? null;
+      if (intent !== null) setClassManagementIntent?.(null);
+      const openCreate = intent === "create" && createClass !== null;
+      // Sprint 28.6H (Finding 1): an incoming class-management intent also
+      // reveals the minimized Add-a-class disclosure so the shared workflow is
+      // visible on a populated list (it is always visible when zero classes).
+      const openImport =
+        intent === "import" && importDeps !== null && createClass !== null;
+      // Sprint 28.6H.6 (Part F/G): a routed intent selects the focused task so
+      // the alternative path is not shown alongside it.
+      listAddMode = openCreate ? "create" : openImport ? "import" : null;
       state = {
         kind: "list",
         classes,
-        form: null,
+        form: openCreate ? emptyForm() : null,
         lastCreated: null,
         importState: idleImportState(),
       };
       rerender();
+      focusForClassManagementIntent(intent);
+      // Sprint 28.6H.8 (Part D/D1): a routed Import intent launches the focused
+      // Google Classroom import task DIRECTLY - the teacher does not click a
+      // second Import button. `onStartImport()` runs the certified import
+      // controller (Part D2: contextual authorization - discovery when already
+      // authorized, the existing OAuth flow when not). It is invoked here,
+      // ~1 await after the Settings "Import Class" click that drove this
+      // navigation, so the OAuth pop-up (`win.open`, a few fast awaits later)
+      // stays inside the click's transient activation window (Part O); the
+      // certified popup-blocked path + retry remains the fallback. No new OAuth
+      // is introduced.
+      if (openImport) onStartImport();
     })
     .catch(() => {
       if (!mount.isConnected) return;
       state = { kind: "error" };
       rerender();
     });
+
+  // Sprint 28.6F: after the list (with any intent-opened control) has
+  // rendered, move focus into the shared workflow so a Settings entry lands
+  // the teacher exactly where the action is. Create focuses the class-name
+  // input; Import focuses the Import entry point (the teacher confirms with
+  // one click, keeping the OAuth pop-up inside a user gesture). Scrolls the
+  // control into view when the environment supports it.
+  function focusForClassManagementIntent(
+    intent: ClassManagementIntent | null,
+  ): void {
+    if (intent === null) return;
+    if (!mount.isConnected) return;
+    const testId =
+      intent === "create" && createClass !== null
+        ? "classes-create-title"
+        : intent === "import" && importDeps !== null && createClass !== null
+          ? "classes-import-open"
+          : null;
+    if (testId === null) return;
+    const target = mount.querySelector<HTMLElement>(
+      `[data-testid=${testId}]`,
+    );
+    if (target === null) return;
+    try {
+      target.scrollIntoView({ block: "center" });
+    } catch {
+      // Non-DOM-complete environments (jsdom) may not implement scrollIntoView.
+    }
+    try {
+      target.focus({ preventScroll: true });
+    } catch {
+      // ignored
+    }
+  }
 }
 
 // Phase 2B.4: teacher-facing mapping for the classesActivate error
@@ -953,7 +1193,6 @@ function renderListState(
   mount: HTMLElement,
   classes: ReadonlyArray<ClassSummary>,
   onOpen: (classId: string) => void,
-  canCreate: boolean,
   form: CreateFormState | null,
   lastCreated: CreateClassResult | null,
   onStartCreate: () => void,
@@ -968,7 +1207,145 @@ function renderListState(
   onCancelImport: () => void,
   onRetryImport: () => void,
   onOpenExistingClass: (classId: string) => void,
+  // Sprint 28.6H.6/H.8 (Part D/E): the chosen class-source task. "create" /
+  // "import" render ONLY that focused task; null renders the operational
+  // Classes landing (no class-administration controls).
+  addMode: ClassManagementIntent | null,
+  // Sprint 28.6H.8 (Part C2): navigate to Settings -> Class Management from the
+  // zero-class Classes landing (the operational landing no longer hosts any
+  // class-administration control). Null in harnesses without the seam.
+  onGoToSettings: (() => void) | null,
 ): void {
+  const hasClasses = classes.length > 0;
+
+  // Sprint 28.6H.6 (Part F/G): the class-management workflow is DECISION vs
+  // TASK separated. A chosen task (manual create OR Google Classroom import)
+  // renders ONLY that task - never the alternative path and never an "Add a
+  // class" wrapper heading. The decision state (no task chosen, e.g. the
+  // zero-class landing) presents the two class sources as clearly distinct
+  // labelled groups (Google Classroom / LyfeLabz Classes). The underlying
+  // Import / Create implementations are unchanged and still shared with
+  // Settings.
+  const importEntry = (directLaunch = false): HTMLElement =>
+    renderImportEntryPoint(
+      doc,
+      canImport,
+      importState,
+      onStartImport,
+      onSelectImportCourse,
+      onCancelImport,
+      onRetryImport,
+      onOpenExistingClass,
+      directLaunch,
+    );
+  const createControls = (): HTMLElement =>
+    renderCreateControls(
+      doc,
+      form,
+      onStartCreate,
+      onCancelCreate,
+      onFormChange,
+      onSubmitCreate,
+    );
+
+  const buildAddSection = (): HTMLElement => {
+    const addGroup = doc.createElement("section");
+    addGroup.className = "shell-classes-add";
+    addGroup.id = "classes-add-panel";
+    addGroup.setAttribute("data-testid", "classes-add-a-class");
+    addGroup.setAttribute("role", "region");
+
+    // FOCUSED MANUAL CREATE TASK (Part F): only the manual form. No "Add a
+    // class" wrapper (F1), no Google Classroom import action (F2). The form
+    // carries its own "Create LyfeLabz Class" heading and a "Create Class"
+    // submit (F3/F4).
+    if (form !== null) {
+      addGroup.setAttribute("aria-label", "Create LyfeLabz Class");
+      addGroup.appendChild(createControls());
+      return addGroup;
+    }
+
+    // FOCUSED GOOGLE CLASSROOM IMPORT TASK (Part D/E/G): only the import
+    // workflow, launched DIRECTLY (auto-started). `directLaunch` suppresses the
+    // standalone "Import Class from Google Classroom" button (Task D3 - no
+    // second Import click) and shows the authorization / discovery progression;
+    // the manual Create form/action is never shown alongside it.
+    if (addMode === "import") {
+      addGroup.setAttribute("aria-label", "Import from Google Classroom");
+      addGroup.appendChild(importEntry(true));
+      return addGroup;
+    }
+
+    // DECISION SURFACE (no task chosen; the zero-class landing): two clearly
+    // labelled class sources so manual creation is never mistaken for a Google
+    // Classroom action.
+    addGroup.setAttribute("aria-labelledby", "classes-add-google-heading");
+
+    const gcGroup = doc.createElement("div");
+    gcGroup.className = "shell-classes-add-source";
+    const gcHeading = doc.createElement("h3");
+    gcHeading.className = "shell-classes-add-heading";
+    gcHeading.id = "classes-add-google-heading";
+    gcHeading.setAttribute("data-testid", "classes-add-google-heading");
+    gcHeading.textContent = "Google Classroom";
+    gcGroup.appendChild(gcHeading);
+    gcGroup.appendChild(importEntry());
+    addGroup.appendChild(gcGroup);
+
+    const llGroup = doc.createElement("div");
+    llGroup.className = "shell-classes-add-source";
+    const llHeading = doc.createElement("h3");
+    llHeading.className = "shell-classes-add-heading";
+    llHeading.id = "classes-add-lyfelabz-heading";
+    llHeading.setAttribute("data-testid", "classes-add-lyfelabz-heading");
+    llHeading.textContent = "LyfeLabz Classes";
+    llGroup.appendChild(llHeading);
+    llGroup.appendChild(createControls());
+    addGroup.appendChild(llGroup);
+
+    return addGroup;
+  };
+
+  // Sprint 28.6H.8 (Part C/D/E): task-vs-landing separation. Once a class-source
+  // task is chosen it renders as a FOCUSED task surface only - never the generic
+  // Classes landing (no "Classes" heading, no class count, no class cards, no
+  // second import/create control). Reusing the certified Classes-hosted import /
+  // create implementation is encouraged; showing the generic landing as an
+  // intermediate step is not.
+  if (form !== null) {
+    // Focused manual create task (Part F): the form carries its own
+    // "Create LyfeLabz Class" heading; no generic Classes landing above it.
+    // Sprint 28.6H.9 (Correction 2): a persistent "Back to Settings" control
+    // sits at the top of the task (parent navigation, distinct from the
+    // form's own Cancel action). Rendered only when the settings-return seam
+    // is wired; it reuses onCancelCreate, which returns to Settings -> Class
+    // Management and clears the draft.
+    if (onGoToSettings !== null) {
+      mount.appendChild(renderBackToSettings(doc, onCancelCreate));
+    }
+    mount.appendChild(buildAddSection());
+    return;
+  }
+  if (addMode === "import") {
+    // Focused Google Classroom import task (Part D/E): a specific task heading
+    // then the certified import workflow (auto-started by the surface). No
+    // Classes heading / count / cards / second Import button.
+    // Sprint 28.6H.9 (Correction 2): a persistent "Back to Settings" control
+    // sits above the task heading (parent navigation, distinct from the task's
+    // Cancel / Close). Rendered only when the settings-return seam is wired; it
+    // reuses onCancelImport, which aborts any in-flight import and returns to
+    // Settings -> Class Management.
+    if (onGoToSettings !== null) {
+      mount.appendChild(renderBackToSettings(doc, onCancelImport));
+    }
+    appendHeadline(doc, mount, "Import from Google Classroom");
+    mount.appendChild(buildAddSection());
+    return;
+  }
+
+  // Normal Classes landing (operational only): the teacher's classes. Class
+  // administration lives in Settings -> Class Management, so this surface hosts
+  // NO Import / Create controls (Part C).
   appendHeadline(doc, mount, "Classes");
 
   const status = doc.createElement("p");
@@ -976,62 +1353,61 @@ function renderListState(
   status.setAttribute("data-testid", "classes-status");
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
-  mount.appendChild(status);
 
-  if (canCreate) {
-    mount.appendChild(
-      renderImportEntryPoint(
-        doc,
-        canImport,
-        importState,
-        onStartImport,
-        onSelectImportCourse,
-        onCancelImport,
-        onRetryImport,
-        onOpenExistingClass,
-      ),
-    );
-    mount.appendChild(
-      renderCreateControls(
-        doc,
-        form,
-        onStartCreate,
-        onCancelCreate,
-        onFormChange,
-        onSubmitCreate,
-      ),
-    );
-  }
+  // Sprint 28.6H.3 (Task A2): class creation / import is an infrequent
+  // administrative task and moves to Settings (its administrative home). The
+  // everyday Classes landing therefore carries NO "+ Add class" control when
+  // the teacher already has one or more classes - the class cards are the only
+  // content. The underlying Import / Create workflows are not deleted: they
+  // still render here transiently when the teacher chooses Import / Create in
+  // Settings (the shared one-shot class-management intent routes to this
+  // surface, `addOpen` below), so Settings and Classes keep ONE workflow
+  // implementation. When the teacher has ZERO classes, adding/importing IS the
+  // required first action and is never a dead end, so the Import / Create
+  // workflow is still shown prominently and directly (empty-state branch).
+
+  mount.appendChild(status);
 
   if (lastCreated !== null) {
     mount.appendChild(renderJoinCodePanel(doc, lastCreated, onDismissLastCreated));
   }
 
-  const region = doc.createElement("div");
-  region.className = "shell-classes-region";
-  region.setAttribute("data-testid", "classes-region");
-  mount.appendChild(region);
-
-  if (classes.length === 0) {
-    status.textContent = "You do not have any classes yet.";
+  if (!hasClasses) {
+    // Sprint 28.6H.8 (Part C2): the zero-class landing is a concise
+    // informational empty state that points to Settings -> Class Management. It
+    // is NOT a second Import / Create decision surface - no class-administration
+    // controls are rendered here.
+    status.textContent = "No classes yet.";
+    const region = doc.createElement("div");
+    region.className = "shell-classes-region";
+    region.setAttribute("data-testid", "classes-region");
     const empty = doc.createElement("p");
     empty.className = "shell-classes-empty";
     empty.setAttribute("data-testid", "classes-empty");
-    empty.textContent = canCreate
-      ? "Choose Import Class from Google Classroom to bring in a class you already teach, or Create LyfeLabz Class to add one from scratch."
-      : "Classrooms you own will appear here once they are created.";
+    empty.textContent = "Add or import a class in Settings.";
     region.appendChild(empty);
+    if (onGoToSettings !== null) {
+      const go = doc.createElement("button");
+      go.type = "button";
+      go.className = "shell-btn shell-classes-go-to-settings";
+      go.setAttribute("data-testid", "classes-go-to-settings");
+      go.textContent = "Go to Settings";
+      go.addEventListener("click", () => onGoToSettings());
+      region.appendChild(go);
+    }
+    mount.appendChild(region);
     return;
   }
 
   status.textContent =
     classes.length === 1 ? "1 class" : `${classes.length} classes`;
 
-  const prompt = doc.createElement("p");
-  prompt.className = "shell-classes-prompt";
-  prompt.setAttribute("data-testid", "classes-prompt");
-  prompt.textContent = "Choose a class to open its workspace.";
-  region.appendChild(prompt);
+  // The class cards are the only content on the operational landing. No
+  // class-administration controls (Import / Create moved to Settings, Part C).
+  const region = doc.createElement("div");
+  region.className = "shell-classes-region";
+  region.setAttribute("data-testid", "classes-region");
+  mount.appendChild(region);
 
   const list = doc.createElement("ul");
   list.className = "shell-classes-list";
@@ -1053,6 +1429,11 @@ function renderImportEntryPoint(
   onCancelImport: () => void,
   onRetryImport: () => void,
   onOpenExistingClass: (classId: string) => void,
+  // Sprint 28.6H.8 (Part D3): direct-launch mode (Settings -> Import Class). The
+  // standalone "Import Class from Google Classroom" button is suppressed because
+  // the flow is auto-started; a brief idle state shows a calm connecting
+  // placeholder, then the authorization / discovery progression renders.
+  directLaunch = false,
 ): HTMLElement {
   // Sprint 24B Phase 2: primary Classes entry point. Renders the Import
   // Class from Google Classroom orchestration end-to-end from Classes,
@@ -1095,18 +1476,30 @@ function renderImportEntryPoint(
     importState.kind === "duplicate" ||
     importState.kind === "error";
 
-  const btn = doc.createElement("button");
-  btn.type = "button";
-  btn.className = "shell-classes-import-open";
-  btn.setAttribute("data-testid", "classes-import-open");
-  btn.textContent = "Import Class from Google Classroom";
-  btn.disabled = inFlow;
-  if (inFlow) btn.setAttribute("aria-disabled", "true");
-  if (isBusy) btn.setAttribute("aria-busy", "true");
-  btn.addEventListener("click", () => onStartImport());
-  wrapper.appendChild(btn);
-
-  if (!inFlow) return wrapper;
+  if (!directLaunch) {
+    const btn = doc.createElement("button");
+    btn.type = "button";
+    btn.className = "shell-classes-import-open";
+    btn.setAttribute("data-testid", "classes-import-open");
+    btn.textContent = "Import Class from Google Classroom";
+    btn.disabled = inFlow;
+    if (inFlow) btn.setAttribute("aria-disabled", "true");
+    if (isBusy) btn.setAttribute("aria-busy", "true");
+    btn.addEventListener("click", () => onStartImport());
+    wrapper.appendChild(btn);
+    if (!inFlow) return wrapper;
+  } else if (!inFlow) {
+    // Direct-launch idle window (auto-start in flight): a calm placeholder, no
+    // "Import Class" button. `role=status`/`aria-live` announces it.
+    const loading = doc.createElement("p");
+    loading.className = "shell-status shell-classes-import-loading";
+    loading.setAttribute("data-testid", "classes-import-loading");
+    loading.setAttribute("role", "status");
+    loading.setAttribute("aria-live", "polite");
+    loading.textContent = "Connecting to Google Classroom…";
+    wrapper.appendChild(loading);
+    return wrapper;
+  }
 
   const panel = doc.createElement("div");
   panel.className = "shell-classes-import-panel";
@@ -1115,7 +1508,14 @@ function renderImportEntryPoint(
   panel.setAttribute("aria-label", "Import Class from Google Classroom");
   wrapper.appendChild(panel);
 
-  panel.appendChild(renderImportStages(doc, importState));
+  // Sprint 28.6H.9 (Correction 3): the numbered four-step import process list
+  // ("Sign in to Google Classroom / Load your courses / Create your LyfeLabz
+  // class / Link to Google Classroom") is removed from the focused import task.
+  // It exposed unnecessary implementation/process narration and added visual
+  // noise; the focused task is now just the heading, the authorization /
+  // loading / course-selection content, and its task actions. No controller
+  // behavior changes - the stepper was pure presentation derived from
+  // importState.
 
   switch (importState.kind) {
     case "connecting":
@@ -1287,94 +1687,34 @@ function renderImportEntryPoint(
   }
 }
 
-const IMPORT_STAGE_LABEL: Readonly<Record<ImportStage, string>> = Object.freeze(
-  {
-    connecting: "Sign in to Google Classroom",
-    discovering: "Load your courses",
-    creating: "Create your LyfeLabz class",
-    linking: "Link to Google Classroom",
-  },
-);
+// Sprint 28.6H.9 (Correction 3): the numbered import stepper
+// (`renderImportStages` + IMPORT_STAGE_LABEL / IMPORT_STAGE_ORDER) is removed.
+// The focused import task no longer narrates the internal connect -> discover
+// -> create -> link process; it shows only the heading, the live
+// authorization / loading / course-selection content, and its task actions.
+// The `ImportStage` type and `importState.stage` field are unchanged (still
+// used by the error-recovery branch); only the presentational stepper is gone.
 
-const IMPORT_STAGE_ORDER: readonly ImportStage[] = Object.freeze([
-  "connecting",
-  "discovering",
-  "creating",
-  "linking",
-]);
-
-function renderImportStages(
+// Sprint 28.6H.9 (Correction 2): persistent parent navigation for a focused
+// Settings child task (Import from Google Classroom / Create LyfeLabz Class).
+// Mirrors the certified "Back to Classes" control (`shell-class-workspace-back`
+// idiom): a quiet text-weight button near the top of the task that returns to
+// Settings -> Class Management. It is navigation, NOT the task action, so it
+// coexists with the task-specific Create Class / Cancel / Try again / Close
+// controls; it reuses the existing settings-return handler (which also tears
+// down any in-flight import) rather than adding a new routing path.
+function renderBackToSettings(
   doc: Document,
-  importState: ImportState,
+  onBackToSettings: () => void,
 ): HTMLElement {
-  const completed = new Set<ImportStage>();
-  let active: ImportStage | null = null;
-  switch (importState.kind) {
-    case "connecting":
-      active = "connecting";
-      break;
-    case "discovering":
-      for (const s of importState.stagesComplete) completed.add(s);
-      active = "discovering";
-      break;
-    case "courses":
-      for (const s of importState.stagesComplete) completed.add(s);
-      break;
-    case "creating":
-      for (const s of importState.stagesComplete) completed.add(s);
-      completed.add("discovering");
-      active = "creating";
-      break;
-    case "linking":
-      for (const s of importState.stagesComplete) completed.add(s);
-      completed.add("discovering");
-      active = "linking";
-      break;
-    case "error": {
-      if (importState.stage === "connecting") {
-        active = "connecting";
-      } else if (importState.stage === "discovering") {
-        completed.add("connecting");
-        active = "discovering";
-      } else if (importState.stage === "creating") {
-        completed.add("connecting");
-        completed.add("discovering");
-        active = "creating";
-      } else {
-        completed.add("connecting");
-        completed.add("discovering");
-        completed.add("creating");
-        active = "linking";
-      }
-      break;
-    }
-    case "duplicate":
-      completed.add("discovering");
-      break;
-    default:
-      break;
-  }
-  const ol = doc.createElement("ol");
-  ol.className = "shell-classes-import-stages";
-  ol.setAttribute("data-testid", "classes-import-stages");
-  ol.setAttribute("aria-label", "Import progress");
-  for (const stage of IMPORT_STAGE_ORDER) {
-    const li = doc.createElement("li");
-    li.className = "shell-classes-import-stage";
-    li.setAttribute("data-testid", `classes-import-stage-${stage}`);
-    let statusWord = "pending";
-    if (completed.has(stage)) statusWord = "complete";
-    if (active === stage)
-      statusWord = importState.kind === "error" ? "failed" : "active";
-    li.setAttribute("data-status", statusWord);
-    if (statusWord === "active") li.setAttribute("aria-current", "step");
-    const label = doc.createElement("span");
-    label.className = "shell-classes-import-stage-label";
-    label.textContent = IMPORT_STAGE_LABEL[stage];
-    li.appendChild(label);
-    ol.appendChild(li);
-  }
-  return ol;
+  const back = doc.createElement("button");
+  back.type = "button";
+  back.className = "shell-classes-back-to-settings";
+  back.setAttribute("data-testid", "classes-back-to-settings");
+  back.textContent = "Back to Settings";
+  back.setAttribute("aria-label", "Back to Settings");
+  back.addEventListener("click", () => onBackToSettings());
+  return back;
 }
 
 function renderImportMessage(
@@ -1522,7 +1862,9 @@ function renderCreateControls(
   const submit = doc.createElement("button");
   submit.type = "submit";
   submit.setAttribute("data-testid", "classes-create-submit");
-  submit.textContent = form.submitting ? "Creating" : "Create LyfeLabz Class";
+  // Sprint 28.6H.6 (Task F4): the heading already establishes this is a
+  // LyfeLabz class, so the submit reads the shorter "Create Class".
+  submit.textContent = form.submitting ? "Creating" : "Create Class";
   submit.disabled = form.submitting;
   if (form.submitting) submit.setAttribute("aria-busy", "true");
   actions.appendChild(submit);
@@ -1635,42 +1977,44 @@ function renderClassCard(
     finishSetup.textContent = "Finish setup";
     card.appendChild(finishSetup);
   } else {
-    if (summary.grade.length > 0) {
+    const gradeText = compactGradeBlock(summary);
+    if (gradeText !== null) {
       const grade = doc.createElement("p");
       grade.className = "shell-class-grade";
       grade.setAttribute("data-testid", `class-grade-${summary.id}`);
-      grade.textContent =
-        summary.block && summary.block.length > 0
-          ? `Grade ${summary.grade} - Block ${summary.block}`
-          : `Grade ${summary.grade}`;
+      // Sprint 28.6C/H: compact grade presentation (`G6 · Block A`), shared
+      // with the class-workspace header via `compactGradeBlock`.
+      grade.textContent = gradeText;
       card.appendChild(grade);
     }
 
-    if (summary.joinCode && summary.joinCode.length > 0) {
-      const code = doc.createElement("p");
-      code.className = "shell-class-joincode";
-      code.setAttribute("data-testid", `class-joincode-${summary.id}`);
-      const label = doc.createElement("span");
-      label.className = "shell-class-joincode-label";
-      label.textContent = "Join code: ";
-      const value = doc.createElement("span");
-      value.className = "shell-class-joincode-value";
-      value.textContent = summary.joinCode;
-      code.appendChild(label);
-      code.appendChild(value);
-      card.appendChild(code);
-    }
+    // Sprint 28.6H.3 (Task A1): the generic assignment-inventory count
+    // ("4 assignments" / "No assignments") is removed from the everyday
+    // Classes card. The total number of assignments is not decision-useful
+    // enough to deserve card-level emphasis, and the Assignments tab already
+    // exposes the full inventory. Per Task A1 it is NOT replaced with another
+    // bare statistic; the card carries only stable class identity (title +
+    // grade/block). The operational-attention data a teacher actually wants
+    // ("who has not completed this assignment", "who newly completed it") is
+    // not available to the Classes landing without per-assignment summary
+    // reads (N+1) or a durable teacher checkpoint that does not yet exist -
+    // see the Sprint 28.6H.3 record and STOP-condition investigation. No new
+    // read is invented here merely to decorate the card.
+
+    // Sprint 28.6I: the join code is intentionally not shown on the class
+    // card. The card carries only what helps a teacher browse the class list
+    // (title, grade/block, assignment count). The join code remains available
+    // on the dedicated surfaces (the post-create "Student join code" panel and
+    // class settings); `summary.joinCode` and all join-code data are untouched.
   }
 
-  const statusPill = doc.createElement("span");
-  statusPill.className = `shell-class-status shell-class-status-${summary.status}`;
-  statusPill.setAttribute("data-testid", `class-status-${summary.id}`);
-  statusPill.setAttribute(
-    "aria-label",
-    `Status: ${STATUS_LABEL[summary.status]}`,
-  );
-  statusPill.textContent = STATUS_LABEL[summary.status];
-  card.appendChild(statusPill);
+  // Sprint 28.6H (Finding 2): the "Active" status badge is removed from the
+  // class card. A class that appears in the everyday Classes workspace is
+  // implicitly active, so the badge merely repeated the current state and
+  // carried no teacher decision. The needsSetup state is still communicated -
+  // by the "Finish setup" affordance and its copy above - so no status pill is
+  // needed here. Backend activation/status semantics are unchanged; this is a
+  // presentation-only removal.
 
   card.addEventListener("click", () => {
     onOpen(summary.id);
@@ -1685,13 +2029,17 @@ function renderClassCard(
 // workspace renderer without leaking the map itself. `available` is
 // false when the syncRoster wrapper is not wired at all (test harness
 // mode); the button and summary are simply omitted in that case.
-type RosterSyncViewEntry =
+export type RosterSyncViewEntry =
   | { readonly status: "idle" }
   | { readonly status: "syncing" }
   | { readonly status: "ok"; readonly counters: SyncRosterCounters; readonly at: number }
   | { readonly status: "error"; readonly kind: SyncRosterError["kind"]; readonly at: number };
 
-type RosterSyncView = {
+// Sprint 28.6H.3 (Task C4): exported so Settings → Class Management can reuse
+// the exact certified roster-sync status panel (same aggregate-only copy, same
+// error taxonomy) rather than duplicating it. The underlying
+// `lmsClassesSyncRoster` callable and its semantics are unchanged.
+export type RosterSyncView = {
   readonly available: boolean;
   readonly entry: RosterSyncViewEntry;
   readonly onSyncClick: () => void;
@@ -1702,7 +2050,6 @@ function renderClassWorkspaceState(
   mount: HTMLElement,
   summary: ClassSummary,
   tab: ClassWorkspaceTab,
-  preview: SnapshotPreview | null,
   onSelectTab: (tab: ClassWorkspaceTab) => void,
   onBack: () => void,
   setupForm: SetupFormState | null,
@@ -1710,7 +2057,7 @@ function renderClassWorkspaceState(
   onSubmitSetup: () => void,
   onCancelSetup: () => void,
   canActivate: boolean,
-  rosterSync: RosterSyncView,
+  assignmentsView: ClassAssignmentsView,
 ): void {
   const workspace = doc.createElement("div");
   workspace.className = "shell-class-workspace";
@@ -1742,7 +2089,7 @@ function renderClassWorkspaceState(
       doc,
       surfaceMount,
       summary,
-      setupForm ?? emptySetupForm(null),
+      setupForm ?? emptySetupForm(),
       onSetupFormChange,
       onSubmitSetup,
       onCancelSetup,
@@ -1751,38 +2098,149 @@ function renderClassWorkspaceState(
     return;
   }
 
-  workspace.appendChild(renderClassNavigation(doc, tab, onSelectTab));
+  // Sprint 28.6H (Finding 3): the CLASS is the primary object. Its identity -
+  // name, then compact grade/block - appears BEFORE the tabs, so the tabs read
+  // as belonging to this class. The "Active" badge is removed (Finding 2); a
+  // class in the everyday workspace is implicitly active.
+  const identity = doc.createElement("div");
+  identity.className = "shell-class-workspace-identity";
+  identity.setAttribute("data-testid", "class-workspace-identity");
 
-  // Sprint 24B Phase 2B.8. Sync roster affordance and summary panel.
-  // Rendered only for an active LMS-linked class. Manual classes and
-  // needsSetup classes never see this row. The button becomes disabled
-  // while a sync is in flight; concurrent clicks are suppressed both by
-  // the disabled state and by the surface's runRosterSync guard.
-  if (
-    summary.status === "active" &&
-    summary.isLmsLinked === true &&
-    rosterSync.available
-  ) {
-    workspace.appendChild(renderRosterSyncPanel(doc, rosterSync));
+  const title = doc.createElement("h2");
+  title.className = "shell-welcome shell-class-workspace-title";
+  title.setAttribute("data-testid", "class-workspace-title");
+  title.textContent = summary.title;
+  identity.appendChild(title);
+
+  const meta = compactGradeBlock(summary);
+  if (meta !== null) {
+    const metaEl = doc.createElement("p");
+    metaEl.className = "shell-class-workspace-meta";
+    metaEl.setAttribute("data-testid", "class-workspace-meta");
+    metaEl.textContent = meta;
+    identity.appendChild(metaEl);
   }
+  workspace.appendChild(identity);
+
+  // Sprint 28.6H.3 (Task B3): the class workspace is operational only. The
+  // "Manage class" disclosure (and the Sync roster action it hosted) is removed
+  // from every everyday class-workspace location; administrative class
+  // management - including roster sync for Google Classroom-linked classes -
+  // now lives in Settings → Class Management (Task C4). The tab row therefore
+  // holds only the class sections (Assignments | Students).
+  const tabRow = doc.createElement("div");
+  tabRow.className = "shell-class-tabrow";
+  tabRow.appendChild(renderClassNavigation(doc, tab, onSelectTab));
+  workspace.appendChild(tabRow);
 
   const surfaceMount = doc.createElement("div");
   surfaceMount.className = `shell-class-surface shell-class-surface-${tab}`;
   surfaceMount.setAttribute("data-testid", "class-surface");
   workspace.appendChild(surfaceMount);
 
-  if (tab === "snapshot") {
-    renderSnapshotSurface(surfaceMount, { summary, preview });
-  } else if (tab === "roster") {
-    renderRosterSurface(doc, surfaceMount, summary);
+  // Sprint 28.6H.3 (Task B1): Overview/Snapshot is retired. The only class
+  // sections are Assignments (the default) and Students; a stale `snapshot`
+  // tab defensively renders Assignments rather than an empty surface.
+  if (tab === "roster") {
+    renderRosterSurface(doc, surfaceMount);
+  } else {
+    renderClassAssignmentsSurface(doc, surfaceMount, summary, assignmentsView);
   }
+}
+
+// Sprint 28.6H (Finding 3): the compact class convention used on the class
+// card and the workspace header - `G6 · Block B`, or `G6` when no block, or
+// null when grade is absent. Never invents a block that is not present.
+// Sprint 28.6H.3 (Task C4): exported so the Settings class-management list
+// renders the same compact grade/block line as the Classes surface.
+export function compactGradeBlock(summary: ClassSummary): string | null {
+  if (summary.status === "needsSetup") return null;
+  if (summary.grade.length === 0) return null;
+  return summary.block && summary.block.length > 0
+    ? `G${summary.grade} · Block ${summary.block}`
+    : `G${summary.grade}`;
+}
+
+// Sprint 28.6C: the class-scoped Assignments section. Shows only this class's
+// assignments (published + closed) by reusing the certified Active Assignments
+// renderer in its flat, classId-filtered form; each row opens the existing
+// Assignment Detail. A class with no assignments gets a calm empty state that
+// points the teacher to Curriculum to choose a lesson (the Curriculum-first
+// lesson-selection model is preserved - no assignment is created here).
+function renderClassAssignmentsSurface(
+  doc: Document,
+  mount: HTMLElement,
+  summary: ClassSummary,
+  assignmentsView: ClassAssignmentsView,
+): void {
+  // Sprint 28.6H (Finding 3): the class identity is the workspace header above
+  // the tabs, so the tab surface heading is the SECTION name, not the class
+  // title (which would otherwise appear twice).
+  const headline = doc.createElement("h2");
+  headline.id = "surface-headline";
+  headline.className = "shell-welcome shell-class-assignments-headline";
+  headline.tabIndex = -1;
+  headline.setAttribute("data-testid", "surface-headline");
+  headline.textContent = "Assignments";
+  mount.appendChild(headline);
+  try {
+    headline.focus({ preventScroll: true });
+  } catch {
+    // ignored
+  }
+
+  // Sprint 28.6H.4 (Part A): the introductory sentence ("The assignments you
+  // have given this class.") is removed - the "Assignments" heading is
+  // self-explanatory and flows directly into the assignment cards.
+
+  // Count using the same predicate as the class card so the two never
+  // disagree. When there is nothing to show, render the calm empty state.
+  const hasAny =
+    assignmentsView.enabled &&
+    assignmentsView
+      .listRegistry()
+      .some((m) => m.classId === summary.id && isRenderableCard(m));
+
+  if (!hasAny) {
+    // Sprint 28.6H.4 (Part A): the empty state is exactly "No assignments
+    // yet." The over-explaining hint ("Choose a lesson in Curriculum...") and
+    // the "Go to Curriculum" button are removed; the teacher reaches Curriculum
+    // through the primary navigation.
+    const empty = doc.createElement("div");
+    empty.className = "shell-class-assignments-empty";
+    empty.setAttribute("data-testid", "class-assignments-empty");
+    empty.setAttribute("role", "status");
+
+    const emptyMsg = doc.createElement("p");
+    emptyMsg.className = "shell-class-assignments-empty-message";
+    emptyMsg.textContent = "No assignments yet.";
+    empty.appendChild(emptyMsg);
+
+    mount.appendChild(empty);
+    return;
+  }
+
+  const sectionMount = doc.createElement("div");
+  sectionMount.className = "shell-class-assignments-section";
+  sectionMount.setAttribute("data-testid", "class-assignments-section");
+  mount.appendChild(sectionMount);
+
+  renderActiveAssignmentsSection(sectionMount, {
+    listRegistry: assignmentsView.listRegistry,
+    open: (assignmentId) => {
+      assignmentsView.open(summary.id, assignmentId);
+    },
+    summaryCallable: assignmentsView.summaryCallable,
+    classIdFilter: summary.id,
+    flat: true,
+  });
 }
 
 // Sprint 24B Phase 2B.8. Sync roster affordance + summary panel. Aggregate
 // counters only; no student names, emails, provider account identifiers,
 // or Google identifiers ever appear here or in any log line this panel
 // emits (it emits none).
-function renderRosterSyncPanel(
+export function renderRosterSyncPanel(
   doc: Document,
   rosterSync: RosterSyncView,
 ): HTMLElement {
@@ -1813,8 +2271,12 @@ function renderRosterSyncPanel(
 
   switch (rosterSync.entry.status) {
     case "idle":
-      status.textContent =
-        "Sync brings the latest Google Classroom roster into LyfeLabz.";
+      // Sprint 28.6H.4 (Task E6): the explanatory sentence ("Sync brings the
+      // latest Google Classroom roster into LyfeLabz.") is removed; the
+      // "Sync roster" action is self-explanatory in this administrative
+      // context. The live region is retained (empty) so a later sync's
+      // success / error status is still announced.
+      status.textContent = "";
       break;
     case "syncing":
       status.textContent = "Synchronizing roster with Google Classroom.";
@@ -1871,9 +2333,8 @@ function renderRosterSyncPanel(
   return panel;
 }
 
-// Phase 2B.4: one-screen imported-class setup form. Asks only for
-// grade and block. Grade may prefill from the teacher's saved
-// defaultGrade preference; block never prefills.
+// One-screen imported-class setup form. Asks only for grade and block,
+// both starting empty; the teacher chooses them for this class.
 function renderSetupSurface(
   doc: Document,
   mount: HTMLElement,
@@ -2015,12 +2476,19 @@ function renderClassNavigation(
   list.className = "shell-class-nav-list";
   list.setAttribute("role", "list");
 
+  // Sprint 28.6H.3 (Task B1): Overview is removed from the class navigation.
+  // Human review found it redundant - the teacher's useful class-level
+  // destinations are Assignments and Students. The final navigation is exactly
+  // `Assignments | Students`; the retired Overview/Snapshot tab is not hidden
+  // by CSS, it is absent from the operational navigation model. The internal
+  // `roster` key is kept stable so the certified Students switcher testid and
+  // its tests are preserved.
   const items: ReadonlyArray<{
     readonly key: ClassWorkspaceTab;
     readonly label: string;
   }> = Object.freeze([
-    Object.freeze({ key: "snapshot" as const, label: "Snapshot" }),
-    Object.freeze({ key: "roster" as const, label: "Roster" }),
+    Object.freeze({ key: "assignments" as const, label: "Assignments" }),
+    Object.freeze({ key: "roster" as const, label: "Students" }),
   ]);
 
   for (const item of items) {
@@ -2046,17 +2514,16 @@ function renderClassNavigation(
   return nav;
 }
 
-function renderRosterSurface(
-  doc: Document,
-  mount: HTMLElement,
-  summary: ClassSummary,
-): void {
+function renderRosterSurface(doc: Document, mount: HTMLElement): void {
+  // Sprint 28.6H (Finding 3/5): section heading is "Students" (the class
+  // identity is the workspace header). No prototype/product-marketing copy;
+  // a real empty state until a roster is wired.
   const headline = doc.createElement("h2");
   headline.id = "surface-headline";
   headline.className = "shell-welcome shell-roster-headline";
   headline.tabIndex = -1;
   headline.setAttribute("data-testid", "surface-headline");
-  headline.textContent = summary.title;
+  headline.textContent = "Students";
   mount.appendChild(headline);
   try {
     headline.focus({ preventScroll: true });
@@ -2064,19 +2531,21 @@ function renderRosterSurface(
     // ignored
   }
 
-  const purpose = doc.createElement("p");
-  purpose.className = "shell-status shell-roster-purpose";
-  purpose.setAttribute("data-testid", "roster-purpose");
-  purpose.textContent =
-    "The class roster is where you will manage this class in detail.";
-  mount.appendChild(purpose);
+  // Sprint 28.6H.4 (Part B): the empty state is exactly "No students yet."
+  // The class-code explanatory sentence is removed - it over-explained and was
+  // too specific to manually joined LyfeLabz classes now that Google Classroom
+  // roster import exists.
+  const empty = doc.createElement("div");
+  empty.className = "shell-roster-empty";
+  empty.setAttribute("data-testid", "roster-empty");
+  empty.setAttribute("role", "status");
 
-  const foundation = doc.createElement("p");
-  foundation.className = "shell-roster-foundation";
-  foundation.setAttribute("data-testid", "roster-foundation");
-  foundation.textContent =
-    "Students who join with the class code appear here. Snapshot remains your between-moments view of this class.";
-  mount.appendChild(foundation);
+  const emptyMsg = doc.createElement("p");
+  emptyMsg.className = "shell-roster-empty-message";
+  emptyMsg.textContent = "No students yet.";
+  empty.appendChild(emptyMsg);
+
+  mount.appendChild(empty);
 }
 
 function appendHeadline(

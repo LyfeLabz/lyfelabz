@@ -34,18 +34,18 @@ import {
   createAssignmentsCallables,
   createIntegrationsDeps,
 } from "./settings/integrations/wire";
-import {
-  createFirebaseUpdateTeacherDefaultGrade,
-  createFirestoreReadTeacherDefaultGrade,
-  type TeacherDefaultGrade,
-  type UpdateTeacherDefaultGrade,
-} from "./teacherPreferences";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
 } from "./settings/integrations/types";
-import { createAssignmentSummaryCallable } from "./assignments/summary/wire";
-import type { AssignmentSummaryCallable } from "./assignments/summary/types";
+import {
+  createAssignmentSummaryCallable,
+  createLessonSummaryCallable,
+} from "./assignments/summary/wire";
+import type {
+  AssignmentSummaryCallable,
+  LessonSummaryCallable,
+} from "./assignments/summary/types";
 import { createAssignmentsListForStudentCallable } from "./assignments/studentList/wire";
 import type { AssignmentsListForStudentCallable } from "./assignments/studentList/types";
 import { createAttemptsListForStudentCallable } from "./assignments/studentResults/wire";
@@ -84,7 +84,10 @@ import {
 // same-uid sign-out/sign-in (auth-session replacement) cannot let the
 // Assign dialog reuse the prior session's class rows.
 import { invalidateCurriculumClassCache } from "./shell/surfaces/curriculum";
-import type { TeacherShellOutletController } from "./shell/surfaces/curriculum";
+import type {
+  TeacherShellOutletController,
+  AssignmentDetailOpenOptions,
+} from "./shell/surfaces/curriculum";
 import {
   createAttemptGetForTeacherCallable,
   createAttemptsListForClassCallable,
@@ -129,6 +132,9 @@ async function run(): Promise<void> {
   // consumed by the reusable Assignment Summary card. Rebound per
   // active-teacher session so cross-session state cannot leak.
   let assignmentSummary: AssignmentSummaryCallable | null = null;
+  // Sprint 28.6E: lesson-level (cross-assignment) View Summary callable.
+  // Wired only for an active-teacher session; null for student/other.
+  let lessonSummary: LessonSummaryCallable | null = null;
   // Sprint 17 Slice 4: certified `assignmentsListForStudent` callable
   // seam consumed by the activeStudent surface. Rebound per
   // active-student session so cross-session state cannot leak. Null on
@@ -225,13 +231,6 @@ async function run(): Promise<void> {
   // session so the Classes surface renders without the primary import
   // entry point.
   let importFromClassroom: ImportFromClassroomDeps | null = null;
-  // Sprint 24B Phase 2B.2: resolved teacher `defaultGrade` preference
-  // and best-effort update seam. Preloaded once per active-teacher
-  // session so the Classes surface can prefill Manual Create without
-  // its own async read. Null on any non-teacher session, when the
-  // reader fails, or when no preference is stored.
-  let defaultGradePref: TeacherDefaultGrade | null = null;
-  let updateDefaultGrade: UpdateTeacherDefaultGrade | null = null;
   // Sprint 13B: session-scoped registry of teacher-owned assignment
   // metadata (title, status, class name). Populated by the certified
   // lifecycle path; consumed by the Assignment Detail metadata reader.
@@ -297,7 +296,10 @@ async function run(): Promise<void> {
       doRestore();
     }
   };
-  const openAssignmentDetail = (assignmentId: string): void => {
+  const openAssignmentDetail = (
+    assignmentId: string,
+    options?: AssignmentDetailOpenOptions,
+  ): void => {
     if (assignmentSummary === null) return;
     // Capture the narrowed callable so the deferred `renderDetailInto`
     // closure below keeps the non-null type (TS re-widens `assignmentSummary`
@@ -333,8 +335,20 @@ async function run(): Promise<void> {
         // of running a full session bootstrap. Falls back to the full
         // `rerun()` path only when the active-teacher session is
         // unavailable (for example after sign-out).
+        //
+        // Sprint 28.6C: when Detail was opened from the class-centered
+        // workflow (Classes -> Class -> Assignments) the entry point supplies
+        // its own `onBack` so the teacher returns to that class context
+        // instead of being stranded in Curriculum. The Curriculum path
+        // supplies no override and keeps the certified re-mount + scroll
+        // restore behavior below.
+        if (options?.onBack !== undefined) {
+          options.onBack();
+          return;
+        }
         remountCurriculum();
       },
+      backLabel: options?.backLabel,
       // Sprint 13D: wire the certified close callable and register the
       // updated metadata into the session-scoped registry so a later
       // navigation to Curriculum reflects the new `closed` status
@@ -419,8 +433,8 @@ async function run(): Promise<void> {
     register: (metadata: Parameters<typeof assignmentDetailRegistry.register>[0]) => {
       assignmentDetailRegistry.register(metadata);
     },
-    open: (assignmentId: string) => {
-      openAssignmentDetail(assignmentId);
+    open: (assignmentId: string, options?: AssignmentDetailOpenOptions) => {
+      openAssignmentDetail(assignmentId, options);
     },
     // Sprint 13C: expose the current registry contents so the Curriculum
     // surface can restore its per-lesson mapping after a full page
@@ -489,6 +503,7 @@ async function run(): Promise<void> {
       });
       assignments = createAssignmentsCallables(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
+      lessonSummary = createLessonSummaryCallable(functions);
       assignmentClose = createAssignmentsCloseCallable(functions);
       assignmentReopen = createAssignmentsReopenCallable(functions);
       assignmentUpdateDraft = createAssignmentsUpdateDraftCallable(functions);
@@ -503,22 +518,6 @@ async function run(): Promise<void> {
       lmsCreateClass = createFirebaseLmsCreateClass(functions);
       activateClass = createFirebaseActivateClass(functions);
       syncRoster = createFirebaseSyncRoster(functions);
-      // Phase 2B.2: preload the teacher preference before any surface
-      // renders. The reader is fail-closed; a failure resolves to null
-      // and the Manual Create form falls back to the pre-Phase 2B.2
-      // seed. Sequenced before dispatch so the first Classes render
-      // already has the preference.
-      updateDefaultGrade =
-        createFirebaseUpdateTeacherDefaultGrade(functions);
-      try {
-        const readDefaultGrade = createFirestoreReadTeacherDefaultGrade(
-          db,
-          session.uid,
-        );
-        defaultGradePref = await readDefaultGrade();
-      } catch {
-        defaultGradePref = null;
-      }
       if (runToken !== currentRunToken) return;
       importFromClassroom = Object.freeze({
         callables: integrations.callables,
@@ -574,6 +573,7 @@ async function run(): Promise<void> {
       integrations = null;
       assignments = null;
       assignmentSummary = null;
+      lessonSummary = null;
       assignmentClose = null;
       assignmentReopen = null;
       assignmentUpdateDraft = null;
@@ -588,8 +588,6 @@ async function run(): Promise<void> {
       activateClass = null;
       syncRoster = null;
       importFromClassroom = null;
-      defaultGradePref = null;
-      updateDefaultGrade = null;
       assignmentDetailRegistry.clear();
       clearLmsPublicationRetryContexts();
       lastActiveTeacher = null;
@@ -597,6 +595,7 @@ async function run(): Promise<void> {
       integrations = null;
       assignments = null;
       assignmentSummary = null;
+      lessonSummary = null;
       assignmentClose = null;
       assignmentReopen = null;
       assignmentUpdateDraft = null;
@@ -611,8 +610,6 @@ async function run(): Promise<void> {
       activateClass = null;
       syncRoster = null;
       importFromClassroom = null;
-      defaultGradePref = null;
-      updateDefaultGrade = null;
       assignmentDetailRegistry.clear();
       clearLmsPublicationRetryContexts();
       lastActiveTeacher = null;
@@ -855,12 +852,11 @@ async function run(): Promise<void> {
     assignments: () => assignments,
     assignmentDetail: () => assignmentDetailSeam,
     assignmentSummary: () => assignmentSummary,
+    lessonSummary: () => lessonSummary,
     studentAssignmentsList: () => studentAssignmentsList,
     studentResultsList: () => studentResultsList,
     createClass: () => createClass,
     importFromClassroom: () => importFromClassroom,
-    defaultGrade: () => defaultGradePref,
-    updateDefaultGrade: () => updateDefaultGrade,
     activateClass: () => activateClass,
     syncRoster: () => syncRoster,
     onLaunchAssignment: (url: string) => {

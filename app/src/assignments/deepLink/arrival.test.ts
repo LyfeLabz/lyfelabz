@@ -92,7 +92,7 @@ describe("renderDeepLinkArrival - informational and failure states", () => {
       '[data-testid="deep-link-arrival-informational"]',
     );
     expect(surface).not.toBeNull();
-    // Go to My Assignments works.
+    // Go to My Science works.
     const button = mount.querySelector(
       '[data-testid="deep-link-arrival-informational-action"]',
     ) as HTMLButtonElement;

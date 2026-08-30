@@ -147,6 +147,67 @@ export function getTopicGroups(): ReadonlyArray<CurriculumTopicGroup> {
   return CURRICULUM_MANIFEST.topicGroups;
 }
 
+// Sprint 28.6D: formal LyfeLabz resource types. These are the four
+// non-lesson instructional resource families surfaced under a Curriculum
+// lesson card's Resources disclosure. Legacy `game` (and `activity`,
+// `map`, `disease`) are deliberately excluded: games are not formal
+// LyfeLabz curriculum (Blueprint §9) and the manifest already carries
+// `game: 0`. This is a presentation-time filter over the existing
+// manifest; no manifest field is added or regenerated.
+export type FormalResourceType =
+  | "simulation"
+  | "investigation"
+  | "extension"
+  | "challenge";
+
+const FORMAL_RESOURCE_TYPES: ReadonlySet<ResourceType> = new Set<ResourceType>([
+  "simulation",
+  "investigation",
+  "extension",
+  "challenge",
+]);
+
+// Human-readable, teacher-facing labels for each formal resource type.
+// Derived from the canonical type; never exposes a raw filename, path,
+// or manifest key.
+export const FORMAL_RESOURCE_LABEL: Readonly<
+  Record<FormalResourceType, string>
+> = Object.freeze({
+  simulation: "Simulation",
+  investigation: "Investigation",
+  extension: "Extension",
+  challenge: "Challenge",
+});
+
+// Resolve a single canonical unit by its slug, or null when the slug is
+// not present in the manifest. Read-only accessor over the generated
+// manifest; the manifest remains the sole source of truth.
+export function getUnitBySlug(slug: string): CurriculumUnit | null {
+  for (const u of getAllUnits()) {
+    if (u.slug === slug) return u;
+  }
+  return null;
+}
+
+// The formal related resources for a lesson, ordered by the manifest's
+// `displayOrder`. Returns only the four formal resource families; the
+// parent `lesson` resource and any legacy `game`/`activity`/`map`/
+// `disease` entries are excluded. An empty array means the lesson has no
+// formal resources (the Curriculum card then omits the Resources control
+// entirely rather than showing an empty disclosure).
+export function getFormalResourcesForLesson(
+  slug: string,
+): ReadonlyArray<CurriculumResource> {
+  const unit = getUnitBySlug(slug);
+  if (unit === null) return Object.freeze([]);
+  return Object.freeze(
+    unit.resources
+      .filter((r) => FORMAL_RESOURCE_TYPES.has(r.type))
+      .slice()
+      .sort((a, b) => a.displayOrder - b.displayOrder),
+  );
+}
+
 export function getOrphanUnits(): ReadonlyArray<CurriculumOrphanUnit> {
   return CURRICULUM_MANIFEST.orphanUnits;
 }

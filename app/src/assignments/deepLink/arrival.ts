@@ -26,8 +26,8 @@ export type DeepLinkArrivalDeps = {
   // Navigate the current tab to an internal lesson URL (window.location.assign
   // in production). Only ever called with a helper-built internal path.
   readonly navigate: (url: string) => void;
-  // Render the student's My Assignments surface (the calm fallback for an
-  // informational or non-retryable state).
+  // Return the student to their My Science landing (the calm fallback for an
+  // informational or non-retryable state). The seam name is retained.
   readonly onGoToMyAssignments: () => void;
 };
 
@@ -153,7 +153,7 @@ function handleResolution(
     heading: "This assignment isn't available for you yet",
     body: "This assignment isn't ready for you right now. Ask your teacher for help.",
     action: {
-      label: "Go to My Assignments",
+      label: "Go to My Science",
       onClick: deps.onGoToMyAssignments,
     },
   });
@@ -186,7 +186,7 @@ function handleFailure(
         heading: "This assignment isn't available for your account",
         body: "This assignment isn't available for your account.",
         action: {
-          label: "Go to My Assignments",
+          label: "Go to My Science",
           onClick: deps.onGoToMyAssignments,
         },
       });
@@ -198,7 +198,7 @@ function handleFailure(
         heading: "This assignment isn't available for you yet",
         body: "This assignment isn't available for your account. Ask your teacher for help.",
         action: {
-          label: "Go to My Assignments",
+          label: "Go to My Science",
           onClick: deps.onGoToMyAssignments,
         },
       });
@@ -209,7 +209,7 @@ function handleFailure(
         heading: "This assignment is closed",
         body: "This assignment is closed.",
         action: {
-          label: "Go to My Assignments",
+          label: "Go to My Science",
           onClick: deps.onGoToMyAssignments,
         },
       });
@@ -222,7 +222,7 @@ function handleFailure(
         heading: "This assignment isn't available",
         body: "This assignment isn't available right now.",
         action: {
-          label: "Go to My Assignments",
+          label: "Go to My Science",
           onClick: deps.onGoToMyAssignments,
         },
       });

@@ -13,15 +13,17 @@ import {
   renderCurriculumSurface,
   type CurriculumAssignmentDetailSeam,
 } from "./curriculum";
-import { renderClassesSurface } from "./classes";
-import { renderPresentModeSurface } from "./presentMode";
+import {
+  renderClassesSurface,
+  type ClassManagementIntent,
+  type ClassWorkspaceReturn,
+} from "./classes";
 import { renderSettingsSurface } from "./settings";
 import type { SnapshotPreview } from "./snapshot";
-import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
 import type {
-  TeacherDefaultGrade,
-  UpdateTeacherDefaultGrade,
-} from "../../teacherPreferences/types";
+  AssignmentSummaryCallable,
+  LessonSummaryCallable,
+} from "../../assignments/summary/types";
 
 // Typed contract for a Teacher Workspace surface.
 //
@@ -40,6 +42,13 @@ type ActiveTeacher = Extract<Session, { kind: "activeTeacher" }>;
 // shell.test.ts data-and-callable-posture invariant). The entry point
 // wires the real implementation from src/presentMode/launchContext;
 // unit tests inject a spy.
+//
+// Sprint 28.6D: Present Mode leaves the primary navigation (Blueprint
+// §8), so no active workspace surface reads this seam. The type and the
+// `onLaunchPresentMode` dep field are retained as dormant plumbing (not
+// deleted) alongside the dormant `presentMode.ts` surface and
+// `app/src/presentMode/*`, so a future genuine classroom-presentation
+// tool can restore the destination without re-threading the wiring.
 export type LaunchPresentMode = () => void;
 
 export type WorkspaceDeps = {
@@ -68,6 +77,10 @@ export type WorkspaceDeps = {
   // Sprint 15: certified summary callable consumed by the Curriculum
   // Active Assignments dashboard for per-card progress counts.
   readonly assignmentSummary?: AssignmentSummaryCallable | null;
+  // Sprint 28.6E: certified lesson-level summary callable consumed by the
+  // Curriculum lesson-card View Summary surface (cross-assignment
+  // aggregate analytics). Null in harnesses that do not exercise it.
+  readonly lessonSummary?: LessonSummaryCallable | null;
   // Sprint 20 internal beta: injected create-class callable seam.
   // Wired at the entry point; null in unit tests that do not exercise
   // creation. See src/classes/createClass.ts.
@@ -78,14 +91,6 @@ export type WorkspaceDeps = {
   // SPRINT_24B_ARCHITECTURAL_BLUEPRINT.md §4.2, this seam bundles the
   // certified callables already wired at the entry point.
   readonly importFromClassroom?: ImportFromClassroomDeps | null;
-  // Sprint 24B Phase 2B.2: resolved teacher `defaultGrade` preference
-  // (null when no preference or read failure). Consumed by the Classes
-  // surface to prefill Manual Create, and by the Settings surface to
-  // display the current value.
-  readonly defaultGrade?: TeacherDefaultGrade | null;
-  // Sprint 24B Phase 2B.2: best-effort preference-update seam. Consumed
-  // by Classes (post-create) and by Settings (explicit set / clear).
-  readonly updateDefaultGrade?: UpdateTeacherDefaultGrade | null;
   // Sprint 24B Phase 2B.4: certified `classesActivate` seam consumed
   // by the imported-class setup form on the Classes surface. Null in
   // test harnesses that do not exercise activation.
@@ -95,6 +100,32 @@ export type WorkspaceDeps = {
   // after activation and for the manual "Sync roster" affordance. Null
   // in test harnesses that do not exercise roster sync.
   readonly syncRoster?: SyncRoster | null;
+  // Sprint 28.6C: bounded intra-shell navigation seam wired by the shell.
+  // The Classes surface uses it to route the empty Assignments state to
+  // Curriculum and to return to the Classes surface after Assignment Detail.
+  // Absent in harnesses that do not exercise those paths.
+  readonly navigateToSurface?: ((surface: WorkspaceSurfaceKey) => void) | null;
+  // Sprint 28.6C: shell-owned class-workspace return-location seam. The
+  // Classes surface reads it once on mount to re-land in a class's
+  // Assignments section after returning from Assignment Detail, and writes it
+  // just before opening Detail. Absent in harnesses that do not exercise it.
+  readonly getClassesReturn?: (() => ClassWorkspaceReturn | null) | null;
+  readonly setClassesReturn?: ((loc: ClassWorkspaceReturn | null) => void) | null;
+  // Sprint 28.6F: the single class-management opener. Settings' "Classes &
+  // Google Classroom" section calls it to open the shared Import / Create
+  // workflow that lives on the Classes surface (one implementation, two
+  // entry points). Absent in harnesses that do not exercise it.
+  readonly openClassManagement?:
+    | ((intent: ClassManagementIntent | null) => void)
+    | null;
+  // Sprint 28.6F: class-management intent one-shot, written by the opener and
+  // consumed once by the next Classes mount to auto-open the chosen control.
+  readonly getClassManagementIntent?:
+    | (() => ClassManagementIntent | null)
+    | null;
+  readonly setClassManagementIntent?:
+    | ((intent: ClassManagementIntent | null) => void)
+    | null;
 };
 
 export type WorkspaceSurface = {
@@ -106,9 +137,12 @@ export type WorkspaceSurface = {
   ) => void;
 };
 
-// Curriculum, Classes, Present Mode, and Settings are the active
-// workspace surfaces after Sprint 6H. Every canonical workspace-surface
-// key now renders a real teacher-facing destination.
+// Classes, Curriculum, and Settings are the active workspace surfaces
+// after Sprint 28.6D. Present Mode was removed from the primary
+// navigation (Blueprint §8); its surface module stays dormant in the
+// tree but is no longer registered here, so it is unreachable through
+// the workspace outlet. Every remaining canonical workspace-surface key
+// renders a real teacher-facing destination.
 export const WORKSPACE_SURFACES: Readonly<
   Record<WorkspaceSurfaceKey, WorkspaceSurface>
 > = Object.freeze({
@@ -125,6 +159,7 @@ export const WORKSPACE_SURFACES: Readonly<
         assignments: deps.assignments ?? null,
         assignmentDetail: deps.assignmentDetail ?? null,
         assignmentSummary: deps.assignmentSummary ?? null,
+        lessonSummary: deps.lessonSummary ?? null,
       }),
   }),
   classes: Object.freeze({
@@ -139,21 +174,17 @@ export const WORKSPACE_SURFACES: Readonly<
         snapshotPreview: deps.snapshotPreview ?? null,
         createClass: deps.createClass ?? null,
         importFromClassroom: deps.importFromClassroom ?? null,
-        defaultGrade: deps.defaultGrade ?? null,
-        updateDefaultGrade: deps.updateDefaultGrade ?? null,
         activateClass: deps.activateClass ?? null,
         syncRoster: deps.syncRoster ?? null,
-      }),
-  }),
-  "present-mode": Object.freeze({
-    key: "present-mode" as const,
-    render: (
-      mount: HTMLElement,
-      session: ActiveTeacher,
-      deps: WorkspaceDeps,
-    ) =>
-      renderPresentModeSurface(mount, session, {
-        onLaunchPresentMode: deps.onLaunchPresentMode,
+        // Sprint 28.6C: class-scoped Assignments section reuse.
+        assignmentDetail: deps.assignmentDetail ?? null,
+        assignmentSummary: deps.assignmentSummary ?? null,
+        navigateToSurface: deps.navigateToSurface ?? null,
+        getClassesReturn: deps.getClassesReturn ?? null,
+        setClassesReturn: deps.setClassesReturn ?? null,
+        // Sprint 28.6F: class-management intent one-shot (Settings entry point).
+        getClassManagementIntent: deps.getClassManagementIntent ?? null,
+        setClassManagementIntent: deps.setClassManagementIntent ?? null,
       }),
   }),
   settings: Object.freeze({
@@ -165,8 +196,24 @@ export const WORKSPACE_SURFACES: Readonly<
     ) =>
       renderSettingsSurface(mount, session, {
         integrations: deps.integrations ?? null,
-        defaultGrade: deps.defaultGrade ?? null,
-        updateDefaultGrade: deps.updateDefaultGrade ?? null,
+        // Sprint 28.6F: the shared class-management opener. Settings' Import /
+        // Create controls invoke this to open the SAME workflow the Classes
+        // `+ Add a class` entry uses; there is no second import/create surface.
+        openClassManagement: deps.openClassManagement ?? null,
+        // Import needs both the Import-from-Classroom seam and the create-class
+        // seam wired (mirrors the Classes import entry point); Create needs the
+        // create-class seam. In production both are wired; null only in
+        // harnesses that do not exercise class management.
+        canImportClasses:
+          (deps.importFromClassroom ?? null) !== null &&
+          (deps.createClass ?? null) !== null,
+        canCreateClasses: (deps.createClass ?? null) !== null,
+        // Sprint 28.6H.3 (Task C4): Settings is the administrative home for
+        // roster sync. It reads the teacher's class list (one query, same shape
+        // Classes uses - no per-class fan-out) and exposes the certified
+        // `lmsClassesSyncRoster` action for Google Classroom-linked classes.
+        listClasses: deps.listClasses,
+        syncRoster: deps.syncRoster ?? null,
       }),
   }),
 });

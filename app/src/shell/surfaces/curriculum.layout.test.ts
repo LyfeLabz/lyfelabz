@@ -143,17 +143,18 @@ describe("Curriculum lesson-card layout & activation badge model", () => {
         ".shell-lesson-actions",
       );
       expect(actions).not.toBeNull();
-      // Preview has been removed (Sprint 20 polish); Present Mode is now
-      // the canonical way for teachers to experience lessons. The header
-      // still hosts grade + topic pills; every remaining control must
-      // stay a descendant of its own card; nothing may escape via portals
-      // or manual reparenting.
+      // Sprint 28.6D: the teacher-safe Preview control returns to the card
+      // (opening the current v2 lesson artifact). The header still hosts
+      // grade + topic pills; every action control must stay a descendant of
+      // its own card's action row; nothing may escape via portals or manual
+      // reparenting.
       const preview = card.querySelector<HTMLElement>(".shell-lesson-preview");
       const header = card.querySelector<HTMLElement>(".shell-lesson-header");
-      expect(preview).toBeNull();
+      expect(preview).not.toBeNull();
+      expect(actions!.contains(preview!)).toBe(true);
       expect(header).not.toBeNull();
       const actionControls = card.querySelectorAll(
-        ".shell-lesson-toggle, .shell-lesson-assign, .shell-lesson-view-summary",
+        ".shell-lesson-toggle, .shell-lesson-assign, .shell-lesson-preview",
       );
       expect(actionControls.length).toBeGreaterThan(0);
       for (const ctl of Array.from(actionControls)) {
@@ -183,7 +184,10 @@ describe("Curriculum lesson-card layout & activation badge model", () => {
     expect(cs.justifyContent).not.toBe("space-between");
   });
 
-  test("assigned card renders '✓ Assigned' inside the card and nothing escapes", async () => {
+  test("assigned card records the assignment-history signal and nothing escapes", async () => {
+    // Sprint 28.6H (Finding 8): the visible "✓ Assigned" badge is removed. The
+    // Assign control always reads "Assign" and stays re-assignable; the
+    // assignment-history signal now lives on the card dataset.
     const detail = makeDetailSeam();
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, {
@@ -208,15 +212,21 @@ describe("Curriculum lesson-card layout & activation badge model", () => {
     const btn = card.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     )!;
-    expect(btn.textContent).toBe("✓ Assigned");
+    // Sprint 28.6H.7 (Part B): an assigned lesson reads "Reassign".
+    expect(btn.textContent).toBe("Reassign");
+    expect(card.getAttribute("data-lesson-assigned")).toBe("true");
     expect(card.contains(btn)).toBe(true);
-    // The Assigned control must live inside the actions row.
+    // The Assign control still lives inside the actions row.
     expect(
       card.querySelector(".shell-lesson-actions")!.contains(btn),
     ).toBe(true);
   });
 
-  test("View summary control renders inside the assigned card's action row", async () => {
+  test("no per-assignment View summary control appears on Curriculum after 28.6D", async () => {
+    // Sprint 28.6D retired the Curriculum-side per-assignment View summary
+    // opener (operational assignment views now live under Classes ->
+    // Class -> Assignments -> Assignment Detail). Even with published
+    // assignments hydrated, the lesson card exposes no view-summary control.
     const hydrated: AssignmentDetailMetadata[] = [
       freeze({
         assignmentId: "a-1",
@@ -237,50 +247,19 @@ describe("Curriculum lesson-card layout & activation badge model", () => {
     const card = mount.querySelector<HTMLElement>(
       "[data-testid=lesson-card-earths-layers]",
     )!;
-    const view = card.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view).not.toBeNull();
-    expect(view!.textContent).toBe("View summary");
-    expect(card.contains(view!)).toBe(true);
     expect(
-      card.querySelector(".shell-lesson-actions")!.contains(view!),
-    ).toBe(true);
-    // The card's card boundaries must contain every control - no
-    // sibling card owns any of this card's children.
-    const otherCards = Array.from(
-      mount.querySelectorAll<HTMLElement>(".shell-lesson-card"),
-    ).filter((c) => c !== card);
-    for (const other of otherCards) {
-      expect(other.contains(view!)).toBe(false);
-    }
-  });
-
-  test("draft-only registration renders 'View drafts' label", () => {
-    const hydrated: AssignmentDetailMetadata[] = [
-      freeze({
-        assignmentId: "a-draft",
-        title: "Introduction to Earth's Layers",
-        status: "draft",
-        className: "6A",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      }) as AssignmentDetailMetadata,
-    ];
-    const detail = makeDetailSeam(hydrated);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignmentDetail: detail.seam,
-    });
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view?.textContent).toBe("View drafts");
-    const card = mount.querySelector<HTMLElement>(
-      "[data-testid=lesson-card-earths-layers]",
+      card.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
+    ).toBeNull();
+    // Sprint 28.6H.7 (Part B): no visible "✓ Assigned" badge. The card records
+    // the assignment-history signal on its dataset, and the primary action
+    // reads "Reassign" (muted green) and is enabled so the lesson stays
+    // re-assignable.
+    expect(card.getAttribute("data-lesson-assigned")).toBe("true");
+    const assign = card.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-assign-earths-layers]",
     )!;
-    expect(card.contains(view!)).toBe(true);
+    expect(assign.textContent).toBe("Reassign");
+    expect(assign.disabled).toBe(false);
   });
 
   test("card boundaries prevent horizontal overflow from action controls", () => {

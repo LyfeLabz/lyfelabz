@@ -9,7 +9,11 @@ import type {
 } from "../../settings/integrations/types";
 import {
   getSurfaceableLessons,
+  getFormalResourcesForLesson,
+  FORMAL_RESOURCE_LABEL,
   TOPIC_LABEL,
+  type CurriculumResource,
+  type FormalResourceType,
   type LessonGrade,
   type LessonTopic,
   type SurfaceableLesson,
@@ -18,15 +22,12 @@ import type {
   AssignmentDetailMetadata,
   AssignmentStatus,
 } from "../../assignments/detail/types";
-import {
-  compareAssignmentsForSelection,
-  isValidForSelection,
-} from "../../assignments/detail/grouping";
-import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
-import {
-  renderActiveAssignmentsSection,
-  type ActiveAssignmentsController,
-} from "./shared/activeAssignments";
+import type {
+  AssignmentSummaryCallable,
+  LessonSummaryCallable,
+} from "../../assignments/summary/types";
+import { renderLessonSummarySurface } from "./lessonSummary";
+import { buildLessonBasePath } from "../../assignments/studentList/launch";
 import { mintAssignmentId } from "./shared/assignmentId";
 import {
   clearConnectionReconnectNeeded,
@@ -46,9 +47,24 @@ import type { AssignmentLmsPublicationState } from "../../assignments/detail/typ
 // metadata (title, class name, status, assignmentId) in the injected
 // registry and invokes the entry-point opener. No student roster, no
 // recipient identifier, no attempt or session identifier is stored.
+// Sprint 28.6C: optional entry-context for opening Assignment Detail. When
+// omitted (the Curriculum -> Active Assignments path), the opener uses its
+// certified behavior: the Back control reads "Back to Curriculum" and returns
+// through the lighter Curriculum re-mount path. The Classes -> Class ->
+// Assignments path supplies both fields so the teacher returns to the same
+// class-centered context and the Back control names it. Direct/deep-link
+// Detail behavior is unaffected because neither field is required.
+export type AssignmentDetailOpenOptions = {
+  readonly onBack?: () => void;
+  readonly backLabel?: string;
+};
+
 export type CurriculumAssignmentDetailSeam = {
   readonly register: (metadata: AssignmentDetailMetadata) => void;
-  readonly open: (assignmentId: string) => void;
+  readonly open: (
+    assignmentId: string,
+    options?: AssignmentDetailOpenOptions,
+  ) => void;
   // Sprint 13C: enumeration accessor used at Curriculum mount to restore
   // the per-lesson mapping after a full page reload. When absent the
   // surface behaves exactly as Sprint 13B (session-only affordance).
@@ -137,6 +153,15 @@ export type CurriculumSurfaceDeps = {
   // preserved either way (no student, attempt, or answer data is named
   // by the dashboard).
   readonly assignmentSummary?: AssignmentSummaryCallable | null;
+  // Sprint 28.6E: certified `assessmentLessonSummary` callable seam. When
+  // present, each lesson card with owned published/closed assignment
+  // history renders a "View Summary" secondary action that opens the
+  // lesson-level (cross-assignment) aggregate summary surface. When
+  // absent-or-null no View Summary control is rendered (no dead control);
+  // the rest of the card is unchanged. The aggregate-only confidentiality
+  // boundary is preserved either way - the surface names no student,
+  // attempt, class, or recipient identifier.
+  readonly lessonSummary?: LessonSummaryCallable | null;
 };
 
 const DEFAULT_LIST_CLASSES: ListClasses = () =>
@@ -187,57 +212,6 @@ type Assignment = {
 // is enabled; the last-enabled row's deselection returns the card to
 // its unassigned state, mirroring section 8 of ASSIGN_EXPERIENCE.md.
 const sessionAssignments: Map<string, Assignment> = new Map();
-
-// Sprint 13B remediation extended by Sprint 13C: session-scoped map from
-// lesson slug to every registered assignment metadata for that lesson.
-// A lesson may have more than one concurrent assignment when a teacher
-// has assigned the same lesson to multiple classes (or across
-// publication cycles). Populated at surface mount from the certified
-// retrieval-hydrated registry and after every `assignmentsPublish`
-// resolves. Deduplicated by canonical `assignmentId`. UID-scoped so a
-// same-tab teacher swap cannot leak the prior teacher's mapping.
-let sessionAssignmentsByLesson: {
-  readonly uid: string;
-  readonly map: Map<string, Map<string, AssignmentDetailMetadata>>;
-} | null = null;
-
-function ensureAssignmentBucket(
-  uid: string,
-): Map<string, Map<string, AssignmentDetailMetadata>> {
-  if (
-    sessionAssignmentsByLesson === null ||
-    sessionAssignmentsByLesson.uid !== uid
-  ) {
-    sessionAssignmentsByLesson = { uid, map: new Map() };
-  }
-  return sessionAssignmentsByLesson.map;
-}
-
-function registerAssignmentMetadata(
-  uid: string,
-  metadata: AssignmentDetailMetadata,
-): void {
-  if (!isValidForSelection(metadata)) return;
-  const bucket = ensureAssignmentBucket(uid);
-  const slug = metadata.lessonSlug as string;
-  let byId = bucket.get(slug);
-  if (byId === undefined) {
-    byId = new Map<string, AssignmentDetailMetadata>();
-    bucket.set(slug, byId);
-  }
-  byId.set(metadata.assignmentId, metadata);
-}
-
-function readAssignmentsForLesson(
-  uid: string,
-  slug: string,
-): ReadonlyArray<AssignmentDetailMetadata> {
-  const bucket = sessionAssignmentsByLesson;
-  if (bucket === null || bucket.uid !== uid) return [];
-  const byId = bucket.map.get(slug);
-  if (byId === undefined) return [];
-  return Array.from(byId.values()).sort(compareAssignmentsForSelection);
-}
 
 // Teacher class list cache. Populated lazily on surface mount so the
 // dialog opens without a round trip. Keyed by uid to avoid returning a
@@ -508,28 +482,70 @@ export function renderCurriculumSurface(
   const integrations = deps.integrations ?? null;
   const assignments = deps.assignments ?? null;
   const assignmentDetail = deps.assignmentDetail ?? null;
+  const lessonSummary = deps.lessonSummary ?? null;
   const doc = mount.ownerDocument;
 
-  // Sprint 13C: restore the session-scoped per-lesson assignment map from
-  // the certified retrieval-hydrated registry so a full page reload does
-  // not lose the visible `View summary` (or `View summaries`) affordance.
-  // Only teacher-owned metadata is consumed. Deduplication is by canonical
-  // `assignmentId`; multiple assignments for the same lesson slug are
-  // preserved so the calm selection interface can surface them.
+  // Sprint 28.6E: the Curriculum lesson grid and the lesson-level View
+  // Summary surface share the Curriculum outlet. All lesson-grid content
+  // is appended to `curriculumView`; opening View Summary hides it and
+  // mounts the summary surface into `summaryHost`, so the Teacher
+  // Workspace shell (header, navigation, footer) stays mounted and
+  // Curriculum remains the active global navigation context. Back removes
+  // the summary surface and restores the grid.
+  const curriculumView = doc.createElement("div");
+  curriculumView.className = "shell-curriculum-view";
+  curriculumView.setAttribute("data-testid", "curriculum-view");
+  mount.appendChild(curriculumView);
+
+  const summaryHost = doc.createElement("div");
+  summaryHost.className = "shell-curriculum-summary-host";
+  summaryHost.setAttribute("data-testid", "curriculum-summary-host");
+  mount.appendChild(summaryHost);
+
+  const openLessonSummary = (lesson: SurfaceableLesson): void => {
+    if (lessonSummary === null) return;
+    curriculumView.hidden = true;
+    renderLessonSummarySurface(summaryHost, {
+      doc,
+      lessonTitle: lesson.title,
+      lessonSlug: lesson.slug,
+      lessonSummary,
+      onBack: () => {
+        summaryHost.textContent = "";
+        curriculumView.hidden = false;
+        // Return focus to the card's View Summary control so the return
+        // trip is keyboard-coherent.
+        const trigger = curriculumView.querySelector<HTMLButtonElement>(
+          `[data-testid=lesson-view-summary-${lesson.slug}]`,
+        );
+        if (trigger) {
+          try {
+            trigger.focus({ preventScroll: true });
+          } catch {
+            // ignored
+          }
+        }
+      },
+    });
+  };
+
+  // Sprint 13C, retained through Sprint 28.6D: rediscover the quiet
+  // "✓ Assigned" assignment-history signal from the certified
+  // retrieval-hydrated registry so a full page reload keeps the card's
+  // history affordance. The card remains fully re-assignable regardless
+  // of history (Blueprint §6); this only drives the presentation-time
+  // badge, it never disables Assign. Only teacher-owned metadata is read.
+  //
+  // Sprint 26 Phase 3 (Defect 2.B): mark the badge only for a hydrated
+  // assignment whose status qualifies as successfully assigned
+  // (`published`/`closed`). The certified enumeration path opts into
+  // draft discovery, so the registry can carry stranded `draft` entries;
+  // marking those would let a draft-only lesson falsely read "Assigned"
+  // after a reload. A draft still hydrates for the class-centered
+  // Assignment Detail surface; it simply does not drive the badge.
   if (assignmentDetail !== null && typeof assignmentDetail.list === "function") {
     try {
       for (const entry of assignmentDetail.list()) {
-        registerAssignmentMetadata(session.uid, entry);
-        // Sprint 26 Phase 3 (Defect 2.B). Rediscover the "✓ Assigned" badge
-        // only for lessons that have a hydrated assignment whose status
-        // qualifies as successfully assigned. The certified enumeration path
-        // opts into draft discovery (`includeDrafts: true` in
-        // `hydrate-wire.ts`), so the hydrated registry can now contain
-        // stranded `draft` entries. Marking every hydrated entry persisted
-        // regardless of status would let a draft-only lesson falsely show
-        // "Assigned" after a reload. The draft still hydrates and stays
-        // available to the View drafts control and the assignment detail
-        // surface; it simply does not drive the successful badge.
         if (
           typeof entry.lessonSlug === "string" &&
           entry.lessonSlug.length > 0 &&
@@ -540,7 +556,7 @@ export function renderCurriculumSurface(
       }
     } catch {
       // Calm degradation. A registry-list failure never blocks Curriculum
-      // rendering; the surface reverts to Sprint 13B session-only behavior.
+      // rendering; the surface reverts to the session-only badge behavior.
     }
   }
 
@@ -552,46 +568,26 @@ export function renderCurriculumSurface(
   const name = session.displayName;
   welcome.textContent =
     name && name.length > 0 ? `Welcome, ${name}.` : "Welcome to LyfeLabz.";
-  mount.appendChild(welcome);
+  curriculumView.appendChild(welcome);
   try {
     welcome.focus({ preventScroll: true });
   } catch {
     // ignored
   }
 
-  // Sprint 15: Active Assignments dashboard section. Rendered only when
-  // the signed-in teacher has one or more `published` assignments in the
-  // session-scoped registry (Sprint 14 §5.1). Reads exclusively from the
-  // already-hydrated registry; introduces no new enumeration path.
-  let activeAssignmentsController: ActiveAssignmentsController | null = null;
-  if (assignmentDetail !== null && typeof assignmentDetail.list === "function") {
-    activeAssignmentsController = renderActiveAssignmentsSection(mount, {
-      listRegistry: () => assignmentDetail.list?.() ?? [],
-      open: (id) => {
-        assignmentDetail.open(id);
-      },
-      summaryCallable: deps.assignmentSummary ?? null,
-    });
-    // Sprint 16 Slice 1: install the per-assignment invalidator so a
-    // lifecycle status change routed through `onStatusChange` while
-    // Curriculum is the mounted surface evicts that card's progress
-    // cache and re-fetches on the next render. The seam is cleared when
-    // Curriculum unmounts (the entry point calls the setter with null
-    // before mounting Assignment Detail) so a stale invalidator cannot
-    // fire against a detached section.
-    if (typeof assignmentDetail.setActiveAssignmentsInvalidator === "function") {
-      assignmentDetail.setActiveAssignmentsInvalidator((assignmentId) => {
-        activeAssignmentsController?.refresh({ assignmentIds: [assignmentId] });
-      });
-    }
-  }
+  // Sprint 28.6D: the Active Assignments dashboard is removed from
+  // Curriculum. Operational assignment management now lives under
+  // Classes -> Class -> Assignments -> Assignment Detail (certified in
+  // 28.6C). Curriculum is lesson-centric only (Blueprint §6); it no
+  // longer renders assignment rows, so no `renderActiveAssignmentsSection`
+  // mount and no per-assignment invalidator are installed here. The
+  // shared renderer continues to serve the Classes Assignments section.
 
-  const intro = doc.createElement("p");
-  intro.className = "shell-status shell-curriculum-intro";
-  intro.setAttribute("data-testid", "curriculum-intro");
-  intro.textContent =
-    "Activate the LyfeLabz lessons your students can access.";
-  mount.appendChild(intro);
+  // Sprint 28.6H.4 (Part C): the subtitle ("Activate the LyfeLabz lessons your
+  // students can access.") is removed and NOT replaced - Curriculum is already
+  // self-explanatory, and reclaiming its vertical space lets more lesson cards
+  // reach the visible desktop viewport. The welcome heading flows directly into
+  // the grade / topic filters.
 
   const restored = readSessionFilters(session.uid);
   const state: {
@@ -608,13 +604,13 @@ export function renderCurriculumSurface(
   const controls = doc.createElement("div");
   controls.className = "shell-curriculum-controls";
   controls.setAttribute("data-testid", "curriculum-filters");
-  mount.appendChild(controls);
+  curriculumView.appendChild(controls);
 
   const grid = doc.createElement("div");
   grid.className = "shell-curriculum-grid";
   grid.setAttribute("data-testid", "curriculum-grid");
   grid.setAttribute("role", "list");
-  mount.appendChild(grid);
+  curriculumView.appendChild(grid);
 
   const emptyNotice = doc.createElement("p");
   emptyNotice.className = "shell-curriculum-empty";
@@ -622,7 +618,7 @@ export function renderCurriculumSurface(
   emptyNotice.hidden = true;
   emptyNotice.textContent =
     "No lessons match the current filters. Adjust a filter to see more.";
-  mount.appendChild(emptyNotice);
+  curriculumView.appendChild(emptyNotice);
 
   const gradeRow = doc.createElement("div");
   gradeRow.className = "shell-filter-row";
@@ -646,7 +642,7 @@ export function renderCurriculumSurface(
   successBanner.setAttribute("role", "status");
   successBanner.setAttribute("aria-live", "polite");
   successBanner.hidden = true;
-  mount.appendChild(successBanner);
+  curriculumView.appendChild(successBanner);
 
   const applyFilters = (): void => {
     let visible = 0;
@@ -729,34 +725,27 @@ export function renderCurriculumSurface(
       assignmentDetail,
       onConfirm: (summary) => {
         refreshAssignControl(card, lesson);
-        refreshViewSummaryControl(card, lesson, session.uid, assignmentDetail);
-        activeAssignmentsController?.refresh();
         showSuccess(successBanner, summary);
       },
-      onLifecycleComplete: (assignmentIds) => {
-        // Re-derive the Assign badge from the persisted-assignment
-        // registry so the card only shows "✓ Assigned" after at least
-        // one class successfully published, and reverts to "Assign"
-        // when every class failed.
+      onLifecycleComplete: () => {
+        // Re-derive the quiet assignment-history badge from the
+        // persisted-assignment registry so the card only shows
+        // "✓ Assigned" after at least one class successfully published,
+        // and reverts to "Assign" when every class failed. The button
+        // stays clickable in both states (reassignment is always
+        // available). Curriculum no longer renders assignment rows, so
+        // no dashboard refresh is needed here (Blueprint §6).
         refreshAssignControl(card, lesson);
-        refreshViewSummaryControl(card, lesson, session.uid, assignmentDetail);
-        activeAssignmentsController?.refresh(
-          assignmentIds.length > 0 ? { assignmentIds } : undefined,
-        );
       },
     });
   };
 
   for (const lesson of LESSONS) {
     grid.appendChild(
-      renderLessonCard(
-        doc,
-        lesson,
-        state.activation,
-        openAssignDialog,
-        session.uid,
-        assignmentDetail,
-      ),
+      renderLessonCard(doc, lesson, state.activation, openAssignDialog, {
+        showViewSummary: lessonSummary !== null,
+        onViewSummary: openLessonSummary,
+      }),
     );
   }
   applyFilters();
@@ -771,7 +760,26 @@ export function renderCurriculumSurface(
   returnLink.textContent = "Return to public lessons";
   returnLink.className = "shell-return-link";
   returnLink.setAttribute("data-testid", "return-link");
-  mount.appendChild(returnLink);
+  curriculumView.appendChild(returnLink);
+}
+
+// Sprint 28.6H.8 (Part A/B): apply the Assign vs Reassign presentation to the
+// action button. Never assigned -> solid full-strength green "Assign".
+// Previously assigned -> green-OUTLINE "Reassign" (still fully active; the
+// behavior / assignment workflow is identical). "Reassign" reads as an action,
+// never a disabled status; the outlined green class carries the receded,
+// secondary-assignment treatment while staying in the assignment-green family.
+function applyAssignState(
+  btn: HTMLButtonElement,
+  lesson: SurfaceableLesson,
+  assigned: boolean,
+): void {
+  btn.textContent = assigned ? "Reassign" : "Assign";
+  btn.setAttribute(
+    "aria-label",
+    assigned ? `Reassign ${lesson.title}` : `Assign ${lesson.title}`,
+  );
+  btn.classList.toggle("shell-lesson-reassign", assigned);
 }
 
 function refreshAssignControl(
@@ -783,16 +791,26 @@ function refreshAssignControl(
   );
   if (!btn) return;
   const assigned = isAssigned(lesson.slug);
-  btn.textContent = assigned ? "✓ Assigned" : "Assign";
-  btn.setAttribute("data-assigned", assigned ? "true" : "false");
-  btn.classList.toggle("shell-lesson-assign-assigned", assigned);
-  btn.setAttribute(
-    "aria-label",
-    assigned
-      ? `Review assignment for ${lesson.title}`
-      : `Assign ${lesson.title}`,
-  );
+  // Sprint 28.6H.7 (Part B): a previously assigned lesson reads "Assign Again"
+  // in muted green; an unused lesson keeps full-strength green "Assign". Assign
+  // is always available and always re-assignable - the change is presentation
+  // only, kept in step with the assignment-history signal after a first
+  // in-session assignment.
+  applyAssignState(btn, lesson, assigned);
   card.setAttribute("data-lesson-assigned", assigned ? "true" : "false");
+  // Sprint 28.6H.6 (Part C): keep the supplemental cool-slate assigned tint in
+  // step with the assignment-history signal after a first in-session assignment.
+  card.classList.toggle("shell-lesson-card-assigned", assigned);
+
+  // Sprint 28.6E/H: reveal (or hide) the View Summary control in step with the
+  // assignment-history signal. A first successful in-session assignment makes
+  // lesson-level analytics meaningful; deselecting every class returns the card
+  // to a never-assigned state and hides it again. View Summary remains
+  // conditional on assignment history even though Assign no longer shows it.
+  const summaryBtn = card.querySelector<HTMLButtonElement>(
+    `[data-testid=lesson-view-summary-${lesson.slug}]`,
+  );
+  if (summaryBtn) summaryBtn.hidden = !assigned;
 }
 
 // Tracks the pending self-dismiss timer per banner so a newer
@@ -824,13 +842,20 @@ function showSuccess(banner: HTMLElement, summary: string): void {
   successDismissTimers.set(banner, handle);
 }
 
+// Sprint 28.6E: per-card View Summary options. `showViewSummary` reflects
+// whether the certified lesson-summary callable is wired (no dead control
+// when it is not); `onViewSummary` opens the lesson-level summary surface.
+type ViewSummaryOptions = {
+  readonly showViewSummary: boolean;
+  readonly onViewSummary: (lesson: SurfaceableLesson) => void;
+};
+
 function renderLessonCard(
   doc: Document,
   lesson: SurfaceableLesson,
   activation: Map<string, boolean>,
   onAssign: (lesson: SurfaceableLesson, card: HTMLElement) => void,
-  teacherUid: string,
-  assignmentDetail: CurriculumAssignmentDetailSeam | null,
+  viewSummary?: ViewSummaryOptions,
 ): HTMLElement {
   const card = doc.createElement("article");
   card.className = "shell-card shell-lesson-card";
@@ -851,7 +876,10 @@ function renderLessonCard(
   const gradePill = doc.createElement("span");
   gradePill.className = "shell-lesson-badge shell-lesson-grade";
   gradePill.setAttribute("data-testid", `lesson-grade-${lesson.slug}`);
-  gradePill.textContent = `Grade ${lesson.grade}`;
+  // Sprint 28.6D (Task 5): compact grade tag ("G6" rather than "Grade 6")
+  // to recover card vertical space. Presentation-only; the manifest grade
+  // metadata is unchanged. The science-domain label is retained alongside.
+  gradePill.textContent = `G${lesson.grade}`;
   header.appendChild(gradePill);
   const topicPill = doc.createElement("span");
   topicPill.className = `shell-lesson-badge shell-lesson-topic shell-lesson-topic-${lesson.topic}`;
@@ -902,266 +930,271 @@ function renderLessonCard(
   });
   actions.appendChild(toggle);
 
+  // Sprint 28.6H.2 (Finding 2 / Tasks 8-10): Assign and Preview live in their
+  // OWN dedicated paired row - a container that holds exactly these two
+  // controls and nothing else. Their equal width/height is computed only from
+  // this pair, so a conditional third control (View Summary) can never enter
+  // the same sizing row and shrink them. The prior implementation appended all
+  // three controls to `.shell-lesson-actions` and relied on `flex-basis:100%`
+  // to wrap View Summary onto its own line; because Assign/Preview use
+  // `flex-basis:0`, all three fit on one line (0 + 0 + 100% = 100%), so View
+  // Summary sat in the same row and crushed Assign/Preview. A separate pair
+  // container removes that failure mode structurally.
+  const actionPair = doc.createElement("div");
+  actionPair.className = "shell-lesson-action-pair";
+  actionPair.setAttribute("data-testid", `lesson-action-pair-${lesson.slug}`);
+
+  // Sprint 28.6H (Finding 7/8): Assign and Preview are a paired primary /
+  // secondary action set. Assign is always available and always reads "Assign"
+  // - the "✓ Assigned" history badge is removed (Finding 8), so a previously
+  // assigned lesson can still be assigned again with no visual change. The
+  // assignment-history signal is kept on the card dataset only to drive the
+  // conditional View Summary control.
   const assign = doc.createElement("button");
   assign.type = "button";
   assign.className = "shell-lesson-assign";
   assign.setAttribute("data-testid", `lesson-assign-${lesson.slug}`);
   const assigned = isAssigned(lesson.slug);
-  assign.textContent = assigned ? "✓ Assigned" : "Assign";
-  assign.setAttribute("data-assigned", assigned ? "true" : "false");
-  assign.classList.toggle("shell-lesson-assign-assigned", assigned);
-  assign.setAttribute(
-    "aria-label",
-    assigned
-      ? `Review assignment for ${lesson.title}`
-      : `Assign ${lesson.title}`,
-  );
+  // Sprint 28.6H.6/H.7 (Part B/C): a lesson that has been assigned at least once
+  // (the existing session assignment-history signal - no new persistence /
+  // backend) receives BOTH a subtle cool-slate card tint AND a muted-green
+  // "Assign Again" action, so the teacher can scan which lessons have been used
+  // while unused lessons come forward with a full-strength green "Assign". The
+  // action is unchanged in behavior (same assignment workflow, always enabled,
+  // always re-assignable); "Assign Again" reads as an action, never a disabled
+  // status.
+  applyAssignState(assign, lesson, assigned);
   card.setAttribute("data-lesson-assigned", assigned ? "true" : "false");
+  card.classList.toggle("shell-lesson-card-assigned", assigned);
   assign.addEventListener("click", () => {
     onAssign(lesson, card);
   });
-  actions.appendChild(assign);
+  actionPair.appendChild(assign);
+
+  // Sprint 28.6D (Task 7): teacher-safe Preview. Opens the current v2
+  // lesson artifact (override-aware `buildLessonBasePath`) with NO
+  // `?assignment` query, in a new tab. The standalone/inert v2 runtime
+  // returns before any Firebase init, so Preview cannot create a session,
+  // attempt, or result, needs no fake student, and never touches
+  // assignment or Classroom state (Blueprint §7). A quieter, neutral
+  // action than Assign. Rendered as a real link so it is keyboard
+  // reachable and its destination is a genuine navigation.
+  const previewPath = buildLessonBasePath(lesson.slug);
+  if (previewPath !== null) {
+    const preview = doc.createElement("a");
+    preview.className = "shell-lesson-preview";
+    preview.setAttribute("data-testid", `lesson-preview-${lesson.slug}`);
+    preview.href = previewPath;
+    preview.target = "_blank";
+    preview.rel = "noopener";
+    preview.textContent = "Preview";
+    preview.setAttribute(
+      "aria-label",
+      `Preview ${lesson.title} (opens in a new tab)`,
+    );
+    actionPair.appendChild(preview);
+  }
+
+  // The paired row is appended as a single unit. Assign and Preview are its
+  // only members; View Summary (below) is a sibling of this pair, never a
+  // child, so it is outside the pair's width calculation.
+  actions.appendChild(actionPair);
 
   card.appendChild(actions);
-  refreshViewSummaryControl(card, lesson, teacherUid, assignmentDetail);
+
+  // Sprint 28.6H.3 (Task D3/D4/D5): View Summary and Resources are both quiet
+  // secondary lesson-inspection actions, so they share ONE quiet footer instead
+  // of stacking as competing controls. The footer row places View Summary on
+  // the left and the `N Resource ›` disclosure on the right; the expanded
+  // Resources panel renders full-width beneath the row. The footer is omitted
+  // entirely when there is nothing to show, and its hairline boundary is
+  // suppressed by CSS (`:has`) when the only member is a hidden (never-assigned)
+  // View Summary, so a card never carries an empty footer.
+  const footerRow = doc.createElement("div");
+  footerRow.className = "shell-lesson-footer-row";
+
+  // View Summary (left). An analytical secondary action (gold-accented,
+  // quieter than Assign). Rendered only when the lesson-summary callable is
+  // wired; visible only for a lesson with owned published/closed assignment
+  // history (the same authoritative signal that lights the assigned badge),
+  // hidden otherwise so there is no dead control. Visibility is refreshed by
+  // `refreshAssignControl` so a first in-session assignment reveals it without
+  // a reload. Opens the lesson-level aggregate summary; it never lists a
+  // specific assignment (that is Classes).
+  let hasViewSummary = false;
+  if (viewSummary?.showViewSummary === true) {
+    const summaryBtn = doc.createElement("button");
+    summaryBtn.type = "button";
+    summaryBtn.className = "shell-lesson-view-summary";
+    summaryBtn.setAttribute(
+      "data-testid",
+      `lesson-view-summary-${lesson.slug}`,
+    );
+    summaryBtn.textContent = "View Summary";
+    summaryBtn.setAttribute(
+      "aria-label",
+      `View lesson summary for ${lesson.title}`,
+    );
+    summaryBtn.hidden = !isAssigned(lesson.slug);
+    summaryBtn.addEventListener("click", () => {
+      viewSummary.onViewSummary(lesson);
+    });
+    footerRow.appendChild(summaryBtn);
+    hasViewSummary = true;
+  }
+
+  // Resources (right). Formal Resources disclosure from the canonical manifest
+  // (simulations, investigations, extensions, challenges; legacy games
+  // excluded). A lesson with no formal resources shows no Resources control.
+  const resources = renderLessonResources(doc, lesson);
+  if (resources !== null) footerRow.appendChild(resources.toggle);
+
+  if (hasViewSummary || resources !== null) {
+    const footer = doc.createElement("div");
+    footer.className = "shell-lesson-footer";
+    footer.setAttribute("data-testid", `lesson-footer-${lesson.slug}`);
+    footer.appendChild(footerRow);
+    if (resources !== null) footer.appendChild(resources.panel);
+    card.appendChild(footer);
+  }
+
   return card;
 }
 
-// Sprint 13B remediation, extended by Sprint 13C. Renders (or removes)
-// the visible teacher-facing secondary action on a lesson card. When
-// exactly one valid assignment is registered for the lesson the control
-// is labeled `View summary` and opens that assignment directly. When two
-// or more valid assignments are registered the control is labeled
-// `View summaries` and opens a compact deterministic selection interface.
-// Invoking the resolved choice always passes the exact selected
-// `assignmentId` to the entry-point opener; the card never re-implements
-// detail mounting.
-const STATUS_LABEL_FOR_SELECTION: Readonly<Record<AssignmentStatus, string>> =
-  Object.freeze({
-    draft: "Draft",
-    published: "Published",
-    closed: "Closed",
-  });
-
-function refreshViewSummaryControl(
-  card: HTMLElement,
-  lesson: SurfaceableLesson,
-  teacherUid: string,
-  assignmentDetail: CurriculumAssignmentDetailSeam | null,
-): void {
-  const doc = card.ownerDocument;
-  const actions = card.querySelector<HTMLElement>(".shell-lesson-actions");
-  if (actions === null) return;
-  const existing = actions.querySelector<HTMLButtonElement>(
-    `[data-testid=lesson-view-summary-${lesson.slug}]`,
-  );
-  const assignments =
-    assignmentDetail === null
-      ? []
-      : readAssignmentsForLesson(teacherUid, lesson.slug);
-  if (assignments.length === 0 || assignmentDetail === null) {
-    if (existing !== null) existing.remove();
-    return;
-  }
-  // Rebuild the control so the singular/plural label stays consistent
-  // when the count crosses the 1 -> 2 boundary during the same session.
-  if (existing !== null) existing.remove();
-
-  // Sprint 13F: when every registered assignment for this lesson is a
-  // draft, the control is labeled `View drafts`. When any published or
-  // closed assignment exists, the Sprint 13B/13C `View summary` /
-  // `View summaries` behavior is preserved unchanged; any co-registered
-  // drafts appear inside the existing selector. Preservation of the
-  // published-only path is the primary intent of the Sprint 13F
-  // architecture rule.
-  const isDraftOnly = assignments.every((a) => a.status === "draft");
-  const view = doc.createElement("button");
-  view.type = "button";
-  view.className = "shell-lesson-view-summary";
-  view.setAttribute("data-testid", `lesson-view-summary-${lesson.slug}`);
-  if (isDraftOnly) {
-    view.setAttribute("data-assignment-count", String(assignments.length));
-    view.setAttribute("data-draft-only", "true");
-    view.setAttribute("aria-label", `View drafts for ${lesson.title}`);
-    view.textContent = "View drafts";
-    if (assignments.length === 1) {
-      const only = assignments[0]!;
-      view.setAttribute("data-assignment-id", only.assignmentId);
-      view.addEventListener("click", () => {
-        assignmentDetail.open(only.assignmentId);
-      });
-    } else {
-      view.addEventListener("click", () => {
-        openAssignmentSelection({
-          doc,
-          lesson,
-          assignments: readAssignmentsForLesson(teacherUid, lesson.slug),
-          onSelect: (assignmentId) => {
-            assignmentDetail.open(assignmentId);
-          },
-          returnFocusTo: view,
-        });
-      });
-    }
-  } else if (assignments.length === 1) {
-    const only = assignments[0]!;
-    view.setAttribute("data-assignment-id", only.assignmentId);
-    view.setAttribute("data-assignment-count", "1");
-    view.setAttribute("aria-label", `View summary for ${lesson.title}`);
-    view.textContent = "View summary";
-    view.addEventListener("click", () => {
-      const id = view.getAttribute("data-assignment-id");
-      if (id === null || id.length === 0) return;
-      assignmentDetail.open(id);
-    });
-  } else {
-    view.setAttribute("data-assignment-count", String(assignments.length));
-    view.setAttribute(
-      "aria-label",
-      `View summaries for ${lesson.title}`,
-    );
-    view.textContent = "View summaries";
-    view.addEventListener("click", () => {
-      openAssignmentSelection({
-        doc,
-        lesson,
-        assignments: readAssignmentsForLesson(teacherUid, lesson.slug),
-        onSelect: (assignmentId) => {
-          assignmentDetail.open(assignmentId);
-        },
-        returnFocusTo: view,
-      });
-    });
-  }
-  actions.appendChild(view);
+// Sprint 28.6D (Task 8). Formal Resources disclosure for one lesson
+// card. Returns null when the lesson has no formal resources (the card
+// then omits the control rather than showing an empty disclosure). The
+// control is a native `<button>` with `aria-expanded`/`aria-controls`
+// toggling an inline panel, so it is keyboard operable and its
+// expanded/collapsed state is exposed to assistive tech. Each resource
+// renders its human-readable type, its title, and an Open link to the
+// canonical public instructional page in a new tab. Resources are
+// Open/Preview only in v1 - never independently assignable (Blueprint
+// §9).
+// Sprint 28.6D.1 (Task 2). Collapsed Resources disclosure label with
+// correct singular/plural grammar. Exported as a pure helper so the
+// plural path stays directly testable: the surfaced manifest currently
+// carries at most one formal resource per lesson, so the "N Resources"
+// branch cannot be reached through the real surface, yet the grammar
+// must remain correct if a lesson later gains multiple resources.
+export function formatResourceCountLabel(count: number): string {
+  return count === 1 ? "1 Resource" : `${count} Resources`;
 }
 
-// -----------------------------------------------------------------------------
-// Assignment selection interface (Sprint 13C remediation)
-// -----------------------------------------------------------------------------
-//
-// Compact overlay reused from the existing Assign dialog pattern so no new
-// design system is introduced. The interface has a clear heading, names
-// the lesson, lists each registered assignment as a native button with an
-// accessible name that includes class and status, supports keyboard
-// navigation and Escape-dismissal, restores focus to the invoking
-// `View summaries` control, and never displays assignment/class/teacher
-// identifiers or any student-scoped data.
+// Sprint 28.6H.3 (Task D3): returns the disclosure TOGGLE and its PANEL as
+// separate nodes so the caller can place the quiet `N Resource ›` toggle into
+// the shared card footer (alongside View Summary) while the expanded panel
+// renders full-width beneath that footer row. Returns null when the lesson has
+// no formal resources (no disclosure at all). The disclosure behavior, count
+// grammar, caret, `aria-expanded`/`aria-controls`, and Open-in-new-tab
+// semantics are unchanged from 28.6D.1.
+function renderLessonResources(
+  doc: Document,
+  lesson: SurfaceableLesson,
+): { readonly toggle: HTMLElement; readonly panel: HTMLElement } | null {
+  const resources = getFormalResourcesForLesson(lesson.slug);
+  if (resources.length === 0) return null;
 
-type OpenAssignmentSelectionInput = {
-  readonly doc: Document;
-  readonly lesson: SurfaceableLesson;
-  readonly assignments: ReadonlyArray<AssignmentDetailMetadata>;
-  readonly onSelect: (assignmentId: string) => void;
-  readonly returnFocusTo: HTMLElement | null;
-};
+  const panelId = `lesson-resources-panel-${lesson.slug}`;
 
-function openAssignmentSelection(input: OpenAssignmentSelectionInput): void {
-  const { doc, lesson, assignments, onSelect, returnFocusTo } = input;
-  if (assignments.length === 0) return;
+  const toggle = doc.createElement("button");
+  toggle.type = "button";
+  toggle.className = "shell-lesson-resources-toggle";
+  toggle.setAttribute("data-testid", `lesson-resources-toggle-${lesson.slug}`);
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", panelId);
+  toggle.setAttribute(
+    "aria-label",
+    `Resources for ${lesson.title}, ${resources.length} available`,
+  );
+  const count = resources.length;
+  const countLabel = doc.createElement("span");
+  countLabel.className = "shell-lesson-resources-count";
+  countLabel.textContent = formatResourceCountLabel(count);
+  toggle.appendChild(countLabel);
 
-  const overlay = doc.createElement("div");
-  overlay.className = "shell-assign-overlay shell-summary-select-overlay";
-  overlay.setAttribute("data-testid", "summary-select-overlay");
-
-  const dialog = doc.createElement("div");
-  dialog.className = "shell-assign-dialog shell-summary-select-dialog";
-  dialog.setAttribute("role", "dialog");
-  dialog.setAttribute("aria-modal", "true");
-  dialog.setAttribute("aria-labelledby", "summary-select-title");
-  dialog.setAttribute("data-testid", "summary-select-dialog");
-  dialog.setAttribute("data-lesson-slug", lesson.slug);
-
-  const title = doc.createElement("h3");
-  title.id = "summary-select-title";
-  title.className = "shell-assign-title";
-  title.setAttribute("data-testid", "summary-select-title");
-  title.textContent = `Choose an assignment for ${lesson.title}`;
-  dialog.appendChild(title);
-
+  const panel = doc.createElement("div");
+  panel.className = "shell-lesson-resources-panel";
+  panel.id = panelId;
+  panel.setAttribute("data-testid", `lesson-resources-${lesson.slug}`);
+  panel.hidden = true;
   const list = doc.createElement("ul");
-  list.className = "shell-summary-select-list";
-  list.setAttribute("data-testid", "summary-select-list");
+  list.className = "shell-lesson-resources-list";
   list.setAttribute("role", "list");
-  dialog.appendChild(list);
+  panel.appendChild(list);
 
-  let closed = false;
-  const close = (): void => {
-    if (closed) return;
-    closed = true;
-    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    doc.removeEventListener("keydown", onKey);
-    if (returnFocusTo !== null) {
-      try {
-        returnFocusTo.focus({ preventScroll: true });
-      } catch {
-        // ignored
-      }
-    }
-  };
-  const onKey = (ev: KeyboardEvent): void => {
-    if (ev.key === "Escape") {
-      ev.preventDefault();
-      close();
-    }
-  };
-
-  for (const meta of assignments) {
-    const item = doc.createElement("li");
-    item.className = "shell-summary-select-item";
-    item.setAttribute("role", "listitem");
-    const btn = doc.createElement("button");
-    btn.type = "button";
-    btn.className = "shell-summary-select-choice";
-    btn.setAttribute(
-      "data-testid",
-      `summary-select-choice-${meta.assignmentId}`,
-    );
-    btn.setAttribute("data-assignment-id", meta.assignmentId);
-    const statusLabel = STATUS_LABEL_FOR_SELECTION[meta.status];
-    const visibleLabel = `${meta.className} · ${statusLabel}`;
-    btn.textContent = visibleLabel;
-    btn.setAttribute(
-      "aria-label",
-      `Open assignment summary for ${meta.className}, ${statusLabel}`,
-    );
-    // Status is not conveyed through color alone; the visible text carries
-    // the label and the accessible name repeats it.
-    btn.setAttribute("data-status", meta.status);
-    btn.addEventListener("click", () => {
-      const id = meta.assignmentId;
-      close();
-      onSelect(id);
-    });
-    item.appendChild(btn);
-    list.appendChild(item);
-  }
-
-  const footer = doc.createElement("div");
-  footer.className = "shell-assign-footer";
-  const cancel = doc.createElement("button");
-  cancel.type = "button";
-  cancel.className = "shell-assign-cancel";
-  cancel.setAttribute("data-testid", "summary-select-cancel");
-  cancel.textContent = "Cancel";
-  cancel.addEventListener("click", close);
-  footer.appendChild(cancel);
-  dialog.appendChild(footer);
-
-  overlay.appendChild(dialog);
-  doc.body.appendChild(overlay);
-  doc.addEventListener("keydown", onKey);
-  overlay.addEventListener("click", (ev) => {
-    if (ev.target === overlay) close();
+  resources.forEach((resource, index) => {
+    list.appendChild(renderResourceItem(doc, lesson, resource, index));
   });
-  try {
-    const firstChoice = list.querySelector<HTMLButtonElement>(
-      ".shell-summary-select-choice",
-    );
-    (firstChoice ?? cancel).focus({ preventScroll: true });
-  } catch {
-    // ignored
-  }
+
+  toggle.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", open ? "false" : "true");
+    panel.hidden = open;
+  });
+
+  return { toggle, panel };
+}
+
+function renderResourceItem(
+  doc: Document,
+  lesson: SurfaceableLesson,
+  resource: CurriculumResource,
+  index: number,
+): HTMLElement {
+  const item = doc.createElement("li");
+  item.className = "shell-lesson-resource";
+  item.setAttribute("role", "listitem");
+
+  const typeLabel =
+    FORMAL_RESOURCE_LABEL[resource.type as FormalResourceType] ?? "Resource";
+
+  // Sprint 28.6D.1 (Task 4): supporting-material row, not a nested lesson
+  // card. The type is a small muted eyebrow above the resource title; the
+  // title is the primary content of the row; a single quiet "Open" link
+  // remains the secondary action. The Open link keeps its discernible
+  // accessible name (type + title + new-tab), so the resource identity is
+  // fully represented in text even though the visible link word is "Open".
+  const main = doc.createElement("div");
+  main.className = "shell-lesson-resource-main";
+
+  const type = doc.createElement("span");
+  type.className = "shell-lesson-resource-type";
+  type.setAttribute(
+    "data-testid",
+    `lesson-resource-type-${lesson.slug}-${index}`,
+  );
+  type.textContent = typeLabel;
+  main.appendChild(type);
+
+  const title = doc.createElement("span");
+  title.className = "shell-lesson-resource-title";
+  title.setAttribute(
+    "data-testid",
+    `lesson-resource-title-${lesson.slug}-${index}`,
+  );
+  title.textContent = resource.label;
+  main.appendChild(title);
+
+  item.appendChild(main);
+
+  const open = doc.createElement("a");
+  open.className = "shell-lesson-resource-open";
+  open.setAttribute(
+    "data-testid",
+    `lesson-resource-open-${lesson.slug}-${index}`,
+  );
+  open.href = resource.href;
+  open.target = "_blank";
+  open.rel = "noopener";
+  open.textContent = "Open";
+  open.setAttribute(
+    "aria-label",
+    `Open ${typeLabel.toLowerCase()}: ${resource.label} (opens in a new tab)`,
+  );
+  item.appendChild(open);
+
+  return item;
 }
 
 // -----------------------------------------------------------------------------
@@ -1852,9 +1885,11 @@ async function runAssignmentLifecycle(input: {
         };
       }
 
-      // Sprint 13B remediation. Record the published assignment in the
-      // session-scoped registry so the lesson card can render the visible
-      // `View summary` opener. Only teacher-owned metadata is stored.
+      // Sprint 13B remediation, retained through Sprint 28.6D. Record the
+      // published assignment in the session-scoped registry so the
+      // class-centered Assignments section and Assignment Detail can
+      // surface it (the registry is now consumed by Classes, not by a
+      // Curriculum-side control). Only teacher-owned metadata is stored.
       if (assignmentDetail !== null) {
         try {
           const meta: AssignmentDetailMetadata = {
@@ -1866,7 +1901,6 @@ async function runAssignmentLifecycle(input: {
             classId: row.classId,
           };
           assignmentDetail.register(meta);
-          registerAssignmentMetadata(teacherUid, meta);
         } catch {
           // defensive no-op: registry failure never disturbs the
           // authoritative publish outcome
@@ -2129,7 +2163,6 @@ export function _resetCurriculumSessionStateForTest(): void {
   sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
   sessionPreferences.topic = "";
   sessionPreferences.lmsTopicId = "";
-  sessionAssignmentsByLesson = null;
   sessionPersistedSlugs = null;
   sessionFilters = null;
   _resetLmsPublicationStateForTest();

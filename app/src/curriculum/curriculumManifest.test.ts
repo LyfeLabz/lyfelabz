@@ -8,10 +8,13 @@ import * as path from "path";
 import {
   CURRICULUM_MANIFEST,
   TOPIC_LABEL,
+  FORMAL_RESOURCE_LABEL,
   getAllUnits,
   getSurfaceableLessons,
   getTopicGroups,
   getOrphanUnits,
+  getUnitBySlug,
+  getFormalResourcesForLesson,
 } from "./curriculumManifest";
 
 const parserPath = path.resolve(
@@ -125,6 +128,60 @@ describe("Canonical curriculum manifest (Sprint 6D.0)", () => {
     ).reduce((a, b) => a + b, 0);
     expect(summed).toBe(total);
     expect(CURRICULUM_MANIFEST.totals.unitCount).toBe(getAllUnits().length);
+  });
+});
+
+describe("Formal resource selectors (Sprint 28.6D)", () => {
+  const FORMAL_TYPES = new Set([
+    "simulation",
+    "investigation",
+    "extension",
+    "challenge",
+  ]);
+
+  test("getUnitBySlug resolves a known unit and returns null otherwise", () => {
+    const unit = getUnitBySlug("earths-layers");
+    expect(unit).not.toBeNull();
+    expect(unit!.slug).toBe("earths-layers");
+    expect(getUnitBySlug("not-a-real-slug")).toBeNull();
+  });
+
+  test("formal resources sum to the 28.6B inventory (13 total, games excluded)", () => {
+    let total = 0;
+    for (const lesson of getSurfaceableLessons()) {
+      const resources = getFormalResourcesForLesson(lesson.slug);
+      for (const r of resources) {
+        expect(FORMAL_TYPES.has(r.type)).toBe(true);
+        expect(r.type).not.toBe("game");
+      }
+      total += resources.length;
+    }
+    // 3 simulations + 4 investigations + 5 extensions + 1 challenge.
+    expect(total).toBe(13);
+    // The manifest itself carries no formal games.
+    expect(CURRICULUM_MANIFEST.totals.resourceCountsByType.game).toBe(0);
+  });
+
+  test("formal resources are ordered by manifest displayOrder", () => {
+    for (const lesson of getSurfaceableLessons()) {
+      const resources = getFormalResourcesForLesson(lesson.slug);
+      for (let i = 1; i < resources.length; i += 1) {
+        expect(resources[i]!.displayOrder).toBeGreaterThanOrEqual(
+          resources[i - 1]!.displayOrder,
+        );
+      }
+    }
+  });
+
+  test("FORMAL_RESOURCE_LABEL maps every formal type to a human label", () => {
+    expect(FORMAL_RESOURCE_LABEL.simulation).toBe("Simulation");
+    expect(FORMAL_RESOURCE_LABEL.investigation).toBe("Investigation");
+    expect(FORMAL_RESOURCE_LABEL.extension).toBe("Extension");
+    expect(FORMAL_RESOURCE_LABEL.challenge).toBe("Challenge");
+  });
+
+  test("an unknown slug yields no formal resources without throwing", () => {
+    expect(getFormalResourcesForLesson("not-a-real-slug")).toEqual([]);
   });
 });
 

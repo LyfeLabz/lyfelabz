@@ -44,6 +44,14 @@ export {
   type SelectedCompletedAttempt,
 } from "./assessment-assignment-summary";
 export {
+  assessmentLessonSummary,
+  aggregateLessonSummary,
+  type AssessmentLessonSummaryRequest,
+  type AssessmentLessonSummaryResponse,
+  type LessonSummaryAssignmentInput,
+  type LessonSummaryAggregate,
+} from "./assessment-lesson-summary";
+export {
   assessmentAttemptsListForClass,
   projectTeacherClassAttemptSummary,
   type AssessmentAttemptsListForClassRequest,

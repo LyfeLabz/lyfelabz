@@ -70,27 +70,30 @@ export const STATIC_SNAPSHOT_PREVIEW: SnapshotPreview = Object.freeze({
   ]),
 });
 
-// Snapshot receives every arm of `ClassSummary` and must label every
-// arm safely. `needsSetup` is included so a class the teacher opened
-// mid-setup does not render an `undefined` label; the Phase 2B.4
-// workspace re-routes needsSetup classes to the setup form before this
-// surface is ever reached, but the safe-render is defense in depth.
-// See docs/platform/SPRINT_24B_PHASE_2B_READER_AUDIT.md §5 C8.
-const STATUS_LABEL: Readonly<Record<ClassSummary["status"], string>> =
-  Object.freeze({
-    active: "Active",
-    archived: "Archived",
-    needsSetup: "Setup needed",
-  });
-
 export type SnapshotRenderInput = {
   readonly summary: ClassSummary;
   // When null, Snapshot renders the no-data state. When present, the
   // static preview groupings are rendered instead. Preview data must
   // never be sourced from Firestore or Cloud Functions.
   readonly preview: SnapshotPreview | null;
+  // Sprint 28.6H (Findings 4/5): the count of this class's assignments,
+  // grouped in-memory from the already-loaded teacher assignment registry
+  // (no per-class call). `null` when the assignment seam is not wired, in
+  // which case the count line is omitted rather than guessed.
+  readonly assignmentCount?: number | null;
 };
 
+// Sprint 28.6H (Findings 3/4/5): the class-workspace Overview.
+//
+// The class name, grade/block, and status no longer live here - the class
+// identity is the workspace header above the tabs (Finding 3), and the
+// "Active" badge is removed entirely (Finding 2). Prototype/product-marketing
+// copy is removed: the "One place to check in on your class between moments."
+// purpose line and the "Classroom activity will appear here..." empty
+// placeholder are gone (Finding 5). Overview shows real, locally-available
+// class information (assignment count, join code) or - when there is genuinely
+// nothing yet - a calm intentional empty state. Roster sync is NOT here; it is
+// an occasional administrative action reached from "Manage class" (Finding 4).
 export function renderSnapshotSurface(
   mount: HTMLElement,
   input: SnapshotRenderInput,
@@ -102,7 +105,7 @@ export function renderSnapshotSurface(
   headline.className = "shell-welcome shell-snapshot-headline";
   headline.tabIndex = -1;
   headline.setAttribute("data-testid", "surface-headline");
-  headline.textContent = input.summary.title;
+  headline.textContent = "Overview";
   mount.appendChild(headline);
   try {
     headline.focus({ preventScroll: true });
@@ -110,58 +113,81 @@ export function renderSnapshotSurface(
     // ignored
   }
 
-  const purpose = doc.createElement("p");
-  purpose.className = "shell-status shell-snapshot-purpose";
-  purpose.setAttribute("data-testid", "snapshot-purpose");
-  purpose.textContent =
-    "One place to check in on your class between moments.";
-  mount.appendChild(purpose);
-
-  const context = doc.createElement("div");
-  context.className = "shell-snapshot-context";
-  context.setAttribute("data-testid", "snapshot-class-context");
-
-  if (input.summary.status !== "needsSetup" && input.summary.grade.length > 0) {
-    const grade = doc.createElement("span");
-    grade.className = "shell-snapshot-grade";
-    grade.setAttribute("data-testid", "snapshot-class-grade");
-    grade.textContent = `Grade ${input.summary.grade}`;
-    context.appendChild(grade);
-  }
-
-  const statusPill = doc.createElement("span");
-  statusPill.className = `shell-snapshot-status shell-snapshot-status-${input.summary.status}`;
-  statusPill.setAttribute("data-testid", "snapshot-class-status");
-  statusPill.setAttribute(
-    "aria-label",
-    `Class status: ${STATUS_LABEL[input.summary.status]}`,
-  );
-  statusPill.textContent = STATUS_LABEL[input.summary.status];
-  context.appendChild(statusPill);
-  mount.appendChild(context);
-
   const region = doc.createElement("section");
   region.className = "shell-snapshot-region";
   region.setAttribute("data-testid", "snapshot-region");
-  region.setAttribute("aria-label", "Class snapshot");
+  region.setAttribute("aria-label", "Class overview");
 
-  if (input.preview === null) {
-    renderEmptyState(doc, region);
-  } else {
+  if (input.preview !== null) {
+    // Development-only static preview of the intended student groupings.
     renderPreviewGroups(doc, region, input.preview);
+    mount.appendChild(region);
+    return;
+  }
+
+  // Real, locally-available class summary. `assignmentCount` is grouped from
+  // the already-loaded teacher assignment registry (no per-class call, no new
+  // read). The join code is class metadata already loaded with the class.
+  const summaryList = doc.createElement("dl");
+  summaryList.className = "shell-snapshot-summary";
+  summaryList.setAttribute("data-testid", "snapshot-summary");
+
+  const count = input.assignmentCount ?? null;
+  if (count !== null) {
+    appendSummaryRow(
+      doc,
+      summaryList,
+      "Assignments",
+      count === 0
+        ? "No assignments yet"
+        : count === 1
+          ? "1 assignment"
+          : `${count} assignments`,
+      "snapshot-assignment-count",
+    );
+  }
+
+  const joinCode =
+    input.summary.status === "needsSetup" ? undefined : input.summary.joinCode;
+  if (joinCode && joinCode.length > 0) {
+    appendSummaryRow(doc, summaryList, "Join code", joinCode, "snapshot-join-code");
+  }
+
+  if (summaryList.childElementCount > 0) {
+    region.appendChild(summaryList);
+  } else {
+    // Genuinely nothing to summarize yet: a calm, intentional empty state (no
+    // product-marketing placeholder).
+    const empty = doc.createElement("p");
+    empty.className = "shell-snapshot-empty";
+    empty.setAttribute("data-testid", "snapshot-empty");
+    empty.setAttribute("role", "status");
+    empty.textContent = "No assignments yet.";
+    region.appendChild(empty);
   }
 
   mount.appendChild(region);
 }
 
-function renderEmptyState(doc: Document, region: HTMLElement): void {
-  const empty = doc.createElement("p");
-  empty.className = "shell-snapshot-empty";
-  empty.setAttribute("data-testid", "snapshot-empty");
-  empty.setAttribute("role", "status");
-  empty.textContent =
-    "Classroom activity will appear here when assignments and submissions exist.";
-  region.appendChild(empty);
+function appendSummaryRow(
+  doc: Document,
+  list: HTMLElement,
+  label: string,
+  value: string,
+  testId: string,
+): void {
+  const row = doc.createElement("div");
+  row.className = "shell-snapshot-summary-row";
+  const dt = doc.createElement("dt");
+  dt.className = "shell-snapshot-summary-label";
+  dt.textContent = label;
+  const dd = doc.createElement("dd");
+  dd.className = "shell-snapshot-summary-value";
+  dd.setAttribute("data-testid", testId);
+  dd.textContent = value;
+  row.appendChild(dt);
+  row.appendChild(dd);
+  list.appendChild(row);
 }
 
 function renderPreviewGroups(

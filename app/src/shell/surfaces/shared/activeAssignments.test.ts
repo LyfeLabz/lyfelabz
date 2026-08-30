@@ -285,7 +285,12 @@ describe("renderActiveAssignmentsSection", () => {
     const progress = mount.querySelector(
       "[data-testid=active-assignment-progress-p1]",
     );
-    expect(progress?.textContent).toBe("3 submitted / 5 started / 10 total");
+    // Sprint 28.6H.3 (Task B4): teacher-oriented completion language.
+    expect(progress?.textContent).toBe("3 of 10 completed");
+    const detail = mount.querySelector(
+      "[data-testid=active-assignment-progress-detail-p1]",
+    );
+    expect(detail?.textContent).toBe("5 not started · 2 started");
   });
 
   test("progress line shows unavailable message on callable failure", async () => {
@@ -581,7 +586,7 @@ describe("Sprint 20: Active Assignments accordion", () => {
     expect(expanded?.hidden).toBe(true);
   });
 
-  test("collapsed summary line reads 'title • class • X/Y submissions'", async () => {
+  test("collapsed summary line reads 'title • class • X of Y completed'", async () => {
     const mount = mkMount();
     renderActiveAssignmentsSection(mount, {
       listRegistry: () => [
@@ -601,11 +606,11 @@ describe("Sprint 20: Active Assignments accordion", () => {
       "[data-testid=active-assignment-summary-p1]",
     );
     expect(summary?.textContent).toBe(
-      "Earth's Layers • Beta • 10/22 submissions",
+      "Earth's Layers • Beta • 10 of 22 completed",
     );
   });
 
-  test("collapsed summary falls back to 'Submission count unavailable' on error", async () => {
+  test("collapsed summary falls back to 'Completion count unavailable' on error", async () => {
     const mount = mkMount();
     renderActiveAssignmentsSection(mount, {
       listRegistry: () => [
@@ -620,7 +625,7 @@ describe("Sprint 20: Active Assignments accordion", () => {
       "[data-testid=active-assignment-summary-p1]",
     );
     expect(summary?.textContent).toBe(
-      "Waves • 6A • Submission count unavailable",
+      "Waves • 6A • Completion count unavailable",
     );
   });
 

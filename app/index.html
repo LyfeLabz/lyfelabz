@@ -300,9 +300,16 @@
     border-color: #666;
     font-weight: 600;
   }
+  /* Sprint 28.6H (Finding 6): the Curriculum grid uses an explicit column
+     count per breakpoint rather than auto-fill, so wide desktops show 4 cards
+     across (not 5) and the card has room for its full contents (grade, domain,
+     title, Assign/Preview, View Summary, Resources) without wrapping or
+     clipping. minmax(0, 1fr) lets each column shrink to fit with no horizontal
+     page scroll. Card readability > maximum density. Responsive counts are set
+     in the media block below (3 / 2 / 1). */
   .shell-curriculum-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     /* Sprint 20 polish: horizontal gap preserved; vertical gap tightened
        (~35%) so the grid reads as one continuous curriculum library. */
     column-gap: 0.85rem;
@@ -314,7 +321,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    padding: 0.55rem 0.85rem 0.55rem 0.85rem;
+    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
     /* Sprint 20 polish: override the inherited .shell-card
        margin-bottom that stacked with the grid row-gap and inflated
        row spacing. Card height is now driven only by content + the
@@ -331,10 +338,29 @@
        row so the Curriculum reads as one uniform library. The value
        is the smallest comfortable height that fits the canonical
        card contents: header pills row + reserved two-line title
-       region + action row, plus current internal spacing. */
-    min-height: 8.75rem;
+       region + action row, plus current internal spacing.
+       Sprint 28.6H.3 (Task D6): View Summary and Resources merged into one
+       quiet footer row (no longer two stacked blocks), so the card needs less
+       reserved height. Sprint 28.6H.4 (Task D3/D6): the surrounding dead space
+       (title/action/footer margins) was trimmed, so the reserved floor drops
+       again to 6.5rem for a materially shorter, scannable card that keeps
+       comfortable 44px touch targets. The effective floor is set once in the
+       responsive block below. */
+    min-height: 6.5rem;
   }
   .shell-lesson-card[hidden] { display: none; }
+  /* Sprint 28.6H.6 (Task C2): a lesson that has already been assigned gets a
+     VERY subtle cool blue/slate tint so the teacher can scan which lessons have
+     been used. This is a DIFFERENT concept from the Classes completed state
+     (pale green) and deliberately uses a cool hue, never green. It stays far
+     quieter than the green Assign button and never fires on a deactivated card
+     (`:not(.shell-lesson-card-inactive)`), which keeps its own gray treatment.
+     The tint is supplemental only; Assign/Preview/View Summary/Resources and
+     every badge are unchanged. */
+  .shell-lesson-card-assigned:not(.shell-lesson-card-inactive) {
+    background: rgba(90, 120, 160, 0.08);
+    border-color: rgba(70, 100, 140, 0.22);
+  }
   .shell-lesson-card-inactive {
     background: #f6f6f6;
     opacity: 0.72;
@@ -373,11 +399,11 @@
     align-items: baseline;
     gap: 0.35rem 0.6rem;
     min-width: 0;
-    /* Sprint 20 final structural pass: widen the gap between the
-       Grade / Topic metadata pills and the lesson title so the title
-       reads as a distinct hierarchical level rather than an extension
-       of the pill row. Delta from prior value is ~4px. */
-    margin-top: 0.4rem;
+    /* Sprint 20 final structural pass: separate the Grade / Topic metadata
+       pills from the lesson title so the title reads as a distinct
+       hierarchical level. Sprint 28.6H.4 (Task D3): trimmed 0.4rem -> 0.25rem
+       to recover card vertical space while keeping the hierarchy readable. */
+    margin-top: 0.25rem;
   }
   .shell-lesson-title-row .shell-lesson-title {
     flex: 1 1 auto;
@@ -401,28 +427,107 @@
     overflow: hidden;
     min-height: 2.6em;
   }
+  /* Sprint 28.6H.2 (Finding 2): the lesson-card action area is a VERTICAL
+     stack, not a single wrapping row. The Assign/Preview pair is its own row
+     (`.shell-lesson-action-pair`) so the two primary controls are sized only
+     against each other and keep identical geometry on every card. The
+     conditional View Summary and the Inactive toggle are separate rows that
+     can never enter the pair's width calculation. This replaces the earlier
+     single-row `flex-wrap` approach, whose `flex-basis:100%` on View Summary
+     did NOT force a wrap: because Assign/Preview use `flex-basis:0`, all three
+     items fit on one line (0 + 0 + 100% = 100%), so View Summary sat in the
+     same row and crushed Assign/Preview narrow. */
   .shell-lesson-actions {
     display: flex;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 0.5rem;
-    /* Sprint 20 final structural pass: shift the action row downward
-       so it is visually separated from the title without being pinned
-       to the bottom edge. The card layout remains Metadata -> Title ->
-       Action with balanced whitespace around the action. Delta from
-       prior value is ~8px. */
-    margin-top: 0.55rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    /* Sprint 28.6D.1 (Task 1) / 28.6H.4 (Task D3): tighten the gap between the
+       lesson title and the primary actions so lesson identity and
+       Assign/Preview read as one connected unit and the card runs shorter. */
+    margin-top: 0.25rem;
     min-width: 0;
   }
   .shell-lesson-actions > * {
     min-width: 0;
-    max-width: 100%;
   }
-  /* View summaries always sits on the right of the status bar so the
-     Assign / Assigned control on the left has a stable location. */
-  .shell-lesson-actions .shell-lesson-view-summary {
+  /* Sprint 28.6H.4 (Task D1/D2): the paired primary row holds exactly two
+     children - Assign and Preview. It is a plain flex row that shrink-wraps to
+     its content (`align-self: flex-start`), so the pair sits at the LEFT of the
+     card and does NOT stretch across the full card width. Equal geometry is NOT
+     delegated to a grid track algorithm (an intrinsic `inline-grid` with
+     `grid-auto-columns: 1fr` did NOT equalize its columns under shrink-to-fit
+     sizing, which is why the live cards showed mismatched widths); instead each
+     control carries an explicit identical fixed width + height below. The pair
+     wraps on an extremely narrow card rather than forcing horizontal scroll. */
+  .shell-lesson-action-pair {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    /* Bounded to the card width (align-self: stretch inherits the actions
+       column's align-items: stretch) so the two controls SHRINK equally to fit
+       a narrow 4-column card instead of wrapping to a second line. Buttons are
+       left-aligned within that width (they never grow to fill it). */
+    justify-content: flex-start;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  /* Sprint 28.6H.4 (Task D1): Assign and Preview resolve to the EXACT same
+     width and height from this ONE shared rule. The fixed width means label
+     length ("Assign" vs "Preview") can never size them differently. `flex: 0 1
+     auto` forbids GROWING (they never stretch into page-level CTAs, Task J
+     #15) but permits equal SHRINK: at the accepted 4-column desktop density a
+     card is only ~165-200px wide, so a rigid 112px pair would wrap; instead the
+     two controls shrink together, staying IDENTICAL and on one line. 7rem =
+     112px is the roomy-card cap (within the 110-125px contract); 2.75rem = 44px
+     is the fixed height (within 42-46px, meeting the 44px touch target).
+     box-sizing keeps padding/border inside the fixed box. */
+  .shell-lesson-assign,
+  .shell-lesson-preview {
+    box-sizing: border-box;
+    width: 7rem;
+    height: 2.75rem;
+    flex: 0 1 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 0;
+    /* Zero the global button's 1rem top-margin (which applied to the
+       Assign <button> but not the Preview <a>, shifting Assign 16px lower and
+       inflating the pair). Both controls now share identical box geometry. */
+    margin: 0;
+  }
+  /* The Inactive toggle is its own row; keep it sized to its content rather
+     than stretching across the full column width. */
+  .shell-lesson-actions > .shell-lesson-toggle {
+    align-self: flex-start;
+  }
+  /* Sprint 28.6H.3 (Task D3/D6): the shared quiet footer for the two secondary
+     lesson-inspection actions. View Summary sits at the left; the Resources
+     disclosure is pushed to the right (`margin-left:auto`) so a Resources-only
+     card reads `                1 Resource ›` while a View-Summary-only card
+     reads `View Summary` at the left. The hairline boundary + top padding are
+     applied only when the row actually contains a VISIBLE control (`:has`), so
+     a card whose sole footer member is a hidden (never-assigned) View Summary
+     shows no empty footer and no stray rule. Wraps on very narrow cards. */
+  .shell-lesson-footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.6rem;
+    min-width: 0;
+  }
+  .shell-lesson-footer-row > .shell-lesson-resources-toggle {
     margin-left: auto;
+  }
+  .shell-lesson-footer:has(.shell-lesson-footer-row > *:not([hidden])) .shell-lesson-footer-row {
+    /* Sprint 28.6H.4 (Task D3/D5): restrained footer separation (0.4rem ->
+       0.3rem) so the quiet View Summary / Resources footer consumes less
+       vertical space. */
+    margin-top: 0.3rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.06));
   }
   .shell-lesson-toggle {
     padding: 0.25rem 0.6rem;
@@ -459,17 +564,11 @@
     .shell-filter-pill { min-height: 44px; }
     .shell-lesson-toggle { min-height: 32px; }
   }
-  @media (max-width: 480px) {
-    .shell-lesson-actions {
-      flex-wrap: wrap;
-      justify-content: stretch;
-    }
-    .shell-lesson-assign,
-    .shell-lesson-view-summary {
-      flex: 1 1 auto;
-      text-align: center;
-    }
-  }
+  /* Sprint 28.6H.2: no phone-width override is needed. The action area is a
+     vertical stack at every width, and the Assign/Preview pair keeps its two
+     equal children side by side (both short labels), so the paired geometry
+     holds on phones without re-introducing a rule that could resize View
+     Summary. */
   .shell-footer {
     text-align: center;
     padding: 1rem;
@@ -504,31 +603,238 @@
   @media (prefers-reduced-motion: reduce) {
     .shell-main, .shell-card { transition: none !important; animation: none !important; }
   }
-  /* Sprint 8C: Settings > Integrations surface. Reuses the shell card
-     language; introduces no new design system. */
-  .shell-settings-category-button {
-    display: block;
-    width: 100%;
-    text-align: left;
+  /* Sprint 28.6F: simplified Settings surface. A single Classes & Google
+     Classroom administrative section: connection status, Import (primary),
+     Create (secondary). Reuses the shell button language; introduces no new
+     design system. Connection management still opens the Integrations
+     surface below. */
+  .shell-settings-intro {
+    margin: 0.25rem 0 1rem 0;
+  }
+  /* Sprint 28.6H.4 (Task E1): Settings is a scalable tabbed surface. The tab
+     row is a quiet segmented control; only real categories render (one tab -
+     Class Management - today). The selected tab carries a solid underline
+     accent (non-color state also on aria-selected). */
+  .shell-settings-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0 0 1.25rem 0;
+    border-bottom: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.1));
+  }
+  .shell-settings-tab {
+    padding: 0.5rem 0.85rem;
     background: transparent;
     border: none;
-    /* Sprint 26 Phase 5: reset the base `button` top margin so the
-       Connected Services category keeps the same vertical rhythm as the
-       plain-paragraph categories. */
+    border-bottom: 2px solid transparent;
+    /* margin-top: 0 zeroes the global button's 1rem top-margin. */
     margin-top: 0;
-    padding: 0;
+    margin-bottom: -1px;
     font: inherit;
-    color: inherit;
+    font-weight: 600;
+    color: var(--tw-ink-muted, #566472);
     cursor: pointer;
   }
-  .shell-settings-category-button:hover .shell-settings-category-title,
-  .shell-settings-category-button:focus-visible .shell-settings-category-title {
-    text-decoration: underline;
+  .shell-settings-tab[aria-selected="true"] {
+    color: var(--tw-ink, #1c2733);
+    border-bottom-color: #1f6b3d;
   }
-  .shell-settings-category-hint {
-    margin: 0.35rem 0 0 0;
+  .shell-settings-tab:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+    border-radius: 4px;
+  }
+  .shell-settings-panel {
+    display: block;
+  }
+  /* Sprint 28.6H.4 (Task E2/E7): the Class Management panel. The Google
+     Classroom connection block and the compact Classes list stack within it;
+     no repeated "Class Management" heading (that is the tab). */
+  .shell-settings-classroom,
+  .shell-settings-classes,
+  .shell-settings-lyfelabz {
+    display: block;
+    max-width: 34rem;
+  }
+  /* Sprint 28.6H.5 (Task D3): tightened so the Class Management panel reads as
+     one compact administrative workspace (1.5rem -> 1rem) without being
+     cramped. */
+  .shell-settings-classes {
+    margin-top: 1rem;
+  }
+  /* Sprint 28.6H.6 (Part E2): the separate LyfeLabz Classes source area. A
+     restrained heading + a single secondary action; clearly its own section,
+     without heavy card chrome. */
+  .shell-settings-lyfelabz {
+    margin-top: 1.4rem;
+  }
+  /* The Import Class action sits just under the Google Classroom connection row
+     inside its own section. */
+  .shell-settings-classroom .shell-settings-class-actions {
+    margin-top: 0.15rem;
+  }
+  .shell-settings-section-heading {
+    font-size: 1.02rem;
+    margin: 0 0 0.4rem 0;
+    color: #222;
+  }
+  /* Task E5: the compact Classes list. Task D3: tightened 1.5rem -> 1.25rem. */
+  .shell-settings-rostersync {
+    margin-top: 1.25rem;
+  }
+  .shell-settings-rostersync .shell-settings-section-heading {
+    margin-bottom: 0.6rem;
+  }
+  .shell-settings-subheading {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+  }
+  /* Sprint 28.6H.4 (Task E5): compact administrative ROWS, not oversized
+     bordered management cards. Each row is a light hairline-separated line with
+     the class identity on the left and (for linked classes) Sync roster on the
+     right. Rows wrap on narrow screens so Sync roster never overflows. */
+  .shell-settings-rostersync-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .shell-settings-rostersync-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
+    padding: 0.6rem 0;
+    border-top: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.08));
+  }
+  .shell-settings-rostersync-item:last-child {
+    border-bottom: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.08));
+  }
+  .shell-settings-rostersync-identity {
+    min-width: 0;
+  }
+  .shell-settings-rostersync-name {
+    margin: 0;
+    font-weight: 600;
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-settings-rostersync-meta {
+    margin: 0.1rem 0 0 0;
+    font-size: 0.85rem;
+    color: var(--tw-ink-muted, #566472);
+  }
+  /* The reused Sync roster panel sits at the right of its row and stays
+     compact (the button + its aria-live status stack). */
+  .shell-settings-rostersync-item .shell-class-rostersync {
+    margin: 0;
+    flex: 0 0 auto;
+    text-align: right;
+  }
+  /* Sprint 28.6H.4 (Task E5): the reused Sync roster control is a quiet,
+     secondary administrative button (not a page CTA). It carries the canonical
+     outlined-button language; its aria-live status sits beneath it. */
+  .shell-class-rostersync-button {
+    /* margin: 0 zeroes the global button's 1rem top-margin. */
+    margin: 0;
+    padding: 0.3rem 0.7rem;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.22);
+    border-radius: 4px;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    min-height: 36px;
+  }
+  .shell-class-rostersync-button:hover,
+  .shell-class-rostersync-button:focus-visible {
+    border-color: rgba(0, 0, 0, 0.4);
+  }
+  .shell-class-rostersync-button:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-class-rostersync-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .shell-class-rostersync-status {
+    margin: 0.3rem 0 0 0;
+    font-size: 0.8rem;
+    color: var(--tw-ink-muted, #566472);
+  }
+  .shell-class-rostersync-status:empty {
+    margin: 0;
+  }
+  /* Sprint 28.6H.7 (Part C/E): the Google Classroom connection-status row and
+     the "Manage connection" control were removed from the primary Class
+     Management surface (contextual authorization now happens on Import Class),
+     so their CSS is removed too - no orphaned spacing remains. */
+  /* Sprint 28.6H.5 (Part E, Task E1): the Student Services placeholder line -
+     restrained informational copy, no cards, no controls. */
+  .shell-settings-placeholder {
+    margin: 0;
+    max-width: 34rem;
+    font-size: 0.95rem;
+    color: var(--tw-ink-soft, #3a4653);
+  }
+  .shell-settings-class-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .shell-settings-class-action {
+    margin-top: 0;
+    padding: 0.5rem 0.9rem;
+    min-height: 36px;
+    font: inherit;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  /* Import is the preferred workflow: primary (filled) hierarchy. */
+  .shell-settings-class-action--primary {
+    background: #1f6b3d;
+    color: #fff;
+    border: 1px solid #1f6b3d;
+  }
+  .shell-settings-class-action--primary:hover,
+  .shell-settings-class-action--primary:focus-visible {
+    background: #175a31;
+    border-color: #175a31;
+  }
+  /* Manual creation remains available but secondary (outlined). */
+  .shell-settings-class-action--secondary {
+    background: #fff;
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.22);
+  }
+  .shell-settings-class-action--secondary:hover,
+  .shell-settings-class-action--secondary:focus-visible {
+    border-color: rgba(0, 0, 0, 0.4);
+  }
+  .shell-settings-class-action:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .shell-settings-class-action:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-settings-class-actions-note {
+    margin: 0.4rem 0 0 0;
     font-size: 0.85rem;
     color: #555;
+  }
+  @media (pointer: coarse) {
+    .shell-settings-class-action,
+    .shell-settings-tab,
+    .shell-class-rostersync-button { min-height: 44px; }
   }
   .shell-integrations {
     display: block;
@@ -655,41 +961,358 @@
      clicking Assign appears to do nothing. Canonical LyfeLabz shell
      tokens; no new design system. */
   .shell-lesson-assign {
-    padding: 0.35rem 0.75rem;
+    /* Sprint 28.6H.4 (Task D1): sizing (width/height/box) is owned by the
+       shared `.shell-lesson-assign, .shell-lesson-preview` rule above; this
+       rule carries only the primary-green presentation. */
+    padding: 0 0.5rem;
     font: inherit;
     background: #1f6b3d;
     color: #fff;
     border: 1px solid #1f6b3d;
     border-radius: 4px;
     cursor: pointer;
-    min-height: 36px;
   }
   .shell-lesson-assign:hover, .shell-lesson-assign:focus-visible {
     background: #175a31;
     border-color: #175a31;
   }
-  .shell-lesson-assign-assigned {
-    background: #fff;
+  /* Sprint 28.6H.8 (Part B): a previously assigned lesson reads "Reassign" as a
+     green-OUTLINE action - transparent fill (the assigned card's slate tint
+     shows through), assignment-green border + text - so unused lessons
+     (full-strength solid green "Assign") clearly come forward while previously
+     used lessons stay easy to reassign. Green text #1f6b3d on the pale
+     slate/white card is high-contrast (>6:1, AA); the outlined green keeps it
+     in the assignment family (distinct from the neutral gray Preview) and never
+     reads as disabled/gray. Hover adds a very light green wash; the focus ring
+     is re-asserted so focus stays visible (Part K). The two-class selector wins
+     over the base solid-green + polish rules regardless of source order. */
+  .shell-lesson-assign.shell-lesson-reassign {
+    background: transparent;
     color: #1f6b3d;
+    border-color: #1f6b3d;
+    box-shadow: none;
   }
-  .shell-lesson-assign-assigned:hover,
-  .shell-lesson-assign-assigned:focus-visible {
+  .shell-lesson-assign.shell-lesson-reassign:hover,
+  .shell-lesson-assign.shell-lesson-reassign:focus-visible {
     background: rgba(31, 107, 61, 0.08);
+    border-color: #175a31;
     color: #175a31;
   }
+  .shell-lesson-assign.shell-lesson-reassign:focus-visible {
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  /* Sprint 28.6H (Finding 8): the "✓ Assigned" badge and its
+     .shell-lesson-assign-assigned styling were removed; Assign always reads
+     "Assign" and stays the primary green control. */
+  /* Sprint 28.6H (Finding 9): lesson-level View Summary is a QUIETER
+     analytical action than Assign/Preview - a restrained, borderless
+     text-style control (no box), so it never competes with the primary
+     paired buttons or crushes into a two-line box. It stays a real,
+     keyboard-focusable button with a visible focus ring; the gold accent
+     lives in the text + underline. white-space:nowrap keeps the label on one
+     line. Hidden (no dead control) until the lesson has owned
+     published/closed assignment history. */
   .shell-lesson-view-summary {
-    padding: 0.35rem 0.75rem;
+    padding: 0.2rem 0;
+    /* margin: 0 zeroes the global button 1rem top-margin that otherwise adds
+       16px above this footer control (Sprint 28.6H.4, Task D3/D5). */
+    margin: 0;
     font: inherit;
-    background: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--tw-ink-soft, #3a4653);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    min-height: 28px;
+    text-decoration: underline;
+    text-decoration-color: var(--tw-gold-border, rgba(214, 158, 23, 0.55));
+    text-underline-offset: 2px;
+  }
+  .shell-lesson-view-summary:hover,
+  .shell-lesson-view-summary:focus-visible {
+    color: var(--tw-gold-strong, #a9790f);
+    text-decoration-color: var(--tw-gold-strong, #a9790f);
+  }
+  .shell-lesson-view-summary:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-lesson-view-summary[hidden] { display: none; }
+  /* Sprint 28.6D: teacher-safe Preview (quieter, neutral action) and the
+     formal Resources disclosure. Canonical shell tokens; no new design
+     system. */
+  .shell-lesson-preview {
+    /* Sprint 28.6H.4 (Task D1): sizing (width/height/box/centering) is owned by
+       the shared `.shell-lesson-assign, .shell-lesson-preview` rule above; this
+       rule carries only the quiet, neutral/outlined presentation. */
+    padding: 0 0.5rem;
+    font: inherit;
+    background: transparent;
     color: #333;
     border: 1px solid rgba(0, 0, 0, 0.18);
     border-radius: 4px;
     cursor: pointer;
+    text-decoration: none;
+  }
+  .shell-lesson-preview:hover,
+  .shell-lesson-preview:focus-visible {
+    border-color: #333;
+    background: rgba(0, 0, 0, 0.04);
+  }
+  /* Sprint 28.6H.3 (Task D5): Resources read as a quiet disclosure inside the
+     shared card footer (see `.shell-lesson-footer-row`), not a third primary
+     action. The footer boundary + spacing now live on the footer row; the
+     disclosure itself is a borderless text row with a rotating caret glyph, and
+     each resource is a compact type-eyebrow + title with a quiet secondary Open
+     action (28.6D.1, unchanged). */
+  .shell-lesson-resources-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    /* margin: 0 zeroes the global button's 1rem top-margin (Sprint
+       28.6H.4, Task D3/D5). */
+    margin: 0;
+    padding: 0.15rem 0;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--tw-ink-soft, #3a4653);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 28px;
+  }
+  /* Disclosure caret: a single right chevron that rotates to point down
+     when expanded. State is carried by shape + aria-expanded, never by
+     color; no icon library is introduced. */
+  .shell-lesson-resources-toggle::after {
+    content: "\203A";
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--tw-ink-muted, #566472);
+    transition: transform 0.15s ease;
+  }
+  .shell-lesson-resources-toggle[aria-expanded="true"]::after {
+    transform: rotate(90deg);
+  }
+  .shell-lesson-resources-toggle:hover,
+  .shell-lesson-resources-toggle:focus-visible {
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-lesson-resources-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-lesson-resources-panel[hidden] { display: none; }
+  .shell-lesson-resources-list {
+    list-style: none;
+    margin: 0.45rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .shell-lesson-resource {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem 0.75rem;
+    flex-wrap: wrap;
+  }
+  .shell-lesson-resource-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .shell-lesson-resource-type {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tw-ink-muted, #566472);
+  }
+  .shell-lesson-resource-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--tw-ink, #1c2733);
+    overflow-wrap: anywhere;
+  }
+  /* Sprint 28.6H.5 (Task C1/C2): the resource Open action is a compact OUTLINED
+     control (not bare green text, not a solid primary button). Fixed 4.75rem
+     (76px) x 2.375rem (38px) - within the 70-85 / 36-40 contract, consistent
+     for every resource row, and clearly SMALLER than Assign/Preview (7rem x
+     2.75rem) so it reads as a tertiary action. Navigation (href, new tab,
+     rel=noopener, accessible name) is unchanged. */
+  .shell-lesson-resource-open {
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.75rem;
+    height: 2.375rem;
+    /* Zero the global button/anchor top-margin reset is unnecessary (this is an
+       <a>), but keep margin explicit for stable geometry. */
+    margin: 0;
+    color: #175a31;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid rgba(23, 90, 49, 0.35);
+    border-radius: 4px;
+    background: transparent;
+  }
+  .shell-lesson-resource-open:hover,
+  .shell-lesson-resource-open:focus-visible {
+    border-color: #175a31;
+    background: rgba(23, 90, 49, 0.06);
+    text-decoration: none;
+  }
+  .shell-lesson-resource-open:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  /* Sprint 28.6E: lesson-level View Summary surface. Rendered into the
+     Curriculum outlet (the shell header/nav/footer stay mounted, so
+     Curriculum remains the active global nav context). Calm, teacher-
+     focused, aggregate-only - clean metric cards, no charts, no animated
+     counters, no gradients. */
+  .shell-curriculum-summary-host:empty { display: none; }
+  .shell-lesson-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .shell-lesson-summary-back {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.1rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--tw-ink-soft, #3a4653);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 32px;
+  }
+  .shell-lesson-summary-back::before {
+    content: "\2039";
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+  .shell-lesson-summary-back:hover { color: var(--tw-ink, #1c2733); }
+  .shell-lesson-summary-back:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-lesson-summary-title {
+    margin: 0.15rem 0 0;
+    font-size: 1.35rem;
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-lesson-summary-title:focus { outline: none; }
+  .shell-lesson-summary-subhead {
+    margin: 0 0 0.4rem;
+    color: var(--tw-ink-muted, #566472);
+    font-size: 0.92rem;
+  }
+  .shell-lesson-summary-loading {
+    color: var(--tw-ink-muted, #566472);
+    padding: 0.75rem 0;
+  }
+  .shell-lesson-summary-error {
+    background: rgba(162, 66, 24, 0.08);
+    border: 1px solid rgba(162, 66, 24, 0.35);
+    border-radius: var(--tw-radius-control, 6px);
+    padding: 0.75rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+  .shell-lesson-summary-error-message {
+    margin: 0;
+    color: #8a3a12;
+  }
+  .shell-lesson-summary-retry {
+    padding: 0.35rem 0.85rem;
+    font: inherit;
+    background: var(--tw-surface, #fff);
+    color: var(--tw-ink-soft, #3a4653);
+    border: 1px solid var(--tw-hairline, rgba(28, 39, 51, 0.09));
+    border-radius: 4px;
+    cursor: pointer;
     min-height: 36px;
   }
-  .shell-lesson-view-summary:hover,
-  .shell-lesson-view-summary:focus-visible {
-    border-color: #333;
+  .shell-lesson-summary-retry:hover,
+  .shell-lesson-summary-retry:focus-visible {
+    border-color: var(--tw-ink-soft, #3a4653);
+  }
+  .shell-lesson-summary-retry:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  /* Four metric cards: one row on desktop/laptop, 2x2 on tablet, single
+     column on narrow/mobile. 1fr columns never force horizontal scroll. */
+  .shell-lesson-summary-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 0.25rem 0 0;
+  }
+  .shell-lesson-summary-metric {
+    background: var(--tw-surface, #fff);
+    border: 1px solid var(--tw-hairline, rgba(28, 39, 51, 0.09));
+    border-radius: var(--tw-radius-card, 10px);
+    padding: 0.85rem 0.95rem;
+    min-width: 0;
+  }
+  .shell-lesson-summary-metric-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tw-ink-muted, #566472);
+  }
+  .shell-lesson-summary-metric-value {
+    margin: 0.35rem 0 0;
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--tw-gold-strong, #a9790f);
+  }
+  .shell-lesson-summary-metric-detail {
+    margin: 0.3rem 0 0;
+    font-size: 0.82rem;
+    color: var(--tw-ink-muted, #566472);
+  }
+  .shell-lesson-summary-foot {
+    margin: 0.9rem 0 0;
+    font-size: 0.85rem;
+    color: var(--tw-ink-muted, #566472);
+  }
+  @media (max-width: 960px) {
+    .shell-lesson-summary-metrics { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .shell-lesson-summary-metrics { grid-template-columns: 1fr; }
+  }
+  @media (pointer: coarse) {
+    .shell-lesson-summary-back { min-height: 44px; }
+    .shell-lesson-summary-retry { min-height: 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shell-lesson-view-summary { transition: none; }
   }
   .shell-curriculum-success {
     background: rgba(61, 220, 132, 0.12);
@@ -854,6 +1477,9 @@
   @media (pointer: coarse) {
     .shell-lesson-assign,
     .shell-lesson-view-summary,
+    .shell-lesson-preview,
+    .shell-lesson-resources-toggle,
+    .shell-lesson-resource-open,
     .shell-assign-cancel,
     .shell-assign-confirm,
     .shell-summary-select-choice { min-height: 44px; }
@@ -952,6 +1578,61 @@
     padding: 0.5rem 0.7rem;
     margin: 0.25rem 0;
   }
+  /* Sprint 28.6H.9 (Correction 4): focused Google Classroom import task action
+     hierarchy. Previously the import task's Try again / Close (and the Cancel /
+     Close rows) had no dedicated styling, so they fell back to the plain gray
+     browser button and read with essentially equal weight. Try again is the
+     recommended recovery action and takes the canonical primary-green treatment
+     (matching .shell-classes-create-open / Assign); Close (and the Cancel rows)
+     take the neutral outlined secondary treatment (matching
+     .shell-classes-create-cancel) so it never competes with Try again. Behavior
+     is unchanged - only the presentation of the existing controls. */
+  .shell-classes-import-actions,
+  .shell-classes-import-error-actions,
+  .shell-classes-import-duplicate-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+  }
+  .shell-classes-import-retry {
+    padding: 0.5rem 0.9rem;
+    font: inherit;
+    background: #1f6b3d;
+    color: #fff;
+    border: 1px solid #1f6b3d;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 36px;
+  }
+  .shell-classes-import-retry:hover,
+  .shell-classes-import-retry:focus-visible {
+    background: #175a31;
+    border-color: #175a31;
+  }
+  .shell-classes-import-cancel {
+    padding: 0.5rem 0.9rem;
+    font: inherit;
+    background: #fff;
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 36px;
+  }
+  .shell-classes-import-cancel:hover,
+  .shell-classes-import-cancel:focus-visible {
+    border-color: #333;
+  }
+  .shell-classes-import-retry:focus-visible,
+  .shell-classes-import-cancel:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  @media (pointer: coarse) {
+    .shell-classes-import-retry,
+    .shell-classes-import-cancel { min-height: 44px; }
+  }
   .shell-classes-joincode {
     margin: 0.75rem 0 1rem 0;
     padding: 0.85rem 1rem;
@@ -1036,6 +1717,16 @@
     --tw-primary:        #1f6b3d;   /* preserved LyfeLabz green */
     --tw-primary-strong: #175a31;
     --tw-primary-wash:   rgba(31, 107, 61, 0.09);
+    /* Sprint 28.6E: restrained LyfeLabz analytics gold. Used only as the
+       View Summary secondary-emphasis accent and the summary metric
+       values, so lesson-level analytics is discoverable without competing
+       with the primary green Assign action. Text-bearing gold is darkened
+       to keep AA contrast on the white surface; the yellow brand gold
+       lives only on borders/washes. */
+    --tw-gold:           #d69e17;
+    --tw-gold-strong:    #a9790f;
+    --tw-gold-wash:      rgba(214, 158, 23, 0.10);
+    --tw-gold-border:    rgba(214, 158, 23, 0.55);
     --tw-focus-ring:     0 0 0 3px rgba(26, 95, 111, 0.22);
     --tw-shadow-card:    0 1px 2px rgba(28, 39, 51, 0.04),
                          0 1px 3px rgba(28, 39, 51, 0.05);
@@ -1262,7 +1953,8 @@
     .shell-lesson-view-summary,
     .shell-assign-confirm,
     .shell-assign-cancel,
-    .shell-summary-select-choice {
+    .shell-summary-select-choice,
+    .shell-lesson-resources-toggle::after {
       transition: none !important;
     }
   }
@@ -1501,48 +2193,12 @@
     border-style: dashed;
     border-color: var(--tw-hairline);
   }
-  /* Assignment Status Bar (Sprint 20 refinement):
-     - The Assign / Assigned control keeps an identical footprint across
-       states so it feels like the same control changing rather than
-       being replaced. Only fill, border, and ink change on assignment.
-     - View summaries reads as a quiet, right-side management action so
-       it never competes with the primary Assign / Assigned control. */
-  /* Assigned state reads as a compact status affordance, not a boxed
-     button. Border, fill, and shadow are stripped so it sits quietly
-     next to the primary View summaries control on the right. */
-  .shell-lesson-assign-assigned {
-    background: transparent;
-    color: var(--tw-primary-strong);
-    border: 1px solid transparent;
-    box-shadow: none;
-    padding: 0.15rem 0.25rem 0.15rem 0;
-    min-height: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: default;
-  }
-  .shell-lesson-assign-assigned:hover,
-  .shell-lesson-assign-assigned:focus-visible {
-    background: transparent;
-    border-color: transparent;
-    color: var(--tw-primary-strong);
-  }
-  .shell-lesson-view-summary {
-    padding: 0.2rem 0.6rem;
-    font-size: 0.85rem;
-    min-height: 30px;
-    background: var(--tw-surface);
-    color: var(--tw-ink-soft);
-    border-color: var(--tw-hairline);
-    box-shadow: none;
-    font-weight: 500;
-  }
-  .shell-lesson-view-summary:hover,
-  .shell-lesson-view-summary:focus-visible {
-    background: var(--tw-surface);
-    border-color: var(--tw-nav-edge);
-    color: var(--tw-ink);
-  }
+  /* Sprint 28.6H (Findings 8/9): the Sprint 20 "Assigned status bar" refinement
+     that re-boxed .shell-lesson-assign-assigned and .shell-lesson-view-summary
+     is retired. The "✓ Assigned" badge is gone (Finding 8), and View Summary is
+     now a quiet borderless text-style control defined once above (Finding 9);
+     re-boxing it here would have made it compete with Assign/Preview again.
+     The touch-target minimum is preserved. */
   @media (pointer: coarse) {
     .shell-lesson-view-summary { min-height: 44px; }
   }
@@ -1834,7 +2490,8 @@
   .shell-active-assignments-toggle-btn:focus-visible,
   .shell-assignment-detail-back:focus-visible,
   .shell-assignment-detail-late-recipients-add:focus-visible,
-  .shell-class-workspace-back:focus-visible {
+  .shell-class-workspace-back:focus-visible,
+  .shell-classes-back-to-settings:focus-visible {
     outline: none;
     box-shadow: var(--tw-focus-ring);
     border-color: var(--tw-nav-edge);
@@ -2413,6 +3070,44 @@
     align-self: flex-start;
     margin-top: 0.2rem;
   }
+  /* Sprint 28.6H.5 (Task A5): the class-scoped Class Workspace assignment card
+     drops the class name and PUBLISHED label, so its content is just the
+     canonical title, the completion line, the date, and Open assignment. This
+     compact variant tightens the internal spacing so the card fits that
+     content with no large empty lower half; there is no fixed/min-height, so
+     the card height is content-driven. */
+  .shell-active-assignment-card-compact {
+    gap: 0.1rem;
+    padding: 0.6rem 0.8rem;
+  }
+  .shell-active-assignment-card-compact .shell-active-assignment-date {
+    margin: 0.15rem 0 0.35rem 0;
+  }
+  /* Sprint 28.6H.6 (Task A1): the variable informational content (title,
+     completion, optional "N not started" line, date) occupies the upper region;
+     `margin-top: auto` pushes Open assignment to the BOTTOM of the flex-column
+     card. Because the grid stretches cards to a shared row height (align-items:
+     stretch), every Open assignment control in a row bottom-aligns even when one
+     card carries an extra progress line - no absolute positioning, no per-status
+     pixel offsets, and the card stays content-driven (Task A2). */
+  .shell-active-assignment-card-compact .shell-active-assignment-open {
+    margin-top: auto;
+  }
+  /* Sprint 28.6H.6 (Task B2): the subtle pale-green COMPLETED treatment for a
+     class-scoped card where every recipient has completed. Extremely pale
+     green-tinted fill + a restrained green-tinted border for rapid scanning -
+     not a saturated card, banner, badge, or checkmark. The title stays normal
+     dark ink; Open assignment stays the same neutral control. */
+  .shell-active-assignment-card-complete {
+    background: rgba(61, 220, 132, 0.07);
+    border-color: rgba(31, 107, 61, 0.28);
+  }
+  /* The completion line reads in a restrained success green on a completed card
+     (supplemental to the authoritative "N of N completed" text). */
+  .shell-active-assignment-card-complete .shell-active-assignment-progress {
+    color: #1f6b3d;
+    font-weight: 600;
+  }
   .shell-active-assignments-toggle {
     display: inline-flex;
     align-items: center;
@@ -2425,7 +3120,11 @@
 
   /* ---- D3: class workspace ------------------------------------------ */
 
-  .shell-class-workspace-back {
+  /* Sprint 28.6H.9 (Correction 2): "Back to Settings" on a focused Settings
+     child task shares the certified "Back to Classes" visual language so
+     parent navigation reads identically across the teacher surface. */
+  .shell-class-workspace-back,
+  .shell-classes-back-to-settings {
     display: inline-block;
     margin: 0 0 0.75rem 0;
     padding: 0.3rem 0;
@@ -2437,7 +3136,8 @@
     font-weight: 600;
     cursor: pointer;
   }
-  .shell-class-workspace-back:hover { text-decoration: underline; }
+  .shell-class-workspace-back:hover,
+  .shell-classes-back-to-settings:hover { text-decoration: underline; }
 
   /* Snapshot / Roster switcher: a compact segmented tab bar with a real
      selected state (underline + weight + color, not color alone) and
@@ -2544,19 +3244,53 @@
     padding: 0;
     margin: 0.5rem 0 0 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    /* Sprint 28.6H.3 (Task A3): the class cards are the everyday operational
+       objects, so they get a more substantial footprint - a slightly wider
+       minimum track so a card reads as a real class tile, not a thin chip. */
+    grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr));
     gap: 0.85rem;
   }
   .shell-classes-item { margin: 0; }
+  /* Sprint 28.6I: the "+ Add class" disclosure sits below the class-card grid,
+     aligned to the right edge of the content column with comfortable spacing.
+     It stays within the content container and wraps rather than overflowing at
+     narrow widths. */
+  .shell-classes-add-bar {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  /* Sprint 28.6H.6 (Part F/G): the shared class-management workflow region. A
+     focused task (create form / import) fills it; the zero-class decision
+     splits it into two labelled class-source groups. */
+  .shell-classes-add {
+    display: block;
+    margin-top: 1rem;
+  }
+  .shell-classes-add-source + .shell-classes-add-source {
+    margin-top: 1.4rem;
+  }
+  .shell-classes-add-heading {
+    font-size: 1.02rem;
+    margin: 0 0 0.5rem 0;
+    color: #222;
+  }
+  /* Sprint 28.6H.3 (Task A3): the everyday class card gets more presence -
+     roomier padding and a comfortable minimum height - so the operational
+     class tile is easy to scan and tap. It carries stable class identity
+     (title + grade/block); a generic assignment-inventory count was removed
+     (Task A1) and no decorative statistic replaces it. */
   .shell-class-card {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.35rem;
+    gap: 0.4rem;
     width: 100%;
+    min-height: 5.25rem;
     text-align: left;
     margin: 0;
-    padding: 0.85rem 1rem;
+    padding: 1.15rem 1.25rem;
     cursor: pointer;
   }
   .shell-class-card:hover {
@@ -2599,16 +3333,33 @@
     font-size: 0.9rem;
   }
 
-  /* ---- D5: Curriculum density at classroom widths ------------------- */
+  /* ---- Curriculum responsive density (Sprint 28.6H, Finding 6) ------ */
 
-  /* Tighten the grid track and card min-height so classroom laptops
-     (1024) and split Chromebooks (768) show materially more lessons per
-     screen: ~4 cols @1280, 3 @1024, 2 @768, 1 on phones. The two-line
-     title clamp and equal-height contract are preserved. */
-  .shell-curriculum-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  /* Explicit column counts so the grid reflows 4 → 3 → 2 → 1 as the
+     workspace narrows, with card readability prioritized over density.
+     Accounts for the 224px teacher sidebar (present down to 720px): the
+     breakpoints are chosen so the content column comfortably fits the
+     target card count. The two-line title clamp and equal-height contract
+     are preserved. */
+  @media (max-width: 1180px) {
+    .shell-curriculum-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
-  .shell-lesson-card { min-height: 7.25rem; }
+  @media (max-width: 860px) {
+    .shell-curriculum-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 600px) {
+    .shell-curriculum-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+  /* Sprint 28.6H.4 (Task D3): this late `.shell-lesson-card` rule wins over the
+     generic `.shell-card { padding: 1.15rem 1.25rem }` (equal specificity, later
+     source), so it is the authoritative card padding + height floor. The
+     generous 1.15rem/1.25rem card padding is trimmed to a compact 0.7rem/0.9rem:
+     it removes real vertical dead space AND frees ~0.7rem of horizontal room per
+     side so the Assign/Preview pair fits the narrow 4-column card on one line. */
+  .shell-lesson-card {
+    min-height: 6.5rem;
+    padding: 0.7rem 0.9rem;
+  }
 
   /* Motion preference: the spinner and caret honor reduced-motion. */
   @media (prefers-reduced-motion: reduce) {
@@ -2684,6 +3435,19 @@
     text-align: center;
     box-sizing: border-box;
     margin: 1.5rem;
+  }
+  /* Sprint 28.6H (Findings 13/15): My Science is a real student WORKSPACE, not
+     a narrow auth card. When the root hosts the student header it uses the
+     desktop width and left alignment, so the page reads as "My Science, my
+     LyfeLabz home" and the assignment grid can use the viewport instead of a
+     mobile-width single column. Every other auth-card surface (signed-out /
+     provisioned / pending / error / admin) keeps the narrow centered card. */
+  body:not(:has(#app-root > .shell-header)) #app-root:has(.student-header) {
+    max-width: 68rem;
+    width: min(68rem, 100%);
+    padding: 2rem 2.25rem 2.25rem;
+    text-align: left;
+    margin: 1.5rem auto;
   }
   /* Canonical LYFELABZ wordmark. Reuses the public homepage nav-logo
      typography and glow so brand identity is a single definition
@@ -2868,124 +3632,140 @@
   }
 
   /* =====================================================================
-     Sprint 28.5B - Student Workspace polish (My Assignments / My Results)
+     Sprint 28.6G - Student My Science
      =====================================================================
-     A single scoped presentation layer over the certified student surface
-     (makeActiveStudentSurface). It reuses the existing auth-card tokens,
-     colors, spacing, radii, and typography; it introduces no second design
-     system, no gamification, and no new domain data, and it changes no
-     behavior, label, launch URL, authorization, lifecycle, or accessibility
-     semantic. Every rule is gated by the auth-card scope AND a student-only
-     hook (the tablist, the assignment/result lists, the cards, and the status
-     chip), so no teacher-workspace control and no sibling auth-card surface
-     (signed-out / provisioned / pending / error / admin) is affected. */
+     A single scoped presentation layer over the consolidated student
+     landing (makeActiveStudentSurface). It reuses the existing auth-card
+     tokens, colors, spacing, radii, and typography; it introduces no second
+     design system and no new domain data. Every rule is gated by the
+     auth-card scope AND a student-only hook, so no teacher-workspace control
+     and no sibling auth-card surface (signed-out / provisioned / pending /
+     error / admin) is affected. */
 
-  /* B2 - Tablist selected state. Give My Assignments / My Results an obvious
-     selected cue that never relies on color alone: the selected tab carries a
-     filled wash, a heavier ink, and a solid accent underline bar; the
-     unselected tab stays quiet. All ARIA (role=tab, aria-selected, roving
-     tabindex, Arrow/Home/End) is owned by the JS and untouched. */
-  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] {
+  /* Minimal header: LYFELABZ wordmark on the left; the student's name and
+     Log out on the right. Wraps on narrow widths; a long name truncates so
+     Log out is never pushed off-screen (Task 21). */
+  body:not(:has(#app-root > .shell-header)) .student-header {
     display: flex;
-    gap: 0.4rem;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-between;
     flex-wrap: wrap;
-    margin: 1.25rem 0 0.25rem;
-    border-bottom: 1px solid var(--tw-hairline);
+    gap: 0.5rem 1rem;
+    margin: 0 0 1.25rem;
   }
-  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab] {
+  body:not(:has(#app-root > .shell-header)) .student-header p.auth-brand {
     margin: 0;
-    margin-bottom: -1px;
-    padding: 0.55rem 1rem;
-    background: transparent;
-    color: var(--tw-ink-muted);
-    border: 1px solid transparent;
-    border-bottom: 3px solid transparent;
-    border-top-left-radius: var(--tw-radius-control);
-    border-top-right-radius: var(--tw-radius-control);
+  }
+  body:not(:has(#app-root > .shell-header)) .student-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+  body:not(:has(#app-root > .shell-header)) .student-name {
+    font-size: 0.92rem;
     font-weight: 600;
-    min-height: 44px;
+    color: var(--tw-ink-soft);
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab]:hover {
-    color: var(--tw-ink);
-    background: var(--tw-nav-wash);
-  }
-  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab][aria-selected=true] {
-    color: var(--tw-nav-edge);
-    background: var(--tw-nav-wash);
-    border-bottom-color: var(--tw-nav-edge);
-  }
-  body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab]:focus-visible {
-    outline: none;
-    box-shadow: var(--tw-focus-ring);
-    border-radius: var(--tw-radius-control);
+  /* The header Log out sits on the header row rather than below it. */
+  body:not(:has(#app-root > .shell-header)) .student-header [data-testid=sign-out] {
+    margin: 0;
+    flex: 0 0 auto;
   }
 
-  /* B3 - Assignment / result cards. Remove the default <ul> disc bullets and
-     40px indent and turn each item into one discrete, left-aligned card in the
-     existing card language (surface, hairline border, card radius, soft
-     shadow). The list stays a semantic <ul>/<li>; only its presentation
-     changes. Vertical stacking of title -> status -> action avoids the
-     status/button collision the audit found at tablet width. */
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-list],
-  body:not(:has(#app-root > .shell-header)) [data-testid=results-list] {
+  /* Domain section. The h2 is a real, left-aligned section heading that
+     assistive tech can navigate; it never becomes a colored dashboard panel -
+     the assignment cards remain the important objects. */
+  body:not(:has(#app-root > .shell-header)) .my-science-domain {
+    margin: 1.5rem 0 0;
+    text-align: left;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-domain-heading] {
+    margin: 0 0 0.6rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--tw-ink-muted);
+  }
+
+  /* Card grid (Sprint 28.6H, Finding 15): within each domain the assignment
+     cards form a responsive grid that uses the desktop width - ~3 across on
+     desktop, 2 on tablet, 1 on narrow phones - instead of one tall column.
+     No default <ul> bullets/indent; each card is one discrete, left-aligned
+     card in the existing card language. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-list] {
     list-style: none;
-    margin: 1.25rem 0 0;
+    margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.75rem;
     text-align: left;
   }
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item],
-  body:not(:has(#app-root > .shell-header)) [data-testid=results-item] {
+  @media (max-width: 860px) {
+    body:not(:has(#app-root > .shell-header)) [data-testid=my-science-list] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 560px) {
+    body:not(:has(#app-root > .shell-header)) [data-testid=my-science-list] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  /* Compact card (Finding 16): eliminate excess vertical whitespace so cards
+     read as a scannable library, not tall panels. Tightened padding and gap;
+     the card still stays comfortable, not cramped. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card] {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.35rem;
     margin: 0;
-    padding: 0.9rem 1rem;
+    padding: 0.7rem 0.85rem;
     background: var(--tw-surface);
     border: 1px solid var(--tw-hairline);
     border-radius: var(--tw-radius-card);
     box-shadow: 0 1px 2px rgba(28, 39, 51, 0.04);
   }
-
-  /* B4 - Title hierarchy. The per-card <h2> defaults to page-headline size and
-     weight, so every card competed as a headline and none won. Calm it to a
-     scannable card title that sits below the page welcome. Heading semantics,
-     the aria-labelledby wiring, and the data-testid are unchanged. */
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item-title],
-  body:not(:has(#app-root > .shell-header)) [data-testid=results-item-title] {
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card-title] {
     margin: 0;
-    font-size: 1.08rem;
+    font-size: 1rem;
     font-weight: 600;
     line-height: 1.3;
     letter-spacing: -0.005em;
     color: var(--tw-ink);
   }
-
-  /* B4 - My Results supporting lines. Best score is the answer the student
-     came for; attempt count is secondary context. Both drop the auth-card
-     paragraph centering/margins inside the card. */
-  body:not(:has(#app-root > .shell-header)) [data-testid=results-best-score] {
+  /* Best score: the percentage the student came for is the prominent value;
+     the raw fraction is quiet supporting context. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card-score] {
     margin: 0;
     font-size: 0.95rem;
-    font-weight: 600;
     color: var(--tw-ink-soft);
   }
-  body:not(:has(#app-root > .shell-header)) [data-testid=results-attempt-count] {
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card-score] strong {
+    font-weight: 700;
+    color: var(--tw-ink);
+  }
+  body:not(:has(#app-root > .shell-header)) .my-science-card-score-raw {
+    color: var(--tw-ink-muted);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card-attempts] {
     margin: 0;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: var(--tw-ink-muted);
   }
 
-  /* B4 - Status chip. A restrained pill. Status is still carried by the
-     visible text label + glyph (the glyph is aria-hidden), never by color
-     alone. Tones are muted and drawn from existing badge/callout tokens - not
-     a bright status rainbow: an inviting teal for Ready to Begin, neutral for
-     Improving, and one soft-success family for the two done states (which the
-     ● / ★ glyph and "Well Done!" / "Perfect Score" text distinguish). */
+  /* Status chip. Status is carried by the visible text label + glyph (the
+     glyph is aria-hidden), never by color alone. Muted tones drawn from the
+     existing badge/callout tokens: an inviting teal for Ready to Begin,
+     neutral for Improving, one soft-success family for the two done states. */
   body:not(:has(#app-root > .shell-header)) .student-status {
     display: inline-flex;
     align-items: center;
@@ -2999,30 +3779,24 @@
     color: var(--tw-ink-soft);
     border: 1px solid transparent;
   }
+  /* Sprint 28.6H (Finding 17): two objective states only - an inviting teal
+     for Ready to Begin, one soft-success family for Completed. */
   body:not(:has(#app-root > .shell-header)) .student-status[data-status=ready] {
     background: var(--tw-nav-wash);
     color: var(--tw-nav-edge);
     border-color: var(--tw-toggle-active-edge);
   }
-  body:not(:has(#app-root > .shell-header)) .student-status[data-status=improving] {
-    background: var(--tw-badge-neutral-bg);
-    color: var(--tw-ink-soft);
-  }
-  body:not(:has(#app-root > .shell-header)) .student-status[data-status=wellDone],
-  body:not(:has(#app-root > .shell-header)) .student-status[data-status=perfect] {
+  body:not(:has(#app-root > .shell-header)) .student-status[data-status=completed] {
     background: var(--tw-callout-success-bg);
     color: var(--tw-callout-success-ink);
     border-color: var(--tw-callout-success-edge);
   }
 
-  /* B1 - Primary action. Open assignment / Improve My Score were raw OS
-     buttons while only the rare error-recovery button was styled, which
-     inverted the hierarchy. Give the everyday action the LyfeLabz primary
-     treatment (filled green pill, 44px touch target, visible focus ring) sized
-     for a card rather than the full-width page hero. Labels, testids, launch
-     URLs, and click behavior are unchanged. */
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch],
-  body:not(:has(#app-root > .shell-header)) [data-testid=results-improve] {
+  /* Primary action. The everyday launch control gets the LyfeLabz primary
+     treatment (filled green pill, 44px touch target, visible focus ring)
+     sized for a card. Labels, testids, launch URLs, and click behavior are
+     owned by the JS. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch] {
     align-self: flex-start;
     margin: 0.15rem 0 0;
     padding: 0.55rem 1.1rem;
@@ -3038,38 +3812,34 @@
                 box-shadow 0.15s ease;
   }
   body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch]:hover:not(:disabled),
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch]:focus-visible:not(:disabled),
-  body:not(:has(#app-root > .shell-header)) [data-testid=results-improve]:hover:not(:disabled),
-  body:not(:has(#app-root > .shell-header)) [data-testid=results-improve]:focus-visible:not(:disabled) {
+  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch]:focus-visible:not(:disabled) {
     background: var(--tw-primary-strong);
     border-color: var(--tw-primary-strong);
     outline: none;
     box-shadow: 0 0 0 3px rgba(31, 107, 61, 0.28);
   }
 
-  /* B4 - Quiet completed work (My Assignments only). A card whose best score
-     already reads Well Done! or Perfect Score recedes so the eye lands on
-     unfinished work first. Presentation only: the card stays visible, the
-     title and status stay readable (no color-only signal, no
-     accessibility-eroding opacity fade), and the Open assignment control stays
-     present and operable - it simply drops to a quieter secondary (outline)
-     treatment. Completion is also carried by the status chip's text + glyph,
-     so it is never signaled by the quieting alone. */
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] {
+  /* Completed work is quieter than unfinished work but never looks disabled
+     (completed is not unavailable): the card recedes to the alt surface and
+     its title softens, and its Open assignment control drops to a quiet
+     secondary (outline) treatment while staying fully operable and readable
+     (no accessibility-eroding opacity fade). Completion is also carried by the
+     status chip text + glyph, so it is never signaled by the quieting alone. */
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card][data-complete=true] {
     background: var(--tw-surface-alt);
     box-shadow: none;
   }
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] [data-testid=assignments-item-title] {
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card][data-complete=true] [data-testid=my-science-card-title] {
     color: var(--tw-ink-soft);
   }
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] [data-testid=assignments-launch] {
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card][data-complete=true] [data-testid=assignments-launch] {
     background: transparent;
     color: var(--tw-nav-edge);
     border-color: var(--tw-nav-edge);
     box-shadow: none;
   }
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] [data-testid=assignments-launch]:hover:not(:disabled),
-  body:not(:has(#app-root > .shell-header)) [data-testid=assignments-item][data-complete=true] [data-testid=assignments-launch]:focus-visible:not(:disabled) {
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card][data-complete=true] [data-testid=assignments-launch]:hover:not(:disabled),
+  body:not(:has(#app-root > .shell-header)) [data-testid=my-science-card][data-complete=true] [data-testid=assignments-launch]:focus-visible:not(:disabled) {
     background: var(--tw-nav-wash);
     color: var(--tw-nav-edge);
     border-color: var(--tw-nav-edge);
@@ -3083,20 +3853,14 @@
       border-radius: 8px;
     }
     .auth-brand { font-size: 1.4rem; }
-    /* Tabs split the row evenly so they never wrap on a narrow phone. */
-    body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] {
-      gap: 0;
-    }
-    body:not(:has(#app-root > .shell-header)) [data-testid=student-nav] [role=tab] {
-      flex: 1 1 0;
-      text-align: center;
-      padding: 0.55rem 0.5rem;
-    }
-    /* Full-width card actions for a comfortable tap target. */
-    body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch],
-    body:not(:has(#app-root > .shell-header)) [data-testid=results-improve] {
+    /* Full-width card action for a comfortable tap target. */
+    body:not(:has(#app-root > .shell-header)) [data-testid=assignments-launch] {
       align-self: stretch;
       text-align: center;
+    }
+    /* On a very narrow phone the name may take the full row above Log out. */
+    body:not(:has(#app-root > .shell-header)) .student-name {
+      max-width: 100%;
     }
   }
   @media (prefers-reduced-motion: reduce) {

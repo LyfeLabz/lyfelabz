@@ -18,7 +18,6 @@ import {
   WORKSPACE_SURFACES,
   mountWorkspaceOutlet,
 } from "./surfaces/workspace";
-import { renderPresentModeSurface } from "./surfaces/presentMode";
 import { renderSettingsSurface } from "./surfaces/settings";
 import type * as SnapshotModule from "./surfaces/snapshot";
 
@@ -78,8 +77,10 @@ describe("Teacher Workspace Shell - layout regions", () => {
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const main = mount.querySelector("#app-main");
     expect(main?.getAttribute("aria-labelledby")).toBe("surface-headline");
+    // Sprint 28.6D: Classes is the default landing surface; its headline
+    // is the labelled region for the outlet.
     expect(mount.querySelector("#surface-headline")?.textContent).toBe(
-      "Welcome, Ada Lovelace.",
+      "Classes",
     );
   });
 });
@@ -156,7 +157,10 @@ describe("Header composition and identity-display rules", () => {
 });
 
 describe("Navigation composition and disabled posture (Sprint 6C)", () => {
-  test("renders items in the specified order: Workspace, Curriculum, Classes, Present Mode, Settings", () => {
+  // Sprint 28.6D: primary teacher navigation is Classes, Curriculum,
+  // Settings, with the LYFELABZ brand item first. Present Mode has left
+  // the primary navigation entirely.
+  test("renders items in the specified order: Workspace, Classes, Curriculum, Settings", () => {
     const mount = mkMount();
     renderNavigation(mount);
     const buttons = Array.from(
@@ -164,11 +168,17 @@ describe("Navigation composition and disabled posture (Sprint 6C)", () => {
     );
     expect(buttons.map((b) => b.getAttribute("data-testid"))).toEqual([
       "nav-lyfelabz",
-      "nav-curriculum",
       "nav-classes",
-      "nav-present-mode",
+      "nav-curriculum",
       "nav-settings",
     ]);
+  });
+
+  test("Present Mode is absent from the primary navigation", () => {
+    const mount = mkMount();
+    renderNavigation(mount);
+    expect(mount.querySelector("[data-testid=nav-present-mode]")).toBeNull();
+    expect((mount.textContent ?? "")).not.toContain("Present Mode");
   });
 
   test("the Workspace section label renders as the brand variant and is not disabled", () => {
@@ -183,10 +193,10 @@ describe("Navigation composition and disabled posture (Sprint 6C)", () => {
     expect(brand?.textContent).toBe("Workspace");
   });
 
-  test("LYFELABZ never carries aria-current, even when Curriculum is the active surface", () => {
+  test("LYFELABZ never carries aria-current, even when Classes is the active surface", () => {
     const mount = mkMount();
     renderNavigation(mount, {
-      activeKey: "curriculum",
+      activeKey: "classes",
       onSelect: () => undefined,
     });
     const brand = mount.querySelector<HTMLButtonElement>(
@@ -195,50 +205,50 @@ describe("Navigation composition and disabled posture (Sprint 6C)", () => {
     expect(brand?.getAttribute("aria-current")).toBeNull();
   });
 
-  test("Curriculum and Classes are the active items; Curriculum carries aria-current=page by default", () => {
+  test("Classes and Curriculum are active items; Classes carries aria-current=page by default", () => {
+    const mount = mkMount();
+    renderNavigation(mount);
+    const classes = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-classes]",
+    );
+    expect(classes?.disabled).toBe(false);
+    expect(classes?.getAttribute("aria-current")).toBe("page");
+    expect(classes?.textContent).toBe("Classes");
+    const curriculum = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-curriculum]",
+    );
+    expect(curriculum?.disabled).toBe(false);
+    expect(curriculum?.getAttribute("aria-current")).toBeNull();
+    expect(curriculum?.textContent).toBe("Curriculum");
+  });
+
+  test("renderNavigation with activeKey=curriculum moves aria-current onto Curriculum", () => {
+    const mount = mkMount();
+    renderNavigation(mount, {
+      activeKey: "curriculum",
+      onSelect: () => undefined,
+    });
+    expect(
+      mount
+        .querySelector("[data-testid=nav-classes]")
+        ?.getAttribute("aria-current"),
+    ).toBeNull();
+    expect(
+      mount
+        .querySelector("[data-testid=nav-curriculum]")
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+  });
+
+  test("Curriculum and Settings are both available workspace destinations", () => {
     const mount = mkMount();
     renderNavigation(mount);
     const curriculum = mount.querySelector<HTMLButtonElement>(
       "[data-testid=nav-curriculum]",
     );
     expect(curriculum?.disabled).toBe(false);
-    expect(curriculum?.getAttribute("aria-current")).toBe("page");
+    expect(curriculum?.getAttribute("aria-disabled")).toBeNull();
     expect(curriculum?.textContent).toBe("Curriculum");
-    const classes = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=nav-classes]",
-    );
-    expect(classes?.disabled).toBe(false);
-    expect(classes?.getAttribute("aria-current")).toBeNull();
-    expect(classes?.textContent).toBe("Classes");
-  });
-
-  test("renderNavigation with activeKey=classes moves aria-current onto Classes", () => {
-    const mount = mkMount();
-    renderNavigation(mount, {
-      activeKey: "classes",
-      onSelect: () => undefined,
-    });
-    expect(
-      mount
-        .querySelector("[data-testid=nav-curriculum]")
-        ?.getAttribute("aria-current"),
-    ).toBeNull();
-    expect(
-      mount
-        .querySelector("[data-testid=nav-classes]")
-        ?.getAttribute("aria-current"),
-    ).toBe("page");
-  });
-
-  test("Present Mode and Settings are both available workspace destinations after Sprint 6H", () => {
-    const mount = mkMount();
-    renderNavigation(mount);
-    const presentMode = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=nav-present-mode]",
-    );
-    expect(presentMode?.disabled).toBe(false);
-    expect(presentMode?.getAttribute("aria-disabled")).toBeNull();
-    expect(presentMode?.textContent).toBe("Present Mode");
     const settings = mount.querySelector<HTMLButtonElement>(
       "[data-testid=nav-settings]",
     );
@@ -299,15 +309,19 @@ describe("Curriculum surface composition (Sprint 6D)", () => {
     _resetCurriculumSessionStateForTest();
   });
 
-  test("renders welcome, curriculum intro, filter controls, lesson grid, and return link", () => {
+  test("renders welcome, filter controls, and lesson grid (no subtitle - Sprint 28.6H.4 Part C)", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacherSession());
     expect(mount.querySelector("[data-testid=surface-headline]")?.textContent)
       .toBe("Welcome, Ada Lovelace.");
-    expect(mount.querySelector("[data-testid=curriculum-intro]")?.textContent)
-      .toBe(
-        "Activate the LyfeLabz lessons your students can access.",
-      );
+    // Sprint 28.6H.4 (Part C): the "Activate the LyfeLabz lessons..." subtitle
+    // is removed and NOT replaced; Curriculum is self-explanatory and the
+    // reclaimed space lets more cards reach the viewport. The welcome heading
+    // flows directly into the grade / topic filters.
+    expect(mount.querySelector("[data-testid=curriculum-intro]")).toBeNull();
+    expect(
+      (mount.textContent ?? ""),
+    ).not.toContain("Activate the LyfeLabz lessons your students can access.");
     expect(mount.querySelector("[data-testid=curriculum-filters]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=curriculum-grid]")).not.toBeNull();
     expect(
@@ -335,15 +349,18 @@ describe("Curriculum surface composition (Sprint 6D)", () => {
     expect(
       mount.querySelector("[data-testid=lesson-title-earths-layers]")?.textContent,
     ).toBe("Earth's Layers");
+    // Sprint 28.6D (Task 5): compact grade tag.
     expect(
       mount.querySelector("[data-testid=lesson-grade-earths-layers]")?.textContent,
-    ).toBe("Grade 7");
+    ).toBe("G7");
     expect(
       mount.querySelector("[data-testid=lesson-topic-earths-layers]")?.textContent,
     ).toBe("Earth & Space");
+    // Sprint 28.6D (Task 7): every surfaced lesson card exposes a Preview
+    // control targeting the current v2 artifact.
     expect(
       mount.querySelector("[data-testid=lesson-preview-earths-layers]"),
-    ).toBeNull();
+    ).not.toBeNull();
     const toggle = mount.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-toggle-earths-layers]",
     );
@@ -532,26 +549,27 @@ describe("Workspace outlet (Sprint 6C)", () => {
     expect(outlets[0]?.id).toBe("app-main");
   });
 
-  test("outlet advertises the active surface via data-active-surface=curriculum", () => {
+  test("outlet advertises the active surface via data-active-surface=classes", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const outlet = mount.querySelector("[data-testid=workspace-outlet]");
-    expect(outlet?.getAttribute("data-active-surface")).toBe("curriculum");
+    // Sprint 28.6D: Classes is the default landing surface.
+    expect(outlet?.getAttribute("data-active-surface")).toBe("classes");
   });
 
-  test("curriculum surface renders through the outlet, not as a shell sibling", () => {
+  test("the default surface renders through the outlet, not as a shell sibling", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const headline = mount.querySelector("[data-testid=surface-headline]");
     const outlet = mount.querySelector("[data-testid=workspace-outlet]");
     expect(headline).not.toBeNull();
     expect(outlet?.contains(headline!)).toBe(true);
-    expect(headline?.textContent).toBe("Welcome, Ada Lovelace.");
+    expect(headline?.textContent).toBe("Classes");
   });
 
-  test("WORKSPACE_SURFACES registers exactly the four workspace-surface keys", () => {
+  test("WORKSPACE_SURFACES registers exactly the three workspace-surface keys", () => {
     expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
-      ["classes", "curriculum", "present-mode", "settings"],
+      ["classes", "curriculum", "settings"],
     );
   });
 
@@ -588,7 +606,7 @@ describe("mountTeacherShell integration", () => {
   test("clicking a navigation item does not throw", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
-    for (const key of ["curriculum", "classes", "present-mode", "settings"]) {
+    for (const key of ["curriculum", "classes", "settings"]) {
       const btn = mount.querySelector<HTMLButtonElement>(
         `[data-testid=nav-${key}]`,
       );
@@ -601,15 +619,15 @@ describe("mountTeacherShell integration", () => {
   });
 });
 
-describe("LYFELABZ brand navigation (Sprint 6C)", () => {
-  test("selecting LYFELABZ from Curriculum is a no-op re-render", () => {
+describe("LYFELABZ brand navigation (Sprint 6C; Sprint 28.6D brand lands on Classes)", () => {
+  test("selecting LYFELABZ from Classes is a no-op re-render", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
     expect(
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
-    ).toBe("curriculum");
+    ).toBe("classes");
     mount
       .querySelector<HTMLButtonElement>("[data-testid=nav-lyfelabz]")
       ?.click();
@@ -620,20 +638,20 @@ describe("LYFELABZ brand navigation (Sprint 6C)", () => {
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
-    ).toBe("curriculum");
+    ).toBe("classes");
   });
 
-  test("selecting LYFELABZ from Classes returns the outlet to Curriculum", () => {
+  test("selecting LYFELABZ from Curriculum returns the outlet to Classes", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
     mount
-      .querySelector<HTMLButtonElement>("[data-testid=nav-classes]")
+      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
       ?.click();
     expect(
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
-    ).toBe("classes");
+    ).toBe("curriculum");
     mount
       .querySelector<HTMLButtonElement>("[data-testid=nav-lyfelabz]")
       ?.click();
@@ -641,7 +659,7 @@ describe("LYFELABZ brand navigation (Sprint 6C)", () => {
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
-    ).toBe("curriculum");
+    ).toBe("classes");
     expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
       1,
     );
@@ -700,7 +718,7 @@ describe("Classroom Workspace surface (Sprint 6B, preserved by 6C)", () => {
     ).toBe("curriculum");
   });
 
-  test("renders a card per classroom with title, grade, and status", async () => {
+  test("renders a card per classroom with title and compact grade, and no status badge", async () => {
     const mount = mkMount();
     const listClasses = makeListClasses([
       freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
@@ -715,15 +733,14 @@ describe("Classroom Workspace surface (Sprint 6B, preserved by 6C)", () => {
     expect(
       mount.querySelector("[data-testid=class-title-c1]")?.textContent,
     ).toBe("6A Life Science");
+    // Sprint 28.6C: the revised class card uses compact grade presentation.
     expect(
       mount.querySelector("[data-testid=class-grade-c1]")?.textContent,
-    ).toBe("Grade 6");
-    expect(
-      mount.querySelector("[data-testid=class-status-c1]")?.textContent,
-    ).toBe("Active");
-    expect(
-      mount.querySelector("[data-testid=class-status-c2]")?.textContent,
-    ).toBe("Archived");
+    ).toBe("G6");
+    // Sprint 28.6H (Finding 2): the "Active" status badge is removed from the
+    // everyday class card (an appearing class is implicitly active).
+    expect(mount.querySelector("[data-testid=class-status-c1]")).toBeNull();
+    expect(mount.querySelector("[data-testid=class-status-c2]")).toBeNull();
   });
 
   test("renders an empty state when the teacher owns no classrooms", async () => {
@@ -733,9 +750,13 @@ describe("Classroom Workspace surface (Sprint 6B, preserved by 6C)", () => {
     await flush();
     expect(mount.querySelector("[data-testid=classes-empty]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=classes-list]")).toBeNull();
+    // Sprint 28.6H.8: the zero-class landing is a concise Settings pointer.
     expect(
       mount.querySelector("[data-testid=classes-status]")?.textContent,
-    ).toBe("You do not have any classes yet.");
+    ).toBe("No classes yet.");
+    expect(mount.textContent ?? "").toContain(
+      "Add or import a class in Settings.",
+    );
   });
 
   test("shows a loading status before the fetcher resolves", () => {
@@ -781,7 +802,8 @@ describe("Classroom Workspace surface (Sprint 6B, preserved by 6C)", () => {
     const workspace = mount.querySelector("[data-testid=class-workspace]");
     expect(workspace).not.toBeNull();
     expect(workspace?.getAttribute("data-class-id")).toBe("c1");
-    expect(workspace?.getAttribute("data-class-tab")).toBe("snapshot");
+    // Sprint 28.6H.3 (Task B2): a class card opens directly on Assignments.
+    expect(workspace?.getAttribute("data-class-tab")).toBe("assignments");
     // The permanent workspace-surface identifier is unchanged
     expect(
       mount
@@ -831,7 +853,10 @@ describe("Assign Experience - Sprint 6E", () => {
     );
     expect(assign).not.toBeNull();
     expect(assign?.textContent).toBe("Assign");
-    expect(assign?.getAttribute("data-assigned")).toBe("false");
+    // Sprint 28.6H (Finding 8): no assignment-history badge on the button; the
+    // card carries the signal.
+    const card = assign?.closest<HTMLElement>("[data-lesson-slug]");
+    expect(card?.getAttribute("data-lesson-assigned")).toBe("false");
   });
 
   test("clicking Assign opens the modal dialog with one row per active class, all selected by default", async () => {
@@ -914,7 +939,7 @@ describe("Assign Experience - Sprint 6E", () => {
     expect(confirm?.disabled).toBe(true);
   });
 
-  test("confirming closes the dialog and flips the card to ✓ Assigned", async () => {
+  test("confirming closes the dialog and records the assignment-history signal", async () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, { listClasses: listTwo });
     mount
@@ -930,8 +955,17 @@ describe("Assign Experience - Sprint 6E", () => {
     const assign = mount.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     );
-    expect(assign?.textContent).toBe("✓ Assigned");
-    expect(assign?.getAttribute("data-assigned")).toBe("true");
+    // Sprint 28.6H.7 (Part B): after a successful assignment the control reads
+    // "Reassign" (green outline, still fully re-assignable - no "✓ Assigned"
+    // badge, never disabled); the card records the history.
+    expect(assign?.textContent).toBe("Reassign");
+    expect(assign?.disabled).toBe(false);
+    expect(assign?.classList.contains("shell-lesson-reassign")).toBe(true);
+    expect(
+      assign?.closest<HTMLElement>("[data-lesson-slug]")?.getAttribute(
+        "data-lesson-assigned",
+      ),
+    ).toBe("true");
     expect(
       mount.querySelector("[data-testid=assign-success]")?.textContent,
     ).toBe("Assigned Earth's Layers to 2 classes.");
@@ -1103,273 +1137,6 @@ describe("Assign Experience - Sprint 6E", () => {
   });
 });
 
-describe("Present Mode workspace surface (Sprint 6F)", () => {
-  const teacher = teacherSession();
-
-  const clickPresentMode = (mount: HTMLElement): void => {
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=nav-present-mode]")
-      ?.click();
-  };
-
-  test("nav item is available (not disabled) and does not carry aria-current by default", () => {
-    const mount = mkMount();
-    renderNavigation(mount);
-    const btn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=nav-present-mode]",
-    );
-    expect(btn?.disabled).toBe(false);
-    expect(btn?.getAttribute("aria-disabled")).toBeNull();
-    expect(btn?.textContent).toBe("Present Mode");
-    expect(btn?.getAttribute("aria-current")).toBeNull();
-  });
-
-  test("nav item carries aria-current=page when Present Mode is the active surface", () => {
-    const mount = mkMount();
-    renderNavigation(mount, {
-      activeKey: "present-mode",
-      onSelect: () => undefined,
-    });
-    expect(
-      mount
-        .querySelector("[data-testid=nav-present-mode]")
-        ?.getAttribute("aria-current"),
-    ).toBe("page");
-    expect(
-      mount
-        .querySelector("[data-testid=nav-curriculum]")
-        ?.getAttribute("aria-current"),
-    ).toBeNull();
-    expect(
-      mount
-        .querySelector("[data-testid=nav-classes]")
-        ?.getAttribute("aria-current"),
-    ).toBeNull();
-  });
-
-  test("WORKSPACE_SURFACES still registers exactly the four canonical keys", () => {
-    expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
-      ["classes", "curriculum", "present-mode", "settings"],
-    );
-    expect(WORKSPACE_SURFACES["present-mode"].key).toBe("present-mode");
-  });
-
-  test("clicking Present Mode switches the outlet to the Present Mode surface", () => {
-    const mount = mkMount();
-    mountTeacherShell(teacher, mount, makeShellDeps());
-    clickPresentMode(mount);
-    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
-    expect(outlet?.getAttribute("data-active-surface")).toBe("present-mode");
-    expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
-      1,
-    );
-  });
-
-  test("Present Mode renders through the workspace outlet, not as a shell sibling", () => {
-    const mount = mkMount();
-    mountTeacherShell(teacher, mount, makeShellDeps());
-    clickPresentMode(mount);
-    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
-    const headline = mount.querySelector("[data-testid=surface-headline]");
-    expect(headline?.textContent).toBe("Present Mode");
-    expect(outlet?.contains(headline!)).toBe(true);
-  });
-
-  test("selecting Present Mode moves aria-current onto the Present Mode nav item", () => {
-    const mount = mkMount();
-    mountTeacherShell(teacher, mount, makeShellDeps());
-    clickPresentMode(mount);
-    expect(
-      mount
-        .querySelector("[data-testid=nav-present-mode]")
-        ?.getAttribute("aria-current"),
-    ).toBe("page");
-    expect(
-      mount
-        .querySelector("[data-testid=nav-curriculum]")
-        ?.getAttribute("aria-current"),
-    ).toBeNull();
-  });
-
-  test("selecting Curriculum after Present Mode returns the outlet to Curriculum", () => {
-    const mount = mkMount();
-    mountTeacherShell(teacher, mount, makeShellDeps());
-    clickPresentMode(mount);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
-      ?.click();
-    expect(
-      mount
-        .querySelector("[data-testid=workspace-outlet]")
-        ?.getAttribute("data-active-surface"),
-    ).toBe("curriculum");
-  });
-
-  test("selecting LYFELABZ from Present Mode returns the outlet to Curriculum", () => {
-    const mount = mkMount();
-    mountTeacherShell(teacher, mount, makeShellDeps());
-    clickPresentMode(mount);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=nav-lyfelabz]")
-      ?.click();
-    expect(
-      mount
-        .querySelector("[data-testid=workspace-outlet]")
-        ?.getAttribute("data-active-surface"),
-    ).toBe("curriculum");
-  });
-
-  test("focus lands on the Present Mode headline when the surface is activated", () => {
-    const mount = mkMount();
-    mountTeacherShell(teacher, mount, makeShellDeps());
-    clickPresentMode(mount);
-    expect(document.activeElement?.getAttribute("data-testid")).toBe(
-      "surface-headline",
-    );
-    expect(document.activeElement?.textContent).toBe("Present Mode");
-  });
-
-  test("renders the title, intro, preparation-focused steps, and future-controls notice", () => {
-    const mount = mkMount();
-    renderPresentModeSurface(mount, teacher);
-    expect(
-      mount.querySelector("[data-testid=surface-headline]")?.textContent,
-    ).toBe("Present Mode");
-    expect(
-      mount.querySelector("[data-testid=present-mode-intro]")?.textContent,
-    ).toBe(
-      "Present Mode is your preparation surface for teaching a LyfeLabz lesson in front of your class. It keeps the classroom projector focused on the curriculum without exposing teacher or student information.",
-    );
-    expect(
-      mount.querySelector("[data-testid=present-mode-preparation]")
-        ?.textContent,
-    ).toBe(
-      "When you are getting ready to teach, prepare from Curriculum first. Present Mode is the moment your preparation reaches the projector.",
-    );
-    for (const testId of [
-      "present-mode-step-choose",
-      "present-mode-step-open",
-      "present-mode-step-teach",
-    ]) {
-      expect(mount.querySelector(`[data-testid=${testId}]`)).not.toBeNull();
-    }
-    expect(
-      mount.querySelector("[data-testid=present-mode-future-notice]")
-        ?.textContent,
-    ).toContain("Presentation controls will become available");
-  });
-
-  test("does not render any 'coming soon', 'under construction', 'dashboard' label, forbidden per Sprint 6F", () => {
-    const mount = mkMount();
-    renderPresentModeSurface(mount, teacher);
-    const text = (mount.textContent ?? "").toLowerCase();
-    expect(text).not.toContain("coming soon");
-    expect(text).not.toContain("under construction");
-    expect(text).not.toContain("dashboard");
-  });
-
-  test("does not render form controls or fake classroom data (Sprint 6G authorizes exactly one launch button)", () => {
-    const mount = mkMount();
-    renderPresentModeSurface(mount, teacher);
-    expect(mount.querySelectorAll("input")).toHaveLength(0);
-    expect(mount.querySelectorAll("select")).toHaveLength(0);
-    expect(mount.querySelectorAll("textarea")).toHaveLength(0);
-    expect(mount.querySelectorAll("form")).toHaveLength(0);
-    const buttons = mount.querySelectorAll("button");
-    expect(buttons).toHaveLength(1);
-    expect(buttons[0]?.getAttribute("data-testid")).toBe(
-      "present-mode-launch",
-    );
-  });
-
-  test("does not render uid, schoolId, email, or any Session claim payload", () => {
-    const mount = mkMount();
-    renderPresentModeSurface(mount, teacher);
-    const text = mount.textContent ?? "";
-    expect(text).not.toContain("u1");
-    expect(text).not.toContain("school-abc");
-    expect(text).not.toContain("claim");
-    expect(text).not.toContain("Ada Lovelace");
-  });
-
-  test("does not include the assign controls or class rosters that would be teacher-scoped in a projection", () => {
-    const mount = mkMount();
-    renderPresentModeSurface(mount, teacher);
-    expect(
-      mount.querySelector("[data-testid=assign-overlay]"),
-    ).toBeNull();
-    expect(
-      mount.querySelector("[data-testid=classes-list]"),
-    ).toBeNull();
-    expect(
-      mount.querySelector("[data-testid=curriculum-grid]"),
-    ).toBeNull();
-  });
-
-  test("Sprint 6G: renders a semantic launch button with the certified accessible name", () => {
-    const mount = mkMount();
-    renderPresentModeSurface(mount, teacher);
-    const btn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=present-mode-launch]",
-    );
-    expect(btn).not.toBeNull();
-    expect(btn?.tagName.toLowerCase()).toBe("button");
-    expect(btn?.getAttribute("type")).toBe("button");
-    expect(btn?.textContent).toBe("Launch Present Mode");
-    expect(btn?.getAttribute("aria-label")).toBe("Launch Present Mode");
-    expect(btn?.disabled).toBe(false);
-  });
-
-  test("Sprint 6G: clicking the launch button invokes the injected handler exactly once", () => {
-    const mount = mkMount();
-    const launch = jest.fn<void, []>();
-    mountTeacherShell(
-      teacher,
-      mount,
-      makeShellDeps({ onLaunchPresentMode: launch }),
-    );
-    clickPresentMode(mount);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=present-mode-launch]")
-      ?.click();
-    expect(launch).toHaveBeenCalledTimes(1);
-  });
-
-  test("Sprint 6G: launch button exposes no teacher, class, or student identifiers", () => {
-    const mount = mkMount();
-    renderPresentModeSurface(mount, teacher);
-    const btn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=present-mode-launch]",
-    );
-    const text = btn?.textContent ?? "";
-    expect(text).not.toContain("u1");
-    expect(text).not.toContain("school-abc");
-    expect(text).not.toContain("Ada Lovelace");
-    expect(text).not.toMatch(/uid|email|claim|assignment|student/i);
-  });
-
-  test("navigating away and back to Present Mode does not double-mount the outlet", () => {
-    const mount = mkMount();
-    mountTeacherShell(teacher, mount, makeShellDeps());
-    clickPresentMode(mount);
-    expect(
-      mount.querySelectorAll("[data-testid=workspace-outlet]"),
-    ).toHaveLength(1);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=nav-classes]")
-      ?.click();
-    clickPresentMode(mount);
-    expect(
-      mount.querySelectorAll("[data-testid=workspace-outlet]"),
-    ).toHaveLength(1);
-    expect(
-      mount
-        .querySelector("[data-testid=workspace-outlet]")
-        ?.getAttribute("data-active-surface"),
-    ).toBe("present-mode");
-  });
-});
-
 describe("Settings workspace surface (Sprint 6H)", () => {
   const teacher = teacherSession();
 
@@ -1460,7 +1227,7 @@ describe("Settings workspace surface (Sprint 6H)", () => {
     ).toBe("curriculum");
   });
 
-  test("selecting LYFELABZ from Settings returns the outlet to Curriculum", () => {
+  test("selecting LYFELABZ from Settings returns the outlet to Classes", () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps());
     clickSettings(mount);
@@ -1471,7 +1238,7 @@ describe("Settings workspace surface (Sprint 6H)", () => {
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
-    ).toBe("curriculum");
+    ).toBe("classes");
   });
 
   test("focus lands on the Settings headline when the surface is activated", () => {
@@ -1484,32 +1251,40 @@ describe("Settings workspace surface (Sprint 6H)", () => {
     expect(document.activeElement?.textContent).toBe("Settings");
   });
 
-  test("renders the title, introductory copy, purpose explanation, and future-growth notice", () => {
+  test("renders the Settings title, a Class Management tab, and the Google Classroom section (Sprint 28.6H.4 Part E)", () => {
+    // Sprint 28.6H.4 (Part E): Settings is a scalable TABBED surface. "Class
+    // Management" is the single real category (a tab), and the Google Classroom
+    // connection lives inside its panel. See settings.test.ts for full coverage;
+    // this asserts shell integration.
     const mount = mkMount();
     renderSettingsSurface(mount, teacher);
     expect(
       mount.querySelector("[data-testid=surface-headline]")?.textContent,
     ).toBe("Settings");
-    // Sprint 28.5D (microcopy): the intro was trimmed to one sentence and
-    // the separate philosophical "purpose" paragraph was removed so the live
-    // controls are easier to find. The information architecture (categories,
-    // growth notice) is unchanged.
-    expect(
-      mount.querySelector("[data-testid=settings-intro]")?.textContent,
-    ).toContain("Manage your LyfeLabz preferences.");
-    expect(
-      mount.querySelector("[data-testid=settings-purpose]"),
-    ).toBeNull();
-    expect(
-      mount.querySelector("[data-testid=settings-growth-notice]")?.textContent,
-    ).toContain(
-      "Additional preferences will appear here as the Teacher Platform grows.",
+    const tab = mount.querySelector(
+      "[data-testid=settings-tab-class-management]",
     );
+    expect(tab?.textContent).toBe("Class Management");
+    expect(tab?.getAttribute("role")).toBe("tab");
+    expect(tab?.getAttribute("aria-selected")).toBe("true");
+    expect(
+      mount.querySelector("[data-testid=settings-panel-class-management]")
+        ?.getAttribute("role"),
+    ).toBe("tabpanel");
+    expect(
+      mount.querySelector("[data-testid=settings-classroom-heading]")?.textContent,
+    ).toBe("Google Classroom");
+    // No dead Accommodations tab (Part G).
+    expect(mount.textContent ?? "").not.toContain("Accommodations");
   });
 
-  test("renders the five certified future preference categories", () => {
+  test("no longer renders the removed future-facing category previews or growth notice", () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher);
+    expect(mount.querySelector("[data-testid=settings-categories]")).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=settings-growth-notice]"),
+    ).toBeNull();
     for (const testId of [
       "settings-category-classroom",
       "settings-category-present-mode",
@@ -1517,14 +1292,8 @@ describe("Settings workspace surface (Sprint 6H)", () => {
       "settings-category-connected-services",
       "settings-category-account",
     ]) {
-      expect(mount.querySelector(`[data-testid=${testId}]`)).not.toBeNull();
+      expect(mount.querySelector(`[data-testid=${testId}]`)).toBeNull();
     }
-    const list = mount.querySelector("[data-testid=settings-categories]");
-    expect(list?.tagName.toLowerCase()).toBe("ul");
-    expect(list?.getAttribute("aria-labelledby")).toBe(
-      "settings-categories-heading",
-    );
-    expect(list?.children.length).toBe(5);
   });
 
   test("does not render any 'coming soon', 'under construction', or placeholder-controls labels", () => {
@@ -1536,21 +1305,15 @@ describe("Settings workspace surface (Sprint 6H)", () => {
     expect(text).not.toContain("placeholder");
   });
 
-  test("renders only the Phase 2B.2 default-grade select; no other form controls or sample settings data", () => {
+  test("no longer renders the removed Default Grade control", () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher);
+    expect(
+      mount.querySelector("[data-testid=settings-default-grade-select]"),
+    ).toBeNull();
+    expect(mount.querySelectorAll("select")).toHaveLength(0);
     expect(mount.querySelectorAll("input")).toHaveLength(0);
-    // Sprint 24B Phase 2B.2 introduced exactly one form control on the
-    // Settings root: the default-grade preference select. Any other
-    // form control on this surface is a regression.
-    const selects = mount.querySelectorAll("select");
-    expect(selects).toHaveLength(1);
-    expect(selects[0]!.getAttribute("data-testid")).toBe(
-      "settings-default-grade-select",
-    );
     expect(mount.querySelectorAll("textarea")).toHaveLength(0);
-    expect(mount.querySelectorAll("form")).toHaveLength(0);
-    expect(mount.querySelectorAll("button")).toHaveLength(0);
   });
 
   test("does not render uid, schoolId, email, or any Session claim payload", () => {
@@ -1583,6 +1346,56 @@ describe("Settings workspace surface (Sprint 6H)", () => {
         ?.getAttribute("data-active-surface"),
     ).toBe("settings");
   });
+
+  test("Sprint 28.6H.3 (Task C3): Settings Create routes into the ONE shared Classes create workflow", async () => {
+    // Settings hosts Import / Create controls (Class Management), but they are
+    // OPENERS that route to the same certified workflow hosted on the Classes
+    // surface (one implementation, two entry points) - Settings renders no
+    // second create/import form of its own.
+    const mount = mkMount();
+    mountTeacherShell(
+      teacher,
+      mount,
+      makeShellDeps({
+        listClasses: () =>
+          Promise.resolve([
+            freeze({
+              id: "c1",
+              title: "6A",
+              grade: "6",
+              status: "active",
+            }) as ClassSummary,
+          ]),
+        createClass: async () =>
+          Object.freeze({
+            classId: "c",
+            joinCode: "AAAA",
+            alreadyCreated: false,
+          }),
+      }),
+    );
+    clickSettings(mount);
+    // Settings exposes the Import / Create openers, but no create/import FORM.
+    const createOpener = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=settings-create-class]",
+    );
+    expect(createOpener).not.toBeNull();
+    expect(mount.querySelector("[data-testid=settings-import-class]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=classes-create-form]")).toBeNull();
+
+    // Clicking Create in Settings routes to Classes and opens the shared
+    // certified Create form there (even though a class already exists, i.e. the
+    // populated landing has no persistent Add control of its own).
+    createOpener!.click();
+    await flush();
+    await flush();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("classes");
+    expect(mount.querySelector("[data-testid=classes-create-form]")).not.toBeNull();
+  });
 });
 
 describe("Class Snapshot foundation (Sprint 7B)", () => {
@@ -1608,12 +1421,13 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
       ?.click();
   };
 
-  test("navigation lists exactly the four permanent workspace destinations after Sprint 7B", () => {
-    // Snapshot must not become a fifth permanent Teacher Workspace
+  test("navigation lists exactly the three permanent workspace destinations after Sprint 28.6D", () => {
+    // Snapshot must not become an extra permanent Teacher Workspace
     // destination. See CLASS_SNAPSHOT_EXPERIENCE.md §6 and
-    // SNAPSHOT_ARCHITECTURE.md §6.
+    // SNAPSHOT_ARCHITECTURE.md §6. Sprint 28.6D reduced the primary
+    // navigation to Classes, Curriculum, Settings (Present Mode removed).
     expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
-      ["classes", "curriculum", "present-mode", "settings"],
+      ["classes", "curriculum", "settings"],
     );
     const mount = mkMount();
     renderNavigation(mount);
@@ -1622,7 +1436,7 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
       mount.querySelectorAll<HTMLButtonElement>(
         "button.shell-nav-button[data-nav-variant=item]",
       ).length,
-    ).toBe(4);
+    ).toBe(3);
   });
 
   test("no-classes state: Classes surface renders the certified empty state, no class workspace", async () => {
@@ -1634,79 +1448,78 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
     expect(mount.querySelector("[data-testid=class-nav]")).toBeNull();
     expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
+    // Sprint 28.6H.8: the zero-class landing points to Settings, with no
+    // class-administration controls.
     expect(
       mount.querySelector("[data-testid=classes-status]")?.textContent,
-    ).toBe("You do not have any classes yet.");
+    ).toBe("No classes yet.");
+    expect(mount.querySelector("[data-testid=classes-import-open]")).toBeNull();
+    expect(mount.querySelector("[data-testid=classes-create-open]")).toBeNull();
   });
 
-  test("no-selected-class state: classes exist but nothing is selected renders the class list with a chooser prompt", async () => {
+  test("no-selected-class state: classes exist but nothing is selected renders the class list with no chooser filler", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     clickClasses(mount);
     await flush();
     expect(mount.querySelector("[data-testid=classes-list]")).not.toBeNull();
-    expect(
-      mount.querySelector("[data-testid=classes-prompt]")?.textContent,
-    ).toBe("Choose a class to open its workspace.");
+    // Sprint 28.6H (Finding 1): the "Choose a class..." filler is removed.
+    expect(mount.querySelector("[data-testid=classes-prompt]")).toBeNull();
     expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
     expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
   });
 
-  test("selecting a class opens its class workspace with Snapshot as the default class-level surface", async () => {
+  test("Task B1/B2: selecting a class opens its workspace with the class identity above the tabs and Assignments default (Overview removed)", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
     const workspace = mount.querySelector("[data-testid=class-workspace]");
     expect(workspace).not.toBeNull();
     expect(workspace?.getAttribute("data-class-id")).toBe("c1");
-    expect(workspace?.getAttribute("data-class-tab")).toBe("snapshot");
-    // The permanent workspace-surface identifier is unchanged
+    expect(workspace?.getAttribute("data-class-tab")).toBe("assignments");
     expect(
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
     ).toBe("classes");
-    // The Snapshot region is present with the class name as its headline
-    expect(mount.querySelector("[data-testid=snapshot-region]")).not.toBeNull();
+    // The class name is the workspace header ABOVE the tabs; the default tab
+    // heads its section "Assignments". Overview/Snapshot is not rendered.
+    expect(
+      mount.querySelector("[data-testid=class-workspace-title]")?.textContent,
+    ).toBe("6A Life Science");
+    expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
     expect(
       mount.querySelector("[data-testid=surface-headline]")?.textContent,
-    ).toBe("6A Life Science");
+    ).toBe("Assignments");
   });
 
-  test("Snapshot with no data renders the certified no-data language, no fictional students", async () => {
+  test("Task B1: opening a class renders no Overview/Snapshot surface at all", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
-    expect(
-      mount.querySelector("[data-testid=snapshot-empty]")?.textContent,
-    ).toBe(
-      "Classroom activity will appear here when assignments and submissions exist.",
-    );
+    // The retired Overview surface is absent - not hidden by CSS.
+    expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
+    expect(mount.querySelector("[data-testid=snapshot-empty]")).toBeNull();
     expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
-    // No preview groupings render without a preview payload
-    for (const key of ["check-in-next", "working", "finished"]) {
-      expect(mount.querySelector(`[data-testid=snapshot-group-${key}]`)).toBeNull();
-    }
+    expect(mount.querySelector("[data-testid=class-nav-snapshot]")).toBeNull();
   });
 
-  test("Snapshot renders the class identity, purpose, and grade + status context", async () => {
+  test("class identity (name + compact grade) is the workspace header; Overview shows no purpose/status/grade line", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
+    // Sprint 28.6H (Finding 3): identity moved to the header (compact grade),
+    // and the "Active" badge / purpose placeholder are gone (Findings 2/5).
     expect(
-      mount.querySelector("[data-testid=snapshot-purpose]")?.textContent,
-    ).toBe("One place to check in on your class between moments.");
+      mount.querySelector("[data-testid=class-workspace-title]")?.textContent,
+    ).toBe("6A Life Science");
     expect(
-      mount.querySelector("[data-testid=snapshot-class-grade]")?.textContent,
-    ).toBe("Grade 6");
-    expect(
-      mount.querySelector("[data-testid=snapshot-class-status]")?.textContent,
-    ).toBe("Active");
-    expect(
-      mount
-        .querySelector("[data-testid=snapshot-class-status]")
-        ?.getAttribute("aria-label"),
-    ).toBe("Class status: Active");
+      mount.querySelector("[data-testid=class-workspace-meta]")?.textContent,
+    ).toBe("G6");
+    expect(mount.querySelector("[data-testid=snapshot-purpose]")).toBeNull();
+    expect(mount.querySelector("[data-testid=snapshot-class-grade]")).toBeNull();
+    expect(mount.querySelector("[data-testid=snapshot-class-status]")).toBeNull();
+    expect(mount.textContent).not.toContain("Active");
   });
 
   test("Snapshot renders no dashboard, analytics, or evaluation language", async () => {
@@ -1728,7 +1541,7 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     expect(text).not.toContain("accommodation");
   });
 
-  test("static representative preview renders the three attention groupings in the certified order", async () => {
+  test("Task B1: the dormant snapshot preview is not rendered in the class workspace (Overview removed)", async () => {
     const mount = mkMount();
     const { STATIC_SNAPSHOT_PREVIEW } = jest.requireActual(
       "./surfaces/snapshot",
@@ -1742,28 +1555,14 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
       }),
     );
     await openC1(mount);
-    const groups = mount.querySelector("[data-testid=snapshot-groups]");
-    expect(groups).not.toBeNull();
-    const items = Array.from(
-      groups?.querySelectorAll<HTMLElement>("[data-testid^=snapshot-group-]") ??
-        [],
-    ).filter((el) =>
-      /^snapshot-group-(check-in-next|working|finished)$/.test(
-        el.getAttribute("data-testid") ?? "",
-      ),
-    );
-    expect(items.map((el) => el.getAttribute("data-testid"))).toEqual([
-      "snapshot-group-check-in-next",
-      "snapshot-group-working",
-      "snapshot-group-finished",
-    ]);
+    // Even with a preview payload wired, the retired Overview surface does not
+    // render it - the class workspace opens on Assignments.
+    expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
+    expect(mount.querySelector("[data-testid=snapshot-preview-notice]")).toBeNull();
+    expect(mount.textContent ?? "").not.toMatch(/Student \d/);
     expect(
-      mount.querySelector("[data-testid=snapshot-preview-notice]")?.textContent,
-    ).toContain("Preview only.");
-    // Placeholder names are anonymous; no real student data
-    const preview = mount.querySelector("[data-testid=snapshot-region]");
-    const previewText = preview?.textContent ?? "";
-    expect(previewText).toMatch(/Student \d/);
+      mount.querySelector("[data-testid=class-workspace]")?.getAttribute("data-class-tab"),
+    ).toBe("assignments");
   });
 
   test("static preview never leaves the class workspace and never affects other surfaces", async () => {
@@ -1779,11 +1578,11 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
         snapshotPreview: STATIC_SNAPSHOT_PREVIEW,
       }),
     );
-    // Curriculum default view does not render preview data
+    // Classes default (class list) view does not render preview data
     expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
-    // Present Mode does not render preview data
+    // Curriculum does not render preview data
     mount
-      .querySelector<HTMLButtonElement>("[data-testid=nav-present-mode]")
+      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
       ?.click();
     expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
     // Settings does not render preview data
@@ -1793,26 +1592,27 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
   });
 
-  test("class-level navigation exposes Snapshot and Roster and marks Snapshot as active by default", async () => {
+  test("Task B1: class-level navigation exposes Assignments and Students only, Assignments active by default", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
     const nav = mount.querySelector("[data-testid=class-nav]");
     expect(nav).not.toBeNull();
     expect(nav?.getAttribute("aria-label")).toBe("Class sections");
-    const snapshotBtn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=class-nav-snapshot]",
+    const assignmentsBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=class-nav-assignments]",
     );
     const rosterBtn = mount.querySelector<HTMLButtonElement>(
       "[data-testid=class-nav-roster]",
     );
-    expect(snapshotBtn).not.toBeNull();
+    expect(mount.querySelector("[data-testid=class-nav-snapshot]")).toBeNull();
+    expect(assignmentsBtn).not.toBeNull();
     expect(rosterBtn).not.toBeNull();
-    expect(snapshotBtn?.getAttribute("aria-current")).toBe("page");
+    expect(assignmentsBtn?.getAttribute("aria-current")).toBe("page");
     expect(rosterBtn?.getAttribute("aria-current")).toBeNull();
   });
 
-  test("selecting Roster moves aria-current and renders the roster foundation surface", async () => {
+  test("selecting Students moves aria-current and renders the roster foundation surface", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
@@ -1828,14 +1628,18 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     ).toBe("page");
     expect(
       mount
-        .querySelector("[data-testid=class-nav-snapshot]")
+        .querySelector("[data-testid=class-nav-assignments]")
         ?.getAttribute("aria-current"),
     ).toBeNull();
-    expect(mount.querySelector("[data-testid=roster-purpose]")).not.toBeNull();
+    // The Students section heads "Students" with a real empty state.
+    expect(mount.querySelector("[data-testid=roster-empty]")).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")?.textContent,
+    ).toBe("Students");
     expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
   });
 
-  test("switching between Snapshot and Roster preserves the class context", async () => {
+  test("switching between Assignments and Students preserves the class context", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
@@ -1848,16 +1652,21 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
         ?.getAttribute("data-class-id"),
     ).toBe("c1");
     mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-nav-snapshot]")
+      .querySelector<HTMLButtonElement>("[data-testid=class-nav-assignments]")
       ?.click();
     expect(
       mount
         .querySelector("[data-testid=class-workspace]")
         ?.getAttribute("data-class-id"),
     ).toBe("c1");
+    // The class identity (workspace header) persists across tab switches.
+    expect(
+      mount.querySelector("[data-testid=class-workspace-title]")?.textContent,
+    ).toBe("6A Life Science");
+    // Back on Assignments, the section heading reads "Assignments".
     expect(
       mount.querySelector("[data-testid=surface-headline]")?.textContent,
-    ).toBe("6A Life Science");
+    ).toBe("Assignments");
   });
 
   test("Back to Classes returns the surface to the class list without a refetch", async () => {
@@ -1876,7 +1685,7 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     expect(listClasses).toHaveBeenCalledTimes(1);
   });
 
-  test("re-opening the same class after Back preserves class context and re-lands on Snapshot", async () => {
+  test("re-opening the same class after Back preserves class context and re-lands on Assignments", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
@@ -1895,20 +1704,22 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
       mount
         .querySelector("[data-testid=class-workspace]")
         ?.getAttribute("data-class-tab"),
-    ).toBe("snapshot");
+    ).toBe("assignments");
   });
 
-  test("focus lands on the Snapshot headline (the class name) when the class workspace opens", async () => {
+  test("focus lands on the Assignments section heading when the class workspace opens", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
     expect(document.activeElement?.getAttribute("data-testid")).toBe(
       "surface-headline",
     );
-    expect(document.activeElement?.textContent).toBe("6A Life Science");
+    // The default class section heading is focused (the class name is the
+    // workspace header above the tabs).
+    expect(document.activeElement?.textContent).toBe("Assignments");
   });
 
-  test("focus lands on the Roster headline when Roster is selected", async () => {
+  test("focus lands on the Students section heading when Students is selected", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
@@ -1918,15 +1729,14 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     expect(document.activeElement?.getAttribute("data-testid")).toBe(
       "surface-headline",
     );
-    expect(document.activeElement?.textContent).toBe("6A Life Science");
+    expect(document.activeElement?.textContent).toBe("Students");
   });
 
-  test("Snapshot does not render Present Mode controls, assign controls, or grading controls", async () => {
+  test("the class workspace renders no Present Mode controls, assign dialog, or curriculum grid", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
-    const snapshot = mount.querySelector("[data-testid=snapshot-region]");
-    expect(snapshot).not.toBeNull();
+    expect(mount.querySelector("[data-testid=class-workspace]")).not.toBeNull();
     // Present Mode launch button belongs to the Present Mode surface only
     expect(mount.querySelector("[data-testid=present-mode-launch]")).toBeNull();
     // Assign controls belong to Curriculum only
@@ -1968,9 +1778,8 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     );
     expect(buttons.map((b) => b.getAttribute("data-testid"))).toEqual([
       "nav-lyfelabz",
-      "nav-curriculum",
       "nav-classes",
-      "nav-present-mode",
+      "nav-curriculum",
       "nav-settings",
     ]);
     // The Classes nav item still carries aria-current
@@ -1981,19 +1790,19 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     ).toBe("page");
   });
 
-  test("clicking Present Mode from the class workspace leaves Classes and returns to Present Mode; Back into Classes returns to the class list", async () => {
+  test("clicking Curriculum from the class workspace leaves Classes and returns to Curriculum; Back into Classes returns to the class list", async () => {
     const mount = mkMount();
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
     await openC1(mount);
     mount
-      .querySelector<HTMLButtonElement>("[data-testid=nav-present-mode]")
+      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
       ?.click();
     expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
     expect(
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
-    ).toBe("present-mode");
+    ).toBe("curriculum");
     mount
       .querySelector<HTMLButtonElement>("[data-testid=nav-classes]")
       ?.click();
@@ -2341,12 +2150,17 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
     // Both LyfeLabz assignments published; LMS attempted once and failed.
     expect(asn.publishes.length).toBe(2);
     expect(int.lmsCalls.length).toBe(1);
-    // The card still reflects the Assigned state; the LyfeLabz record is
-    // authoritative and untouched by the LMS-side failure.
+    // The card still records the assignment-history signal; the LyfeLabz record
+    // is authoritative and untouched by the LMS-side failure. (Sprint 28.6H
+    // Finding 8: signal lives on the card, not a button badge.)
     const assign = mount.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     );
-    expect(assign?.getAttribute("data-assigned")).toBe("true");
+    expect(
+      assign?.closest<HTMLElement>("[data-lesson-slug]")?.getAttribute(
+        "data-lesson-assigned",
+      ),
+    ).toBe("true");
     // The confirmation names the LMS-side outcome without blaming the
     // teacher and without rolling back the LyfeLabz assignment.
     const summary = mount.querySelector(
@@ -2546,1466 +2360,6 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
   });
 });
 
-// -----------------------------------------------------------------------------
-// Sprint 13B remediation - visible View summary opener
-// -----------------------------------------------------------------------------
-
-describe("Assign Experience - Sprint 13B remediation", () => {
-  const teacher = teacherSession();
-
-  type CreateDraftIn = {
-    assignmentId: string;
-    classId: string;
-    lessonSlug: string;
-    mode: "practice" | "classroom";
-    title?: string;
-  };
-  type PublishIn = { assignmentId: string };
-
-  const twoClasses: ReadonlyArray<ClassSummary> = freeze([
-    freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
-    freeze({ id: "c2", title: "7B Systems", grade: "7", status: "active" }),
-  ] as ClassSummary[]);
-  const listTwo: ListClasses = () => Promise.resolve(twoClasses);
-
-  const makeAssignments = (opts: { failPublish?: boolean } = {}) => {
-    const drafts: CreateDraftIn[] = [];
-    const publishes: PublishIn[] = [];
-    return {
-      drafts,
-      publishes,
-      seam: {
-        createDraft: async (input: CreateDraftIn) => {
-          drafts.push(input);
-          return {
-            assignmentId: input.assignmentId,
-            status: "draft" as const,
-            alreadyCreated: false,
-          };
-        },
-        publish: async (input: PublishIn) => {
-          if (opts.failPublish) {
-            throw new Error("publish failed");
-          }
-          publishes.push(input);
-          return {
-            assignmentId: input.assignmentId,
-            status: "published" as const,
-            alreadyPublished: false,
-          };
-        },
-      },
-    };
-  };
-
-  const makeDetailSeam = () => {
-    const registered: Array<{
-      assignmentId: string;
-      title: string;
-      className: string;
-      status: string;
-    }> = [];
-    const opened: string[] = [];
-    return {
-      registered,
-      opened,
-      seam: {
-        register: (m: {
-          assignmentId: string;
-          title: string;
-          className: string;
-          status: "draft" | "published" | "closed";
-        }) => {
-          registered.push({ ...m });
-        },
-        open: (id: string) => {
-          opened.push(id);
-        },
-      },
-    };
-  };
-
-  const confirmSingleClass = async (
-    mount: HTMLElement,
-    lessonSlug: string,
-    keepClassId: string,
-  ): Promise<void> => {
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=lesson-assign-${lessonSlug}]`,
-      )
-      ?.click();
-    await flush();
-    for (const cid of ["c1", "c2"]) {
-      if (cid === keepClassId) continue;
-      const cb = document.querySelector<HTMLInputElement>(
-        `[data-testid=assign-row-enabled-${cid}]`,
-      );
-      if (cb) {
-        cb.checked = false;
-        cb.dispatchEvent(new Event("change"));
-      }
-    }
-    document
-      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
-      ?.click();
-    await flush();
-    await flush();
-  };
-
-  beforeEach(() => {
-    _resetCurriculumSessionStateForTest();
-    document
-      .querySelectorAll("[data-testid=assign-overlay]")
-      .forEach((el) => el.remove());
-  });
-
-  test("View summary is absent before publication", () => {
-    const detail = makeDetailSeam();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    expect(
-      mount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
-    ).toBeNull();
-  });
-
-  test("successful publish registers metadata and reveals View summary on the correct card", async () => {
-    const asn = makeAssignments();
-    const detail = makeDetailSeam();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    await confirmSingleClass(mount, "earths-layers", "c1");
-    expect(detail.registered.length).toBe(1);
-    expect(detail.registered[0]?.status).toBe("published");
-    expect(detail.registered[0]?.title).toBe(
-      // certified curriculum manifest entry
-      mount
-        .querySelector("[data-testid=lesson-title-earths-layers]")
-        ?.textContent,
-    );
-    expect(detail.registered[0]?.className).toContain("6A Life Science");
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view).not.toBeNull();
-    expect(view?.tagName).toBe("BUTTON");
-    expect(view?.textContent).toBe("View summary");
-    expect(view?.getAttribute("aria-label")).toContain("View summary for");
-    // The affordance is not attached to any other card.
-    const others = mount.querySelectorAll(
-      "[data-testid^=lesson-view-summary-]",
-    );
-    expect(others.length).toBe(1);
-  });
-
-  test("clicking View summary invokes the entry-point opener exactly once with the correct assignmentId", async () => {
-    const asn = makeAssignments();
-    const detail = makeDetailSeam();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    await confirmSingleClass(mount, "earths-layers", "c1");
-    const expectedId = detail.registered[0]!.assignmentId;
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    view!.click();
-    expect(detail.opened).toEqual([expectedId]);
-  });
-
-  test("failed publish does not register anything and does not reveal View summary", async () => {
-    const asn = makeAssignments({ failPublish: true });
-    const detail = makeDetailSeam();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    await confirmSingleClass(mount, "earths-layers", "c1");
-    expect(detail.registered.length).toBe(0);
-    expect(
-      mount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
-    ).toBeNull();
-  });
-
-  test("multiple published lessons each retain their own View summary that opens its own assignment", async () => {
-    const asn = makeAssignments();
-    const detail = makeDetailSeam();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    await confirmSingleClass(mount, "earths-layers", "c1");
-    await confirmSingleClass(mount, "what-is-life", "c1");
-    const a = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    const b = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-what-is-life]",
-    );
-    expect(a).not.toBeNull();
-    expect(b).not.toBeNull();
-    const aId = a!.getAttribute("data-assignment-id")!;
-    const bId = b!.getAttribute("data-assignment-id")!;
-    expect(aId).not.toBe(bId);
-    a!.click();
-    b!.click();
-    expect(detail.opened).toEqual([aId, bId]);
-  });
-
-  test("Curriculum re-render preserves View summary for the active session", async () => {
-    const asn = makeAssignments();
-    const detail = makeDetailSeam();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    await confirmSingleClass(mount, "earths-layers", "c1");
-    const remount = mkMount();
-    renderCurriculumSurface(remount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    expect(
-      remount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
-    ).not.toBeNull();
-  });
-
-  test("View summary is absent when no assignmentDetail seam is wired", async () => {
-    const asn = makeAssignments();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-    });
-    await confirmSingleClass(mount, "earths-layers", "c1");
-    expect(
-      mount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
-    ).toBeNull();
-  });
-
-  test("test-only reset clears the session-scoped assignmentId map", async () => {
-    const asn = makeAssignments();
-    const detail = makeDetailSeam();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    await confirmSingleClass(mount, "earths-layers", "c1");
-    _resetCurriculumSessionStateForTest();
-    const remount = mkMount();
-    renderCurriculumSurface(remount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    expect(
-      remount.querySelector("[data-testid=lesson-view-summary-earths-layers]"),
-    ).toBeNull();
-  });
-
-  test("the four-item Teacher Workspace navigation remains unchanged when the seam is wired", () => {
-    const detail = makeDetailSeam();
-    const mount = mkMount();
-    mountTeacherShell(teacher, mount, {
-      ...makeShellDeps({ listClasses: listTwo }),
-      assignmentDetail: detail.seam,
-    });
-    const items = NAVIGATION_ITEMS.filter((i) => i.variant === "item");
-    expect(items.map((i) => i.label)).toEqual([
-      "Curriculum",
-      "Classes",
-      "Present Mode",
-      "Settings",
-    ]);
-    for (const i of items) {
-      expect(
-        mount.querySelector<HTMLElement>(`[data-testid=nav-${i.key}]`),
-      ).not.toBeNull();
-    }
-  });
-});
-
-// -----------------------------------------------------------------------------
-// Sprint 13C remediation - multiple-assignment selection interface
-// -----------------------------------------------------------------------------
-
-describe("Assign Experience - Sprint 13C multiple-assignment selection", () => {
-  const teacher = teacherSession();
-
-  const twoClasses: ReadonlyArray<ClassSummary> = freeze([
-    freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
-    freeze({ id: "c2", title: "7B Systems", grade: "7", status: "active" }),
-  ] as ClassSummary[]);
-  const listTwo: ListClasses = () => Promise.resolve(twoClasses);
-
-  type CreateDraftIn = {
-    assignmentId: string;
-    classId: string;
-    lessonSlug: string;
-    mode: "practice" | "classroom";
-    title?: string;
-  };
-  type PublishIn = { assignmentId: string };
-  const makeAssignments = () => {
-    const drafts: CreateDraftIn[] = [];
-    const publishes: PublishIn[] = [];
-    return {
-      drafts,
-      publishes,
-      seam: {
-        createDraft: async (input: CreateDraftIn) => {
-          drafts.push(input);
-          return {
-            assignmentId: input.assignmentId,
-            status: "draft" as const,
-            alreadyCreated: false,
-          };
-        },
-        publish: async (input: PublishIn) => {
-          publishes.push(input);
-          return {
-            assignmentId: input.assignmentId,
-            status: "published" as const,
-            alreadyPublished: false,
-          };
-        },
-      },
-    };
-  };
-
-  type Registered = {
-    assignmentId: string;
-    title: string;
-    className: string;
-    status: "draft" | "published" | "closed";
-    lessonSlug?: string;
-    classId?: string;
-  };
-  const makeHydratedSeam = (initial: ReadonlyArray<Registered>) => {
-    const store = new Map<string, Registered>();
-    for (const m of initial) store.set(m.assignmentId, { ...m });
-    const opened: string[] = [];
-    return {
-      opened,
-      seam: {
-        register: (m: Registered) => {
-          store.set(m.assignmentId, { ...m });
-        },
-        open: (id: string) => {
-          opened.push(id);
-        },
-        list: () => Array.from(store.values()),
-      },
-    };
-  };
-
-  const confirmAllClasses = async (
-    mount: HTMLElement,
-    lessonSlug: string,
-  ): Promise<void> => {
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=lesson-assign-${lessonSlug}]`,
-      )
-      ?.click();
-    await flush();
-    document
-      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
-      ?.click();
-    await flush();
-    await flush();
-  };
-
-  const closeSelection = (): void => {
-    document
-      .querySelectorAll("[data-testid=summary-select-overlay]")
-      .forEach((el) => el.remove());
-  };
-
-  beforeEach(() => {
-    _resetCurriculumSessionStateForTest();
-    document
-      .querySelectorAll("[data-testid=assign-overlay]")
-      .forEach((el) => el.remove());
-    closeSelection();
-  });
-
-  test("hydrated multiple assignments render View summaries (not View summary)", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "a1",
-        title: "Earth's Layers",
-        className: "6A Life Science · Grade 6",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-      {
-        assignmentId: "a2",
-        title: "Earth's Layers",
-        className: "7B Systems · Grade 7",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c2",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view).not.toBeNull();
-    expect(view?.textContent).toBe("View summaries");
-    expect(view?.getAttribute("data-assignment-count")).toBe("2");
-    expect(view?.getAttribute("aria-label")).toContain("View summaries for");
-    expect(view?.hasAttribute("data-assignment-id")).toBe(false);
-  });
-
-  test("clicking View summaries opens a selection interface listing every assignment", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "a1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-      {
-        assignmentId: "a2",
-        title: "Earth's Layers",
-        className: "7B Systems",
-        status: "closed",
-        lessonSlug: "earths-layers",
-        classId: "c2",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=lesson-view-summary-earths-layers]",
-      )
-      ?.click();
-    const dialog = document.querySelector(
-      "[data-testid=summary-select-dialog]",
-    );
-    expect(dialog).not.toBeNull();
-    expect(dialog?.getAttribute("role")).toBe("dialog");
-    expect(dialog?.getAttribute("aria-modal")).toBe("true");
-    expect(
-      document.querySelector("[data-testid=summary-select-title]")?.textContent,
-    ).toContain("Earth's Layers");
-    const choices = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        "[data-testid^=summary-select-choice-]",
-      ),
-    );
-    expect(choices).toHaveLength(2);
-    for (const c of choices) expect(c.tagName).toBe("BUTTON");
-    const texts = choices.map((c) => c.textContent ?? "");
-    expect(texts.some((t) => t.includes("6A Life Science"))).toBe(true);
-    expect(texts.some((t) => t.includes("7B Systems"))).toBe(true);
-    expect(texts.some((t) => t.includes("Published"))).toBe(true);
-    expect(texts.some((t) => t.includes("Closed"))).toBe(true);
-    for (const t of texts) {
-      expect(t).not.toContain("a1");
-      expect(t).not.toContain("a2");
-    }
-  });
-
-  test("choices sort by class name ascending, then by status", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "z",
-        title: "T",
-        className: "6C",
-        status: "closed",
-        lessonSlug: "earths-layers",
-        classId: "cc",
-      },
-      {
-        assignmentId: "y",
-        title: "T",
-        className: "6A",
-        status: "closed",
-        lessonSlug: "earths-layers",
-        classId: "ca",
-      },
-      {
-        assignmentId: "x",
-        title: "T",
-        className: "6A",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "cb",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=lesson-view-summary-earths-layers]",
-      )
-      ?.click();
-    const ids = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        "[data-testid^=summary-select-choice-]",
-      ),
-    ).map((b) => b.getAttribute("data-assignment-id"));
-    expect(ids).toEqual(["x", "y", "z"]);
-  });
-
-  test("selecting a specific choice opens that exact assignment ID", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "a-first",
-        title: "T",
-        className: "6A",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-      {
-        assignmentId: "a-second",
-        title: "T",
-        className: "6B",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c2",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=lesson-view-summary-earths-layers]",
-      )
-      ?.click();
-    document
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=summary-select-choice-a-second]",
-      )
-      ?.click();
-    expect(detail.opened).toEqual(["a-second"]);
-    expect(
-      document.querySelector("[data-testid=summary-select-overlay]"),
-    ).toBeNull();
-  });
-
-  test("Escape dismisses the selection interface without opening anything", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "a1",
-        title: "T",
-        className: "6A",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-      {
-        assignmentId: "a2",
-        title: "T",
-        className: "6B",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c2",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=lesson-view-summary-earths-layers]",
-      )
-      ?.click();
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    expect(
-      document.querySelector("[data-testid=summary-select-overlay]"),
-    ).toBeNull();
-    expect(detail.opened).toEqual([]);
-  });
-
-  test("publishing a second assignment for the same lesson flips View summary to View summaries", async () => {
-    const asn = makeAssignments();
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "existing",
-        title: "Earth's Layers",
-        className: "9Z Legacy",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "cX",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    const before = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(before?.textContent).toBe("View summary");
-    // Publish to c1 - now two assignments exist for the same lesson.
-    await confirmAllClasses(mount, "earths-layers");
-    const after = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(after?.textContent).toBe("View summaries");
-    // The newly published assignment appears immediately without reload.
-    after?.click();
-    const choices = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        "[data-testid^=summary-select-choice-]",
-      ),
-    );
-    // 1 hydrated + 2 published (one per class) = 3 choices.
-    expect(choices.length).toBeGreaterThanOrEqual(3);
-  });
-
-  test("publishing another lesson does not alter the first lesson's choices", async () => {
-    const asn = makeAssignments();
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "e1",
-        title: "Earth's Layers",
-        className: "6A",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-      {
-        assignmentId: "e2",
-        title: "Earth's Layers",
-        className: "6B",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c2",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-      assignmentDetail: detail.seam,
-    });
-    await confirmAllClasses(mount, "what-is-life");
-    // earths-layers still has exactly its 2 hydrated choices.
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=lesson-view-summary-earths-layers]",
-      )
-      ?.click();
-    const ids = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        "[data-testid^=summary-select-choice-]",
-      ),
-    )
-      .map((b) => b.getAttribute("data-assignment-id"))
-      .sort();
-    expect(ids).toEqual(["e1", "e2"]);
-  });
-
-  test("malformed hydrated entry does not suppress valid siblings", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "",
-        title: "",
-        className: "",
-        status: "published",
-        lessonSlug: "earths-layers",
-      },
-      {
-        assignmentId: "a-valid",
-        title: "Earth's Layers",
-        className: "6A",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    // Only the valid entry remains, so singular label applies.
-    expect(view?.textContent).toBe("View summary");
-    expect(view?.getAttribute("data-assignment-id")).toBe("a-valid");
-  });
-});
-
-// -----------------------------------------------------------------------------
-// Sprint 13F - Persistent Draft Assignment Discovery
-// -----------------------------------------------------------------------------
-
-describe("Curriculum - Sprint 13F draft discovery", () => {
-  const teacher = teacherSession();
-
-  const twoClasses: ReadonlyArray<ClassSummary> = freeze([
-    freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
-    freeze({ id: "c2", title: "7B Systems", grade: "7", status: "active" }),
-  ] as ClassSummary[]);
-  const listTwo: ListClasses = () => Promise.resolve(twoClasses);
-
-  type Registered = {
-    assignmentId: string;
-    title: string;
-    className: string;
-    status: "draft" | "published" | "closed";
-    lessonSlug?: string;
-    classId?: string;
-  };
-  const makeHydratedSeam = (initial: ReadonlyArray<Registered>) => {
-    const store = new Map<string, Registered>();
-    for (const m of initial) store.set(m.assignmentId, { ...m });
-    const opened: string[] = [];
-    return {
-      opened,
-      seam: {
-        register: (m: Registered) => {
-          store.set(m.assignmentId, { ...m });
-        },
-        open: (id: string) => {
-          opened.push(id);
-        },
-        list: () => Array.from(store.values()),
-      },
-    };
-  };
-
-  const closeSelection = (): void => {
-    document
-      .querySelectorAll("[data-testid=summary-select-overlay]")
-      .forEach((el) => el.remove());
-  };
-
-  beforeEach(() => {
-    _resetCurriculumSessionStateForTest();
-    closeSelection();
-  });
-
-  test("single hydrated draft shows View drafts and opens directly", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "d1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "draft",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view).not.toBeNull();
-    expect(view?.textContent).toBe("View drafts");
-    expect(view?.getAttribute("data-draft-only")).toBe("true");
-    expect(view?.getAttribute("data-assignment-id")).toBe("d1");
-    expect(view?.getAttribute("aria-label")).toContain("View drafts for");
-    view?.click();
-    expect(detail.opened).toEqual(["d1"]);
-  });
-
-  test("multiple hydrated drafts show View drafts and open selector", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "d1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "draft",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-      {
-        assignmentId: "d2",
-        title: "Earth's Layers",
-        className: "7B Systems",
-        status: "draft",
-        lessonSlug: "earths-layers",
-        classId: "c2",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view?.textContent).toBe("View drafts");
-    expect(view?.getAttribute("data-assignment-count")).toBe("2");
-    view?.click();
-    const dialog = document.querySelector(
-      "[data-testid=summary-select-dialog]",
-    );
-    expect(dialog).not.toBeNull();
-    const choices = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        "[data-testid^=summary-select-choice-]",
-      ),
-    );
-    expect(choices).toHaveLength(2);
-    const texts = choices.map((c) => c.textContent ?? "");
-    expect(texts.some((t) => t.includes("Draft"))).toBe(true);
-    choices[0]?.click();
-    expect(detail.opened).toHaveLength(1);
-  });
-
-  test("selector ordering is deterministic across drafts", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "z",
-        title: "Earth's Layers",
-        className: "7B Systems",
-        status: "draft",
-        lessonSlug: "earths-layers",
-        classId: "c2",
-      },
-      {
-        assignmentId: "a",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "draft",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=lesson-view-summary-earths-layers]",
-      )
-      ?.click();
-    const ids = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        "[data-testid^=summary-select-choice-]",
-      ),
-    ).map((b) => b.getAttribute("data-assignment-id"));
-    expect(ids).toEqual(["a", "z"]);
-  });
-
-  test("published-only lesson still uses View summary label unchanged", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "p1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view?.textContent).toBe("View summary");
-    expect(view?.hasAttribute("data-draft-only")).toBe(false);
-  });
-
-  test("mixed draft + published preserves View summaries label", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "d1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "draft",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-      {
-        assignmentId: "p1",
-        title: "Earth's Layers",
-        className: "7B Systems",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c2",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view?.textContent).toBe("View summaries");
-    expect(view?.hasAttribute("data-draft-only")).toBe(false);
-  });
-
-  test("closed-only preserves prior behavior", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "c1x",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "closed",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignmentDetail: detail.seam,
-    });
-    const view = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=lesson-view-summary-earths-layers]",
-    );
-    expect(view?.textContent).toBe("View summary");
-    expect(view?.hasAttribute("data-draft-only")).toBe(false);
-  });
-});
-
-describe("Sprint 16 Slice 1: dashboard refresh completeness", () => {
-  const teacher = teacherSession();
-
-  type Registered = {
-    assignmentId: string;
-    title: string;
-    className: string;
-    status: "draft" | "published" | "closed";
-    lessonSlug?: string;
-    classId?: string;
-    publishedAt?: number;
-  };
-
-  type Summary = {
-    assignmentId: string;
-    classId: string;
-    totalStudents: number;
-    completedStudents: number;
-    inProgressStudents: number;
-    notStartedStudents: number;
-    completionPercentage: number;
-    averagePercentage: number | null;
-    highestPercentage: number | null;
-    lowestPercentage: number | null;
-    perfectScoreStudents: number;
-  };
-
-  const summary = (id: string, over: Partial<Summary> = {}): Summary => ({
-    assignmentId: id,
-    classId: "c1",
-    totalStudents: 10,
-    completedStudents: 0,
-    inProgressStudents: 0,
-    notStartedStudents: 10,
-    completionPercentage: 0,
-    averagePercentage: null,
-    highestPercentage: null,
-    lowestPercentage: null,
-    perfectScoreStudents: 0,
-    ...over,
-  });
-
-  const makeHydratedSeam = (initial: ReadonlyArray<Registered>) => {
-    const store = new Map<string, Registered>();
-    for (const m of initial) store.set(m.assignmentId, { ...m });
-    const opened: string[] = [];
-    let installed: ((assignmentId: string) => void) | null = null;
-    return {
-      opened,
-      getInvalidator: (): ((id: string) => void) | null => installed,
-      seam: {
-        register: (m: Registered) => {
-          store.set(m.assignmentId, { ...m });
-        },
-        open: (id: string) => {
-          opened.push(id);
-        },
-        list: () => Array.from(store.values()),
-        setActiveAssignmentsInvalidator: (
-          fn: ((id: string) => void) | null,
-        ) => {
-          installed = fn;
-        },
-      },
-    };
-  };
-
-  beforeEach(() => {
-    _resetCurriculumSessionStateForTest();
-  });
-
-  test("Curriculum installs the per-assignment invalidator on mount via the seam setter", () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "p1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: emptyListClasses,
-      assignmentDetail: detail.seam,
-    });
-    expect(typeof detail.getInvalidator()).toBe("function");
-  });
-
-  test("invalidator refresh only re-fetches the targeted assignment", async () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "p1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-      {
-        assignmentId: "p2",
-        title: "Waves",
-        className: "6B Physical",
-        status: "published",
-        lessonSlug: "nature-of-waves",
-        classId: "c2",
-      },
-    ]);
-    const calls: string[] = [];
-    const summaryCallable = async (input: { assignmentId: string }) => {
-      calls.push(input.assignmentId);
-      return summary(input.assignmentId);
-    };
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: emptyListClasses,
-      assignmentDetail: detail.seam,
-      assignmentSummary: summaryCallable,
-    });
-    await flush();
-    await flush();
-    expect(calls.sort()).toEqual(["p1", "p2"]);
-    calls.length = 0;
-
-    // Simulate an `onStatusChange` firing for exactly one card.
-    detail.getInvalidator()?.("p1");
-    await flush();
-    await flush();
-    expect(calls).toEqual(["p1"]);
-  });
-
-  test("invalidator is a no-op for an assignmentId that was never cached", async () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "p1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-    ]);
-    const calls: string[] = [];
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: emptyListClasses,
-      assignmentDetail: detail.seam,
-      assignmentSummary: async ({ assignmentId }) => {
-        calls.push(assignmentId);
-        return summary(assignmentId);
-      },
-    });
-    await flush();
-    await flush();
-    calls.length = 0;
-    detail.getInvalidator()?.("does-not-exist");
-    await flush();
-    await flush();
-    expect(calls).toEqual([]);
-  });
-
-  test("a single invalidator invocation triggers exactly one summary refresh (no duplicate refresh)", async () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "p1",
-        title: "Earth's Layers",
-        className: "6A Life Science",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-      },
-    ]);
-    const calls: string[] = [];
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: emptyListClasses,
-      assignmentDetail: detail.seam,
-      assignmentSummary: async ({ assignmentId }) => {
-        calls.push(assignmentId);
-        return summary(assignmentId);
-      },
-    });
-    await flush();
-    await flush();
-    calls.length = 0;
-    detail.getInvalidator()?.("p1");
-    await flush();
-    await flush();
-    expect(calls).toEqual(["p1"]);
-  });
-
-  test("Show closed and published-date ordering are preserved after an invalidator-driven refresh", async () => {
-    const detail = makeHydratedSeam([
-      {
-        assignmentId: "old",
-        title: "Waves",
-        className: "6B",
-        status: "published",
-        lessonSlug: "nature-of-waves",
-        classId: "c2",
-        publishedAt: 1000,
-      },
-      {
-        assignmentId: "new",
-        title: "Earth's Layers",
-        className: "6A",
-        status: "published",
-        lessonSlug: "earths-layers",
-        classId: "c1",
-        publishedAt: 2000,
-      },
-      {
-        assignmentId: "closed1",
-        title: "Cells",
-        className: "6A",
-        status: "closed",
-        lessonSlug: "cell-types",
-        classId: "c1",
-        publishedAt: 500,
-      },
-    ]);
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: emptyListClasses,
-      assignmentDetail: detail.seam,
-      assignmentSummary: async ({ assignmentId }) => summary(assignmentId),
-    });
-    await flush();
-    await flush();
-
-    // Show closed toggle is present but off; closed card hidden.
-    const toggle = mount.querySelector<HTMLInputElement>(
-      "[data-testid=active-assignments-show-closed]",
-    );
-    expect(toggle).not.toBeNull();
-    expect(
-      mount.querySelector("[data-testid=active-assignment-card-closed1]"),
-    ).toBeNull();
-
-    // Trigger an invalidator refresh; ordering must remain new-then-old.
-    detail.getInvalidator()?.("new");
-    await flush();
-    await flush();
-    const cards = Array.from(
-      mount.querySelectorAll<HTMLElement>(
-        "[data-testid^=active-assignment-card-]",
-      ),
-    ).map((c) => c.getAttribute("data-assignment-id"));
-    expect(cards).toEqual(["new", "old"]);
-
-    // Toggle Show closed and confirm the closed card appears.
-    toggle!.checked = true;
-    toggle!.dispatchEvent(new Event("change"));
-    expect(
-      mount.querySelector("[data-testid=active-assignment-card-closed1]"),
-    ).not.toBeNull();
-  });
-});
-
-describe("Sprint 16 Slice 7: integrated teacher monitoring workflow", () => {
-  const teacher = teacherSession();
-
-  type Registered = {
-    assignmentId: string;
-    title: string;
-    className: string;
-    status: "draft" | "published" | "closed";
-    lessonSlug?: string;
-    classId?: string;
-    publishedAt?: number;
-  };
-
-  type Summary = {
-    assignmentId: string;
-    classId: string;
-    totalStudents: number;
-    completedStudents: number;
-    inProgressStudents: number;
-    notStartedStudents: number;
-    completionPercentage: number;
-    averagePercentage: number | null;
-    highestPercentage: number | null;
-    lowestPercentage: number | null;
-    perfectScoreStudents: number;
-  };
-
-  beforeEach(() => {
-    _resetCurriculumSessionStateForTest();
-  });
-
-  test("full lifecycle: publish -> Detail counts refresh on close -> Show closed reveals -> reopen restores Published", async () => {
-    // Simulates the complete workflow exercised by Slices 1 through 6:
-    // dashboard invalidator refresh (Slice 1), single per-lifecycle summary
-    // fetch anchored to the invalidator (Slices 2/5), authoritative summary
-    // counts on the card (Slice 3), Show closed toggle plus Back-target
-    // labeling of the Curriculum destination (Slice 4), and stable
-    // accessible naming across lifecycle transitions (Slice 6).
-    const store = new Map<string, Registered>();
-    store.set("a1", {
-      assignmentId: "a1",
-      title: "Earth's Layers",
-      className: "6A Life Science",
-      status: "published",
-      lessonSlug: "earths-layers",
-      classId: "c1",
-      publishedAt: 2000,
-    });
-    // A second published card keeps the section visible after `a1` closes so
-    // the Show closed toggle remains in the DOM through the transition.
-    store.set("a2", {
-      assignmentId: "a2",
-      title: "Nature of Waves",
-      className: "6B Physical",
-      status: "published",
-      lessonSlug: "nature-of-waves",
-      classId: "c2",
-      publishedAt: 1000,
-    });
-
-    let installed: ((assignmentId: string) => void) | null = null;
-    const opened: string[] = [];
-    const assignmentDetailSeam = {
-      register: (m: Registered) => {
-        store.set(m.assignmentId, { ...m });
-      },
-      open: (id: string) => {
-        opened.push(id);
-      },
-      list: () => Array.from(store.values()),
-      setActiveAssignmentsInvalidator: (
-        fn: ((id: string) => void) | null,
-      ): void => {
-        installed = fn;
-      },
-    };
-
-    // Progress snapshot the dashboard should render for `a1`.
-    const snapshots = new Map<string, Summary>();
-    const buildSummary = (
-      id: string,
-      completed: number,
-      inProgress: number,
-    ): Summary => ({
-      assignmentId: id,
-      classId: "c1",
-      totalStudents: 10,
-      completedStudents: completed,
-      inProgressStudents: inProgress,
-      notStartedStudents: 10 - completed - inProgress,
-      completionPercentage: (completed / 10) * 100,
-      averagePercentage: completed > 0 ? 82 : null,
-      highestPercentage: completed > 0 ? 100 : null,
-      lowestPercentage: completed > 0 ? 60 : null,
-      perfectScoreStudents: 0,
-    });
-    snapshots.set("a1", buildSummary("a1", 3, 2));
-    snapshots.set("a2", buildSummary("a2", 0, 0));
-
-    const summaryCalls: string[] = [];
-    const summaryCallable = async (input: { assignmentId: string }) => {
-      summaryCalls.push(input.assignmentId);
-      const snap = snapshots.get(input.assignmentId);
-      if (snap === undefined) throw new Error("no snapshot");
-      return snap;
-    };
-
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: emptyListClasses,
-      assignmentDetail: assignmentDetailSeam,
-      assignmentSummary: summaryCallable,
-    });
-    await flush();
-    await flush();
-
-    // Slice 1: invalidator seam installed on mount.
-    expect(typeof installed).toBe("function");
-
-    // Slice 3: authoritative summary counts flow into the card's progress
-    // line copy. Format: `${completed} submitted / ${started} started /
-    // ${total} total`.
-    const card = mount.querySelector<HTMLElement>(
-      "[data-testid=active-assignment-card-a1]",
-    );
-    expect(card).not.toBeNull();
-    const progress = card!.querySelector<HTMLElement>(
-      "[data-testid=active-assignment-progress-a1]",
-    );
-    expect(progress).not.toBeNull();
-    expect(progress!.textContent).toContain("3 submitted");
-    expect(progress!.textContent).toContain("5 started");
-    expect(progress!.textContent).toContain("10 total");
-
-    // Show closed toggle is not rendered while no closed card exists.
-    expect(
-      mount.querySelector("[data-testid=active-assignments-show-closed]"),
-    ).toBeNull();
-
-    // Simulate a student submission and a lifecycle close: `onStatusChange`
-    // registers the mutated card and fires the invalidator. Slice 1 must
-    // re-issue exactly one summary read for that assignment.
-    summaryCalls.length = 0;
-    snapshots.set("a1", buildSummary("a1", 5, 2));
-    store.set("a1", { ...store.get("a1")!, status: "closed" });
-    installed!("a1");
-    await flush();
-    await flush();
-
-    // Slice 4: closed card is hidden from the DOM while Show closed is off,
-    // and no wasted summary fetch is issued for a hidden card (Slice 1
-    // invalidation purges the cache; rendering issues the fresh call).
-    expect(
-      mount.querySelector("[data-testid=active-assignment-card-a1]"),
-    ).toBeNull();
-    expect(summaryCalls).toEqual([]);
-
-    // Slice 4/6: the Show closed toggle now appears (a closed card exists)
-    // and defaults to off with an accessible label.
-    const toggle = mount.querySelector<HTMLInputElement>(
-      "[data-testid=active-assignments-show-closed]",
-    );
-    expect(toggle).not.toBeNull();
-    expect(toggle!.checked).toBe(false);
-    expect(toggle!.getAttribute("aria-label")).toBe(
-      "Show closed assignments",
-    );
-
-    // Toggle Show closed on; the closed card now surfaces and the fresh
-    // Slice 3 authoritative counts (5 submitted / 7 started) render after
-    // exactly one summary re-fetch for the invalidated card.
-    toggle!.checked = true;
-    toggle!.dispatchEvent(new Event("change"));
-    await flush();
-    await flush();
-    expect(summaryCalls).toEqual(["a1"]);
-    const closedCard = mount.querySelector<HTMLElement>(
-      "[data-testid=active-assignment-card-a1]",
-    );
-    expect(closedCard).not.toBeNull();
-    const closedProgress = closedCard!.querySelector<HTMLElement>(
-      "[data-testid=active-assignment-progress-a1]",
-    );
-    expect(closedProgress!.textContent).toContain("5 submitted");
-    expect(closedProgress!.textContent).toContain("7 started");
-
-    // Slice 6 accessibility: the card exposes a stable role="group" with an
-    // aria-labelledby pointing at the card title id.
-    expect(closedCard!.getAttribute("role")).toBe("group");
-    const labelledBy = closedCard!.getAttribute("aria-labelledby");
-    expect(labelledBy).not.toBeNull();
-    expect(labelledBy!.length).toBeGreaterThan(0);
-    const label = mount.querySelector(`#${labelledBy}`);
-    expect(label).not.toBeNull();
-
-    // Simulate reopen: status transitions back to `published`, the
-    // invalidator fires once, exactly one summary read is issued, and the
-    // card returns to the published set. Toggle Show closed off again to
-    // confirm the reopened card remains visible in the published set.
-    summaryCalls.length = 0;
-    store.set("a1", { ...store.get("a1")!, status: "published" });
-    installed!("a1");
-    await flush();
-    await flush();
-    // The reopened card is now in the published set and issues exactly one
-    // summary refresh.
-    expect(summaryCalls).toEqual(["a1"]);
-    const reopened = mount.querySelector<HTMLElement>(
-      "[data-testid=active-assignment-card-a1]",
-    );
-    expect(reopened).not.toBeNull();
-    expect(reopened!.getAttribute("data-status")).toBe("published");
-
-    // Slices 1/5: the `open` seam and the dashboard invalidator route
-    // through the certified `assignmentDetailRegistry`; no forbidden API
-    // (`onSnapshot`, `localStorage`, `sessionStorage`, `IndexedDB`,
-    // `setInterval`, refresh-driven `setTimeout`) was introduced by any
-    // Sprint 16 slice. The dashboard section source proves it.
-    const source = fs.readFileSync(
-      path.resolve(
-        __dirname,
-        "surfaces/shared/activeAssignments.ts",
-      ),
-      "utf8",
-    );
-    expect(source).not.toContain("onSnapshot");
-    expect(source).not.toContain("localStorage");
-    expect(source).not.toContain("sessionStorage");
-    expect(source).not.toContain("IndexedDB");
-    expect(source).not.toMatch(/setInterval\s*\(/);
-  });
-});
-
 describe("Assign dialog CSS ships with the shell host page", () => {
   // Regression guard for the production defect where clicking Assign
   // appeared to do nothing because `app/index.html` shipped no CSS for
@@ -4044,13 +2398,18 @@ describe("Assign dialog CSS ships with the shell host page", () => {
   });
 
   test("every class name the Curriculum surface renders has a style rule", () => {
-    // These are the classes the Curriculum surface's Assign flow and its
-    // View-summaries selector attach to elements it inserts into the
+    // These are the classes the Curriculum surface's Assign flow, Preview,
+    // and Resources disclosure attach to elements it inserts into the
     // document. Every one must have at least a declaration block in the
     // shell page so nothing renders as an unstyled inline block.
     const required = [
+      "shell-lesson-action-pair",
       "shell-lesson-assign",
-      "shell-lesson-view-summary",
+      "shell-lesson-preview",
+      "shell-lesson-resources-toggle",
+      "shell-lesson-resource-type",
+      "shell-lesson-resource-title",
+      "shell-lesson-resource-open",
       "shell-assign-overlay",
       "shell-assign-dialog",
       "shell-assign-title",
@@ -4061,12 +2420,246 @@ describe("Assign dialog CSS ships with the shell host page", () => {
       "shell-assign-rows",
       "shell-assign-row",
       "shell-assign-field",
-      "shell-summary-select-choice",
     ];
     for (const cls of required) {
       const re = new RegExp(`\\.${cls}\\s*[\\{,]`);
       expect(shellHtml).toMatch(re);
     }
+  });
+
+  test("Resources disclosure is a quiet row, not the old outlined pill (Sprint 28.6D.1)", () => {
+    // Regression for the 28.6D.1 hierarchy polish: the Resources toggle
+    // must no longer resemble Assign/Preview. Its rule drops the outlined
+    // pill treatment (border + 99px radius) that made it read as a third
+    // primary action.
+    const toggleMatch = shellHtml.match(
+      /\n\s*\.shell-lesson-resources-toggle\s*\{([^}]+)\}/,
+    );
+    expect(toggleMatch).not.toBeNull();
+    const body = toggleMatch![1];
+    expect(body).toMatch(/border\s*:\s*none/);
+    expect(body).not.toMatch(/border-radius\s*:\s*99px/);
+    // The resource-type capsule background/pill is gone too; the type is a
+    // plain metadata eyebrow.
+    const typeMatch = shellHtml.match(
+      /\.shell-lesson-resource-type\s*\{([^}]+)\}/,
+    );
+    expect(typeMatch).not.toBeNull();
+    expect(typeMatch![1]).not.toMatch(/background\s*:/);
+    expect(typeMatch![1]).toMatch(/text-transform\s*:\s*uppercase/);
+    // Sprint 28.6H.3 (Task D3): the shared quiet footer row (View Summary +
+    // Resources) is separated by a light top border, applied only when a
+    // visible control is present (`:has`).
+    const footerMatch = shellHtml.match(
+      /\.shell-lesson-footer-row\s*\{([^}]*border-top[^}]*)\}/,
+    );
+    expect(footerMatch).not.toBeNull();
+    expect(footerMatch![1]).toMatch(/border-top\s*:/);
+    // The boundary is applied only when the footer holds a visible control.
+    expect(shellHtml).toMatch(/\.shell-lesson-footer:has\(/);
+  });
+
+  test("expanded resource Open is a compact OUTLINED control, distinct from Assign/Preview (Sprint 28.6H.5, Task C1/C2, J#18-20)", () => {
+    const openMatch = shellHtml.match(
+      /\n\s*\.shell-lesson-resource-open\s*\{([^}]+)\}/,
+    );
+    expect(openMatch).not.toBeNull();
+    const body = openMatch![1];
+    // J#18: outlined (a real border), not bare text and not a solid fill.
+    expect(body).toMatch(/border\s*:\s*1px solid/);
+    expect(body).toMatch(/background\s*:\s*transparent/);
+    // J#19: one consistent sizing rule with fixed dimensions (76 x 38px),
+    // within the 70-85 / 36-40 contract.
+    const width = body.match(/width:\s*([0-9.]+)rem/);
+    const height = body.match(/height:\s*([0-9.]+)rem/);
+    expect(width).not.toBeNull();
+    expect(height).not.toBeNull();
+    expect(parseFloat(width![1])).toBeCloseTo(4.75, 2); // 76px
+    expect(parseFloat(height![1])).toBeCloseTo(2.375, 3); // 38px
+    // J#20: strictly smaller than Assign/Preview (7rem x 2.75rem).
+    expect(parseFloat(width![1])).toBeLessThan(7);
+    expect(parseFloat(height![1])).toBeLessThan(2.75);
+  });
+
+  test("assignment Open action bottom-anchors and completed cards get a pale-green (not green primary) treatment (Sprint 28.6H.6, Part A/B)", () => {
+    // Part A: the compact class card pushes Open assignment to the bottom via
+    // margin-top:auto (resilient flex layout, not absolute positioning).
+    const openMatch = shellHtml.match(
+      /\.shell-active-assignment-card-compact\s+\.shell-active-assignment-open\s*\{([^}]+)\}/,
+    );
+    expect(openMatch).not.toBeNull();
+    expect(openMatch![1]).toMatch(/margin-top:\s*auto/);
+    // Part B2: the completed card is a subtle pale-green tint + restrained green
+    // border - no saturated fill, no primary-green button repaint.
+    const completeMatch = shellHtml.match(
+      /\.shell-active-assignment-card-complete\s*\{([^}]+)\}/,
+    );
+    expect(completeMatch).not.toBeNull();
+    expect(completeMatch![1]).toMatch(/background\s*:/);
+    expect(completeMatch![1]).toMatch(/border-color\s*:/);
+    // Very pale: a low-alpha green fill, not #1f6b3d / #175a31 solid green.
+    expect(completeMatch![1]).not.toMatch(/#1f6b3d|#175a31/);
+  });
+
+  test("Curriculum assigned lesson gets a cool/slate tint distinct from the green completed state (Sprint 28.6H.6, Part C)", () => {
+    const assignedMatch = shellHtml.match(
+      /\.shell-lesson-card-assigned:not\(\.shell-lesson-card-inactive\)\s*\{([^}]+)\}/,
+    );
+    expect(assignedMatch).not.toBeNull();
+    const body = assignedMatch![1];
+    expect(body).toMatch(/background\s*:/);
+    // Cool blue/slate, never green - the two states must not share a color.
+    expect(body).not.toMatch(/#1f6b3d|#175a31/);
+    expect(body).not.toMatch(/220,\s*132/); // not the pale-green rgba used by Classes
+  });
+
+  test("Reassign is a green-OUTLINE action (transparent fill, green border + text), not solid/gray/disabled (Sprint 28.6H.8, Part B)", () => {
+    // The reassign rule uses the two-class selector so it wins over the base
+    // solid-green Assign regardless of source order.
+    const reassignMatch = shellHtml.match(
+      /\.shell-lesson-assign\.shell-lesson-reassign\s*\{([^}]+)\}/,
+    );
+    expect(reassignMatch).not.toBeNull();
+    const body = reassignMatch![1];
+    // Transparent fill (the assigned card's slate tint shows through), with the
+    // assignment-green border + text - NOT a solid fill, NOT gray.
+    expect(body).toMatch(/background\s*:\s*transparent/);
+    expect(body).toMatch(/color\s*:\s*#1f6b3d/);
+    expect(body).toMatch(/border-color\s*:\s*#1f6b3d/);
+    // No solid-Assign micro-shadow in the resting state.
+    expect(body).toMatch(/box-shadow\s*:\s*none/);
+    // The base Assign remains full-strength SOLID green.
+    const baseMatch = shellHtml.match(/\n\s*\.shell-lesson-assign\s*\{([^}]+)\}/);
+    expect(baseMatch![1]).toMatch(/background\s*:\s*#1f6b3d/);
+    // Hover adds a very light green wash (not gray, not disabled).
+    expect(shellHtml).toMatch(
+      /\.shell-lesson-assign\.shell-lesson-reassign:hover[^{]*\{[^}]*background\s*:\s*rgba\(31,\s*107,\s*61/,
+    );
+    // The focus ring is re-asserted on Reassign (visible focus preserved).
+    expect(shellHtml).toMatch(
+      /\.shell-lesson-assign\.shell-lesson-reassign:focus-visible\s*\{[^}]*box-shadow/,
+    );
+  });
+
+  test("Curriculum grid targets four columns on large desktop and reflows (Sprint 28.6H, Finding 6)", () => {
+    // The base grid is an explicit 4-column layout (not auto-fill, which
+    // produced 5 across at 1280), and it reduces to 3 / 2 / 1 at narrower
+    // widths. Card readability over maximum density.
+    const gridMatch = shellHtml.match(
+      /\.shell-curriculum-grid\s*\{([^}]+)\}/,
+    );
+    expect(gridMatch).not.toBeNull();
+    expect(gridMatch![1]).toMatch(/grid-template-columns:\s*repeat\(4,/);
+    expect(shellHtml).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+    expect(shellHtml).toMatch(/repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+    // No auto-fill density that overflows to 5 columns.
+    expect(gridMatch![1]).not.toMatch(/auto-fill/);
+  });
+
+  test("Curriculum card vertical spacing is materially reduced (Sprint 28.6H.4, Task D3/D6)", () => {
+    // The effective card min-height floor is the single-declaration compact
+    // rule; it drops to 6.5rem (from 7.25rem) as the surrounding dead space is
+    // trimmed, so more cards reach the desktop viewport (the ~two-row target).
+    const floorMatch = shellHtml.match(
+      /\.shell-lesson-card\s*\{\s*min-height:\s*([0-9.]+)rem;/,
+    );
+    expect(floorMatch).not.toBeNull();
+    expect(parseFloat(floorMatch![1])).toBeLessThanOrEqual(6.5);
+    // The action row hugs the title (tightened top margin) rather than floating
+    // with a wide gap.
+    const actionsMatch = shellHtml.match(
+      /\n\s*\.shell-lesson-actions\s*\{([^}]+)\}/,
+    );
+    expect(actionsMatch).not.toBeNull();
+    const marginTop = actionsMatch![1].match(/margin-top:\s*([0-9.]+)rem/);
+    expect(marginTop).not.toBeNull();
+    expect(parseFloat(marginTop![1])).toBeLessThanOrEqual(0.25);
+  });
+
+  test("Assign and Preview resolve to the EXACT same fixed width and height from ONE shared rule (Sprint 28.6H.4, Task D1)", () => {
+    // The concrete sizing contract: both controls take their width AND height
+    // from the single shared `.shell-lesson-assign, .shell-lesson-preview`
+    // rule, so label length ("Assign" vs "Preview") can never size them
+    // differently, and neither can grow to consume card width.
+    const pairMatch = shellHtml.match(
+      /\.shell-lesson-assign,\s*\n\s*\.shell-lesson-preview\s*\{([^}]+)\}/,
+    );
+    expect(pairMatch).not.toBeNull();
+    const body = pairMatch![1];
+    // Task J #13: same width rule. 7rem = 112px, within the 110-125px contract.
+    const width = body.match(/(?:^|[^-])width:\s*([0-9.]+rem)/);
+    expect(width).not.toBeNull();
+    expect(width![1]).toBe("7rem");
+    // Task J #14: same height rule. 2.75rem = 44px, within 42-46px and meeting
+    // the 44px touch-target minimum.
+    const height = body.match(/height:\s*([0-9.]+rem)/);
+    expect(height).not.toBeNull();
+    expect(height![1]).toBe("2.75rem");
+    // Task J #15: neither button uses flex-grow to consume card width. It is
+    // `flex: 0 1 auto` - grow 0 (never stretches into a page CTA), shrink 1
+    // (both shrink EQUALLY to fit a narrow 4-column card, staying identical and
+    // on one line instead of wrapping).
+    expect(body).toMatch(/flex:\s*0 1 auto/);
+    expect(body).not.toMatch(/flex-grow:\s*[1-9]/);
+    expect(body).not.toMatch(/flex:\s*1 /);
+    expect(body).toMatch(/justify-content:\s*center/);
+    expect(body).toMatch(/box-sizing:\s*border-box/);
+  });
+
+  test("View Summary is a quiet borderless text-style control, not a third boxed button (Sprint 28.6H, Finding 9)", () => {
+    // The base rule is the standalone `.shell-lesson-view-summary { ... }`
+    // block (not the comma-listed responsive/focus rules); it starts with the
+    // quiet text-style padding.
+    const vsMatch = shellHtml.match(
+      /\n\s*\.shell-lesson-view-summary\s*\{\s*padding: 0\.2rem 0;([^}]+)\}/,
+    );
+    expect(vsMatch).not.toBeNull();
+    // Borderless (no boxed outline competing with Assign/Preview), transparent
+    // fill, and never wraps into a crushed two-line box.
+    expect(vsMatch![1]).toMatch(/border:\s*none/);
+    expect(vsMatch![1]).toMatch(/background:\s*transparent/);
+    expect(vsMatch![1]).toMatch(/white-space:\s*nowrap/);
+  });
+
+  test("Sprint 28.6H.4 (Task D1/D2): the Assign/Preview pair shrink-wraps to the left and never stretches; View Summary lives in the shared footer", () => {
+    // The pair is a plain flex row (NOT an intrinsic grid, whose 1fr columns
+    // did not equalize under shrink-to-fit and produced the mismatched live
+    // widths). It shrink-wraps to its content and sits at the left of the card
+    // (align-self: flex-start), so the two fixed-size controls read as compact
+    // card-level actions rather than page CTAs.
+    const pairMatch = shellHtml.match(
+      /\.shell-lesson-action-pair\s*\{([^}]+)\}/,
+    );
+    expect(pairMatch).not.toBeNull();
+    expect(pairMatch![1]).toMatch(/display:\s*flex/);
+    expect(pairMatch![1]).not.toMatch(/display:\s*inline-grid/);
+    // nowrap so the two controls shrink to fit a narrow card on ONE line
+    // instead of wrapping to a second row (which would inflate card height).
+    expect(pairMatch![1]).toMatch(/flex-wrap:\s*nowrap/);
+    // The actions container is a vertical stack.
+    const actionsMatch = shellHtml.match(
+      /\n\s*\.shell-lesson-actions\s*\{([^}]+)\}/,
+    );
+    expect(actionsMatch).not.toBeNull();
+    expect(actionsMatch![1]).toMatch(/flex-direction:\s*column/);
+    // The shared footer row holds View Summary (left) and the Resources
+    // disclosure (pushed right via margin-left:auto).
+    const footerRowMatch = shellHtml.match(
+      /\n\s*\.shell-lesson-footer-row\s*\{([^}]+)\}/,
+    );
+    expect(footerRowMatch).not.toBeNull();
+    expect(footerRowMatch![1]).toMatch(/display:\s*flex/);
+    expect(shellHtml).toMatch(
+      /\.shell-lesson-footer-row\s*>\s*\.shell-lesson-resources-toggle\s*\{[^}]*margin-left:\s*auto/,
+    );
+    // View Summary is no longer a direct child of the actions stack (that CSS
+    // rule is gone); it must not carry any greedy flex basis.
+    expect(shellHtml).not.toMatch(
+      /\.shell-lesson-actions\s*>\s*\.shell-lesson-view-summary/,
+    );
+    expect(shellHtml).not.toMatch(
+      /\.shell-lesson-view-summary\s*\{[^}]*flex:\s*1 1 100%/,
+    );
   });
 
   test("clicking Assign appends the overlay to the document body", async () => {
@@ -4103,5 +2696,56 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     // Dialog is inside the overlay, not attached elsewhere.
     const dialog = overlay!.querySelector("[data-testid=assign-dialog]");
     expect(dialog).not.toBeNull();
+  });
+});
+
+describe("Settings class-management CSS ships with the shell host page (Sprint 28.6F)", () => {
+  // The simplified Settings surface (settings.ts) renders an Import (primary)
+  // and a Create (secondary) class-management action. Their primary/secondary
+  // hierarchy is carried by distinct style rules in the served page, not by
+  // color alone at the DOM level. This guards that both rules exist and are
+  // visually distinct so the hierarchy cannot silently collapse.
+  const shellHtml = fs.readFileSync(
+    path.resolve(__dirname, "../../index.html"),
+    "utf8",
+  );
+
+  const ruleBody = (cls: string): string | null => {
+    const m = shellHtml.match(
+      new RegExp(`\\.${cls.replace(/[-]/g, "\\-")}\\s*\\{([^}]+)\\}`),
+    );
+    return m ? m[1] : null;
+  };
+
+  test("primary and secondary class-action rules are present and distinct", () => {
+    const primary = ruleBody("shell-settings-class-action--primary");
+    const secondary = ruleBody("shell-settings-class-action--secondary");
+    expect(primary).not.toBeNull();
+    expect(secondary).not.toBeNull();
+    // Primary is a filled treatment; secondary is not the same fill.
+    expect(primary as string).toMatch(/background\s*:/);
+    expect(primary).not.toBe(secondary);
+  });
+
+  test("the old future-category button rule is gone", () => {
+    // Sprint 28.6F removed the future-facing Settings category previews; the
+    // dead `.shell-settings-category-button` rule must not linger.
+    expect(shellHtml).not.toMatch(/\.shell-settings-category-button\s*[{,]/);
+  });
+
+  test("Settings ships tab styling and compact class rows, not oversized cards (Sprint 28.6H.4, Task E1/E5/J#34)", () => {
+    // The tabbed surface has a real tab style with a non-color selected cue.
+    const tab = ruleBody("shell-settings-tab");
+    expect(tab).not.toBeNull();
+    expect(shellHtml).toMatch(
+      /\.shell-settings-tab\[aria-selected="true"\]\s*\{[^}]*border-bottom-color/,
+    );
+    // The class rows are compact flex lines separated by hairlines - NOT a
+    // bordered management card (no full border + border-radius box).
+    const item = ruleBody("shell-settings-rostersync-item");
+    expect(item).not.toBeNull();
+    expect(item as string).toMatch(/display:\s*flex/);
+    expect(item as string).not.toMatch(/border-radius/);
+    expect(item as string).not.toMatch(/border:\s*1px/);
   });
 });

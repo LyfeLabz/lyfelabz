@@ -141,6 +141,16 @@ const assignBtn = (
 ): HTMLButtonElement | null =>
   mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${slug}]`);
 
+// Sprint 28.6H (Finding 8): the visible "✓ Assigned" badge is removed - the
+// Assign control always reads "Assign" and is always re-assignable. The
+// assignment-history signal now lives on the card dataset
+// (data-lesson-assigned), which still drives View Summary visibility. Tests
+// assert that signal via the card that owns the Assign button.
+const assignedState = (btn: HTMLButtonElement | null): string | null =>
+  btn?.closest<HTMLElement>("[data-lesson-slug]")?.getAttribute(
+    "data-lesson-assigned",
+  ) ?? null;
+
 describe("Assign false-success guard", () => {
   beforeEach(() => {
     _resetCurriculumSessionStateForTest();
@@ -169,7 +179,7 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(btn?.textContent).toBe("Assign");
-    expect(btn?.getAttribute("data-assigned")).toBe("false");
+    expect(assignedState(btn)).toBe("false");
 
     // Now let publish resolve.
     publishGate.release();
@@ -177,8 +187,9 @@ describe("Assign false-success guard", () => {
     await flush();
     await flush();
 
-    expect(btn?.textContent).toBe("✓ Assigned");
-    expect(btn?.getAttribute("data-assigned")).toBe("true");
+    expect(assignedState(btn)).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
+    expect(assignedState(btn)).toBe("true");
     expect(asn.publishes.length).toBeGreaterThan(0);
   });
 
@@ -201,7 +212,7 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(btn?.textContent).toBe("Assign");
-    expect(btn?.getAttribute("data-assigned")).toBe("false");
+    expect(assignedState(btn)).toBe("false");
     expect(asn.publishes).toHaveLength(0);
     expect(detail.registered).toHaveLength(0);
   });
@@ -225,7 +236,7 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(btn?.textContent).toBe("Assign");
-    expect(btn?.getAttribute("data-assigned")).toBe("false");
+    expect(assignedState(btn)).toBe("false");
     expect(asn.drafts.length).toBeGreaterThan(0);
     expect(detail.registered).toHaveLength(0);
   });
@@ -265,7 +276,7 @@ describe("Assign false-success guard", () => {
     // The drafts survived, so no Assigned badge and no data loss claim.
     expect(asn.drafts.length).toBe(2);
     const btn = assignBtn(mount, "earths-layers");
-    expect(btn?.getAttribute("data-assigned")).toBe("false");
+    expect(assignedState(btn)).toBe("false");
   });
 
   test("draft-create failure reports the assignment could not be saved", async () => {
@@ -344,7 +355,8 @@ describe("Assign false-success guard", () => {
     expect(text).not.toMatch(/was not created/);
     // One class published, so the badge is Assigned.
     const btn = assignBtn(mount, "earths-layers");
-    expect(btn?.textContent).toBe("✓ Assigned");
+    expect(assignedState(btn)).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
   });
 
   test("persisted assignment is rediscovered on remount (post-reload hydration)", () => {
@@ -366,8 +378,9 @@ describe("Assign false-success guard", () => {
     });
 
     const btn = assignBtn(mount, "earths-layers");
-    expect(btn?.textContent).toBe("✓ Assigned");
-    expect(btn?.getAttribute("data-assigned")).toBe("true");
+    expect(assignedState(btn)).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
+    expect(assignedState(btn)).toBe("true");
   });
 
   test("partial success (one class publishes, one fails) shows ✓ Assigned", async () => {
@@ -410,8 +423,9 @@ describe("Assign false-success guard", () => {
     await flush();
 
     const btn = assignBtn(mount, "earths-layers");
-    expect(btn?.textContent).toBe("✓ Assigned");
-    expect(btn?.getAttribute("data-assigned")).toBe("true");
+    expect(assignedState(btn)).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
+    expect(assignedState(btn)).toBe("true");
     expect(publishes.length).toBe(1);
   });
 
@@ -435,7 +449,7 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(btn?.textContent).toBe("Assign");
-    expect(btn?.getAttribute("data-assigned")).toBe("false");
+    expect(assignedState(btn)).toBe("false");
   });
 
   test("multiple classes assigned the same lesson still produce one stable Assigned state", () => {
@@ -468,8 +482,9 @@ describe("Assign false-success guard", () => {
       "[data-testid=lesson-assign-earths-layers]",
     );
     expect(buttons.length).toBe(1);
-    expect(buttons[0]?.textContent).toBe("✓ Assigned");
-    expect(buttons[0]?.getAttribute("data-assigned")).toBe("true");
+    expect(assignedState(buttons[0])).toBe("true");
+    expect(buttons[0]?.textContent).toBe("Reassign");
+    expect(assignedState(buttons[0])).toBe("true");
   });
 
   test("empty hydration result does not flip a card to Assigned", () => {
@@ -482,7 +497,7 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(btn?.textContent).toBe("Assign");
-    expect(btn?.getAttribute("data-assigned")).toBe("false");
+    expect(assignedState(btn)).toBe("false");
   });
 });
 
@@ -558,7 +573,8 @@ describe("Assign outcome model - three-way multi-class mix", () => {
     expect(text).not.toMatch(/was not created/);
     // A published class exists, so the badge is Assigned.
     const btn = assignBtn(mount, "earths-layers");
-    expect(btn?.textContent).toBe("✓ Assigned");
+    expect(assignedState(btn)).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
     // Exactly one draft was rejected; two drafts saved; one publish failed.
     expect(detail.registered).toHaveLength(1); // only the published class
   });
@@ -587,7 +603,7 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
       `[data-testid=lesson-view-summary-${slug}]`,
     );
 
-  test("hydrated draft leaves the card unassigned but exposes View drafts", () => {
+  test("hydrated draft leaves the card unassigned (no Assigned badge)", () => {
     const hydrated: AssignmentDetailMetadata[] = [
       {
         assignmentId: "asn-draft-1",
@@ -607,11 +623,11 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(btn?.textContent).toBe("Assign");
-    expect(btn?.getAttribute("data-assigned")).toBe("false");
-    // The draft is not lost: the legitimate draft control still appears.
-    const view = viewControl(mount, "earths-layers");
-    expect(view?.textContent).toBe("View drafts");
-    expect(view?.getAttribute("data-draft-only")).toBe("true");
+    expect(assignedState(btn)).toBe("false");
+    // Sprint 28.6D: the Curriculum-side per-assignment View drafts opener
+    // was retired; a stranded draft never lights the Assigned badge and no
+    // view-summary control appears (draft management lives under Classes).
+    expect(viewControl(mount, "earths-layers")).toBeNull();
   });
 
   test("hydrated published lights the Assigned badge", () => {
@@ -633,8 +649,9 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
     });
 
     const btn = assignBtn(mount, "earths-layers");
-    expect(btn?.textContent).toBe("✓ Assigned");
-    expect(btn?.getAttribute("data-assigned")).toBe("true");
+    expect(assignedState(btn)).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
+    expect(assignedState(btn)).toBe("true");
   });
 
   test("hydrated closed also lights the Assigned badge", () => {
@@ -656,8 +673,9 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
     });
 
     const btn = assignBtn(mount, "earths-layers");
-    expect(btn?.textContent).toBe("✓ Assigned");
-    expect(btn?.getAttribute("data-assigned")).toBe("true");
+    expect(assignedState(btn)).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
+    expect(assignedState(btn)).toBe("true");
   });
 
   test("draft co-registered with a published assignment still lights Assigned (order-independent)", () => {
@@ -688,8 +706,9 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
     });
 
     const btn = assignBtn(mount, "earths-layers");
-    expect(btn?.textContent).toBe("✓ Assigned");
-    expect(btn?.getAttribute("data-assigned")).toBe("true");
+    expect(assignedState(btn)).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
+    expect(assignedState(btn)).toBe("true");
   });
 
   test("a draft-only lesson and a published lesson hydrate to independent card states", () => {
@@ -719,8 +738,8 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
     });
 
     const draftCard = assignBtn(mount, "earths-layers");
-    expect(draftCard?.getAttribute("data-assigned")).toBe("false");
+    expect(assignedState(draftCard)).toBe("false");
     const publishedCard = assignBtn(mount, "what-is-life");
-    expect(publishedCard?.getAttribute("data-assigned")).toBe("true");
+    expect(assignedState(publishedCard)).toBe("true");
   });
 });

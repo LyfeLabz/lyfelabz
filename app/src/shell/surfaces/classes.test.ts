@@ -60,6 +60,7 @@ type ImportOverrides = {
   links?: readonly IntegrationsClassLink[];
   teacherClasses?: readonly IntegrationsLyfeLabzClass[];
   importClass?: ImportFromClassroomDeps["callables"]["importClass"];
+  discoverClasses?: ImportFromClassroomDeps["callables"]["discoverClasses"];
 };
 
 function makeImportDeps(overrides: ImportOverrides = {}): {
@@ -89,10 +90,12 @@ function makeImportDeps(overrides: ImportOverrides = {}): {
         calls.push("completeConnection");
         return { connectionId: "conn-new", alreadyConnected: false };
       },
-      discoverClasses: async () => {
-        calls.push("discoverClasses");
-        return courses;
-      },
+      discoverClasses:
+        overrides.discoverClasses ??
+        (async () => {
+          calls.push("discoverClasses");
+          return courses;
+        }),
       importClass:
         overrides.importClass ??
         (async ({ classId, lmsClassId }) => {
@@ -123,11 +126,24 @@ function makeImportDeps(overrides: ImportOverrides = {}): {
   return { deps, calls };
 }
 
-const openCreateForm = async (mount: HTMLElement): Promise<void> => {
+// Sprint 28.6H.8: the manual create form is reached via the shared
+// class-management "create" intent (Settings -> Create LyfeLabz Class), not a
+// landing button. This renders the Classes surface with that intent so the
+// certified Manual Create form opens directly.
+const openCreateForm = async (
+  mount: HTMLElement,
+  deps: Parameters<typeof renderClassesSurface>[2],
+): Promise<void> => {
+  let intent: "create" | "import" | null = "create";
+  mount.textContent = "";
+  renderClassesSurface(mount, teacher, {
+    ...deps,
+    getClassManagementIntent: () => intent,
+    setClassManagementIntent: (v) => {
+      intent = v;
+    },
+  });
   await flush();
-  mount
-    .querySelector<HTMLButtonElement>("[data-testid=classes-create-open]")!
-    .click();
 };
 
 describe("Create Class form input focus", () => {
@@ -136,8 +152,7 @@ describe("Create Class form input focus", () => {
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const createClass: CreateClass = async () =>
       Object.freeze({ classId: "c", joinCode: "AAAA", alreadyCreated: false });
-    renderClassesSurface(mount, teacher, { listClasses, createClass });
-    await openCreateForm(mount);
+    await openCreateForm(mount, { listClasses, createClass });
 
     const first = mount.querySelector<HTMLInputElement>(
       "[data-testid=classes-create-title]",
@@ -171,8 +186,7 @@ describe("Create Class form input focus", () => {
         alreadyCreated: false,
       });
     };
-    renderClassesSurface(mount, teacher, { listClasses, createClass });
-    await openCreateForm(mount);
+    await openCreateForm(mount, { listClasses, createClass });
 
     const title = mount.querySelector<HTMLInputElement>(
       "[data-testid=classes-create-title]",
@@ -204,13 +218,17 @@ describe("Create Class form input focus", () => {
     ]);
   });
 
-  test("Cancel closes the form and resets to the Create button", async () => {
+  test("Cancel closes the create form and returns to Settings (Sprint 28.6H.8)", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const createClass: CreateClass = async () =>
       Object.freeze({ classId: "c", joinCode: "CCCC", alreadyCreated: false });
-    renderClassesSurface(mount, teacher, { listClasses, createClass });
-    await openCreateForm(mount);
+    const navSpy = jest.fn();
+    await openCreateForm(mount, {
+      listClasses,
+      createClass,
+      navigateToSurface: navSpy,
+    });
 
     const title = mount.querySelector<HTMLInputElement>(
       "[data-testid=classes-create-title]",
@@ -222,70 +240,37 @@ describe("Create Class form input focus", () => {
       .querySelector<HTMLButtonElement>("[data-testid=classes-create-cancel]")!
       .click();
 
-    expect(
-      mount.querySelector("[data-testid=classes-create-form]"),
-    ).toBeNull();
-    expect(
-      mount.querySelector("[data-testid=classes-create-open]"),
-    ).not.toBeNull();
-
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=classes-create-open]")!
-      .click();
-    const reopened = mount.querySelector<HTMLInputElement>(
-      "[data-testid=classes-create-title]",
-    )!;
-    expect(reopened.value).toBe("");
+    // Cancel routes the teacher back to Settings -> Class Management (the
+    // decision surface); the shell then tears down the Classes surface. Classes
+    // no longer hosts a landing "Create" button to fall back to.
+    expect(navSpy).toHaveBeenCalledWith("settings");
   });
 
-  test("Import stub is inert when the import-from-classroom seam is absent (test-only fallback)", async () => {
+  test("Sprint 28.6H.8: an import intent without a wired import seam is inert (falls back to the operational landing)", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const createClass: CreateClass = async () =>
       Object.freeze({ classId: "c", joinCode: "EEEE", alreadyCreated: false });
-    renderClassesSurface(mount, teacher, { listClasses, createClass });
+    // Import intent but NO importFromClassroom seam: the focused import task is
+    // not activated (import requires the certified seam); the surface shows the
+    // operational zero-class landing (Settings guidance), never a broken task.
+    renderClassesSurface(mount, teacher, {
+      listClasses,
+      createClass,
+      getClassManagementIntent: (): "import" => "import",
+      setClassManagementIntent: () => {},
+    });
     await flush();
-
-    const importBtn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=classes-import-open]",
-    );
-    expect(importBtn).not.toBeNull();
-    expect(importBtn!.textContent).toBe("Import Class from Google Classroom");
-    expect(importBtn!.disabled).toBe(true);
-    expect(importBtn!.getAttribute("aria-disabled")).toBe("true");
-
-    const status = mount.querySelector<HTMLElement>(
-      "[data-testid=classes-import-status]",
-    );
-    expect(status).not.toBeNull();
-    expect(status!.textContent).toMatch(/not available/i);
-
-    const createBtn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=classes-create-open]",
-    );
-    expect(createBtn).not.toBeNull();
-    expect(createBtn!.textContent).toBe("Create LyfeLabz Class");
-    // Ordering: the primary Import entry point precedes the secondary
-    // Create LyfeLabz Class entry point in the DOM.
-    const importIdx = Array.from(
-      mount.querySelectorAll<HTMLElement>("[data-testid]"),
-    ).findIndex((n) => n.getAttribute("data-testid") === "classes-import-open");
-    const createIdx = Array.from(
-      mount.querySelectorAll<HTMLElement>("[data-testid]"),
-    ).findIndex((n) => n.getAttribute("data-testid") === "classes-create-open");
-    expect(importIdx).toBeGreaterThanOrEqual(0);
-    expect(createIdx).toBeGreaterThan(importIdx);
-
-    // aria-describedby links the disabled button to the explanatory
-    // status paragraph, so a screen reader announces the "coming soon"
-    // reason on focus rather than only when the tooltip fires.
-    expect(importBtn!.getAttribute("aria-describedby")).toBe(
-      "classes-import-status",
-    );
-    expect(status!.id).toBe("classes-import-status");
+    expect(
+      mount.querySelector("[data-testid=classes-import-open]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")?.textContent,
+    ).toBe("Classes");
+    expect(mount.querySelector("[data-testid=classes-empty]")).not.toBeNull();
   });
 
-  test("Sprint 24B Phase 1: Classes exposes exactly the two approved entry points and no third class control", async () => {
+  test("Sprint 28.6H.8: the operational Classes landing hosts no class-administration controls", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const createClass: CreateClass = async () =>
@@ -293,25 +278,19 @@ describe("Create Class form input focus", () => {
     renderClassesSurface(mount, teacher, { listClasses, createClass });
     await flush();
 
-    // The two approved entry points are present.
+    // Class administration (Import / Create) lives in Settings, not here.
     expect(
       mount.querySelector("[data-testid=classes-import-open]"),
-    ).not.toBeNull();
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=classes-create-open]"),
-    ).not.toBeNull();
-
-    // No third class-creation or class-import affordance from the old
-    // Settings-side surface may have slipped in.
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=integrations-import-googleClassroom]"),
     ).toBeNull();
-    expect(
-      mount.querySelector("[data-testid=integrations-imported-classes]"),
-    ).toBeNull();
   });
 
-  test("Sprint 24B Phase 2: Import button is active when import-from-classroom seam is wired", async () => {
+  test("Sprint 28.6H.8: a wired import seam + intent auto-launches the focused import task into course discovery (no manual Import button)", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const createClass: CreateClass = async () =>
@@ -321,15 +300,26 @@ describe("Create Class form input focus", () => {
       listClasses,
       createClass,
       importFromClassroom: importDeps.deps,
+      getClassManagementIntent: (): "import" => "import",
+      setClassManagementIntent: () => {},
     });
     await flush();
+    await flush();
+    await flush();
 
-    const btn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=classes-import-open]",
-    );
-    expect(btn).not.toBeNull();
-    expect(btn!.disabled).toBe(false);
-    expect(btn!.textContent).toBe("Import Class from Google Classroom");
+    // No standalone "Import Class" button (Part D3 - no second Import click);
+    // the connected teacher's flow auto-started straight into course discovery.
+    expect(
+      mount.querySelector("[data-testid=classes-import-open]"),
+    ).toBeNull();
+    expect(importDeps.calls).toContain("discoverClasses");
+    expect(
+      mount.querySelector("[data-testid=classes-import-panel]"),
+    ).not.toBeNull();
+    // The task heading is Google Classroom import, not the generic "Classes".
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")?.textContent,
+    ).toBe("Import from Google Classroom");
     // Teacher does not need to visit Settings; the entry point is on Classes.
     expect(
       mount.querySelector("[data-testid=integrations-surface]"),
@@ -372,12 +362,11 @@ describe("Create Class form input focus", () => {
       listClasses,
       createClass,
       importFromClassroom: importDeps.deps,
+      getClassManagementIntent: (): "import" => "import",
+      setClassManagementIntent: () => {},
     });
     await flush();
-
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=classes-import-open]")!
-      .click();
+    // Sprint 28.6H.8: the import task auto-starts (no manual Import click).
     await flush();
     await flush();
 
@@ -428,12 +417,11 @@ describe("Create Class form input focus", () => {
       listClasses,
       createClass,
       importFromClassroom: importDeps.deps,
+      getClassManagementIntent: (): "import" => "import",
+      setClassManagementIntent: () => {},
     });
     await flush();
-
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=classes-import-open]")!
-      .click();
+    // Sprint 28.6H.8: the import task auto-starts (no manual Import click).
     await flush();
     await flush();
     await flush();
@@ -483,16 +471,23 @@ describe("Create Class form input focus", () => {
         }),
       ],
     });
+    // Sprint 28.6H.3 (Task A2/C3): with classes present, the everyday Classes
+    // landing has no "+ Add class" control - class management moved to Settings.
+    // The import workflow is reached via the shared class-management intent the
+    // Settings Import control sets. Drive that one-shot intent so the certified
+    // import entry point opens on this populated list (the SAME workflow).
+    let intent: "create" | "import" | null = "import";
     renderClassesSurface(mount, teacher, {
       listClasses,
       createClass,
       importFromClassroom: importDeps.deps,
+      getClassManagementIntent: () => intent,
+      setClassManagementIntent: (next) => {
+        intent = next;
+      },
     });
     await flush();
-
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=classes-import-open]")!
-      .click();
+    // Sprint 28.6H.8: the import task auto-starts (no manual Import click).
     await flush();
     await flush();
 
@@ -547,12 +542,11 @@ describe("Create Class form input focus", () => {
       listClasses,
       createClass,
       importFromClassroom: importDeps.deps,
+      getClassManagementIntent: (): "import" => "import",
+      setClassManagementIntent: () => {},
     });
     await flush();
-
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=classes-import-open]")!
-      .click();
+    // Sprint 28.6H.8: the import task auto-starts (no manual Import click).
     await flush();
     await flush();
     mount
@@ -571,11 +565,73 @@ describe("Create Class form input focus", () => {
     expect(err!.textContent).toMatch(/Period 3 Science/);
     // Raw error code does not leak.
     expect(err!.textContent).not.toMatch(/unavailable/i);
-    const linkingStage = mount.querySelector<HTMLElement>(
-      "[data-testid=classes-import-stage-linking]",
+    // Sprint 28.6H.9 (Correction 3): the numbered four-step import process list
+    // is removed from the focused import task; no stepper renders in any state,
+    // including this linking error.
+    expect(
+      mount.querySelector("[data-testid=classes-import-stages]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=classes-import-stage-linking]"),
+    ).toBeNull();
+  });
+
+  test("Sprint 28.6H.9 (Correction 3/4): a recoverable import error shows no stepper and a Try again / Close hierarchy", async () => {
+    const mount = mkMount();
+    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
+    const createClass: CreateClass = async () =>
+      Object.freeze({ classId: "c", joinCode: "AAAA", alreadyCreated: false });
+    // Fail at the discovering stage (a non-linking, recoverable stage) so the
+    // error state renders BOTH Try again and Close - the cancellation-style
+    // recovery state the hierarchy correction targets.
+    const importDeps = makeImportDeps({
+      discoverClasses: async () => {
+        throw new Error("boom");
+      },
+    });
+    renderClassesSurface(mount, teacher, {
+      listClasses,
+      createClass,
+      importFromClassroom: importDeps.deps,
+      getClassManagementIntent: (): "import" => "import",
+      setClassManagementIntent: () => {},
+    });
+    await flush();
+    await flush();
+    await flush();
+    await flush();
+
+    const err = mount.querySelector<HTMLElement>(
+      "[data-testid=classes-import-error]",
     );
-    expect(linkingStage).not.toBeNull();
-    expect(linkingStage!.getAttribute("data-status")).toBe("failed");
+    expect(err).not.toBeNull();
+
+    // Correction 3: no numbered process stepper in any state.
+    expect(
+      mount.querySelector("[data-testid=classes-import-stages]"),
+    ).toBeNull();
+
+    // Correction 4: Try again is the primary recovery action; Close is the
+    // neutral secondary. The hierarchy is carried by dedicated classes (the
+    // primary-green retry vs the outlined secondary cancel), and Try again
+    // precedes Close in DOM order.
+    const retry = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=classes-import-retry]",
+    );
+    const close = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=classes-import-cancel]",
+    );
+    expect(retry).not.toBeNull();
+    expect(close).not.toBeNull();
+    expect(retry!.textContent).toBe("Try again");
+    expect(close!.textContent).toBe("Close");
+    expect(retry!.classList.contains("shell-classes-import-retry")).toBe(true);
+    expect(close!.classList.contains("shell-classes-import-cancel")).toBe(true);
+    // Try again comes before Close in document order (primary first).
+    expect(
+      retry!.compareDocumentPosition(close!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   test("full typed title submits verbatim, unaltered by the surface", async () => {
@@ -590,8 +646,7 @@ describe("Create Class form input focus", () => {
         alreadyCreated: false,
       });
     };
-    renderClassesSurface(mount, teacher, { listClasses, createClass });
-    await openCreateForm(mount);
+    await openCreateForm(mount, { listClasses, createClass });
 
     const title = mount.querySelector<HTMLInputElement>(
       "[data-testid=classes-create-title]",
@@ -648,11 +703,12 @@ describe("Create Class form input focus", () => {
       mount.querySelector("[data-testid=class-setup-cta-needs-setup-class]"),
     ).not.toBeNull();
 
-    const status = mount.querySelector<HTMLElement>(
-      "[data-testid=class-status-needs-setup-class]",
-    );
-    expect(status).not.toBeNull();
-    expect(status!.textContent).toBe("Setup needed");
+    // Sprint 28.6H (Finding 2): the class-card status badge is removed. The
+    // needsSetup state is carried by the "Finish setting up..." affordance and
+    // the "Finish setup" CTA above, so no status pill is rendered on the card.
+    expect(
+      mount.querySelector("[data-testid=class-status-needs-setup-class]"),
+    ).toBeNull();
 
     // No join code, grade, or block is rendered for a needsSetup card.
     expect(
@@ -664,38 +720,20 @@ describe("Create Class form input focus", () => {
   });
 });
 
-// Sprint 24B Phase 2B.2 - Teacher `defaultGrade` preference integration
-// on Manual Create.
-describe("Manual Create default grade preference", () => {
-  test("prefills grade from saved defaultGrade when present", async () => {
+// Sprint 28.6F - grade/block belong to the class, not the teacher. The
+// global `defaultGrade` preference (and its Manual Create prefill / best-
+// effort write) were removed (Blueprint §14). Manual Create derives grade
+// and block only from this class's own form; nothing is inherited.
+describe("Manual Create grade/block (per-class, Sprint 28.6F)", () => {
+  test("the grade and block selects begin unselected (no inherited default)", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const createClass: CreateClass = async () =>
       Object.freeze({ classId: "c", joinCode: "AAAA", alreadyCreated: false });
-    renderClassesSurface(mount, teacher, {
+    await openCreateForm(mount, {
       listClasses,
       createClass,
-      defaultGrade: "8",
     });
-    await openCreateForm(mount);
-
-    const grade = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=classes-create-grade]",
-    )!;
-    expect(grade.value).toBe("8");
-  });
-
-  test("Phase 2B.4: no defaultGrade preference leaves the grade select unselected (no Grade 7 default)", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
-    const createClass: CreateClass = async () =>
-      Object.freeze({ classId: "c", joinCode: "AAAA", alreadyCreated: false });
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      createClass,
-      defaultGrade: null,
-    });
-    await openCreateForm(mount);
 
     const grade = mount.querySelector<HTMLSelectElement>(
       "[data-testid=classes-create-grade]",
@@ -707,7 +745,7 @@ describe("Manual Create default grade preference", () => {
     expect(block.value).toBe("");
   });
 
-  test("Phase 2B.4: Manual Create submit is rejected when grade is not chosen", async () => {
+  test("Manual Create submit is rejected when grade is not chosen", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const captured: CreateClassInput[] = [];
@@ -719,12 +757,10 @@ describe("Manual Create default grade preference", () => {
         alreadyCreated: false,
       });
     };
-    renderClassesSurface(mount, teacher, {
+    await openCreateForm(mount, {
       listClasses,
       createClass,
-      defaultGrade: null,
     });
-    await openCreateForm(mount);
     const title = mount.querySelector<HTMLInputElement>(
       "[data-testid=classes-create-title]",
     )!;
@@ -742,20 +778,18 @@ describe("Manual Create default grade preference", () => {
     expect(err!.textContent).toMatch(/grade/i);
   });
 
-  test("Manual Create remains usable when the preference reader has not resolved", async () => {
+  test("Manual Create form renders with empty grade/block and is usable", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const createClass: CreateClass = async () =>
       Object.freeze({ classId: "c", joinCode: "AAAA", alreadyCreated: false });
-    // Absent defaultGrade in deps is equivalent to a failed read.
-    renderClassesSurface(mount, teacher, { listClasses, createClass });
-    await openCreateForm(mount);
+    await openCreateForm(mount, { listClasses, createClass });
     expect(
       mount.querySelector("[data-testid=classes-create-form]"),
     ).not.toBeNull();
   });
 
-  test("teacher may override the prefilled grade before submission", async () => {
+  test("the grade and block the teacher chooses for this class are submitted", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const captured: CreateClassInput[] = [];
@@ -767,26 +801,24 @@ describe("Manual Create default grade preference", () => {
         alreadyCreated: false,
       });
     };
-    renderClassesSurface(mount, teacher, {
+    await openCreateForm(mount, {
       listClasses,
       createClass,
-      defaultGrade: "6",
     });
-    await openCreateForm(mount);
 
     const title = mount.querySelector<HTMLInputElement>(
       "[data-testid=classes-create-title]",
     )!;
-    title.value = "Override";
+    title.value = "Chosen";
     title.dispatchEvent(new Event("input", { bubbles: true }));
 
     const grade = mount.querySelector<HTMLSelectElement>(
       "[data-testid=classes-create-grade]",
     )!;
-    expect(grade.value).toBe("6");
+    // Nothing is preselected; the teacher picks the grade for this class.
+    expect(grade.value).toBe("");
     grade.value = "8";
     grade.dispatchEvent(new Event("change", { bubbles: true }));
-    // Phase 2B.4: block never prefills.
     const block = mount.querySelector<HTMLSelectElement>(
       "[data-testid=classes-create-block]",
     )!;
@@ -802,24 +834,15 @@ describe("Manual Create default grade preference", () => {
     expect(captured[0]!.block).toBe("B");
   });
 
-  test("successful class creation triggers a best-effort preference update", async () => {
+  test("successful class creation reveals the join-code panel", async () => {
     const mount = mkMount();
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
     const createClass: CreateClass = async () =>
       Object.freeze({ classId: "c", joinCode: "CODE", alreadyCreated: false });
-    const updates: Array<"6" | "7" | "8" | null> = [];
-    const updateDefaultGrade = async (
-      next: "6" | "7" | "8" | null,
-    ): Promise<void> => {
-      updates.push(next);
-    };
-    renderClassesSurface(mount, teacher, {
+    await openCreateForm(mount, {
       listClasses,
       createClass,
-      defaultGrade: null,
-      updateDefaultGrade,
     });
-    await openCreateForm(mount);
     const title = mount.querySelector<HTMLInputElement>(
       "[data-testid=classes-create-title]",
     )!;
@@ -841,90 +864,7 @@ describe("Manual Create default grade preference", () => {
       .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     await flush();
     await flush();
-    expect(updates).toEqual(["6"]);
-  });
-
-  test("failed class creation does not update the preference", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
-    const createClass: CreateClass = async () => {
-      throw Object.assign(new Error("nope"), { code: "internal" });
-    };
-    const updates: Array<"6" | "7" | "8" | null> = [];
-    const updateDefaultGrade = async (
-      next: "6" | "7" | "8" | null,
-    ): Promise<void> => {
-      updates.push(next);
-    };
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      createClass,
-      defaultGrade: null,
-      updateDefaultGrade,
-    });
-    await openCreateForm(mount);
-    const title = mount.querySelector<HTMLInputElement>(
-      "[data-testid=classes-create-title]",
-    )!;
-    title.value = "Fail";
-    title.dispatchEvent(new Event("input", { bubbles: true }));
-
-    mount
-      .querySelector<HTMLFormElement>("[data-testid=classes-create-form]")!
-      .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    await flush();
-    await flush();
-    expect(updates).toEqual([]);
-  });
-
-  test("failed preference update does not undo a successful class creation", async () => {
-    const mount = mkMount();
-    const created: string[] = [];
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [];
-    const createClass: CreateClass = async (input) => {
-      created.push(input.title);
-      return Object.freeze({
-        classId: "c",
-        joinCode: "OK",
-        alreadyCreated: false,
-      });
-    };
-    const updateDefaultGrade = async (): Promise<void> => {
-      throw new Error("preference storage unavailable");
-    };
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      createClass,
-      defaultGrade: null,
-      updateDefaultGrade,
-    });
-    await openCreateForm(mount);
-    const title = mount.querySelector<HTMLInputElement>(
-      "[data-testid=classes-create-title]",
-    )!;
-    title.value = "Survives";
-    title.dispatchEvent(new Event("input", { bubbles: true }));
-    // Phase 2B.4: explicit grade and block are required.
-    const grade = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=classes-create-grade]",
-    )!;
-    grade.value = "7";
-    grade.dispatchEvent(new Event("change", { bubbles: true }));
-    const block = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=classes-create-block]",
-    )!;
-    block.value = "A";
-    block.dispatchEvent(new Event("change", { bubbles: true }));
-    mount
-      .querySelector<HTMLFormElement>("[data-testid=classes-create-form]")!
-      .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    await flush();
-    await flush();
-    await flush();
-    // Class creation succeeded even though the best-effort preference
-    // write threw.
-    expect(created).toEqual(["Survives"]);
-    // The join-code panel signals success.
+    // The join-code panel signals a successful create.
     expect(
       mount.querySelector("[data-testid=classes-joincode-panel]"),
     ).not.toBeNull();
@@ -1001,29 +941,6 @@ describe("Imported-class setup form (Phase 2B.4)", () => {
     ).toBeNull();
   });
 
-  test("saved defaultGrade prefills the setup grade select", async () => {
-    const mount = mkMount();
-    const listClasses = async () => [needsSetupSummary];
-    const createClass: CreateClass = async () =>
-      Object.freeze({ classId: "c", joinCode: "X", alreadyCreated: false });
-    const activateClass = jest.fn();
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      createClass,
-      activateClass,
-      defaultGrade: "8",
-    });
-    await openSetup(mount);
-    const grade = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=class-setup-grade]",
-    )!;
-    expect(grade.value).toBe("8");
-    const block = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=class-setup-block]",
-    )!;
-    expect(block.value).toBe("");
-  });
-
   test("submit without grade is rejected before activation is invoked", async () => {
     const mount = mkMount();
     const listClasses = async () => [needsSetupSummary];
@@ -1058,9 +975,14 @@ describe("Imported-class setup form (Phase 2B.4)", () => {
       listClasses,
       createClass,
       activateClass,
-      defaultGrade: "7",
     });
     await openSetup(mount);
+    // Choose a grade for this class so validation reaches the block check.
+    const grade = mount.querySelector<HTMLSelectElement>(
+      "[data-testid=class-setup-grade]",
+    )!;
+    grade.value = "7";
+    grade.dispatchEvent(new Event("change", { bubbles: true }));
     mount
       .querySelector<HTMLFormElement>("[data-testid=class-setup-form]")!
       .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
@@ -1119,7 +1041,7 @@ describe("Imported-class setup form (Phase 2B.4)", () => {
     ]);
   });
 
-  test("successful activation navigates to Snapshot on the now-active class", async () => {
+  test("successful activation navigates to Assignments on the now-active class", async () => {
     const mount = mkMount();
     let calls = 0;
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
@@ -1161,7 +1083,7 @@ describe("Imported-class setup form (Phase 2B.4)", () => {
       "[data-testid=class-workspace]",
     );
     expect(workspace).not.toBeNull();
-    expect(workspace!.getAttribute("data-class-tab")).toBe("snapshot");
+    expect(workspace!.getAttribute("data-class-tab")).toBe("assignments");
     expect(
       mount.querySelector("[data-testid=class-setup-form]"),
     ).toBeNull();
@@ -1212,102 +1134,6 @@ describe("Imported-class setup form (Phase 2B.4)", () => {
       "[data-testid=class-setup-submit]",
     )!;
     expect(submit.disabled).toBe(false);
-  });
-
-  test("preference update fires best-effort after successful activation", async () => {
-    const mount = mkMount();
-    let calls = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      calls += 1;
-      return calls === 1 ? [needsSetupSummary] : [activeSummary];
-    };
-    const createClass: CreateClass = async () =>
-      Object.freeze({ classId: "c", joinCode: "X", alreadyCreated: false });
-    const activateClass = async () =>
-      Object.freeze({
-        classId: needsSetupSummary.id,
-        status: "active" as const,
-        joinCode: "AAAABBBB",
-        alreadyActive: false,
-      });
-    const updates: Array<"6" | "7" | "8" | null> = [];
-    const updateDefaultGrade = async (next: "6" | "7" | "8" | null) => {
-      updates.push(next);
-    };
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      createClass,
-      activateClass,
-      updateDefaultGrade,
-    });
-    await openSetup(mount);
-    const grade = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=class-setup-grade]",
-    )!;
-    grade.value = "8";
-    grade.dispatchEvent(new Event("change", { bubbles: true }));
-    const block = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=class-setup-block]",
-    )!;
-    block.value = "D";
-    block.dispatchEvent(new Event("change", { bubbles: true }));
-    mount
-      .querySelector<HTMLFormElement>("[data-testid=class-setup-form]")!
-      .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    await flush();
-    await flush();
-    await flush();
-    expect(updates).toEqual(["8"]);
-  });
-
-  test("preference update failure does not undo activation", async () => {
-    const mount = mkMount();
-    let calls = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      calls += 1;
-      return calls === 1 ? [needsSetupSummary] : [activeSummary];
-    };
-    const createClass: CreateClass = async () =>
-      Object.freeze({ classId: "c", joinCode: "X", alreadyCreated: false });
-    const activateClass = async () =>
-      Object.freeze({
-        classId: needsSetupSummary.id,
-        status: "active" as const,
-        joinCode: "AAAABBBB",
-        alreadyActive: false,
-      });
-    const updateDefaultGrade = async () => {
-      throw new Error("preference storage unavailable");
-    };
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      createClass,
-      activateClass,
-      updateDefaultGrade,
-    });
-    await openSetup(mount);
-    const grade = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=class-setup-grade]",
-    )!;
-    grade.value = "7";
-    grade.dispatchEvent(new Event("change", { bubbles: true }));
-    const block = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=class-setup-block]",
-    )!;
-    block.value = "A";
-    block.dispatchEvent(new Event("change", { bubbles: true }));
-    mount
-      .querySelector<HTMLFormElement>("[data-testid=class-setup-form]")!
-      .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    await flush();
-    await flush();
-    await flush();
-    // Navigation still landed on Snapshot for the now-active class.
-    const workspace = mount.querySelector<HTMLElement>(
-      "[data-testid=class-workspace]",
-    );
-    expect(workspace).not.toBeNull();
-    expect(workspace!.getAttribute("data-class-tab")).toBe("snapshot");
   });
 
   test("cancel returns to Classes list without invoking activation", async () => {
@@ -1535,18 +1361,21 @@ describe("Phase 2B.8: LMS activation auto-sync", () => {
     expect(syncRoster).toHaveBeenCalledTimes(1);
   });
 
-  test("roster sync panel is rendered before syncRoster promise resolves", async () => {
+  test("Task B3/C4: the automatic post-activation sync still fires, but the class workspace renders NO roster-sync UI (it moved to Settings)", async () => {
     const mount = mkMount();
     let listCallCount = 0;
     const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
       listCallCount++;
       return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
     };
+    let syncCalls = 0;
     let resolveSyncRoster!: (r: SyncRosterResult) => void;
-    const syncRoster: SyncRoster = () =>
-      new Promise<SyncRosterResult>((resolve) => {
+    const syncRoster: SyncRoster = () => {
+      syncCalls += 1;
+      return new Promise<SyncRosterResult>((resolve) => {
         resolveSyncRoster = resolve;
       });
+    };
     const activateClass: ActivateClass = async () => activateResult;
     renderClassesSurface(mount, teacher, {
       listClasses,
@@ -1558,158 +1387,23 @@ describe("Phase 2B.8: LMS activation auto-sync", () => {
     await flush();
     await flush();
     await flush();
-    // syncRoster is in flight; panel must already be visible
+    // The automatic post-activation roster sync (backend behavior) still fires.
+    expect(syncCalls).toBe(1);
+    // But the everyday class workspace no longer hosts any roster-sync UI or a
+    // "Manage class" disclosure - roster administration lives in Settings.
+    expect(mount.querySelector("[data-testid=class-rostersync]")).toBeNull();
     expect(
-      mount.querySelector("[data-testid=class-rostersync]"),
-    ).not.toBeNull();
-    resolveSyncRoster(defaultSyncResult);
-    await flush();
-  });
-
-  test("sync button is disabled with aria-busy while syncRoster is in flight", async () => {
-    const mount = mkMount();
-    let listCallCount = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      listCallCount++;
-      return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
-    };
-    let resolveSyncRoster!: (r: SyncRosterResult) => void;
-    const syncRoster: SyncRoster = () =>
-      new Promise<SyncRosterResult>((resolve) => {
-        resolveSyncRoster = resolve;
-      });
-    const activateClass: ActivateClass = async () => activateResult;
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await openLmsSetup(mount);
-    submitSetupForm(mount);
-    await flush();
-    await flush();
-    await flush();
-    const button = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=class-rostersync-button]",
-    );
-    expect(button).not.toBeNull();
-    expect(button!.disabled).toBe(true);
-    expect(button!.getAttribute("aria-busy")).toBe("true");
-    resolveSyncRoster(defaultSyncResult);
-    await flush();
-    const buttonAfter = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=class-rostersync-button]",
-    );
-    expect(buttonAfter!.disabled).toBe(false);
-    expect(buttonAfter!.getAttribute("aria-busy")).toBeNull();
-  });
-
-  test("workspace renders snapshot for the activated class before syncRoster completes", async () => {
-    const mount = mkMount();
-    let listCallCount = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      listCallCount++;
-      return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
-    };
-    let resolveSyncRoster!: (r: SyncRosterResult) => void;
-    const syncRoster: SyncRoster = () =>
-      new Promise<SyncRosterResult>((resolve) => {
-        resolveSyncRoster = resolve;
-      });
-    const activateClass: ActivateClass = async () => activateResult;
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await openLmsSetup(mount);
-    submitSetupForm(mount);
-    await flush();
-    await flush();
-    await flush();
+      mount.querySelector("[data-testid=class-rostersync-button]"),
+    ).toBeNull();
+    expect(mount.querySelector("[data-testid=class-manage-toggle]")).toBeNull();
+    expect(mount.querySelector("[data-testid=class-manage-panel]")).toBeNull();
+    // The activated class lands on Assignments (Overview removed).
     const workspace = mount.querySelector<HTMLElement>(
       "[data-testid=class-workspace]",
-    );
-    expect(workspace).not.toBeNull();
-    expect(workspace!.getAttribute("data-class-tab")).toBe("snapshot");
-    expect(mount.querySelector("[data-testid=class-setup-form]")).toBeNull();
+    )!;
+    expect(workspace.getAttribute("data-class-tab")).toBe("assignments");
     resolveSyncRoster(defaultSyncResult);
     await flush();
-  });
-
-  test("after syncRoster resolves the status area shows aggregate counters", async () => {
-    const mount = mkMount();
-    let listCallCount = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      listCallCount++;
-      return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
-    };
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    const activateClass: ActivateClass = async () => activateResult;
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await openLmsSetup(mount);
-    submitSetupForm(mount);
-    await flush();
-    await flush();
-    await flush();
-    const status = mount.querySelector<HTMLElement>(
-      "[data-testid=class-rostersync-status]",
-    );
-    expect(status).not.toBeNull();
-    expect(status!.textContent).toMatch(/Roster synced/);
-    expect(status!.textContent).toMatch(/Added: 22/);
-    expect(status!.textContent).toMatch(/Unchanged: 3/);
-    expect(status!.textContent).toMatch(/Withdrawn: 1/);
-    expect(status!.textContent).toMatch(/Unresolved: 0/);
-    expect(
-      mount.querySelector("[data-testid=class-rostersync]")!.getAttribute(
-        "data-rostersync-status",
-      ),
-    ).toBe("ok");
-  });
-
-  test("after syncRoster rejects the status area shows calm error recovery copy", async () => {
-    const mount = mkMount();
-    let listCallCount = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      listCallCount++;
-      return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
-    };
-    const syncRoster: SyncRoster = async () => {
-      // Throw a shaped error matching the SyncRosterError contract.
-      // runRosterSync checks err.kind as a string property rather than
-      // instanceof, so a plain shaped Error is sufficient here.
-      throw Object.assign(new Error("network failure"), {
-        kind: "transient" as const,
-        serverCode: null,
-        name: "SyncRosterError",
-      });
-    };
-    const activateClass: ActivateClass = async () => activateResult;
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await openLmsSetup(mount);
-    submitSetupForm(mount);
-    await flush();
-    await flush();
-    await flush();
-    const status = mount.querySelector<HTMLElement>(
-      "[data-testid=class-rostersync-status]",
-    );
-    expect(status).not.toBeNull();
-    // Calm recovery copy; raw error message and error kind must not appear
-    expect(status!.textContent).not.toMatch(/network failure/i);
-    expect(status!.textContent).not.toMatch(/transient/i);
-    const panel = mount.querySelector("[data-testid=class-rostersync]")!;
-    expect(panel.getAttribute("data-rostersync-status")).toBe("error");
-    expect(panel.getAttribute("data-rostersync-error-kind")).toBe("transient");
   });
 
   test("listClasses is called exactly twice: once on mount and once after activation", async () => {
@@ -2001,536 +1695,14 @@ describe("Phase 2B.8: auto-sync negative gates", () => {
   });
 });
 
-// Sprint 24B Phase 2B.8 - roster sync panel and manual sync button.
-// These tests navigate to an already-active LMS class and interact with
-// the Sync roster affordance directly.
-describe("Phase 2B.8: roster sync panel and manual sync button", () => {
-  const LMS_CLASS_ID = "cid-lms-panel-1";
-
-  const lmsActiveSummary: ClassSummary = Object.freeze({
-    id: LMS_CLASS_ID,
-    title: "LMS Active Period 4",
-    status: "active" as const,
-    grade: "7",
-    block: "B",
-    isLmsLinked: true,
-  });
-
-  const manualActiveSummary: ClassSummary = Object.freeze({
-    id: "cid-manual-panel-1",
-    title: "Manual Active Period 4",
-    status: "active" as const,
-    grade: "7",
-    block: "C",
-    joinCode: "MMMMNNN",
-  });
-
-  const lmsNeedsSetupSummary: ClassSummary = Object.freeze({
-    id: LMS_CLASS_ID,
-    title: "LMS Active Period 4",
-    status: "needsSetup" as const,
-    isLmsLinked: true,
-  });
-
-  const defaultSyncResult: SyncRosterResult = Object.freeze({
-    classId: LMS_CLASS_ID,
-    added: 10,
-    reactivated: 2,
-    unchanged: 5,
-    withdrawn: 1,
-    unresolved: 0,
-    skipped: 0,
-    upstreamRosterEmpty: false,
-  });
-
-  const openWorkspace = async (
-    mount: HTMLElement,
-    classId: string,
-  ): Promise<void> => {
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=class-card-${classId}]`,
-      )!
-      .click();
-    await flush();
-  };
-
-  test("roster sync panel renders for an active LMS-linked class with syncRoster available", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await openWorkspace(mount, LMS_CLASS_ID);
-    expect(
-      mount.querySelector("[data-testid=class-rostersync]"),
-    ).not.toBeNull();
-    expect(
-      mount.querySelector("[data-testid=class-rostersync-button]"),
-    ).not.toBeNull();
-  });
-
-  test("roster sync panel does not render for a manual active class (isLmsLinked absent)", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      manualActiveSummary,
-    ];
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await openWorkspace(mount, "cid-manual-panel-1");
-    expect(mount.querySelector("[data-testid=class-rostersync]")).toBeNull();
-  });
-
-  test("roster sync panel does not render for a manual active class (isLmsLinked: false)", async () => {
-    const mount = mkMount();
-    const explicitlyManualSummary: ClassSummary = Object.freeze({
-      id: "cid-explicit-manual-1",
-      title: "Manual Period 5",
-      status: "active" as const,
-      grade: "7",
-      block: "D",
-      joinCode: "ZZZZWWWW",
-      isLmsLinked: false,
-    });
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      explicitlyManualSummary,
-    ];
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await openWorkspace(mount, "cid-explicit-manual-1");
-    expect(mount.querySelector("[data-testid=class-rostersync]")).toBeNull();
-  });
-
-  test("roster sync panel does not render for a needsSetup class", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsNeedsSetupSummary,
-    ];
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    const activateClass = jest.fn();
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=class-card-${LMS_CLASS_ID}]`,
-      )!
-      .click();
-    await flush();
-    expect(
-      mount.querySelector("[data-testid=class-setup-form]"),
-    ).not.toBeNull();
-    expect(mount.querySelector("[data-testid=class-rostersync]")).toBeNull();
-  });
-
-  test("roster sync panel does not render when the syncRoster dependency is absent", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    renderClassesSurface(mount, teacher, { listClasses });
-    await openWorkspace(mount, LMS_CLASS_ID);
-    expect(mount.querySelector("[data-testid=class-rostersync]")).toBeNull();
-  });
-
-  test("Sync roster button invokes syncRoster exactly once per click", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    const syncRoster = jest.fn(
-      async (): Promise<SyncRosterResult> =>
-        defaultSyncResult,
-    );
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await openWorkspace(mount, LMS_CLASS_ID);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-rostersync-button]")!
-      .click();
-    await flush();
-    await flush();
-    expect(syncRoster).toHaveBeenCalledTimes(1);
-    expect(syncRoster).toHaveBeenCalledWith({ classId: LMS_CLASS_ID });
-  });
-
-  test("sync button is disabled with aria-busy while syncRoster is in flight", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    let resolveSyncRoster!: (r: SyncRosterResult) => void;
-    const syncRoster: SyncRoster = () =>
-      new Promise<SyncRosterResult>((resolve) => {
-        resolveSyncRoster = resolve;
-      });
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await openWorkspace(mount, LMS_CLASS_ID);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-rostersync-button]")!
-      .click();
-    await flush();
-    const button = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=class-rostersync-button]",
-    );
-    expect(button!.disabled).toBe(true);
-    expect(button!.getAttribute("aria-busy")).toBe("true");
-    resolveSyncRoster(defaultSyncResult);
-    await flush();
-    const buttonAfter = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=class-rostersync-button]",
-    );
-    expect(buttonAfter!.disabled).toBe(false);
-    expect(buttonAfter!.getAttribute("aria-busy")).toBeNull();
-  });
-
-  test("duplicate concurrent button clicks are suppressed", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    let resolveSyncRoster!: (r: SyncRosterResult) => void;
-    const syncRoster = jest.fn(
-      (): Promise<SyncRosterResult> =>
-        new Promise<SyncRosterResult>((resolve) => {
-          resolveSyncRoster = resolve;
-        }),
-    );
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await openWorkspace(mount, LMS_CLASS_ID);
-    const button = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=class-rostersync-button]",
-    )!;
-    button.click();
-    await flush();
-    // Second click while in flight: the in-flight guard must block it
-    button.click();
-    await flush();
-    expect(syncRoster).toHaveBeenCalledTimes(1);
-    resolveSyncRoster(defaultSyncResult);
-    await flush();
-  });
-
-  test("successful sync displays aggregate counters in the status area", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await openWorkspace(mount, LMS_CLASS_ID);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-rostersync-button]")!
-      .click();
-    await flush();
-    await flush();
-    const status = mount.querySelector<HTMLElement>(
-      "[data-testid=class-rostersync-status]",
-    );
-    expect(status).not.toBeNull();
-    expect(status!.textContent).toMatch(/Roster synced/);
-    expect(status!.textContent).toMatch(/Added: 10/);
-    expect(status!.textContent).toMatch(/Unchanged: 5/);
-    expect(status!.textContent).toMatch(/Withdrawn: 1/);
-    expect(
-      mount
-        .querySelector("[data-testid=class-rostersync]")!
-        .getAttribute("data-rostersync-status"),
-    ).toBe("ok");
-  });
-
-  test("sync failure displays calm recovery copy and class workspace remains active", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    const syncRoster: SyncRoster = async () => {
-      throw Object.assign(new Error("OAuth expired."), {
-        kind: "reconnectRequired" as const,
-        serverCode: "lms.upstreamAuthorizationFailed",
-        name: "SyncRosterError",
-      });
-    };
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await openWorkspace(mount, LMS_CLASS_ID);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-rostersync-button]")!
-      .click();
-    await flush();
-    await flush();
-    const workspace = mount.querySelector<HTMLElement>(
-      "[data-testid=class-workspace]",
-    );
-    expect(workspace).not.toBeNull();
-    const status = mount.querySelector<HTMLElement>(
-      "[data-testid=class-rostersync-status]",
-    );
-    expect(status).not.toBeNull();
-    // Raw error message and server code must not appear in the UI
-    expect(status!.textContent).not.toMatch(/OAuth expired/i);
-    expect(status!.textContent).not.toMatch(/upstreamAuthorizationFailed/i);
-    expect(status!.textContent).toMatch(/reconnect/i);
-    const panel = mount.querySelector("[data-testid=class-rostersync]")!;
-    expect(panel.getAttribute("data-rostersync-status")).toBe("error");
-    expect(panel.getAttribute("data-rostersync-error-kind")).toBe(
-      "reconnectRequired",
-    );
-  });
-});
-
-// Sprint 24B Phase 2B.8 - sync state persistence across rerenders.
-describe("Phase 2B.8: sync state persistence across rerenders", () => {
-  const LMS_CLASS_ID = "cid-lms-persist-1";
-
-  const lmsNeedsSetupSummary: ClassSummary = Object.freeze({
-    id: LMS_CLASS_ID,
-    title: "LMS Period 4",
-    status: "needsSetup" as const,
-    isLmsLinked: true,
-  });
-  const lmsActiveSummary: ClassSummary = Object.freeze({
-    id: LMS_CLASS_ID,
-    title: "LMS Period 4",
-    status: "active" as const,
-    grade: "7",
-    block: "B",
-    isLmsLinked: true,
-  });
-
-  const activateResult: ActivateClassResult = Object.freeze({
-    classId: LMS_CLASS_ID,
-    status: "active" as const,
-    joinCode: null,
-    alreadyActive: false,
-  });
-
-  const defaultSyncResult: SyncRosterResult = Object.freeze({
-    classId: LMS_CLASS_ID,
-    added: 5,
-    reactivated: 0,
-    unchanged: 10,
-    withdrawn: 0,
-    unresolved: 0,
-    skipped: 0,
-    upstreamRosterEmpty: false,
-  });
-
-  const openLmsSetup = async (mount: HTMLElement): Promise<void> => {
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=class-card-${LMS_CLASS_ID}]`,
-      )!
-      .click();
-    await flush();
-  };
-
-  const submitSetupForm = (mount: HTMLElement): void => {
-    const grade = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=class-setup-grade]",
-    )!;
-    grade.value = "7";
-    grade.dispatchEvent(new Event("change", { bubbles: true }));
-    const block = mount.querySelector<HTMLSelectElement>(
-      "[data-testid=class-setup-block]",
-    )!;
-    block.value = "B";
-    block.dispatchEvent(new Event("change", { bubbles: true }));
-    mount
-      .querySelector<HTMLFormElement>("[data-testid=class-setup-form]")!
-      .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-  };
-
-  test("selected class remains selected in the workspace after activation", async () => {
-    const mount = mkMount();
-    let listCallCount = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      listCallCount++;
-      return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
-    };
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    const activateClass: ActivateClass = async () => activateResult;
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await openLmsSetup(mount);
-    submitSetupForm(mount);
-    await flush();
-    await flush();
-    await flush();
-    const workspace = mount.querySelector<HTMLElement>(
-      "[data-testid=class-workspace]",
-    );
-    expect(workspace).not.toBeNull();
-    expect(workspace!.getAttribute("data-class-id")).toBe(LMS_CLASS_ID);
-  });
-
-  test("roster sync entry is idle before the first manual sync request", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    // Use a plain mock: the test validates idle state before any click,
-    // so syncRoster should never be invoked in this test.
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=class-card-${LMS_CLASS_ID}]`,
-      )!
-      .click();
-    await flush();
-    const button = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=class-rostersync-button]",
-    );
-    expect(button).not.toBeNull();
-    expect(button!.disabled).toBe(false);
-    const status = mount.querySelector<HTMLElement>(
-      "[data-testid=class-rostersync-status]",
-    );
-    expect(status!.textContent).toMatch(/Sync brings/);
-  });
-
-  test("roster sync entry is syncing while syncRoster is in flight", async () => {
-    const mount = mkMount();
-    let listCallCount = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      listCallCount++;
-      return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
-    };
-    let resolveSyncRoster!: (r: SyncRosterResult) => void;
-    const syncRoster: SyncRoster = () =>
-      new Promise<SyncRosterResult>((resolve) => {
-        resolveSyncRoster = resolve;
-      });
-    const activateClass: ActivateClass = async () => activateResult;
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await openLmsSetup(mount);
-    submitSetupForm(mount);
-    await flush();
-    await flush();
-    await flush();
-    const status = mount.querySelector<HTMLElement>(
-      "[data-testid=class-rostersync-status]",
-    );
-    expect(status!.textContent).toMatch(/Synchronizing roster/);
-    resolveSyncRoster(defaultSyncResult);
-    await flush();
-  });
-
-  test("roster sync entry transitions to ok after syncRoster resolves", async () => {
-    const mount = mkMount();
-    let listCallCount = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      listCallCount++;
-      return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
-    };
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    const activateClass: ActivateClass = async () => activateResult;
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await openLmsSetup(mount);
-    submitSetupForm(mount);
-    await flush();
-    await flush();
-    await flush();
-    expect(
-      mount
-        .querySelector("[data-testid=class-rostersync]")!
-        .getAttribute("data-rostersync-status"),
-    ).toBe("ok");
-  });
-
-  test("sync can be triggered again after the first in-flight request completes", async () => {
-    const mount = mkMount();
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => [
-      lmsActiveSummary,
-    ];
-    let syncCallCount = 0;
-    let resolveFirst!: (r: SyncRosterResult) => void;
-    const syncRoster: SyncRoster = () => {
-      syncCallCount++;
-      return new Promise<SyncRosterResult>((resolve) => {
-        resolveFirst = resolve;
-      });
-    };
-    renderClassesSurface(mount, teacher, { listClasses, syncRoster });
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=class-card-${LMS_CLASS_ID}]`,
-      )!
-      .click();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-rostersync-button]")!
-      .click();
-    await flush();
-    expect(syncCallCount).toBe(1);
-    // Click again while in flight: suppressed
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-rostersync-button]")!
-      .click();
-    await flush();
-    expect(syncCallCount).toBe(1);
-    // Resolve first sync
-    resolveFirst(defaultSyncResult);
-    await flush();
-    // Button re-enabled; a second sync can now be triggered
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-rostersync-button]")!
-      .click();
-    await flush();
-    await flush();
-    expect(syncCallCount).toBe(2);
-  });
-
-  test("setup form does not re-appear after activation completes", async () => {
-    const mount = mkMount();
-    let listCallCount = 0;
-    const listClasses = async (): Promise<ReadonlyArray<ClassSummary>> => {
-      listCallCount++;
-      return listCallCount === 1 ? [lmsNeedsSetupSummary] : [lmsActiveSummary];
-    };
-    const syncRoster: SyncRoster = async () => defaultSyncResult;
-    const activateClass: ActivateClass = async () => activateResult;
-    renderClassesSurface(mount, teacher, {
-      listClasses,
-      syncRoster,
-      activateClass,
-    });
-    await openLmsSetup(mount);
-    submitSetupForm(mount);
-    await flush();
-    await flush();
-    await flush();
-    // Workspace is visible; setup form must not re-appear
-    expect(
-      mount.querySelector("[data-testid=class-workspace]"),
-    ).not.toBeNull();
-    expect(mount.querySelector("[data-testid=class-setup-form]")).toBeNull();
-    // Roster sync panel is visible (LMS class, syncRoster available)
-    expect(
-      mount.querySelector("[data-testid=class-rostersync]"),
-    ).not.toBeNull();
-  });
-});
+// Sprint 28.6H.3 (Task B3/C4): the former "roster sync panel and manual sync
+// button" and "sync state persistence across rerenders" describes exercised the
+// roster-sync UI that lived in the class workspace ("Manage class" disclosure).
+// That administration moved to Settings -> Class Management (one implementation,
+// reusing the certified `lmsClassesSyncRoster` callable and the shared status
+// panel). Its behavior - roster sync offered only for Google Classroom-linked
+// classes, invoked exactly once per click, aggregate-only status, and no
+// automatic sync on render - is now covered by settings.test.ts. The automatic
+// post-activation sync (backend behavior, unchanged) and the absence of any
+// roster-sync UI in the class workspace are covered above in the
+// "LMS activation auto-sync" describe.

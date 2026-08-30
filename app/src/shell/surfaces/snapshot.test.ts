@@ -4,12 +4,15 @@
 import { renderSnapshotSurface } from "./snapshot";
 import type { ClassSummary } from "../../classes/types";
 
-// Sprint 24B Phase 2B.1 unit coverage for the Snapshot surface's safe
-// handling of the extended `ClassStatus` union. Snapshot chose the
-// safe-render path (Reader Audit §5 C8) so a class opened mid-setup
-// does not render an `undefined` label or crash reading `grade`. Any
-// re-routing of needsSetup classes to the setup form is a Phase 2B.4
-// concern and is not asserted here.
+// Sprint 28.6H (Findings 3/4/5): the class-workspace Overview.
+//
+// The class name, grade/block, and status no longer live in Overview - the
+// class identity is the workspace header above the tabs, and the "Active"
+// badge is removed entirely. Prototype/product-marketing copy is removed (the
+// "One place to check in..." purpose line and the "Classroom activity will
+// appear here..." empty placeholder). Overview shows real, locally-available
+// information (assignment count, join code) or a calm intentional empty state.
+// Roster sync is NOT here (it moved to "Manage class").
 
 const mkMount = (): HTMLElement => {
   const div = document.createElement("div");
@@ -17,32 +20,35 @@ const mkMount = (): HTMLElement => {
   return div;
 };
 
-describe("renderSnapshotSurface needsSetup safety", () => {
-  it("renders the Setup needed pill without crashing on absent grade", () => {
+describe("renderSnapshotSurface (Overview)", () => {
+  it("heads the section 'Overview' and shows no class name/status/grade line", () => {
     const mount = mkMount();
     const summary: ClassSummary = Object.freeze({
-      id: "c-setup",
-      title: "Imported Period 4",
-      status: "needsSetup" as const,
+      id: "c-active",
+      title: "Period 1",
+      status: "active" as const,
+      grade: "7",
+      block: "B",
     });
-    renderSnapshotSurface(mount, { summary, preview: null });
+    renderSnapshotSurface(mount, { summary, preview: null, assignmentCount: 0 });
 
-    const pill = mount.querySelector<HTMLElement>(
-      "[data-testid=snapshot-class-status]",
-    );
-    expect(pill).not.toBeNull();
-    expect(pill!.textContent).toBe("Setup needed");
-    expect(pill!.getAttribute("aria-label")).toBe(
-      "Class status: Setup needed",
-    );
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")!.textContent,
+    ).toBe("Overview");
 
-    // No grade element is rendered for a needsSetup class.
+    // The identity (name, grade/block) and the Active badge belong to the
+    // workspace header, not Overview.
+    expect(mount.textContent).not.toContain("Period 1");
+    expect(mount.textContent).not.toContain("Active");
+    expect(
+      mount.querySelector("[data-testid=snapshot-class-status]"),
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=snapshot-class-grade]"),
     ).toBeNull();
   });
 
-  it("renders grade and Active pill for an active summary", () => {
+  it("removes prototype/product-marketing copy", () => {
     const mount = mkMount();
     const summary: ClassSummary = Object.freeze({
       id: "c-active",
@@ -50,17 +56,73 @@ describe("renderSnapshotSurface needsSetup safety", () => {
       status: "active" as const,
       grade: "7",
     });
-    renderSnapshotSurface(mount, { summary, preview: null });
+    renderSnapshotSurface(mount, { summary, preview: null, assignmentCount: 2 });
 
-    const grade = mount.querySelector<HTMLElement>(
-      "[data-testid=snapshot-class-grade]",
+    expect(mount.textContent).not.toContain(
+      "One place to check in on your class between moments.",
     );
-    expect(grade).not.toBeNull();
-    expect(grade!.textContent).toBe("Grade 7");
+    expect(mount.textContent).not.toContain(
+      "Classroom activity will appear here",
+    );
+    expect(mount.querySelector("[data-testid=snapshot-purpose]")).toBeNull();
+  });
 
-    const pill = mount.querySelector<HTMLElement>(
-      "[data-testid=snapshot-class-status]",
-    );
-    expect(pill!.textContent).toBe("Active");
+  it("shows real, locally-available class information (assignment count, join code)", () => {
+    const mount = mkMount();
+    const summary: ClassSummary = Object.freeze({
+      id: "c-active",
+      title: "Period 1",
+      status: "active" as const,
+      grade: "7",
+      joinCode: "ABCD",
+    });
+    renderSnapshotSurface(mount, { summary, preview: null, assignmentCount: 3 });
+
+    expect(
+      mount.querySelector("[data-testid=snapshot-assignment-count]")!
+        .textContent,
+    ).toBe("3 assignments");
+    expect(
+      mount.querySelector("[data-testid=snapshot-join-code]")!.textContent,
+    ).toBe("ABCD");
+    // No empty placeholder when there is real data.
+    expect(mount.querySelector("[data-testid=snapshot-empty]")).toBeNull();
+  });
+
+  it("renders a calm real empty state when nothing to summarize yet", () => {
+    const mount = mkMount();
+    const summary: ClassSummary = Object.freeze({
+      id: "c-active",
+      title: "Period 1",
+      status: "active" as const,
+      grade: "7",
+    });
+    // No assignment seam wired (null) and no join code: nothing to summarize.
+    renderSnapshotSurface(mount, {
+      summary,
+      preview: null,
+      assignmentCount: null,
+    });
+
+    const empty = mount.querySelector("[data-testid=snapshot-empty]");
+    expect(empty).not.toBeNull();
+    expect(empty!.textContent).toBe("No assignments yet.");
+  });
+
+  it("counts assignments with correct grammar (0 / 1 / N) and does not crash on needsSetup", () => {
+    const mount = mkMount();
+    const setup: ClassSummary = Object.freeze({
+      id: "c-setup",
+      title: "Imported Period 4",
+      status: "needsSetup" as const,
+    });
+    // Defense in depth: the workspace routes needsSetup to the setup form, but
+    // Overview must never read grade/block/joinCode off a needsSetup summary.
+    renderSnapshotSurface(mount, { summary: setup, preview: null, assignmentCount: 1 });
+    expect(
+      mount.querySelector("[data-testid=snapshot-assignment-count]")!
+        .textContent,
+    ).toBe("1 assignment");
+    expect(mount.querySelector("[data-testid=snapshot-join-code]")).toBeNull();
   });
 });

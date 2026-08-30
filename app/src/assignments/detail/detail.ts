@@ -58,6 +58,14 @@ export type AssignmentDetailDeps = {
   readonly loadMetadata: AssignmentDetailMetadataReader;
   readonly summaryCallable: AssignmentSummaryCallable;
   readonly onBack?: () => void;
+  // Sprint 28.6C: optional Back-control label. Assignment Detail is now
+  // reachable from two entry paths. When opened from Curriculum -> Active
+  // Assignments the control keeps its certified "Back to Curriculum" label
+  // (the default). When opened from Classes -> Class -> Assignments the entry
+  // point supplies "Back to class" so the teacher returns naturally to the
+  // class-centered workflow. Only the label changes; the return behavior is
+  // provided entirely by the injected `onBack`.
+  readonly backLabel?: string;
   // Sprint 13D: optional close-assignment lifecycle seam. When supplied
   // and the loaded metadata is `published`, the surface renders a
   // secondary `Close assignment` action that opens a confirmation
@@ -234,11 +242,13 @@ export function renderAssignmentDetail(
     back.type = "button";
     back.className = "shell-assignment-detail-back";
     back.setAttribute("data-testid", "assignment-detail-back");
-    // Sprint 16 Slice 4: the Back control always returns to Curriculum
-    // (the lighter re-mount path from Slice 1). Visible label and the
-    // accessible name agree.
-    back.setAttribute("aria-label", "Back to Curriculum");
-    back.textContent = "Back to Curriculum";
+    // Sprint 16 Slice 4 / Sprint 28.6C: the Back control returns to the entry
+    // context. The default label is "Back to Curriculum" (the Slice 1 lighter
+    // re-mount path); the Classes entry path supplies "Back to class". Visible
+    // label and the accessible name agree.
+    const backLabel = deps.backLabel ?? "Back to Curriculum";
+    back.setAttribute("aria-label", backLabel);
+    back.textContent = backLabel;
     back.addEventListener("click", () => {
       deps.onBack?.();
     });

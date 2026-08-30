@@ -160,8 +160,15 @@ describe("B6 success banner - visibility after successful assignment", () => {
     const btn = mount.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     );
-    expect(btn?.getAttribute("data-assigned")).toBe("true");
-    expect(btn?.textContent).toBe("✓ Assigned");
+    // Sprint 28.6H.7 (Part B): no "✓ Assigned" badge; the card records the
+    // assignment-history signal and the action becomes "Reassign" (muted
+    // green, still re-assignable).
+    expect(
+      btn?.closest<HTMLElement>("[data-lesson-slug]")?.getAttribute(
+        "data-lesson-assigned",
+      ),
+    ).toBe("true");
+    expect(btn?.textContent).toBe("Reassign");
   });
 });
 

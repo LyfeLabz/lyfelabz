@@ -1,19 +1,20 @@
 /**
  * @jest-environment node
  *
- * Sprint 28.5B - Student Workspace polish, served-CSS regression pins.
+ * Sprint 28.6G - Student My Science, served-CSS regression pins.
  *
  * The student surface (makeActiveStudentSurface) renders firebase-free DOM
  * that jsdom tests exercise, but jsdom never loads app/index.html or applies
  * its CSS, so the jsdom surface tests cannot see the presentation contracts
  * this phase established. This test reads the exact document Firebase Hosting
- * serves for /app/** and pins the served CSS that backs B1 (primary action),
- * B2 (selected tab), and B5 (error callout) - the same posture as the Sprint
- * 25/26 assign-toast and category-spacing CSS regression tests.
+ * serves for /app/** and pins the served CSS that backs the minimal header,
+ * the primary launch action, the quiet-completed treatment, and the error
+ * callout - the same posture as the earlier Sprint 25/26/28.5B served-CSS
+ * regressions.
  *
  * These are contract pins, not pixel/color assertions: they assert that the
- * student-only testids are covered by the intended rules, so a future edit
- * cannot silently drop the styling (the exact class of regression B5 fixes).
+ * student-only testids/classes are covered by the intended rules, so a future
+ * edit cannot silently drop the styling.
  */
 import * as fs from "fs";
 import * as path from "path";
@@ -39,53 +40,78 @@ const ruleBody = (css: string, selector: string): string | null => {
 
 const SCOPE = "body:not(:has(#app-root > .shell-header))";
 
-describe("Sprint 28.5B B1 - primary student action is styled", () => {
+describe("28.6G - primary student launch action is styled", () => {
   const body = ruleBody(html, `${SCOPE} [data-testid=assignments-launch]`);
 
-  test("Open assignment / Improve My Score share a filled-primary rule", () => {
+  test("Open assignment carries the filled-primary treatment and a real touch target", () => {
     expect(body).not.toBeNull();
-    // Same primary token the certified sign-in / retry buttons already use.
     expect(body as string).toMatch(/background:\s*var\(--tw-primary\)/);
-    // A reasonable touch target is preserved.
     expect(body as string).toMatch(/min-height:\s*44px/);
-    // The improve action is in the same selector list.
-    const selectorList = (html.replace(/\/\*[\s\S]*?\*\//g, "").match(
-      /[^{}]+\{[^{}]*\}/g,
-    ) ?? []).find((r) =>
-      r.includes(`${SCOPE} [data-testid=assignments-launch]`) &&
-      r.includes("background: var(--tw-primary)"),
-    );
-    expect(selectorList).toContain(`${SCOPE} [data-testid=results-improve]`);
   });
 });
 
-describe("Sprint 28.5B B2 - selected tab has a non-color cue", () => {
-  const body = ruleBody(
-    html,
-    `${SCOPE} [data-testid=student-nav] [role=tab][aria-selected=true]`,
-  );
-
-  test("the selected tab carries a solid accent underline bar (not color alone)", () => {
+describe("28.6G - completed work is quieter but stays interactive", () => {
+  test("a completed card recedes to the alt surface (not disabled)", () => {
+    const body = ruleBody(
+      html,
+      `${SCOPE} [data-testid=my-science-card][data-complete=true]`,
+    );
     expect(body).not.toBeNull();
-    expect(body as string).toMatch(
-      /border-bottom-color:\s*var\(--tw-nav-edge\)/,
+    expect(body as string).toMatch(/background:\s*var\(--tw-surface-alt\)/);
+  });
+
+  test("a completed card's Open assignment drops to a quiet outline treatment (still operable)", () => {
+    const body = ruleBody(
+      html,
+      `${SCOPE} [data-testid=my-science-card][data-complete=true] [data-testid=assignments-launch]`,
     );
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/background:\s*transparent/);
+    expect(body as string).toMatch(/border-color:\s*var\(--tw-nav-edge\)/);
   });
 });
 
-describe("Sprint 28.5B B5 - student error surfaces get the callout styling", () => {
-  // The renderers overwrite data-testid=error-banner with assignments-error /
-  // results-error for their retry tests; the callout rule must cover both so
-  // the error reads as an error again.
+describe("28.6G - the minimal header truncates a long name so Log out stays visible", () => {
+  const body = ruleBody(html, `${SCOPE} .student-name`);
+
+  test("student-name is single-line, capped, and ellipsized", () => {
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/text-overflow:\s*ellipsis/);
+    expect(body as string).toMatch(/white-space:\s*nowrap/);
+    expect(body as string).toMatch(/max-width:/);
+  });
+});
+
+describe("28.6G - the student error surface gets the callout styling", () => {
   test("assignments-error is in the callout rule's selector list", () => {
     const body = ruleBody(html, `${SCOPE} [data-testid=assignments-error]`);
     expect(body).not.toBeNull();
     expect(body as string).toMatch(/var\(--tw-callout-error-bg\)/);
   });
+});
 
-  test("results-error is in the callout rule's selector list", () => {
-    const body = ruleBody(html, `${SCOPE} [data-testid=results-error]`);
+describe("28.6H - My Science is a wide workspace, not a narrow auth card (Findings 13/15)", () => {
+  test("the root hosting the student header uses a wide, left-aligned layout", () => {
+    const body = ruleBody(html, `${SCOPE} #app-root:has(.student-header)`);
     expect(body).not.toBeNull();
-    expect(body as string).toMatch(/var\(--tw-callout-error-bg\)/);
+    // Materially wider than the 32rem auth card, and left-aligned.
+    expect(body as string).toMatch(/max-width:\s*68rem/);
+    expect(body as string).toMatch(/text-align:\s*left/);
+  });
+
+  test("the assignment list is a multi-column grid, not a single tall column", () => {
+    const body = ruleBody(html, `${SCOPE} [data-testid=my-science-list]`);
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/display:\s*grid/);
+    expect(body as string).toMatch(/grid-template-columns:\s*repeat\(3,/);
+  });
+});
+
+describe("28.6H - student cards are compact (Finding 16)", () => {
+  test("the card uses tightened padding and a small inter-line gap", () => {
+    const body = ruleBody(html, `${SCOPE} [data-testid=my-science-card]`);
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/padding:\s*0\.7rem/);
+    expect(body as string).toMatch(/gap:\s*0\.35rem/);
   });
 });

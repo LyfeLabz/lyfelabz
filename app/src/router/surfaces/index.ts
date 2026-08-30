@@ -5,15 +5,14 @@ import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
-  TeacherDefaultGrade,
-  UpdateTeacherDefaultGrade,
-} from "../../teacherPreferences/types";
-import type {
   AssignmentsCallables,
   IntegrationsDeps,
 } from "../../settings/integrations/types";
 import type { CurriculumAssignmentDetailSeam } from "../../shell/surfaces/curriculum";
-import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
+import type {
+  AssignmentSummaryCallable,
+  LessonSummaryCallable,
+} from "../../assignments/summary/types";
 import type {
   AssignmentsListForStudentCallable,
   AssignmentsListForStudentItem,
@@ -22,12 +21,16 @@ import { buildAssignmentLaunchUrl } from "../../assignments/studentList/launch";
 import type {
   StudentResultsListCallable,
   StudentResultAggregate,
-  StudentStatusKey,
 } from "../../assignments/studentResults/types";
+import { aggregateByAssignment } from "../../assignments/studentResults/aggregate";
+// Sprint 28.6G: the canonical curriculum manifest is the single source of
+// truth for a student card's science domain and its displayed lesson title.
+// No second student-side domain/title registry is introduced.
 import {
-  aggregateByAssignment,
-  STUDENT_STATUS_LABELS,
-} from "../../assignments/studentResults/aggregate";
+  getUnitBySlug,
+  TOPIC_LABEL,
+  type LessonTopic,
+} from "../../curriculum/curriculumManifest";
 import { mountTeacherShell } from "../../shell/shell";
 import {
   clear,
@@ -114,6 +117,11 @@ export type SurfaceDeps = {
   // itself is a function, so the getter-form is required to keep the
   // type check unambiguous.
   readonly assignmentSummary?: () => AssignmentSummaryCallable | null;
+  // Sprint 28.6E: certified `assessmentLessonSummary` seam consumed by the
+  // Curriculum lesson-card View Summary surface for lesson-level
+  // (cross-assignment) aggregate analytics. Supplied through a getter for
+  // the same per-session rebind reason as `assignmentSummary`.
+  readonly lessonSummary?: () => LessonSummaryCallable | null;
   // Sprint 17 Slice 4: certified `assignmentsListForStudent` callable
   // seam consumed by the activeStudent surface. Always supplied through
   // a getter so per-session state can rebind across reruns without
@@ -147,12 +155,6 @@ export type SurfaceDeps = {
   // state cannot leak; null on any non-teacher session so the Classes
   // surface renders without the primary import entry point.
   readonly importFromClassroom?: () => ImportFromClassroomDeps | null;
-  // Sprint 24B Phase 2B.2: getters for the resolved `defaultGrade`
-  // preference and the best-effort update seam. Same getter pattern as
-  // the other per-active-teacher dependencies so per-session state can
-  // rebind across reruns without rebuilding the route table.
-  readonly defaultGrade?: () => TeacherDefaultGrade | null;
-  readonly updateDefaultGrade?: () => UpdateTeacherDefaultGrade | null;
   // Sprint 24B Phase 2B.4: getter for the certified `classesActivate`
   // seam. Rebound per active-teacher session so cross-session state
   // cannot leak.
@@ -737,17 +739,13 @@ export const makeActiveTeacherSurface =
       deps.assignmentSummary !== undefined
         ? deps.assignmentSummary()
         : null;
+    const lessonSummary =
+      deps.lessonSummary !== undefined ? deps.lessonSummary() : null;
     const createClass =
       deps.createClass !== undefined ? deps.createClass() : null;
     const importFromClassroom =
       deps.importFromClassroom !== undefined
         ? deps.importFromClassroom()
-        : null;
-    const defaultGrade =
-      deps.defaultGrade !== undefined ? deps.defaultGrade() : null;
-    const updateDefaultGrade =
-      deps.updateDefaultGrade !== undefined
-        ? deps.updateDefaultGrade()
         : null;
     const activateClass =
       deps.activateClass !== undefined ? deps.activateClass() : null;
@@ -761,10 +759,9 @@ export const makeActiveTeacherSurface =
       assignments,
       assignmentDetail,
       assignmentSummary,
+      lessonSummary,
       createClass,
       importFromClassroom,
-      defaultGrade,
-      updateDefaultGrade,
       activateClass,
       syncRoster,
     });
@@ -792,31 +789,109 @@ export const makeActiveTeacherSurface =
 // states, and preserve the calm-software conventions (welcome,
 // return-to-lessons, sign-out) across every state.
 
-type StudentView = "assignments" | "results";
+// Sprint 28.6G: My Science consolidates the former two-surface split
+// (My Assignments / My Results) into a single domain-grouped student
+// landing. There is no view switcher: a student sees all their science
+// work in one place, grouped by canonical science domain, with unfinished
+// work prominent and completed work quieter but still visible and
+// re-launchable. Blueprint (SPRINT_28_6_ARCHITECTURAL_BLUEPRINT.md) section 15.
 
-// Distinct status glyphs so an indicator is legible without color
-// (PDR-024l). The visible text label is always the primary carrier of
-// meaning; the glyph is decorative and marked aria-hidden.
-const STATUS_GLYPHS: Readonly<Record<StudentStatusKey, string>> = Object.freeze(
-  {
+// Locked student-facing domain order (Blueprint section 15). The four
+// assignable science domains, in the fixed order a student always sees.
+// behavioral-science is gated (never assignable) and never appears. This
+// array carries ONLY the locked ORDER; every human-readable domain label
+// and lesson title still comes from the canonical curriculum manifest
+// (TOPIC_LABEL / getUnitBySlug), so no second registry is introduced.
+const STUDENT_DOMAIN_ORDER: ReadonlyArray<LessonTopic> = Object.freeze([
+  "earth-space",
+  "life-science",
+  "physical-science",
+  "tech-engineering",
+]);
+
+const STUDENT_DOMAINS: ReadonlySet<LessonTopic> = new Set(STUDENT_DOMAIN_ORDER);
+
+// Heading for the single trailing catch-all group that holds any card whose
+// lessonSlug cannot be resolved to one of the four student domains: an
+// unknown or gated slug, or a completed attempt whose assignment is no
+// longer listed (e.g. it was closed after the student finished). Blueprint
+// section 15: such a card is placed here rather than dropped, so no work is
+// ever lost.
+const OTHER_DOMAIN_HEADING = "Other";
+
+// One unified work item for My Science, derived by joining a caller-scoped
+// published assignment (assignmentsListForStudent) with the student's own
+// completed-attempt aggregate (aggregateByAssignment). A "historical" item
+// (launchUrl null, no live assignment record) is completed work whose
+// assignment is no longer listed; it still shows the student's result so
+// completed work is never hidden, but it is not re-launchable.
+type MyScienceItem = {
+  readonly assignmentId: string;
+  readonly title: string;
+  readonly topic: LessonTopic | null;
+  readonly launchUrl: string | null;
+  readonly aggregate: StudentResultAggregate | null;
+  readonly completed: boolean;
+  readonly publishedAt: number | null;
+  readonly lessonSlug: string | null;
+};
+
+// Sprint 28.6H (Finding 17): My Science shows OBJECTIVE status only. A
+// completed assignment says "Completed"; the score itself communicates
+// performance. An unfinished assignment says "Ready to Begin". The former
+// subjective judgments (Perfect Score / Well Done! / Improving) are removed -
+// a score does not establish "improvement", and the labels added a value
+// judgment the student did not need. Two states, each carried by visible text
+// (primary) plus a decorative aria-hidden glyph (never color alone).
+type MyScienceStatus = "ready" | "completed";
+
+const MY_SCIENCE_STATUS_LABEL: Readonly<Record<MyScienceStatus, string>> =
+  Object.freeze({
+    ready: "Ready to Begin",
+    completed: "Completed",
+  });
+
+const MY_SCIENCE_STATUS_GLYPH: Readonly<Record<MyScienceStatus, string>> =
+  Object.freeze({
     ready: "○", // hollow circle
-    improving: "◐", // half-filled circle
-    wellDone: "●", // filled circle
-    perfect: "★", // star
-  },
-);
+    completed: "●", // filled circle
+  });
 
 export const makeActiveStudentSurface =
   (deps: SurfaceDeps): RouteSurface =>
   (session, mount) => {
     if (session.kind !== "activeStudent") return;
     const doc = mount.ownerDocument;
-    renderHeader(mount);
-    renderHeadline(mount, `Welcome, ${session.displayName}.`);
-    renderParagraph(
-      mount,
-      "You are signed in to LyfeLabz. Choose My Assignments to see published work, or My Results to review your scores.",
-    );
+
+    // Minimal student header (Blueprint section 15; Task 4): LYFELABZ
+    // wordmark, the student's safe display name, and Log out - nothing else.
+    // No teacher-style navigation, no My Assignments / My Results tabs, no
+    // dashboard chrome. displayName is the same safe identity field the
+    // product already showed; no uid / schoolId / provider id / email is
+    // ever rendered.
+    const header = doc.createElement("header");
+    header.className = "student-header";
+    header.setAttribute("data-testid", "student-header");
+    renderHeader(header);
+    const identity = doc.createElement("div");
+    identity.className = "student-identity";
+    const name = doc.createElement("span");
+    name.className = "student-name";
+    name.setAttribute("data-testid", "student-name");
+    name.textContent = session.displayName;
+    identity.appendChild(name);
+    renderSignOut(identity, deps.onSignOut);
+    header.appendChild(identity);
+    mount.appendChild(header);
+
+    // The single surface heading. renderHeadline focuses it, which both
+    // announces the surface on load and restores a sensible focus target
+    // when a student returns here from an assessment (Blueprint section 16).
+    renderHeadline(mount, "My Science");
+
+    const panel = doc.createElement("div");
+    panel.setAttribute("data-testid", "my-science-panel");
+    mount.appendChild(panel);
 
     const assignmentsCallable =
       typeof deps.studentAssignmentsList === "function"
@@ -828,266 +903,60 @@ export const makeActiveStudentSurface =
         : null;
     const launch = deps.onLaunchAssignment;
 
-    // Session-scoped success caches so switching tabs does not re-fetch,
-    // plus a shared in-flight promise so the two views never double-invoke
-    // the backend for the same data. A failed read clears the in-flight
-    // memo and is never cached, so a retry re-invokes the callable.
-    let assignmentsCache: ReadonlyArray<AssignmentsListForStudentItem> | null =
-      null;
-    let resultsCache: ReadonlyMap<string, StudentResultAggregate> | null = null;
-    let assignmentsInFlight: Promise<ReadonlyArray<
-      AssignmentsListForStudentItem
-    > | null> | null = null;
-    let resultsInFlight: Promise<ReadonlyMap<
-      string,
-      StudentResultAggregate
-    > | null> | null = null;
-
-    const getAssignments = (): Promise<ReadonlyArray<
-      AssignmentsListForStudentItem
-    > | null> => {
-      if (assignmentsCache !== null) return Promise.resolve(assignmentsCache);
-      if (assignmentsCallable === null) return Promise.resolve(null);
-      if (assignmentsInFlight === null) {
-        const callable = assignmentsCallable;
-        assignmentsInFlight = callable().then(
-          (response) => {
-            assignmentsCache = response.items;
-            assignmentsInFlight = null;
-            return assignmentsCache;
-          },
-          (err) => {
-            assignmentsInFlight = null;
-            throw err;
-          },
-        );
-      }
-      return assignmentsInFlight;
-    };
-
-    const getResults = (): Promise<ReadonlyMap<
-      string,
-      StudentResultAggregate
-    > | null> => {
-      if (resultsCache !== null) return Promise.resolve(resultsCache);
-      if (resultsCallable === null) return Promise.resolve(null);
-      if (resultsInFlight === null) {
-        const callable = resultsCallable;
-        resultsInFlight = callable().then(
-          (response) => {
-            // Single-student self-aggregation over the caller's own
-            // attempts. No cross-student data is read or computed.
-            resultsCache = aggregateByAssignment(response.attempts);
-            resultsInFlight = null;
-            return resultsCache;
-          },
-          (err) => {
-            resultsInFlight = null;
-            throw err;
-          },
-        );
-      }
-      return resultsInFlight;
-    };
-
-    // Non-rejecting variants used where the data is auxiliary to a view
-    // (status decoration on My Assignments; title/launch join on My
-    // Results). A failure of the auxiliary read degrades gracefully rather
-    // than failing the primary view.
-    const getResultsSafe = async (): Promise<ReadonlyMap<
-      string,
-      StudentResultAggregate
-    > | null> => {
-      try {
-        return await getResults();
-      } catch {
-        return null;
-      }
-    };
-    const getAssignmentsSafe = async (): Promise<ReadonlyArray<
-      AssignmentsListForStudentItem
-    > | null> => {
-      try {
-        return await getAssignments();
-      } catch {
-        return null;
-      }
-    };
-
-    // Nav (WAI-ARIA tablist) + a single panel host the active view renders
-    // into. Selection is conveyed by aria-selected and visible text, never
-    // color alone.
-    const panel = doc.createElement("div");
-    panel.setAttribute("data-testid", "student-panel");
-    panel.setAttribute("role", "tabpanel");
-    panel.id = "student-panel";
-    panel.tabIndex = 0;
-
-    let renderAssignmentsView: () => void = () => undefined;
-    let renderResultsView: () => void = () => undefined;
-    // The currently selected view. An async view load only commits to the
-    // shared panel when its view is still active, so a slow read that
-    // resolves after the student switched tabs cannot clobber the other
-    // view (PDR-024i two-surface menu integrity).
-    let activeView: StudentView = "assignments";
-
-    const nav = doc.createElement("div");
-    nav.setAttribute("role", "tablist");
-    nav.setAttribute("aria-label", "Student views");
-    nav.setAttribute("data-testid", "student-nav");
-
-    const tabs: Partial<Record<StudentView, HTMLButtonElement>> = {};
-
-    const select = (view: StudentView): void => {
-      activeView = view;
-      for (const key of ["assignments", "results"] as const) {
-        const tab = tabs[key];
-        if (!tab) continue;
-        const selected = key === view;
-        tab.setAttribute("aria-selected", selected ? "true" : "false");
-        tab.tabIndex = selected ? 0 : -1;
-      }
-      panel.setAttribute(
-        "aria-labelledby",
-        view === "assignments" ? "student-tab-assignments" : "student-tab-results",
-      );
-      if (view === "assignments") renderAssignmentsView();
-      else renderResultsView();
-    };
-
-    const makeTab = (
-      view: StudentView,
-      label: string,
-      testId: string,
-      id: string,
-    ): HTMLButtonElement => {
-      const tab = doc.createElement("button");
-      tab.type = "button";
-      tab.id = id;
-      tab.textContent = label;
-      tab.setAttribute("role", "tab");
-      tab.setAttribute("aria-controls", "student-panel");
-      tab.setAttribute("data-testid", testId);
-      tab.addEventListener("click", () => {
-        select(view);
-        tab.focus();
-      });
-      // Roving-tabindex arrow navigation between the two tabs.
-      tab.addEventListener("keydown", (event) => {
-        const key = event.key;
-        if (
-          key === "ArrowRight" ||
-          key === "ArrowLeft" ||
-          key === "Home" ||
-          key === "End"
-        ) {
-          event.preventDefault();
-          const other: StudentView =
-            view === "assignments" ? "results" : "assignments";
-          const target =
-            key === "Home"
-              ? "assignments"
-              : key === "End"
-                ? "results"
-                : other;
-          select(target as StudentView);
-          tabs[target as StudentView]?.focus();
-        }
-      });
-      tabs[view] = tab;
-      nav.appendChild(tab);
-      return tab;
-    };
-
-    makeTab("assignments", "My Assignments", "nav-assignments", "student-tab-assignments");
-    makeTab("results", "My Results", "nav-results", "student-tab-results");
-
-    mount.appendChild(nav);
-    mount.appendChild(panel);
-    renderReturnLink(mount);
-    renderSignOut(mount, deps.onSignOut);
-
-    // --- My Assignments view -------------------------------------------
-    renderAssignmentsView = (): void => {
+    // Rendering My Science is strictly read-only (Task 18): it invokes only
+    // the two caller-scoped READ callables (published assignments + the
+    // student's own completed attempts). It never creates or mutates an
+    // attempt, session, result, recipient, or enrollment. The only writing
+    // path is the existing authorized launcher, reached solely by a student
+    // clicking Open assignment.
+    const load = (): void => {
       clear(panel);
-      if (assignmentsCallable === null && assignmentsCache === null) {
-        // The callable seam is unavailable (for example the entry point
-        // has not yet wired it, or the session transition raced the route
-        // table). Fall back to a calm empty state; do not prompt retry
-        // against a missing dependency.
-        renderAssignmentsEmpty(panel);
+      if (assignmentsCallable === null) {
+        // The primary seam is unavailable (e.g. a route transition raced the
+        // wiring). Fall back to a calm empty state rather than prompting a
+        // retry against a missing dependency.
+        renderMyScienceEmpty(panel);
         return;
       }
-      renderLoadingIndicator(panel, "Loading your assignments");
-      Promise.all([getAssignments(), getResultsSafe()]).then(
-        ([items, statusByAssignment]) => {
-          if (activeView !== "assignments") return;
+      renderLoadingIndicator(panel, "Loading your science");
+      const assignmentsRead = assignmentsCallable().then((r) => r.items);
+      // Results are auxiliary: a results failure degrades the surface (no
+      // scores / tiers) rather than failing the whole page, so a student can
+      // always still open their work. A missing seam is treated the same as
+      // a failed read: null => degraded (Task 16).
+      const resultsRead: Promise<ReadonlyMap<
+        string,
+        StudentResultAggregate
+      > | null> =
+        resultsCallable === null
+          ? Promise.resolve(null)
+          : resultsCallable()
+              .then((r) => aggregateByAssignment(r.attempts))
+              .catch(() => null);
+      Promise.all([assignmentsRead, resultsRead]).then(
+        ([items, resultsMap]) => {
           clear(panel);
-          const launchable = filterLaunchableItems(items ?? []);
-          if (launchable.length === 0) {
-            renderAssignmentsEmpty(panel);
-            return;
-          }
-          renderAssignmentsList(panel, launchable, launch, statusByAssignment);
+          renderMyScience(panel, items ?? [], resultsMap, launch);
         },
         () => {
-          if (activeView !== "assignments") return;
+          // The primary (assignments) read failed. Show a calm, recoverable
+          // error with a retry that re-invokes the read. No Firebase code,
+          // callable name, or Firestore path is ever exposed.
           clear(panel);
-          renderAssignmentsError(panel, renderAssignmentsView);
+          renderMyScienceError(panel, load);
         },
       );
     };
 
-    // --- My Results view -----------------------------------------------
-    renderResultsView = (): void => {
-      clear(panel);
-      if (resultsCallable === null && resultsCache === null) {
-        renderResultsEmpty(panel);
-        return;
-      }
-      renderLoadingIndicator(panel, "Loading your results");
-      Promise.all([getResults(), getAssignmentsSafe()]).then(
-        ([aggregates, items]) => {
-          if (activeView !== "results") return;
-          clear(panel);
-          if (aggregates === null || aggregates.size === 0) {
-            renderResultsEmpty(panel);
-            return;
-          }
-          renderResultsList(panel, aggregates, items ?? [], launch);
-        },
-        () => {
-          if (activeView !== "results") return;
-          clear(panel);
-          renderResultsError(panel, renderResultsView);
-        },
-      );
-    };
-
-    // Default landing is My Assignments (PDR-024i order preserved).
-    select("assignments");
+    load();
   };
-
-function filterLaunchableItems(
-  items: ReadonlyArray<AssignmentsListForStudentItem>,
-): ReadonlyArray<AssignmentsListForStudentItem> {
-  // Belt-and-suspenders: wire.ts already discards malformed items, but
-  // the launcher URL builder is the last gate before an identifier is
-  // encoded into a URL. Any item that cannot produce a valid launch URL
-  // is dropped here so no button can render without a working target.
-  const out: AssignmentsListForStudentItem[] = [];
-  for (const item of items) {
-    if (buildAssignmentLaunchUrl(item) !== null) out.push(item);
-  }
-  return out;
-}
 
 // Build the accessible status chip: a decorative glyph (aria-hidden) plus
 // the canonical PDR-024l label as visible text, so status is never
 // conveyed by color alone.
 function renderStatusChip(
   doc: Document,
-  status: StudentStatusKey,
+  status: MyScienceStatus,
   testId: string,
 ): HTMLElement {
   const chip = doc.createElement("span");
@@ -1096,32 +965,31 @@ function renderStatusChip(
   chip.setAttribute("data-status", status);
   const glyph = doc.createElement("span");
   glyph.setAttribute("aria-hidden", "true");
-  glyph.textContent = STATUS_GLYPHS[status];
+  glyph.textContent = MY_SCIENCE_STATUS_GLYPH[status];
   const label = doc.createElement("span");
   label.className = "student-status-label";
-  label.textContent = STUDENT_STATUS_LABELS[status];
+  label.textContent = MY_SCIENCE_STATUS_LABEL[status];
   chip.appendChild(glyph);
   chip.appendChild(doc.createTextNode(" "));
   chip.appendChild(label);
   return chip;
 }
 
-function renderAssignmentsEmpty(mount: HTMLElement): void {
+function renderMyScienceEmpty(mount: HTMLElement): void {
   const p = mount.ownerDocument.createElement("p");
-  p.setAttribute("data-testid", "assignments-empty");
+  p.setAttribute("data-testid", "my-science-empty");
   p.textContent =
-    "No assignments are open for you right now. Check back after your teacher publishes one.";
+    "No science assignments yet. Check back after your teacher assigns work.";
   mount.appendChild(p);
 }
 
-function renderAssignmentsError(
-  mount: HTMLElement,
-  onRetry: () => void,
-): void {
+function renderMyScienceError(mount: HTMLElement, onRetry: () => void): void {
   const banner = renderErrorBanner(
     mount,
-    "We could not load your assignments. Check your connection and try again.",
+    "We could not load your science work. Check your connection and try again.",
   );
+  // Reuse the certified student error-callout hook (Sprint 28.5B B5) so the
+  // message reads as an error, not muted text.
   banner.setAttribute("data-testid", "assignments-error");
   const retry = renderPrimaryButton(
     mount,
@@ -1134,166 +1002,220 @@ function renderAssignmentsError(
   retry.setAttribute("aria-label", "Try again");
 }
 
-function renderAssignmentsList(
+// Pure join of the caller-scoped published assignments with the student's
+// own completed-attempt aggregate. Deterministic; no I/O. When resultsMap is
+// null (results unavailable / degraded), every listed item is treated as
+// not-yet-completed with no status, and no historical items are synthesized,
+// so nothing is mislabeled as done (or not-done) on incomplete data.
+function buildMyScienceItems(
+  items: ReadonlyArray<AssignmentsListForStudentItem>,
+  resultsMap: ReadonlyMap<string, StudentResultAggregate> | null,
+): ReadonlyArray<MyScienceItem> {
+  const out: MyScienceItem[] = [];
+  const seen = new Set<string>();
+  for (const item of items) {
+    const launchUrl = buildAssignmentLaunchUrl(item);
+    // A listed item with no resolvable launch URL (malformed slug) cannot be
+    // started; drop it rather than render a dead control (fail closed).
+    if (launchUrl === null) continue;
+    seen.add(item.assignmentId);
+    const unit = getUnitBySlug(item.lessonSlug);
+    // The canonical curriculum title is the source of truth for the card
+    // label; the stored teacher-authored assignment title is the fallback
+    // and is never mutated (Blueprint section 15). Gated / unknown units
+    // fall back to the stored title and to the trailing "Other" group.
+    const title = unit ? unit.title : item.title;
+    const topic = unit && STUDENT_DOMAINS.has(unit.topic) ? unit.topic : null;
+    const aggregate = resultsMap
+      ? resultsMap.get(item.assignmentId) ?? null
+      : null;
+    out.push({
+      assignmentId: item.assignmentId,
+      title,
+      topic,
+      launchUrl,
+      aggregate,
+      completed: aggregate !== null,
+      publishedAt:
+        typeof item.publishedAt === "number" ? item.publishedAt : null,
+      lessonSlug: item.lessonSlug,
+    });
+  }
+  // Historical completed work: a completed attempt whose assignment is no
+  // longer in the published list (typically closed after the student
+  // finished). Kept so completed work is never hidden, but not re-launchable
+  // and with no lessonSlug, so it lands in the trailing "Other" group under a
+  // safe, non-leaking label.
+  if (resultsMap !== null) {
+    for (const aggregate of resultsMap.values()) {
+      if (seen.has(aggregate.assignmentId)) continue;
+      out.push({
+        assignmentId: aggregate.assignmentId,
+        title: "Assignment no longer listed",
+        topic: null,
+        launchUrl: null,
+        aggregate,
+        completed: true,
+        publishedAt: null,
+        lessonSlug: null,
+      });
+    }
+  }
+  return out;
+}
+
+// Deterministic within-domain ordering (Blueprint section 15): unfinished
+// before completed, then newest published first (null publishedAt last),
+// then lessonSlug ascending (null last), then assignmentId ascending as the
+// final stable fallback.
+function compareMyScienceItems(a: MyScienceItem, b: MyScienceItem): number {
+  if (a.completed !== b.completed) return a.completed ? 1 : -1;
+  const ap = a.publishedAt ?? -Infinity;
+  const bp = b.publishedAt ?? -Infinity;
+  if (ap !== bp) return bp - ap;
+  const as = a.lessonSlug ?? "\uffff";
+  const bs = b.lessonSlug ?? "\uffff";
+  if (as !== bs) return as < bs ? -1 : 1;
+  if (a.assignmentId < b.assignmentId) return -1;
+  if (a.assignmentId > b.assignmentId) return 1;
+  return 0;
+}
+
+function renderMyScience(
   mount: HTMLElement,
   items: ReadonlyArray<AssignmentsListForStudentItem>,
+  resultsMap: ReadonlyMap<string, StudentResultAggregate> | null,
   launch: ((url: string) => void) | undefined,
-  statusByAssignment: ReadonlyMap<string, StudentResultAggregate> | null,
 ): void {
   const doc = mount.ownerDocument;
-  const list = doc.createElement("ul");
-  list.setAttribute("data-testid", "assignments-list");
-  list.className = "shell-list";
-  for (const item of items) {
-    const url = buildAssignmentLaunchUrl(item);
-    if (url === null) continue;
-    const li = doc.createElement("li");
-    li.setAttribute("data-testid", "assignments-item");
+  const work = buildMyScienceItems(items, resultsMap);
+  if (work.length === 0) {
+    renderMyScienceEmpty(mount);
+    return;
+  }
+  // When results are unavailable the surface degrades: cards render without a
+  // status chip, score, or completed-tier treatment so nothing is mislabeled.
+  // Domain grouping needs only the manifest, so it is preserved.
+  const degraded = resultsMap === null;
+
+  // Bucket by domain. Render a section only when it holds at least one item
+  // (empty domains are omitted, Blueprint section 15).
+  const byTopic = new Map<LessonTopic | "other", MyScienceItem[]>();
+  for (const it of work) {
+    const key: LessonTopic | "other" = it.topic ?? "other";
+    const bucket = byTopic.get(key);
+    if (bucket) bucket.push(it);
+    else byTopic.set(key, [it]);
+  }
+
+  const order: Array<LessonTopic | "other"> = [
+    ...STUDENT_DOMAIN_ORDER,
+    "other",
+  ];
+  for (const key of order) {
+    const bucket = byTopic.get(key);
+    if (!bucket || bucket.length === 0) continue;
+    bucket.sort(compareMyScienceItems);
+
+    const section = doc.createElement("section");
+    section.className = "my-science-domain";
+    section.setAttribute("data-testid", "my-science-domain");
+    section.setAttribute("data-domain", key);
 
     const heading = doc.createElement("h2");
-    heading.setAttribute("data-testid", "assignments-item-title");
-    // Titles are user-authored content routed through Element.textContent
-    // (never innerHTML). No launch URL is constructed from the title.
-    heading.textContent = item.title;
-    li.appendChild(heading);
+    heading.setAttribute("data-testid", "my-science-domain-heading");
+    heading.textContent =
+      key === "other" ? OTHER_DOMAIN_HEADING : TOPIC_LABEL[key];
+    section.appendChild(heading);
 
-    // Status decoration. Only rendered when the caller-scoped result read
-    // is available, so a missing or failed results read degrades to the
-    // launch-only card rather than mislabeling attempted work. An
-    // assignment with no completed attempt derives Ready to Begin.
-    if (statusByAssignment !== null) {
-      const aggregate = statusByAssignment.get(item.assignmentId);
-      const status: StudentStatusKey = aggregate ? aggregate.status : "ready";
-      // Sprint 28.5B (B4): flag strongly-completed work (a best score that
-      // derives Well Done! or Perfect Score) so the stylesheet can quiet the
-      // card and let the eye settle on unfinished work first. This is
-      // presentation only: the card stays visible, its title/status/label
-      // and accessible name are unchanged, its Open assignment control and
-      // launch URL are unchanged, and no authorization, lifecycle, or backend
-      // state is affected. Only rendered when the caller-scoped results read
-      // succeeded (status is known); a degraded launch-only card is never
-      // marked complete.
-      if (status === "perfect" || status === "wellDone") {
-        li.setAttribute("data-complete", "true");
-      }
-      li.appendChild(renderStatusChip(doc, status, "assignments-item-status"));
+    const list = doc.createElement("ul");
+    list.className = "shell-list";
+    list.setAttribute("data-testid", "my-science-list");
+    for (const it of bucket) {
+      list.appendChild(renderMyScienceCard(doc, it, launch, degraded));
     }
+    section.appendChild(list);
+    mount.appendChild(section);
+  }
+}
 
+function renderMyScienceCard(
+  doc: Document,
+  item: MyScienceItem,
+  launch: ((url: string) => void) | undefined,
+  degraded: boolean,
+): HTMLElement {
+  const li = doc.createElement("li");
+  li.setAttribute("data-testid", "my-science-card");
+
+  const heading = doc.createElement("h3");
+  heading.setAttribute("data-testid", "my-science-card-title");
+  // Titles are manifest/user-authored content routed through textContent
+  // (never innerHTML); no launch URL is ever built from the title.
+  heading.textContent = item.title;
+  li.appendChild(heading);
+
+  const showResult = !degraded && item.completed && item.aggregate !== null;
+  // Sprint 28.6H (Finding 17): OBJECTIVE status only - "Completed" for finished
+  // work, "Ready to Begin" for unfinished. The score below carries the actual
+  // performance; no subjective judgment is shown.
+  const status: MyScienceStatus = item.completed ? "completed" : "ready";
+
+  // Status is carried by visible text (never color alone). In the degraded
+  // state we know neither completion nor status, so no chip is shown rather
+  // than a misleading one.
+  if (!degraded) {
+    li.setAttribute("data-status", status);
+    // All completed work is visually quieter than unfinished work (Task 7);
+    // it stays visible and interactive (completed is not unavailable).
+    if (showResult) li.setAttribute("data-complete", "true");
+    li.appendChild(renderStatusChip(doc, status, "my-science-card-status"));
+  }
+
+  if (showResult && item.aggregate) {
+    const agg = item.aggregate;
+    // Sprint 28.6H (Finding 16): compact score line - "100% · 10/10" - rather
+    // than the taller "Best score 100% (10 / 10)". The percentage is the value
+    // the student came for (prominent); the raw fraction is quiet context.
+    const score = doc.createElement("p");
+    score.setAttribute("data-testid", "my-science-card-score");
+    const strong = doc.createElement("strong");
+    strong.textContent = `${agg.bestPercentage}%`;
+    score.appendChild(strong);
+    const raw = doc.createElement("span");
+    raw.className = "my-science-card-score-raw";
+    raw.textContent = ` · ${agg.bestScore}/${agg.bestMaxScore}`;
+    score.appendChild(raw);
+    li.appendChild(score);
+
+    const attempts = doc.createElement("p");
+    attempts.setAttribute("data-testid", "my-science-card-attempts");
+    attempts.textContent =
+      agg.attemptCount === 1 ? "1 attempt" : `${agg.attemptCount} attempts`;
+    li.appendChild(attempts);
+  }
+
+  // Launch action. Reuses the certified assignment launcher URL and the
+  // shared primary-action testid (assignments-launch) so the same styling
+  // and the same launch/authorization path apply. Historical items (no live
+  // assignment record) carry no launch URL and render no action; their
+  // result is still shown so the student can see how they did.
+  if (item.launchUrl !== null) {
+    const url = item.launchUrl;
     const btn = doc.createElement("button");
     btn.type = "button";
     btn.setAttribute("data-testid", "assignments-launch");
     btn.setAttribute("data-assignment-launch-url", url);
     btn.textContent = "Open assignment";
+    // The accessible name includes the lesson title (Blueprint section 16).
+    btn.setAttribute("aria-label", `Open assignment: ${item.title}`);
     btn.addEventListener("click", () => {
       if (launch) launch(url);
     });
     li.appendChild(btn);
-
-    list.appendChild(li);
   }
-  mount.appendChild(list);
-}
 
-// -----------------------------------------------------------------------------
-// My Results rendering
-// -----------------------------------------------------------------------------
-
-function renderResultsEmpty(mount: HTMLElement): void {
-  const p = mount.ownerDocument.createElement("p");
-  p.setAttribute("data-testid", "results-empty");
-  p.textContent = "You have not completed any assignments yet.";
-  mount.appendChild(p);
-}
-
-function renderResultsError(mount: HTMLElement, onRetry: () => void): void {
-  const banner = renderErrorBanner(
-    mount,
-    "We could not load your results. Check your connection and try again.",
-  );
-  banner.setAttribute("data-testid", "results-error");
-  const retry = renderPrimaryButton(
-    mount,
-    "Try again",
-    () => {
-      onRetry();
-    },
-    "results-retry",
-  );
-  retry.setAttribute("aria-label", "Try again");
-}
-
-function renderResultsList(
-  mount: HTMLElement,
-  aggregates: ReadonlyMap<string, StudentResultAggregate>,
-  assignments: ReadonlyArray<AssignmentsListForStudentItem>,
-  launch: ((url: string) => void) | undefined,
-): void {
-  const doc = mount.ownerDocument;
-  // Index the current assignment list by assignmentId for the title and
-  // launch-target join. Both reads are caller-scoped; no cross-student
-  // data is involved.
-  const byId = new Map<string, AssignmentsListForStudentItem>();
-  for (const item of assignments) byId.set(item.assignmentId, item);
-
-  const list = doc.createElement("ul");
-  list.setAttribute("data-testid", "results-list");
-  list.className = "shell-list";
-
-  for (const aggregate of aggregates.values()) {
-    const item = byId.get(aggregate.assignmentId) ?? null;
-    const launchUrl = item ? buildAssignmentLaunchUrl(item) : null;
-
-    const li = doc.createElement("li");
-    li.setAttribute("data-testid", "results-item");
-
-    const heading = doc.createElement("h2");
-    heading.setAttribute("data-testid", "results-item-title");
-    // Title-join behavior: when the current assignment record is
-    // available, use its title; otherwise fall back to a safe,
-    // understandable label rather than exposing an internal id
-    // (blueprint §5.4 title-join fallback). Titles are user-authored and
-    // routed through textContent (never innerHTML).
-    heading.textContent = item ? item.title : "Assignment no longer listed";
-    li.appendChild(heading);
-
-    li.appendChild(
-      renderStatusChip(doc, aggregate.status, "results-status"),
-    );
-
-    const best = doc.createElement("p");
-    best.setAttribute("data-testid", "results-best-score");
-    best.textContent = `Best score: ${aggregate.bestScore} / ${aggregate.bestMaxScore}`;
-    li.appendChild(best);
-
-    const count = doc.createElement("p");
-    count.setAttribute("data-testid", "results-attempt-count");
-    count.textContent =
-      aggregate.attemptCount === 1
-        ? "1 attempt completed"
-        : `${aggregate.attemptCount} attempts completed`;
-    li.appendChild(count);
-
-    // Improve My Score is offered on every less-than-perfect best score
-    // (PDR-024k), but only when a launchable target exists (fail closed;
-    // a result whose assignment is no longer listed cannot be relaunched,
-    // blueprint §5.4). It reuses the existing launch path; it never begins
-    // a session directly.
-    if (aggregate.canImprove && launchUrl !== null) {
-      const improve = doc.createElement("button");
-      improve.type = "button";
-      improve.setAttribute("data-testid", "results-improve");
-      improve.setAttribute("data-assignment-launch-url", launchUrl);
-      improve.textContent = "Improve My Score";
-      improve.setAttribute("aria-label", "Improve My Score");
-      improve.addEventListener("click", () => {
-        if (launch) launch(launchUrl);
-      });
-      li.appendChild(improve);
-    }
-
-    list.appendChild(li);
-  }
-  mount.appendChild(list);
+  return li;
 }
 
 // -----------------------------------------------------------------------------

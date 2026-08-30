@@ -37,20 +37,6 @@ const has = (selector: string): boolean => ruleBody(html, selector) !== null;
 
 /** Body of the LAST rule matching `selector` - the one that wins the cascade
  *  when a base rule is overridden later in source order. */
-const lastRuleBody = (css: string, selector: string): string | null => {
-  const stripped = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const rules = stripped.match(/[^{}]+\{[^{}]*\}/g) ?? [];
-  let found: string | null = null;
-  for (const rule of rules) {
-    const open = rule.indexOf("{");
-    const prelude = rule.slice(0, open);
-    const body = rule.slice(open + 1, rule.lastIndexOf("}"));
-    const selectors = prelude.split(",").map((s) => s.trim());
-    if (selectors.includes(selector)) found = body;
-  }
-  return found;
-};
-
 describe("D1 - shared teacher management controls are defined", () => {
   test("shell-btn is a real, intentional button (padding, border, radius, cursor)", () => {
     const body = ruleBody(html, ".shell-btn");
@@ -216,16 +202,18 @@ describe("D4 - Active Assignments dashboard is styled", () => {
   });
 });
 
-describe("D5 - Curriculum density at classroom widths", () => {
-  test("the grid track minimum is tightened below the old 250px", () => {
-    // The base rule (minmax(250px)) is overridden later in source order by the
-    // 28.5D density rule, so read the effective (last) rule.
-    const grid = lastRuleBody(html, ".shell-curriculum-grid");
+describe("Curriculum density (Sprint 28.6H, Finding 6)", () => {
+  test("the grid uses an explicit 4-column layout, not auto-fill", () => {
+    // 28.6H replaced the auto-fill minmax() track (which produced 5 across at
+    // 1280) with explicit column counts (4 desktop, reflowing to 3 / 2 / 1),
+    // so card readability wins over maximum density.
+    const grid = ruleBody(html, ".shell-curriculum-grid");
     expect(grid).not.toBeNull();
-    const m = grid!.match(/minmax\((\d+)px/);
-    expect(m).not.toBeNull();
-    const minPx = parseInt((m as RegExpMatchArray)[1], 10);
-    expect(minPx).toBeLessThan(250);
-    expect(minPx).toBeGreaterThanOrEqual(180);
+    expect(grid).toMatch(/grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+    expect(grid).not.toMatch(/auto-fill/);
+    // Reflow rules exist for narrower widths.
+    const stripped = html.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(stripped).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+    expect(stripped).toMatch(/repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   });
 });

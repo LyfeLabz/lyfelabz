@@ -4,6 +4,8 @@ import { httpsCallable } from "firebase/functions";
 import type {
   AssignmentSummary,
   AssignmentSummaryCallable,
+  LessonSummary,
+  LessonSummaryCallable,
 } from "./types";
 
 // Sprint 13A entry-point wiring for the certified
@@ -83,5 +85,54 @@ export function createAssignmentSummaryCallable(
     const res = await callable({ assignmentId: input.assignmentId });
     const data = (res.data ?? {}) as CallableRecord;
     return parseSummary(data);
+  };
+}
+
+// Sprint 28.6E: entry-point wiring for the certified
+// `assessmentLessonSummary` callable. The backend is authoritative for
+// every metric; this wire never derives, aggregates, or recomputes. It
+// only canonicalizes/validates the response shape (mirroring
+// `parseSummary`) so a malformed payload fails loudly rather than
+// rendering silently wrong numbers.
+function parseLessonSummary(raw: CallableRecord): LessonSummary {
+  const lessonSlug = raw.lessonSlug;
+  const classesAssigned = raw.classesAssigned;
+  const students = raw.students;
+  const studentsCompleted = raw.studentsCompleted;
+  const completionPercentage = raw.completionPercentage;
+  const averageBestPercentage = raw.averageBestPercentage;
+  const assignmentsConsidered = raw.assignmentsConsidered;
+
+  if (
+    !isString(lessonSlug) ||
+    !isFiniteNumber(classesAssigned) ||
+    !isFiniteNumber(students) ||
+    !isFiniteNumber(studentsCompleted) ||
+    !isFiniteNumber(completionPercentage) ||
+    !isNullableFiniteNumber(averageBestPercentage) ||
+    !isFiniteNumber(assignmentsConsidered)
+  ) {
+    throw new Error("assessmentLessonSummary returned an unexpected shape.");
+  }
+
+  return Object.freeze({
+    lessonSlug,
+    classesAssigned,
+    students,
+    studentsCompleted,
+    completionPercentage,
+    averageBestPercentage,
+    assignmentsConsidered,
+  });
+}
+
+export function createLessonSummaryCallable(
+  functions: Functions,
+): LessonSummaryCallable {
+  const callable = httpsCallable(functions, "assessmentLessonSummary");
+  return async (input) => {
+    const res = await callable({ lessonSlug: input.lessonSlug });
+    const data = (res.data ?? {}) as CallableRecord;
+    return parseLessonSummary(data);
   };
 }

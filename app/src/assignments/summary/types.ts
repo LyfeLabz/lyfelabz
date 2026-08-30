@@ -35,3 +35,28 @@ export type AssignmentSummary = {
 export type AssignmentSummaryCallable = (input: {
   readonly assignmentId: string;
 }) => Promise<AssignmentSummary>;
+
+// Sprint 28.6E lesson-level (cross-assignment) summary. Mirrors the
+// certified `assessmentLessonSummary` callable response allowlist
+// (SPRINT_28_6_ARCHITECTURAL_BLUEPRINT.md §10). Curriculum View Summary is
+// aggregate-only: no student/attempt/class/recipient identifier, name,
+// email, response, or answer-key value crosses the boundary - this module
+// names none of those either. `averageBestPercentage` is `null` when no
+// student has completed the lesson yet so the surface renders an
+// unambiguous "No completed scores yet" state instead of a misleading 0%.
+export type LessonSummary = {
+  readonly lessonSlug: string;
+  readonly classesAssigned: number;
+  readonly students: number;
+  readonly studentsCompleted: number;
+  readonly completionPercentage: number;
+  readonly averageBestPercentage: number | null;
+  readonly assignmentsConsidered: number;
+};
+
+// Injected lesson-summary callable seam. The Curriculum surface never
+// imports firebase/* directly; the entry point wires the real callable and
+// tests inject an in-memory fake.
+export type LessonSummaryCallable = (input: {
+  readonly lessonSlug: string;
+}) => Promise<LessonSummary>;

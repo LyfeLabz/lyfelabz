@@ -128,10 +128,17 @@ describe("Sprint 28.5D D2A - opening Detail preserves the shell", () => {
     expect(mount.querySelector("[data-testid=workspace-outlet]")).toBeNull();
   });
 
-  test("Curriculum stays the active navigation item while Detail is shown", () => {
+  test("the origin surface stays the active navigation item while Detail is shown", () => {
     const mount = mkMount();
     const { seam, getController } = makeSeam();
     mountTeacherShell(teacherSession(), mount, makeDeps(seam));
+
+    // Sprint 28.6D: Classes is the default landing surface. Navigate to
+    // Curriculum first so Detail is opened from the Curriculum context, and
+    // confirm the active nav item is preserved (not reset) under the overlay.
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
+      ?.click();
 
     getController()!.show(renderDetailStub);
 

@@ -101,7 +101,7 @@ describe("dispatch — renders the correct surface into the mount", () => {
     expect(hist.calls[0].url).toBe("/app/signin");
   });
 
-  test("renders the active student landing surface with sign-out and return-to-lessons", () => {
+  test("renders the active student My Science landing with the minimal header (name + Log out)", () => {
     const mount = mkMount();
     const hist = fakeHistory();
     dispatch(
@@ -115,9 +115,12 @@ describe("dispatch — renders the correct surface into the mount", () => {
       mount,
       hist,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ben.");
+    // Sprint 28.6G: the student landing is the consolidated My Science page.
+    expect(mount.querySelector("h1")?.textContent).toBe("My Science");
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=student-name]")?.textContent,
+    ).toBe("Ben");
     // Opaque identifiers must never render on the student surface.
     expect(mount.textContent).not.toContain("s1");
     expect(mount.textContent).not.toContain("u1");
@@ -157,8 +160,9 @@ describe("dispatch — renders the correct surface into the mount", () => {
     // Product mark is the h1 per shell spec §8.1. Sprint 20 replaced
     // the product-name text with the canonical LYFELABZ wordmark.
     expect(mount.querySelector("h1")?.textContent).toBe("LYFELABZ");
-    // Welcome message is an h2 inside the Home surface.
-    expect(mount.querySelector("h2")?.textContent).toBe("Welcome, Ada.");
+    // Sprint 28.6D: Classes is the default landing surface; its h2
+    // headline is the labelled region for the outlet.
+    expect(mount.querySelector("h2")?.textContent).toBe("Classes");
     // Opaque schoolId must never render in the shell (spec §7.2).
     expect(mount.textContent).not.toContain("s1");
     expect(hist.calls[0].url).toBe("/app/teacher");
@@ -285,9 +289,9 @@ describe("dispatch — renders the correct surface into the mount", () => {
       hist,
     );
     // After switching to the teacher shell the mount contains exactly
-    // one h1 (product mark) and one h2 (welcome message).
+    // one h1 (product mark) and the default Classes surface headline (h2).
     expect(mount.querySelectorAll("h1")).toHaveLength(1);
     expect(mount.querySelector("h1")?.textContent).toBe("LYFELABZ");
-    expect(mount.querySelector("h2")?.textContent).toBe("Welcome, Ada.");
+    expect(mount.querySelector("h2")?.textContent).toBe("Classes");
   });
 });

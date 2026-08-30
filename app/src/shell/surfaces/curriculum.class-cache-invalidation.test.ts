@@ -145,17 +145,16 @@ describe("Curriculum class-cache invalidation (Sprint 25 B2)", () => {
     renderCurriculumSurface(curriculumMount, teacherA, { listClasses });
     await flush();
 
-    // Create a class on the Classes surface.
+    // Create a class on the Classes surface. Sprint 28.6H.8: the manual create
+    // form is reached via the shared class-management "create" intent (Settings
+    // -> Create LyfeLabz Class), not a landing button.
     const classesMount = mkMount();
     renderClassesSurface(classesMount, teacherA, {
       listClasses,
       createClass,
-      updateDefaultGrade: null,
+      getClassManagementIntent: (): "create" => "create",
+      setClassManagementIntent: () => {},
     });
-    await flush();
-    classesMount
-      .querySelector<HTMLButtonElement>("[data-testid=classes-create-open]")!
-      .click();
     await flush();
 
     const title = classesMount.querySelector<HTMLInputElement>(
