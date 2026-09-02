@@ -874,17 +874,27 @@ describe("provisioned surface - Student enrollment method (Sprint 29F)", () => {
     expect(el(mount, "method-choice-google")).not.toBeNull();
   });
 
-  test("defaults to Class code and does not show both method actions at once", () => {
+  test("defaults to Google Classroom and does not show both method actions at once", () => {
     const mount = renderStudent();
-    expect(el(mount, "method-code")?.hidden).toBe(false);
-    expect(el(mount, "method-google")?.hidden).toBe(true);
+    // Sprint 29F: Google Classroom is the default student join method.
+    expect(el(mount, "method-google")?.hidden).toBe(false);
+    expect(el(mount, "method-code")?.hidden).toBe(true);
     // aria reflects the default selection.
     expect(
-      el(mount, "method-choice-code")?.getAttribute("aria-expanded"),
+      el(mount, "method-choice-google")?.getAttribute("aria-expanded"),
     ).toBe("true");
     expect(
-      el(mount, "method-choice-google")?.getAttribute("aria-expanded"),
+      el(mount, "method-choice-code")?.getAttribute("aria-expanded"),
     ).toBe("false");
+  });
+
+  test("Google Classroom is rendered first, before Class code (Sprint 29F)", () => {
+    const mount = renderStudent();
+    const selector = el(mount, "method-selector")!;
+    const buttons = Array.from(
+      selector.querySelectorAll("[data-testid^=method-choice-]"),
+    ).map((b) => b.getAttribute("data-testid"));
+    expect(buttons).toEqual(["method-choice-google", "method-choice-code"]);
   });
 
   test("Class code method reveals name, join code, hint, and Join class", () => {
@@ -1720,6 +1730,39 @@ describe("error surface", () => {
     await flush();
     expect(spies.refresh).toHaveBeenCalledTimes(1);
   });
+});
+
+describe("29F - support contact address", () => {
+  // Guard against the fake placeholder returning to any user-visible support
+  // surface. Renders every surface that shows a support line and asserts the
+  // real address is present and no `.example` placeholder is.
+  const supportSurfaces: Array<[string, (t: ReturnType<typeof createRouteTable>, m: HTMLElement) => void]> = [
+    [
+      "suspended",
+      (t, m) => t.suspendedUser(freeze<Session>({ kind: "suspendedUser", uid: "u1" }), m),
+    ],
+    [
+      "error:userRecordMissing",
+      (t, m) => t.error(freeze<Session>({ kind: "error", reason: "userRecordMissing" }), m),
+    ],
+    [
+      "error:recordShapeInvalid",
+      (t, m) => t.error(freeze<Session>({ kind: "error", reason: "recordShapeInvalid" }), m),
+    ],
+  ];
+
+  test.each(supportSurfaces)(
+    "%s surface shows support@lyfelabz.com and no lyfelabz.example placeholder",
+    (_name, render) => {
+      const { deps } = makeDeps();
+      const table = createRouteTable(deps);
+      const mount = mkMount();
+      render(table, mount);
+      const text = mount.textContent ?? "";
+      expect(text).toContain("support@lyfelabz.com");
+      expect(text).not.toContain("lyfelabz.example");
+    },
+  );
 });
 
 describe("loading surface", () => {

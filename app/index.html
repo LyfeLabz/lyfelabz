@@ -3444,18 +3444,34 @@
     box-sizing: border-box;
     margin: 1.5rem;
   }
-  /* Sprint 28.6H (Findings 13/15): My Science is a real student WORKSPACE, not
-     a narrow auth card. When the root hosts the student header it uses the
-     desktop width and left alignment, so the page reads as "My Science, my
-     LyfeLabz home" and the assignment grid can use the viewport instead of a
-     mobile-width single column. Every other auth-card surface (signed-out /
-     provisioned / pending / error / admin) keeps the narrow centered card. */
+  /* Sprint 28.6H (Findings 13/15) + Sprint 29F: My Science is a real student
+     WORKSPACE, not a narrow auth card. When the root hosts the student header
+     it drops the floating-card chrome (background, border, radius, shadow) and
+     spans the full page so it reads as "My Science, my LyfeLabz home" rather
+     than a large card sitting inside another page. The assignment grid uses the
+     viewport instead of a mobile-width single column. Every other auth-card
+     surface (signed-out / provisioned / pending / error / admin) keeps the
+     narrow centered card because it lacks the .student-header hook. */
   body:not(:has(#app-root > .shell-header)) #app-root:has(.student-header) {
-    max-width: 68rem;
-    width: min(68rem, 100%);
-    padding: 2rem 2.25rem 2.25rem;
+    max-width: none;
+    width: 100%;
+    padding: 1.5rem 2rem 2.25rem;
     text-align: left;
-    margin: 1.5rem auto;
+    margin: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    align-self: stretch;
+  }
+  /* Top-align the student workspace to the page (mirrors the teacher shell
+     escape) so the full-page workspace is not vertically centered like a card.
+     Keyed on .student-header, which is unique to the active-student surface, so
+     onboarding / error / role-selection surfaces keep their centered card. */
+  body:not(:has(#app-root > .shell-header)):has(#app-root > .student-header) {
+    display: block;
+    align-items: initial;
+    justify-content: initial;
   }
   /* Canonical LYFELABZ wordmark. Reuses the public homepage nav-logo
      typography and glow so brand identity is a single definition
@@ -3842,6 +3858,8 @@
     flex-wrap: wrap;
     gap: 0.5rem 1rem;
     margin: 0 0 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.08));
   }
   body:not(:has(#app-root > .shell-header)) .student-header p.auth-brand {
     margin: 0;

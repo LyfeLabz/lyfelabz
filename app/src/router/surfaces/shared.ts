@@ -6,6 +6,12 @@
 
 export type OnSignOut = () => void;
 
+// Sprint 29F: the single canonical user-facing application-support address.
+// Every surface that shows a "contact support" line reads it from here so the
+// address is defined once and can never drift back to a placeholder. Privacy /
+// legal contact addresses are intentionally separate and are not defined here.
+export const SUPPORT_EMAIL = "support@lyfelabz.com";
+
 const doc = (mount: HTMLElement): Document => mount.ownerDocument;
 
 export function clear(mount: HTMLElement): void {

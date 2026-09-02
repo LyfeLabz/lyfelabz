@@ -45,6 +45,7 @@ import {
   renderReturnLink,
   renderSignOut,
   setButtonPending,
+  SUPPORT_EMAIL,
   type OnSignOut,
 } from "./shared";
 
@@ -292,7 +293,7 @@ export const makeProvisionedSurface =
       "role-choice-student",
       STUDENT_SECTION_ID,
       "Student",
-      "Join your class with a code or Google Classroom.",
+      "Join your class with Google Classroom or a class code.",
     );
     mount.appendChild(roleSelector);
 
@@ -447,15 +448,19 @@ export const makeProvisionedSurface =
       methodSelector.appendChild(b);
       return b;
     };
-    const codeMethodChoice = makeMethodChoice(
-      "method-choice-code",
-      "student-code-method",
-      "Class code",
-    );
+    // Sprint 29F: Google Classroom is the primary student join method, so it is
+    // created (and therefore rendered) first. Class code remains fully
+    // supported as the second choice. Creation order is the render order because
+    // makeMethodChoice appends each button to the selector.
     const googleMethodChoice = makeMethodChoice(
       "method-choice-google",
       "student-google-method",
       "Google Classroom",
+    );
+    const codeMethodChoice = makeMethodChoice(
+      "method-choice-code",
+      "student-code-method",
+      "Class code",
     );
     studentAction.appendChild(methodSelector);
 
@@ -636,13 +641,13 @@ export const makeProvisionedSurface =
     lmsBtn.setAttribute("aria-label", "Continue with Google Classroom");
     studentAction.appendChild(googleMethod);
 
-    // Enrollment-method progressive disclosure. Default to Class code (the
-    // primary manual path) so a student with a code needs no extra click.
-    // Selecting a method reveals only that method's action, updates aria and
-    // selected state, and never triggers enrollment. Typed manual values are
-    // preserved when switching away and back because the fields are only
-    // hidden, never rebuilt.
-    let studentMethod: "code" | "google" = "code";
+    // Enrollment-method progressive disclosure. Sprint 29F: default to Google
+    // Classroom (the primary student join method) so its panel appears
+    // immediately on entering Student onboarding. Selecting a method reveals
+    // only that method's action, updates aria and selected state, and never
+    // triggers enrollment. Typed manual values are preserved when switching away
+    // and back because the fields are only hidden, never rebuilt.
+    let studentMethod: "code" | "google" = "google";
     const selectMethod = (method: "code" | "google", moveFocus: boolean): void => {
       const codeActive = method === "code";
       studentMethod = method;
@@ -663,7 +668,7 @@ export const makeProvisionedSurface =
         }
       }
     };
-    selectMethod("code", false);
+    selectMethod("google", false);
     codeMethodChoice.addEventListener("click", () => selectMethod("code", true));
     googleMethodChoice.addEventListener("click", () =>
       selectMethod("google", true),
@@ -1466,7 +1471,7 @@ export const makeSuspendedSurface =
     );
     renderParagraph(
       mount,
-      "If you believe this is a mistake, contact your school administrator or LyfeLabz support at teachers@lyfelabz.example.",
+      `If you believe this is a mistake, contact your school administrator or LyfeLabz support at ${SUPPORT_EMAIL}.`,
     );
     renderSignOut(mount, deps.onSignOut);
   };
@@ -1596,8 +1601,7 @@ export const makeErrorSurface =
     if (copy.showSupport) {
       const support = mount.ownerDocument.createElement("p");
       support.className = "shell-small";
-      support.textContent =
-        "Contact support at teachers@lyfelabz.example with your email address.";
+      support.textContent = `Contact support at ${SUPPORT_EMAIL} with your email address.`;
       mount.appendChild(support);
     }
   };

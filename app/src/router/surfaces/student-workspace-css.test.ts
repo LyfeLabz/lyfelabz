@@ -90,13 +90,38 @@ describe("28.6G - the student error surface gets the callout styling", () => {
   });
 });
 
-describe("28.6H - My Science is a wide workspace, not a narrow auth card (Findings 13/15)", () => {
-  test("the root hosting the student header uses a wide, left-aligned layout", () => {
+describe("29F - My Science is a full-page workspace, not a floating card (Findings 13/15)", () => {
+  test("the root hosting the student header is full-width, left-aligned, and drops the card chrome", () => {
     const body = ruleBody(html, `${SCOPE} #app-root:has(.student-header)`);
     expect(body).not.toBeNull();
-    // Materially wider than the 32rem auth card, and left-aligned.
-    expect(body as string).toMatch(/max-width:\s*68rem/);
+    // Full-page: no width cap, no floating-card background/border/radius/shadow.
+    expect(body as string).toMatch(/max-width:\s*none/);
+    expect(body as string).toMatch(/width:\s*100%/);
     expect(body as string).toMatch(/text-align:\s*left/);
+    expect(body as string).toMatch(/background:\s*transparent/);
+    expect(body as string).toMatch(/box-shadow:\s*none/);
+    expect(body as string).toMatch(/border-radius:\s*0/);
+    // It must NOT keep the narrow auth-card width.
+    expect(body as string).not.toMatch(/max-width:\s*68rem/);
+  });
+
+  test("the active-student workspace is top-aligned to the page (block body), keyed on the student header", () => {
+    const body = ruleBody(
+      html,
+      `${SCOPE}:has(#app-root > .student-header)`,
+    );
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/display:\s*block/);
+  });
+
+  test("non-student auth surfaces keep the narrow centered card", () => {
+    // The base auth-card rule (no .student-header hook) still caps width and
+    // carries the floating-card chrome, so onboarding / role / error surfaces
+    // are unaffected by the full-page student treatment.
+    const body = ruleBody(html, `${SCOPE} #app-root`);
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/max-width:\s*32rem/);
+    expect(body as string).toMatch(/box-shadow:/);
   });
 
   test("the assignment list is a multi-column grid, not a single tall column", () => {
@@ -104,6 +129,14 @@ describe("28.6H - My Science is a wide workspace, not a narrow auth card (Findin
     expect(body).not.toBeNull();
     expect(body as string).toMatch(/display:\s*grid/);
     expect(body as string).toMatch(/grid-template-columns:\s*repeat\(3,/);
+  });
+
+  test("the student header has a subtle bottom divider separating it from the My Science body", () => {
+    const body = ruleBody(html, `${SCOPE} .student-header`);
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/border-bottom:\s*1px solid/);
+    expect(body as string).toMatch(/--tw-hairline-soft/);
+    expect(body as string).toMatch(/padding-bottom:/);
   });
 });
 

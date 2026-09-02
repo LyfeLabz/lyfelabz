@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { renderClassesSurface } from "./classes";
+import { renderClassesSurface, renderRosterSyncPanel } from "./classes";
+import type { RosterSyncView } from "./classes";
 import type { Session } from "../../session/types";
 import type { ClassSummary } from "../../classes/types";
 import type {
@@ -1706,3 +1707,65 @@ describe("Phase 2B.8: auto-sync negative gates", () => {
 // post-activation sync (backend behavior, unchanged) and the absence of any
 // roster-sync UI in the class workspace are covered above in the
 // "LMS activation auto-sync" describe.
+
+describe("29F - roster sync unresolved teacher guidance", () => {
+  const okView = (unresolved: number): RosterSyncView =>
+    Object.freeze({
+      available: true,
+      onSyncClick: () => {},
+      entry: {
+        status: "ok" as const,
+        at: 0,
+        counters: {
+          added: 2,
+          reactivated: 0,
+          unchanged: 3,
+          withdrawn: 1,
+          unresolved,
+          skipped: 0,
+          upstreamRosterEmpty: false,
+        },
+      },
+    });
+
+  const statusText = (unresolved: number): string => {
+    const panel = renderRosterSyncPanel(document, okView(unresolved));
+    return (
+      panel.querySelector("[data-testid=class-rostersync-status]")
+        ?.textContent ?? ""
+    );
+  };
+
+  test("unresolved = 0 shows the plain success summary and no guidance", () => {
+    const text = statusText(0);
+    expect(text).toContain("Added: 2");
+    expect(text).toContain("Unchanged: 3");
+    expect(text).toContain("Withdrawn: 1");
+    expect(text).not.toMatch(/sign(ing)? in/i);
+    // The bare "Unresolved:" label is gone.
+    expect(text).not.toContain("Unresolved:");
+  });
+
+  test("unresolved = 1 uses singular guidance and keeps the counts", () => {
+    const text = statusText(1);
+    expect(text).toContain("Added: 2");
+    expect(text).toContain("Unchanged: 3");
+    expect(text).toContain("Withdrawn: 1");
+    expect(text).toContain(
+      "1 student hasn't finished signing in to LyfeLabz with their school Google account yet.",
+    );
+    expect(text).toContain("sync the roster again");
+    expect(text).not.toContain("Unresolved:");
+  });
+
+  test("unresolved > 1 uses plural guidance and keeps the counts", () => {
+    const text = statusText(3);
+    expect(text).toContain("Added: 2");
+    expect(text).toContain("Unchanged: 3");
+    expect(text).toContain("Withdrawn: 1");
+    expect(text).toContain(
+      "3 students haven't finished signing in to LyfeLabz with their school Google accounts yet.",
+    );
+    expect(text).not.toContain("Unresolved:");
+  });
+});

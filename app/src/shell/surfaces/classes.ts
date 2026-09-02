@@ -2285,14 +2285,26 @@ export function renderRosterSyncPanel(
       const c = rosterSync.entry.counters;
       // Truthful aggregate summary. Zero values are always shown so the
       // teacher can distinguish "no changes" from "not yet synced".
-      // Unresolved students are represented separately from added so the
-      // teacher never mistakes them for enrolled students.
       const parts: string[] = [];
       parts.push(`Added: ${c.added}`);
       parts.push(`Unchanged: ${c.unchanged}`);
       parts.push(`Withdrawn: ${c.withdrawn}`);
-      parts.push(`Unresolved: ${c.unresolved}`);
-      status.textContent = `Roster synced. ${parts.join(", ")}.`;
+      // Sprint 29F: replace the raw "Unresolved: N" label with plain-language
+      // guidance. `unresolved` means those Classroom students have no usable
+      // active LyfeLabz identity yet (they have not finished signing in with
+      // their school Google account), so the teacher's next step is concrete:
+      // have them sign in, then sync again. The count is preserved inside the
+      // sentence; it never appears as a bare unexplained number. Singular and
+      // plural are handled so the copy always reads naturally.
+      let sentence = `Roster synced. ${parts.join(", ")}.`;
+      if (c.unresolved > 0) {
+        const guidance =
+          c.unresolved === 1
+            ? "1 student hasn't finished signing in to LyfeLabz with their school Google account yet. Ask them to sign in, then sync the roster again."
+            : `${c.unresolved} students haven't finished signing in to LyfeLabz with their school Google accounts yet. Ask them to sign in, then sync the roster again.`;
+        sentence = `${sentence} ${guidance}`;
+      }
+      status.textContent = sentence;
       panel.setAttribute("data-rostersync-status", "ok");
       break;
     }

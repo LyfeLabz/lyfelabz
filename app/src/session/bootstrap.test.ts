@@ -345,8 +345,37 @@ describe("bootstrapSession — error kinds", () => {
     };
     const session = await bootstrapSession(makeAuth(user), db, onlineEnv);
     expect(session).toEqual({ kind: "error", reason: "userRecordMissing" });
-    // 1 initial read + 6 retries = 7 total. Never unbounded.
-    expect(calls).toBeLessThanOrEqual(7);
+    // Sprint 29F: 1 initial read + 20 retries = 21 total (~10 s). Never
+    // unbounded, and never an infinite spinner.
+    expect(calls).toBeLessThanOrEqual(21);
+  });
+
+  test("29F - record appearing after the old ~3 s window but within the new ~10 s ceiling still resolves", async () => {
+    // Under the old 7-call (~3 s) bound this brand-new account would have
+    // surfaced userRecordMissing. The widened window lets a slower cold
+    // authOnUserCreate trigger land and the session resolve normally.
+    const user = makeUser("u1", () => ({}), "slow@example.com");
+    let calls = 0;
+    const db: BootstrapFirestoreInput = {
+      getUser: async () => {
+        calls++;
+        // Appears on the 12th read - past the old 7-read ceiling.
+        if (calls < 12) {
+          return { exists: false, data: () => undefined };
+        }
+        return {
+          exists: true,
+          data: () => ({ status: "provisioned", email: "slow@example.com" }),
+        };
+      },
+    };
+    const session = await bootstrapSession(makeAuth(user), db, onlineEnv);
+    expect(session).toEqual({
+      kind: "provisioned",
+      uid: "u1",
+      email: "slow@example.com",
+    });
+    expect(calls).toBe(12);
   });
 
   test("error(userRecordUnreadable) when the read rejects", async () => {

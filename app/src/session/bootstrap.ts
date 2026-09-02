@@ -42,8 +42,18 @@ const defaultEnv: BootstrapEnv = {
 // resolving, so a naive read races the trigger and returns
 // `userRecordMissing` for a brand-new Google account. Polling gives the
 // trigger a calm, bounded window to land before we surface a permanent
-// missing-record error. Total wait ≤ 3 s (7 attempts × 500 ms).
-const MISSING_RECORD_MAX_ATTEMPTS = 7;
+// missing-record error.
+//
+// Sprint 29F: production certification showed a genuinely new account still hit
+// `userRecordMissing` under the old ~3 s ceiling (a cold Gen-1 authOnUserCreate
+// invocation plus Firestore propagation can exceed the warm ~1-1.5 s path). The
+// window is widened to a bounded ~10 s so ordinary provisioning latency resolves
+// on its own. The UI shows its neutral loading state throughout this await; the
+// missing-record error (with Try again) is surfaced only if the record is still
+// absent after the bounded window, so a genuine failure is never hidden and the
+// loop can never run unbounded. Total wait ≤ 10 s (initial read + 20 retries ×
+// 500 ms).
+const MISSING_RECORD_MAX_ATTEMPTS = 21;
 const MISSING_RECORD_DELAY_MS = 500;
 
 // The Canonical Session Bootstrap.
