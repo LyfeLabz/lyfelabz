@@ -21,6 +21,7 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     signIn: jest.Mock<Promise<void>>;
     refresh: jest.Mock<Promise<void>>;
     requestVerification: jest.Mock<Promise<void>>;
+    activatePilotTeacher: jest.Mock<Promise<void>, []>;
     listClasses: jest.Mock<Promise<ReadonlyArray<never>>, [string]>;
     studentOnboarding: jest.Mock<
       Promise<void>,
@@ -40,6 +41,9 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     Promise<void>,
     [{ role: "teacher"; schoolId: string; displayName: string }]
   >(() => Promise.resolve());
+  const activatePilotTeacher = jest.fn<Promise<void>, []>(() =>
+    Promise.resolve(),
+  );
   const listClasses = jest.fn<Promise<ReadonlyArray<never>>, [string]>(
     () => Promise.resolve(Object.freeze([])),
   );
@@ -57,6 +61,7 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     onSignIn: signIn,
     onRefreshSession: refresh,
     onRequestVerification: requestVerification,
+    onActivatePilotTeacher: activatePilotTeacher,
     onStudentOnboarding: studentOnboarding,
     onStudentLmsOnboarding: studentLmsOnboarding,
     getGoogleDisplayName: googleDisplayName,
@@ -71,6 +76,7 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
       signIn,
       refresh,
       requestVerification,
+      activatePilotTeacher,
       listClasses,
       studentOnboarding,
       studentLmsOnboarding,
@@ -146,7 +152,7 @@ describe("signed-out surface", () => {
 });
 
 describe("provisioned surface", () => {
-  test("renders welcome copy and a form for schoolId and displayName", () => {
+  test("renders welcome copy and a direct teacher-activation control (no name or school fields)", () => {
     const { deps } = makeDeps();
     const table = createRouteTable(deps);
     const mount = mkMount();
@@ -157,11 +163,29 @@ describe("provisioned surface", () => {
     expect(mount.querySelector("h1")?.textContent).toBe(
       "Welcome to LyfeLabz.",
     );
-    expect(mount.querySelector("[data-testid=display-name]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=school-id]")).not.toBeNull();
+    // Sprint 29G.5C: the manual name + school-identifier fields are gone.
+    expect(mount.querySelector("[data-testid=display-name]")).toBeNull();
+    expect(mount.querySelector("[data-testid=school-id]")).toBeNull();
     expect(
       mount.querySelector("[data-testid=request-verification]"),
-    ).not.toBeNull();
+    ).toBeNull();
+    // Direct activation control is present instead.
+    const activate = mount.querySelector("[data-testid=activate-teacher]");
+    expect(activate).not.toBeNull();
+    expect(activate?.textContent).toBe("Continue as Teacher");
+    // Sprint 29G.5C-R1 copy: activation language, no verification wording.
+    expect(mount.textContent).toContain(
+      "Create and assign lessons to your students.",
+    );
+    expect(mount.textContent).toContain("Teacher access");
+    expect(mount.textContent).toContain(
+      "Continue to activate your LyfeLabz teacher workspace.",
+    );
+    expect(mount.textContent).not.toContain(
+      "Verify your school to create and assign lessons.",
+    );
+    expect(mount.textContent).not.toContain("Teacher verification");
+    expect(mount.textContent).not.toContain("approved school accounts");
     // Student branch is co-present so a new user can pick their path.
     expect(mount.querySelector("[data-testid=student-section]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=join-code]")).not.toBeNull();
@@ -169,23 +193,7 @@ describe("provisioned surface", () => {
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
   });
 
-  test("blocks submission until both inputs are non-empty", async () => {
-    const { deps, spies } = makeDeps();
-    const table = createRouteTable(deps);
-    const mount = mkMount();
-    table.provisioned(
-      freeze<Session>({ kind: "provisioned", uid: "u1" }),
-      mount,
-    );
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=request-verification]")
-      ?.click();
-    await flush();
-    expect(spies.requestVerification).not.toHaveBeenCalled();
-    expect(mount.querySelector("[data-testid=error-banner]")).not.toBeNull();
-  });
-
-  test("on successful submit, calls the callable once with the collected inputs and schedules a refresh", async () => {
+  test("selecting Continue as Teacher activates directly (no client-supplied fields) and schedules a refresh", async () => {
     jest.useFakeTimers();
     const { deps, spies } = makeDeps();
     const table = createRouteTable(deps);
@@ -194,33 +202,29 @@ describe("provisioned surface", () => {
       freeze<Session>({ kind: "provisioned", uid: "u1" }),
       mount,
     );
-    (mount.querySelector("[data-testid=display-name]") as HTMLInputElement).value =
-      "Ada";
-    (mount.querySelector("[data-testid=school-id]") as HTMLInputElement).value =
-      "s1";
     mount
-      .querySelector<HTMLButtonElement>("[data-testid=request-verification]")
+      .querySelector<HTMLButtonElement>("[data-testid=activate-teacher]")
       ?.click();
     await Promise.resolve();
     await Promise.resolve();
-    expect(spies.requestVerification).toHaveBeenCalledTimes(1);
-    expect(spies.requestVerification).toHaveBeenCalledWith({
-      role: "teacher",
-      schoolId: "s1",
-      displayName: "Ada",
-    });
+    expect(spies.activatePilotTeacher).toHaveBeenCalledTimes(1);
+    // No arguments: the server derives email and school; the client asserts
+    // nothing.
+    expect(spies.activatePilotTeacher).toHaveBeenCalledWith();
+    expect(spies.requestVerification).not.toHaveBeenCalled();
     jest.advanceTimersByTime(700);
     await Promise.resolve();
     expect(spies.refresh).toHaveBeenCalledTimes(1);
     jest.useRealTimers();
   });
 
-  test("renders permission errors with the specified copy", async () => {
-    const permissionErr = Object.assign(new Error("nope"), {
+  test("shows a safe not-enabled message for a non-allowlisted account", async () => {
+    const notAllowlisted = Object.assign(new Error("nope"), {
       code: "functions/permission-denied",
+      details: { code: "teachers.pilotNotAllowlisted" },
     });
     const { deps } = makeDeps({
-      onRequestVerification: () => Promise.reject(permissionErr),
+      onActivatePilotTeacher: () => Promise.reject(notAllowlisted),
     });
     const table = createRouteTable(deps);
     const mount = mkMount();
@@ -228,18 +232,19 @@ describe("provisioned surface", () => {
       freeze<Session>({ kind: "provisioned", uid: "u1" }),
       mount,
     );
-    (mount.querySelector("[data-testid=display-name]") as HTMLInputElement).value =
-      "Ada";
-    (mount.querySelector("[data-testid=school-id]") as HTMLInputElement).value =
-      "s1";
     mount
-      .querySelector<HTMLButtonElement>("[data-testid=request-verification]")
+      .querySelector<HTMLButtonElement>("[data-testid=activate-teacher]")
       ?.click();
     await flush();
     await flush();
-    expect(
-      mount.querySelector("[data-testid=error-banner]")?.textContent,
-    ).toContain("not eligible");
+    const banner = mount.querySelector("[data-testid=error-banner]");
+    expect(banner?.textContent).toBe(
+      "Teacher access has not been enabled for this account.",
+    );
+    // The safe message never leaks internal identifiers or raw backend text.
+    expect(mount.textContent).not.toContain("Referenced school does not exist.");
+    expect(mount.textContent).not.toContain("allowlist");
+    expect(mount.textContent).not.toContain("weston-middle");
   });
 });
 
@@ -327,10 +332,9 @@ describe("provisioned surface - role selector (Sprint 29F)", () => {
     );
     expect(teacher?.hidden).toBe(false);
     expect(student?.hidden).toBe(true);
-    // Teacher verification controls are reachable once revealed.
-    expect(mount.querySelector("[data-testid=display-name]")).not.toBeNull();
+    // Teacher activation control is reachable once revealed.
     expect(
-      mount.querySelector("[data-testid=request-verification]"),
+      mount.querySelector("[data-testid=activate-teacher]"),
     ).not.toBeNull();
   });
 
@@ -395,19 +399,22 @@ describe("provisioned surface - role selector (Sprint 29F)", () => {
 
   test("switching roles preserves fields the learner already typed", () => {
     const mount = render();
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=role-choice-teacher]")
-      ?.click();
-    (mount.querySelector("[data-testid=display-name]") as HTMLInputElement).value =
-      "Ada";
+    // The teacher branch no longer has a typed field (Sprint 29G.5C direct
+    // activation), so field preservation is exercised on the student branch,
+    // which remains in the DOM across role switches.
     mount
       .querySelector<HTMLButtonElement>("[data-testid=role-choice-student]")
       ?.click();
+    (mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement).value =
+      "Ada";
     mount
       .querySelector<HTMLButtonElement>("[data-testid=role-choice-teacher]")
       ?.click();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=role-choice-student]")
+      ?.click();
     expect(
-      (mount.querySelector("[data-testid=display-name]") as HTMLInputElement)
+      (mount.querySelector("[data-testid=student-display-name]") as HTMLInputElement)
         .value,
     ).toBe("Ada");
   });

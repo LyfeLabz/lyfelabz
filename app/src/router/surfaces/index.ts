@@ -56,11 +56,25 @@ export type SurfaceDeps = {
   readonly onSignOut: OnSignOut;
   readonly onSignIn: () => Promise<void>;
   readonly onRefreshSession: () => Promise<void>;
+  // Retained manual teacher-verification seam (Sprint 8-era). The curated
+  // pilot onboarding path no longer routes through it (see
+  // `onActivatePilotTeacher`), but the manual request/approve architecture
+  // is preserved for possible future non-pilot onboarding, so the seam
+  // stays wired.
   readonly onRequestVerification: (input: {
     readonly role: "teacher";
     readonly schoolId: string;
     readonly displayName: string;
   }) => Promise<void>;
+  // Sprint 29G.5C direct allowlisted pilot-teacher activation. The teacher
+  // onboarding branch calls this with no arguments: the server reads the
+  // authenticated email, checks the protected pilot allowlist, assigns the
+  // canonical pilot school, and activates the teacher. The client asserts
+  // no name, school, or email. The entry point force-refreshes the ID token
+  // after a successful call so the newly issued teacher claims are present
+  // before the workspace loads. Wired to the `teachersActivatePilot`
+  // callable.
+  readonly onActivatePilotTeacher: () => Promise<void>;
   // Sprint 20 internal beta: student self-onboarding + first-class join.
   // The client calls `studentsCompleteOnboarding` then force-refreshes the
   // ID token so custom claims (role, schoolId, districtId) are present
@@ -287,7 +301,7 @@ export const makeProvisionedSurface =
       "role-choice-teacher",
       TEACHER_SECTION_ID,
       "Teacher",
-      "Verify your school to create and assign lessons.",
+      "Create and assign lessons to your students.",
     );
     const studentChoice = makeRoleChoice(
       "role-choice-student",
@@ -314,43 +328,21 @@ export const makeProvisionedSurface =
     teacherContext.className = "workflow-context";
     const teacherHead = doc.createElement("h2");
     teacherHead.id = "onboarding-teacher-heading";
-    teacherHead.textContent = "Teacher verification";
+    teacherHead.textContent = "Teacher access";
     teacherContext.appendChild(teacherHead);
     const teacherIntro = doc.createElement("p");
     teacherIntro.textContent =
-      "A LyfeLabz administrator will verify that you teach at your school, usually within one school day.";
+      "Continue to activate your LyfeLabz teacher workspace.";
     teacherContext.appendChild(teacherIntro);
     teacherSection.appendChild(teacherContext);
 
-    // Right action column: the two fields sit side by side on desktop, then
-    // the submit control beneath them.
+    // Right action column: a single direct-activation control. Sprint
+    // 29G.5C removed the manual "Your name" and "School identifier" fields
+    // for the curated pilot: the server reads the authenticated email,
+    // checks the protected allowlist, and assigns the canonical pilot
+    // school. No name or school is typed here.
     const teacherAction = doc.createElement("div");
     teacherAction.className = "workflow-action";
-
-    const form = doc.createElement("form");
-    form.setAttribute("data-testid", "verification-form");
-    form.className = "shell-form workflow-fields";
-
-    const nameLabel = doc.createElement("label");
-    nameLabel.textContent = "Your name";
-    const nameInput = doc.createElement("input");
-    nameInput.type = "text";
-    nameInput.required = true;
-    nameInput.autocomplete = "name";
-    nameInput.setAttribute("data-testid", "display-name");
-    nameLabel.appendChild(nameInput);
-
-    const schoolLabel = doc.createElement("label");
-    schoolLabel.textContent = "School identifier";
-    const schoolInput = doc.createElement("input");
-    schoolInput.type = "text";
-    schoolInput.required = true;
-    schoolInput.setAttribute("data-testid", "school-id");
-    schoolLabel.appendChild(schoolInput);
-
-    form.appendChild(nameLabel);
-    form.appendChild(schoolLabel);
-    teacherAction.appendChild(form);
 
     const teacherErrorHost = doc.createElement("div");
     teacherErrorHost.setAttribute("data-testid", "teacher-error-host");
@@ -358,35 +350,22 @@ export const makeProvisionedSurface =
 
     const teacherBtn = renderPrimaryButton(
       teacherAction,
-      "Request Verification",
+      "Continue as Teacher",
       async () => {
-        const displayName = nameInput.value.trim();
-        const schoolId = schoolInput.value.trim();
         clear(teacherErrorHost);
-        if (!displayName || !schoolId) {
-          renderErrorBanner(
-            teacherErrorHost,
-            "Enter your name and school identifier to request verification.",
-          );
-          return;
-        }
-        setButtonPending(teacherBtn, "Requesting verification");
+        setButtonPending(teacherBtn, "Activating teacher access");
         try {
-          await deps.onRequestVerification({
-            role: "teacher",
-            schoolId,
-            displayName,
-          });
-          setButtonPending(teacherBtn, "Request sent");
+          await deps.onActivatePilotTeacher();
+          setButtonPending(teacherBtn, "Teacher access enabled");
           window.setTimeout(() => {
             void deps.onRefreshSession();
           }, TRANSITION_MESSAGE_MS);
         } catch (err) {
-          clearButtonPending(teacherBtn, "Request Verification");
-          renderErrorBanner(teacherErrorHost, describeVerificationError(err));
+          clearButtonPending(teacherBtn, "Continue as Teacher");
+          renderErrorBanner(teacherErrorHost, describePilotActivationError(err));
         }
       },
-      "request-verification",
+      "activate-teacher",
     );
     // Also expose the classic banner for legacy tests that read from the
     // mount root.
@@ -698,7 +677,7 @@ export const makeProvisionedSurface =
       // on a hidden field. Best-effort; never throws in a non-focusable
       // test environment.
       const firstField = teacherActive
-        ? nameInput
+        ? teacherBtn
         : studentMethod === "code"
           ? sNameInput
           : lmsBtn;
@@ -714,25 +693,43 @@ export const makeProvisionedSurface =
     renderSignOut(mount, deps.onSignOut);
   };
 
-function describeVerificationError(err: unknown): string {
-  const code =
+// Map a direct pilot-activation failure to calm, safe copy. Sprint 29G.5C.
+// No branch ever exposes allowlist contents, an internal school/district
+// id, a Firestore path, administrator details, or a raw backend message.
+// The unknown-code fallback is a fixed generic string (never the server
+// message) so backend text cannot leak into the onboarding UI.
+function describePilotActivationError(err: unknown): string {
+  const platformCode = extractPlatformErrorCode(err);
+  switch (platformCode) {
+    case "teachers.pilotNotAllowlisted":
+      return "Teacher access has not been enabled for this account.";
+    case "teachers.pilotSchoolUnconfigured":
+    case "teachers.schoolNotFound":
+    case "district-unassigned":
+    case "school-district-mismatch":
+      return "Teacher access isn't ready yet. Please try again later.";
+    case "teachers.activeSchoolMismatch":
+    case "teachers.roleConflict":
+    case "teachers.invalidStatus":
+    case "teachers.invalidRole":
+      return "This account can't be activated as a teacher. Sign out and try again with your school Google account.";
+    case "teachers.unauthenticated":
+    case "unauthenticated":
+      return "Your sign-in expired. Sign out and try again.";
+  }
+  const fb =
     err && typeof err === "object" && "code" in err
       ? String((err as { code?: unknown }).code)
       : "";
-  const message =
-    err && typeof err === "object" && "message" in err
-      ? String((err as { message?: unknown }).message)
-      : "";
-  if (code.includes("permission") || code.includes("unauthenticated")) {
-    return "Your account is not eligible to request verification. Sign out and try again with your school Google account.";
+  if (fb.includes("permission")) {
+    // A permission-denied with no canonical code still resolves to the safe
+    // not-enabled message rather than exposing anything internal.
+    return "Teacher access has not been enabled for this account.";
   }
-  if (code.includes("unavailable") || code.includes("network")) {
-    return "We could not send your request. Check your connection and try again.";
+  if (fb.includes("unavailable") || fb.includes("network")) {
+    return "We could not reach LyfeLabz. Check your connection and try again.";
   }
-  if (message) {
-    return message.slice(0, 240);
-  }
-  return "We could not send your request. Try again in a moment.";
+  return "We could not enable teacher access. Try again in a moment.";
 }
 
 // Extract the canonical PlatformError code the callable layer preserves on

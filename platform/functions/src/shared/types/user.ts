@@ -114,3 +114,19 @@ export type StudentActivationWrite = {
   readonly displayName: string;
   readonly status: "active";
 };
+
+// Write shape for the direct allowlisted pilot-teacher activation callable
+// (teachersActivatePilot), Sprint 29G.5C. Conforms to Data Model §3.1: the
+// activation-required fields (role, schoolId, displayName) are written on
+// the `provisioned` -> `active` transition. Unlike the manual
+// verification path, no `pendingVerification` intermediate state is used:
+// a curated, protected-allowlist teacher activates directly. schoolId is
+// assigned server-side from the protected pilot configuration and is never
+// client-supplied. Custom claims are issued alongside this write via the
+// canonical claims helper.
+export type TeacherPilotActivationWrite = {
+  readonly role: "teacher";
+  readonly schoolId: string;
+  readonly displayName: string;
+  readonly status: "active";
+};

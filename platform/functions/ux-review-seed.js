@@ -54,6 +54,16 @@ const PROJECT_ID = "lyfelabz-prod";
 const DISTRICT_ID = "district-beta";
 const SCHOOL_ID = "school-beta";
 
+// Sprint 29G.5C - emulator-only fixtures for reviewing the direct
+// allowlisted pilot-teacher activation flow. These mirror the intended
+// production Weston pilot (schoolId `weston-middle`, districtId
+// `district-weston`, shortName `WMS`) but exist ONLY in the emulator seed;
+// no production data is created here. The school is written directly (like
+// school-beta) so it carries the canonical `districtId` the shared
+// district-context helper reads.
+const PILOT_DISTRICT_ID = "district-weston";
+const PILOT_SCHOOL_ID = "weston-middle";
+
 // Fake local identities. The google.com provider link is what makes each
 // account appear in the Auth Emulator's Google account chooser so the
 // reviewer can sign in with one click and no password.
@@ -77,6 +87,25 @@ const LATE_STUDENT = {
   name: "Late Review Student",
   google: "ux-google-late-000000000001",
   role: "student",
+};
+
+// Sprint 29G.5C review identities for the direct pilot-activation flow.
+// Both are provisioned (NOT active) with a google.com provider link so they
+// appear in the Auth Emulator chooser. PILOT_TEACHER's email is on the
+// emulator allowlist and activates directly; UNLISTED_TEACHER is not on the
+// allowlist and must see the safe "Teacher access has not been enabled"
+// message.
+const PILOT_TEACHER = {
+  uid: "ux-pilot-teacher",
+  email: "ux-pilot-teacher@lyfelabz-cert.example",
+  name: "UX Pilot Teacher",
+  google: "ux-google-pilot-000000000001",
+};
+const UNLISTED_TEACHER = {
+  uid: "ux-unlisted-teacher",
+  email: "ux-unlisted-teacher@lyfelabz-cert.example",
+  name: "UX Unlisted Teacher",
+  google: "ux-google-unlisted-000000000001",
 };
 
 // Classes owned by the UX Review Teacher.
@@ -213,6 +242,83 @@ async function provisionUser(auth, db, u, log) {
   });
 
   log(`[ux-seed]   provisioned ${u.role} ${u.uid} (${u.name})`);
+}
+
+// Sprint 29G.5C - create a google-linked account whose users/{uid} record
+// is in the `provisioned` state (no role, no schoolId, no custom claims),
+// exactly the state authOnUserCreate leaves after first sign-in. Used to
+// review the direct pilot-activation transition (provisioned -> active
+// teacher) end to end. Emulator only.
+async function provisionProvisionedTeacher(auth, db, u, log) {
+  try {
+    await auth.getUser(u.uid);
+    await auth.deleteUser(u.uid);
+  } catch (err) {
+    if (err.code !== "auth/user-not-found") throw err;
+  }
+
+  const importResult = await auth.importUsers([
+    {
+      uid: u.uid,
+      email: u.email,
+      emailVerified: true,
+      displayName: u.name,
+      providerData: [
+        {
+          uid: u.google,
+          providerId: "google.com",
+          email: u.email,
+          displayName: u.name,
+        },
+      ],
+    },
+  ]);
+  if (importResult.failureCount > 0) {
+    throw new Error(
+      `importUsers (${u.uid}) failed: ${JSON.stringify(importResult.errors)}`,
+    );
+  }
+
+  // No custom claims: a provisioned account carries none until activation.
+  await db.collection("users").doc(u.uid).set({
+    authUid: u.uid,
+    status: "provisioned",
+    displayName: u.name,
+    email: u.email,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+
+  log(`[ux-seed]   provisioned (pre-activation) ${u.uid} (${u.name})`);
+}
+
+// Sprint 29G.5C - seed the canonical Weston pilot school + district and the
+// protected teacher pilot configuration for the emulator. The school is
+// written directly (like school-beta) with the canonical `districtId`; the
+// same `{ name, shortName: "WMS", timezone, districtId }` shape is also
+// accepted by the `schoolsCreate` callable after the 29G.5C-R1 shortName
+// fix, so production can seed Weston through that callable. The allowlist
+// names exactly the PILOT_TEACHER email plus the canonical `pilotSchoolId`.
+// Emulator only.
+async function seedPilotConfig(db, log) {
+  log("\n[ux-seed] Seeding Weston pilot school + protected pilot allowlist");
+  await db.collection("districts").doc(PILOT_DISTRICT_ID).set({
+    name: "Weston Public Schools",
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  await db.collection("schools").doc(PILOT_SCHOOL_ID).set({
+    name: "Weston Middle School",
+    shortName: "WMS",
+    timezone: "America/New_York",
+    districtId: PILOT_DISTRICT_ID,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  await db.collection("platformConfig").doc("teacherPilotAllowlist").set({
+    emails: [PILOT_TEACHER.email],
+    pilotSchoolId: PILOT_SCHOOL_ID,
+  });
+  log(
+    `[ux-seed]   schools/${PILOT_SCHOOL_ID} + platformConfig/teacherPilotAllowlist (1 email, pilotSchoolId=${PILOT_SCHOOL_ID})`,
+  );
 }
 
 // Restore a deterministic baseline for the review student. Completing the
@@ -422,11 +528,16 @@ async function main() {
 
   await deployReviewAssessments(log);
   await seedOrg(db, log);
+  await seedPilotConfig(db, log);
 
   log("\n[ux-seed] Provisioning fake local users");
   await provisionUser(auth, db, TEACHER, log);
   await provisionUser(auth, db, STUDENT, log);
   await provisionUser(auth, db, LATE_STUDENT, log);
+  // Sprint 29G.5C: provisioned (pre-activation) teachers for the direct
+  // pilot-activation review.
+  await provisionProvisionedTeacher(auth, db, PILOT_TEACHER, log);
+  await provisionProvisionedTeacher(auth, db, UNLISTED_TEACHER, log);
 
   await seedClasses(db, log);
   await resetReviewStudentAssessmentState(db, log);
@@ -476,6 +587,8 @@ async function main() {
   log("[ux-seed]   Teacher: UX Review Teacher (" + TEACHER.email + ")");
   log("[ux-seed]   Student: UX Review Student (" + STUDENT.email + ")");
   log("[ux-seed]   Late:    Late Review Student (" + LATE_STUDENT.email + ")");
+  log("[ux-seed]   Pilot (allowlisted, provisioned): " + PILOT_TEACHER.email + " -> Continue as Teacher activates directly");
+  log("[ux-seed]   Unlisted (provisioned): " + UNLISTED_TEACHER.email + " -> Continue as Teacher shows 'access not enabled'");
   log("[ux-seed]   Sign in via the Auth Emulator Google chooser; do NOT use 'Add new account'.");
 }
 

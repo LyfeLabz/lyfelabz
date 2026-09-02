@@ -45,6 +45,7 @@ type CreateData = {
   name?: unknown;
   shortName?: unknown;
   timezone?: unknown;
+  districtId?: unknown;
   district?: unknown;
   gradeLevels?: unknown;
   brandingRef?: unknown;
@@ -90,7 +91,7 @@ function existingSnapshot(
     name?: string;
     shortName?: string;
     timezone?: string;
-    district?: string;
+    districtId?: string;
     gradeLevels?: readonly string[];
     brandingRef?: string;
   } = {},
@@ -102,8 +103,8 @@ function existingSnapshot(
       shortName: overrides.shortName ?? "alpha",
       timezone: overrides.timezone ?? "America/New_York",
       createdAt: {} as never,
-      ...(overrides.district !== undefined
-        ? { district: overrides.district }
+      ...(overrides.districtId !== undefined
+        ? { districtId: overrides.districtId }
         : {}),
       ...(overrides.gradeLevels !== undefined
         ? { gradeLevels: overrides.gradeLevels }
@@ -146,7 +147,7 @@ describe("schoolsCreate", () => {
     expect(result).toEqual({ schoolId: "school-abc", alreadyCreated: false });
   });
 
-  it("preserves optional fields in the canonical write payload", async () => {
+  it("preserves optional fields in the canonical write payload, mapping the legacy district alias to districtId", async () => {
     mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
     mockSchoolSet.mockResolvedValueOnce(undefined);
     mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
@@ -167,10 +168,59 @@ describe("schoolsCreate", () => {
       shortName: "alpha",
       timezone: "America/New_York",
       createdAt: SERVER_TIMESTAMP_SENTINEL,
-      district: "District 5",
+      districtId: "District 5",
       gradeLevels: ["6", "7", "8"],
       brandingRef: "branding/alpha",
     });
+  });
+
+  it("persists the canonical districtId when supplied directly", async () => {
+    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
+    mockSchoolSet.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+    await __schoolsCreateHandler(
+      makeRequest({ data: { ...VALID_DATA, districtId: "district-weston" } }),
+    );
+
+    expect(mockSchoolSet).toHaveBeenCalledWith({
+      name: "Alpha Academy",
+      shortName: "alpha",
+      timezone: "America/New_York",
+      createdAt: SERVER_TIMESTAMP_SENTINEL,
+      districtId: "district-weston",
+    });
+  });
+
+  it("accepts districtId and legacy district together when they match", async () => {
+    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
+    mockSchoolSet.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+    await __schoolsCreateHandler(
+      makeRequest({
+        data: { ...VALID_DATA, districtId: "district-weston", district: "district-weston" },
+      }),
+    );
+
+    expect(mockSchoolSet).toHaveBeenCalledWith({
+      name: "Alpha Academy",
+      shortName: "alpha",
+      timezone: "America/New_York",
+      createdAt: SERVER_TIMESTAMP_SENTINEL,
+      districtId: "district-weston",
+    });
+  });
+
+  it("rejects conflicting districtId and legacy district with schools.invalidDistrict", async () => {
+    await expect(
+      __schoolsCreateHandler(
+        makeRequest({
+          data: { ...VALID_DATA, districtId: "district-weston", district: "district-other" },
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
+    expect(mockSchoolDocRef).not.toHaveBeenCalled();
   });
 
   it("rejects an unauthenticated caller with schools.unauthenticated", async () => {
@@ -241,12 +291,7 @@ describe("schoolsCreate", () => {
     expect(mockSchoolDocRef).not.toHaveBeenCalled();
   });
 
-  it("rejects a non-URL-safe shortName with schools.invalidShortName", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, shortName: "Alpha Academy" } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
+  it("rejects an empty, mis-leading, over-long, or path-unsafe shortName with schools.invalidShortName", async () => {
     await expect(
       __schoolsCreateHandler(
         makeRequest({ data: { ...VALID_DATA, shortName: "" } }),
@@ -254,10 +299,43 @@ describe("schoolsCreate", () => {
     ).rejects.toMatchObject({ code: "schools.invalidShortName" });
     await expect(
       __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, shortName: "-alpha-" } }),
+        makeRequest({ data: { ...VALID_DATA, shortName: "   " } }),
+      ),
+    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
+    // Must begin with an alphanumeric.
+    await expect(
+      __schoolsCreateHandler(
+        makeRequest({ data: { ...VALID_DATA, shortName: "-alpha" } }),
+      ),
+    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
+    // Path/markup characters are rejected.
+    await expect(
+      __schoolsCreateHandler(
+        makeRequest({ data: { ...VALID_DATA, shortName: "a/b" } }),
+      ),
+    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
+    // Over the length bound.
+    await expect(
+      __schoolsCreateHandler(
+        makeRequest({ data: { ...VALID_DATA, shortName: "x".repeat(49) } }),
       ),
     ).rejects.toMatchObject({ code: "schools.invalidShortName" });
     expect(mockSchoolDocRef).not.toHaveBeenCalled();
+  });
+
+  it("accepts human-facing shortName labels (Sprint 29G.5C-R1)", async () => {
+    for (const label of ["WMS", "Beta", "Weston MS", "St. Mary's & Co", "alpha"]) {
+      mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
+      mockSchoolSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+      const result = await __schoolsCreateHandler(
+        makeRequest({ data: { ...VALID_DATA, shortName: label } }),
+      );
+      expect(result).toEqual({ schoolId: "school-abc", alreadyCreated: false });
+      expect(mockSchoolSet).toHaveBeenCalledWith(
+        expect.objectContaining({ shortName: label }),
+      );
+    }
   });
 
   it("rejects an empty timezone with schools.invalidTimezone", async () => {
@@ -269,7 +347,7 @@ describe("schoolsCreate", () => {
     expect(mockSchoolDocRef).not.toHaveBeenCalled();
   });
 
-  it("rejects a non-string district with schools.invalidDistrict", async () => {
+  it("rejects a non-string district / districtId with schools.invalidDistrict", async () => {
     await expect(
       __schoolsCreateHandler(
         makeRequest({ data: { ...VALID_DATA, district: 42 } }),
@@ -278,6 +356,16 @@ describe("schoolsCreate", () => {
     await expect(
       __schoolsCreateHandler(
         makeRequest({ data: { ...VALID_DATA, district: "   " } }),
+      ),
+    ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
+    await expect(
+      __schoolsCreateHandler(
+        makeRequest({ data: { ...VALID_DATA, districtId: 42 } }),
+      ),
+    ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
+    await expect(
+      __schoolsCreateHandler(
+        makeRequest({ data: { ...VALID_DATA, districtId: "   " } }),
       ),
     ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
     expect(mockSchoolDocRef).not.toHaveBeenCalled();
@@ -322,10 +410,10 @@ describe("schoolsCreate", () => {
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
-  it("idempotent match compares optional fields (district, gradeLevels, brandingRef) exactly", async () => {
+  it("idempotent match compares optional fields (districtId, gradeLevels, brandingRef) exactly, resolving the legacy district alias", async () => {
     mockSchoolGet.mockResolvedValueOnce(
       existingSnapshot({
-        district: "District 5",
+        districtId: "District 5",
         gradeLevels: ["6", "7", "8"],
         brandingRef: "branding/alpha",
       }),
@@ -448,7 +536,7 @@ describe("schoolsCreate", () => {
           name: "  Alpha Academy  ",
           shortName: "  alpha  ",
           timezone: "  America/New_York  ",
-          district: "  District 5  ",
+          districtId: "  District 5  ",
           brandingRef: "  branding/alpha  ",
         },
       }),
@@ -461,7 +549,7 @@ describe("schoolsCreate", () => {
       shortName: "alpha",
       timezone: "America/New_York",
       createdAt: SERVER_TIMESTAMP_SENTINEL,
-      district: "District 5",
+      districtId: "District 5",
       brandingRef: "branding/alpha",
     });
   });

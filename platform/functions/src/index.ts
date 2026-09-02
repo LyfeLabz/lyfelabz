@@ -61,6 +61,7 @@ export {
 export { submissionsCreate, submissionsFinalize } from "./submissions";
 export {
   teacherPreferencesUpdate,
+  teachersActivatePilot,
   teachersApproveVerification,
   teachersDenyVerification,
   teachersRequestVerification,

@@ -15,6 +15,7 @@ export {
   TEACHER_PILOT_ALLOWLIST_DOC_ID,
   assertTeacherPilotAllowlisted,
   normalizeEmail,
+  resolvePilotSchoolId,
   type TeacherPilotAllowlistDoc,
 } from "./config/teacher-pilot-allowlist";
 export {
@@ -297,6 +298,7 @@ export {
   type StudentProfile,
   type TeacherApprovalWrite,
   type TeacherDenialWrite,
+  type TeacherPilotActivationWrite,
   type TeacherProfile,
   type TeacherVerificationRequestWrite,
   type UserProvisioningWrite,

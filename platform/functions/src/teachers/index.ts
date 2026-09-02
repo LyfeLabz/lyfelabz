@@ -1,6 +1,11 @@
 // teachers/ domain entry point.
 
 export {
+  teachersActivatePilot,
+  type TeachersActivatePilotRequest,
+  type TeachersActivatePilotResponse,
+} from "./teachers-activate-pilot";
+export {
   teachersApproveVerification,
   type TeachersApproveVerificationRequest,
   type TeachersApproveVerificationResponse,

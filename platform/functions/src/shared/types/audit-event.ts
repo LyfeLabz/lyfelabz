@@ -26,6 +26,11 @@ export const AUDIT_ACTIONS = [
   "teachers.verificationRequested",
   "teachers.verificationApproved",
   "teachers.verificationDenied",
+  // Sprint 29G.5C - direct allowlisted pilot teacher activation. Emitted by
+  // the `teachersActivatePilot` self-activation callable on the
+  // `provisioned` -> `active` transition, distinct from the manual
+  // `teachers.verificationApproved` administrator path which is retained.
+  "teachers.pilotActivated",
   "schools.created",
   "classes.created",
   "classes.metadataUpdated",

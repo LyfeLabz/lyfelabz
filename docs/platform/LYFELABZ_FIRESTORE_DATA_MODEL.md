@@ -333,7 +333,7 @@ Purpose: The institutional tenant record.
 Required fields:
 
 - name: Display name of the school.
-- shortName: A URL-safe token used in dashboards and any per-school routing.
+- shortName: A human-facing short display label for the school (e.g. "WMS", "Beta"). Stored metadata only; it is not used for routing, URLs, or document ids (the machine identifier is the schoolId document id). Accepts a bounded label of letters, digits, spaces, and the punctuation . ' & - beginning with an alphanumeric.
 - timezone: Required because due dates and lesson analytics need a canonical local time.
 - createdAt: For auditing.
 

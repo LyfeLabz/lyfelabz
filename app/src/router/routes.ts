@@ -47,6 +47,7 @@ export function createSignOutOnlyRouteTable(
     onSignIn: rejectMissing,
     onRefreshSession: rejectMissing,
     onRequestVerification: rejectMissing,
+    onActivatePilotTeacher: rejectMissing,
     listClasses: rejectMissing,
     onLaunchPresentMode: () => undefined,
   });

@@ -12,6 +12,7 @@ import {
   TEACHER_PILOT_ALLOWLIST_DOC_ID,
   assertTeacherPilotAllowlisted,
   normalizeEmail,
+  resolvePilotSchoolId,
 } from "./teacher-pilot-allowlist";
 
 function allowlistSnapshot(
@@ -142,6 +143,55 @@ describe("teacher-pilot-allowlist", () => {
         assertTeacherPilotAllowlisted("stranger@example.org"),
       ).rejects.toMatchObject({
         message: "This account is not authorized for the teacher pilot.",
+      });
+    });
+  });
+
+  describe("resolvePilotSchoolId", () => {
+    it("returns the trimmed pilotSchoolId, reading the canonical config document", async () => {
+      mockDocGet.mockResolvedValueOnce(
+        allowlistSnapshot({
+          data: {
+            emails: ["pilot.teacher@example.org"],
+            pilotSchoolId: "  weston-middle  ",
+          },
+        }),
+      );
+
+      await expect(resolvePilotSchoolId()).resolves.toBe("weston-middle");
+      expect(mockCollection).toHaveBeenCalledWith(PLATFORM_CONFIG_COLLECTION);
+      expect(mockDoc).toHaveBeenCalledWith(TEACHER_PILOT_ALLOWLIST_DOC_ID);
+    });
+
+    it("fails closed when the config document is absent", async () => {
+      mockDocGet.mockResolvedValueOnce(allowlistSnapshot({ exists: false }));
+      await expect(resolvePilotSchoolId()).rejects.toMatchObject({
+        code: "teachers.pilotSchoolUnconfigured",
+      });
+    });
+
+    it("fails closed when pilotSchoolId is missing", async () => {
+      mockDocGet.mockResolvedValueOnce(
+        allowlistSnapshot({ data: { emails: ["pilot.teacher@example.org"] } }),
+      );
+      await expect(resolvePilotSchoolId()).rejects.toMatchObject({
+        code: "teachers.pilotSchoolUnconfigured",
+      });
+    });
+
+    it("fails closed when pilotSchoolId is malformed (non-string or empty)", async () => {
+      mockDocGet.mockResolvedValueOnce(
+        allowlistSnapshot({ data: { pilotSchoolId: 42 } }),
+      );
+      await expect(resolvePilotSchoolId()).rejects.toMatchObject({
+        code: "teachers.pilotSchoolUnconfigured",
+      });
+
+      mockDocGet.mockResolvedValueOnce(
+        allowlistSnapshot({ data: { pilotSchoolId: "   " } }),
+      );
+      await expect(resolvePilotSchoolId()).rejects.toMatchObject({
+        code: "teachers.pilotSchoolUnconfigured",
       });
     });
   });

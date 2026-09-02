@@ -41,8 +41,16 @@ export const TEACHER_PILOT_ALLOWLIST_DOC_ID = "teacherPilotAllowlist";
 // Canonical read shape of `platformConfig/teacherPilotAllowlist`. Every
 // field is optional so a malformed or partially-populated document is
 // tolerated by the reader and resolved by failing closed.
+//
+// Sprint 29G.5C - `pilotSchoolId` (Option C from the 29G.5B architecture
+// review) names the canonical pilot school that direct allowlisted teacher
+// activation assigns server-side. It lives on the same protected document
+// as `emails` so the Weston pilot school is never hard-coded into business
+// logic and can be changed by editing one protected config document. The
+// document remains denied to every client role at the Rules layer.
 export type TeacherPilotAllowlistDoc = {
   readonly emails?: unknown;
+  readonly pilotSchoolId?: unknown;
 };
 
 // Normalize an email for allowlist comparison: trim surrounding whitespace
@@ -98,4 +106,42 @@ export async function assertTeacherPilotAllowlisted(
     (entry) => normalizeEmail(entry) === candidate,
   );
   if (!allowlisted) refuse();
+}
+
+// Non-secret refusal used when the pilot school is not configured. Kept
+// distinct from the allowlist refusal so operators can tell an
+// unconfigured pilot school apart from a non-allowlisted teacher without
+// either error revealing protected configuration contents.
+function refusePilotSchoolUnconfigured(): never {
+  throw new PlatformError(
+    "teachers.pilotSchoolUnconfigured",
+    "The teacher pilot school is not configured.",
+  );
+}
+
+// Resolve the canonical pilot `schoolId` from the protected
+// `platformConfig/teacherPilotAllowlist` document. Returns the trimmed
+// non-empty `pilotSchoolId`. Fails closed with
+// `teachers.pilotSchoolUnconfigured` when the document is absent, when the
+// field is missing, or when it is not a non-empty string, so a
+// misconfigured pilot can never activate a teacher against an unknown or
+// empty school. This performs no mutation and never returns a
+// client-supplied value; the caller resolves the school and district
+// entirely from server-trusted configuration and the canonical
+// `schools/{schoolId}` record.
+export async function resolvePilotSchoolId(): Promise<string> {
+  const snapshot = await getAdminFirestore()
+    .collection(PLATFORM_CONFIG_COLLECTION)
+    .doc(TEACHER_PILOT_ALLOWLIST_DOC_ID)
+    .get();
+
+  if (!snapshot.exists) refusePilotSchoolUnconfigured();
+
+  const data = snapshot.data() as TeacherPilotAllowlistDoc | undefined;
+  const raw = data?.pilotSchoolId;
+  if (typeof raw !== "string") refusePilotSchoolUnconfigured();
+  const pilotSchoolId = raw.trim();
+  if (pilotSchoolId.length === 0) refusePilotSchoolUnconfigured();
+
+  return pilotSchoolId;
 }

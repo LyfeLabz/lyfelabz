@@ -745,6 +745,36 @@ async function run(): Promise<void> {
     await callable(input);
   };
 
+  // Sprint 29G.5C: direct allowlisted pilot-teacher activation. No name,
+  // school, or email is sent; the server reads the authenticated email,
+  // checks the protected pilot allowlist, assigns the canonical pilot
+  // school, and activates the teacher. After a successful call the ID token
+  // is force-refreshed so the newly issued teacher custom claims (role,
+  // schoolId, districtId) are present before the teacher workspace loads,
+  // mirroring the student onboarding path.
+  const onActivatePilotTeacher = async (): Promise<void> => {
+    const { getFunctions, httpsCallable, connectFunctionsEmulator } =
+      await import("firebase/functions");
+    const functions = getFunctions();
+    if (
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1")
+    ) {
+      try {
+        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+      } catch {
+        // already connected
+      }
+    }
+    const activate = httpsCallable(functions, "teachersActivatePilot");
+    await activate({ role: "teacher" });
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await currentUser.getIdToken(true);
+    }
+  };
+
   // Sprint 20 internal beta: canonical school id for the beta cohort.
   // The class join code alone does not carry a schoolId, but the beta is
   // scoped to a single school. Mirrors platform/functions/src/scripts/
@@ -843,6 +873,7 @@ async function run(): Promise<void> {
     onSignIn,
     onRefreshSession,
     onRequestVerification,
+    onActivatePilotTeacher,
     onStudentOnboarding,
     onStudentLmsOnboarding,
     getGoogleDisplayName,

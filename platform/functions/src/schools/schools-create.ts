@@ -22,7 +22,12 @@ export type SchoolsCreateRequest = {
   readonly name: string;
   readonly shortName: string;
   readonly timezone: string;
-  readonly district?: string;
+  // Sprint 29G.5C fix-forward: the canonical persisted district field is
+  // `districtId` (read by the shared district-context helper and the
+  // onboarding/approval paths). The callable accepts `districtId`
+  // (preferred) or the legacy `district` alias on the payload and
+  // normalizes either into this single canonical field.
+  readonly districtId?: string;
   readonly gradeLevels?: readonly string[];
   readonly brandingRef?: string;
 };
@@ -36,16 +41,25 @@ export type SchoolsCreateResponse = {
   readonly alreadyCreated: boolean;
 };
 
-// URL-safe token per Data Model §3.2 shortName: lowercase alphanumerics
-// and hyphens only, one to forty characters. Deliberately strict so that
-// dashboards and any future per-school routing can rely on the value
-// without escaping.
-const SHORT_NAME_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+// Sprint 29G.5C-R1: shortName is a HUMAN-FACING short display label, not a
+// machine slug. No code reads it for routing, URLs, dashboards, or paths
+// (the sole readers write/compare it), and the canonical Beta school stores
+// the mixed-case label "Beta" - which the earlier lowercase-only pattern
+// would have rejected. The pattern therefore accepts a bounded human label
+// (letters in any case, digits, spaces, and the common label punctuation
+// . ' & -), must begin with an alphanumeric, and is trimmed and length-
+// bounded before the test. Existing lowercase values remain valid. Emptiness
+// and unbounded length are still rejected. Values like "WMS", "Beta", and
+// "Weston MS" are valid.
+const SHORT_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 .'&-]*$/;
+const SHORT_NAME_MAX_LENGTH = 48;
 
-// Firestore document IDs cannot contain "/", cannot be "." or "..", and
-// cannot match the reserved __.*__ pattern. Keeping the accepted set to
-// URL-safe characters is stricter than the raw Firestore constraint and
-// matches the shortName policy.
+// The schoolId is the machine identifier: it is the Firestore document ID
+// and the value a teacher's record and claims carry, so it stays a strict
+// URL-safe token. Firestore document IDs cannot contain "/", cannot be "."
+// or "..", and cannot match the reserved __.*__ pattern; this accepted set
+// is stricter than the raw Firestore constraint. (This is distinct from
+// shortName, which is a human-facing display label - see above.)
 const SCHOOL_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
 
 function isNonEmptyString(value: unknown): value is string {
@@ -118,10 +132,10 @@ function validateRequest(data: unknown): SchoolsCreateRequest {
     );
   }
   const shortName = payload.shortName.trim();
-  if (!SHORT_NAME_PATTERN.test(shortName)) {
+  if (shortName.length > SHORT_NAME_MAX_LENGTH || !SHORT_NAME_PATTERN.test(shortName)) {
     throw new PlatformError(
       "schools.invalidShortName",
-      "shortName must be a URL-safe token (lowercase letters, digits, hyphens).",
+      "shortName must be a short label (letters, digits, spaces, and . ' & -) starting with a letter or digit.",
     );
   }
 
@@ -138,19 +152,44 @@ function validateRequest(data: unknown): SchoolsCreateRequest {
     name: string;
     shortName: string;
     timezone: string;
-    district?: string;
+    districtId?: string;
     gradeLevels?: readonly string[];
     brandingRef?: string;
   } = { schoolId, name, shortName, timezone };
 
-  if (payload.district !== undefined) {
-    if (!isNonEmptyString(payload.district)) {
+  // Accept the canonical `districtId` (preferred) or the legacy `district`
+  // alias. Either is validated as a non-empty string and normalized into
+  // the canonical `districtId`. Supplying both is permitted only when they
+  // are identical after trimming, so a caller can never smuggle two
+  // conflicting district values through the two field names.
+  let districtIdRaw: unknown;
+  if (payload.districtId !== undefined && payload.district !== undefined) {
+    if (!isNonEmptyString(payload.districtId) || !isNonEmptyString(payload.district)) {
       throw new PlatformError(
         "schools.invalidDistrict",
-        "district, when supplied, must be a non-empty string.",
+        "districtId/district, when supplied, must be a non-empty string.",
       );
     }
-    request.district = payload.district.trim();
+    if (payload.districtId.trim() !== payload.district.trim()) {
+      throw new PlatformError(
+        "schools.invalidDistrict",
+        "districtId and legacy district must match when both are supplied.",
+      );
+    }
+    districtIdRaw = payload.districtId;
+  } else if (payload.districtId !== undefined) {
+    districtIdRaw = payload.districtId;
+  } else if (payload.district !== undefined) {
+    districtIdRaw = payload.district;
+  }
+  if (districtIdRaw !== undefined) {
+    if (!isNonEmptyString(districtIdRaw)) {
+      throw new PlatformError(
+        "schools.invalidDistrict",
+        "districtId, when supplied, must be a non-empty string.",
+      );
+    }
+    request.districtId = districtIdRaw.trim();
   }
 
   if (payload.gradeLevels !== undefined) {
@@ -187,7 +226,7 @@ function existingMatchesRequest(
   ) {
     return false;
   }
-  if ((existing.district ?? undefined) !== (input.district ?? undefined)) {
+  if ((existing.districtId ?? undefined) !== (input.districtId ?? undefined)) {
     return false;
   }
   if ((existing.brandingRef ?? undefined) !== (input.brandingRef ?? undefined)) {
@@ -272,7 +311,7 @@ async function schoolsCreateHandler(
     shortName: input.shortName,
     timezone: input.timezone,
     createdAt: FieldValue.serverTimestamp(),
-    ...(input.district !== undefined ? { district: input.district } : {}),
+    ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
     ...(input.gradeLevels !== undefined
       ? { gradeLevels: input.gradeLevels }
       : {}),
