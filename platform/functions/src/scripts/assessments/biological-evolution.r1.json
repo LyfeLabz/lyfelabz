@@ -12,11 +12,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "A single organism changing its traits during its lifetime"
+          "text": "A population changing over many generations due to environmental pressures"
         },
         {
           "optionId": "B",
-          "text": "A population changing over many generations due to environmental pressures"
+          "text": "A single organism changing its traits during its lifetime"
         },
         {
           "optionId": "C",
@@ -28,7 +28,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "Biological evolution describes populations (not individuals) changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time."
     },
     {
@@ -90,7 +90,7 @@
       "options": [
         {
           "optionId": "A",
-          "text": "A dog losing fur because of mange (a skin disease)"
+          "text": "A bird hatched with a longer beak than other birds"
         },
         {
           "optionId": "B",
@@ -98,7 +98,7 @@
         },
         {
           "optionId": "C",
-          "text": "A bird hatched with a longer beak than other birds"
+          "text": "A dog losing fur because of mange (a skin disease)"
         },
         {
           "optionId": "D",
@@ -106,7 +106,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "A",
       "explanation": "Heritable variation means differences caused by genes that can be passed to offspring. A bird born with a longer beak inherited that trait and can pass it on. Scars, diseases, and environmental growth effects are NOT heritable."
     },
     {
@@ -176,15 +176,15 @@
         },
         {
           "optionId": "C",
-          "text": "Analogous structures, convergent evolution producing similar solutions"
+          "text": "Transitional structures, evidence of one evolving into the other"
         },
         {
           "optionId": "D",
-          "text": "Transitional structures, evidence of one evolving into the other"
+          "text": "Analogous structures, convergent evolution producing similar solutions"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "Analogous structures result from convergent evolution: unrelated species independently evolve similar traits because they face similar environmental pressures. Dolphins and sharks both need fins to swim, but they evolved separately."
     },
     {
@@ -228,15 +228,15 @@
         },
         {
           "optionId": "C",
-          "text": "Chimpanzees and humans share a recent common ancestor"
+          "text": "DNA comparisons are not reliable for tracing evolution"
         },
         {
           "optionId": "D",
-          "text": "DNA comparisons are not reliable for tracing evolution"
+          "text": "Chimpanzees and humans share a recent common ancestor"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "The more DNA two species share, the more recently they diverged from a common ancestor. 98% similarity means humans and chimps branched from a shared ancestor relatively recently in evolutionary time; they didn't evolve from each other."
     },
     {

@@ -12,11 +12,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "7 days"
+          "text": "27.3 days"
         },
         {
           "optionId": "B",
-          "text": "27.3 days"
+          "text": "7 days"
         },
         {
           "optionId": "C",
@@ -28,7 +28,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "The Moon takes 27.3 days (roughly one month) to orbit Earth. This is its orbital period, and it's also where the word 'month' originally comes from."
     },
     {
@@ -46,15 +46,15 @@
         },
         {
           "optionId": "C",
-          "text": "Yes, once every 27.3 days"
+          "text": "Yes, once per year, like Earth's orbit"
         },
         {
           "optionId": "D",
-          "text": "Yes, once per year, like Earth's orbit"
+          "text": "Yes, once every 27.3 days"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "The Moon does rotate, once every 27.3 days, exactly matching its orbital period. This perfect synchrony is called tidal locking, and it is why we always see the same face of the Moon from Earth."
     },
     {
@@ -90,7 +90,7 @@
       "options": [
         {
           "optionId": "A",
-          "text": "Full Moon"
+          "text": "New Moon"
         },
         {
           "optionId": "B",
@@ -98,7 +98,7 @@
         },
         {
           "optionId": "C",
-          "text": "New Moon"
+          "text": "Full Moon"
         },
         {
           "optionId": "D",
@@ -106,7 +106,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "A",
       "explanation": "During New Moon, the Moon sits directly between Earth and the Sun. Its lit side faces away from us, so we see no illuminated surface from Earth. This is day 0 of the lunar cycle."
     },
     {
@@ -228,15 +228,15 @@
         },
         {
           "optionId": "C",
-          "text": "More than half of the visible surface is lit"
+          "text": "None of the visible surface is lit"
         },
         {
           "optionId": "D",
-          "text": "None of the visible surface is lit"
+          "text": "More than half of the visible surface is lit"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "Gibbous means more than half of the Moon's visible surface is illuminated. There are two gibbous phases: Waxing Gibbous (growing toward Full) and Waning Gibbous (shrinking away from Full)."
     },
     {

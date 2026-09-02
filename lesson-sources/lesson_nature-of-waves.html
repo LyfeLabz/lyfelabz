@@ -5433,13 +5433,8 @@ const nwQuizQuestions = [
   {
     // Q1 - energy transfer / matter - applied scenario
     q: "A duck floats on a pond. A wave passes underneath. What happens to the duck?",
-    options: [
-      "The duck rides the wave to the other side of the pond",
-      "The duck bobs up and down, mostly staying in the same place",
-      "The duck sinks until the wave passes",
-      "The duck is pushed sideways by the moving water"
-    ],
-    correct: 1,
+    options: ["The duck bobs up and down, mostly staying in the same place","The duck rides the wave to the other side of the pond","The duck sinks until the wave passes","The duck is pushed sideways by the moving water"],
+    correct: 0,
     explanation: "The wave carries energy across the pond, but the water itself (and the duck on top of it) mostly stays put. The duck only rises and falls."
   },
   {
@@ -5457,30 +5452,20 @@ const nwQuizQuestions = [
   {
     // Q3 - mechanical vs EM - applied to a famous scenario
     q: "Two astronauts float in space inches apart. One shouts. Why can't the other one hear it?",
-    options: [
-      "Their helmets block all sound",
-      "Sound is an electromagnetic wave and travels too slowly",
-      "Sound is a mechanical wave and needs a medium, there's no air in space",
-      "Sound only works for distances under a meter"
-    ],
-    correct: 2,
+    options: ["Their helmets block all sound","Sound is an electromagnetic wave and travels too slowly","Sound only works for distances under a meter","Sound is a mechanical wave and needs a medium, there's no air in space"],
+    correct: 3,
     explanation: "Sound is a mechanical wave, so it needs a medium (like air) to travel through. Space is a vacuum, no medium, no sound."
   },
   {
     // Q4 - mechanical vs EM - categorize multiple examples
     q: "Which of the following can travel through completely empty space?",
-    options: [
-      "Sound waves from a speaker",
-      "Ocean waves",
-      "Visible light from the Sun",
-      "A stadium wave"
-    ],
-    correct: 2,
+    options: ["Visible light from the Sun","Ocean waves","Sound waves from a speaker","A stadium wave"],
+    correct: 0,
     explanation: "Visible light is an electromagnetic wave; it doesn't need a medium. That's why sunlight can cross 93 million miles of empty space to reach Earth in about 8 minutes."
   },
   {
     // Q5 - crest / trough / resting - diagram interpretation
-    q: "Look at the wave below. Which letter points to the <strong>trough</strong>?",
+    q: "Which letter points to the trough?",
     visual: `<svg viewBox="0 0 460 170" xmlns="http://www.w3.org/2000/svg" aria-label="A wave with three labeled points: A at the highest peak, B on the resting line, C at the lowest dip, D on the wave between peak and dip.">
       <line x1="20" y1="85" x2="440" y2="85" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="5,4"/>
       <path d="M 20 85 C 70 15, 130 15, 180 85 C 230 155, 290 155, 340 85 C 380 35, 420 35, 440 65"
@@ -5506,13 +5491,8 @@ const nwQuizQuestions = [
   {
     // Q6 - crest / trough / resting - concept of resting position
     q: "What is the resting position of a wave?",
-    options: [
-      "The peak of the wave",
-      "The point where the wave stops moving",
-      "The calm middle line that the wave rises above and dips below",
-      "The same thing as the wavelength"
-    ],
-    correct: 2,
+    options: ["The calm middle line that the wave rises above and dips below","The point where the wave stops moving","The peak of the wave","The same thing as the wavelength"],
+    correct: 0,
     explanation: "The resting position is the level the wave would sit at if it weren't moving. Crests rise above it, troughs dip below it."
   },
   {
@@ -5530,13 +5510,8 @@ const nwQuizQuestions = [
   {
     // Q8 - frequency - temporal concept, not shape
     q: "What does the frequency of a wave tell you?",
-    options: [
-      "How tall the wave is",
-      "How far apart the peaks are",
-      "How many crests pass a point each second",
-      "How fast the wave is moving"
-    ],
-    correct: 2,
+    options: ["How tall the wave is","How far apart the peaks are","How fast the wave is moving","How many crests pass a point each second"],
+    correct: 3,
     explanation: "Frequency counts how many wave crests pass a fixed point in one second. It's measured in Hertz (Hz). It's about how often something happens, not how the wave looks."
   },
   {

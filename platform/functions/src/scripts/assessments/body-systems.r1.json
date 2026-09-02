@@ -42,7 +42,7 @@
         },
         {
           "optionId": "B",
-          "text": "The lab partner, cells build tissues, which build organs; damage at the bottom affects everything above"
+          "text": "Neither, the nervous system automatically repairs cellular damage"
         },
         {
           "optionId": "C",
@@ -50,11 +50,11 @@
         },
         {
           "optionId": "D",
-          "text": "Neither, the nervous system automatically repairs cellular damage"
+          "text": "The lab partner, cells build tissues, which build organs; damage at the bottom affects everything above"
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "D",
       "explanation": "The hierarchy runs from smallest to largest: organelles → cells → tissues → organs → body systems. Damage at the bottom cascades upward, broken cells mean broken tissue, which means a failing organ. You cannot fix the top without addressing the foundation."
     },
     {
@@ -64,11 +64,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "It controls only voluntary muscle movements"
+          "text": "It coordinates multiple systems simultaneously, acting as the body's master controller"
         },
         {
           "optionId": "B",
-          "text": "It coordinates multiple systems simultaneously, acting as the body's master controller"
+          "text": "It controls only voluntary muscle movements"
         },
         {
           "optionId": "C",
@@ -80,7 +80,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "The nervous system sent signals to the circulatory system (speed up the heart), the respiratory system (breathe faster), and the muscular system (contract harder), all at once. That simultaneous coordination is exactly what makes it the master controller."
     },
     {
@@ -120,7 +120,7 @@
         },
         {
           "optionId": "B",
-          "text": "Solid = large intestine; liquid = bladder; CO₂ = lungs"
+          "text": "Liquid = stomach; solid = lungs; CO₂ = bladder"
         },
         {
           "optionId": "C",
@@ -128,11 +128,11 @@
         },
         {
           "optionId": "D",
-          "text": "Liquid = stomach; solid = lungs; CO₂ = bladder"
+          "text": "Solid = large intestine; liquid = bladder; CO₂ = lungs"
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "D",
       "explanation": "The large intestine removes solid waste, the bladder stores and removes liquid waste (urine), and the lungs exhale gaseous carbon dioxide (CO₂) waste."
     },
     {
@@ -168,11 +168,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "Digestive system triggered it; skeletal system benefits"
+          "text": "Nervous system triggered it; muscular system benefits from increased oxygen delivery"
         },
         {
           "optionId": "B",
-          "text": "Nervous system triggered it; muscular system benefits from increased oxygen delivery"
+          "text": "Digestive system triggered it; skeletal system benefits"
         },
         {
           "optionId": "C",
@@ -184,7 +184,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "The nervous system detected the demand for more oxygen and sent signals to speed up the heart. The faster-beating heart pumps more blood, delivering more oxygen to the muscular system, which needs it to keep contracting. This nervous → circulatory → muscular chain is the sprint scenario from the start of this lesson."
     },
     {
@@ -198,7 +198,7 @@
         },
         {
           "optionId": "B",
-          "text": "The circulatory system acts as a transport network, delivering immune cells wherever they are needed"
+          "text": "White blood cells travel independently through tissue, not through blood vessels"
         },
         {
           "optionId": "C",
@@ -206,11 +206,11 @@
         },
         {
           "optionId": "D",
-          "text": "White blood cells travel independently through tissue, not through blood vessels"
+          "text": "The circulatory system acts as a transport network, delivering immune cells wherever they are needed"
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "D",
       "explanation": "The speed of the immune response depends entirely on the circulatory system, blood vessels carry white blood cells throughout the body, allowing immune cells to reach any infection site within minutes. Without this transport network, the immune system could not respond quickly."
     },
     {
@@ -280,15 +280,15 @@
         },
         {
           "optionId": "C",
-          "text": "Circulatory system"
+          "text": "Immune system"
         },
         {
           "optionId": "D",
-          "text": "Immune system"
+          "text": "Circulatory system"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "The circulatory system is the great connector; it picks up oxygen from the respiratory system and nutrients from the digestive system, then delivers both to cells throughout the body."
     },
     {
@@ -350,11 +350,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "It makes room for new organs to grow"
+          "text": "It helps maintain homeostasis"
         },
         {
           "optionId": "B",
-          "text": "It helps maintain homeostasis"
+          "text": "It makes room for new organs to grow"
         },
         {
           "optionId": "C",
@@ -366,7 +366,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "Waste products are toxic when they build up. Removing them through the excretory system helps the body maintain homeostasis, a stable internal environment that cells need to survive."
     },
     {

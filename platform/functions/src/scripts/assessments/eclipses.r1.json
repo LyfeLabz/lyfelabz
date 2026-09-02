@@ -12,11 +12,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "A new moon is brighter, making the eclipse more visible from Earth."
+          "text": "Only at new moon is the Moon between Earth and the Sun, blocking sunlight from reaching Earth."
         },
         {
           "optionId": "B",
-          "text": "Only at new moon is the Moon between Earth and the Sun, blocking sunlight from reaching Earth."
+          "text": "A new moon is brighter, making the eclipse more visible from Earth."
         },
         {
           "optionId": "C",
@@ -28,7 +28,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "A solar eclipse requires the Moon between Earth and the Sun, a geometry that only occurs at new moon. At full moon, the Moon is on Earth's far side and can't block the Sun."
     },
     {
@@ -46,15 +46,15 @@
         },
         {
           "optionId": "C",
-          "text": "The path of totality"
+          "text": "The eclipse meridian"
         },
         {
           "optionId": "D",
-          "text": "The eclipse meridian"
+          "text": "The path of totality"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "The path of totality is the narrow strip swept by the Moon's umbra, typically under 270 km wide, moving across Earth at over 1,600 km/h."
     },
     {
@@ -72,15 +72,15 @@
         },
         {
           "optionId": "C",
-          "text": "Penumbra, the outer shadow, the Moon only partly covers the Sun."
+          "text": "Path of totality, the strip swept by the Moon's full shadow."
         },
         {
           "optionId": "D",
-          "text": "Path of totality, the strip swept by the Moon's full shadow."
+          "text": "Penumbra, the outer shadow, the Moon only partly covers the Sun."
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "The penumbra is the outer shadow where the Moon covers only part of the Sun. Observers there see a partial eclipse. The narrower umbra (where the Sun is fully blocked) is where total eclipses occur."
     },
     {
@@ -168,7 +168,7 @@
       "options": [
         {
           "optionId": "A",
-          "text": "The Moon moves too fast during new moon to cast a shadow on Earth."
+          "text": "The Moon's orbit is tilted ~5°, so its shadow usually passes above or below Earth."
         },
         {
           "optionId": "B",
@@ -176,7 +176,7 @@
         },
         {
           "optionId": "C",
-          "text": "The Moon's orbit is tilted ~5°, so its shadow usually passes above or below Earth."
+          "text": "The Moon moves too fast during new moon to cast a shadow on Earth."
         },
         {
           "optionId": "D",
@@ -184,7 +184,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "A",
       "explanation": "The Moon's orbit is tilted ~5° relative to Earth's orbital plane. At most new moons, the shadow passes above or below Earth. Eclipses only occur near a node."
     },
     {
@@ -254,15 +254,15 @@
         },
         {
           "optionId": "C",
-          "text": "The Sun and Moon appear nearly the same size in Earth's sky, even though the Sun is 400× larger."
+          "text": "The Moon always casts a shadow exactly as wide as Earth's diameter."
         },
         {
           "optionId": "D",
-          "text": "The Moon always casts a shadow exactly as wide as Earth's diameter."
+          "text": "The Sun and Moon appear nearly the same size in Earth's sky, even though the Sun is 400× larger."
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "The Sun is 400× wider than the Moon but also 400× farther away, making them appear nearly identical in size. This lets the Moon's umbra just barely reach Earth's surface."
     }
   ]

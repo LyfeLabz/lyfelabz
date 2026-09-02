@@ -12,11 +12,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "The duck rides the wave to the other side of the pond"
+          "text": "The duck bobs up and down, mostly staying in the same place"
         },
         {
           "optionId": "B",
-          "text": "The duck bobs up and down, mostly staying in the same place"
+          "text": "The duck rides the wave to the other side of the pond"
         },
         {
           "optionId": "C",
@@ -28,7 +28,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "The wave carries energy across the pond, but the water itself (and the duck on top of it) mostly stays put. The duck only rises and falls."
     },
     {
@@ -72,15 +72,15 @@
         },
         {
           "optionId": "C",
-          "text": "Sound is a mechanical wave and needs a medium, there's no air in space"
+          "text": "Sound only works for distances under a meter"
         },
         {
           "optionId": "D",
-          "text": "Sound only works for distances under a meter"
+          "text": "Sound is a mechanical wave and needs a medium, there's no air in space"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "Sound is a mechanical wave, so it needs a medium (like air) to travel through. Space is a vacuum, no medium, no sound."
     },
     {
@@ -90,7 +90,7 @@
       "options": [
         {
           "optionId": "A",
-          "text": "Sound waves from a speaker"
+          "text": "Visible light from the Sun"
         },
         {
           "optionId": "B",
@@ -98,7 +98,7 @@
         },
         {
           "optionId": "C",
-          "text": "Visible light from the Sun"
+          "text": "Sound waves from a speaker"
         },
         {
           "optionId": "D",
@@ -106,13 +106,13 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "A",
       "explanation": "Visible light is an electromagnetic wave; it doesn't need a medium. That's why sunlight can cross 93 million miles of empty space to reach Earth in about 8 minutes."
     },
     {
       "itemId": "q5",
       "itemType": "singleChoice",
-      "stem": "Look at the wave below. Which letter points to the <strong>trough</strong>?",
+      "stem": "Which letter points to the trough?",
       "options": [
         {
           "optionId": "A",
@@ -142,7 +142,7 @@
       "options": [
         {
           "optionId": "A",
-          "text": "The peak of the wave"
+          "text": "The calm middle line that the wave rises above and dips below"
         },
         {
           "optionId": "B",
@@ -150,7 +150,7 @@
         },
         {
           "optionId": "C",
-          "text": "The calm middle line that the wave rises above and dips below"
+          "text": "The peak of the wave"
         },
         {
           "optionId": "D",
@@ -158,7 +158,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "A",
       "explanation": "The resting position is the level the wave would sit at if it weren't moving. Crests rise above it, troughs dip below it."
     },
     {
@@ -202,15 +202,15 @@
         },
         {
           "optionId": "C",
-          "text": "How many crests pass a point each second"
+          "text": "How fast the wave is moving"
         },
         {
           "optionId": "D",
-          "text": "How fast the wave is moving"
+          "text": "How many crests pass a point each second"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "Frequency counts how many wave crests pass a fixed point in one second. It's measured in Hertz (Hz). It's about how often something happens, not how the wave looks."
     },
     {

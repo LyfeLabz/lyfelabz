@@ -12,11 +12,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "That bacteria are simple and unimportant organisms"
+          "text": "That unicellular organisms can be highly capable and successful in challenging environments"
         },
         {
           "optionId": "B",
-          "text": "That unicellular organisms can be highly capable and successful in challenging environments"
+          "text": "That bacteria are simple and unimportant organisms"
         },
         {
           "optionId": "C",
@@ -28,7 +28,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "Bacteria and other unicellular organisms have thrived in environments ranging from boiling springs to frozen tundra. One cell performing every life function is not a limitation; it is one of life's most successful strategies."
     },
     {
@@ -220,7 +220,7 @@
       "options": [
         {
           "optionId": "A",
-          "text": "Multicellular eukaryote"
+          "text": "Unicellular prokaryote"
         },
         {
           "optionId": "B",
@@ -228,7 +228,7 @@
         },
         {
           "optionId": "C",
-          "text": "Unicellular prokaryote"
+          "text": "Multicellular eukaryote"
         },
         {
           "optionId": "D",
@@ -236,7 +236,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "A",
       "explanation": "No nucleus + single cell = unicellular prokaryote. All known prokaryotes are unicellular, and no known organisms are both multicellular and prokaryotic. The absence of a membrane-bound nucleus is the defining structural feature of prokaryotic cells."
     },
     {

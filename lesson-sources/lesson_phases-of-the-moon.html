@@ -2203,19 +2203,14 @@ const PM_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNj
 const pmQuizQuestions = [
   {
     q: "How long does it take for the Moon to complete one full orbit around Earth?",
-    options: ["7 days","27.3 days","365 days","12 hours"],
-    correct: 1,
+    options: ["27.3 days","7 days","365 days","12 hours"],
+    correct: 0,
     explanation: "The Moon takes 27.3 days (roughly one month) to orbit Earth. This is its orbital period, and it's also where the word 'month' originally comes from."
   },
   {
     q: "Does the Moon rotate on its axis? If so, how often?",
-    options: [
-      "No; it stays fixed while Earth rotates",
-      "Yes, once every 24 hours, like Earth",
-      "Yes, once every 27.3 days",
-      "Yes, once per year, like Earth's orbit"
-    ],
-    correct: 2,
+    options: ["No; it stays fixed while Earth rotates","Yes, once every 24 hours, like Earth","Yes, once per year, like Earth's orbit","Yes, once every 27.3 days"],
+    correct: 3,
     explanation: "The Moon does rotate, once every 27.3 days, exactly matching its orbital period. This perfect synchrony is called tidal locking, and it is why we always see the same face of the Moon from Earth."
   },
   {
@@ -2231,8 +2226,8 @@ const pmQuizQuestions = [
   },
   {
     q: "During which phase is the Moon located between Earth and the Sun?",
-    options: ["Full Moon","First Quarter","New Moon","Waxing Gibbous"],
-    correct: 2,
+    options: ["New Moon","First Quarter","Full Moon","Waxing Gibbous"],
+    correct: 0,
     explanation: "During New Moon, the Moon sits directly between Earth and the Sun. Its lit side faces away from us, so we see no illuminated surface from Earth. This is day 0 of the lunar cycle."
   },
   {
@@ -2261,8 +2256,8 @@ const pmQuizQuestions = [
   },
   {
     q: "Which of the following correctly describes a 'gibbous' moon?",
-    options: ["Less than half of the visible surface is lit","Exactly half of the visible surface is lit","More than half of the visible surface is lit","None of the visible surface is lit"],
-    correct: 2,
+    options: ["Less than half of the visible surface is lit","Exactly half of the visible surface is lit","None of the visible surface is lit","More than half of the visible surface is lit"],
+    correct: 3,
     explanation: "Gibbous means more than half of the Moon's visible surface is illuminated. There are two gibbous phases: Waxing Gibbous (growing toward Full) and Waning Gibbous (shrinking away from Full)."
   },
   {

@@ -12,7 +12,7 @@
       "options": [
         {
           "optionId": "A",
-          "text": "Igneous rock, because it forms from cooled magma"
+          "text": "Sedimentary rock, because organisms get buried in layers"
         },
         {
           "optionId": "B",
@@ -20,7 +20,7 @@
         },
         {
           "optionId": "C",
-          "text": "Sedimentary rock, because organisms get buried in layers"
+          "text": "Igneous rock, because it forms from cooled magma"
         },
         {
           "optionId": "D",
@@ -28,7 +28,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "A",
       "explanation": "Sedimentary rock forms when layers of sediment pile up and compact over time. Organisms that die and get buried in sediment can be preserved as fossils. Igneous and metamorphic rocks form under conditions (extreme heat or pressure) that would destroy any organism."
     },
     {
@@ -72,15 +72,15 @@
         },
         {
           "optionId": "C",
-          "text": "The bottom layer"
+          "text": "Age cannot be determined from position alone"
         },
         {
           "optionId": "D",
-          "text": "Age cannot be determined from position alone"
+          "text": "The bottom layer"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "Superposition tells us that in undisturbed rock layers, the bottom layer was deposited first and is therefore the oldest. Each layer on top formed later. This is one of the most fundamental principles in reading the rock record."
     },
     {
@@ -116,11 +116,11 @@
       "options": [
         {
           "optionId": "A",
-          "text": "Lived for millions of years across many regions"
+          "text": "Lived briefly but spread across the whole globe"
         },
         {
           "optionId": "B",
-          "text": "Lived briefly but spread across the whole globe"
+          "text": "Lived for millions of years across many regions"
         },
         {
           "optionId": "C",
@@ -132,7 +132,7 @@
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "A",
       "explanation": "A good index fossil comes from a species that (1) existed for a short, specific time period (so finding it precisely dates that layer) and (2) was widespread across the globe, so it can be used to match and compare layers at different locations around the world."
     },
     {
@@ -172,7 +172,7 @@
         },
         {
           "optionId": "B",
-          "text": "Relative dating; it orders events without giving exact ages"
+          "text": "Radiometric dating, because it uses radioactive elements"
         },
         {
           "optionId": "C",
@@ -180,11 +180,11 @@
         },
         {
           "optionId": "D",
-          "text": "Radiometric dating, because it uses radioactive elements"
+          "text": "Relative dating; it orders events without giving exact ages"
         }
       ],
       "points": 1,
-      "correctOptionId": "B",
+      "correctOptionId": "D",
       "explanation": "Relative dating determines the order of events (which came first) without giving an exact age in years. Saying \"Layer A is older than Layer B\" is relative dating. Absolute dating would say \"Layer A is 250 million years old.\""
     },
     {
@@ -202,15 +202,15 @@
         },
         {
           "optionId": "C",
-          "text": "Intense heat and pressure deep underground; without melting"
+          "text": "Erosion and deposition at the bottom of a river"
         },
         {
           "optionId": "D",
-          "text": "Erosion and deposition at the bottom of a river"
+          "text": "Intense heat and pressure deep underground; without melting"
         }
       ],
       "points": 1,
-      "correctOptionId": "C",
+      "correctOptionId": "D",
       "explanation": "Metamorphic rock forms when other rocks are subjected to intense heat and pressure deep underground. Crucially, the rock does not melt, if it melted, it would eventually become igneous rock. The heat and pressure transform the existing minerals into something new."
     },
     {
