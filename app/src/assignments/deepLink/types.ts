@@ -16,6 +16,16 @@ export type DeepLinkInternalTarget =
 
 export type DeepLinkAttemptContext = "authorized" | "informational";
 
+// F5.2 §7.1 - the server-selected differentiated presentation, mirrored verbatim.
+// Present only when the resolver (Op C, Slice 4) minted a `differentiated` grant
+// on a launch target. The client routes on `path` alone; it never decodes the
+// `variantKey` or derives any field.
+export type DeepLinkPresentation = {
+  readonly variantKey: string;
+  readonly presentationRevisionId: string;
+  readonly path: string;
+};
+
 // The successfully parsed resolution payload.
 export type DeepLinkResolution = {
   readonly assignmentId: string;
@@ -23,6 +33,15 @@ export type DeepLinkResolution = {
   readonly lessonSlug: string;
   readonly internalTarget: DeepLinkInternalTarget;
   readonly attemptContext: DeepLinkAttemptContext;
+  // F5.2 §7.1 additive, optional differentiation fields (Slice 4 server / Slice
+  // 5 client), present only for an accommodated launch target:
+  //   - `presentation` iff a `differentiated` grant was minted;
+  //   - `launchRef` iff any grant was minted (`differentiated`/`canonicalFallback`).
+  // Both entirely absent for canonical-expected students. The student never
+  // asserts either field (server FORBIDDEN_REQUEST_KEYS); server responses are
+  // authoritative and the client only routes/transports.
+  readonly presentation?: DeepLinkPresentation;
+  readonly launchRef?: string;
 };
 
 // Injected callable seam. The arrival surface never imports firebase/*

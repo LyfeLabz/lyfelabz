@@ -7843,6 +7843,7 @@
   function createAssessmentRuntime(input) {
     const { version: version5, callables, env } = input;
     const assignmentId = isNonEmptyString(input.assignmentId) ? input.assignmentId : null;
+    const launchRef = isNonEmptyString(input.launchRef) ? input.launchRef : void 0;
     let mode = assignmentId === null ? "inert" : "pending";
     let destroyed = false;
     let sessionId = null;
@@ -7875,7 +7876,7 @@
       }
       beginPromise = (async () => {
         try {
-          const outcome = await callables.begin(assignmentId);
+          const outcome = await callables.begin(assignmentId, launchRef);
           if (destroyed) return;
           if (!isNonEmptyString(outcome.sessionId)) {
             throw new Error("callable returned an empty sessionId");
@@ -8016,6 +8017,30 @@
       getAttempt,
       destroy
     };
+  }
+
+  // src/runtime/launchParams.ts
+  var LAUNCH_REF_SANITY_RE = /^[A-Za-z0-9_-]{1,128}$/;
+  function detectLaunchRef(win) {
+    try {
+      const readParam = (raw) => typeof raw === "string" && LAUNCH_REF_SANITY_RE.test(raw) ? raw : null;
+      const search = win.location.search ?? "";
+      if (search.length > 0) {
+        const found = readParam(new URLSearchParams(search).get("launchRef"));
+        if (found !== null) return found;
+      }
+      const hash = win.location.hash ?? "";
+      if (hash.length > 0) {
+        const hashParams = new URLSearchParams(
+          hash.startsWith("#") ? hash.slice(1) : hash
+        );
+        const found = readParam(hashParams.get("launchRef"));
+        if (found !== null) return found;
+      }
+    } catch {
+      return null;
+    }
+    return null;
   }
 
   // src/firebase-config.ts
@@ -8295,8 +8320,9 @@
     const finalize = httpsCallable(functions, "assessmentAttemptsFinalize");
     const getAttempt = httpsCallable(functions, "assessmentAttemptGet");
     return {
-      begin: async (assignmentId) => {
-        const res = await begin({ assignmentId });
+      begin: async (assignmentId, launchRef) => {
+        const payload = typeof launchRef === "string" && launchRef.length > 0 ? { assignmentId, launchRef } : { assignmentId };
+        const res = await begin(payload);
         const data = isRecord(res.data) ? res.data : {};
         const sessionId = data.sessionId;
         if (typeof sessionId !== "string" || sessionId.length === 0) {
@@ -8391,6 +8417,7 @@
       installInertRuntime(runtimeWin, false);
       return;
     }
+    const launchRef = detectLaunchRef(win);
     installInertRuntime(runtimeWin, true);
     const existingApp = getApps()[0];
     const app = existingApp ?? initializeApp(getFirebaseClientConfig(win));
@@ -8415,6 +8442,7 @@
     const runtime = createAssessmentRuntime({
       version: VERSION,
       assignmentId,
+      launchRef,
       callables,
       env: { randomId: randomIdempotencyKey }
     });

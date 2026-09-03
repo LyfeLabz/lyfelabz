@@ -4,6 +4,7 @@ import { httpsCallable } from "firebase/functions";
 import type {
   DeepLinkAttemptContext,
   DeepLinkInternalTarget,
+  DeepLinkPresentation,
   DeepLinkResolution,
   DeepLinkResolveCallable,
 } from "./types";
@@ -61,13 +62,36 @@ function parseResolution(raw: unknown): DeepLinkResolution {
   if (attemptContext === "authorized" && internalTarget !== "assignmentLaunch") {
     throw new Error("deep-link resolution response was inconsistent");
   }
+  // F5.2 §7.1 optional differentiation fields. Parsed ADDITIVELY: a malformed
+  // `presentation`/`launchRef` is dropped (the launch proceeds canonically),
+  // never a reason to fail the whole resolution. Only the wire SHAPE is checked
+  // here; the differentiated path's routing-safety validation is the routing
+  // layer's trust boundary (launchRouting.ts), not this parser's.
+  const presentation = parsePresentation(record.presentation);
+  const launchRef = isNonEmptyString(record.launchRef)
+    ? record.launchRef
+    : undefined;
   return Object.freeze({
     assignmentId,
     classId,
     lessonSlug,
     internalTarget: internalTarget as DeepLinkInternalTarget,
     attemptContext: attemptContext as DeepLinkAttemptContext,
+    ...(presentation !== undefined ? { presentation } : {}),
+    ...(launchRef !== undefined ? { launchRef } : {}),
   });
+}
+
+function parsePresentation(raw: unknown): DeepLinkPresentation | undefined {
+  if (raw === null || typeof raw !== "object") return undefined;
+  const record = raw as CallableRecord;
+  const variantKey = record.variantKey;
+  const presentationRevisionId = record.presentationRevisionId;
+  const path = record.path;
+  if (!isNonEmptyString(variantKey)) return undefined;
+  if (!isNonEmptyString(presentationRevisionId)) return undefined;
+  if (!isNonEmptyString(path)) return undefined;
+  return Object.freeze({ variantKey, presentationRevisionId, path });
 }
 
 export function createDeepLinkResolveCallable(

@@ -5,6 +5,7 @@ import type {
   AssignmentsListForStudentCallable,
   AssignmentsListForStudentItem,
   AssignmentsListForStudentResponse,
+  LaunchPresentation,
 } from "./types";
 
 // Sprint 17 Slice 4 entry-point wiring for the certified
@@ -39,6 +40,25 @@ const isNullableFiniteNumber = (v: unknown): v is number | null =>
 // the caller to skip malformed items without discarding the entire
 // response, which matches the spec's "ignore malformed items safely"
 // requirement.
+// F5.2 §7.1 optional differentiation fields. Parsed defensively and additively:
+// a malformed `presentation` or `launchRef` is DROPPED (the item still renders
+// and launches canonically), never a reason to discard the whole item. The
+// client never authors these; it only transports what the server sent. The
+// `path` is NOT validated for routing safety here (that is the routing layer's
+// trust boundary, launchRouting.ts); this parser only asserts the wire SHAPE so
+// a non-string can never flow downstream.
+function parseLaunchPresentation(raw: unknown): LaunchPresentation | undefined {
+  if (raw === null || typeof raw !== "object") return undefined;
+  const record = raw as CallableRecord;
+  const variantKey = record.variantKey;
+  const presentationRevisionId = record.presentationRevisionId;
+  const path = record.path;
+  if (!isNonEmptyString(variantKey)) return undefined;
+  if (!isNonEmptyString(presentationRevisionId)) return undefined;
+  if (!isNonEmptyString(path)) return undefined;
+  return Object.freeze({ variantKey, presentationRevisionId, path });
+}
+
 export function parseAssignmentsListForStudentItem(
   raw: unknown,
 ): AssignmentsListForStudentItem | null {
@@ -54,12 +74,18 @@ export function parseAssignmentsListForStudentItem(
   if (!isNonEmptyString(title)) return null;
   if (status !== "published") return null;
   if (!isNullableFiniteNumber(publishedAt)) return null;
+  const presentation = parseLaunchPresentation(record.presentation);
+  const launchRef = isNonEmptyString(record.launchRef)
+    ? record.launchRef
+    : undefined;
   return Object.freeze({
     assignmentId,
     lessonSlug,
     title,
     status: "published",
     publishedAt,
+    ...(presentation !== undefined ? { presentation } : {}),
+    ...(launchRef !== undefined ? { launchRef } : {}),
   });
 }
 

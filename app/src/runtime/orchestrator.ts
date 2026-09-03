@@ -57,6 +57,12 @@ export type AssessmentRuntime = {
 export type CreateAssessmentRuntimeInput = {
   readonly version: string;
   readonly assignmentId: string | null;
+  // F5.2 §7.3/§8 (Slice 5): the opaque launch-grant reference detected from the
+  // launch URL, transported verbatim to `assessmentSessionsBegin`. Present only
+  // for an accommodated launch (differentiated or canonicalFallback); null
+  // otherwise, which keeps canonical begins byte-identical. Slice 6 enforces it
+  // server-side; the runtime only forwards it and never inspects its meaning.
+  readonly launchRef?: string | null;
   readonly callables: RuntimeCallables;
   readonly env: RuntimeEnv;
 };
@@ -99,6 +105,8 @@ export function createAssessmentRuntime(
   const { version, callables, env } = input;
   const assignmentId =
     isNonEmptyString(input.assignmentId) ? input.assignmentId : null;
+  // Transport-only: forwarded verbatim to begin, never decoded or defaulted.
+  const launchRef = isNonEmptyString(input.launchRef) ? input.launchRef : undefined;
 
   let mode: RuntimeMode = assignmentId === null ? "inert" : "pending";
   let destroyed = false;
@@ -134,7 +142,7 @@ export function createAssessmentRuntime(
     }
     beginPromise = (async (): Promise<void> => {
       try {
-        const outcome = await callables.begin(assignmentId);
+        const outcome = await callables.begin(assignmentId, launchRef);
         if (destroyed) return;
         if (!isNonEmptyString(outcome.sessionId)) {
           throw new Error("callable returned an empty sessionId");

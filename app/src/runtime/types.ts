@@ -51,8 +51,14 @@ export type AttemptSummary = {
 // through one of these. Real implementations (entry.ts) forward to the
 // certified callables; tests inject in-memory fakes so the orchestrator
 // stays lesson-independent and Firebase-free.
+// F5.2 §4.3/§8 (Slice 5 transport, Slice 6 enforcement): begin accepts one new
+// OPTIONAL field, the opaque `launchRef`. Slice 5 only transports it (populated
+// only when a valid launchRef arrived from server resolution); Slice 6 makes the
+// server consume it. It is never required here and never client-authored beyond
+// verbatim transport - the client never decodes, derives, or replaces it.
 export type BeginCallable = (
   assignmentId: string,
+  launchRef?: string,
 ) => Promise<{ readonly sessionId: string; readonly alreadyLive: boolean }>;
 
 export type AutosaveCallable = (

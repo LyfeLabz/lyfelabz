@@ -424,3 +424,62 @@ describe("createAssessmentRuntime - refresh recovery + destroy", () => {
     await expect(runtime.finalize([])).rejects.toThrow(/destroyed/);
   });
 });
+
+// F5.2 §7.3/§8 (Slice 5): the assessment-begin transport seam. The runtime
+// forwards the opaque launchRef to begin verbatim, only when one was provided;
+// it never enforces, decodes, or fabricates it (that is Slice 6, server-side).
+describe("createAssessmentRuntime - launchRef transport (F5.2 Slice 5)", () => {
+  function beginRefSpy() {
+    const calls: Array<{ assignmentId: string; launchRef: string | undefined }> = [];
+    const callables: RuntimeCallables = {
+      begin: async (assignmentId, launchRef) => {
+        calls.push({ assignmentId, launchRef });
+        return { sessionId: `sess-${assignmentId}`, alreadyLive: false };
+      },
+      autosave: async () => ({ persisted: true }),
+      finalize: async () => FINALIZE_RESULT,
+      getAttempt: async () => ATTEMPT_SUMMARY,
+    };
+    return { callables, calls };
+  }
+
+  test("forwards a provided launchRef to begin verbatim", async () => {
+    const spy = beginRefSpy();
+    const runtime = createAssessmentRuntime({
+      version: "17.5.0",
+      assignmentId: "asg-1",
+      launchRef: "0123456789abcdef0123456789abcdef",
+      callables: spy.callables,
+      env,
+    });
+    await runtime.begin();
+    expect(spy.calls).toEqual([
+      { assignmentId: "asg-1", launchRef: "0123456789abcdef0123456789abcdef" },
+    ]);
+  });
+
+  test("a canonical launch (no launchRef) calls begin with launchRef undefined", async () => {
+    const spy = beginRefSpy();
+    const runtime = createAssessmentRuntime({
+      version: "17.5.0",
+      assignmentId: "asg-1",
+      callables: spy.callables,
+      env,
+    });
+    await runtime.begin();
+    expect(spy.calls).toEqual([{ assignmentId: "asg-1", launchRef: undefined }]);
+  });
+
+  test("an empty-string launchRef is treated as absent", async () => {
+    const spy = beginRefSpy();
+    const runtime = createAssessmentRuntime({
+      version: "17.5.0",
+      assignmentId: "asg-1",
+      launchRef: "",
+      callables: spy.callables,
+      env,
+    });
+    await runtime.begin();
+    expect(spy.calls[0]?.launchRef).toBeUndefined();
+  });
+});

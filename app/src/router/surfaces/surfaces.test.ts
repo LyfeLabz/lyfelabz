@@ -1614,9 +1614,80 @@ describe("My Science (28.6G) - empty / loading / error / read-only / a11y", () =
     }
     btn?.click();
     expect(onLaunchAssignment).toHaveBeenCalledTimes(1);
-    expect(onLaunchAssignment).toHaveBeenCalledWith(url);
+    // F5.2 Slice 5: the launcher now receives the server-authoritative launch
+    // PLAN, not a bare URL. A canonical item routes to exactly the canonical URL
+    // (primary === canonical, not differentiated), so no identity leaks and the
+    // behavior is byte-identical to pre-differentiation.
+    expect(onLaunchAssignment).toHaveBeenCalledWith({
+      primaryUrl: url,
+      canonicalUrl: url,
+      differentiated: false,
+      differentiatedRejected: false,
+    });
     // The launch button's accessible name includes the lesson title.
     expect(btn?.getAttribute("aria-label")).toBe("Open assignment: What Is Life?");
+  });
+
+  test("F5.2 Slice 5: a differentiated item launches the server path (ref transported) while the DOM attribute stays canonical/non-leaking", async () => {
+    const rev = `pr${"a".repeat(64)}`;
+    const ref = "0123456789abcdef0123456789abcdef";
+    const onLaunchAssignment = jest.fn();
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([
+        okItem({
+          presentation: {
+            variantKey: "reading-adapted",
+            presentationRevisionId: rev,
+            path: `app/lessons/variants/lesson_what-is-life__${rev}.html`,
+          },
+          launchRef: ref,
+        }),
+      ]),
+      studentResultsList: resultsSeam([]),
+      onLaunchAssignment,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignments-launch]",
+    );
+    // The DOM launch attribute is the CANONICAL URL - never the opaque variant
+    // path and never the launchRef.
+    const attr = btn?.getAttribute("data-assignment-launch-url") ?? "";
+    expect(attr).toBe("/app/lessons/lesson_what-is-life.html?assignment=assign-1");
+    expect(attr).not.toContain("variants");
+    expect(attr).not.toContain("launchRef");
+    // Clicking hands the executor the differentiated plan (server path + ref).
+    btn?.click();
+    expect(onLaunchAssignment).toHaveBeenCalledWith({
+      differentiated: true,
+      differentiatedRejected: false,
+      canonicalUrl: "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
+      primaryUrl: `/app/lessons/variants/lesson_what-is-life__${rev}.html?assignment=assign-1&launchRef=${ref}`,
+    });
+  });
+
+  test("F5.2 Slice 5: a canonicalFallback item (launchRef only) launches canonical with the fallback ref", async () => {
+    const ref = "0123456789abcdef0123456789abcdef";
+    const onLaunchAssignment = jest.fn();
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([okItem({ launchRef: ref })]),
+      studentResultsList: resultsSeam([]),
+      onLaunchAssignment,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    mount.querySelector<HTMLButtonElement>("[data-testid=assignments-launch]")?.click();
+    expect(onLaunchAssignment).toHaveBeenCalledWith({
+      differentiated: false,
+      differentiatedRejected: false,
+      canonicalUrl: "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
+      primaryUrl: `/app/lessons/lesson_what-is-life.html?assignment=assign-1&launchRef=${ref}`,
+    });
   });
 
   test("heading hierarchy is h1 My Science -> h2 domain -> h3 card title", async () => {

@@ -75,6 +75,97 @@ describe("renderDeepLinkArrival - silent handoff", () => {
   });
 });
 
+// F5.2 §7.3 (Slice 5) - differentiated deep-link launch routing + fallback.
+describe("renderDeepLinkArrival - differentiated routing", () => {
+  const REV = `pr${"a".repeat(64)}`;
+  const SAFE_PATH = `app/lessons/variants/lesson_${SLUG}__${REV}.html`;
+  const REF = "0123456789abcdef0123456789abcdef";
+  const presentation = {
+    variantKey: "reading-adapted",
+    presentationRevisionId: REV,
+    path: SAFE_PATH,
+  };
+
+  test("authorized differentiated launch navigates to the exact server path with the launchRef", async () => {
+    const mount = makeMount();
+    const deps = makeDeps({
+      resolve: jest.fn().mockResolvedValue(resolution({ presentation, launchRef: REF })),
+      probe: jest.fn().mockResolvedValue(true),
+    });
+    await renderDeepLinkArrival(mount, deps);
+    expect(deps.probe).toHaveBeenCalledTimes(1);
+    expect(deps.navigate).toHaveBeenCalledWith(
+      `/${SAFE_PATH}?assignment=${ASSIGNMENT_ID}&launchRef=${REF}`,
+    );
+  });
+
+  test("authorized canonicalFallback launch navigates canonical WITH the fallback ref", async () => {
+    const mount = makeMount();
+    const deps = makeDeps({
+      resolve: jest.fn().mockResolvedValue(resolution({ launchRef: REF })),
+    });
+    await renderDeepLinkArrival(mount, deps);
+    expect(deps.navigate).toHaveBeenCalledWith(
+      `/lesson_${SLUG}.html?assignment=${ASSIGNMENT_ID}&launchRef=${REF}`,
+    );
+  });
+
+  test("differentiated load failure falls back to canonical (no ref) and emits the anomaly (T-Q1)", async () => {
+    const mount = makeMount();
+    const onVariantLoadFailure = jest.fn();
+    const deps = makeDeps({
+      resolve: jest.fn().mockResolvedValue(resolution({ presentation, launchRef: REF })),
+      probe: jest.fn().mockResolvedValue(false),
+      onVariantLoadFailure,
+    });
+    await renderDeepLinkArrival(mount, deps);
+    expect(onVariantLoadFailure).toHaveBeenCalledTimes(1);
+    expect(deps.navigate).toHaveBeenCalledWith(
+      `/lesson_${SLUG}.html?assignment=${ASSIGNMENT_ID}`,
+    );
+    // The differentiated URL and the launchRef were never navigated.
+    const navd = (deps.navigate as jest.Mock).mock.calls[0][0] as string;
+    expect(navd).not.toContain("launchRef");
+    expect(navd).not.toContain("variants");
+  });
+
+  test("differentiated practice routes to the adapted artifact with no assignment param or ref", async () => {
+    const mount = makeMount();
+    const deps = makeDeps({
+      resolve: jest.fn().mockResolvedValue(
+        resolution({
+          internalTarget: "lessonPractice",
+          attemptContext: "informational",
+          presentation,
+        }),
+      ),
+      probe: jest.fn().mockResolvedValue(true),
+    });
+    await renderDeepLinkArrival(mount, deps);
+    expect(deps.navigate).toHaveBeenCalledWith(`/${SAFE_PATH}`);
+    const navd = (deps.navigate as jest.Mock).mock.calls[0][0] as string;
+    expect(navd).not.toContain("assignment");
+    expect(navd).not.toContain("launchRef");
+  });
+
+  test("an informational state never navigates, even if presentation fields are present", async () => {
+    const mount = makeMount();
+    const deps = makeDeps({
+      resolve: jest.fn().mockResolvedValue(
+        resolution({
+          internalTarget: "informational",
+          attemptContext: "informational",
+          presentation,
+          launchRef: REF,
+        }),
+      ),
+      probe: jest.fn().mockResolvedValue(true),
+    });
+    await renderDeepLinkArrival(mount, deps);
+    expect(deps.navigate).not.toHaveBeenCalled();
+  });
+});
+
 describe("renderDeepLinkArrival - informational and failure states", () => {
   test("informational renders a calm message and never navigates", async () => {
     const mount = makeMount();

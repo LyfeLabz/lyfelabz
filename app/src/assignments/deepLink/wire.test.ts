@@ -114,4 +114,40 @@ describe("createDeepLinkResolveCallable", () => {
       "enrollment-inactive",
     );
   });
+
+  // F5.2 §7.1 differentiation fields (Slice 5) - additive, optional, defensive.
+  const REV = `pr${"a".repeat(64)}`;
+  const PRESENTATION = {
+    variantKey: "reading-adapted",
+    presentationRevisionId: REV,
+    path: `app/lessons/variants/lesson_earths-layers__${REV}.html`,
+  };
+  const REF = "0123456789abcdef0123456789abcdef";
+
+  test("backward compatible: a resolution with no differentiation fields parses canonically", async () => {
+    callableResponse = okResolution();
+    const callable = createDeepLinkResolveCallable(fakeFunctions);
+    const res = await callable({ assignmentId: "assign-1" });
+    expect(res).not.toHaveProperty("presentation");
+    expect(res).not.toHaveProperty("launchRef");
+  });
+
+  test("carries a well-formed presentation + launchRef verbatim", async () => {
+    callableResponse = okResolution({ presentation: PRESENTATION, launchRef: REF });
+    const callable = createDeepLinkResolveCallable(fakeFunctions);
+    const res = await callable({ assignmentId: "assign-1" });
+    expect(res.presentation).toEqual(PRESENTATION);
+    expect(res.launchRef).toBe(REF);
+  });
+
+  test("drops a malformed presentation but still resolves canonically (no throw)", async () => {
+    callableResponse = okResolution({
+      presentation: { variantKey: "reading-adapted" },
+      launchRef: REF,
+    });
+    const callable = createDeepLinkResolveCallable(fakeFunctions);
+    const res = await callable({ assignmentId: "assign-1" });
+    expect(res).not.toHaveProperty("presentation");
+    expect(res.launchRef).toBe(REF);
+  });
 });

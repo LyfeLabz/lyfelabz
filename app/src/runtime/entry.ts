@@ -10,6 +10,7 @@ import type { Functions } from "firebase/functions";
 
 import { createAssessmentRuntime } from "./orchestrator";
 import type { AssessmentRuntime } from "./orchestrator";
+import { detectLaunchRef } from "./launchParams";
 import type {
   AttemptItemResult,
   AttemptSummary,
@@ -298,6 +299,7 @@ function detectAssignmentId(win: Window): string | null {
   return null;
 }
 
+
 function isEmulatorHost(win: Window): boolean {
   return detectEmulatorHost(win);
 }
@@ -426,8 +428,16 @@ function createBackedCallables(functions: Functions): RuntimeCallables {
   const finalize = httpsCallable(functions, "assessmentAttemptsFinalize");
   const getAttempt = httpsCallable(functions, "assessmentAttemptGet");
   return {
-    begin: async (assignmentId) => {
-      const res = await begin({ assignmentId });
+    begin: async (assignmentId, launchRef) => {
+      // F5.2 §4.3/§8: send the opaque `launchRef` ONLY when one was transported
+      // from server resolution. A canonical launch omits it entirely, so the
+      // request stays byte-identical to pre-feature behavior. The client never
+      // decodes or derives the ref; Slice 6 makes the server consume it.
+      const payload =
+        typeof launchRef === "string" && launchRef.length > 0
+          ? { assignmentId, launchRef }
+          : { assignmentId };
+      const res = await begin(payload);
       const data = isRecord(res.data) ? res.data : {};
       const sessionId = data.sessionId;
       if (typeof sessionId !== "string" || sessionId.length === 0) {
@@ -532,6 +542,9 @@ async function bootstrap(win: Window): Promise<void> {
     return;
   }
 
+  // Present only for an accommodated launch; ignored by the server until Slice 6.
+  const launchRef = detectLaunchRef(win);
+
   installInertRuntime(runtimeWin, true);
 
   const existingApp = getApps()[0];
@@ -568,6 +581,7 @@ async function bootstrap(win: Window): Promise<void> {
   const runtime = createAssessmentRuntime({
     version: VERSION,
     assignmentId,
+    launchRef,
     callables,
     env: { randomId: randomIdempotencyKey },
   });

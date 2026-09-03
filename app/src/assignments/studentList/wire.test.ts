@@ -80,6 +80,56 @@ describe("parseAssignmentsListForStudentItem", () => {
   ])("rejects malformed item: %s", (_label, raw) => {
     expect(parseAssignmentsListForStudentItem(raw)).toBeNull();
   });
+
+  // F5.2 §7.1 differentiation fields (Slice 5) - additive, optional, defensive.
+  const REV = `pr${"a".repeat(64)}`;
+  const PRESENTATION = {
+    variantKey: "reading-adapted",
+    presentationRevisionId: REV,
+    path: `app/lessons/variants/lesson_${base.lessonSlug}__${REV}.html`,
+  };
+  const REF = "0123456789abcdef0123456789abcdef";
+
+  test("backward compatible: an item with neither presentation nor launchRef parses canonically", () => {
+    const item = parseAssignmentsListForStudentItem(base);
+    expect(item).not.toHaveProperty("presentation");
+    expect(item).not.toHaveProperty("launchRef");
+  });
+
+  test("carries a well-formed presentation + launchRef verbatim", () => {
+    const item = parseAssignmentsListForStudentItem({
+      ...base,
+      presentation: PRESENTATION,
+      launchRef: REF,
+    });
+    expect(item?.presentation).toEqual(PRESENTATION);
+    expect(item?.launchRef).toBe(REF);
+  });
+
+  test("carries a launchRef with no presentation (canonicalFallback)", () => {
+    const item = parseAssignmentsListForStudentItem({ ...base, launchRef: REF });
+    expect(item).not.toHaveProperty("presentation");
+    expect(item?.launchRef).toBe(REF);
+  });
+
+  test.each([
+    ["malformed presentation object", { presentation: { path: 1 }, launchRef: REF }],
+    ["presentation missing path", {
+      presentation: { variantKey: "reading-adapted", presentationRevisionId: REV },
+      launchRef: REF,
+    }],
+    ["non-string launchRef", { presentation: PRESENTATION, launchRef: 7 }],
+    ["empty launchRef", { presentation: PRESENTATION, launchRef: "" }],
+  ])(
+    "drops a malformed differentiation field without discarding the whole item: %s",
+    (_label, over) => {
+      // The item still parses (canonical launch is preserved); only the
+      // malformed optional field is dropped.
+      const item = parseAssignmentsListForStudentItem({ ...base, ...over });
+      expect(item).not.toBeNull();
+      expect(item?.assignmentId).toBe(base.assignmentId);
+    },
+  );
 });
 
 describe("createAssignmentsListForStudentCallable", () => {

@@ -1,4 +1,8 @@
-import { buildAssignmentLaunchUrl, buildLessonBasePath } from "../studentList/launch";
+import {
+  executeLaunch,
+  planAssignmentLaunch,
+  planPracticeLaunch,
+} from "../studentList/launchRouting";
 import type { DeepLinkResolution, DeepLinkResolveCallable } from "./types";
 
 // Sprint 27 Phase 4 (blueprint §8.3, §8.5, §8.6): the Google Classroom
@@ -24,8 +28,18 @@ export type DeepLinkArrivalDeps = {
   // The certified resolver seam (wire.ts). Rejects on any resolver refusal.
   readonly resolve: DeepLinkResolveCallable;
   // Navigate the current tab to an internal lesson URL (window.location.assign
-  // in production). Only ever called with a helper-built internal path.
+  // in production). Only ever called with a helper-built internal path (the
+  // canonical target or the server-selected differentiated artifact).
   readonly navigate: (url: string) => void;
+  // F5.2 §7.3 (Slice 5): best-effort load probe for a differentiated artifact,
+  // used only before a differentiated navigation commits. Resolves true iff the
+  // artifact is retrievable; any failure is treated as a load failure (fall back
+  // visually to canonical, discard the launchRef). Optional; production wires a
+  // same-origin HEAD fetch. When omitted, a differentiated target is navigated
+  // optimistically (the §6.8 publication machine already confirmed liveness).
+  readonly probe?: (url: string) => Promise<boolean>;
+  // Emit the neutral, non-sensitive variant-load-failure anomaly (§7.3).
+  readonly onVariantLoadFailure?: () => void;
   // Return the student to their My Science landing (the calm fallback for an
   // informational or non-retryable state). The seam name is retained.
   readonly onGoToMyAssignments: () => void;
@@ -105,39 +119,65 @@ function renderLoading(mount: HTMLElement): void {
   mount.appendChild(section);
 }
 
-function handleResolution(
+// Build the injected executor deps from the arrival deps. The routing DECISION
+// (canonical vs the exact server-selected differentiated path) is owned by
+// launchRouting.ts; arrival only supplies the browser side effects. A missing
+// probe navigates a differentiated target optimistically (see DeepLinkArrivalDeps).
+function launchExecuteDeps(deps: DeepLinkArrivalDeps) {
+  return {
+    navigate: deps.navigate,
+    probe: deps.probe ?? (async (): Promise<boolean> => true),
+    onVariantLoadFailure: deps.onVariantLoadFailure,
+  };
+}
+
+async function handleResolution(
   mount: HTMLElement,
   deps: DeepLinkArrivalDeps,
   resolution: DeepLinkResolution,
-): void {
+): Promise<void> {
   if (
     resolution.attemptContext === "authorized" &&
     resolution.internalTarget === "assignmentLaunch"
   ) {
     // Silent arrival (PDR-024h): hand off to the existing assignment-aware
     // launch/runtime, exactly as the My Assignments launch control does. No
-    // class or assignment picker is shown.
-    const url = buildAssignmentLaunchUrl({
+    // class or assignment picker is shown. F5.2 §7.3: the plan routes to the
+    // server-selected differentiated presentation when one was minted, else to
+    // the canonical lesson, transporting the opaque launchRef unchanged.
+    const plan = planAssignmentLaunch({
       assignmentId: resolution.assignmentId,
       lessonSlug: resolution.lessonSlug,
       title: "",
       status: "published",
       publishedAt: null,
+      ...(resolution.presentation !== undefined
+        ? { presentation: resolution.presentation }
+        : {}),
+      ...(resolution.launchRef !== undefined
+        ? { launchRef: resolution.launchRef }
+        : {}),
     });
-    if (url !== null) {
-      deps.navigate(url);
+    if (plan !== null) {
+      await executeLaunch(plan, launchExecuteDeps(deps));
       return;
     }
-    // A missing launch URL means the resolved lessonSlug is unusable. Fail
-    // closed to a calm retryable state rather than launching a broken URL.
+    // A missing plan means the resolved lessonSlug is unusable. Fail closed to a
+    // calm retryable state rather than launching a broken URL.
     renderRetryable(mount, deps);
     return;
   }
 
   if (resolution.internalTarget === "lessonPractice") {
-    const base = buildLessonBasePath(resolution.lessonSlug);
-    if (base !== null) {
-      deps.navigate(base);
+    // Practice never reaches session begin (§9): no launchRef is transported and
+    // no assignment context is attached, but a differentiated presentation still
+    // routes the student to the adapted artifact.
+    const plan = planPracticeLaunch(
+      resolution.lessonSlug,
+      resolution.presentation,
+    );
+    if (plan !== null) {
+      await executeLaunch(plan, launchExecuteDeps(deps));
       return;
     }
     renderRetryable(mount, deps);
@@ -244,7 +284,7 @@ async function run(mount: HTMLElement, deps: DeepLinkArrivalDeps): Promise<void>
     handleFailure(mount, deps, err);
     return;
   }
-  handleResolution(mount, deps, resolution);
+  await handleResolution(mount, deps, resolution);
 }
 
 // Render the deep-link arrival surface into `mount`, invoke the resolver, and

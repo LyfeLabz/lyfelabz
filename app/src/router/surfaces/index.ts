@@ -17,7 +17,10 @@ import type {
   AssignmentsListForStudentCallable,
   AssignmentsListForStudentItem,
 } from "../../assignments/studentList/types";
-import { buildAssignmentLaunchUrl } from "../../assignments/studentList/launch";
+import {
+  planAssignmentLaunch,
+  type LaunchPlan,
+} from "../../assignments/studentList/launchRouting";
 import type {
   StudentResultsListCallable,
   StudentResultAggregate,
@@ -154,12 +157,15 @@ export type SurfaceDeps = {
   // targets ONLY the caller-scoped student read; the class-scoped teacher
   // read `assessmentAttemptsListForClass` is never wired here.
   readonly studentResultsList?: () => StudentResultsListCallable | null;
-  // Sprint 17 Slice 4: launch a lesson from the activeStudent surface.
-  // Injected so tests can assert the exact URL without stubbing
-  // window.location. The entry point wires window.location.assign; the
-  // launcher URL is composed inside the surface from the certified item
-  // fields so identifier leakage cannot be introduced at the wire.
-  readonly onLaunchAssignment?: (url: string) => void;
+  // Sprint 17 Slice 4 / F5.2 Slice 5: launch a lesson from the activeStudent
+  // surface. Receives the server-authoritative launch PLAN (canonical or
+  // differentiated) composed inside the surface from the certified item fields;
+  // the entry point wires the plan into the launch executor (navigate + variant
+  // load-probe + fallback). Injected so tests can assert routing without
+  // stubbing window.location or fetch. Identifier leakage cannot be introduced
+  // at the wire: the plan's canonical URL carries only the assignmentId, and the
+  // opaque launchRef travels only on the (probed) differentiated target.
+  readonly onLaunchAssignment?: (plan: LaunchPlan) => void;
   // Sprint 20 internal beta: injected create-class callable seam wired
   // per active-teacher session. Always supplied through a getter so
   // per-session state can rebind across reruns without rebuilding the
@@ -1048,7 +1054,10 @@ type MyScienceItem = {
   readonly assignmentId: string;
   readonly title: string;
   readonly topic: LessonTopic | null;
-  readonly launchUrl: string | null;
+  // F5.2 Slice 5: the server-authoritative launch plan (canonical or
+  // differentiated) for a live assignment; null for historical completed work
+  // that is no longer launchable.
+  readonly launchPlan: LaunchPlan | null;
   readonly aggregate: StudentResultAggregate | null;
   readonly completed: boolean;
   readonly publishedAt: number | null;
@@ -1233,10 +1242,14 @@ function buildMyScienceItems(
   const out: MyScienceItem[] = [];
   const seen = new Set<string>();
   for (const item of items) {
-    const launchUrl = buildAssignmentLaunchUrl(item);
-    // A listed item with no resolvable launch URL (malformed slug) cannot be
-    // started; drop it rather than render a dead control (fail closed).
-    if (launchUrl === null) continue;
+    // F5.2 §7.3 (Slice 5): the routing decision is server-authoritative. The
+    // plan routes to the server-selected differentiated presentation when one
+    // was minted for this item, else to the canonical lesson; it never derives a
+    // variant or path from the item. A null plan means the canonical lesson URL
+    // is unresolvable (malformed slug); drop it rather than render a dead
+    // control (fail closed).
+    const launchPlan = planAssignmentLaunch(item);
+    if (launchPlan === null) continue;
     seen.add(item.assignmentId);
     const unit = getUnitBySlug(item.lessonSlug);
     // The canonical curriculum title is the source of truth for the card
@@ -1252,7 +1265,7 @@ function buildMyScienceItems(
       assignmentId: item.assignmentId,
       title,
       topic,
-      launchUrl,
+      launchPlan,
       aggregate,
       completed: aggregate !== null,
       publishedAt:
@@ -1272,7 +1285,7 @@ function buildMyScienceItems(
         assignmentId: aggregate.assignmentId,
         title: "Assignment no longer listed",
         topic: null,
-        launchUrl: null,
+        launchPlan: null,
         aggregate,
         completed: true,
         publishedAt: null,
@@ -1304,7 +1317,7 @@ function renderMyScience(
   mount: HTMLElement,
   items: ReadonlyArray<AssignmentsListForStudentItem>,
   resultsMap: ReadonlyMap<string, StudentResultAggregate> | null,
-  launch: ((url: string) => void) | undefined,
+  launch: ((plan: LaunchPlan) => void) | undefined,
 ): void {
   const doc = mount.ownerDocument;
   const work = buildMyScienceItems(items, resultsMap);
@@ -1361,7 +1374,7 @@ function renderMyScience(
 function renderMyScienceCard(
   doc: Document,
   item: MyScienceItem,
-  launch: ((url: string) => void) | undefined,
+  launch: ((plan: LaunchPlan) => void) | undefined,
   degraded: boolean,
 ): HTMLElement {
   const li = doc.createElement("li");
@@ -1419,17 +1432,23 @@ function renderMyScienceCard(
   // and the same launch/authorization path apply. Historical items (no live
   // assignment record) carry no launch URL and render no action; their
   // result is still shown so the student can see how they did.
-  if (item.launchUrl !== null) {
-    const url = item.launchUrl;
+  if (item.launchPlan !== null) {
+    const plan = item.launchPlan;
     const btn = doc.createElement("button");
     btn.type = "button";
     btn.setAttribute("data-testid", "assignments-launch");
-    btn.setAttribute("data-assignment-launch-url", url);
+    // The DOM launch attribute is always the CANONICAL target (never the
+    // differentiated artifact URL and never the opaque launchRef): the observable
+    // launch target stays non-leaking and byte-identical to pre-differentiation
+    // behavior for the canonical population. The differentiated routing and the
+    // launchRef transport happen inside the injected launch executor at click
+    // time, from the closed-over plan, never from a DOM attribute.
+    btn.setAttribute("data-assignment-launch-url", plan.canonicalUrl);
     btn.textContent = "Open assignment";
     // The accessible name includes the lesson title (Blueprint section 16).
     btn.setAttribute("aria-label", `Open assignment: ${item.title}`);
     btn.addEventListener("click", () => {
-      if (launch) launch(url);
+      if (launch) launch(plan);
     });
     li.appendChild(btn);
   }
