@@ -17,6 +17,31 @@ const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 const CANONICAL_ROOT = path.join(REPO_ROOT, "lesson-sources");
 const V1_OUTPUT_ROOT = REPO_ROOT;
 const V2_OUTPUT_ROOT = path.join(REPO_ROOT, "app", "lessons");
+const VARIANT_OUTPUT_ROOT = path.join(REPO_ROOT, "app", "lessons", "variants");
+
+/*
+ * Target-set registry (P4-3, differentiation F5.2 Slice 2).
+ *
+ * Every build target - the two existing canonical outputs plus the
+ * differentiated-presentation target - is declared once, generically,
+ * instead of the two-branch ternary this replaced. Adding a future
+ * differentiated target means adding one entry here, not duplicating
+ * output-path resolution.
+ *
+ *   "flat"   - output must live directly inside root (matches the v1
+ *              public URL: no subdirectories).
+ *   "nested" - output may live anywhere under root, except inside another
+ *              target's reserved root (VARIANT_OUTPUT_ROOT is reserved so
+ *              a canonical v2 lesson can never accidentally land inside
+ *              the differentiated-variant retention tree).
+ */
+const TARGETS = {
+  v1: { root: V1_OUTPUT_ROOT, mode: "flat" },
+  v2: { root: V2_OUTPUT_ROOT, mode: "nested" },
+  variant: { root: VARIANT_OUTPUT_ROOT, mode: "nested" },
+};
+
+const CANONICAL_TARGET_IDS = Object.freeze(["v1", "v2"]);
 
 function isWithin(parent, child) {
   const rel = path.relative(parent, child);
@@ -43,26 +68,35 @@ function resolveSource(relPath) {
 }
 
 function resolveOutput(target, relPath) {
+  const def = TARGETS[target];
+  if (!def) {
+    throw new Error(`[lesson-builder] unknown build target: ${target}`);
+  }
   const abs = path.resolve(REPO_ROOT, relPath);
   assertWithinRepo(abs, `${target} output`);
-  const expectedRoot = target === "v1" ? V1_OUTPUT_ROOT : V2_OUTPUT_ROOT;
-  if (target === "v1") {
-    // v1 output must live directly at the repo root, matching the current
-    // public URL. Deeper paths are rejected so a misconfigured lesson can
-    // not silently write under app/ or lesson-sources/.
-    if (path.dirname(abs) !== expectedRoot) {
+  if (def.mode === "flat") {
+    // Flat targets (v1) must land directly at their root, matching the
+    // current public URL. Deeper paths are rejected so a misconfigured
+    // lesson can not silently write under app/ or lesson-sources/.
+    if (path.dirname(abs) !== def.root) {
       throw new Error(
-        `[lesson-builder] v1 output must live at repo root: ${relPath}`,
-      );
-    }
-  } else if (target === "v2") {
-    if (!isWithin(expectedRoot, abs)) {
-      throw new Error(
-        `[lesson-builder] v2 output must live under app/lessons/: ${relPath}`,
+        `[lesson-builder] ${target} output must live at repo root: ${relPath}`,
       );
     }
   } else {
-    throw new Error(`[lesson-builder] unknown build target: ${target}`);
+    if (!isWithin(def.root, abs)) {
+      throw new Error(
+        `[lesson-builder] ${target} output must live under ${path.relative(REPO_ROOT, def.root)}/: ${relPath}`,
+      );
+    }
+    // The differentiated-variant tree is reserved for the variant target
+    // only, so a canonical target can never collide with retained variant
+    // artifacts (M7 boundary).
+    if (target !== "variant" && isWithin(VARIANT_OUTPUT_ROOT, abs)) {
+      throw new Error(
+        `[lesson-builder] ${target} output must not land under app/lessons/variants/ (reserved for differentiated presentation artifacts): ${relPath}`,
+      );
+    }
   }
   return abs;
 }
@@ -102,6 +136,9 @@ module.exports = {
   CANONICAL_ROOT,
   V1_OUTPUT_ROOT,
   V2_OUTPUT_ROOT,
+  VARIANT_OUTPUT_ROOT,
+  TARGETS,
+  CANONICAL_TARGET_IDS,
   isWithin,
   resolveSource,
   resolveOutput,

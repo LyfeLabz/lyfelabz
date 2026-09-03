@@ -14,17 +14,13 @@
 
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
 
 const paths = require("./paths.cjs");
 const scanner = require("./markerScanner.cjs");
 const transformer = require("./transformer.cjs");
 const configMod = require("./config.cjs");
 const equivalence = require("./equivalence.cjs");
-
-function sha256(bytes) {
-  return crypto.createHash("sha256").update(bytes).digest("hex");
-}
+const { sha256Hex: sha256 } = require("./hash.cjs");
 
 function readSource(cfg) {
   const abs = paths.resolveSource(cfg.canonicalSource);
@@ -40,12 +36,20 @@ function buildBytes(cfg, target, sourceBytes) {
   return { bytes: out, scan };
 }
 
-function buildBoth(cfg, sourceBytes) {
-  const v1 = buildBytes(cfg, "v1", sourceBytes);
-  const v2 = buildBytes(cfg, "v2", sourceBytes);
-  configMod.assertSignatures(cfg, v1.bytes, v2.bytes);
-  equivalence.assertEquivalent(v1.bytes, v2.bytes, cfg.equivalenceExclusions);
-  return { v1, v2 };
+function buildAllTargets(cfg, sourceBytes) {
+  // Target-set model (P4-3): every configured canonical target is built
+  // from one loop over paths.CANONICAL_TARGET_IDS instead of two literal
+  // branches. The per-pair signature/equivalence checks below remain
+  // v1/v2-specific by design - that is the canonical instructional
+  // contract between the public and authenticated lesson, not build-target
+  // dispatch, and F5.2 leaves it unchanged.
+  const built = {};
+  for (const target of paths.CANONICAL_TARGET_IDS) {
+    built[target] = buildBytes(cfg, target, sourceBytes);
+  }
+  configMod.assertSignatures(cfg, built.v1.bytes, built.v2.bytes);
+  equivalence.assertEquivalent(built.v1.bytes, built.v2.bytes, cfg.equivalenceExclusions);
+  return built;
 }
 
 function writeAtomically(finalAbs, bytes) {
@@ -61,8 +65,9 @@ function writeAtomically(finalAbs, bytes) {
 function buildLesson({ slug, target, write = false }) {
   const cfg = configMod.loadConfig(slug);
   const { bytes: sourceBytes } = readSource(cfg);
-  const { v1, v2 } = buildBoth(cfg, sourceBytes);
-  const picked = target === "v1" ? v1 : v2;
+  const built = buildAllTargets(cfg, sourceBytes);
+  const picked = built[target];
+  if (!picked) throw new Error(`[lesson-builder] unknown build target: ${target}`);
   const outAbs = paths.resolveOutput(target, cfg.outputs[target]);
   const srcAbs = paths.resolveSource(cfg.canonicalSource);
   paths.assertOutputNotSource(srcAbs, outAbs);
@@ -73,9 +78,9 @@ function buildLesson({ slug, target, write = false }) {
 function verifyLesson({ slug }) {
   const cfg = configMod.loadConfig(slug);
   const { bytes: sourceBytes } = readSource(cfg);
-  const { v1, v2 } = buildBoth(cfg, sourceBytes);
+  const built = buildAllTargets(cfg, sourceBytes);
   const results = {};
-  for (const target of ["v1", "v2"]) {
+  for (const target of paths.CANONICAL_TARGET_IDS) {
     const outAbs = paths.resolveOutput(target, cfg.outputs[target]);
     if (!fs.existsSync(outAbs)) {
       throw new Error(
@@ -84,8 +89,8 @@ function verifyLesson({ slug }) {
       );
     }
     const onDisk = fs.readFileSync(outAbs, "utf8");
-    const built = target === "v1" ? v1.bytes : v2.bytes;
-    if (onDisk !== built) {
+    const builtBytes = built[target].bytes;
+    if (onDisk !== builtBytes) {
       throw new Error(
         `[lesson-verify] ${slug} ${target}: committed artifact drifts from canonical source. ` +
           `Regenerate with \`npm --prefix app run lessons:build -- --only=${slug} --target=${target}\`.`,
