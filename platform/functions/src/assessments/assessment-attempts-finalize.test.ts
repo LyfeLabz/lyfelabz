@@ -1299,4 +1299,149 @@ describe("assessmentAttemptsFinalize", () => {
       __assessmentAttemptsFinalizeHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assignment-not-published" });
   });
+
+  // -------- F5.2 Slice 6 - delivery-outcome propagation (§3.4/§8.4) --------
+
+  const REVISION_A = `pr${"a".repeat(64)}`;
+  const REVISION_B = `pr${"b".repeat(64)}`;
+  const VARIANT_KEY = "reading-adapted";
+
+  it("Slice 6 (T-O3/T-O4): copies a differentiated session's outcome + pair verbatim onto the attempt", async () => {
+    seedDefaultFixture({
+      session: {
+        ...(fixture.session as object),
+        deliveryOutcome: "differentiated",
+        variantKey: VARIANT_KEY,
+        presentationRevisionId: REVISION_A,
+      },
+    });
+    await __assessmentAttemptsFinalizeHandler(makeRequest());
+    const write = txSets[0].data as Record<string, unknown>;
+    expect(write.deliveryOutcome).toBe("differentiated");
+    expect(write.variantKey).toBe(VARIANT_KEY);
+    expect(write.presentationRevisionId).toBe(REVISION_A);
+    // Scoring is untouched by presentation identity.
+    expect(write.assessmentRevisionId).toBe(REVISION_ID);
+  });
+
+  it("Slice 6: copies a canonical session's outcome with no pair", async () => {
+    seedDefaultFixture({
+      session: { ...(fixture.session as object), deliveryOutcome: "canonical" },
+    });
+    await __assessmentAttemptsFinalizeHandler(makeRequest());
+    const write = txSets[0].data as Record<string, unknown>;
+    expect(write.deliveryOutcome).toBe("canonical");
+    expect(write).not.toHaveProperty("variantKey");
+    expect(write).not.toHaveProperty("presentationRevisionId");
+  });
+
+  it("Slice 6: copies a canonicalFallback session's outcome with no pair", async () => {
+    seedDefaultFixture({
+      session: { ...(fixture.session as object), deliveryOutcome: "canonicalFallback" },
+    });
+    await __assessmentAttemptsFinalizeHandler(makeRequest());
+    const write = txSets[0].data as Record<string, unknown>;
+    expect(write.deliveryOutcome).toBe("canonicalFallback");
+    expect(write).not.toHaveProperty("variantKey");
+  });
+
+  it("Slice 6 (legacy): a pre-Slice-6 session (no deliveryOutcome) yields an attempt with no delivery fields (no backfill)", async () => {
+    // The default session fixture carries no delivery fields.
+    await __assessmentAttemptsFinalizeHandler(makeRequest());
+    const write = txSets[0].data as Record<string, unknown>;
+    expect(write).not.toHaveProperty("deliveryOutcome");
+    expect(write).not.toHaveProperty("variantKey");
+    expect(write).not.toHaveProperty("presentationRevisionId");
+  });
+
+  it("Slice 6 (defensive): refuses a malformed differentiated session missing its pair", async () => {
+    seedDefaultFixture({
+      session: {
+        ...(fixture.session as object),
+        deliveryOutcome: "differentiated",
+        // pair intentionally absent
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.malformedSession" });
+    expect(txSets).toHaveLength(0);
+  });
+
+  it("Slice 6 (defensive): refuses a malformed canonical session carrying a pair", async () => {
+    seedDefaultFixture({
+      session: {
+        ...(fixture.session as object),
+        deliveryOutcome: "canonical",
+        variantKey: VARIANT_KEY,
+        presentationRevisionId: REVISION_A,
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.malformedSession" });
+  });
+
+  it("Slice 6 (reassessment): a later session frozen at revision B yields an attempt carrying B, not A", async () => {
+    // Reassessment is a NEW session with its own freeze. Attempt 1 (a separate
+    // immutable doc) retains revision A; a second session frozen at B copies B.
+    // The assignment's assessmentRevisionId is unchanged across reassessments.
+    seedDefaultFixture({
+      session: {
+        ...(fixture.session as object),
+        sessionOrdinal: 2,
+        deliveryOutcome: "differentiated",
+        variantKey: VARIANT_KEY,
+        presentationRevisionId: REVISION_B,
+      },
+      // Prior attempt count = 1 so this finalize is attemptNumber 2.
+      existingAttempt: undefined,
+    });
+    // Make the attempt-count query report one prior attempt.
+    mockRunTransaction.mockReset();
+    mockRunTransaction.mockImplementation((fn: (tx: unknown) => unknown) => {
+      const tx = {
+        get: (refOrQuery: { __kind?: string; __hasLimit?: boolean }) => {
+          if (refOrQuery.__kind === "session") {
+            return makeSnap({ exists: true, data: () => fixture.session });
+          }
+          if (refOrQuery.__kind === "assignment") {
+            return makeSnap({ exists: true, data: () => fixture.assignment });
+          }
+          if (refOrQuery.__kind === "enrollment") {
+            return makeSnap({ exists: true, data: () => fixture.enrollment });
+          }
+          if (refOrQuery.__kind === "recipient") {
+            return makeSnap({ exists: true, data: () => fixture.recipient });
+          }
+          if (refOrQuery.__kind === "revision") {
+            return makeSnap({ exists: true, data: () => fixture.revision });
+          }
+          if (refOrQuery.__kind === "answerKey") {
+            return makeSnap({ exists: true, data: () => fixture.answerKey });
+          }
+          if (refOrQuery.__kind === "attempt") {
+            return makeSnap({ exists: false });
+          }
+          if (refOrQuery.__kind === "attemptsQuery") {
+            if (refOrQuery.__hasLimit) return { empty: true, size: 0, docs: [] };
+            // One prior attempt exists (attempt 1 at revision A).
+            return { empty: false, size: 1, docs: [{}] };
+          }
+          throw new Error("unexpected");
+        },
+        set: (ref: unknown, data: unknown) => txSets.push({ ref, data }),
+        delete: (ref: unknown) => txDeletes.push(ref),
+      };
+      return fn(tx);
+    });
+
+    const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+    expect(result.attemptNumber).toBe(2);
+    const write = txSets[0].data as Record<string, unknown>;
+    expect(write.presentationRevisionId).toBe(REVISION_B);
+    expect(write.deliveryOutcome).toBe("differentiated");
+    // Same assessment revision as attempt 1 - differentiation never touches it.
+    expect(write.assessmentRevisionId).toBe(REVISION_ID);
+  });
 });

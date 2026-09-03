@@ -12,6 +12,40 @@ export const ASSESSMENT_SESSIONS_COLLECTION = "assessmentSessions";
 // this union in one place rather than reintroducing a competing name.
 export type AssessmentSessionStatus = "live" | "archived";
 
+// F5.2 §3.3/§8.1 - the three-state durable delivery-outcome vocabulary,
+// Persistent Student Differentiation Slice 6. Server-derived at session begin
+// and never client-supplied. This is the EXACT certified set; no fourth
+// persisted value (`failed`, `unknown`, `adapted`, `disabled`,
+// `missingCoverage`, `retired`, `legacy`, ...) is ever introduced. Operational
+// reasons live only in telemetry (§ telemetry), never in this durable enum.
+//   - `"canonical"`         : no support expected at freeze; canonical delivered.
+//   - `"differentiated"`    : a validated uid/assignment/lesson-bound launch
+//                             grant delivered the frozen `(variantKey,
+//                             presentationRevisionId)` pair.
+//   - `"canonicalFallback"` : support expected but canonical delivered for a
+//                             legitimate reason (coverage gap/retired,
+//                             operational disable, or a canonical-fallback
+//                             grant). No presentation pair.
+export type DeliveryOutcome = "canonical" | "differentiated" | "canonicalFallback";
+
+// F5.2 §3.3 pair invariant, expressed as a discriminated union so a session
+// can NEVER be typed with `deliveryOutcome:"differentiated"` and no pair, nor
+// with a pair on a `"canonical"`/`"canonicalFallback"` freeze. The
+// `variantKey`/`presentationRevisionId` pair is present iff
+// `deliveryOutcome === "differentiated"`; exactly one present is unrepresentable.
+// This is the ONLY server-derived delivery shape written onto a new session at
+// begin (`assessmentSessionsBegin`, Slice 6); it comes from a validated launch
+// grant (differentiated) or a server-side no-ref legitimacy check (fallback),
+// never from client input.
+export type SessionDeliveryFreeze =
+  | { readonly deliveryOutcome: "canonical" }
+  | { readonly deliveryOutcome: "canonicalFallback" }
+  | {
+      readonly deliveryOutcome: "differentiated";
+      readonly variantKey: string;
+      readonly presentationRevisionId: string;
+    };
+
 // Per-item autosave response inline on the session document per
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §6. `itemId` names the assessment
 // item the student answered and `response` carries the student's current
@@ -63,6 +97,16 @@ export type AssessmentSessionRecord = {
   readonly startedAt: Timestamp;
   readonly responses?: readonly AssessmentSessionResponse[];
   readonly lastActivityAt?: Timestamp;
+  // F5.2 §3.3 - Persistent Student Differentiation Slice 6 additive fields.
+  // Frozen at creation from the validated launch grant / no-ref legitimacy
+  // check and never rewritten by autosave, sweep, recover, or finalize. All
+  // three are OPTIONAL on the read shape: a pre-Slice-6 session lacks all
+  // three and is interpreted as canonical (§3.3, §12). The §3.3 invariant
+  // (pair present iff `deliveryOutcome:"differentiated"`) holds by
+  // construction on every session created at/after Slice 6.
+  readonly deliveryOutcome?: DeliveryOutcome;
+  readonly variantKey?: string;
+  readonly presentationRevisionId?: string;
 };
 
 // Write shape for the assessment-session creation callable
@@ -71,6 +115,14 @@ export type AssessmentSessionRecord = {
 // are set at creation; `status` is always `live` at creation; `startedAt`
 // is stamped by the server via `FieldValue.serverTimestamp()`; no other
 // lifecycle value is reachable through this write path.
+// The delivery freeze (`SessionDeliveryFreeze`, §3.3) is intersected onto the
+// creation write so every NEW session is durably stamped with its
+// server-derived `deliveryOutcome` (and, iff differentiated, its exact
+// presentation pair) at the single authoritative freeze point. The pair
+// invariant is carried by the union: a differentiated write cannot omit the
+// pair and a canonical/canonicalFallback write cannot carry one. Autosave uses
+// `AssessmentSessionAutosaveWrite`, whose two-field shape structurally cannot
+// touch these frozen fields (V4).
 export type AssessmentSessionCreationWrite = {
   readonly studentId: string;
   readonly assignmentId: string;
@@ -84,7 +136,7 @@ export type AssessmentSessionCreationWrite = {
   readonly sessionOrdinal: number;
   readonly status: "live";
   readonly startedAt: FieldValue;
-};
+} & SessionDeliveryFreeze;
 
 // Autosave-write shape for the assessment-session update callable
 // (assessmentSessionsAutosave). Conforms to

@@ -214,6 +214,61 @@ function readCanonicalSessionResponses(
   return map;
 }
 
+// F5.2 §3.4/§8.4 - copy the session's frozen delivery state onto the attempt
+// verbatim inside the finalize transaction (absent on session => absent here).
+// The session freeze is authoritative: finalize NEVER re-resolves the current
+// presentation index or the student's current accommodation, and never mints or
+// consults a grant. A pre-Slice-6 session carries no `deliveryOutcome`, so the
+// attempt carries none either (no backfill; §3.4). The §3.3 pair invariant is
+// re-asserted defensively here so a structurally impossible malformed session
+// (differentiated with a missing pair, or a pair on a non-differentiated freeze)
+// fails closed with no attempt written rather than persisting a malformed
+// immutable record.
+type AttemptDeliveryFields = {
+  readonly deliveryOutcome?: AssessmentSessionRecord["deliveryOutcome"];
+  readonly variantKey?: string;
+  readonly presentationRevisionId?: string;
+};
+
+function sessionDeliveryForAttempt(
+  session: AssessmentSessionRecord,
+): AttemptDeliveryFields {
+  const { deliveryOutcome, variantKey, presentationRevisionId } = session;
+  if (deliveryOutcome === undefined) {
+    // Pre-Slice-6 session: no durable-outcome contract existed. Absent =>
+    // absent; interpreted as canonical downstream, never backfilled.
+    if (variantKey !== undefined || presentationRevisionId !== undefined) {
+      throw new PlatformError(
+        "assessmentAttempts.malformedSession",
+        "Session carries a presentation pair without a deliveryOutcome.",
+      );
+    }
+    return {};
+  }
+  if (deliveryOutcome === "differentiated") {
+    if (
+      typeof variantKey !== "string" ||
+      variantKey.length === 0 ||
+      typeof presentationRevisionId !== "string" ||
+      presentationRevisionId.length === 0
+    ) {
+      throw new PlatformError(
+        "assessmentAttempts.malformedSession",
+        "Differentiated session is missing its frozen presentation pair.",
+      );
+    }
+    return { deliveryOutcome, variantKey, presentationRevisionId };
+  }
+  // canonical | canonicalFallback: no pair permitted (§3.3 invariant).
+  if (variantKey !== undefined || presentationRevisionId !== undefined) {
+    throw new PlatformError(
+      "assessmentAttempts.malformedSession",
+      "Non-differentiated session must not carry a presentation pair.",
+    );
+  }
+  return { deliveryOutcome };
+}
+
 // Deterministic attempt identifier per
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §12: `{assignmentId}__{studentId}__a{attemptNumber}`.
 export function attemptIdFor(
@@ -841,6 +896,8 @@ async function assessmentAttemptsFinalizeHandler(
         itemResults: scoring.itemResults,
         idempotencyKey: input.idempotencyKey,
         submittedAt: FieldValue.serverTimestamp(),
+        // §3.4/§8.4 - propagate the session's frozen delivery state verbatim.
+        ...sessionDeliveryForAttempt(session),
       };
 
       tx.set(attemptCreationDocRef(attemptId), attemptWrite);

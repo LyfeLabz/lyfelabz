@@ -453,6 +453,38 @@ describe("assessmentAssignmentSummary", () => {
     expect(result.perfectScoreStudents).toBe(1);
   });
 
+  it("T-L1 (Slice 6): aggregate reporting ignores deliveryOutcome / variantKey / presentationRevisionId", async () => {
+    // Attempts carrying the new Slice 6 delivery fields (differentiated,
+    // canonicalFallback, or none) aggregate identically to the same scores
+    // without them. Score reporting never reads presentation metadata (§3.4).
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedRecipient(STUDENT_C);
+    seedAttempt({
+      studentId: STUDENT_A,
+      percentage: 60,
+      score: 3,
+      maxScore: 5,
+      deliveryOutcome: "differentiated",
+      variantKey: "reading-adapted",
+      presentationRevisionId: `pr${"a".repeat(64)}`,
+    });
+    seedAttempt({
+      studentId: STUDENT_B,
+      percentage: 100,
+      score: 5,
+      maxScore: 5,
+      deliveryOutcome: "canonicalFallback",
+    });
+    // STUDENT_C carries no delivery fields (pre-Slice-6 attempt).
+    seedAttempt({ studentId: STUDENT_C, percentage: 80, score: 4, maxScore: 5 });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(result.averagePercentage).toBe(80);
+    expect(result.highestPercentage).toBe(100);
+    expect(result.lowestPercentage).toBe(60);
+    expect(result.perfectScoreStudents).toBe(1);
+  });
+
   it("perfect score uses raw score and max score", async () => {
     seedRecipient(STUDENT_A);
     seedAttempt({ studentId: STUDENT_A, percentage: 99, score: 5, maxScore: 5 });

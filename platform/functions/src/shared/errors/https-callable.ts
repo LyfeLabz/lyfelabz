@@ -74,6 +74,23 @@ const PERMISSION_SUFFIXES = [
   ".pilotNotAllowlisted",
 ];
 
+// F5.2 §8.2/§8.3 - Persistent Student Differentiation Slice 6 begin-time
+// refusals. These stable UPPER_SNAKE codes are surfaced to the client via
+// `HttpsError.details.code`; the coarse Firebase code communicates
+// retriability. `BEGIN_REQUIRES_LAUNCH` (obtain a fresh grant),
+// `LAUNCH_REF_EXPIRED` (re-resolve for a fresh grant), and
+// `BEGIN_VALIDATION_UNAVAILABLE` (transient/unresolvable coverage) are all
+// RETRIABLE and map to `unavailable` so a well-behaved client retries after
+// re-resolution. `LAUNCH_REF_INVALID` (forged/unknown/cross-user/cross-
+// assignment/cross-lesson/malformed) is NON-retriable and maps to the
+// conservative `failed-precondition` bucket; its refusal shape is uniform and
+// discloses neither grant existence nor any configuration.
+const RETRIABLE_BEGIN_CODES = new Set([
+  "BEGIN_REQUIRES_LAUNCH",
+  "BEGIN_VALIDATION_UNAVAILABLE",
+  "LAUNCH_REF_EXPIRED",
+]);
+
 const NOT_FOUND_SUFFIXES = [
   ".notFound",
   ".sessionNotFound",
@@ -110,6 +127,8 @@ function endsWithAny(code: string, suffixes: readonly string[]): boolean {
 }
 
 export function mapPlatformCodeToHttpsCode(code: string): FunctionsErrorCode {
+  if (RETRIABLE_BEGIN_CODES.has(code)) return "unavailable";
+  if (code === "LAUNCH_REF_INVALID") return "failed-precondition";
   if (AUTH_CODES.has(code)) return "unauthenticated";
   if (endsWithAny(code, AUTH_SUFFIXES)) return "unauthenticated";
   if (PERMISSION_CODES.has(code)) return "permission-denied";

@@ -16,9 +16,12 @@ import {
   type AssessmentSessionRecord,
   type AssignmentRecord,
   type EnrollmentRecord,
+  type SessionDeliveryFreeze,
 } from "../shared";
 
 import { isCanonicalRecipient } from "../assignments/assignment-recipients";
+import { resolveBeginDelivery } from "./resolve-begin-delivery";
+import { buildBeginDeliveryPorts } from "./begin-delivery-deps";
 
 // Client-supplied request payload for assessmentSessionsBegin per
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §21. The authenticated student
@@ -27,8 +30,18 @@ import { isCanonicalRecipient } from "../assignments/assignment-recipients";
 // record (§13) and the caller's verified district context (§17). No
 // client-authoritative revision, score, correctness marker, or explanation
 // payload is accepted onto a session at any point in its lifecycle.
+// F5.2 §4.3/§8 - the client may add exactly one new optional field,
+// `launchRef`: the OPAQUE server-issued launch-grant id transported from server
+// resolution (§7). It can name no content - the grant's content binding is
+// server-written at issuance and the client transports only the id. Every
+// authoritative delivery selector (`variantKey`, `presentationRevisionId`,
+// `deliveryOutcome`, `outcomeAtIssuance`, a presentation path, an accommodation
+// status/level, `configRevision`, `studentId`, grant contents) is a FORBIDDEN
+// request key, refused at the boundary (§4.3): delivery identity is
+// server-derived, never client-asserted.
 export type AssessmentSessionsBeginRequest = {
   readonly assignmentId: string;
+  readonly launchRef?: string;
 };
 
 // Return payload of a successful session-begin call. `sessionId` is the
@@ -79,7 +92,34 @@ async function assertActiveStudentInDistrict(
   };
 }
 
-function validateRequest(data: unknown): { readonly assignmentId: string } {
+// F5.2 §4.3 forbidden request-shape coverage for begin. Every authoritative
+// delivery/presentation selector and every launch-grant content field is
+// refused with a request-shape error rather than silently ignored, so a broken
+// or tampering client is surfaced immediately and no laundering path exists.
+// `launchRef` (the sole new accepted field) is intentionally NOT in this list.
+const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
+  "variantKey",
+  "presentationRevisionId",
+  "readingLevel",
+  "level",
+  "accommodation",
+  "presentation",
+  "path",
+  "deliveryOutcome",
+  "outcomeAtIssuance",
+  "studentId",
+  "configRevision",
+  "status",
+  "issuedAt",
+  "expiresAt",
+  "lessonSlug",
+  "grantId",
+];
+
+function validateRequest(data: unknown): {
+  readonly assignmentId: string;
+  readonly launchRef?: string;
+} {
   if (data === null || typeof data !== "object") {
     throw new PlatformError(
       "assessmentSessions.invalidRequest",
@@ -87,6 +127,14 @@ function validateRequest(data: unknown): { readonly assignmentId: string } {
     );
   }
   const payload = data as Record<string, unknown>;
+  for (const key of FORBIDDEN_REQUEST_KEYS) {
+    if (key in payload) {
+      throw new PlatformError(
+        "assessmentSessions.invalidRequest",
+        `Server-owned field "${key}" is not permitted on the request.`,
+      );
+    }
+  }
   if (!isNonEmptyString(payload.assignmentId)) {
     throw new PlatformError(
       "assessmentSessions.invalidAssignmentId",
@@ -100,7 +148,24 @@ function validateRequest(data: unknown): { readonly assignmentId: string } {
       "assignmentId must be a URL-safe token.",
     );
   }
-  return { assignmentId };
+
+  // The optional opaque launch reference. Only its SHAPE is checked here (a
+  // present-but-non-string or empty value is a request-shape error). Its FORMAT
+  // and validity (unknown/forged/expired/mismatched) are decided at consumption
+  // by the grant validator, which returns the stable `LAUNCH_REF_INVALID` /
+  // `LAUNCH_REF_EXPIRED` codes rather than a generic request error.
+  let launchRef: string | undefined;
+  if ("launchRef" in payload && payload.launchRef !== undefined) {
+    if (!isNonEmptyString(payload.launchRef)) {
+      throw new PlatformError(
+        "assessmentSessions.invalidRequest",
+        "launchRef must be a non-empty string when present.",
+      );
+    }
+    launchRef = payload.launchRef.trim();
+  }
+
+  return launchRef === undefined ? { assignmentId } : { assignmentId, launchRef };
 }
 
 async function loadAssignment(assignmentId: string): Promise<AssignmentRecord> {
@@ -382,6 +447,11 @@ async function assessmentSessionsBeginHandler(
         derived,
       )
     ) {
+      // §8.2 step 1 - idempotency first. An existing Live session is returned
+      // as-is; its frozen presentation/delivery fields never change and a
+      // supplied `launchRef` is IGNORED (never re-validated, never joins the
+      // request-match comparison). Repeated begin cannot mutate a frozen
+      // session, so grant replay within TTL is harmless.
       safeLog(() =>
         log.info("assessmentSessions.beginIdempotent", {
           actorUserId: actor.uid,
@@ -396,6 +466,27 @@ async function assessmentSessionsBeginHandler(
     );
   }
 
+  // Slice 6 authoritative delivery freeze (§8). AFTER the full existing
+  // authorization chain and the idempotency check, and BEFORE the create, the
+  // server derives the durable `deliveryOutcome` (and, iff differentiated, the
+  // exact presentation pair) from a validated launch grant or the no-ref
+  // legitimacy check. This is the single freeze point: the value is computed
+  // here and written once by the create below, and never changes thereafter for
+  // this session. A refusal (BEGIN_REQUIRES_LAUNCH, LAUNCH_REF_INVALID,
+  // LAUNCH_REF_EXPIRED, BEGIN_VALIDATION_UNAVAILABLE) throws BEFORE the create,
+  // so no session and no attempt are ever produced on a refused begin. The
+  // grant is never re-resolved against the current index (the A->B invariant),
+  // and the no-ref coverage check never selects a revision.
+  const delivery: SessionDeliveryFreeze = await resolveBeginDelivery(
+    buildBeginDeliveryPorts(),
+    {
+      studentId: actor.uid,
+      assignmentId: input.assignmentId,
+      lessonSlug: assignment.lessonSlug,
+      launchRef: input.launchRef,
+    },
+  );
+
   const creation: AssessmentSessionCreationWrite = {
     studentId: actor.uid,
     assignmentId: input.assignmentId,
@@ -409,6 +500,7 @@ async function assessmentSessionsBeginHandler(
     sessionOrdinal: FIRST_SESSION_ORDINAL,
     status: "live",
     startedAt: FieldValue.serverTimestamp(),
+    ...delivery,
   };
 
   // Sprint 11D I-3. Use `create` (server-enforced "must-not-exist"

@@ -1,6 +1,9 @@
 import type { FieldValue, Timestamp } from "firebase-admin/firestore";
 
-import type { AssessmentSessionResponse } from "./assessment-session";
+import type {
+  AssessmentSessionResponse,
+  DeliveryOutcome,
+} from "./assessment-session";
 
 // Canonical Firestore collection identifier for the immutable authoritative
 // attempt record per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7, §11
@@ -57,6 +60,18 @@ export type AssessmentAttemptRecord = {
   readonly itemResults: readonly AssessmentAttemptItemResult[];
   readonly idempotencyKey: string;
   readonly submittedAt: Timestamp;
+  // F5.2 §3.4 - Persistent Student Differentiation Slice 6 additive fields,
+  // copied verbatim from the session's frozen delivery state inside the
+  // finalize transaction (absent on session => absent here). Immutable, like
+  // every other attempt field. `deliveryOutcome` is delivery-status metadata,
+  // not plan/diagnosis data (§11); the pair is present iff
+  // `deliveryOutcome:"differentiated"` (§3.3 invariant). Pre-feature attempts
+  // predate this contract and carry none of the three; that absence is NOT
+  // evidence that no accommodation existed and is NEVER backfilled (§3.4).
+  // Aggregate score reporting ignores all three (T-L1).
+  readonly deliveryOutcome?: DeliveryOutcome;
+  readonly variantKey?: string;
+  readonly presentationRevisionId?: string;
 };
 
 // Write shape for the sole authorized attempt writer
@@ -81,4 +96,12 @@ export type AssessmentAttemptCreationWrite = {
   readonly itemResults: readonly AssessmentAttemptItemResult[];
   readonly idempotencyKey: string;
   readonly submittedAt: FieldValue;
+  // Slice 6 delivery propagation (§3.4). Optional and additive: the finalize
+  // transaction copies these from the session when present (differentiated =>
+  // both pair fields; canonical/canonicalFallback => `deliveryOutcome` only;
+  // pre-Slice-6 session => none). Never re-resolved from the current index or
+  // the student's current accommodation - the session freeze is authoritative.
+  readonly deliveryOutcome?: DeliveryOutcome;
+  readonly variantKey?: string;
+  readonly presentationRevisionId?: string;
 };

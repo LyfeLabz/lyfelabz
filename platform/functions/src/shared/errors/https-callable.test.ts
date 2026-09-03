@@ -97,6 +97,21 @@ describe("mapPlatformCodeToHttpsCode", () => {
       "failed-precondition",
     );
   });
+
+  it("maps the F5.2 Slice 6 begin refusals to their retriability bucket", () => {
+    // Retriable: the client re-resolves / obtains a fresh grant and retries.
+    expect(mapPlatformCodeToHttpsCode("BEGIN_REQUIRES_LAUNCH")).toBe(
+      "unavailable",
+    );
+    expect(mapPlatformCodeToHttpsCode("BEGIN_VALIDATION_UNAVAILABLE")).toBe(
+      "unavailable",
+    );
+    expect(mapPlatformCodeToHttpsCode("LAUNCH_REF_EXPIRED")).toBe("unavailable");
+    // Non-retriable, non-disclosing: forged/unknown/mismatched/malformed grant.
+    expect(mapPlatformCodeToHttpsCode("LAUNCH_REF_INVALID")).toBe(
+      "failed-precondition",
+    );
+  });
 });
 
 describe("translateThrown", () => {

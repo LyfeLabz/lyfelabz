@@ -285,6 +285,8 @@ export {
   type AssessmentSessionRecord,
   type AssessmentSessionResponse,
   type AssessmentSessionStatus,
+  type DeliveryOutcome,
+  type SessionDeliveryFreeze,
 } from "./types/assessment-session";
 export {
   ASSESSMENTS_COLLECTION,

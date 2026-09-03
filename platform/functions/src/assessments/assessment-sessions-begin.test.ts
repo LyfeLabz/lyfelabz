@@ -6,6 +6,13 @@ const mockSessionGet = jest.fn();
 const mockSessionCreate = jest.fn();
 const mockRecipientGet = jest.fn();
 
+// F5.2 Slice 6 differentiation ports (consumed via begin-delivery-deps, which
+// imports these from the same mocked `../shared`).
+const mockAccommodationGet = jest.fn();
+const mockGrantGet = jest.fn();
+const mockIndexGet = jest.fn();
+const mockIsDeliveryEnabled = jest.fn();
+
 const mockAssignmentDocRef = jest.fn(() => ({ get: mockAssignmentGet }));
 const mockEnrollmentDocRef = jest.fn(() => ({ get: mockEnrollmentGet }));
 const mockSessionDocRef = jest.fn(() => ({ get: mockSessionGet }));
@@ -16,6 +23,9 @@ const mockSessionCreationDocRef = jest.fn(() => ({
 const mockAssignmentRecipientDocRef = jest.fn(() => ({
   get: mockRecipientGet,
 }));
+const mockStudentAccommodationDocRef = jest.fn(() => ({ get: mockAccommodationGet }));
+const mockLaunchGrantDocRef = jest.fn(() => ({ get: mockGrantGet }));
+const mockPresentationVariantIndexDocRef = jest.fn(() => ({ get: mockIndexGet }));
 
 const mockWriteAuditEvent = jest.fn();
 const mockRequireDistrictContext = jest.fn();
@@ -58,6 +68,21 @@ jest.mock("../shared", () => {
     enrollmentsCollectionRef: jest.fn(),
     requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
+    // Slice 6 differentiation ports + pure helpers used by begin-delivery-deps.
+    studentAccommodationDocRef: mockStudentAccommodationDocRef,
+    launchGrantDocRef: mockLaunchGrantDocRef,
+    presentationVariantIndexDocRef: mockPresentationVariantIndexDocRef,
+    isDifferentiatedDeliveryEnabled: mockIsDeliveryEnabled,
+    isValidGrantId: (value: unknown) =>
+      typeof value === "string" && /^[0-9a-f]{32}$/.test(value),
+    isValidLessonSlugForVariant: (slug: string) =>
+      typeof slug === "string" && /^[a-z0-9-]+$/.test(slug),
+    isValidVariantKey: (variantKey: string) =>
+      typeof variantKey === "string" &&
+      /^[a-z0-9-]+$/.test(variantKey) &&
+      !variantKey.includes("__"),
+    assertActivateWriteConsistent: () => undefined,
+    variantKeyForReadingLevel: (level: string) => `reading-${level}`,
     parseAssessmentIdFromRevisionId: (revisionId: string) => {
       const m = /__r(\d+)$/.exec(revisionId);
       if (!m) return undefined;
@@ -143,6 +168,87 @@ function absentSessionSnapshot() {
   return { exists: false, data: () => undefined };
 }
 
+// -------- Slice 6 differentiation fixtures --------
+
+const VALID_LAUNCH_REF = "0123456789abcdef0123456789abcdef";
+// A charset-valid lessonSlug (no underscores) so the no-ref coverage check can
+// classify an index as "active". The default LESSON_SLUG carries underscores
+// and therefore always resolves to a legitimate coverage gap (absent).
+const VARIANT_LESSON_SLUG = "earths-layers";
+const VARIANT_KEY = "reading-adapted";
+const REVISION_A = `pr${"a".repeat(64)}`;
+const FAR_FUTURE_MS = 9_999_999_999_999;
+
+function absentAccommodationSnapshot() {
+  return { exists: false, data: () => undefined };
+}
+
+function activeAccommodationSnapshot() {
+  return {
+    exists: true,
+    data: () => ({
+      studentId: STUDENT_UID,
+      schoolId: SCHOOL_ID,
+      readingAccessibility: { status: "active", level: "adapted" },
+      configRevision: 1,
+      createdAt: {} as never,
+      createdBy: TEACHER_UID,
+      updatedAt: {} as never,
+      updatedBy: TEACHER_UID,
+    }),
+  };
+}
+
+function differentiatedGrantSnapshot(overrides: Record<string, unknown> = {}) {
+  return {
+    exists: true,
+    data: () => ({
+      grantId: VALID_LAUNCH_REF,
+      studentId: STUDENT_UID,
+      assignmentId: ASSIGNMENT_ID,
+      lessonSlug: LESSON_SLUG,
+      outcomeAtIssuance: "differentiated",
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_A,
+      issuedAt: { toMillis: () => FAR_FUTURE_MS - 60_000 },
+      expiresAt: { toMillis: () => FAR_FUTURE_MS },
+      ...overrides,
+    }),
+  };
+}
+
+function fallbackGrantSnapshot(overrides: Record<string, unknown> = {}) {
+  return {
+    exists: true,
+    data: () => ({
+      grantId: VALID_LAUNCH_REF,
+      studentId: STUDENT_UID,
+      assignmentId: ASSIGNMENT_ID,
+      lessonSlug: LESSON_SLUG,
+      outcomeAtIssuance: "canonicalFallback",
+      issuedAt: { toMillis: () => FAR_FUTURE_MS - 60_000 },
+      expiresAt: { toMillis: () => FAR_FUTURE_MS },
+      ...overrides,
+    }),
+  };
+}
+
+function activeIndexSnapshot(lessonSlug: string) {
+  return {
+    exists: true,
+    data: () => ({
+      lessonSlug,
+      variantKey: VARIANT_KEY,
+      currentPresentationRevisionId: REVISION_A,
+      currentPath: `app/lessons/variants/lesson_${lessonSlug}__${REVISION_A}.html`,
+      contentSha256: "a".repeat(64),
+      status: "active",
+      updatedAt: {} as never,
+      publishedBy: "publisher",
+    }),
+  };
+}
+
 function recipientSnapshot(overrides: Record<string, unknown> = {}) {
   return {
     exists: true,
@@ -206,6 +312,19 @@ describe("assessmentSessionsBegin", () => {
     mockLogInfo.mockReset();
     mockLogWarn.mockReset();
     mockLogError.mockReset();
+    // Slice 6 defaults: no accommodation record (=> canonical), delivery
+    // enabled, no grant/index reads unless a test opts in. These keep the
+    // pre-Slice-6 canonical begin behavior intact for every existing test.
+    mockAccommodationGet.mockReset();
+    mockAccommodationGet.mockResolvedValue(absentAccommodationSnapshot());
+    mockGrantGet.mockReset();
+    mockIndexGet.mockReset();
+    mockIndexGet.mockResolvedValue({ exists: false, data: () => undefined });
+    mockIsDeliveryEnabled.mockReset();
+    mockIsDeliveryEnabled.mockResolvedValue(true);
+    mockStudentAccommodationDocRef.mockClear();
+    mockLaunchGrantDocRef.mockClear();
+    mockPresentationVariantIndexDocRef.mockClear();
   });
 
   it("returns the deterministic first-session identifier", () => {
@@ -243,6 +362,8 @@ describe("assessmentSessionsBegin", () => {
       sessionOrdinal: 1,
       status: "live",
       startedAt: SERVER_TIMESTAMP_SENTINEL,
+      // Slice 6: no accommodation (default fixture) => canonical, no pair.
+      deliveryOutcome: "canonical",
     });
     expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
     expect(mockWriteAuditEvent).toHaveBeenCalledWith({
@@ -665,5 +786,251 @@ describe("assessmentSessionsBegin", () => {
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assessmentSessions.conflict" });
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  // -------- F5.2 Slice 6 - session binding + delivery outcome --------
+
+  it("Slice 6: freezes differentiated + pair from a valid launch grant", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    // The grant is bound to the assignment-frozen lessonSlug. Active
+    // accommodation is irrelevant on the grant path; leave the default absent.
+    mockGrantGet.mockResolvedValueOnce(differentiatedGrantSnapshot());
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-d", record: {} });
+
+    const result = await __assessmentSessionsBeginHandler(
+      makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+    );
+
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false });
+    expect(mockLaunchGrantDocRef).toHaveBeenCalledWith(VALID_LAUNCH_REF);
+    expect(mockSessionCreate).toHaveBeenCalledTimes(1);
+    expect(mockSessionCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deliveryOutcome: "differentiated",
+        variantKey: VARIANT_KEY,
+        presentationRevisionId: REVISION_A,
+      }),
+    );
+  });
+
+  it("Slice 6: freezes canonicalFallback (no pair) from a valid fallback grant", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockGrantGet.mockResolvedValueOnce(fallbackGrantSnapshot());
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-f", record: {} });
+
+    await __assessmentSessionsBeginHandler(
+      makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+    );
+
+    const write = mockSessionCreate.mock.calls[0][0] as Record<string, unknown>;
+    expect(write.deliveryOutcome).toBe("canonicalFallback");
+    expect(write).not.toHaveProperty("variantKey");
+    expect(write).not.toHaveProperty("presentationRevisionId");
+  });
+
+  it("Slice 6 (T-N3): refuses an unknown launch grant, creating no session or audit", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockGrantGet.mockResolvedValueOnce({ exists: false, data: () => undefined });
+
+    await expect(
+      __assessmentSessionsBeginHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+      ),
+    ).rejects.toMatchObject({ code: "LAUNCH_REF_INVALID" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6 (T-N4): refuses another student's grant", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockGrantGet.mockResolvedValueOnce(
+      differentiatedGrantSnapshot({ studentId: "other-uid" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+      ),
+    ).rejects.toMatchObject({ code: "LAUNCH_REF_INVALID" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6 (T-N6): refuses an expired grant with the retriable LAUNCH_REF_EXPIRED", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockGrantGet.mockResolvedValueOnce(
+      differentiatedGrantSnapshot({ expiresAt: { toMillis: () => 1 } }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+      ),
+    ).rejects.toMatchObject({ code: "LAUNCH_REF_EXPIRED" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6: no accommodation + no ref freezes canonical", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    // Default accommodation fixture is absent.
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-c", record: {} });
+
+    await __assessmentSessionsBeginHandler(makeRequest());
+    const write = mockSessionCreate.mock.calls[0][0] as Record<string, unknown>;
+    expect(write.deliveryOutcome).toBe("canonical");
+    expect(write).not.toHaveProperty("variantKey");
+  });
+
+  it("Slice 6 (T-R4): active accommodation + delivery disabled + no ref freezes canonicalFallback", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockAccommodationGet.mockReset();
+    mockAccommodationGet.mockResolvedValue(activeAccommodationSnapshot());
+    mockIsDeliveryEnabled.mockReset();
+    mockIsDeliveryEnabled.mockResolvedValue(false);
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-df", record: {} });
+
+    await __assessmentSessionsBeginHandler(makeRequest());
+    const write = mockSessionCreate.mock.calls[0][0] as Record<string, unknown>;
+    expect(write.deliveryOutcome).toBe("canonicalFallback");
+    expect(write).not.toHaveProperty("presentationRevisionId");
+    // The index is never consulted while delivery is disabled.
+    expect(mockIndexGet).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6 (T-R2): active accommodation + coverage absent + no ref freezes canonicalFallback", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockAccommodationGet.mockReset();
+    mockAccommodationGet.mockResolvedValue(activeAccommodationSnapshot());
+    // Index absent (default fixture).
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-cf", record: {} });
+
+    await __assessmentSessionsBeginHandler(makeRequest());
+    const write = mockSessionCreate.mock.calls[0][0] as Record<string, unknown>;
+    expect(write.deliveryOutcome).toBe("canonicalFallback");
+  });
+
+  it("Slice 6 (T-R1): active accommodation + active coverage + enabled + no ref => BEGIN_REQUIRES_LAUNCH, no session/attempt", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(
+      assignmentSnapshot({ lessonSlug: VARIANT_LESSON_SLUG }),
+    );
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockAccommodationGet.mockReset();
+    mockAccommodationGet.mockResolvedValue(activeAccommodationSnapshot());
+    mockIndexGet.mockReset();
+    mockIndexGet.mockResolvedValue(activeIndexSnapshot(VARIANT_LESSON_SLUG));
+
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "BEGIN_REQUIRES_LAUNCH" });
+    // Downgrade-hole proof: available required support is not suppressed by an
+    // omitted ref. No session, no audit.
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6 (Slice 5 downgrade defense): a ref discarded after variant load-failure cannot begin canonically", async () => {
+    // Slice 5 discards the differentiated launchRef when the artifact fails to
+    // load, so begin arrives with no ref. With active coverage still published
+    // the server must refuse rather than record a false canonical session.
+    mockAssignmentGet.mockResolvedValueOnce(
+      assignmentSnapshot({ lessonSlug: VARIANT_LESSON_SLUG }),
+    );
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockAccommodationGet.mockReset();
+    mockAccommodationGet.mockResolvedValue(activeAccommodationSnapshot());
+    mockIndexGet.mockReset();
+    mockIndexGet.mockResolvedValue(activeIndexSnapshot(VARIANT_LESSON_SLUG));
+
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()), // no launchRef
+    ).rejects.toMatchObject({ code: "BEGIN_REQUIRES_LAUNCH" });
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6: an existing Live session ignores a supplied launchRef (idempotent, no re-validation)", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(existingLiveSessionSnapshot());
+
+    const result = await __assessmentSessionsBeginHandler(
+      makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+    );
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true });
+    // The grant is never read; frozen fields never change on a repeated begin.
+    expect(mockGrantGet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6 (tamper): rejects a client-asserted deliveryOutcome", async () => {
+    await expect(
+      __assessmentSessionsBeginHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, deliveryOutcome: "differentiated" } }),
+      ),
+    ).rejects.toMatchObject({ code: "assessmentSessions.invalidRequest" });
+    expect(mockAssignmentGet).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6 (tamper): rejects a client-asserted presentation pair", async () => {
+    await expect(
+      __assessmentSessionsBeginHandler(
+        makeRequest({
+          data: {
+            assignmentId: ASSIGNMENT_ID,
+            variantKey: "reading-adapted",
+            presentationRevisionId: REVISION_A,
+          },
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "assessmentSessions.invalidRequest" });
+    expect(mockAssignmentGet).not.toHaveBeenCalled();
+  });
+
+  it("Slice 6 (tamper): rejects a client-supplied studentId selector", async () => {
+    await expect(
+      __assessmentSessionsBeginHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, studentId: "victim-uid" } }),
+      ),
+    ).rejects.toMatchObject({ code: "assessmentSessions.invalidRequest" });
+  });
+
+  it("Slice 6 (tamper): a launchRef cannot bypass assignment authorization", async () => {
+    // A perfectly valid grant does not rescue a caller who is not a recipient:
+    // authorization runs to completion BEFORE any grant validation.
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(absentRecipientSnapshot());
+    mockGrantGet.mockResolvedValue(differentiatedGrantSnapshot());
+
+    await expect(
+      __assessmentSessionsBeginHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+      ),
+    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
+    // Grant validation is never reached; no session created.
+    expect(mockGrantGet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 });
