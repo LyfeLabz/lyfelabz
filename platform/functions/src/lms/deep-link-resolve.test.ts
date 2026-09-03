@@ -18,6 +18,13 @@ const mockIsCanonicalRecipient = jest.fn();
 const mockLogInfo = jest.fn();
 const mockLogError = jest.fn();
 
+// F5.2 Slice 4: the launch-presentation resolver (Op C) is injected via
+// `../shared`. Default outcome is EXPECTED_CANONICAL so pre-feature response
+// assertions (no `presentation`/`launchRef`) remain exact; individual tests
+// override it to exercise differentiated / canonicalFallback outcomes.
+const mockLaunchResolve = jest.fn();
+const mockCreateLaunchResolver = jest.fn(() => ({ resolve: mockLaunchResolve }));
+
 const FIXED_NOW_MS = 1_700_000_000_000;
 
 jest.mock("firebase-admin/firestore", () => ({
@@ -42,6 +49,7 @@ jest.mock("../shared", () => {
     enrollmentDocRef: mockEnrollmentDocRef,
     requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
+    createRequestLaunchPresentationResolver: mockCreateLaunchResolver,
   };
 });
 
@@ -110,6 +118,10 @@ function setupHappyPath() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Default: canonical-expected student. Op C attaches no differentiation
+  // fields, so pre-feature response assertions stay exact.
+  mockLaunchResolve.mockResolvedValue({ kind: "expectedCanonical" });
+  mockCreateLaunchResolver.mockReturnValue({ resolve: mockLaunchResolve });
 });
 
 describe("lmsDeepLinkResolve - success", () => {
@@ -363,5 +375,120 @@ describe("lmsDeepLinkResolve - privacy and read-only", () => {
     const res = await __lmsDeepLinkResolveHandler(makeRequest());
     expect(res.attemptContext).toBe("authorized");
     expect(mockLogError).toHaveBeenCalled();
+  });
+});
+
+// F5.2 Slice 4 - Op C differentiation resolution on the deep-link surface
+// (§4 Op C, §7.1, §7.3). The resolver itself is unit-tested exhaustively in
+// `../shared/presentation/resolve-launch-presentation.test.ts`; here we assert
+// the SURFACE wiring: Op C runs only for launch targets, strictly after the
+// authorization chain, and attaches the additive optional fields correctly.
+describe("lmsDeepLinkResolve - Slice 4 differentiation (Op C)", () => {
+  it("attaches presentation + launchRef for a differentiated assignment launch", async () => {
+    setupHappyPath();
+    const presentation = {
+      variantKey: "reading-adapted",
+      presentationRevisionId: `pr${"a".repeat(64)}`,
+      path: `app/lessons/variants/lesson_earths-layers__pr${"a".repeat(64)}.html`,
+    };
+    mockLaunchResolve.mockResolvedValue({
+      kind: "differentiated",
+      launchRef: "0123456789abcdef0123456789abcdef",
+      presentation,
+    });
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("assignmentLaunch");
+    expect(res.presentation).toEqual(presentation);
+    expect(res.launchRef).toBe("0123456789abcdef0123456789abcdef");
+    // Resolution runs for the authenticated student's own uid and the frozen
+    // lessonSlug - never a client-asserted identity or variant.
+    expect(mockLaunchResolve).toHaveBeenCalledWith({
+      studentId: STUDENT_UID,
+      assignmentId: ASSIGNMENT_ID,
+      lessonSlug: LESSON_SLUG,
+    });
+  });
+
+  it("attaches launchRef only (no presentation) for a canonicalFallback launch", async () => {
+    setupHappyPath();
+    mockLaunchResolve.mockResolvedValue({
+      kind: "canonicalFallback",
+      launchRef: "ffffffffffffffffffffffffffffffff",
+      reason: "coverageAbsent",
+    });
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.launchRef).toBe("ffffffffffffffffffffffffffffffff");
+    expect("presentation" in res).toBe(false);
+  });
+
+  it("attaches nothing for a canonical-expected (non-accommodated) student", async () => {
+    setupHappyPath();
+    mockLaunchResolve.mockResolvedValue({ kind: "expectedCanonical" });
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect("presentation" in res).toBe(false);
+    expect("launchRef" in res).toBe(false);
+  });
+
+  it("attaches nothing (canonical) when Op C reports an internal failure", async () => {
+    setupHappyPath();
+    mockLaunchResolve.mockResolvedValue({ kind: "internalFailure" });
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("assignmentLaunch");
+    expect("presentation" in res).toBe(false);
+    expect("launchRef" in res).toBe(false);
+  });
+
+  it("runs Op C for a practice launch (lessonPractice target)", async () => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(assignmentSnapshot({ mode: "practice" }));
+    mockLaunchResolve.mockResolvedValue({
+      kind: "differentiated",
+      launchRef: "0123456789abcdef0123456789abcdef",
+      presentation: {
+        variantKey: "reading-adapted",
+        presentationRevisionId: `pr${"b".repeat(64)}`,
+        path: `app/lessons/variants/lesson_earths-layers__pr${"b".repeat(64)}.html`,
+      },
+    });
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("lessonPractice");
+    expect(res.launchRef).toBe("0123456789abcdef0123456789abcdef");
+    expect(mockLaunchResolve).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT run Op C for an informational target (non-recipient)", async () => {
+    setupHappyPath();
+    mockIsCanonicalRecipient.mockResolvedValue(false);
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("informational");
+    expect(mockLaunchResolve).not.toHaveBeenCalled();
+    expect("launchRef" in res).toBe(false);
+  });
+
+  it("does NOT run Op C for a closed assignment (informational)", async () => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(assignmentSnapshot({ status: "closed" }));
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("informational");
+    expect(mockLaunchResolve).not.toHaveBeenCalled();
+  });
+
+  it("refuses a client-asserted variantKey (forbidden request key)", async () => {
+    setupHappyPath();
+    await expect(
+      __lmsDeepLinkResolveHandler(
+        makeRequest({ assignmentId: ASSIGNMENT_ID, variantKey: "reading-adapted" }),
+      ),
+    ).rejects.toBeInstanceOf(PlatformError);
+    expect(mockLaunchResolve).not.toHaveBeenCalled();
+  });
+
+  it("refuses a client-asserted launchRef (response-only on this surface)", async () => {
+    setupHappyPath();
+    await expect(
+      __lmsDeepLinkResolveHandler(
+        makeRequest({ assignmentId: ASSIGNMENT_ID, launchRef: "x".repeat(32) }),
+      ),
+    ).rejects.toBeInstanceOf(PlatformError);
   });
 });

@@ -15,6 +15,12 @@ const mockRequireDistrictContext = jest.fn();
 
 const mockLogInfo = jest.fn();
 
+// F5.2 Slice 4: the per-item launch-presentation resolver (Op C) is injected
+// via `../shared`. Default outcome is EXPECTED_CANONICAL so pre-feature item
+// shape assertions remain exact; individual tests override it.
+const mockLaunchResolve = jest.fn();
+const mockCreateLaunchResolver = jest.fn(() => ({ resolve: mockLaunchResolve }));
+
 jest.mock("firebase-admin/firestore", () => ({}));
 
 jest.mock("firebase-functions/v2/https", () => ({
@@ -32,6 +38,7 @@ jest.mock("../shared", () => {
     assignmentDocRef: mockAssignmentDocRef,
     assignmentRecipientsCollectionGroupRef: mockRecipientsCollectionGroupRef,
     requireDistrictContext: mockRequireDistrictContext,
+    createRequestLaunchPresentationResolver: mockCreateLaunchResolver,
   };
 });
 
@@ -153,6 +160,9 @@ beforeEach(() => {
         assignmentRegistry.get(id) ?? { exists: false, id, data: () => undefined },
       ),
   }));
+  // Default: canonical-expected student (no differentiation fields attached).
+  mockLaunchResolve.mockResolvedValue({ kind: "expectedCanonical" });
+  mockCreateLaunchResolver.mockReturnValue({ resolve: mockLaunchResolve });
 });
 
 describe("assignmentsListForStudent - authorization", () => {
@@ -487,5 +497,104 @@ describe("assignmentsListForStudent - ordering", () => {
     });
     const res = await __assignmentsListForStudentHandler(makeRequest());
     expect(res.items.map((i) => i.assignmentId)).toEqual(["b", "a"]);
+  });
+});
+
+// F5.2 Slice 4 - per-item Op C differentiation resolution on the list surface
+// (§4 Op C, §7.1, §7.3). The resolver core is unit-tested separately; here we
+// assert the SURFACE wiring: one resolver per call, one resolve per item for
+// the authenticated student's own uid, correct additive-field attachment, and
+// per-item degradation.
+describe("assignmentsListForStudent - Slice 4 differentiation (Op C)", () => {
+  test("attaches presentation + launchRef to a differentiated item", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1")] });
+    seedAssignment("a1");
+    const presentation = {
+      variantKey: "reading-adapted",
+      presentationRevisionId: `pr${"a".repeat(64)}`,
+      path: `app/lessons/variants/lesson_earths-layers__pr${"a".repeat(64)}.html`,
+    };
+    mockLaunchResolve.mockResolvedValue({
+      kind: "differentiated",
+      launchRef: "0123456789abcdef0123456789abcdef",
+      presentation,
+    });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items[0].presentation).toEqual(presentation);
+    expect(res.items[0].launchRef).toBe("0123456789abcdef0123456789abcdef");
+    // Resolved for the authenticated caller's uid and the item's own
+    // (assignmentId, lessonSlug) - never a client-asserted identity.
+    expect(mockLaunchResolve).toHaveBeenCalledWith({
+      studentId: STUDENT_UID,
+      assignmentId: "a1",
+      lessonSlug: "lesson_g7_earths-layers",
+    });
+  });
+
+  test("attaches launchRef only (no presentation) for a canonicalFallback item", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1")] });
+    seedAssignment("a1");
+    mockLaunchResolve.mockResolvedValue({
+      kind: "canonicalFallback",
+      launchRef: "ffffffffffffffffffffffffffffffff",
+      reason: "operationalDisable",
+    });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items[0].launchRef).toBe("ffffffffffffffffffffffffffffffff");
+    expect("presentation" in res.items[0]).toBe(false);
+  });
+
+  test("attaches nothing for a canonical-expected student (item shape unchanged)", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1")] });
+    seedAssignment("a1");
+    mockLaunchResolve.mockResolvedValue({ kind: "expectedCanonical" });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect("presentation" in res.items[0]).toBe(false);
+    expect("launchRef" in res.items[0]).toBe(false);
+  });
+
+  test("degrades one item to canonical on internal failure without failing the list", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a1"), recipientDoc("a2")],
+    });
+    seedAssignment("a1", { publishedAt: { toMillis: () => 2_000 } });
+    seedAssignment("a2", { publishedAt: { toMillis: () => 1_000 } });
+    mockLaunchResolve
+      .mockResolvedValueOnce({ kind: "internalFailure" })
+      .mockResolvedValueOnce({
+        kind: "differentiated",
+        launchRef: "0123456789abcdef0123456789abcdef",
+        presentation: {
+          variantKey: "reading-adapted",
+          presentationRevisionId: `pr${"c".repeat(64)}`,
+          path: `app/lessons/variants/lesson_earths-layers__pr${"c".repeat(64)}.html`,
+        },
+      });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toHaveLength(2);
+    const a1 = res.items.find((i) => i.assignmentId === "a1");
+    const a2 = res.items.find((i) => i.assignmentId === "a2");
+    expect("launchRef" in (a1 as object)).toBe(false);
+    expect(a2?.launchRef).toBe("0123456789abcdef0123456789abcdef");
+  });
+
+  test("creates exactly one resolver per call (memoized reads) across items", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a1"), recipientDoc("a2")],
+    });
+    seedAssignment("a1");
+    seedAssignment("a2");
+    await __assignmentsListForStudentHandler(makeRequest());
+    expect(mockCreateLaunchResolver).toHaveBeenCalledTimes(1);
+    expect(mockLaunchResolve).toHaveBeenCalledTimes(2);
+  });
+
+  test("refuses a client-asserted variantKey before any resolution", async () => {
+    await expect(
+      __assignmentsListForStudentHandler(
+        makeRequest({ variantKey: "reading-adapted" }),
+      ),
+    ).rejects.toBeInstanceOf(PlatformError);
+    expect(mockLaunchResolve).not.toHaveBeenCalled();
   });
 });

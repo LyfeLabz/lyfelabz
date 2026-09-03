@@ -67,6 +67,11 @@ import {
   type PresentationVariantIndexRetireWrite,
 } from "../types/presentation-variant";
 import {
+  LAUNCH_GRANTS_COLLECTION,
+  type LaunchGrantCreationWrite,
+  type LaunchGrantRecord,
+} from "../types/launch-grant";
+import {
   SCHOOLS_COLLECTION,
   type SchoolCreationWrite,
   type SchoolRecord,
@@ -991,6 +996,42 @@ export function presentationVariantIndexRetireDocRef(
     .doc(
       presentationVariantIndexDocId(lessonSlug, variantKey),
     ) as DocumentReference<PresentationVariantIndexRetireWrite>;
+}
+
+// -------------------- Launch grant references --------------------
+//
+// Typed Firestore references for the F5.2 Persistent Student Differentiation
+// Slice 4 record family `launchGrants/{grantId}`. Server-issued, TTL-bounded
+// presentation-binding evidence (§3.6, §7.2). Zero direct client access (see
+// the paired Rules deny-all block). The ONLY writer is the Slice 4 launch
+// resolution (Op C, `../presentation/resolve-launch-presentation`), which
+// mints grants inside `lmsDeepLinkResolve` and `assignmentsListForStudent`;
+// the ONLY reader is `assessmentSessionsBegin` (Slice 6). No client role can
+// read, enumerate, or write this family.
+
+// Read typed reference for `launchGrants/{grantId}`. The document identifier
+// is the 32-lowercase-hex CSPRNG grant id. Slice 4 never reads a grant back;
+// this reference exists for the Slice 6 begin-time validation.
+export function launchGrantDocRef(
+  grantId: string,
+): DocumentReference<LaunchGrantRecord> {
+  return getAdminFirestore()
+    .collection(LAUNCH_GRANTS_COLLECTION)
+    .doc(grantId) as DocumentReference<LaunchGrantRecord>;
+}
+
+// Creation-write typed reference for `launchGrants/{grantId}`. Op C uses this
+// reference with `DocumentReference.create()` so a grant-id collision is a
+// non-overwrite (the caller loops to a fresh id). The narrow write shape
+// (`LaunchGrantCreationWrite`) enforces the §3.6 pair invariant at the type
+// level and carries concrete server-computed `issuedAt`/`expiresAt` so no
+// client value or mutable sentinel can reach the record.
+export function launchGrantCreationDocRef(
+  grantId: string,
+): DocumentReference<LaunchGrantCreationWrite> {
+  return getAdminFirestore()
+    .collection(LAUNCH_GRANTS_COLLECTION)
+    .doc(grantId) as DocumentReference<LaunchGrantCreationWrite>;
 }
 
 // -------------------- External identity references --------------------

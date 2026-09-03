@@ -651,6 +651,33 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- launchGrants/{grantId} ----------
+    //
+    // F5.2 Persistent Student Differentiation, Slice 4 (server resolution +
+    // launch grants). Server-issued, TTL-bounded presentation-binding evidence
+    // keyed by an unguessable 32-lowercase-hex CSPRNG grant id. Per F5.2 §3.6,
+    // §7.2, and §11: zero direct client access for ANY role. A launch grant is
+    // EVIDENCE, not authorization - it authorizes nothing by itself and
+    // `assessmentSessionsBegin` performs its full existing authorization before
+    // any grant validation - so leaking a grant's contents would disclose a
+    // student's differentiation configuration for no functional benefit.
+    // Students, teachers, and unauthenticated callers are denied get, list,
+    // create, update, and delete. The sole writer is the Slice 4 launch
+    // resolution (Op C, inside `lmsDeepLinkResolve` / `assignmentsListForStudent`)
+    // and the sole reader is `assessmentSessionsBegin` (Slice 6); both run
+    // through the Admin SDK, bypassing Rules. The student ever only holds the
+    // opaque grant id, transported as `launchRef` (§7.2).
+    //
+    // This block uses an explicit `allow read, write: if false;` pattern
+    // (mirroring `studentAccommodations`, `presentationVariants`,
+    // `assessmentAnswerKeys`, `externalIdentities`, and `auditEvents`) so the
+    // server-only intent is documented at the surface and cannot be relaxed by
+    // a broader accidental edit. `read` covers both `get` and `list`, so
+    // collection enumeration is denied as well.
+    match /launchGrants/{grantId} {
+      allow read, write: if false;
+    }
+
     // ---------- Terminal default-deny ----------
     match /{document=**} {
       allow read, write: if false;

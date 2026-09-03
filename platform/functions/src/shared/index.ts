@@ -19,6 +19,11 @@ export {
   type TeacherPilotAllowlistDoc,
 } from "./config/teacher-pilot-allowlist";
 export {
+  DIFFERENTIATED_DELIVERY_CONFIG_DOC_ID,
+  isDifferentiatedDeliveryEnabled,
+  type DifferentiatedDeliveryConfigDoc,
+} from "./config/differentiated-delivery-flag";
+export {
   requireDistrictContext,
   type DistrictClaimToken,
   type DistrictContext,
@@ -134,6 +139,52 @@ export {
   studentAccommodationUpdateDocRef,
   studentAccommodationHistoryDocRef,
 } from "./firestore/typed-ref";
+export {
+  launchGrantCreationDocRef,
+  launchGrantDocRef,
+} from "./firestore/typed-ref";
+export {
+  presentationVariantIndexDocRef,
+} from "./firestore/typed-ref";
+export {
+  PRESENTATION_VARIANTS_COLLECTION,
+  presentationVariantIndexDocId,
+  isValidPresentationRevisionId,
+  isValidVariantKey,
+  isValidLessonSlugForVariant,
+  variantKeyForReadingLevel,
+  assertActivateWriteConsistent,
+  type PresentationVariantIndexDoc,
+  type PresentationVariantStatus,
+} from "./types/presentation-variant";
+export {
+  LAUNCH_GRANTS_COLLECTION,
+  LAUNCH_GRANT_TTL_MS,
+  assertLaunchGrantPairInvariant,
+  computeGrantExpiryMs,
+  isValidGrantId,
+  type LaunchGrantCreationWrite,
+  type LaunchGrantOutcomeAtIssuance,
+  type LaunchGrantRecord,
+} from "./types/launch-grant";
+export { generateGrantId } from "./presentation/launch-grant-id";
+export {
+  createLaunchPresentationResolver,
+  type LaunchFallbackReason,
+  type LaunchPresentation,
+  type LaunchPresentationResolution,
+  type LaunchPresentationResolver,
+  type LaunchPresentationResolverPorts,
+  type LaunchPresentationTelemetryEvent,
+  type MintGrantInput,
+  type ReadingResolution,
+  type ResolveLaunchPresentationInput,
+  type VariantIndexEvaluation,
+} from "./presentation/resolve-launch-presentation";
+export {
+  buildLaunchPresentationResolverPorts,
+  createRequestLaunchPresentationResolver,
+} from "./presentation/launch-presentation-deps";
 export { runFirestoreTransaction } from "./firestore/transaction";
 export { createFirestoreBatch } from "./firestore/batch";
 export { log, type LogPayload } from "./logging/logger";

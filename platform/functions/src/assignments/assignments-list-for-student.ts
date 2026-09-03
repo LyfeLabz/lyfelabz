@@ -5,10 +5,12 @@ import {
   PlatformError,
   assignmentDocRef,
   assignmentRecipientsCollectionGroupRef,
+  createRequestLaunchPresentationResolver,
   log,
   requireDistrictContext,
   type AssignmentRecord,
   type AssignmentRecipientRecord,
+  type LaunchPresentation,
 } from "../shared";
 
 // Sprint 17 Slice 2: certified student assignment-discovery callable.
@@ -52,6 +54,17 @@ export type AssignmentsListForStudentItem = {
   readonly title: string;
   readonly status: "published";
   readonly publishedAt: number | null;
+  // F5.2 §7.1/§7.3 additive, optional differentiation fields (Slice 4),
+  // resolved per item by server-authoritative Op C from the authenticated
+  // student uid. Present ONLY for an accommodated student:
+  //   - `presentation` iff a `differentiated` grant was minted for this item;
+  //   - `launchRef` iff any grant was minted (`differentiated` or
+  //     `canonicalFallback`).
+  // Entirely absent for canonical-expected students, so existing consumers
+  // that ignore the fields are unaffected. The Slice 4 client ignores both;
+  // routing/transport is Slice 5/6. The student never asserts either field.
+  readonly presentation?: LaunchPresentation;
+  readonly launchRef?: string;
 };
 
 export type AssignmentsListForStudentRequest = Record<string, never>;
@@ -74,6 +87,22 @@ const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
   "classId",
   "teacherId",
   "assignmentId",
+  // F5.2 §4.3 - differentiation selector fields the student must never assert.
+  // Resolution is server-authoritative per item from the authenticated uid;
+  // the client never chooses a variant/revision/path, and `launchRef` is
+  // response-only here.
+  "variantKey",
+  "presentationRevisionId",
+  "readingLevel",
+  "accommodation",
+  "accommodationStatus",
+  "presentation",
+  "launchRef",
+  "deliveryOutcome",
+  "outcomeAtIssuance",
+  "configRevision",
+  "issuedAt",
+  "expiresAt",
 ];
 
 function validateRequest(data: unknown): void {
@@ -243,6 +272,17 @@ async function assignmentsListForStudentHandler(
     frozen.map((recipient) => loadAssignmentIfVisible(recipient, actor)),
   );
 
+  // F5.2 §4 Op C / §7.3 (Slice 4): server-authoritative presentation
+  // resolution per visible item, strictly AFTER the authorization/visibility
+  // gates above. One resolver per call memoizes the single accommodation read
+  // and the single operational-flag read, and memoizes the index read per
+  // distinct lessonSlug (§7.3); a grant is minted per item because grants are
+  // assignment-bound. A canonical-expected student (no accommodation /
+  // inactive) resolves to no grant and no presentation, so the items stay
+  // shape-identical to pre-feature behavior. An internal failure for one item
+  // degrades that item to canonical (§8.5 row 8) without failing the list.
+  const launchResolver = createRequestLaunchPresentationResolver();
+
   const items: AssignmentsListForStudentItem[] = [];
   for (const record of loaded) {
     if (!record) continue;
@@ -251,12 +291,29 @@ async function assignmentsListForStudentHandler(
       typeof rawTitle === "string" && rawTitle.length > 0
         ? rawTitle
         : record.lessonSlug;
+
+    const resolution = await launchResolver.resolve({
+      studentId: actor.uid,
+      assignmentId: record.assignmentId,
+      lessonSlug: record.lessonSlug,
+    });
+    let presentation: LaunchPresentation | undefined;
+    let launchRef: string | undefined;
+    if (resolution.kind === "differentiated") {
+      presentation = resolution.presentation;
+      launchRef = resolution.launchRef;
+    } else if (resolution.kind === "canonicalFallback") {
+      launchRef = resolution.launchRef;
+    }
+
     items.push({
       assignmentId: record.assignmentId,
       lessonSlug: record.lessonSlug,
       title,
       status: "published",
       publishedAt: timestampToMillis(record.publishedAt),
+      ...(presentation !== undefined ? { presentation } : {}),
+      ...(launchRef !== undefined ? { launchRef } : {}),
     });
   }
 

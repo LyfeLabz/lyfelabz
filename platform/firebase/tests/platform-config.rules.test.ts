@@ -143,4 +143,39 @@ describe("Firestore Rules: platformConfig/{configId}", () => {
       );
     });
   });
+
+  // F5.2 §8.6/§11 (T-R5, P2-B) - the server-owned operational
+  // differentiated-delivery flag lives at
+  // `platformConfig/differentiatedDelivery` and is covered by the same
+  // deny-all block. No student can set/override it, no teacher can assert it,
+  // and no ordinary client can flip it; only an Admin-credentialed operator
+  // (bypassing Rules) changes it.
+  describe("differentiatedDelivery operational flag - server-owned", () => {
+    const FLAG_DOC_ID = "differentiatedDelivery";
+
+    it("denies a student read of the flag", async () => {
+      const db = testEnv
+        .authenticatedContext(STUDENT_UID, STUDENT_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "platformConfig", FLAG_DOC_ID)));
+    });
+
+    it("denies a student create of the flag (cannot assert delivery state)", async () => {
+      const db = testEnv
+        .authenticatedContext(STUDENT_UID, STUDENT_TOKEN)
+        .firestore();
+      await assertFails(
+        setDoc(doc(db, "platformConfig", FLAG_DOC_ID), { enabled: true }),
+      );
+    });
+
+    it("denies a teacher update of the flag (cannot override the disable)", async () => {
+      const db = testEnv
+        .authenticatedContext(TEACHER_UID, TEACHER_TOKEN)
+        .firestore();
+      await assertFails(
+        updateDoc(doc(db, "platformConfig", FLAG_DOC_ID), { enabled: false }),
+      );
+    });
+  });
 });

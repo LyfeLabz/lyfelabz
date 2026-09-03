@@ -5,12 +5,14 @@ import {
   platformCallable,
   PlatformError,
   assignmentDocRef,
+  createRequestLaunchPresentationResolver,
   enrollmentDocRef,
   log,
   requireDistrictContext,
   writeAuditEvent,
   type AssignmentRecord,
   type EnrollmentRecord,
+  type LaunchPresentation,
 } from "../shared";
 
 import { isCanonicalRecipient } from "../assignments/assignment-recipients";
@@ -30,10 +32,14 @@ import { enrollmentIdFor } from "../enrollments/enrollments-join-by-code";
 //     canonical LyfeLabz state (identity, district, enrollment, recipient).
 //   - Read-only against LyfeLabz DOMAIN state. It never creates, mutates, or
 //     deletes a session, attempt, assignment, publication, enrollment,
-//     recipient, or link record. The only document it writes is the
-//     append-only `lms.deepLinkResolved` audit event on a successful
-//     resolution (PDR-027 §17: "MUST NOT write to any Firestore document
-//     except auditEvents/*").
+//     recipient, or link record. It writes the append-only
+//     `lms.deepLinkResolved` audit event on a successful resolution, and -
+//     as authorized by F5.2 §4 Op C (Slice 4) - it may mint a TTL-transient
+//     `launchGrants/{grantId}` record for an accommodated student on a launch
+//     target. The launch grant is non-domain, non-authoritative presentation
+//     EVIDENCE (§7.2), not domain state; PDR-027 §17's domain-write
+//     prohibition is preserved. Grant minting is best-effort: any failure
+//     degrades to a canonical response (no grant), never blocking the launch.
 //   - Classroom-agnostic. It never calls Google Classroom, never reads an
 //     OAuth token, and never returns anything derived from the caller's
 //     Classroom account or grant.
@@ -75,6 +81,20 @@ export type LmsDeepLinkResolveResponse = {
   readonly lessonSlug: string;
   readonly internalTarget: LmsDeepLinkInternalTarget;
   readonly attemptContext: LmsDeepLinkAttemptContext;
+  // F5.2 §7.1 additive, optional differentiation fields (Slice 4). Present
+  // ONLY when server-authoritative resolution (Op C) minted a grant for an
+  // accommodated student on a launch target (`assignmentLaunch`/
+  // `lessonPractice`):
+  //   - `presentation` iff a `differentiated` grant was minted;
+  //   - `launchRef` iff any grant was minted (`differentiated` or
+  //     `canonicalFallback`).
+  // Both are ENTIRELY ABSENT for canonical-expected students (no accommodation
+  // / inactive), whose response stays byte-shape-identical to pre-feature
+  // behavior. The Slice 4 client ignores both fields; client routing on
+  // `presentation.path` and `launchRef` transport are Slice 5/6. The student
+  // never asserts either field (see FORBIDDEN_REQUEST_KEYS).
+  readonly presentation?: LaunchPresentation;
+  readonly launchRef?: string;
 };
 
 // Canonical assignment identifier grammar (identical to
@@ -99,6 +119,22 @@ const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
   "teacherId",
   "recipientId",
   "sessionId",
+  // F5.2 §4.3 - differentiation selector fields the student must never assert.
+  // Resolution is server-authoritative from the authenticated uid; the client
+  // never chooses its presentation, and `launchRef` is response-only on this
+  // surface (never accepted here). Presence of any of these fails closed.
+  "variantKey",
+  "presentationRevisionId",
+  "readingLevel",
+  "accommodation",
+  "accommodationStatus",
+  "presentation",
+  "launchRef",
+  "deliveryOutcome",
+  "outcomeAtIssuance",
+  "configRevision",
+  "issuedAt",
+  "expiresAt",
 ];
 
 function isNonEmptyString(value: unknown): value is string {
@@ -331,6 +367,36 @@ async function lmsDeepLinkResolveHandler(
     }
   }
 
+  // F5.2 §4 Op C / §7.3 (Slice 4): server-authoritative presentation
+  // resolution, strictly AFTER the full authorization chain above. Op C runs
+  // only for actual launch targets (`assignmentLaunch`, `lessonPractice`) - a
+  // student who reaches an `informational` surface is not launching a lesson,
+  // begin would refuse them, and minting a never-consumed grant would
+  // contradict the grant's meaning (§7.2). For a canonical-expected student
+  // (no accommodation / inactive) Op C returns no grant and no presentation,
+  // and the response stays shape-identical to pre-feature behavior. Any
+  // internal failure degrades to canonical (§8.5 row 8): the launch is never
+  // blocked by a differentiation-resolution problem.
+  let presentation: LaunchPresentation | undefined;
+  let launchRef: string | undefined;
+  if (
+    internalTarget === "assignmentLaunch" ||
+    internalTarget === "lessonPractice"
+  ) {
+    const resolution = await createRequestLaunchPresentationResolver().resolve({
+      studentId: actor.uid,
+      assignmentId,
+      lessonSlug: assignment.lessonSlug,
+    });
+    if (resolution.kind === "differentiated") {
+      presentation = resolution.presentation;
+      launchRef = resolution.launchRef;
+    } else if (resolution.kind === "canonicalFallback") {
+      launchRef = resolution.launchRef;
+    }
+    // `expectedCanonical` and `internalFailure` attach nothing.
+  }
+
   // PDR-027 §10.1 step 9 / §23: emit the resolution audit event. Best-effort
   // so an audit outage never blocks a legitimate student; it is the ONLY
   // document this resolver writes. The payload carries no PII, no classmate
@@ -370,6 +436,9 @@ async function lmsDeepLinkResolveHandler(
     lessonSlug: assignment.lessonSlug,
     internalTarget,
     attemptContext,
+    // Additive, optional (§7.1): present only for an accommodated launch.
+    ...(presentation !== undefined ? { presentation } : {}),
+    ...(launchRef !== undefined ? { launchRef } : {}),
   };
 }
 
