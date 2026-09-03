@@ -30,6 +30,19 @@ export {
 } from "./errors/district-errors";
 export { PlatformError } from "./errors/platform-error";
 export {
+  READING_LEVELS,
+  STUDENT_ACCOMMODATIONS_COLLECTION,
+  ACCOMMODATION_HISTORY_SUBCOLLECTION,
+  accommodationHistoryDocId,
+  type AccommodationHistoryRecord,
+  type AccommodationHistoryWrite,
+  type ReadingAccessibilityConfig,
+  type ReadingLevel,
+  type StudentAccommodationCreationWrite,
+  type StudentAccommodationRecord,
+  type StudentAccommodationUpdateWrite,
+} from "./types/student-accommodation";
+export {
   assessmentIdForLessonSlug,
   revisionIdForOrdinal,
   parseAssessmentIdFromRevisionId,
@@ -116,6 +129,10 @@ export {
   externalIdentityCreationDocRef,
   externalIdentityRevocationDocRef,
   externalIdentityRestorationDocRef,
+  studentAccommodationDocRef,
+  studentAccommodationCreationDocRef,
+  studentAccommodationUpdateDocRef,
+  studentAccommodationHistoryDocRef,
 } from "./firestore/typed-ref";
 export { runFirestoreTransaction } from "./firestore/transaction";
 export { createFirestoreBatch } from "./firestore/batch";

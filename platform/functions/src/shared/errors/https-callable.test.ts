@@ -124,6 +124,21 @@ describe("translateThrown", () => {
     });
   });
 
+  it("merges PlatformError.details alongside the canonical code (F5.2 CAS conflict payload)", () => {
+    const platform = new PlatformError(
+      "accommodations.writeConflict",
+      "expectedRevision does not match the current configuration revision.",
+      undefined,
+      { configRevision: 3, readingAccessibility: { status: "inactive" } },
+    );
+    const translated = translateThrown(platform);
+    expect(translated.details).toEqual({
+      code: "accommodations.writeConflict",
+      configRevision: 3,
+      readingAccessibility: { status: "inactive" },
+    });
+  });
+
   it("passes an existing HttpsError through unchanged", () => {
     const original = new HttpsError("permission-denied", "no.");
     const translated = translateThrown(original);

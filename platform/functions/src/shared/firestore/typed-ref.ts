@@ -51,6 +51,15 @@ import {
   type EnrollmentStatusChangeWrite,
 } from "../types/enrollment";
 import {
+  ACCOMMODATION_HISTORY_SUBCOLLECTION,
+  STUDENT_ACCOMMODATIONS_COLLECTION,
+  accommodationHistoryDocId,
+  type AccommodationHistoryWrite,
+  type StudentAccommodationCreationWrite,
+  type StudentAccommodationRecord,
+  type StudentAccommodationUpdateWrite,
+} from "../types/student-accommodation";
+import {
   SCHOOLS_COLLECTION,
   type SchoolCreationWrite,
   type SchoolRecord,
@@ -853,6 +862,72 @@ export function classLmsLinkDocRef(
   return getAdminFirestore()
     .collection(CLASSES_COLLECTION)
     .doc(classId) as DocumentReference<ClassLmsLinkWrite>;
+}
+
+// -------------------- Student accommodation references --------------------
+//
+// Typed Firestore references for the F5.2 Persistent Student
+// Differentiation Slice 1 record family. `studentAccommodations/{studentId}`
+// and its `history` subcollection are server-owned: zero direct client
+// access (see the paired Rules deny-all block). `accommodationsGet` and
+// `accommodationsSet` are the only callables that touch these references.
+
+// Read typed reference for `studentAccommodations/{studentId}`. Document ID
+// equals the canonical student `uid`. Callers that need to perform the
+// first-activation creation write or a subsequent CAS update use
+// `studentAccommodationCreationDocRef` or `studentAccommodationUpdateDocRef`
+// respectively so that `FieldValue`-safe write shapes are preserved at the
+// write boundary.
+export function studentAccommodationDocRef(
+  studentId: string,
+): DocumentReference<StudentAccommodationRecord> {
+  return getAdminFirestore()
+    .collection(STUDENT_ACCOMMODATIONS_COLLECTION)
+    .doc(studentId) as DocumentReference<StudentAccommodationRecord>;
+}
+
+// Creation-write typed reference for `studentAccommodations/{studentId}`.
+// `accommodationsSet` uses this reference with `Transaction.create()` for
+// the first accepted state-changing write (`configRevision` 0 -> 1), so
+// the Firestore `ALREADY_EXISTS` precondition - and the transaction
+// retry it forces on a concurrent racer - is the CAS enforcement
+// mechanism for first activation.
+export function studentAccommodationCreationDocRef(
+  studentId: string,
+): DocumentReference<StudentAccommodationCreationWrite> {
+  return getAdminFirestore()
+    .collection(STUDENT_ACCOMMODATIONS_COLLECTION)
+    .doc(studentId) as DocumentReference<StudentAccommodationCreationWrite>;
+}
+
+// Update-write typed reference for `studentAccommodations/{studentId}`.
+// `accommodationsSet` uses this reference with `Transaction.update()` for
+// every accepted state-changing write after the first. The narrow write
+// shape structurally excludes `studentId`, `schoolId`, `createdAt`, and
+// `createdBy` so a configuration update can never silently rewrite
+// ownership or provenance.
+export function studentAccommodationUpdateDocRef(
+  studentId: string,
+): DocumentReference<StudentAccommodationUpdateWrite> {
+  return getAdminFirestore()
+    .collection(STUDENT_ACCOMMODATIONS_COLLECTION)
+    .doc(studentId) as DocumentReference<StudentAccommodationUpdateWrite>;
+}
+
+// Typed reference for one append-only history entry at
+// `studentAccommodations/{studentId}/history/{r{revision}}`. `accommodationsSet`
+// writes this reference with `Transaction.create()` atomically alongside
+// the parent record write; no code path ever updates or deletes an
+// existing history entry.
+export function studentAccommodationHistoryDocRef(
+  studentId: string,
+  revision: number,
+): DocumentReference<AccommodationHistoryWrite> {
+  return getAdminFirestore()
+    .collection(STUDENT_ACCOMMODATIONS_COLLECTION)
+    .doc(studentId)
+    .collection(ACCOMMODATION_HISTORY_SUBCOLLECTION)
+    .doc(accommodationHistoryDocId(revision)) as DocumentReference<AccommodationHistoryWrite>;
 }
 
 // -------------------- External identity references --------------------

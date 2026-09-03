@@ -1,3 +1,4 @@
+export { accommodationsGet, accommodationsSet } from "./accommodations";
 export {
   assessmentAssignmentSummary,
   assessmentLessonSummary,

@@ -146,6 +146,16 @@ export const AUDIT_ACTIONS = [
   "identity.mappingRestored",
   "identity.migrationAttempted",
   "identity.migrationCompleted",
+  // F5.2 Persistent Student Differentiation, Slice 1. Emitted by
+  // `accommodationsSet` on every ACCEPTED state-changing write to a
+  // student's `studentAccommodations/{studentId}` record (activation,
+  // update, or deactivation). The target is the `studentAccommodation`;
+  // the payload carries only platform configuration (status/level and the
+  // before/after `configRevision`), never IEP/plan text, a diagnosis, or a
+  // disability category (F5.2 §3.1, §11). Per F5.2 §3.7/§4.2 (C6), an
+  // equal-value write is a true no-op and emits NO audit event - this
+  // action is written only when the record actually changed.
+  "accommodations.configurationChanged",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

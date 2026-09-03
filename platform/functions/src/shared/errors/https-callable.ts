@@ -154,7 +154,7 @@ export function translateThrown(
     return new HttpsError(
       mapPlatformCodeToHttpsCode(err.code),
       err.message,
-      { code: err.code },
+      { code: err.code, ...(err.details ?? {}) },
     );
   }
 

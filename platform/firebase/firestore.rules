@@ -598,6 +598,35 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- studentAccommodations/{studentId} ----------
+    //
+    // F5.2 Persistent Student Differentiation, Slice 1 (accommodation
+    // record + teacher operations, dark). Server-owned platform
+    // configuration - never IEP/504 case-management data - keyed by the
+    // canonical student `uid`. Per F5.2 §3.1 and §11: zero direct client
+    // read/write for ANY role, including the owning student and the
+    // authorizing teacher. `accommodationsGet` and `accommodationsSet` are
+    // the sole readers/writers and both run through the Admin SDK from the
+    // Cloud Function trust boundary, therefore bypassing Rules.
+    //
+    // This block uses an explicit `allow read, write: if false;` pattern
+    // (mirroring `assessmentAnswerKeys`, `externalIdentities`, and
+    // `auditEvents`) so the server-only intent is documented at the
+    // surface and cannot be relaxed by a broader accidental edit.
+    match /studentAccommodations/{studentId} {
+      allow read, write: if false;
+
+      // ---------- studentAccommodations/{studentId}/history/{revisionId} ----------
+      //
+      // Append-only history of every accepted state-changing write per
+      // F5.2 §3.1 (S1). Server-written, immutable, never deleted. Zero
+      // direct client access for any role; `accommodationsSet` is the
+      // sole writer and runs through the Admin SDK.
+      match /history/{revisionId} {
+        allow read, write: if false;
+      }
+    }
+
     // ---------- Terminal default-deny ----------
     match /{document=**} {
       allow read, write: if false;
