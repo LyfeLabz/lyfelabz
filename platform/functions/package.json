@@ -13,7 +13,8 @@
     "lint": "eslint --ext .ts src",
     "test": "jest",
     "test:watch": "jest --watch",
-    "deploy:assessment": "node lib/scripts/deploy-assessment.js"
+    "deploy:assessment": "node lib/scripts/deploy-assessment.js",
+    "publish:variant": "node lib/scripts/publish-variant.js"
   },
   "dependencies": {
     "firebase-admin": "^12.2.0",

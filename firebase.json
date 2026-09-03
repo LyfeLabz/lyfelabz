@@ -19,6 +19,7 @@
       "lesson-sources/**",
       "mission-control/**",
       "wonderbox/**",
+      "app/lessons/variants/manifest.json",
       "**/*.md",
       "**/*.map",
       "Leaderboard_GScript.js",

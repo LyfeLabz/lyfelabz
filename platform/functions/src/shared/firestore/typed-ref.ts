@@ -60,6 +60,13 @@ import {
   type StudentAccommodationUpdateWrite,
 } from "../types/student-accommodation";
 import {
+  PRESENTATION_VARIANTS_COLLECTION,
+  presentationVariantIndexDocId,
+  type PresentationVariantIndexActivateWrite,
+  type PresentationVariantIndexDoc,
+  type PresentationVariantIndexRetireWrite,
+} from "../types/presentation-variant";
+import {
   SCHOOLS_COLLECTION,
   type SchoolCreationWrite,
   type SchoolRecord,
@@ -928,6 +935,62 @@ export function studentAccommodationHistoryDocRef(
     .doc(studentId)
     .collection(ACCOMMODATION_HISTORY_SUBCOLLECTION)
     .doc(accommodationHistoryDocId(revision)) as DocumentReference<AccommodationHistoryWrite>;
+}
+
+// -------------------- Presentation variant index references --------------------
+//
+// Typed Firestore references for the F5.2 Persistent Student Differentiation
+// Slice 3 record family `presentationVariants/{lessonSlug}__{variantKey}`.
+// The index is server-owned: zero direct client access (see the paired Rules
+// deny-all block). The ONLY writer is the Slice 3 publish tooling, which
+// advances the pointer exclusively through the §6.8 index-last publication
+// state machine (the index write is mechanically preceded by the step-8
+// hosted-byte liveness check in the same tool run). No student or teacher
+// runtime code reads this family until Slice 4.
+
+// Read typed reference for `presentationVariants/{lessonSlug}__{variantKey}`.
+// Absence of the document means "no current differentiated coverage for this
+// pair" (§8.5); Slice 3 never consumes that meaning - the index is inert
+// until Slice 4.
+export function presentationVariantIndexDocRef(
+  lessonSlug: string,
+  variantKey: string,
+): DocumentReference<PresentationVariantIndexDoc> {
+  return getAdminFirestore()
+    .collection(PRESENTATION_VARIANTS_COLLECTION)
+    .doc(presentationVariantIndexDocId(lessonSlug, variantKey)) as DocumentReference<PresentationVariantIndexDoc>;
+}
+
+// Activate-write typed reference (publish or rollback/repoint). The publish
+// tooling uses this with `.set()` to point the index at a retained,
+// liveness-confirmed revision and force `status:"active"`. Per P5.1 there is
+// NO compare-and-set: concurrent publishes of two valid, verified revisions
+// may race and either may end current; an unverified revision can never win
+// because the write is only reached after the step-8 liveness gate.
+export function presentationVariantIndexActivateDocRef(
+  lessonSlug: string,
+  variantKey: string,
+): DocumentReference<PresentationVariantIndexActivateWrite> {
+  return getAdminFirestore()
+    .collection(PRESENTATION_VARIANTS_COLLECTION)
+    .doc(
+      presentationVariantIndexDocId(lessonSlug, variantKey),
+    ) as DocumentReference<PresentationVariantIndexActivateWrite>;
+}
+
+// Retire-write typed reference. The publish tooling uses this with
+// `.update()` to flip `status` to `"retired"`, withdrawing the variant from
+// new differentiated resolution. The current pointer/hash are left in place
+// and neither the artifact nor its manifest entry is ever touched.
+export function presentationVariantIndexRetireDocRef(
+  lessonSlug: string,
+  variantKey: string,
+): DocumentReference<PresentationVariantIndexRetireWrite> {
+  return getAdminFirestore()
+    .collection(PRESENTATION_VARIANTS_COLLECTION)
+    .doc(
+      presentationVariantIndexDocId(lessonSlug, variantKey),
+    ) as DocumentReference<PresentationVariantIndexRetireWrite>;
 }
 
 // -------------------- External identity references --------------------

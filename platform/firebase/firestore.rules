@@ -627,6 +627,30 @@ service cloud.firestore {
       }
     }
 
+    // ---------- presentationVariants/{indexId} ----------
+    //
+    // F5.2 Persistent Student Differentiation, Slice 3 (publication state
+    // machine + runtime current-presentation index + retention gating). The
+    // server-owned current-presentation index keyed by
+    // `{lessonSlug}__{variantKey}`. Per F5.2 §3.5/§5.3 and §11: zero direct
+    // client read/write for ANY role. Students must not be able to read it,
+    // enumerate variants, discover a `variantKey`, or write/repoint/retire it;
+    // teachers must not mutate it through ordinary client access. The only
+    // writer is the Slice 3 publish tooling, which advances the pointer
+    // exclusively through the §6.8 index-last state machine via the Admin SDK
+    // (bypassing Rules). Later (Slice 4) server resolution consumes it
+    // server-side only; it stays deny-all to every client forever.
+    //
+    // This block uses an explicit `allow read, write: if false;` pattern
+    // (mirroring `studentAccommodations`, `assessmentAnswerKeys`,
+    // `externalIdentities`, and `auditEvents`) so the server-only intent is
+    // documented at the surface and cannot be relaxed by a broader accidental
+    // edit. `read` covers both `get` and `list`, so collection enumeration is
+    // denied as well.
+    match /presentationVariants/{indexId} {
+      allow read, write: if false;
+    }
+
     // ---------- Terminal default-deny ----------
     match /{document=**} {
       allow read, write: if false;
