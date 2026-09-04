@@ -1,8 +1,12 @@
 import {
   configureEmulatorEnv,
+  configureStagingEnv,
+  ensureStagingTargetSafe,
   ensureTargetSafe,
   main,
+  makeStagingDeployHosting,
   parseArgs,
+  STAGING_PROJECT_ID,
   type CliArgs,
   type CliDeps,
 } from "./publish-variant";
@@ -128,7 +132,23 @@ describe("parseArgs", () => {
   test("rejects unknown args and bad enum values", () => {
     expect(parseArgs(["--nope=1"]).ok).toBe(false);
     expect(parseArgs(["--op=frobnicate", "--lesson=x", "--variant=y"]).ok).toBe(false);
-    expect(parseArgs(["--target=staging", "--lesson=x", "--variant=y"]).ok).toBe(false);
+    expect(parseArgs(["--target=prod", "--lesson=x", "--variant=y"]).ok).toBe(false);
+  });
+
+  test("accepts --target=staging and --project (validated later in ensureTargetSafe)", () => {
+    const r = parseArgs([
+      "--target=staging",
+      "--project=lyfelabz-staging",
+      "--lesson=earths-layers",
+      "--variant=reading-adapted",
+      "--revision=" + REV,
+      "--published-by=op",
+    ]);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.args.target).toBe("staging");
+      expect(r.args.project).toBe("lyfelabz-staging");
+    }
   });
 });
 
@@ -142,6 +162,7 @@ describe("ensureTargetSafe", () => {
     publishedBy: "op",
     hostingOrigin: "https://lyfelabz.com",
     iKnowProduction: true,
+    project: null,
   };
 
   test("emulator target is always safe", () => {
@@ -195,6 +216,147 @@ describe("configureEmulatorEnv", () => {
     });
     expect(mutations.FIRESTORE_EMULATOR_HOST).toBe("127.0.0.1:8080");
     expect(mutations.GCLOUD_PROJECT).toBe("lyfelabz-prod");
+  });
+});
+
+describe("ensureStagingTargetSafe (fail-closed, alias-name never trusted)", () => {
+  const stagingArgs: CliArgs = {
+    op: "publish",
+    target: "staging",
+    lessonSlug: "earths-layers",
+    variantKey: "reading-adapted",
+    presentationRevisionId: REV,
+    publishedBy: "op",
+    hostingOrigin: `https://${STAGING_PROJECT_ID}.web.app`,
+    iKnowProduction: false,
+    project: STAGING_PROJECT_ID,
+  };
+  const okEnv: NodeJS.ProcessEnv = { GOOGLE_APPLICATION_CREDENTIALS: "/staging-creds.json" };
+
+  test("STAGING_PROJECT_ID is the hard literal lyfelabz-staging", () => {
+    expect(STAGING_PROJECT_ID).toBe("lyfelabz-staging");
+  });
+
+  test("a fully specified staging publish is safe", () => {
+    expect(ensureStagingTargetSafe(stagingArgs, okEnv)).toBeNull();
+  });
+
+  test("requires an explicit --project (no alias/default is trusted)", () => {
+    const err = ensureStagingTargetSafe({ ...stagingArgs, project: null }, okEnv);
+    expect(err).toContain("staging target requires --project=lyfelabz-staging");
+  });
+
+  test("refuses any project other than lyfelabz-staging (never production)", () => {
+    const err = ensureStagingTargetSafe({ ...stagingArgs, project: "lyfelabz-prod" }, okEnv);
+    expect(err).toContain("refuses project 'lyfelabz-prod'");
+  });
+
+  test("refuses when FIRESTORE_EMULATOR_HOST is set", () => {
+    const err = ensureStagingTargetSafe(stagingArgs, {
+      ...okEnv,
+      FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+    });
+    expect(err).toContain("FIRESTORE_EMULATOR_HOST");
+  });
+
+  test("refuses when a conflicting project is already in the environment", () => {
+    for (const key of ["GCLOUD_PROJECT", "GOOGLE_CLOUD_PROJECT"] as const) {
+      const err = ensureStagingTargetSafe(stagingArgs, { ...okEnv, [key]: "lyfelabz-prod" });
+      expect(err).toContain(`${key}='lyfelabz-prod'`);
+    }
+  });
+
+  test("allows an environment project that already equals staging", () => {
+    expect(
+      ensureStagingTargetSafe(stagingArgs, { ...okEnv, GCLOUD_PROJECT: STAGING_PROJECT_ID }),
+    ).toBeNull();
+  });
+
+  test("requires GOOGLE_APPLICATION_CREDENTIALS", () => {
+    const err = ensureStagingTargetSafe(stagingArgs, {});
+    expect(err).toContain("GOOGLE_APPLICATION_CREDENTIALS");
+  });
+
+  test("publish requires --hosting-origin", () => {
+    const err = ensureStagingTargetSafe({ ...stagingArgs, hostingOrigin: null }, okEnv);
+    expect(err).toContain("requires --hosting-origin");
+  });
+
+  test("refuses a non-https hosting origin", () => {
+    const err = ensureStagingTargetSafe(
+      { ...stagingArgs, hostingOrigin: `http://${STAGING_PROJECT_ID}.web.app` },
+      okEnv,
+    );
+    expect(err).toContain("must be https");
+  });
+
+  test("refuses a hosting origin that does not resolve to the staging site", () => {
+    const err = ensureStagingTargetSafe(
+      { ...stagingArgs, hostingOrigin: "https://lyfelabz.com" },
+      okEnv,
+    );
+    expect(err).toContain("does not resolve to the 'lyfelabz-staging' hosting site");
+  });
+
+  test("retire does not require --hosting-origin", () => {
+    expect(
+      ensureStagingTargetSafe(
+        { ...stagingArgs, op: "retire", hostingOrigin: null, presentationRevisionId: null },
+        okEnv,
+      ),
+    ).toBeNull();
+  });
+
+  test("ensureTargetSafe routes staging to the staging gate, never the production branch", () => {
+    // iKnowProduction is false here; a production-branch fall-through would
+    // return the --i-know error. Staging must be validated on its own terms.
+    expect(ensureTargetSafe(stagingArgs, okEnv)).toBeNull();
+    expect(ensureTargetSafe({ ...stagingArgs, project: null }, okEnv)).toContain(
+      "staging target requires --project",
+    );
+  });
+});
+
+describe("configureStagingEnv", () => {
+  test("forces both Admin SDK project vars to the staging id", () => {
+    const mutations: Record<string, string> = {};
+    configureStagingEnv(STAGING_PROJECT_ID, (k, v) => {
+      mutations[k] = v;
+    });
+    expect(mutations.GCLOUD_PROJECT).toBe(STAGING_PROJECT_ID);
+    expect(mutations.GOOGLE_CLOUD_PROJECT).toBe(STAGING_PROJECT_ID);
+  });
+
+  test("throws (never mutates env) for any non-staging project", () => {
+    expect(() => configureStagingEnv("lyfelabz-prod", () => undefined)).toThrow("lyfelabz-prod");
+  });
+});
+
+describe("makeStagingDeployHosting (fail-closed deploy port)", () => {
+  test("deploys only for the authorized staging project", async () => {
+    const calls: string[] = [];
+    const port = makeStagingDeployHosting(STAGING_PROJECT_ID, (p) => calls.push(p));
+    const result = await port();
+    expect(result).toEqual({ ok: true });
+    expect(calls).toEqual([STAGING_PROJECT_ID]);
+  });
+
+  test("refuses a non-staging project WITHOUT invoking the deploy runner", async () => {
+    const calls: string[] = [];
+    const port = makeStagingDeployHosting("lyfelabz-prod", (p) => calls.push(p));
+    const result = await port();
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("not the authorized staging project");
+    expect(calls).toEqual([]); // never deployed
+  });
+
+  test("a failing deploy becomes { ok: false } (stops publication before the index)", async () => {
+    const port = makeStagingDeployHosting(STAGING_PROJECT_ID, () => {
+      throw new Error("firebase exited 1");
+    });
+    const result = await port();
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("firebase exited 1");
   });
 });
 

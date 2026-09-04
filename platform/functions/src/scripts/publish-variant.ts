@@ -39,19 +39,34 @@ import type {
   PublishResult,
   RetireInput,
   RetireResult,
+  DeployHostingPort,
 } from "../variants/variant-publication";
 
 export type PublishOp = "publish" | "rollback" | "retire";
 
+// The ONE authorized non-production live environment for the Slices 1-6 staging
+// integration certification gate. This is a hard literal, never derived from a
+// Firebase alias name (an alias is a local label and is not a trust boundary):
+// every staging deploy or Firestore mutation must positively resolve to exactly
+// this project id or fail closed. Production (`lyfelabz-prod`) is never a
+// fallback for the staging target.
+export const STAGING_PROJECT_ID = "lyfelabz-staging";
+
+export type PublishTarget = "emulator" | "staging" | "production";
+
 export type CliArgs = {
   readonly op: PublishOp;
-  readonly target: "emulator" | "production";
+  readonly target: PublishTarget;
   readonly lessonSlug: string;
   readonly variantKey: string;
   readonly presentationRevisionId: string | null;
   readonly publishedBy: string;
   readonly hostingOrigin: string | null;
   readonly iKnowProduction: boolean;
+  // Explicit, operator-supplied project id. Required for the staging target and
+  // must equal STAGING_PROJECT_ID; the double lock (explicit intent + literal
+  // guard) means a mistyped or defaulted project can never silently deploy.
+  readonly project: string | null;
 };
 
 export type CliDeps = {
@@ -73,20 +88,22 @@ const USAGE =
   "Usage: publish-variant --lesson=<slug> --variant=<variantKey> " +
   "[--op=publish|rollback|retire] [--revision=<presentationRevisionId>] " +
   "[--published-by=<operator>] [--hosting-origin=<https://...>] " +
-  "[--target=emulator|production] [--i-know=production]";
+  "[--target=emulator|staging|production] [--project=<projectId>] " +
+  "[--i-know=production]";
 
 export function parseArgs(
   argv: readonly string[],
   env: NodeJS.ProcessEnv = {},
 ): ArgParseResult {
   let op: PublishOp = "publish";
-  let target: "emulator" | "production" = "emulator";
+  let target: PublishTarget = "emulator";
   let lessonSlug: string | undefined;
   let variantKey: string | undefined;
   let presentationRevisionId: string | null = null;
   let publishedBy: string | undefined;
   let hostingOrigin: string | null = null;
   let iKnowProduction = false;
+  let project: string | null = null;
 
   for (const raw of argv) {
     if (raw === "--help" || raw === "-h") {
@@ -106,10 +123,13 @@ export function parseArgs(
         op = value;
         break;
       case "target":
-        if (value !== "emulator" && value !== "production") {
-          return { ok: false, message: "--target must be emulator or production" };
+        if (value !== "emulator" && value !== "staging" && value !== "production") {
+          return { ok: false, message: "--target must be emulator, staging, or production" };
         }
         target = value;
+        break;
+      case "project":
+        project = value.length > 0 ? value : null;
         break;
       case "lesson":
         if (value.length === 0) return { ok: false, message: "--lesson is required" };
@@ -169,13 +189,70 @@ export function parseArgs(
       publishedBy: resolvedPublishedBy,
       hostingOrigin,
       iKnowProduction,
+      project,
     },
   };
+}
+
+// Positively proves that a would-be staging operation resolves to exactly the
+// authorized staging project, failing closed otherwise. An alias name is never
+// trusted: the explicit `--project` must equal the STAGING_PROJECT_ID literal,
+// and any project already present in the environment (which the Admin SDK would
+// otherwise pick up) must agree - so production can never be reached, whether by
+// default, by a stale env var, or by a mistyped flag.
+export function ensureStagingTargetSafe(
+  args: CliArgs,
+  env: NodeJS.ProcessEnv,
+): string | null {
+  if (args.project === null) {
+    return `staging target requires --project=${STAGING_PROJECT_ID} (explicit, verified project id; an alias name is not trusted)`;
+  }
+  if (args.project !== STAGING_PROJECT_ID) {
+    return `staging target refuses project '${args.project}': only '${STAGING_PROJECT_ID}' is authorized`;
+  }
+  const emulatorHost = env.FIRESTORE_EMULATOR_HOST;
+  if (typeof emulatorHost === "string" && emulatorHost.length > 0) {
+    return "refusing staging publish while FIRESTORE_EMULATOR_HOST is set (would redirect the staging index write to the emulator)";
+  }
+  // The Admin SDK reads these; if either is set it MUST already be staging, so a
+  // leftover production project id can never silently receive the index write.
+  for (const key of ["GCLOUD_PROJECT", "GOOGLE_CLOUD_PROJECT"] as const) {
+    const val = env[key];
+    if (typeof val === "string" && val.length > 0 && val !== STAGING_PROJECT_ID) {
+      return `refusing staging publish: ${key}='${val}' does not match the authorized staging project '${STAGING_PROJECT_ID}'`;
+    }
+  }
+  const credentials = env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (typeof credentials !== "string" || credentials.length === 0) {
+    return "staging target requires GOOGLE_APPLICATION_CREDENTIALS (staging service-account credentials for the Admin SDK index write)";
+  }
+  if (args.op === "publish" || args.op === "rollback") {
+    if (args.hostingOrigin === null) {
+      return `staging --op=${args.op} requires --hosting-origin=<https://...> for the liveness fetch`;
+    }
+    let host: string;
+    try {
+      const parsed = new URL(args.hostingOrigin);
+      if (parsed.protocol !== "https:") {
+        return `staging --hosting-origin must be https (got '${args.hostingOrigin}')`;
+      }
+      host = parsed.hostname;
+    } catch {
+      return `staging --hosting-origin is not a valid URL: '${args.hostingOrigin}'`;
+    }
+    if (!host.includes(STAGING_PROJECT_ID)) {
+      return `staging --hosting-origin '${args.hostingOrigin}' does not resolve to the '${STAGING_PROJECT_ID}' hosting site (refusing to fetch liveness from a non-staging origin)`;
+    }
+  }
+  return null;
 }
 
 export function ensureTargetSafe(args: CliArgs, env: NodeJS.ProcessEnv): string | null {
   if (args.target === "emulator") {
     return null;
+  }
+  if (args.target === "staging") {
+    return ensureStagingTargetSafe(args, env);
   }
   if (!args.iKnowProduction) {
     return "production target requires --i-know=production";
@@ -208,6 +285,27 @@ export function configureEmulatorEnv(
   }
 }
 
+// Binds the Admin SDK to the authorized staging project explicitly. Unlike the
+// emulator path, this NEVER falls back to a default project: it is only ever
+// called after ensureStagingTargetSafe has proven the project id, and it forces
+// both env vars the Admin SDK consults to that verified id so no ambient or
+// defaulted project (including production) can be reached. Must not be called
+// for any other target.
+export function configureStagingEnv(
+  projectId: string,
+  setEnv: (k: string, v: string) => void,
+): void {
+  if (projectId !== STAGING_PROJECT_ID) {
+    // Defense in depth: the caller already validated this, but never let a
+    // non-staging id through to the Admin SDK.
+    throw new Error(
+      `configureStagingEnv refuses project '${projectId}': only '${STAGING_PROJECT_ID}' is authorized`,
+    );
+  }
+  setEnv("GCLOUD_PROJECT", projectId);
+  setEnv("GOOGLE_CLOUD_PROJECT", projectId);
+}
+
 export async function main(argv: readonly string[], deps: CliDeps): Promise<number> {
   const parsed = parseArgs(argv, deps.env);
   if (!parsed.ok) {
@@ -224,6 +322,9 @@ export async function main(argv: readonly string[], deps: CliDeps): Promise<numb
 
   if (args.target === "emulator") {
     configureEmulatorEnv(deps.env, deps.setEnv);
+  } else if (args.target === "staging") {
+    // args.project is proven === STAGING_PROJECT_ID by ensureTargetSafe above.
+    configureStagingEnv(args.project as string, deps.setEnv);
   }
 
   try {
@@ -269,6 +370,41 @@ export async function main(argv: readonly string[], deps: CliDeps): Promise<numb
     deps.logError(`unexpected publication error: ${message}`);
     return 1;
   }
+}
+
+// Runs the actual `firebase deploy --only hosting` for a proven project id and
+// throws on any non-zero/failed invocation. Injected into
+// makeStagingDeployHosting so the guard logic is unit-testable without spawning
+// a process; the entry point supplies the real execFileSync-backed runner.
+export type DeployRunner = (projectId: string) => void;
+
+// Builds the §6.8 step-7 Hosting deploy port for the staging target. It is
+// fail-closed: it refuses to deploy unless the project id is exactly
+// STAGING_PROJECT_ID, so even a bug upstream can never turn this into a
+// production deploy. A failed deploy returns { ok: false }, which the state
+// machine treats as a HOSTING_DEPLOYED failure that stops publication before
+// the index is ever touched.
+export function makeStagingDeployHosting(
+  projectId: string,
+  runDeploy: DeployRunner,
+): DeployHostingPort {
+  return () => {
+    if (projectId !== STAGING_PROJECT_ID) {
+      return Promise.resolve({
+        ok: false as const,
+        error: `refusing hosting deploy: project '${projectId}' is not the authorized staging project '${STAGING_PROJECT_ID}'`,
+      });
+    }
+    try {
+      runDeploy(projectId);
+      return Promise.resolve({ ok: true as const });
+    } catch (err) {
+      return Promise.resolve({
+        ok: false as const,
+        error: `staging hosting deploy failed: ${(err as Error).message}`,
+      });
+    }
+  };
 }
 
 // --------------------------------------------------------------------------
@@ -399,8 +535,48 @@ function makeFetchHosted(origin: string): FetchHostedPort {
 
 if (require.main === module) {
   const repoRoot = repoRootFromCompiled();
+  const argv = process.argv.slice(2);
 
-  void main(process.argv.slice(2), {
+  // Pre-resolve the target/project ONLY to decide which Hosting deploy port and
+  // liveness origin to wire. main() re-parses the same argv and remains the
+  // authoritative validator and safety gate (ensureTargetSafe runs there), so
+  // this pre-parse can never relax a check.
+  const preParsed = parseArgs(argv, process.env);
+  const preTarget = preParsed.ok ? preParsed.args.target : "emulator";
+  const preProject = preParsed.ok ? preParsed.args.project : null;
+  const preHostingOrigin = preParsed.ok ? preParsed.args.hostingOrigin : null;
+
+  // The real staging Hosting deploy: `firebase deploy --only hosting` scoped to
+  // the proven staging project. execFileSync with an argument array (no shell)
+  // means no user value is ever interpolated into a shell; projectId is the
+  // validated STAGING_PROJECT_ID literal in any case. A non-zero exit throws,
+  // which makeStagingDeployHosting turns into an { ok: false } that stops
+  // publication before the index is touched.
+  const stagingDeployRunner: DeployRunner = (projectId) => {
+    execFileSync(
+      "firebase",
+      ["deploy", "--only", "hosting", "--project", projectId, "--non-interactive"],
+      { stdio: "inherit" },
+    );
+  };
+
+  // Staging gets a REAL, fail-closed deploy port. Emulator and production keep
+  // the pre-existing guarded no-op (operator deploys Hosting out of band; the
+  // liveness fetch still PROVES the deploy) - production behavior is unchanged.
+  const deployHosting: DeployHostingPort =
+    preTarget === "staging" && preProject !== null
+      ? makeStagingDeployHosting(preProject, stagingDeployRunner)
+      : () => Promise.resolve({ ok: true as const });
+
+  // Staging binds the liveness fetch to the validated --hosting-origin (proven
+  // to resolve to the staging site). Other targets keep the existing
+  // LYFELABZ_HOSTING_ORIGIN env behavior unchanged.
+  const fetchOrigin =
+    preTarget === "staging" && preHostingOrigin !== null
+      ? preHostingOrigin
+      : process.env.LYFELABZ_HOSTING_ORIGIN ?? "";
+
+  void main(argv, {
     env: process.env,
     setEnv: (key, value) => {
       process.env[key] = value;
@@ -410,18 +586,10 @@ if (require.main === module) {
 
     publish: (input) => {
       const loadRetainedRevision = makeLoadRetainedRevision(repoRoot);
-      // In this task no real production deploy is performed. The deploy port
-      // is intentionally a guarded no-op: the operator deploys Hosting out of
-      // band (or via a separate reviewed step) and this CLI PROVES the deploy
-      // through the liveness fetch. A future reviewed change may wire an
-      // actual `firebase deploy --only hosting` here behind the production
-      // gate; execFileSync is imported for that eventual wiring.
-      void execFileSync;
-      const origin = process.env.LYFELABZ_HOSTING_ORIGIN ?? "";
       return publishRetainedRevision(input, {
         loadRetainedRevision,
-        deployHosting: () => Promise.resolve({ ok: true as const }),
-        fetchHosted: makeFetchHosted(origin),
+        deployHosting,
+        fetchHosted: makeFetchHosted(fetchOrigin),
         hashBytes,
         writeIndexActivate: async (revision, publishedBy) => {
           await presentationVariantIndexActivateDocRef(revision.lessonSlug, revision.variantKey).set({

@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "lyfelabz-prod"
-  }
+    "default": "lyfelabz-prod",
+    "staging": "lyfelabz-staging"
+  },
+  "targets": {},
+  "etags": {}
 }
