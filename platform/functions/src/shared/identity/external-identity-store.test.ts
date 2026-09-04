@@ -157,9 +157,11 @@ jest.mock("../firestore/typed-ref", () => ({
 
 import {
   createOrConfirmExternalIdentity,
+  listActiveExternalIdentityHashesForUser,
   listExternalIdentitiesForUser,
   reconcileExternalIdentityForUser,
   resolveActiveExternalIdentity,
+  resolveActiveUserIdByExternalIdentityDocId,
   restoreExternalIdentity,
   revokeExternalIdentity,
 } from "./external-identity-store";
@@ -692,5 +694,98 @@ describe("hashed doc id sanity", () => {
       source: "authOnUserCreate",
     });
     expect(created.externalIdentityId).toBe(derived);
+  });
+});
+
+// Sprint 29G.5K - membership-matching read helpers.
+describe("listActiveExternalIdentityHashesForUser", () => {
+  it("returns the ACTIVE mapping doc ids (identity hashes) for a user+provider", async () => {
+    await createOrConfirmExternalIdentity({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+      userId: UID_A,
+      source: "authOnUserCreate",
+    });
+    const derived = computeExternalIdentityDocId({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+    });
+    const hashes = await listActiveExternalIdentityHashesForUser(
+      UID_A,
+      PROVIDER,
+    );
+    expect(hashes).toEqual([derived]);
+  });
+
+  it("excludes a revoked mapping", async () => {
+    await createOrConfirmExternalIdentity({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+      userId: UID_A,
+      source: "authOnUserCreate",
+    });
+    await revokeExternalIdentity({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+      userId: UID_A,
+    });
+    const hashes = await listActiveExternalIdentityHashesForUser(
+      UID_A,
+      PROVIDER,
+    );
+    expect(hashes).toEqual([]);
+  });
+
+  it("returns an empty list for a user with no mapping", async () => {
+    const hashes = await listActiveExternalIdentityHashesForUser(
+      UID_B,
+      PROVIDER,
+    );
+    expect(hashes).toEqual([]);
+  });
+});
+
+describe("resolveActiveUserIdByExternalIdentityDocId", () => {
+  it("resolves the UID for an active mapping doc id", async () => {
+    await createOrConfirmExternalIdentity({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+      userId: UID_A,
+      source: "authOnUserCreate",
+    });
+    const derived = computeExternalIdentityDocId({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+    });
+    expect(await resolveActiveUserIdByExternalIdentityDocId(derived)).toBe(
+      UID_A,
+    );
+  });
+
+  it("returns null for a revoked mapping", async () => {
+    await createOrConfirmExternalIdentity({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+      userId: UID_A,
+      source: "authOnUserCreate",
+    });
+    await revokeExternalIdentity({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+      userId: UID_A,
+    });
+    const derived = computeExternalIdentityDocId({
+      providerId: PROVIDER,
+      providerAccountId: ACCOUNT_A,
+    });
+    expect(
+      await resolveActiveUserIdByExternalIdentityDocId(derived),
+    ).toBeNull();
+  });
+
+  it("returns null for an unknown doc id", async () => {
+    expect(
+      await resolveActiveUserIdByExternalIdentityDocId("nonexistent-hash"),
+    ).toBeNull();
   });
 });

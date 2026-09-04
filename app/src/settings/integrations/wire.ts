@@ -112,6 +112,7 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
   const disconnect = httpsCallable(functions, "lmsConnectionsDisconnect");
   const discover = httpsCallable(functions, "lmsClassesDiscover");
   const importClass = httpsCallable(functions, "lmsClassesImport");
+  const refreshRoster = httpsCallable(functions, "lmsClassesRefreshRoster");
   const listTopics = httpsCallable(functions, "lmsClassesListTopics");
   const publishAssignment = httpsCallable(functions, "lmsAssignmentsPublish");
   const refreshClass = httpsCallable(functions, "lmsClassesRefresh");
@@ -188,6 +189,25 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
         lmsClassId,
         alreadyLinked: data.alreadyLinked === true,
       };
+    },
+    refreshRoster: async (input) => {
+      const res = await refreshRoster(input);
+      const data = (res.data ?? {}) as CallableRecord;
+      const classId = readString(data.classId);
+      if (!classId) {
+        throw new Error("lmsClassesRefreshRoster returned an unexpected shape.");
+      }
+      const num = (v: unknown): number =>
+        typeof v === "number" && Number.isFinite(v) ? v : 0;
+      return Object.freeze({
+        classId,
+        membersSeen: num(data.membersSeen),
+        added: num(data.added),
+        reaffirmed: num(data.reaffirmed),
+        removed: num(data.removed),
+        withdrawnEnrollments: num(data.withdrawnEnrollments),
+        upstreamRosterEmpty: data.upstreamRosterEmpty === true,
+      });
     },
     refreshClass: async (input) => {
       const res = await refreshClass(input);

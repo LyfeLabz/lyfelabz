@@ -113,17 +113,6 @@ const wiredDeps = (
   canImportClasses: true,
   canCreateClasses: true,
   listClasses: async () => Object.freeze([lmsClass, manualClass]),
-  syncRoster: async () =>
-    Object.freeze({
-      classId: "c-lms",
-      added: 2,
-      reactivated: 0,
-      unchanged: 5,
-      withdrawn: 1,
-      unresolved: 0,
-      skipped: 0,
-      upstreamRosterEmpty: false,
-    }),
   ...overrides,
 });
 
@@ -389,100 +378,38 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     expect(manual.textContent).toContain("G7 · Block B");
   });
 
-  test("roster sync is offered ONLY for Google Classroom-linked classes (Task E5)", async () => {
+  test("Sprint 29G.5K-2: NO Sync roster button renders for any class (manual or Google Classroom)", async () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher, wiredDeps());
     await flush();
-    const lms = mount.querySelector(
-      "[data-testid=settings-class-item-c-lms]",
-    )!;
-    const manual = mount.querySelector(
-      "[data-testid=settings-class-item-c-manual]",
-    )!;
-    // The linked class exposes Sync roster; the manual class never does.
-    expect(lms.querySelector("[data-testid=class-rostersync-button]")).not.toBeNull();
+    // The linked and manual class rows both still render as identity rows...
     expect(
-      manual.querySelector("[data-testid=class-rostersync-button]"),
-    ).toBeNull();
-    // Exactly one Sync roster button overall (for the one linked class).
+      mount.querySelector("[data-testid=settings-class-item-c-lms]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=settings-class-item-c-manual]"),
+    ).not.toBeNull();
+    // ...but the manual roster-sync control is gone entirely - no button on
+    // any class, no per-class sync panel.
     expect(
       mount.querySelectorAll("[data-testid=class-rostersync-button]"),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
+    expect(
+      mount.querySelectorAll("[data-testid=class-rostersync-status]"),
+    ).toHaveLength(0);
   });
 
-  test("the roster-sync explanatory paragraph is removed (Task E6)", async () => {
+  test("Sprint 29G.5K-2: no synchronization instruction text appears in normal teacher UI", async () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher, wiredDeps());
     await flush();
-    expect(mount.textContent ?? "").not.toContain(
-      "Sync brings the latest Google Classroom roster into LyfeLabz.",
+    const text = (mount.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("sync roster");
+    expect(text).not.toContain("sync the roster");
+    expect(text).not.toContain("haven't finished signing in");
+    expect(text).not.toContain(
+      "sync brings the latest google classroom roster into lyfelabz.",
     );
-    // The Sync roster action itself is still present and labelled.
-    const btn = mount.querySelector(
-      "[data-testid=class-rostersync-button]",
-    )!;
-    expect(btn.textContent).toBe("Sync roster");
-  });
-
-  test("clicking Sync roster invokes the certified callable exactly once and shows aggregate counters", async () => {
-    let calls = 0;
-    const mount = mkMount();
-    renderSettingsSurface(
-      mount,
-      teacher,
-      wiredDeps([activeConnection], {
-        syncRoster: async () => {
-          calls += 1;
-          return Object.freeze({
-            classId: "c-lms",
-            added: 1,
-            reactivated: 0,
-            unchanged: 0,
-            withdrawn: 0,
-            unresolved: 0,
-            skipped: 0,
-            upstreamRosterEmpty: false,
-          });
-        },
-      }),
-    );
-    await flush();
-    const btn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=class-rostersync-button]",
-    )!;
-    btn.click();
-    expect(calls).toBe(1);
-    await flush();
-    const status = mount.querySelector(
-      "[data-testid=class-rostersync-status]",
-    )!;
-    expect(status.textContent).toContain("Added: 1");
-  });
-
-  test("opening Settings does NOT trigger a roster sync (no auto-mutation)", async () => {
-    let calls = 0;
-    const mount = mkMount();
-    renderSettingsSurface(
-      mount,
-      teacher,
-      wiredDeps([activeConnection], {
-        syncRoster: async () => {
-          calls += 1;
-          return Object.freeze({
-            classId: "c-lms",
-            added: 0,
-            reactivated: 0,
-            unchanged: 0,
-            withdrawn: 0,
-            unresolved: 0,
-            skipped: 0,
-            upstreamRosterEmpty: false,
-          });
-        },
-      }),
-    );
-    await flush();
-    expect(calls).toBe(0);
   });
 
   test("does not render a Default Grade control or any form control", () => {

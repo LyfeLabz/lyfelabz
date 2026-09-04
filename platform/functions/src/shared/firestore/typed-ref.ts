@@ -32,6 +32,7 @@ import {
   LMS_CLASS_LINKS_COLLECTION,
   LMS_CONNECTIONS_COLLECTION,
   LMS_PROVIDERS_COLLECTION,
+  LMS_ROSTER_MEMBERSHIPS_COLLECTION,
   type LmsAssignmentPublicationCreationWrite,
   type LmsAssignmentPublicationRecord,
   type LmsClassLinkCreationWrite,
@@ -43,6 +44,10 @@ import {
   type LmsConnectionRevocationWrite,
   type LmsProviderCreationWrite,
   type LmsProviderRecord,
+  type LmsRosterMembershipCreationWrite,
+  type LmsRosterMembershipReaffirmWrite,
+  type LmsRosterMembershipRecord,
+  type LmsRosterMembershipRemovalWrite,
 } from "../types/lms";
 import {
   ENROLLMENTS_COLLECTION,
@@ -860,6 +865,51 @@ export function lmsAssignmentPublicationCreationDocRef(
     .doc(
       publicationId,
     ) as DocumentReference<LmsAssignmentPublicationCreationWrite>;
+}
+
+// -------------------- lmsRosterMemberships references (Sprint 29G.5K) --------------------
+//
+// Server-only trusted Classroom roster-membership cache. Denied to every
+// client role at the Rules layer; only Cloud Function code reads/writes it.
+
+export function lmsRosterMembershipsCollectionRef(): CollectionReference<LmsRosterMembershipRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(
+      LMS_ROSTER_MEMBERSHIPS_COLLECTION,
+    ) as CollectionReference<LmsRosterMembershipRecord>;
+}
+
+export function lmsRosterMembershipDocRef(
+  membershipId: string,
+): DocumentReference<LmsRosterMembershipRecord> {
+  return getAdminFirestore()
+    .collection(LMS_ROSTER_MEMBERSHIPS_COLLECTION)
+    .doc(membershipId) as DocumentReference<LmsRosterMembershipRecord>;
+}
+
+export function lmsRosterMembershipCreationDocRef(
+  membershipId: string,
+): DocumentReference<LmsRosterMembershipCreationWrite> {
+  return getAdminFirestore()
+    .collection(LMS_ROSTER_MEMBERSHIPS_COLLECTION)
+    .doc(membershipId) as DocumentReference<LmsRosterMembershipCreationWrite>;
+}
+
+export function lmsRosterMembershipReaffirmDocRef(
+  membershipId: string,
+): DocumentReference<LmsRosterMembershipReaffirmWrite> {
+  return getAdminFirestore()
+    .collection(LMS_ROSTER_MEMBERSHIPS_COLLECTION)
+    .doc(membershipId) as DocumentReference<LmsRosterMembershipReaffirmWrite>;
+}
+
+export function lmsRosterMembershipRemovalDocRef(
+  membershipId: string,
+): DocumentReference<LmsRosterMembershipRemovalWrite> {
+  return getAdminFirestore()
+    .collection(LMS_ROSTER_MEMBERSHIPS_COLLECTION)
+    .doc(membershipId) as DocumentReference<LmsRosterMembershipRemovalWrite>;
 }
 
 // Narrow LMS-link write reference for classes/{classId}. The class-import

@@ -100,6 +100,10 @@ export type WorkspaceDeps = {
   // after activation and for the manual "Sync roster" affordance. Null
   // in test harnesses that do not exercise roster sync.
   readonly syncRoster?: SyncRoster | null;
+  // Sprint 29G.5K-3: best-effort class-open membership freshness callable.
+  readonly refreshRoster?:
+    | ((input: { readonly classId: string }) => Promise<unknown>)
+    | null;
   // Sprint 28.6C: bounded intra-shell navigation seam wired by the shell.
   // The Classes surface uses it to route the empty Assignments state to
   // Curriculum and to return to the Classes surface after Assignment Detail.
@@ -176,6 +180,7 @@ export const WORKSPACE_SURFACES: Readonly<
         importFromClassroom: deps.importFromClassroom ?? null,
         activateClass: deps.activateClass ?? null,
         syncRoster: deps.syncRoster ?? null,
+        refreshRoster: deps.refreshRoster ?? null,
         // Sprint 28.6C: class-scoped Assignments section reuse.
         assignmentDetail: deps.assignmentDetail ?? null,
         assignmentSummary: deps.assignmentSummary ?? null,
@@ -208,12 +213,11 @@ export const WORKSPACE_SURFACES: Readonly<
           (deps.importFromClassroom ?? null) !== null &&
           (deps.createClass ?? null) !== null,
         canCreateClasses: (deps.createClass ?? null) !== null,
-        // Sprint 28.6H.3 (Task C4): Settings is the administrative home for
-        // roster sync. It reads the teacher's class list (one query, same shape
-        // Classes uses - no per-class fan-out) and exposes the certified
-        // `lmsClassesSyncRoster` action for Google Classroom-linked classes.
+        // Sprint 28.6H.3 (Task C4): Settings reads the teacher's class list
+        // (one query, same shape Classes uses - no per-class fan-out).
+        // Sprint 29G.5K-2: the manual roster-sync action was removed from
+        // Settings, so the sync callable is no longer wired here.
         listClasses: deps.listClasses,
-        syncRoster: deps.syncRoster ?? null,
       }),
   }),
 });

@@ -48,6 +48,11 @@ export type ImportFromClassroomDeps = {
     | "completeConnection"
     | "discoverClasses"
     | "importClass"
+    // Sprint 29G.5K-2: the roster-capture step of the single Import
+    // workflow. Invoked server-side immediately after the class link is
+    // opened, so "Import Class" means "class + its current Google Classroom
+    // roster". Never a separate teacher action.
+    | "refreshRoster"
   >;
   readonly openOAuth: OAuthHandoff;
   readonly redirectUri: string;
@@ -65,7 +70,11 @@ export type ImportStage =
   | "connecting"
   | "discovering"
   | "creating"
-  | "linking";
+  | "linking"
+  // Sprint 29G.5K-2: capturing the imported class's current Google
+  // Classroom roster membership into the trusted server-only cache. A
+  // failure here must NOT present the import as fully ready.
+  | "capturing";
 
 export type ImportErrorState = {
   readonly kind: "error";
@@ -300,6 +309,9 @@ export function createImportFromClassroom(
       });
     } catch (err) {
       if (isAlreadyLinkedError(err)) {
+        // NOTE: an already-linked course cannot proceed to roster capture on
+        // THIS class (the course belongs to another class); the orphan branch
+        // below is unchanged.
         // The Google Classroom course is already linked to another
         // LyfeLabz class (possibly the teacher's own from an earlier
         // session, or a colleague's). The `needsSetup` class we just
@@ -322,6 +334,38 @@ export function createImportFromClassroom(
         stage: "linking",
         providerDisplayName: provider.providerDisplayName,
         message: `We started your class for "${course.name}" but could not finish connecting it to Google Classroom. Try again in a moment.`,
+        recoveryHint: describeStageErrorHint(err),
+        retry: Object.freeze({
+          classId,
+          connectionId,
+          course,
+        }),
+      });
+      return;
+    }
+
+    // Sprint 29G.5K-2: the link is open; now capture the class's current
+    // Google Classroom roster into the trusted server-only membership cache
+    // as the roster step of this ONE Import workflow. The teacher performs no
+    // separate roster action. If capture fails, the import is NOT presented as
+    // fully ready: the flow surfaces a recoverable "capturing" error whose
+    // retry re-runs the link (idempotent) and the capture, never asking the
+    // teacher to "sync".
+    set({
+      kind: "linking",
+      providerDisplayName: provider.providerDisplayName,
+      course,
+      classId,
+      stagesComplete: freeze<ImportStage>([...linkingStages, "linking"]),
+    });
+    try {
+      await deps.callables.refreshRoster({ classId });
+    } catch (err) {
+      set({
+        kind: "error",
+        stage: "capturing",
+        providerDisplayName: provider.providerDisplayName,
+        message: `We connected "${course.name}" but could not finish importing its Google Classroom roster. Try again in a moment.`,
         recoveryHint: describeStageErrorHint(err),
         retry: Object.freeze({
           classId,
@@ -440,7 +484,7 @@ export function createImportFromClassroom(
       const errorState = state;
       if (
         errorState.kind === "error" &&
-        errorState.stage === "linking" &&
+        (errorState.stage === "linking" || errorState.stage === "capturing") &&
         errorState.retry !== undefined
       ) {
         const provider = providerCache;

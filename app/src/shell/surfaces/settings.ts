@@ -1,18 +1,17 @@
 import type { Session } from "../../session/types";
 import type { IntegrationsDeps } from "../../settings/integrations/types";
 import type { ClassManagementIntent } from "./classes";
-import {
-  compactGradeBlock,
-  renderRosterSyncPanel,
-  type RosterSyncViewEntry,
-} from "./classes";
+import { compactGradeBlock } from "./classes";
 import type { ListClasses } from "../../classes/listClasses";
 import type { ClassSummary } from "../../classes/types";
-import type {
-  SyncRoster,
-  SyncRosterCounters,
-  SyncRosterError,
-} from "../../classes/syncRoster";
+
+// Sprint 29G.5K-2: the teacher-facing manual "Sync roster" affordance is
+// removed. Google Classroom-backed classes now capture their roster
+// automatically as part of the one Import Class workflow, and students are
+// enrolled on their own first Google sign-in - so no teacher roster
+// synchronization is exposed as normal class administration. The backend
+// roster primitives remain for internal recovery/support; this surface no
+// longer renders them.
 
 // Settings workspace surface.
 //
@@ -68,11 +67,12 @@ export type SettingsDeps = {
   readonly canImportClasses?: boolean;
   readonly canCreateClasses?: boolean;
   // Sprint 28.6H.3 (Task C4): the teacher class list reader (same seam Classes
-  // uses) and the certified roster-sync callable. Roster sync administration
-  // lives here. Both optional so test harnesses that do not exercise class
-  // management can omit them.
+  // uses). Optional so test harnesses that do not exercise class management
+  // can omit it.
+  //
+  // Sprint 29G.5K-2: the roster-sync callable is no longer a Settings dep -
+  // the manual teacher sync action has been removed from this surface.
   readonly listClasses?: ListClasses | null;
-  readonly syncRoster?: SyncRoster | null;
 };
 
 export function renderSettingsSurface(
@@ -94,7 +94,6 @@ export function renderSettingsSurface(
   const canImportClasses = deps.canImportClasses === true;
   const canCreateClasses = deps.canCreateClasses === true;
   const listClasses = deps.listClasses ?? null;
-  const syncRoster = deps.syncRoster ?? null;
 
   const doc = mount.ownerDocument;
   const container = doc.createElement("div");
@@ -102,57 +101,20 @@ export function renderSettingsSurface(
   container.setAttribute("data-testid", "settings-container");
   mount.appendChild(container);
 
-  // Sprint 28.6H.3 (Task C4): class list + ephemeral roster-sync state for the
-  // Class Management section. The class list is loaded once per Settings mount
-  // (one query, no per-class fan-out). Roster-sync state is keyed by classId
-  // and is never persisted; duplicate concurrent clicks are suppressed by the
-  // in-flight status. Opening Settings never triggers a sync.
+  // Sprint 28.6H.3 (Task C4): class list for the Class Management section.
+  // The class list is loaded once per Settings mount (one query, no per-class
+  // fan-out).
+  //
+  // Sprint 29G.5K-2: the ephemeral roster-sync state and the per-class
+  // `Sync roster` action have been removed. Roster membership is captured
+  // automatically at import and students self-enroll on first sign-in, so the
+  // teacher never performs a manual roster synchronization here.
   type ClassesState =
     | { readonly kind: "idle" }
     | { readonly kind: "loading" }
     | { readonly kind: "error" }
     | { readonly kind: "list"; readonly classes: ReadonlyArray<ClassSummary> };
   let classesState: ClassesState = { kind: "idle" };
-  const rosterSyncByClass = new Map<string, RosterSyncViewEntry>();
-
-  const getRosterEntry = (classId: string): RosterSyncViewEntry =>
-    rosterSyncByClass.get(classId) ?? { status: "idle" };
-
-  const runRosterSync = (classId: string): void => {
-    if (syncRoster === null) return;
-    if (getRosterEntry(classId).status === "syncing") return;
-    rosterSyncByClass.set(classId, { status: "syncing" });
-    draw();
-    void syncRoster({ classId })
-      .then((result) => {
-        if (!mount.isConnected) return;
-        const counters: SyncRosterCounters = {
-          added: result.added,
-          reactivated: result.reactivated,
-          unchanged: result.unchanged,
-          withdrawn: result.withdrawn,
-          unresolved: result.unresolved,
-          skipped: result.skipped,
-          upstreamRosterEmpty: result.upstreamRosterEmpty,
-        };
-        rosterSyncByClass.set(classId, {
-          status: "ok",
-          counters,
-          at: Date.now(),
-        });
-        draw();
-      })
-      .catch((err: unknown) => {
-        if (!mount.isConnected) return;
-        const kind: SyncRosterError["kind"] =
-          err && typeof err === "object" && "kind" in err &&
-          typeof (err as { kind?: unknown }).kind === "string"
-            ? (err as { kind: SyncRosterError["kind"] }).kind
-            : "unknown";
-        rosterSyncByClass.set(classId, { status: "error", kind, at: Date.now() });
-        draw();
-      });
-  };
 
   // Sprint 28.6H.7 (Part C/E): Settings no longer renders a proactive Google
   // Classroom connection subview or a connection-status line. `draw()` always
@@ -357,17 +319,9 @@ export function renderSettingsSurface(
 
       li.appendChild(identity);
 
-      // Sync roster only for Google Classroom-linked classes with the sync
-      // callable wired. Manual classes show no sync action.
-      if (linked && syncRoster !== null) {
-        li.appendChild(
-          renderRosterSyncPanel(doc, {
-            available: true,
-            entry: getRosterEntry(summary.id),
-            onSyncClick: () => runRosterSync(summary.id),
-          }),
-        );
-      }
+      // Sprint 29G.5K-2: no per-class roster-sync action. Google
+      // Classroom-backed classes reflect their roster automatically; the
+      // teacher sees only the class identity, never a synchronization control.
       list.appendChild(li);
     }
 

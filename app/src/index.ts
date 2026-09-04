@@ -936,6 +936,7 @@ async function run(): Promise<void> {
     importFromClassroom: () => importFromClassroom,
     activateClass: () => activateClass,
     syncRoster: () => syncRoster,
+    refreshRoster: () => integrations?.callables.refreshRoster ?? null,
     onLaunchAssignment: (plan: LaunchPlan) => {
       // F5.2 §7.3 (Slice 5): execute the server-authoritative launch plan.
       // Canonical/canonicalFallback plans navigate directly; a differentiated

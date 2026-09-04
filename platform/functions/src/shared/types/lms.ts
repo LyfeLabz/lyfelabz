@@ -9,6 +9,11 @@ export const LMS_CONNECTIONS_COLLECTION = "lmsConnections";
 export const LMS_CLASS_LINKS_COLLECTION = "lmsClassLinks";
 export const LMS_ASSIGNMENT_PUBLICATIONS_COLLECTION =
   "lmsAssignmentPublications";
+// Sprint 29G.5K - trusted upstream Classroom roster-membership cache.
+// One document per (class link, upstream Google account) pair, keyed by a
+// deterministic id `${linkId}__${identityHash}`. Server-only (denied to
+// every client role at the Rules layer, mirroring `externalIdentities`).
+export const LMS_ROSTER_MEMBERSHIPS_COLLECTION = "lmsRosterMemberships";
 
 // Canonical provider identifier vocabulary. The set is closed per Data
 // Model §2.9.a and PDR-019h. Additional providers require an amendment
@@ -201,4 +206,82 @@ export type LmsAssignmentPublicationCreationWrite = {
   readonly errorCode?: string;
   readonly errorMessage?: string;
   readonly publishedAt: FieldValue;
+};
+
+// -------------------- lmsRosterMemberships/{linkId__identityHash} --------------------
+//
+// Sprint 29G.5K - trusted upstream Google Classroom roster-membership
+// cache. This collection is the persistent, server-authoritative record
+// of "which upstream Google accounts are members of an imported Classroom
+// course" captured at import/refresh time, BEFORE any of those students
+// has necessarily signed into LyfeLabz.
+//
+// PII minimization (mirrors `externalIdentities`, PDR-023C-I): the ONLY
+// upstream-identity value stored is `identityHash`, the SHA-256 document
+// identifier produced by `computeExternalIdentityDocId({ providerId:
+// "google.com", providerAccountId })`. The raw Google `providerAccountId`
+// is never persisted here, never logged, and never returned to a client.
+// The hash is the same value the certified external-identity bridge keys
+// on, so a student's own Google sign-in (which creates the active
+// `externalIdentities/{hash}` mapping) matches a stored membership by a
+// pure equality lookup on `identityHash` - with no roster re-fetch and no
+// teacher action.
+//
+// Trust boundary: membership presence is NOT authorization. A membership
+// document alone NEVER creates an active LyfeLabz user, an enrollment, or
+// an Auth claim. Only when a membership hash matches an authenticated
+// student's own active identity mapping (server-side) is an enrollment
+// materialized. The collection is denied to every client role at the
+// Rules layer; only Cloud Function code writes and reads it.
+//
+// `status` is the membership lifecycle: `member` means the account is
+// present in the last successfully captured upstream roster; `removed`
+// means a later successful capture observed it absent. An empty or failed
+// upstream roster never transitions members to `removed` (the capture
+// engine's `upstreamRosterEmpty` guard), so a transient Classroom API
+// failure can never mass-remove a class's membership.
+export type LmsRosterMembershipStatus = "member" | "removed";
+
+export type LmsRosterMembershipRecord = {
+  readonly classId: string;
+  readonly linkId: string;
+  readonly ownerUid: string;
+  readonly schoolId: string;
+  readonly providerId: LmsProviderId;
+  // SHA-256 hash document id of (google.com, providerAccountId). Never the
+  // raw upstream account identifier.
+  readonly identityHash: string;
+  readonly status: LmsRosterMembershipStatus;
+  readonly firstSeenAt: Timestamp;
+  readonly lastSeenAt: Timestamp;
+  readonly removedAt?: Timestamp;
+};
+
+// Creation write for a newly observed member (or a previously `removed`
+// member seen again - the deterministic id makes the write idempotent and
+// re-affirms `member`).
+export type LmsRosterMembershipCreationWrite = {
+  readonly classId: string;
+  readonly linkId: string;
+  readonly ownerUid: string;
+  readonly schoolId: string;
+  readonly providerId: LmsProviderId;
+  readonly identityHash: string;
+  readonly status: "member";
+  readonly firstSeenAt: FieldValue;
+  readonly lastSeenAt: FieldValue;
+};
+
+// Narrow re-affirmation write for an existing member observed again in a
+// fresh successful capture. Only the "seen" timestamp advances.
+export type LmsRosterMembershipReaffirmWrite = {
+  readonly status: "member";
+  readonly lastSeenAt: FieldValue;
+};
+
+// Narrow removal write: a member absent from a fresh successful (non-empty)
+// upstream roster capture transitions to `removed`.
+export type LmsRosterMembershipRemovalWrite = {
+  readonly status: "removed";
+  readonly removedAt: FieldValue;
 };

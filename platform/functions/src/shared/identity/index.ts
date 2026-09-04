@@ -14,9 +14,11 @@ export {
 
 export {
   createOrConfirmExternalIdentity,
+  listActiveExternalIdentityHashesForUser,
   listExternalIdentitiesForUser,
   reconcileExternalIdentityForUser,
   resolveActiveExternalIdentity,
+  resolveActiveUserIdByExternalIdentityDocId,
   restoreExternalIdentity,
   revokeExternalIdentity,
   type CreateOrConfirmInput,

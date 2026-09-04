@@ -56,3 +56,16 @@ export function lmsAssignmentPublicationIdFor(
 ): string {
   return `${assignmentId}__${safeToken(providerId)}__${hashComponent(attemptNonce)}`;
 }
+
+// Sprint 29G.5K - one document per (class link, upstream Google account)
+// pair. `identityHash` is the 64-char SHA-256 document id produced by
+// `computeExternalIdentityDocId({ providerId: "google.com",
+// providerAccountId })`; it is already URL-safe and opaque. Combining it
+// with the immutable `linkId` yields a deterministic, idempotent
+// membership id scoped to a single imported Classroom course.
+export function lmsRosterMembershipIdFor(
+  linkId: string,
+  identityHash: string,
+): string {
+  return `${linkId}__${identityHash}`;
+}

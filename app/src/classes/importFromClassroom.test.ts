@@ -43,6 +43,7 @@ type Overrides = {
   openOAuth?: ImportFromClassroomDeps["openOAuth"];
   lmsCreateClass?: ImportFromClassroomDeps["lmsCreateClass"];
   importClass?: ImportFromClassroomDeps["callables"]["importClass"];
+  refreshRoster?: ImportFromClassroomDeps["callables"]["refreshRoster"];
   discoverClasses?: ImportFromClassroomDeps["callables"]["discoverClasses"];
   listClassLinks?: ImportFromClassroomDeps["listClassLinks"] | null;
 };
@@ -95,6 +96,20 @@ function makeDeps(overrides: Overrides = {}): {
         (async ({ classId, lmsClassId }) => {
           calls.push(`importClass:${classId}:${lmsClassId}`);
           return { linkId: "link-1", classId, lmsClassId, alreadyLinked: false };
+        }),
+      refreshRoster:
+        overrides.refreshRoster ??
+        (async ({ classId }) => {
+          calls.push(`refreshRoster:${classId}`);
+          return {
+            classId,
+            membersSeen: 3,
+            added: 3,
+            reaffirmed: 0,
+            removed: 0,
+            withdrawnEnrollments: 0,
+            upstreamRosterEmpty: false,
+          };
         }),
     },
     openOAuth:
@@ -195,6 +210,94 @@ describe("createImportFromClassroom", () => {
       expect(final.classId).toMatch(/^[a-z0-9]{20}$/);
       expect(final.course.lmsClassId).toBe("gc-1");
     }
+  });
+
+  test("Sprint 29G.5K-2: Import captures the class roster as part of the one workflow before reaching linked", async () => {
+    const states: ImportState[] = [];
+    const { deps, calls } = makeDeps();
+    const controller = createImportFromClassroom(deps, (s) => states.push(s));
+    await controller.start();
+    await flush();
+    const current = controller.getState();
+    if (current.kind !== "courses") throw new Error("expected courses");
+    await controller.selectCourse(current.courses[0]!);
+    await flush();
+
+    // The roster capture ran server-side against the created class, ordered
+    // after the link - one Import workflow, no separate teacher action.
+    const createdClassId = (() => {
+      const c = calls.find((x) => x.startsWith("importClass:"));
+      return c ? c.split(":")[1] : "";
+    })();
+    expect(createdClassId).toMatch(/^[a-z0-9]{20}$/);
+    expect(calls).toContain(`refreshRoster:${createdClassId}`);
+    expect(calls.indexOf(`refreshRoster:${createdClassId}`)).toBeGreaterThan(
+      calls.findIndex((x) => x.startsWith("importClass:")),
+    );
+    expect(controller.getState().kind).toBe("linked");
+  });
+
+  test("Sprint 29G.5K-2: a roster-capture failure does NOT present the import as ready; it is a recoverable capturing error", async () => {
+    const states: ImportState[] = [];
+    const { deps } = makeDeps({
+      refreshRoster: async () => {
+        throw Object.assign(new Error("upstream"), { code: "unavailable" });
+      },
+    });
+    const controller = createImportFromClassroom(deps, (s) => states.push(s));
+    await controller.start();
+    await flush();
+    const current = controller.getState();
+    if (current.kind !== "courses") throw new Error("expected courses");
+    await controller.selectCourse(current.courses[0]!);
+    await flush();
+
+    const final = controller.getState();
+    expect(final.kind).toBe("error");
+    if (final.kind === "error") {
+      expect(final.stage).toBe("capturing");
+      // The teacher is never told to "sync" or manage a "roster".
+      expect(final.message.toLowerCase()).not.toContain("sync");
+      // A retry is offered against the same class.
+      expect(final.retry).toBeDefined();
+    }
+    // Never reached the ready `linked` state.
+    expect(states.some((s) => s.kind === "linked")).toBe(false);
+  });
+
+  test("Sprint 29G.5K-2: retry after a capture failure re-runs link + capture and reaches linked", async () => {
+    let attempts = 0;
+    const { deps, calls } = makeDeps({
+      refreshRoster: async ({ classId }) => {
+        attempts += 1;
+        if (attempts === 1) {
+          throw Object.assign(new Error("upstream"), { code: "unavailable" });
+        }
+        calls.push(`refreshRoster:${classId}`);
+        return {
+          classId,
+          membersSeen: 1,
+          added: 1,
+          reaffirmed: 0,
+          removed: 0,
+          withdrawnEnrollments: 0,
+          upstreamRosterEmpty: false,
+        };
+      },
+    });
+    const controller = createImportFromClassroom(deps, () => {});
+    await controller.start();
+    await flush();
+    const current = controller.getState();
+    if (current.kind !== "courses") throw new Error("expected courses");
+    await controller.selectCourse(current.courses[0]!);
+    await flush();
+    expect(controller.getState().kind).toBe("error");
+
+    await controller.retry();
+    await flush();
+    expect(controller.getState().kind).toBe("linked");
+    expect(attempts).toBe(2);
   });
 
   test("duplicate course detected client-side surfaces the Open class / Cancel panel", async () => {

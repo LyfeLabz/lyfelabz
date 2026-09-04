@@ -17,6 +17,7 @@ export { lmsDeepLinkResolve } from "./deep-link-resolve";
 export { lmsClassesDiscover } from "./classes-discover";
 export { lmsClassesImport } from "./classes-import";
 export { lmsClassesRefresh } from "./classes-refresh";
+export { lmsClassesRefreshRoster } from "./classes-refresh-roster";
 export { lmsClassesSyncRoster } from "./classes-sync-roster";
 export { lmsClassesListTopics } from "./classes-list-topics";
 export { lmsConnectionsBegin } from "./connections-begin";

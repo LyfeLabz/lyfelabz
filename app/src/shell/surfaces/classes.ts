@@ -155,6 +155,14 @@ export type ClassesSurfaceDeps = {
   // the automatic initial sync is skipped without altering activation
   // behavior.
   readonly syncRoster?: SyncRoster | null;
+  // Sprint 29G.5K-3: best-effort membership freshness callable. When wired,
+  // the surface fires `lmsClassesRefreshRoster` once per class-open event for
+  // LMS-backed classes so newly added Classroom students are captured without
+  // a teacher action. Fire-and-forget: a refresh failure never blocks class
+  // use; the last-known-good membership state remains authoritative.
+  readonly refreshRoster?:
+    | ((input: { readonly classId: string }) => Promise<unknown>)
+    | null;
   // Sprint 28.6C: the session-scoped teacher assignment-detail seam (the same
   // one Curriculum uses). The Classes surface reads `list()` - already
   // hydrated once from `assignmentsTeacherList`, which carries `classId` - to
@@ -265,6 +273,7 @@ export function renderClassesSurface(
   const importDeps = deps.importFromClassroom ?? null;
   const activateClass = deps.activateClass ?? null;
   const syncRoster = deps.syncRoster ?? null;
+  const refreshRoster = deps.refreshRoster ?? null;
   const assignmentDetail = deps.assignmentDetail ?? null;
   const assignmentSummary = deps.assignmentSummary ?? null;
   const navigateToSurface = deps.navigateToSurface ?? null;
@@ -341,6 +350,12 @@ export function renderClassesSurface(
         readonly at: number;
       };
   const rosterSyncByClass: Map<string, RosterSyncEntry> = new Map();
+
+  // Sprint 29G.5K-3: tracks class-open membership refreshes currently in
+  // flight so a rapid re-open of the same class does not double-call.
+  // Membership is removed on completion (success or failure) so a later
+  // genuine re-open can trigger another refresh.
+  const rosterRefreshInFlight: Set<string> = new Set();
 
   // Sprint 28.6H (Finding 1): whether the minimized "+ Add class" disclosure is
   // revealed in a populated Classes list. Closure-scoped (not part of the
@@ -501,6 +516,29 @@ export function renderClassesSurface(
       setupForm: isNeedsSetup ? emptySetupForm() : null,
     };
     rerender();
+    // Sprint 29G.5K-3: best-effort membership freshness on class open.
+    // Fires only for active LMS-backed classes (needsSetup classes have no
+    // enrolled students yet and do not need a refresh). Never blocks the
+    // class from opening; a failure is logged for engineering diagnosis but
+    // does not surface to the teacher or alter the class workspace.
+    if (
+      refreshRoster !== null &&
+      summary?.isLmsLinked === true &&
+      summary.status === "active" &&
+      !rosterRefreshInFlight.has(classId)
+    ) {
+      rosterRefreshInFlight.add(classId);
+      void refreshRoster({ classId })
+        .catch((err: unknown) => {
+          // Best-effort: class remains open with last-known-good membership.
+          if (typeof console !== "undefined") {
+            console.warn("[LyfeLabz] class-open roster refresh failed:", err);
+          }
+        })
+        .finally(() => {
+          rosterRefreshInFlight.delete(classId);
+        });
+    }
   };
 
   const onStartCreate = (): void => {

@@ -185,6 +185,11 @@ export type SurfaceDeps = {
   // `lmsClassesSyncRoster` seam. Same rebind semantics as the other
   // per-active-teacher dependencies.
   readonly syncRoster?: () => SyncRoster | null;
+  // Sprint 29G.5K-3: best-effort class-open membership freshness callable
+  // getter. Same rebind semantics as syncRoster.
+  readonly refreshRoster?: () =>
+    | ((input: { readonly classId: string }) => Promise<unknown>)
+    | null;
 };
 
 // -----------------------------------------------------------------------------
@@ -804,7 +809,11 @@ function describeLmsOnboardingError(err: unknown): string {
   const platformCode = extractPlatformErrorCode(err);
   switch (platformCode) {
     case "students.noLmsEnrollment":
-      return "Your class isn't ready in LyfeLabz yet. Ask your teacher to update the class roster, then try again.";
+      // Sprint 29G.5K-2: zero-coordination onboarding. A genuine
+      // no-membership student sees calm, non-technical copy with a clear
+      // next step and NO synchronization instruction. It never names a
+      // class, a roster, sync, or any Google identifier.
+      return "We couldn't find a LyfeLabz class connected to your Google Classroom account yet. Ask your teacher for help.";
     case "students.conflictingLmsEnrollment":
     case "students.schoolNotFound":
     case "district-unassigned":
@@ -976,6 +985,8 @@ export const makeActiveTeacherSurface =
       deps.activateClass !== undefined ? deps.activateClass() : null;
     const syncRoster =
       deps.syncRoster !== undefined ? deps.syncRoster() : null;
+    const refreshRoster =
+      deps.refreshRoster !== undefined ? deps.refreshRoster() : null;
     mountTeacherShell(session, mount, {
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
@@ -989,6 +1000,7 @@ export const makeActiveTeacherSurface =
       importFromClassroom,
       activateClass,
       syncRoster,
+      refreshRoster,
     });
   };
 

@@ -143,6 +143,22 @@ export type IntegrationsCallables = {
     readonly lmsClassId: string;
     readonly alreadyLinked: boolean;
   }>;
+  // Sprint 29G.5K-2: capture the imported class's current Google Classroom
+  // roster membership into the trusted server-only membership cache. This is
+  // the roster step of the single Import Class workflow (never a separate
+  // teacher action). The response carries only deterministic membership
+  // counts - no student identity, no Google identifier, no token.
+  readonly refreshRoster: (input: {
+    readonly classId: string;
+  }) => Promise<{
+    readonly classId: string;
+    readonly membersSeen: number;
+    readonly added: number;
+    readonly reaffirmed: number;
+    readonly removed: number;
+    readonly withdrawnEnrollments: number;
+    readonly upstreamRosterEmpty: boolean;
+  }>;
   // Sprint 8D authorized scope expansion: topic listing and assignment
   // publication. Every other previously excluded capability remains
   // absent from this interface.

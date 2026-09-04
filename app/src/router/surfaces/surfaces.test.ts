@@ -744,13 +744,14 @@ describe("provisioned surface - Google Classroom (LMS) branch", () => {
     const banner = mount.querySelector(
       "[data-testid=lms-error-host] [data-testid=error-banner]",
     );
-    expect(banner?.textContent).toContain(
-      "Ask your teacher to update the class roster",
-    );
+    // Sprint 29G.5K-2: zero-coordination copy. No synchronization
+    // instruction; a clear teacher-help next step.
+    expect(banner?.textContent).toContain("Ask your teacher for help");
+    expect(banner?.textContent?.toLowerCase()).not.toContain("sync");
+    expect(banner?.textContent?.toLowerCase()).not.toContain("roster");
     // No internal codes or identifiers leak.
     expect(banner?.textContent).not.toContain("functions/");
     expect(banner?.textContent).not.toContain("students.");
-    expect(banner?.textContent?.toLowerCase()).not.toContain("school");
     expect(banner?.textContent?.toLowerCase()).not.toContain("district");
     // No transition to the active surface; the button is available to retry.
     expect(spies.refresh).not.toHaveBeenCalled();

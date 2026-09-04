@@ -83,6 +83,28 @@ export const AUDIT_ACTIONS = [
   // signals. Never carries provider account identifiers, Firebase UIDs,
   // student names, emails, or profile data.
   "lms.rosterSynchronized",
+  // Sprint 29G.5K - trusted Classroom roster-membership capture. Emitted
+  // once per completed capture/refresh of one linked upstream class's
+  // roster into the server-only `lmsRosterMemberships` cache. The audit
+  // target is the LyfeLabz `class`; the payload carries only the provider
+  // id and deterministic membership counts (`membersSeen`, `added`,
+  // `removed`, `reaffirmed`) plus the `upstreamRosterEmpty` structural
+  // signal. It NEVER carries a provider account identifier, an identity
+  // hash, a Firebase UID, a student name, an email, or profile data. This
+  // is distinct from `lms.rosterSynchronized` (which reconciles
+  // enrollments); membership capture creates no enrollment and no user.
+  "lms.rosterMembershipsCaptured",
+  // Sprint 29G.5K - enrollment materialized from trusted Classroom
+  // membership during the student's own first `Continue with Google
+  // Classroom` onboarding. Emitted once per LyfeLabz class into which the
+  // authenticated student was enrolled by matching their own active
+  // Google identity mapping against a stored `member` roster membership.
+  // The audit target is the LyfeLabz `class`; the actor is the student.
+  // The payload carries only the provider id and a PII-free `source`
+  // marker. It NEVER carries the identity hash, provider account
+  // identifier, or any profile data. This distinguishes "enrollment
+  // created from trusted membership" from `students.activated`.
+  "lms.membershipEnrollmentCreated",
   // Sprint 26 Phase 1 - minimal consent-flow observability. Two PII-safe
   // durable outcomes on the incremental scope-widening path
   // (connections-complete.ts), which previously had structured logging

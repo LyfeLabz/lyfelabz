@@ -566,6 +566,36 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- lmsRosterMemberships/{membershipId} ----------
+    //
+    // Sprint 29G.5K - trusted Google Classroom roster-membership cache.
+    //
+    // Server-only record of which upstream Google accounts are members of
+    // an imported Classroom course, captured at import/refresh time before
+    // those students have necessarily signed into LyfeLabz. The body is
+    // sensitive: it confers eligibility for automatic enrollment, so a
+    // client that could read it would learn class membership and a client
+    // that could write it could forge membership and self-authorize. Every
+    // client role is therefore denied every operation. The only upstream
+    // identity value stored is the SHA-256 `identityHash` (never the raw
+    // provider account identifier); the document id is
+    // `${linkId}__${identityHash}`.
+    //
+    // The sole writers/readers are the `lmsClassesRefreshRoster` callable
+    // and the `studentsCompleteLmsOnboarding` materialization step, both of
+    // which run under Admin SDK authority and bypass Rules. Membership
+    // presence never authorizes on its own: an enrollment is created only
+    // when a membership hash matches the student's own authenticated Google
+    // identity mapping, evaluated server-side.
+    //
+    // This block uses an explicit `allow read, write: if false;` pattern
+    // (mirroring `externalIdentities`, `assessmentAnswerKeys`, and
+    // `auditEvents`) so the server-only intent is documented at the surface
+    // and cannot be relaxed by a broader accidental edit.
+    match /lmsRosterMemberships/{membershipId} {
+      allow read, write: if false;
+    }
+
     // ---------- auditEvents/{eventId} ----------
     //
     // Append-only server-write, server-read per Security Model §11 and

@@ -481,6 +481,59 @@ export async function restoreExternalIdentity(
   });
 }
 
+// Sprint 29G.5K - resolve the ACTIVE mapping document identifiers (the
+// canonical identity hashes) for a given Firebase UID and provider. The
+// document id IS `computeExternalIdentityDocId(providerId,
+// providerAccountId)`, so this returns exactly the values the trusted
+// roster-membership cache (`lmsRosterMemberships.identityHash`) is keyed
+// on, letting the onboarding path match an authenticated student's own
+// identity against stored membership by equality WITHOUT ever handling
+// the raw provider account identifier. The raw account id is never
+// returned. Server-only; never exposed through a client callable.
+export async function listActiveExternalIdentityHashesForUser(
+  userId: string,
+  providerId: ExternalIdentityProviderId,
+): Promise<readonly string[]> {
+  const validatedUser = assertValidUserId(userId);
+  const validatedProvider = assertValidProviderId(providerId);
+  const snap = await externalIdentitiesCollectionRef()
+    .where("userId", "==", validatedUser)
+    .where("providerId", "==", validatedProvider)
+    .where("status", "==", "active")
+    .get();
+  const out: string[] = [];
+  for (const doc of snap.docs) {
+    // Defense-in-depth: honor only records whose stored fields agree with
+    // the query, mirroring `resolveActiveExternalIdentity`.
+    const data = doc.data();
+    if (!data) continue;
+    if (data.userId !== validatedUser) continue;
+    if (data.providerId !== validatedProvider) continue;
+    if (data.status !== "active") continue;
+    out.push(doc.id);
+  }
+  return out;
+}
+
+// Sprint 29G.5K - reverse lookup used by roster-membership removal to
+// withdraw an enrollment for a member who has left the Classroom: given a
+// canonical identity-hash document id, return the ACTIVE mapping's Firebase
+// UID (or null). Only an active mapping resolves; a missing, revoked, or
+// malformed record yields null. The raw provider account identifier is
+// never handled here. Server-only.
+export async function resolveActiveUserIdByExternalIdentityDocId(
+  externalIdentityDocId: string,
+): Promise<string | null> {
+  if (!isNonEmptyString(externalIdentityDocId)) return null;
+  const snap = await externalIdentityDocRef(externalIdentityDocId).get();
+  if (!snap.exists) return null;
+  const data = snap.data();
+  if (!data) return null;
+  if (data.status !== "active") return null;
+  if (!isNonEmptyString(data.userId)) return null;
+  return data.userId;
+}
+
 // Server-side list of every mapping for a given Firebase UID
 // (active + revoked). Used only by internal reconciliation. NEVER
 // exposed through a client callable.

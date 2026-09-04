@@ -115,6 +115,11 @@ export {
   lmsProviderCreationDocRef,
   lmsProviderDocRef,
   lmsProvidersCollectionRef,
+  lmsRosterMembershipsCollectionRef,
+  lmsRosterMembershipDocRef,
+  lmsRosterMembershipCreationDocRef,
+  lmsRosterMembershipReaffirmDocRef,
+  lmsRosterMembershipRemovalDocRef,
   enrollmentCreationDocRef,
   enrollmentDocRef,
   enrollmentStatusChangeDocRef,
@@ -241,6 +246,7 @@ export {
   LMS_CLASS_LINKS_COLLECTION,
   LMS_CONNECTIONS_COLLECTION,
   LMS_PROVIDERS_COLLECTION,
+  LMS_ROSTER_MEMBERSHIPS_COLLECTION,
   type ClassEnrollmentSource,
   type LmsAssignmentPublicationCreationWrite,
   type LmsAssignmentPublicationRecord,
@@ -257,6 +263,11 @@ export {
   type LmsProviderCreationWrite,
   type LmsProviderId,
   type LmsProviderRecord,
+  type LmsRosterMembershipCreationWrite,
+  type LmsRosterMembershipReaffirmWrite,
+  type LmsRosterMembershipRecord,
+  type LmsRosterMembershipRemovalWrite,
+  type LmsRosterMembershipStatus,
 } from "./types/lms";
 export {
   ENROLLMENTS_COLLECTION,
@@ -330,9 +341,11 @@ export {
 } from "./identity/external-identity-doc-id";
 export {
   createOrConfirmExternalIdentity,
+  listActiveExternalIdentityHashesForUser,
   listExternalIdentitiesForUser,
   reconcileExternalIdentityForUser,
   resolveActiveExternalIdentity,
+  resolveActiveUserIdByExternalIdentityDocId,
   restoreExternalIdentity,
   revokeExternalIdentity,
   type CreateOrConfirmInput,

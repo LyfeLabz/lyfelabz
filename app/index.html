@@ -1586,6 +1586,17 @@
     padding: 0.5rem 0.7rem;
     margin: 0.25rem 0;
   }
+  /* Sprint 29G.5K-3 visual fix: the discovered-course list uses a <ul> whose
+     browser default includes a bullet marker. Remove it so the course button
+     is the complete selectable UI with no preceding decoration. */
+  .shell-classes-import-courses {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .shell-classes-import-course {
+    list-style: none;
+  }
   /* Sprint 28.6H.9 (Correction 4): focused Google Classroom import task action
      hierarchy. Previously the import task's Try again / Close (and the Cancel /
      Close rows) had no dedicated styling, so they fell back to the plain gray

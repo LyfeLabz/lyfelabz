@@ -15,6 +15,8 @@ import {
   type UserRecord,
 } from "../shared";
 
+import { materializeLmsEnrollmentsFromMembership } from "./materialize-lms-enrollments";
+
 // studentsCompleteLmsOnboarding
 //
 // Sprint 27 Phase 3 (blueprint Decision 2). The narrow, LMS-specific
@@ -360,6 +362,18 @@ async function studentsCompleteLmsOnboardingHandler(
       `LMS onboarding requires status "provisioned" (current: "${user.status}").`,
     );
   }
+
+  // Sprint 29G.5K - zero-coordination materialization. Before resolving the
+  // student's school, match the authenticated student's own Google identity
+  // against the trusted `lmsRosterMemberships` cache captured at class
+  // import time and create the canonical enrollment(s). This is what lets
+  // the student's FIRST `Continue with Google Classroom` both enroll and
+  // activate them with no teacher roster sync and no second click. When the
+  // student is not a member of any imported class this is a no-op and the
+  // `resolveLmsSchoolId` call below fails closed with the safe
+  // `students.noLmsEnrollment` message. Cross-school membership ambiguity
+  // fails closed here before any enrollment is written.
+  await materializeLmsEnrollmentsFromMembership({ uid });
 
   // Server-authoritative eligibility and school derivation. No client value
   // participates in either.

@@ -81,6 +81,10 @@ export type ShellDeps = {
   // consumed by the LMS class workspace for the automatic initial sync
   // after activation and for the manual "Sync roster" affordance.
   readonly syncRoster?: SyncRoster | null;
+  // Sprint 29G.5K-3: best-effort class-open membership freshness callable.
+  readonly refreshRoster?:
+    | ((input: { readonly classId: string }) => Promise<unknown>)
+    | null;
 };
 
 export function mountTeacherShell(
@@ -145,6 +149,7 @@ export function mountTeacherShell(
     importFromClassroom: deps.importFromClassroom ?? null,
     activateClass: deps.activateClass ?? null,
     syncRoster: deps.syncRoster ?? null,
+    refreshRoster: deps.refreshRoster ?? null,
     // Sprint 28.6C: bounded intra-shell navigation seam. A workspace surface
     // (Classes) uses it to request a surface switch - e.g. the empty
     // Assignments state routing to Curriculum, and the Assignment Detail

@@ -45,6 +45,22 @@ jest.mock("firebase-functions/v2/https", () => ({
   onCall: <T,>(handler: T) => handler,
 }));
 
+// Sprint 29G.5K: the activation handler now calls the membership
+// materialization step before resolving the school. That step has its own
+// dedicated unit coverage (materialize-lms-enrollments.test.ts); here it is
+// mocked to a no-op so these tests stay focused on the activation contract.
+// Individual tests can override `mockMaterialize` to simulate a match.
+const mockMaterialize = jest.fn().mockResolvedValue({
+  created: 0,
+  matchedClasses: 0,
+  schoolId: null,
+});
+jest.mock("./materialize-lms-enrollments", () => ({
+  materializeLmsEnrollmentsFromMembership: (
+    ...args: readonly unknown[]
+  ) => mockMaterialize(...args),
+}));
+
 jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
@@ -238,6 +254,33 @@ describe("studentsCompleteLmsOnboarding", () => {
       schoolId: "school-beta",
       alreadyActive: false,
     });
+  });
+
+  it("Sprint 29G.5K: materializes membership enrollments for a provisioned student before resolving school (zero-coordination)", async () => {
+    mockMaterialize.mockClear();
+    mockUserGet.mockResolvedValueOnce(provisionedSnapshot());
+    classesById["class-lms-1"] = lmsClass();
+    mockEnrollmentsGet.mockResolvedValueOnce(
+      enrollmentsSnapshot([enrollmentDoc("class-lms-1__uid-abc", { classId: "class-lms-1" })]),
+    );
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshotExists());
+    mockUserUpdate.mockResolvedValueOnce(undefined);
+    mockWriteCustomClaims.mockResolvedValueOnce({
+      role: "student",
+      schoolId: "school-beta",
+      districtId: "district-beta",
+    });
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-m", record: {} });
+
+    const result = await __studentsCompleteLmsOnboardingHandler(makeRequest());
+
+    // The materialization step ran exactly once for this caller, before the
+    // activation completed (the student's own first Continue both enrolls
+    // and activates, with no teacher roster sync).
+    expect(mockMaterialize).toHaveBeenCalledTimes(1);
+    expect(mockMaterialize).toHaveBeenCalledWith({ uid: "uid-abc" });
+    expect(result.status).toBe("active");
+    expect(result.role).toBe("student");
   });
 
   it("writes the canonical claims shape derived from server state", async () => {

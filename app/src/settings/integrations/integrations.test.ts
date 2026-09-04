@@ -52,6 +52,16 @@ function makeDeps(
       lmsClassId: "",
       alreadyLinked: false,
     }),
+    refreshRoster: async () =>
+      Object.freeze({
+        classId: "",
+        membersSeen: 0,
+        added: 0,
+        reaffirmed: 0,
+        removed: 0,
+        withdrawnEnrollments: 0,
+        upstreamRosterEmpty: false,
+      }),
     listClassTopics: async () => Object.freeze([]),
     refreshClass: async () =>
       Object.freeze({

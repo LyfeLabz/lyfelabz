@@ -46,6 +46,7 @@ export {
   lmsClassesDiscover,
   lmsClassesImport,
   lmsClassesRefresh,
+  lmsClassesRefreshRoster,
   lmsClassesSyncRoster,
   lmsClassesListTopics,
   lmsConnectionsBegin,
