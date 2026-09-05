@@ -190,6 +190,10 @@ export type SurfaceDeps = {
   readonly refreshRoster?: () =>
     | ((input: { readonly classId: string }) => Promise<unknown>)
     | null;
+  // Slice 7: Student Services accommodation callable getters (G19-gated).
+  readonly listStudents?: () => import("../../accommodations/wire").AccommodationsListStudentsCallable | null;
+  readonly getAccommodation?: () => import("../../accommodations/wire").AccommodationsGetCallable | null;
+  readonly setAccommodation?: () => import("../../accommodations/wire").AccommodationsSetCallable | null;
 };
 
 // -----------------------------------------------------------------------------
@@ -987,6 +991,12 @@ export const makeActiveTeacherSurface =
       deps.syncRoster !== undefined ? deps.syncRoster() : null;
     const refreshRoster =
       deps.refreshRoster !== undefined ? deps.refreshRoster() : null;
+    const listStudents =
+      deps.listStudents !== undefined ? deps.listStudents() : null;
+    const getAccommodation =
+      deps.getAccommodation !== undefined ? deps.getAccommodation() : null;
+    const setAccommodation =
+      deps.setAccommodation !== undefined ? deps.setAccommodation() : null;
     mountTeacherShell(session, mount, {
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
@@ -1001,6 +1011,9 @@ export const makeActiveTeacherSurface =
       activateClass,
       syncRoster,
       refreshRoster,
+      listStudents,
+      getAccommodation,
+      setAccommodation,
     });
   };
 

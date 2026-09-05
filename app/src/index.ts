@@ -75,6 +75,14 @@ import { createAssignmentsReopenCallable } from "./assignments/detail/reopen-wir
 import { createAssignmentsUpdateDraftCallable } from "./assignments/detail/update-wire";
 import { createAssignmentsPublishCallable } from "./assignments/detail/publish-wire";
 import {
+  createAccommodationsListStudentsCallable,
+  createAccommodationsGetCallable,
+  createAccommodationsSetCallable,
+  type AccommodationsListStudentsCallable,
+  type AccommodationsGetCallable,
+  type AccommodationsSetCallable,
+} from "./accommodations/wire";
+import {
   createAssignmentRecipientListCallable,
   type AssignmentRecipientListCallable,
 } from "./assignments/detail/roster-wire";
@@ -263,6 +271,12 @@ async function run(): Promise<void> {
   // Rebound per active-teacher session so cross-session state cannot
   // leak. Null on any non-teacher session.
   let syncRoster: SyncRoster | null = null;
+  // Slice 7: Student Services accommodation callables. Rebound per
+  // active-teacher session. Null until G19 production gate is satisfied;
+  // wired here so the seam exists when the gate is lifted.
+  let accommodationsListStudents: AccommodationsListStudentsCallable | null = null;
+  let accommodationsGet: AccommodationsGetCallable | null = null;
+  let accommodationsSet: AccommodationsSetCallable | null = null;
   // Sprint 24B Phase 2: primary Import Class from Google Classroom
   // orchestration dependencies. Composed from the certified
   // Integrations callable seam (lmsProvidersList,
@@ -560,6 +574,12 @@ async function run(): Promise<void> {
       lmsCreateClass = createFirebaseLmsCreateClass(functions);
       activateClass = createFirebaseActivateClass(functions);
       syncRoster = createFirebaseSyncRoster(functions);
+      // Slice 7: Student Services. Wired unconditionally in the
+      // teacher branch; G19 gate is enforced by the UI (SettingsDeps
+      // seams stay present but are dark until the gate is lifted).
+      accommodationsListStudents = createAccommodationsListStudentsCallable(functions);
+      accommodationsGet = createAccommodationsGetCallable(functions);
+      accommodationsSet = createAccommodationsSetCallable(functions);
       if (runToken !== currentRunToken) return;
       importFromClassroom = Object.freeze({
         callables: integrations.callables,
@@ -914,6 +934,11 @@ async function run(): Promise<void> {
       : null;
   };
 
+  // F5.2 §14 G19: set to true only after Slices 2-6 are production-verified.
+  // Changing this to true exposes the Slice 7 teacher activation surface in
+  // production. Leave false until the G19 gate is formally satisfied.
+  const G19_GATE_OPEN = false;
+
   const table = createRouteTable({
     onSignOut,
     onSignIn,
@@ -937,6 +962,10 @@ async function run(): Promise<void> {
     activateClass: () => activateClass,
     syncRoster: () => syncRoster,
     refreshRoster: () => integrations?.callables.refreshRoster ?? null,
+    // Slice 7 / G19: dark until Slices 2-6 are production-verified.
+    listStudents: () => (G19_GATE_OPEN ? accommodationsListStudents : null),
+    getAccommodation: () => (G19_GATE_OPEN ? accommodationsGet : null),
+    setAccommodation: () => (G19_GATE_OPEN ? accommodationsSet : null),
     onLaunchAssignment: (plan: LaunchPlan) => {
       // F5.2 §7.3 (Slice 5): execute the server-authoritative launch plan.
       // Canonical/canonicalFallback plans navigate directly; a differentiated

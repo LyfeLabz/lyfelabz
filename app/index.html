@@ -844,6 +844,165 @@
     .shell-settings-tab,
     .shell-class-rostersync-button { min-height: 44px; }
   }
+  /* Slice 7: Student Services panel */
+  .shell-ss-picker {
+    margin-bottom: 1.25rem;
+    max-width: 28rem;
+  }
+  .shell-ss-picker-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .shell-ss-picker-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-ss-class-select {
+    padding: 0.4rem 0.6rem;
+    font: inherit;
+    font-size: 0.95rem;
+    border: 1px solid rgba(0,0,0,0.22);
+    border-radius: 4px;
+    color: var(--tw-ink, #1c2733);
+    background: #fff;
+    width: 100%;
+    max-width: 22rem;
+  }
+  .shell-ss-class-select:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-ss-student-list-section,
+  .shell-ss-detail { max-width: 34rem; }
+  .shell-ss-section-desc {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    color: var(--tw-ink-soft, #3a4653);
+  }
+  /* list-style: none removes the bullet marker from each student row. */
+  .shell-ss-student-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .shell-ss-student-item {
+    border-top: 1px solid var(--tw-hairline-soft, rgba(28,39,51,0.08));
+  }
+  .shell-ss-student-item:last-child {
+    border-bottom: 1px solid var(--tw-hairline-soft, rgba(28,39,51,0.08));
+  }
+  .shell-ss-student-btn {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 0;
+    background: transparent;
+    border: none;
+    margin: 0;
+    text-align: left;
+    font: inherit;
+    font-weight: 600;
+    color: var(--tw-ink, #1c2733);
+    cursor: pointer;
+  }
+  .shell-ss-student-btn:hover,
+  .shell-ss-student-btn:focus-visible { text-decoration: underline; }
+  .shell-ss-student-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  /* Back navigation: compact link-style control matching shell-integrations-back */
+  .shell-ss-back-btn {
+    background: transparent;
+    border: none;
+    color: var(--tw-ink-muted, #566472);
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.2rem 0;
+    margin: 0 0 0.75rem 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .shell-ss-back-btn:hover,
+  .shell-ss-back-btn:focus-visible { text-decoration: underline; }
+  .shell-ss-back-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+    border-radius: 3px;
+  }
+  .shell-ss-student-detail-name {
+    margin: 0 0 0.6rem 0;
+    font-size: 1.05rem;
+    color: var(--tw-ink, #1c2733);
+  }
+  /* Student detail card: tighter vertical rhythm via flex gap. */
+  .shell-ss-ra-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--tw-hairline-soft, rgba(28,39,51,0.12));
+    border-radius: 6px;
+    background: #fff;
+  }
+  /* Gap handles spacing; reset browser p margins so gap is the only space. */
+  .shell-ss-ra-card p { margin: 0; }
+  .shell-ss-ra-card-heading {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-ss-ra-status { font-weight: 600; color: var(--tw-ink-soft, #3a4653); }
+  .shell-ss-ra-active-desc { font-size: 0.9rem; color: var(--tw-ink-soft, #3a4653); }
+  .shell-ss-ra-scope { font-size: 0.85rem; color: var(--tw-ink-muted, #566472); }
+  .shell-ss-ra-action {
+    align-self: flex-start;
+    margin: 0.25rem 0 0 0;
+    padding: 0.45rem 1rem;
+    min-height: 36px;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.22);
+    background: #fff;
+    color: #333;
+  }
+  .shell-ss-ra-action:hover,
+  .shell-ss-ra-action:focus-visible { border-color: rgba(0,0,0,0.4); }
+  .shell-ss-ra-action:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-ss-ra-action:disabled { opacity: 0.6; cursor: default; }
+  .shell-ss-ra-action--confirm {
+    background: #c0392b;
+    color: #fff;
+    border-color: #c0392b;
+  }
+  .shell-ss-ra-action--confirm:hover,
+  .shell-ss-ra-action--confirm:focus-visible { background: #a93226; border-color: #a93226; }
+  .shell-ss-confirm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 5px;
+    background: rgba(192,57,43,0.06);
+    border: 1px solid rgba(192,57,43,0.18);
+  }
+  .shell-ss-conflict-msg { font-size: 0.88rem; color: #8a5a12; }
+  @media (pointer: coarse) {
+    .shell-ss-student-btn,
+    .shell-ss-ra-action { min-height: 44px; }
+  }
   .shell-integrations {
     display: block;
   }

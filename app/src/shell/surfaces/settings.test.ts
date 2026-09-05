@@ -144,35 +144,326 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     ).toBeNull();
   });
 
-  test("Student Services is selectable and shows a restrained placeholder (Sprint 28.6H.5 Part E)", () => {
+  // ── Slice 7: Student Services functional UI ──────────────────────────────
+
+  // Student list now returns identity only (studentId + studentDisplayName).
+  // Accommodation state for a selected student is loaded via getAccommodation.
+  const makeListStudents = (
+    students: Array<{ studentId: string; studentDisplayName: string }> = [],
+  ) => jest.fn().mockResolvedValue({ classId: "cls-1", students });
+
+  const makeGetAccommodation = (rev = 0, status: "active" | "inactive" = "inactive") =>
+    jest.fn().mockResolvedValue(
+      rev === 0
+        ? { configRevision: 0 }
+        : {
+            configRevision: rev,
+            readingAccessibility:
+              status === "active"
+                ? { status: "active", level: "adapted" }
+                : { status: "inactive" },
+            updatedBy: "teacher-uid",
+          },
+    );
+
+  const makeSetAccommodation = (
+    newRev: number,
+    newStatus: "active" | "inactive" = "active",
+    shouldReject = false,
+  ) => {
+    const mock = jest.fn();
+    if (shouldReject) {
+      mock.mockRejectedValue({ code: "accommodations.conflict" });
+    } else {
+      mock.mockResolvedValue({
+        studentId: "stu-1",
+        configRevision: newRev,
+        readingAccessibility:
+          newStatus === "active"
+            ? { status: "active", level: "adapted" }
+            : { status: "inactive" },
+        noop: false,
+      });
+    }
+    return mock;
+  };
+
+  // Base deps with all three seams wired. `students` is identity-only.
+  const wiredSSDeps = (
+    students: Array<{ studentId: string; studentDisplayName: string }> = [],
+    getRevision = 2,
+    getStatus: "active" | "inactive" = "inactive",
+  ): SettingsDeps => ({
+    ...wiredDeps(),
+    listStudents: makeListStudents(students),
+    getAccommodation: makeGetAccommodation(getRevision, getStatus),
+    setAccommodation: makeSetAccommodation(getRevision + 1),
+  });
+
+  const switchToSS = (mount: HTMLElement) =>
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=settings-tab-student-services]")!
+      .click();
+
+  // Shared setup: load class list, select a class, await student load.
+  const selectClass = async (mount: HTMLElement, classId: string) => {
+    await Promise.resolve();
+    await Promise.resolve();
+    const select = mount.querySelector<HTMLSelectElement>("[data-testid=ss-class-select]")!;
+    select.value = classId;
+    select.dispatchEvent(new Event("change"));
+    await Promise.resolve();
+    await Promise.resolve();
+  };
+
+  const openStudentDetail = async (mount: HTMLElement, studentId: string, classId: string) => {
+    await selectClass(mount, classId);
+    mount.querySelector<HTMLButtonElement>(`[data-testid=ss-student-btn-${studentId}]`)!.click();
+    await Promise.resolve();
+    await Promise.resolve();
+  };
+
+  test("Student Services with no accommodation seams shows placeholder (Slice 7 graceful degradation)", () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher, wiredDeps());
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=settings-tab-student-services]",
-      )!
-      .click();
-    const ss = mount.querySelector("[data-testid=settings-tab-student-services]")!;
-    const cm = mount.querySelector("[data-testid=settings-tab-class-management]")!;
-    expect(ss.getAttribute("aria-selected")).toBe("true");
-    expect(cm.getAttribute("aria-selected")).toBe("false");
-    // The Student Services panel is now rendered with its restrained message.
-    const panel = mount.querySelector(
-      "[data-testid=settings-panel-student-services]",
-    )!;
+    switchToSS(mount);
+    const panel = mount.querySelector("[data-testid=settings-panel-student-services]")!;
     expect(panel.getAttribute("role")).toBe("tabpanel");
-    const note = mount.querySelector(
-      "[data-testid=settings-student-services-note]",
-    )!;
-    expect(note.textContent).toBe(
-      "Student accommodations and supports will be managed here.",
-    );
-    // No accommodation controls, toggles, or form inputs of any kind.
+    const note = mount.querySelector("[data-testid=settings-student-services-note]")!;
+    expect(note.textContent).toBe("Student accommodations and supports will be managed here.");
     expect(panel.querySelectorAll("input, select, textarea")).toHaveLength(0);
-    // The Class Management panel is swapped out (not merely hidden).
-    expect(
-      mount.querySelector("[data-testid=settings-panel-class-management]"),
-    ).toBeNull();
+    expect(mount.querySelector("[data-testid=settings-panel-class-management]")).toBeNull();
+  });
+
+  test("Student Services with seams wired shows a class picker and no placeholder (Slice 7)", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps(undefined, {
+      listStudents: makeListStudents(),
+      getAccommodation: makeGetAccommodation(),
+      setAccommodation: makeSetAccommodation(1),
+    }));
+    switchToSS(mount);
+    expect(mount.querySelector("[data-testid=settings-student-services-note]")).toBeNull();
+    expect(mount.querySelector("[data-testid=ss-class-picker]")).not.toBeNull();
+    expect(mount.querySelector<HTMLSelectElement>("[data-testid=ss-class-select]")).not.toBeNull();
+  });
+
+  test("Student Services shows no redundant instruction when no class is selected", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredSSDeps());
+    switchToSS(mount);
+    // The class label and picker convey the interaction; no redundant prose.
+    expect(mount.querySelector("[data-testid=ss-no-class-hint]")).toBeNull();
+    expect(mount.querySelector("[data-testid=ss-class-picker]")).not.toBeNull();
+  });
+
+  test("Student Services class picker lists active classes", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredSSDeps());
+    switchToSS(mount);
+    await Promise.resolve();
+    await Promise.resolve();
+    const options = Array.from(
+      mount.querySelector<HTMLSelectElement>("[data-testid=ss-class-select]")!.options,
+    ).map((o) => o.value).filter(Boolean);
+    expect(options.length).toBeGreaterThan(0);
+  });
+
+  test("Student Services shows loading state while fetching students", async () => {
+    const mount = mkMount();
+    let resolveList!: (v: { classId: string; students: [] }) => void;
+    const pendingList = jest.fn().mockReturnValue(
+      new Promise<{ classId: string; students: [] }>((r) => { resolveList = r; }),
+    );
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps(),
+      listStudents: pendingList,
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await selectClass(mount, lmsClass.id);
+    expect(mount.querySelector("[data-testid=ss-students-loading]")).not.toBeNull();
+    resolveList({ classId: lmsClass.id, students: [] });
+  });
+
+  test("Student Services shows student list (name buttons, no accommodation badges)", async () => {
+    const mount = mkMount();
+    const students = [
+      { studentId: "stu-1", studentDisplayName: "Alice" },
+      { studentId: "stu-2", studentDisplayName: "Bob" },
+    ];
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps(students),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await selectClass(mount, lmsClass.id);
+    const list = mount.querySelector("[data-testid=ss-student-list]");
+    expect(list).not.toBeNull();
+    // shell-ss-student-list carries list-style: none; confirming no bullet marker.
+    expect(list?.className).toContain("shell-ss-student-list");
+    expect(mount.querySelector("[data-testid=ss-student-btn-stu-1]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=ss-student-btn-stu-2]")).not.toBeNull();
+    // No accommodation-status badges on the list.
+    expect(mount.querySelector("[data-testid=ss-student-ra-badge-stu-1]")).toBeNull();
+    expect(mount.querySelector("[data-testid=ss-student-ra-badge-stu-2]")).toBeNull();
+    // No "Reading support" or On/Off terminology in the list view.
+    const listText = (mount.querySelector("[data-testid=ss-student-list]")?.textContent ?? "").toLowerCase();
+    expect(listText).not.toContain("reading support");
+    expect(listText).not.toContain("on");
+    expect(listText).not.toContain("off");
+  });
+
+  test("Student Services shows Reading Accessibility card heading (not 'adapted') for a selected student", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 2, "inactive"),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    expect(mount.querySelector("[data-testid=ss-ra-card-heading]")?.textContent).toBe("Reading Accessibility");
+    const panel = mount.querySelector("[data-testid=settings-panel-student-services]")!;
+    expect((panel.textContent ?? "").toLowerCase()).not.toContain("adapted");
+  });
+
+  test("Student Services status line shows 'Inactive' without repeating the service name", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 2, "inactive"),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    const status = mount.querySelector("[data-testid=ss-ra-status]");
+    // Status shows only the state word; service heading provides context.
+    expect(status?.textContent).toBe("Inactive");
+    // Redundant prefix must not appear.
+    expect((status?.textContent ?? "")).not.toContain("Reading Accessibility: Inactive");
+    expect((status?.textContent ?? "")).not.toContain("Reading Accessibility:");
+    expect((status?.textContent ?? "")).not.toContain("On");
+    expect((status?.textContent ?? "")).not.toContain("Off");
+  });
+
+  test("Student Services status line shows 'Active' without repeating the service name", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 3, "active"),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    // Status shows only the state word; service heading provides context.
+    expect(mount.querySelector("[data-testid=ss-ra-status]")?.textContent).toBe("Active");
+    // Redundant prefix must not appear.
+    expect((mount.querySelector("[data-testid=ss-ra-status]")?.textContent ?? "")).not.toContain("Reading Accessibility:");
+    expect((mount.querySelector("[data-testid=settings-panel-student-services]")?.textContent ?? "")).not.toContain("Reading Accessibility: Active");
+    expect((mount.querySelector("[data-testid=settings-panel-student-services]")?.textContent ?? "")).not.toContain("Reading Accessibility: Inactive");
+    // Active description shown.
+    expect(mount.querySelector("[data-testid=ss-ra-active-desc]")).not.toBeNull();
+  });
+
+  test("Student Services shows canonical scope note (applies to the student, not an assignment)", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 2, "inactive"),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    const scope = mount.querySelector("[data-testid=ss-ra-scope]");
+    expect(scope?.textContent).toBe("Student services apply to the student, not an individual assignment.");
+  });
+
+  test("Student Services action button reads 'Activate' for inactive service", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 2, "inactive"),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    expect(mount.querySelector("[data-testid=ss-ra-action]")?.textContent).toBe("Activate");
+  });
+
+  test("Student Services action button reads 'Deactivate' for active service", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 3, "active"),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    expect(mount.querySelector("[data-testid=ss-ra-action]")?.textContent).toBe("Deactivate");
+  });
+
+  test("Student Services deactivation requires a confirmation step before writing", async () => {
+    const mount = mkMount();
+    const setMock = makeSetAccommodation(4);
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 3, "active"),
+      listClasses: async () => Object.freeze([lmsClass]),
+      setAccommodation: setMock,
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    // Click Deactivate - must NOT write immediately.
+    mount.querySelector<HTMLButtonElement>("[data-testid=ss-ra-action]")!.click();
+    expect(setMock).not.toHaveBeenCalled();
+    // Confirmation dialog must appear.
+    expect(mount.querySelector("[data-testid=ss-deactivate-confirm]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=ss-deactivate-confirm-btn]")?.textContent).toBe("Yes, deactivate");
+    expect(mount.querySelector("[data-testid=ss-deactivate-cancel-btn]")?.textContent).toBe("Cancel");
+  });
+
+  test("Student Services deactivation confirmation - Cancel restores the card without writing", async () => {
+    const mount = mkMount();
+    const setMock = makeSetAccommodation(4);
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 3, "active"),
+      listClasses: async () => Object.freeze([lmsClass]),
+      setAccommodation: setMock,
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    mount.querySelector<HTMLButtonElement>("[data-testid=ss-ra-action]")!.click();
+    mount.querySelector<HTMLButtonElement>("[data-testid=ss-deactivate-cancel-btn]")!.click();
+    expect(setMock).not.toHaveBeenCalled();
+    expect(mount.querySelector("[data-testid=ss-deactivate-confirm]")).toBeNull();
+    expect(mount.querySelector("[data-testid=ss-ra-action]")?.textContent).toBe("Deactivate");
+  });
+
+  test("Student Services Back button returns to student list", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }]),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    mount.querySelector<HTMLButtonElement>("[data-testid=ss-back-btn]")!.click();
+    expect(mount.querySelector("[data-testid=ss-student-list]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=ss-student-detail]")).toBeNull();
+  });
+
+  test("Student Services does not expose configRevision or internal fields to the UI", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredSSDeps([{ studentId: "stu-1", studentDisplayName: "Alice" }], 7, "inactive"),
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    const text = (mount.querySelector("[data-testid=settings-panel-student-services]")?.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("configrevision");
+    expect(text).not.toContain("variantkey");
+    expect(text).not.toContain("presentationrevision");
+    expect(text).not.toContain("launchref");
+    expect(text).not.toContain("deliveryoutcome");
+    expect(text).not.toContain("adapted");
+    expect(text).not.toContain("reading support");
+    expect(text).not.toContain("turn on");
+    expect(text).not.toContain("turn off");
   });
 
   test("selecting Student Services then back to Class Management restores the panel", () => {

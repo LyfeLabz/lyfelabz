@@ -8,6 +8,11 @@ import type {
   AssignmentsCallables,
   IntegrationsDeps,
 } from "../../settings/integrations/types";
+import type {
+  AccommodationsListStudentsCallable,
+  AccommodationsGetCallable,
+  AccommodationsSetCallable,
+} from "../../accommodations/wire";
 import type { WorkspaceSurfaceKey } from "../navigation";
 import {
   renderCurriculumSurface,
@@ -104,6 +109,11 @@ export type WorkspaceDeps = {
   readonly refreshRoster?:
     | ((input: { readonly classId: string }) => Promise<unknown>)
     | null;
+  // Slice 7: Student Services accommodation seams. Optional; absent until
+  // G19 production gate is satisfied (Slices 2-6 production-verified).
+  readonly listStudents?: AccommodationsListStudentsCallable | null;
+  readonly getAccommodation?: AccommodationsGetCallable | null;
+  readonly setAccommodation?: AccommodationsSetCallable | null;
   // Sprint 28.6C: bounded intra-shell navigation seam wired by the shell.
   // The Classes surface uses it to route the empty Assignments state to
   // Curriculum and to return to the Classes surface after Assignment Detail.
@@ -218,6 +228,10 @@ export const WORKSPACE_SURFACES: Readonly<
         // Sprint 29G.5K-2: the manual roster-sync action was removed from
         // Settings, so the sync callable is no longer wired here.
         listClasses: deps.listClasses,
+        // Slice 7: Student Services accommodation seams (G19-gated).
+        listStudents: deps.listStudents ?? null,
+        getAccommodation: deps.getAccommodation ?? null,
+        setAccommodation: deps.setAccommodation ?? null,
       }),
   }),
 });

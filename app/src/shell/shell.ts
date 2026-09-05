@@ -22,6 +22,11 @@ import type {
   AssignmentSummaryCallable,
   LessonSummaryCallable,
 } from "../assignments/summary/types";
+import type {
+  AccommodationsListStudentsCallable,
+  AccommodationsGetCallable,
+  AccommodationsSetCallable,
+} from "../accommodations/wire";
 
 // Top-level teacher-workspace shell mount.
 //
@@ -85,6 +90,10 @@ export type ShellDeps = {
   readonly refreshRoster?:
     | ((input: { readonly classId: string }) => Promise<unknown>)
     | null;
+  // Slice 7: Student Services accommodation seams (G19-gated; optional).
+  readonly listStudents?: AccommodationsListStudentsCallable | null;
+  readonly getAccommodation?: AccommodationsGetCallable | null;
+  readonly setAccommodation?: AccommodationsSetCallable | null;
 };
 
 export function mountTeacherShell(
@@ -150,6 +159,9 @@ export function mountTeacherShell(
     activateClass: deps.activateClass ?? null,
     syncRoster: deps.syncRoster ?? null,
     refreshRoster: deps.refreshRoster ?? null,
+    listStudents: deps.listStudents ?? null,
+    getAccommodation: deps.getAccommodation ?? null,
+    setAccommodation: deps.setAccommodation ?? null,
     // Sprint 28.6C: bounded intra-shell navigation seam. A workspace surface
     // (Classes) uses it to request a surface switch - e.g. the empty
     // Assignments state routing to Curriculum, and the Assignment Detail

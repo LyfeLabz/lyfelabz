@@ -1,4 +1,4 @@
-export { accommodationsGet, accommodationsSet } from "./accommodations";
+export { accommodationsGet, accommodationsListStudents, accommodationsSet } from "./accommodations";
 export {
   assessmentAssignmentSummary,
   assessmentLessonSummary,

@@ -138,7 +138,9 @@ if (require.main === module) {
     async function idToken(uid: string, role: "teacher" | "student"): Promise<string> {
       const custom = await auth.createCustomToken(uid, CLAIMS(role));
       const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${apiKey}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: custom, returnSecureToken: true }),
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Referer": "https://lyfelabz-staging.web.app/" },
+        body: JSON.stringify({ token: custom, returnSecureToken: true }),
       });
       const body = (await res.json()) as { idToken?: string; error?: unknown };
       if (!res.ok || !body.idToken) throw new Error(`token mint failed: ${JSON.stringify(redact(body))}`);
@@ -374,8 +376,170 @@ if (require.main === module) {
           out("resetSession", { uid, deleted: true });
           break;
         }
+        // ── Slice 7 certification commands ─────────────────────────────────────
+        case "listStudents": {
+          // Cert A: response shape - only {studentId, studentDisplayName}, no accommodation state.
+          const classId = getFlag("class") ?? SEED.classId;
+          const tok = await idToken(SEED.teacher, "teacher");
+          const r = await call("accommodationsListStudents", tok, { classId });
+          out("listStudents", { ok: r.ok, code: r.ok ? "ok" : r.code, ...(r.ok ? {
+            classId: r.result.classId,
+            count: (r.result.students ?? []).length,
+            students: (r.result.students ?? []).map((s: any) => ({
+              studentId: s.studentId,
+              studentDisplayName: s.studentDisplayName,
+              keys: Object.keys(s),
+              hasAccommodationField: "readingAccessibility" in s || "accommodation" in s || "status" in s,
+            })),
+          } : { message: r.message }) });
+          break;
+        }
+        case "listStudentsUnowned": {
+          // Cert B: refuses class not owned by caller.
+          const tok = await idToken(SEED.teacher, "teacher");
+          const r = await call("accommodationsListStudents", tok, { classId: "not-my-class" });
+          out("listStudentsUnowned", { refused: !r.ok, code: r.ok ? "UNEXPECTED-OK" : r.code });
+          break;
+        }
+        case "listStudentsAsStudent": {
+          // Cert B: role-forbidden for student callers.
+          const tok = await idToken(SEED.diff, "student");
+          const r = await call("accommodationsListStudents", tok, { classId: SEED.classId });
+          out("listStudentsAsStudent", { refused: !r.ok, code: r.ok ? "UNEXPECTED-OK" : r.code });
+          break;
+        }
+        case "readAccommodationAsStudent": {
+          // Cert B: accommodationsGet refuses student callers.
+          const tok = await idToken(SEED.diff, "student");
+          const r = await call("accommodationsGet", tok, { studentId: SEED.diff, classId: SEED.classId });
+          out("readAccommodationAsStudent", { refused: !r.ok, code: r.ok ? "UNEXPECTED-OK" : r.code });
+          break;
+        }
+        case "readAccommodation": {
+          // Read current accommodation state via accommodationsGet as teacher.
+          const studentId = getFlag("student") ?? SEED.diff;
+          const tok = await idToken(SEED.teacher, "teacher");
+          const r = await call("accommodationsGet", tok, { studentId, classId: SEED.classId });
+          out(`accommodationsGet student=${studentId}`, { ok: r.ok, code: r.ok ? "ok" : r.code, result: r.ok ? r.result : r.message });
+          break;
+        }
+        case "deactivate": {
+          // Cert G: deactivate via real accommodationsSet callable.
+          const expected = Number(getFlag("expected") ?? "0");
+          const tok = await idToken(SEED.teacher, "teacher");
+          const r = await call("accommodationsSet", tok, { studentId: SEED.diff, classId: SEED.classId, expectedRevision: expected, newValue: { status: "inactive" } });
+          out("deactivate", { ok: r.ok, code: r.ok ? "ok" : r.code, response: r.ok ? redact(r.result) : r.message });
+          out("accommodationDoc", await readDoc(`studentAccommodations/${SEED.diff}`));
+          const deactHist = await db.collection("studentAccommodations").doc(SEED.diff).collection("history").get();
+          out("accommodationHistory", deactHist.docs.map((d) => { const h = d.data(); return { id: d.id, revision: h.revision, status: h.readingAccessibility?.status, setBy: h.setBy }; }));
+          break;
+        }
+        case "staleWrite": {
+          // Cert E: CAS stale write is rejected; current state is NOT overwritten.
+          const docBefore = await readDoc(`studentAccommodations/${SEED.diff}`);
+          const currentRev: number = (docBefore as any)?.configRevision ?? 0;
+          const staleRev = Math.max(0, currentRev - 1);
+          const tok = await idToken(SEED.teacher, "teacher");
+          const r = await call("accommodationsSet", tok, { studentId: SEED.diff, classId: SEED.classId, expectedRevision: staleRev, newValue: { status: "inactive" } });
+          const docAfter = await readDoc(`studentAccommodations/${SEED.diff}`);
+          out("staleWrite", {
+            currentRevision: currentRev,
+            staleRevisionUsed: staleRev,
+            refused: !r.ok,
+            code: r.ok ? "UNEXPECTED-OK" : r.code,
+            docRevisionUnchanged: (docAfter as any)?.configRevision === currentRev,
+            docStatusUnchanged: (docAfter as any)?.readingAccessibility?.status === (docBefore as any)?.readingAccessibility?.status,
+          });
+          break;
+        }
+        case "noopWrite": {
+          // Cert D: equal-value set -> noop:true, no configRevision increment.
+          const docBefore = await readDoc(`studentAccommodations/${SEED.diff}`);
+          const currentRev: number = (docBefore as any)?.configRevision ?? 0;
+          const currentStatus: string = (docBefore as any)?.readingAccessibility?.status ?? "inactive";
+          const currentValue = currentStatus === "active" ? { status: "active", level: "adapted" } : { status: "inactive" };
+          const tok = await idToken(SEED.teacher, "teacher");
+          const r = await call("accommodationsSet", tok, { studentId: SEED.diff, classId: SEED.classId, expectedRevision: currentRev, newValue: currentValue });
+          const docAfter = await readDoc(`studentAccommodations/${SEED.diff}`);
+          const histBefore = await db.collection("studentAccommodations").doc(SEED.diff).collection("history").get();
+          out("noopWrite", {
+            ok: r.ok,
+            noop: r.ok ? r.result?.noop : null,
+            configRevisionBefore: currentRev,
+            configRevisionAfter: (docAfter as any)?.configRevision ?? null,
+            revisionUnchanged: (docAfter as any)?.configRevision === currentRev,
+            historyCount: histBefore.docs.length,
+          });
+          break;
+        }
+        case "historicalIntegrity": {
+          // Cert H: Slice 7 ops did not mutate historical sessions/attempts.
+          const attemptsForDiff = await readAttempts(SEED.diff);
+          const attemptsForCanon = await readAttempts(SEED.canon);
+          const legacyAttempt = await readDoc("attempts/staging-cert-legacy-attempt");
+          out("historicalIntegrity", {
+            diffAttemptCount: attemptsForDiff.length,
+            canonAttemptCount: attemptsForCanon.length,
+            diffAttempts: attemptsForDiff,
+            legacyExists: !!legacyAttempt,
+            legacyHasDeliveryOutcome: legacyAttempt ? Object.prototype.hasOwnProperty.call(legacyAttempt, "deliveryOutcome") : null,
+            legacyHasVariantKey: legacyAttempt ? Object.prototype.hasOwnProperty.call(legacyAttempt, "variantKey") : null,
+          });
+          break;
+        }
+        case "crossTeacher": {
+          // Cert I: student-scoped accommodation; two teachers with class relationship to same student.
+          const TEACHER2 = "staging-cert-teacher-2";
+          const CLASS2 = "staging-cert-class-2";
+          // Provision second synthetic teacher (idempotent).
+          try { await auth.createUser({ uid: TEACHER2, email: "staging-cert-teacher-2@staging-cert.invalid", displayName: "Staging Cert Teacher 2" }); } catch { /* already exists */ }
+          await auth.setCustomUserClaims(TEACHER2, { role: "teacher", schoolId: "staging-cert-school", districtId: "staging-cert-district" });
+          await db.doc(`users/${TEACHER2}`).set({ uid: TEACHER2, status: "active", role: "teacher", schoolId: "staging-cert-school", districtId: "staging-cert-district", displayName: "Staging Cert Teacher 2" }, { merge: true });
+          // Provision second class (idempotent).
+          await db.doc(`classes/${CLASS2}`).set({ classId: CLASS2, teacherId: TEACHER2, schoolId: "staging-cert-school", districtId: "staging-cert-district", name: "Staging Cert Class 2", status: "active", grade: "7", block: "A", joinCode: "CERT2X" }, { merge: true });
+          // Enroll diff student in second class.
+          await db.doc(`enrollments/${CLASS2}__${SEED.diff}`).set({ classId: CLASS2, studentId: SEED.diff, schoolId: "staging-cert-school", districtId: "staging-cert-district", status: "active", role: "student", createdAt: FieldValue.serverTimestamp() }, { merge: true });
+          // Both teachers read accommodation state for the same student via their respective classes.
+          const tok1 = await idToken(SEED.teacher, "teacher");
+          const r1 = await call("accommodationsGet", tok1, { studentId: SEED.diff, classId: SEED.classId });
+          const tok2 = await idToken(TEACHER2, "teacher");
+          const r2 = await call("accommodationsGet", tok2, { studentId: SEED.diff, classId: CLASS2 });
+          const groundTruth = await readDoc(`studentAccommodations/${SEED.diff}`);
+          out("crossTeacher", {
+            teacher1: { ok: r1.ok, configRevision: r1.ok ? r1.result.configRevision : null, status: r1.ok ? r1.result.readingAccessibility?.status : r1.code },
+            teacher2: { ok: r2.ok, configRevision: r2.ok ? r2.result.configRevision : null, status: r2.ok ? r2.result.readingAccessibility?.status : r2.code },
+            sameConfigRevision: r1.ok && r2.ok && r1.result.configRevision === r2.result.configRevision,
+            sameStatus: r1.ok && r2.ok && r1.result.readingAccessibility?.status === r2.result.readingAccessibility?.status,
+            groundTruth: { configRevision: (groundTruth as any)?.configRevision, status: (groundTruth as any)?.readingAccessibility?.status },
+          });
+          break;
+        }
+        case "verifyCertJ": {
+          // Post-activation verification for brownc@weston.org Cert J setup.
+          // Requires brownc to have activated via the UI first (custom claims needed).
+          const BROWNC_UID = "kPckdZWX0HYhVckUhFE19mbnvPu1";
+          const CLASS_J = "staging-cert-class-j";
+          const STUDENT_DIFF = SEED.diff;
+          // Mint a teacher token for brownc (uses their now-active claims).
+          const browncTok = await idToken(BROWNC_UID, "teacher");
+          // Call accommodationsListStudents as brownc with class-j.
+          const listR = await call("accommodationsListStudents", browncTok, { classId: CLASS_J });
+          const getR = await call("accommodationsGet", browncTok, { studentId: STUDENT_DIFF, classId: CLASS_J });
+          out("verifyCertJ", {
+            listStudents: { ok: listR.ok, code: listR.ok ? "ok" : listR.code,
+              count: listR.ok ? (listR.result.students ?? []).length : null,
+              diffStudentFound: listR.ok ? (listR.result.students ?? []).some((s: any) => s.studentId === STUDENT_DIFF) : false,
+              allKeys: listR.ok ? (listR.result.students ?? []).map((s: any) => Object.keys(s)) : null,
+            },
+            accommodationsGet: { ok: getR.ok, code: getR.ok ? "ok" : getR.code,
+              configRevision: getR.ok ? getR.result.configRevision : null,
+              status: getR.ok ? getR.result.readingAccessibility?.status : null,
+            },
+          });
+          break;
+        }
         default:
-          process.stdout.write(`[driver] commands: whoami | flag | activate | phaseA | list | runAttempt | beginNoRef | invalidGrant | phaseAB | legacyFixture | prepareBrowserActor --uid=<uid> | read | readAttempts | resetSession\n`);
+          process.stdout.write(`[driver] commands: whoami | flag | activate | phaseA | list | runAttempt | beginNoRef | invalidGrant | phaseAB | legacyFixture | prepareBrowserActor --uid=<uid> | read | readAttempts | resetSession | listStudents | listStudentsUnowned | listStudentsAsStudent | readAccommodationAsStudent | readAccommodation | deactivate | staleWrite | noopWrite | historicalIntegrity | crossTeacher | verifyCertJ\n`);
       }
       process.exit(0);
     } catch (err) {
