@@ -20,6 +20,15 @@ export type LoadClassRoster = (input: {
   readonly classId: string;
 }) => Promise<ClassRosterResult>;
 
+// Sprint 29G.5P: a LAZY accessor for the roster loader. `LoadClassRoster` is
+// created asynchronously at teacher functions-init, so the teacher-surface
+// dependency chain must carry a getter that is resolved only when the Students
+// surface actually renders (after init), instead of snapshotting a value during
+// earlier router assembly (which captured `null`). Returns `null` while the
+// loader is not yet initialized; the Students surface treats that as "not
+// ready" (loading), never as a genuine empty roster.
+export type LoadClassRosterAccessor = () => LoadClassRoster | null;
+
 type CallableRecord = Readonly<Record<string, unknown>>;
 
 function isNonEmptyString(value: unknown): value is string {

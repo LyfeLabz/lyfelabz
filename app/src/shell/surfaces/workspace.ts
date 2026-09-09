@@ -3,7 +3,7 @@ import type { ListClasses } from "../../classes/listClasses";
 import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
-import type { LoadClassRoster } from "../../classes/classRoster";
+import type { LoadClassRosterAccessor } from "../../classes/classRoster";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
   AssignmentsCallables,
@@ -113,7 +113,7 @@ export type WorkspaceDeps = {
   // Sprint 29G.5P: teacher Students-tab roster reader (`enrollmentsListForClass`).
   // Forwarded into the Classes surface so the Students tab lists real active
   // enrollments. Null in harnesses that do not exercise the roster.
-  readonly loadRoster?: LoadClassRoster | null;
+  readonly loadRoster?: LoadClassRosterAccessor | null;
   // Slice 7: Student Services accommodation seams. Optional; absent until
   // G19 production gate is satisfied (Slices 2-6 production-verified).
   readonly listStudents?: AccommodationsListStudentsCallable | null;

@@ -14,7 +14,7 @@ import type {
   ImportState,
 } from "../../classes/importFromClassroom";
 import { createImportFromClassroom } from "../../classes/importFromClassroom";
-import type { LoadClassRoster } from "../../classes/classRoster";
+import type { LoadClassRosterAccessor } from "../../classes/classRoster";
 import type { IntegrationsLmsClass } from "../../settings/integrations/types";
 import type { TeacherDefaultGrade } from "../../teacherPreferences/types";
 import { isTeacherDefaultGrade } from "../../teacherPreferences/types";
@@ -168,7 +168,7 @@ export type ClassesSurfaceDeps = {
   // workspace's Students tab lists the real active canonical enrollments for
   // the class (via `enrollmentsListForClass`). Null in test harnesses that do
   // not exercise the roster; in that case the tab shows its empty state.
-  readonly loadRoster?: LoadClassRoster | null;
+  readonly loadRoster?: LoadClassRosterAccessor | null;
   // Sprint 28.6C: the session-scoped teacher assignment-detail seam (the same
   // one Curriculum uses). The Classes surface reads `list()` - already
   // hydrated once from `assignmentsTeacherList`, which carries `classId` - to
@@ -2104,7 +2104,7 @@ function renderClassWorkspaceState(
   onCancelSetup: () => void,
   canActivate: boolean,
   assignmentsView: ClassAssignmentsView,
-  loadRoster: LoadClassRoster | null,
+  loadRoster: LoadClassRosterAccessor | null,
 ): void {
   const workspace = doc.createElement("div");
   workspace.className = "shell-class-workspace";
@@ -2594,7 +2594,7 @@ function renderRosterSurface(
   doc: Document,
   mount: HTMLElement,
   classId: string,
-  loadRoster: LoadClassRoster | null,
+  loadRoster: LoadClassRosterAccessor | null,
 ): void {
   // Sprint 28.6H (Finding 3/5): section heading is "Students" (the class
   // identity is the workspace header).
@@ -2617,7 +2617,7 @@ function renderRosterSurface(
   body.className = "shell-roster-body";
   mount.appendChild(body);
 
-  // No roster reader wired (test harnesses that do not exercise the roster):
+  // No roster ACCESSOR wired (test harnesses that do not exercise the roster):
   // fall back to the genuine empty state rather than a spinner that never
   // resolves.
   if (loadRoster === null) {
@@ -2625,12 +2625,26 @@ function renderRosterSurface(
     return;
   }
 
+  // Resolve the loader lazily, now that the Students surface is actually
+  // rendering (after teacher functions-init). Snapshotting during earlier
+  // router assembly captured `null`; resolving here yields the live loader.
+  const loader = loadRoster();
+
   const loading = doc.createElement("p");
   loading.className = "shell-roster-loading";
   loading.setAttribute("data-testid", "roster-loading");
   loading.setAttribute("role", "status");
   loading.textContent = "Loading students…";
   body.appendChild(loading);
+
+  // A null loader here means initialization is genuinely not ready yet. Keep
+  // the loading state in place - NEVER fall through to the empty state, so a
+  // not-ready loader is never mistaken for a zero-student roster (this state is
+  // not expected once the teacher can reach the Students tab, but it must fail
+  // toward "loading", not "no students").
+  if (loader === null) {
+    return;
+  }
 
   // Guard against a stale async result after the surface is torn down on a
   // tab switch: only mutate the DOM while this body is still connected.
@@ -2640,7 +2654,7 @@ function renderRosterSurface(
     render();
   };
 
-  void loadRoster({ classId })
+  void loader({ classId })
     .then((result) => {
       applyIfLive(() => {
         if (result.students.length === 0) {

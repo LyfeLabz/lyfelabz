@@ -3,7 +3,7 @@ import type { ListClasses } from "../classes/listClasses";
 import type { CreateClass } from "../classes/createClass";
 import type { ActivateClass } from "../classes/activateClass";
 import type { SyncRoster } from "../classes/syncRoster";
-import type { LoadClassRoster } from "../classes/classRoster";
+import type { LoadClassRosterAccessor } from "../classes/classRoster";
 import type { ImportFromClassroomDeps } from "../classes/importFromClassroom";
 import type {
   AssignmentsCallables,
@@ -92,7 +92,7 @@ export type ShellDeps = {
     | ((input: { readonly classId: string }) => Promise<unknown>)
     | null;
   // Sprint 29G.5P: teacher Students-tab roster reader seam.
-  readonly loadRoster?: LoadClassRoster | null;
+  readonly loadRoster?: LoadClassRosterAccessor | null;
   // Slice 7: Student Services accommodation seams (G19-gated; optional).
   readonly listStudents?: AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: AccommodationsGetCallable | null;

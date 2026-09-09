@@ -2044,7 +2044,7 @@ describe("Sprint 29G.5P: teacher Students tab roster", () => {
         { studentId: "s-bravo", studentDisplayName: "Bravo Student" },
       ],
     }));
-    await openStudentsTab(mount, { loadRoster });
+    await openStudentsTab(mount, { loadRoster: () => loadRoster });
     await flush();
 
     // Correct class population is requested.
@@ -2070,7 +2070,7 @@ describe("Sprint 29G.5P: teacher Students tab roster", () => {
       classId: input.classId,
       students: [],
     }));
-    await openStudentsTab(mount, { loadRoster });
+    await openStudentsTab(mount, { loadRoster: () => loadRoster });
     await flush();
 
     const empty = mount.querySelector("[data-testid=roster-empty]");
@@ -2085,7 +2085,7 @@ describe("Sprint 29G.5P: teacher Students tab roster", () => {
     const loadRoster = jest.fn(async () => {
       throw new Error("callable failed");
     });
-    await openStudentsTab(mount, { loadRoster });
+    await openStudentsTab(mount, { loadRoster: () => loadRoster });
     await flush();
 
     const error = mount.querySelector("[data-testid=roster-error]");
@@ -2114,7 +2114,7 @@ describe("Sprint 29G.5P: teacher Students tab roster", () => {
           resolve = r;
         }),
     );
-    await openStudentsTab(mount, { loadRoster });
+    await openStudentsTab(mount, { loadRoster: () => loadRoster });
     // Still pending: loading placeholder is visible, no empty/list/error yet.
     expect(mount.querySelector("[data-testid=roster-loading]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=roster-empty]")).toBeNull();
@@ -2142,7 +2142,7 @@ describe("Sprint 29G.5P: teacher Students tab roster", () => {
         } as { studentId: string; studentDisplayName: string },
       ],
     }));
-    await openStudentsTab(mount, { loadRoster });
+    await openStudentsTab(mount, { loadRoster: () => loadRoster });
     await flush();
 
     const html = mount.innerHTML;

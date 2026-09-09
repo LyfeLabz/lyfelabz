@@ -3,7 +3,7 @@ import type { ListClasses } from "../../classes/listClasses";
 import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
-import type { LoadClassRoster } from "../../classes/classRoster";
+import type { LoadClassRosterAccessor } from "../../classes/classRoster";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
   AccommodationsListStudentsCallable,
@@ -198,7 +198,7 @@ export type SurfaceDeps = {
     | null;
   // Sprint 29G.5P: getter for the teacher Students-tab roster reader
   // (`enrollmentsListForClass`). Same rebind semantics as refreshRoster.
-  readonly loadRoster?: () => LoadClassRoster | null;
+  readonly loadRoster?: LoadClassRosterAccessor;
   // Slice 7: Student Services accommodation callable getters (G19-gated).
   readonly listStudents?: () => AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: () => AccommodationsGetCallable | null;
@@ -1000,8 +1000,12 @@ export const makeActiveTeacherSurface =
       deps.syncRoster !== undefined ? deps.syncRoster() : null;
     const refreshRoster =
       deps.refreshRoster !== undefined ? deps.refreshRoster() : null;
-    const loadRoster =
-      deps.loadRoster !== undefined ? deps.loadRoster() : null;
+    // Sprint 29G.5P: pass the loader ACCESSOR (getter) through, do NOT snapshot
+    // its value here. `loadClassRoster` is created asynchronously at functions
+    // init; snapshotting at surface-assembly time captured `null`, which then
+    // reached the Students surface permanently. The accessor is resolved lazily
+    // when the Students tab renders (after init).
+    const loadRoster: LoadClassRosterAccessor | null = deps.loadRoster ?? null;
     const listStudents =
       deps.listStudents !== undefined ? deps.listStudents() : null;
     const getAccommodation =
