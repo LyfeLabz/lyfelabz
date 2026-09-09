@@ -763,7 +763,7 @@ export function renderSettingsSurface(
       confirmBtn.setAttribute("data-testid", "ss-deactivate-confirm-btn");
       confirmBtn.textContent = "Yes, deactivate";
       confirmBtn.addEventListener("click", () => {
-        executeSet(studentId, classId, currentRevision, { status: "inactive" }, detailState.config);
+        executeSet(studentId, classId, currentRevision, { status: "inactive" });
       });
       confirmWrap.appendChild(confirmBtn);
 
@@ -811,7 +811,7 @@ export function renderSettingsSurface(
     } else {
       actionBtn.textContent = "Activate";
       actionBtn.addEventListener("click", () => {
-        executeSet(studentId, classId, currentRevision, { status: "active", level: "adapted" }, currentConfig);
+        executeSet(studentId, classId, currentRevision, { status: "active", level: "adapted" });
       });
     }
 
@@ -826,7 +826,6 @@ export function renderSettingsSurface(
     classId: string,
     expectedRevision: number,
     newValue: ReadingAccessibilityConfig,
-    _previousConfig: ReadingAccessibilityConfig,
   ): void => {
     studentDetailState = { kind: "saving" };
     draw();

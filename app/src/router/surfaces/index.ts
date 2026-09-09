@@ -5,6 +5,11 @@ import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
+  AccommodationsListStudentsCallable,
+  AccommodationsGetCallable,
+  AccommodationsSetCallable,
+} from "../../accommodations/wire";
+import type {
   AssignmentsCallables,
   IntegrationsDeps,
 } from "../../settings/integrations/types";
@@ -191,9 +196,9 @@ export type SurfaceDeps = {
     | ((input: { readonly classId: string }) => Promise<unknown>)
     | null;
   // Slice 7: Student Services accommodation callable getters (G19-gated).
-  readonly listStudents?: () => import("../../accommodations/wire").AccommodationsListStudentsCallable | null;
-  readonly getAccommodation?: () => import("../../accommodations/wire").AccommodationsGetCallable | null;
-  readonly setAccommodation?: () => import("../../accommodations/wire").AccommodationsSetCallable | null;
+  readonly listStudents?: () => AccommodationsListStudentsCallable | null;
+  readonly getAccommodation?: () => AccommodationsGetCallable | null;
+  readonly setAccommodation?: () => AccommodationsSetCallable | null;
 };
 
 // -----------------------------------------------------------------------------

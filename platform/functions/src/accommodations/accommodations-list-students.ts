@@ -75,7 +75,7 @@ function validateRequest(
       "classId must be a non-empty string.",
     );
   }
-  const classId = (payload.classId as string).trim();
+  const classId = payload.classId.trim();
   if (!CLASS_ID_PATTERN.test(classId)) {
     throw new PlatformError(
       "accommodations.invalidClassId",

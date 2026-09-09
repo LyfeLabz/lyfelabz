@@ -1,18 +1,1 @@
-[
-  {
-    "lessonSlug": "staging-cert-fixture",
-    "variantKey": "reading-adapted",
-    "presentationRevisionId": "prd35502243cd3caf026f4436183d92fac31e669483bf01d40954b8e24f2cd8657",
-    "path": "app/lessons/variants/lesson_staging-cert-fixture__prd35502243cd3caf026f4436183d92fac31e669483bf01d40954b8e24f2cd8657.html",
-    "sha256": "d35502243cd3caf026f4436183d92fac31e669483bf01d40954b8e24f2cd8657",
-    "publishedAt": "2026-09-03T00:00:00.000Z"
-  },
-  {
-    "lessonSlug": "staging-cert-fixture",
-    "variantKey": "reading-adapted",
-    "presentationRevisionId": "pr784872aad5bd6a7b0c0a47b3bdfbc09fc2750ad0fc9e8bb050f76a00fa9aed46",
-    "path": "app/lessons/variants/lesson_staging-cert-fixture__pr784872aad5bd6a7b0c0a47b3bdfbc09fc2750ad0fc9e8bb050f76a00fa9aed46.html",
-    "sha256": "784872aad5bd6a7b0c0a47b3bdfbc09fc2750ad0fc9e8bb050f76a00fa9aed46",
-    "publishedAt": "2026-09-03T00:00:00.000Z"
-  }
-]
+[]
