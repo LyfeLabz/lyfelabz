@@ -14,11 +14,16 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "deploy:assessment": "node lib/scripts/deploy-assessment.js",
-    "publish:variant": "node lib/scripts/publish-variant.js"
+    "publish:variant": "node lib/scripts/publish-variant.js",
+    "prepare:astra004-hosting": "npm run build && node lib/scripts/astra004-hosting-prepare.js",
+    "test:astra004-hosting": "jest --runInBand --runTestsByPath src/scripts/astra004-hosting-prepare.test.ts",
+    "test:astra004-hosting:mutations": "node scripts/astra004-hosting-mutation-check.cjs"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^7.11.6",
     "firebase-admin": "^12.2.0",
-    "firebase-functions": "^5.0.1"
+    "firebase-functions": "^5.0.1",
+    "google-auth-library": "^9.15.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

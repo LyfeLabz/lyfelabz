@@ -46,8 +46,10 @@ jest.mock("../shared", () => {
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     ASSESSMENT_SCHEMA_VERSION_V1: 1,
-    runFirestoreTransaction: (fn: (tx: unknown) => Promise<unknown>) =>
-      mockRunTransaction(fn),
+    runFirestoreTransaction: (
+      fn: (tx: unknown) => Promise<unknown>,
+      firestore: unknown,
+    ) => mockRunTransaction(fn, firestore),
     assessmentDocRef: mockAssessmentDocRef,
     assessmentRevisionDocRef: mockAssessmentRevisionDocRef,
     assessmentAnswerKeyDocRef: mockAssessmentAnswerKeyDocRef,
@@ -70,6 +72,7 @@ jest.mock("../shared", () => {
 });
 
 import { PlatformError } from "../shared/errors/platform-error";
+import type { Firestore } from "firebase-admin/firestore";
 import {
   assessmentIdFor,
   deployAssessmentRevision,
@@ -547,6 +550,34 @@ describe("deployAssessmentRevision", () => {
     );
     await deployAssessmentRevision(baseInput());
     expect(observedTxSize).toBe(3);
+  });
+
+  it("threads an explicitly supplied Firestore instance through every transaction reference", async () => {
+    const firestore = { exact: "staging-firestore" } as unknown as Firestore;
+    await deployAssessmentRevision(baseInput(), firestore);
+
+    expect(mockRunTransaction.mock.calls[0][1]).toBe(firestore);
+    expect(mockAssessmentDocRef).toHaveBeenCalledWith(ASSESSMENT_ID, firestore);
+    expect(mockAssessmentRevisionDocRef).toHaveBeenCalledWith(
+      REVISION_ID_1,
+      firestore,
+    );
+    expect(mockAssessmentAnswerKeyDocRef).toHaveBeenCalledWith(
+      REVISION_ID_1,
+      firestore,
+    );
+    expect(mockAssessmentDeploymentDocRef).toHaveBeenCalledWith(
+      ASSESSMENT_ID,
+      firestore,
+    );
+    expect(mockAssessmentRevisionDeploymentDocRef).toHaveBeenCalledWith(
+      REVISION_ID_1,
+      firestore,
+    );
+    expect(mockAssessmentAnswerKeyDeploymentDocRef).toHaveBeenCalledWith(
+      REVISION_ID_1,
+      firestore,
+    );
   });
 
   // Sprint 11D I-2. The revision + answer-key writes now use tx.create()

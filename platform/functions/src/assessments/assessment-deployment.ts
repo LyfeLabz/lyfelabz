@@ -1,4 +1,4 @@
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, type Firestore } from "firebase-admin/firestore";
 
 import {
   PlatformError,
@@ -65,6 +65,20 @@ export type AssessmentDeploymentResult = {
   readonly revisionId: string;
   readonly revisionOrdinal: number;
   readonly assessmentCreated: boolean;
+};
+
+// Pure, timestamp-free projection of a deployment candidate. Administrative
+// tooling uses this to validate and inspect the exact documents the canonical
+// transaction would author without performing a Firestore write. Keeping this
+// projection here prevents dry-run tooling from growing a second assessment
+// schema implementation.
+export type AssessmentDeploymentPlan = {
+  readonly input: AssessmentDeploymentInput;
+  readonly assessmentId: string;
+  readonly revisionId: string;
+  readonly assessmentWrite: AssessmentDeploymentWrite;
+  readonly revisionWrite: Omit<AssessmentRevisionDeploymentWrite, "publishedAt">;
+  readonly answerKeyWrite: Omit<AssessmentAnswerKeyDeploymentWrite, "publishedAt">;
 };
 
 const ACTIVITY_ID_PATTERN =
@@ -338,6 +352,41 @@ function projectAnswerKeyItems(
   }));
 }
 
+export function planAssessmentRevision(
+  rawInput: unknown,
+): AssessmentDeploymentPlan {
+  const input = validateDeploymentInput(rawInput);
+  const assessmentId = assessmentIdFor(input.activityId);
+  const revisionId = revisionIdFor(assessmentId, input.revisionOrdinal);
+
+  return {
+    input,
+    assessmentId,
+    revisionId,
+    assessmentWrite: {
+      assessmentId,
+      activityId: input.activityId,
+      currentRevisionId: revisionId,
+    },
+    revisionWrite: {
+      assessmentId,
+      revisionOrdinal: input.revisionOrdinal,
+      activityId: input.activityId,
+      itemOrderingRule: input.itemOrderingRule,
+      items: projectRevisionItems(input.items),
+      publishedBy: input.publishedBy,
+      schemaVersion: input.schemaVersion,
+    },
+    answerKeyWrite: {
+      assessmentId,
+      revisionOrdinal: input.revisionOrdinal,
+      items: projectAnswerKeyItems(input.items),
+      publishedBy: input.publishedBy,
+      schemaVersion: input.schemaVersion,
+    },
+  };
+}
+
 // Canonical deployment entry point per
 // ASSESSMENT_SCORING_CONTRACT.md §13 and
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §11, §12, §16.
@@ -360,16 +409,16 @@ function projectAnswerKeyItems(
 //     collections (§11).
 export async function deployAssessmentRevision(
   rawInput: unknown,
+  firestore?: Firestore,
 ): Promise<AssessmentDeploymentResult> {
-  const input = validateDeploymentInput(rawInput);
-  const assessmentId = assessmentIdFor(input.activityId);
-  const revisionId = revisionIdFor(assessmentId, input.revisionOrdinal);
+  const plan = planAssessmentRevision(rawInput);
+  const { input, assessmentId, revisionId } = plan;
 
   const outcome = await runFirestoreTransaction<AssessmentDeploymentResult>(
     async (tx) => {
-      const assessmentRef = assessmentDocRef(assessmentId);
-      const revisionRef = assessmentRevisionDocRef(revisionId);
-      const answerKeyRef = assessmentAnswerKeyDocRef(revisionId);
+      const assessmentRef = assessmentDocRef(assessmentId, firestore);
+      const revisionRef = assessmentRevisionDocRef(revisionId, firestore);
+      const answerKeyRef = assessmentAnswerKeyDocRef(revisionId, firestore);
 
       const [assessmentSnap, revisionSnap, answerKeySnap] = await Promise.all([
         tx.get(assessmentRef),
@@ -423,30 +472,16 @@ export async function deployAssessmentRevision(
       }
 
       const revisionWrite: AssessmentRevisionDeploymentWrite = {
-        assessmentId,
-        revisionOrdinal: input.revisionOrdinal,
-        activityId: input.activityId,
-        itemOrderingRule: input.itemOrderingRule,
-        items: projectRevisionItems(input.items),
+        ...plan.revisionWrite,
         publishedAt: FieldValue.serverTimestamp(),
-        publishedBy: input.publishedBy,
-        schemaVersion: input.schemaVersion,
       };
 
       const answerKeyWrite: AssessmentAnswerKeyDeploymentWrite = {
-        assessmentId,
-        revisionOrdinal: input.revisionOrdinal,
-        items: projectAnswerKeyItems(input.items),
+        ...plan.answerKeyWrite,
         publishedAt: FieldValue.serverTimestamp(),
-        publishedBy: input.publishedBy,
-        schemaVersion: input.schemaVersion,
       };
 
-      const assessmentWrite: AssessmentDeploymentWrite = {
-        assessmentId,
-        activityId: input.activityId,
-        currentRevisionId: revisionId,
-      };
+      const assessmentWrite = plan.assessmentWrite;
 
       // Sprint 11D I-2. Use `create` for the two immutable revision
       // documents. The transactional read above already refuses a
@@ -468,9 +503,15 @@ export async function deployAssessmentRevision(
       // preserves any future metadata the parent doc carries. The
       // deterministic assessmentId keeps the create-on-first-publication
       // semantics intact (merge creates the document if it is absent).
-      tx.create(assessmentRevisionDeploymentDocRef(revisionId), revisionWrite);
-      tx.create(assessmentAnswerKeyDeploymentDocRef(revisionId), answerKeyWrite);
-      tx.set(assessmentDeploymentDocRef(assessmentId), assessmentWrite, {
+      tx.create(
+        assessmentRevisionDeploymentDocRef(revisionId, firestore),
+        revisionWrite,
+      );
+      tx.create(
+        assessmentAnswerKeyDeploymentDocRef(revisionId, firestore),
+        answerKeyWrite,
+      );
+      tx.set(assessmentDeploymentDocRef(assessmentId, firestore), assessmentWrite, {
         merge: true,
       });
 
@@ -481,6 +522,7 @@ export async function deployAssessmentRevision(
         assessmentCreated,
       };
     },
+    firestore,
   );
 
   try {

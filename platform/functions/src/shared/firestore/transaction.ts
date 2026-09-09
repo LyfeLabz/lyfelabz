@@ -1,4 +1,4 @@
-import type { Transaction } from "firebase-admin/firestore";
+import type { Firestore, Transaction } from "firebase-admin/firestore";
 
 import { getAdminFirestore } from "./admin";
 
@@ -13,6 +13,7 @@ import { getAdminFirestore } from "./admin";
 // transaction object.
 export async function runFirestoreTransaction<T>(
   fn: (tx: Transaction) => Promise<T>,
+  firestore: Firestore = getAdminFirestore(),
 ): Promise<T> {
-  return getAdminFirestore().runTransaction(fn);
+  return firestore.runTransaction(fn);
 }

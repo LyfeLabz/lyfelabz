@@ -1,4 +1,9 @@
-import type { CollectionReference, DocumentReference, Query } from "firebase-admin/firestore";
+import type {
+  CollectionReference,
+  DocumentReference,
+  Firestore,
+  Query,
+} from "firebase-admin/firestore";
 
 import {
   ASSIGNMENTS_COLLECTION,
@@ -653,24 +658,27 @@ export function assessmentSessionAutosaveDocRef(
 
 export function assessmentDocRef(
   assessmentId: string,
+  firestore: Firestore = getAdminFirestore(),
 ): DocumentReference<AssessmentRecord> {
-  return getAdminFirestore()
+  return firestore
     .collection(ASSESSMENTS_COLLECTION)
     .doc(assessmentId) as DocumentReference<AssessmentRecord>;
 }
 
 export function assessmentRevisionDocRef(
   revisionId: string,
+  firestore: Firestore = getAdminFirestore(),
 ): DocumentReference<AssessmentRevisionRecord> {
-  return getAdminFirestore()
+  return firestore
     .collection(ASSESSMENT_REVISIONS_COLLECTION)
     .doc(revisionId) as DocumentReference<AssessmentRevisionRecord>;
 }
 
 export function assessmentAnswerKeyDocRef(
   revisionId: string,
+  firestore: Firestore = getAdminFirestore(),
 ): DocumentReference<AssessmentAnswerKeyRecord> {
-  return getAdminFirestore()
+  return firestore
     .collection(ASSESSMENT_ANSWER_KEYS_COLLECTION)
     .doc(revisionId) as DocumentReference<AssessmentAnswerKeyRecord>;
 }
@@ -685,24 +693,27 @@ export function assessmentAnswerKeyDocRef(
 
 export function assessmentDeploymentDocRef(
   assessmentId: string,
+  firestore: Firestore = getAdminFirestore(),
 ): DocumentReference<AssessmentDeploymentWrite> {
-  return getAdminFirestore()
+  return firestore
     .collection(ASSESSMENTS_COLLECTION)
     .doc(assessmentId) as DocumentReference<AssessmentDeploymentWrite>;
 }
 
 export function assessmentRevisionDeploymentDocRef(
   revisionId: string,
+  firestore: Firestore = getAdminFirestore(),
 ): DocumentReference<AssessmentRevisionDeploymentWrite> {
-  return getAdminFirestore()
+  return firestore
     .collection(ASSESSMENT_REVISIONS_COLLECTION)
     .doc(revisionId) as DocumentReference<AssessmentRevisionDeploymentWrite>;
 }
 
 export function assessmentAnswerKeyDeploymentDocRef(
   revisionId: string,
+  firestore: Firestore = getAdminFirestore(),
 ): DocumentReference<AssessmentAnswerKeyDeploymentWrite> {
-  return getAdminFirestore()
+  return firestore
     .collection(ASSESSMENT_ANSWER_KEYS_COLLECTION)
     .doc(revisionId) as DocumentReference<AssessmentAnswerKeyDeploymentWrite>;
 }
