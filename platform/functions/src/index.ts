@@ -37,6 +37,7 @@ export {
 } from "./classes";
 export {
   enrollmentsJoinByCode,
+  enrollmentsListForClass,
   enrollmentsSetStatus,
   enrollmentsTeacherAdd,
 } from "./enrollments";

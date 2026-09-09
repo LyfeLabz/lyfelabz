@@ -1,4 +1,9 @@
 import type { Session } from "../../session/types";
+import {
+  readStoredCurriculumFilters,
+  writeStoredCurriculumFilters,
+  clearAllStoredCurriculumFilters,
+} from "../../curriculumFilters/storage";
 import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
 import type {
@@ -315,24 +320,69 @@ function isValidTopicFilter(v: string): v is TopicFilter {
   return false;
 }
 
+// Sprint 29G.5P: durable, same-browser persistence for the Curriculum
+// grade/topic filter, UID-scoped. This backs the in-memory `sessionFilters`
+// so a teacher resumes their last grade and topic after a reload, a browser
+// restart, and a sign-out/sign-in on the SAME browser. The actual browser
+// storage access lives in the `curriculumFilters/storage` seam (outside the
+// shell, per the Step 5 posture invariant); this surface only validates the
+// returned values against the current filter enumerations. Persistence is
+// same-browser only: no Firestore, no cross-device sync, no backend/rules/
+// callable change, and it deliberately does NOT read or write the separate
+// class-creation `defaultGrade` preference.
+
+// Read the durable per-uid filter selection. Never trusts arbitrary stored
+// content: each field is validated with the same `isValid*Filter` guards used
+// for the in-memory value, so a corrupted or stale key can never propagate
+// into the UI. Returns null when nothing durable is available so the caller
+// can fall back to defaults.
+function readStoredFilters(
+  uid: string,
+): { grade: GradeFilter; topic: TopicFilter } | null {
+  const raw = readStoredCurriculumFilters(uid);
+  if (raw === null) return null;
+  const grade: GradeFilter = isValidGradeFilter(raw.grade) ? raw.grade : "all";
+  const topic: TopicFilter = isValidTopicFilter(raw.topic) ? raw.topic : "all";
+  return { grade, topic };
+}
+
+function writeStoredFilters(
+  uid: string,
+  grade: GradeFilter,
+  topic: TopicFilter,
+): void {
+  writeStoredCurriculumFilters(uid, grade, topic);
+}
+
+// Test-only full-reset drops the durable buckets too; production sign-out
+// never calls this, so real cross-sign-in persistence is preserved.
+function clearStoredFilters(): void {
+  clearAllStoredCurriculumFilters();
+}
+
 function readSessionFilters(uid: string): {
   grade: GradeFilter;
   topic: TopicFilter;
 } {
-  if (sessionFilters === null || sessionFilters.uid !== uid) {
-    return { grade: "all", topic: "all" };
+  // Prefer the live in-session selection when it belongs to this uid.
+  if (sessionFilters !== null && sessionFilters.uid === uid) {
+    // Defensive validation: if a previously stored value is no longer a
+    // valid filter key (e.g. TOPIC_FILTERS was pruned in a later release
+    // while a same-session bucket still held the old value), fall back to
+    // the safe default rather than propagating a stale key into the UI.
+    const grade: GradeFilter = isValidGradeFilter(sessionFilters.grade)
+      ? sessionFilters.grade
+      : "all";
+    const topic: TopicFilter = isValidTopicFilter(sessionFilters.topic)
+      ? sessionFilters.topic
+      : "all";
+    return { grade, topic };
   }
-  // Defensive validation: if a previously stored value is no longer a
-  // valid filter key (e.g. TOPIC_FILTERS was pruned in a later release
-  // while a same-session bucket still held the old value), fall back to
-  // the safe default rather than propagating a stale key into the UI.
-  const grade: GradeFilter = isValidGradeFilter(sessionFilters.grade)
-    ? sessionFilters.grade
-    : "all";
-  const topic: TopicFilter = isValidTopicFilter(sessionFilters.topic)
-    ? sessionFilters.topic
-    : "all";
-  return { grade, topic };
+  // No live selection for this uid (fresh page load / after sign-in / a
+  // different uid): restore from the durable, uid-scoped store if present.
+  const stored = readStoredFilters(uid);
+  if (stored !== null) return stored;
+  return { grade: "all", topic: "all" };
 }
 
 function writeSessionFilters(
@@ -341,6 +391,7 @@ function writeSessionFilters(
   topic: TopicFilter,
 ): void {
   sessionFilters = { uid, grade, topic };
+  writeStoredFilters(uid, grade, topic);
 }
 
 function ensurePersistedSlugsBucket(uid: string): Set<string> {
@@ -2165,5 +2216,6 @@ export function _resetCurriculumSessionStateForTest(): void {
   sessionPreferences.lmsTopicId = "";
   sessionPersistedSlugs = null;
   sessionFilters = null;
+  clearStoredFilters();
   _resetLmsPublicationStateForTest();
 }

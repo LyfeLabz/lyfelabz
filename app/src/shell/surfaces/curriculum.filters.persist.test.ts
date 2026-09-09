@@ -198,12 +198,125 @@ describe("Curriculum filter persistence across teacher-workspace tab navigation"
     expect(gradeOf(bMount, "7")).toBe("false");
     expect(topicOf(bMount, "earth-space")).toBe("false");
 
-    // Teacher A's selections have been evicted (the bucket is UID-scoped
-    // to a single teacher at a time; a same-tab teacher swap discards
-    // the prior teacher's state).
+    // Sprint 29G.5P: durable persistence is UID-scoped. Teacher B never sees
+    // Teacher A's selection (asserted above), and Teacher A resumes their OWN
+    // persisted selection on return - a sign-out/sign-in on the same browser
+    // restores the same teacher's last grade/topic, without any cross-uid leak.
     const aMountAgain = mkMount();
     renderCurriculumSurface(aMountAgain, teacherA);
-    expect(gradeOf(aMountAgain, "all")).toBe("true");
-    expect(topicOf(aMountAgain, "all")).toBe("true");
+    expect(gradeOf(aMountAgain, "7")).toBe("true");
+    expect(topicOf(aMountAgain, "earth-space")).toBe("true");
+    expect(gradeOf(aMountAgain, "all")).toBe("false");
+    expect(topicOf(aMountAgain, "all")).toBe("false");
+  });
+});
+
+describe("Curriculum filter durable persistence (Sprint 29G.5P, localStorage)", () => {
+  const KEY = "lyfelabz.curriculum.filters.teacher-A";
+
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+  });
+
+  test("selecting a grade persists it to uid-scoped localStorage", () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    click(mount, "filter-grade-7");
+    const raw = window.localStorage.getItem(KEY);
+    expect(raw).not.toBeNull();
+    expect(JSON.parse(raw as string).grade).toBe("7");
+  });
+
+  test("selecting a topic persists it to uid-scoped localStorage", () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    click(mount, "filter-topic-earth-space");
+    const raw = window.localStorage.getItem(KEY);
+    expect(raw).not.toBeNull();
+    expect(JSON.parse(raw as string).topic).toBe("earth-space");
+  });
+
+  test("last grade+topic are restored after a simulated reload (memory cleared, storage intact)", () => {
+    // A prior session persisted this selection; a reload re-inits module memory
+    // (cleared in beforeEach) while localStorage survives.
+    window.localStorage.setItem(
+      KEY,
+      JSON.stringify({ grade: "7", topic: "earth-space" }),
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    expect(gradeOf(mount, "7")).toBe("true");
+    expect(topicOf(mount, "earth-space")).toBe("true");
+    expect(gradeOf(mount, "all")).toBe("false");
+    expect(topicOf(mount, "all")).toBe("false");
+  });
+
+  test("an invalid stored grade is ignored (falls back to All Grades)", () => {
+    window.localStorage.setItem(
+      KEY,
+      JSON.stringify({ grade: "99", topic: "earth-space" }),
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    expect(gradeOf(mount, "all")).toBe("true");
+    // The valid topic is still restored.
+    expect(topicOf(mount, "earth-space")).toBe("true");
+  });
+
+  test("an invalid stored topic is ignored (falls back to All Topics)", () => {
+    window.localStorage.setItem(
+      KEY,
+      JSON.stringify({ grade: "7", topic: "not-a-real-topic" }),
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    expect(topicOf(mount, "all")).toBe("true");
+    // The valid grade is still restored.
+    expect(gradeOf(mount, "7")).toBe("true");
+  });
+
+  test("corrupt stored JSON is ignored (falls back to defaults, no throw)", () => {
+    window.localStorage.setItem(KEY, "{ not valid json");
+    const mount = mkMount();
+    expect(() =>
+      renderCurriculumSurface(mount, teacherSession()),
+    ).not.toThrow();
+    expect(gradeOf(mount, "all")).toBe("true");
+    expect(topicOf(mount, "all")).toBe("true");
+  });
+
+  test("a localStorage read failure falls back safely to defaults", () => {
+    const spy = jest
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation(() => {
+        throw new Error("storage blocked");
+      });
+    try {
+      const mount = mkMount();
+      expect(() =>
+        renderCurriculumSurface(mount, teacherSession()),
+      ).not.toThrow();
+      expect(gradeOf(mount, "all")).toBe("true");
+      expect(topicOf(mount, "all")).toBe("true");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  test("a localStorage write failure does not break the UI (selection still applies in-session)", () => {
+    const spy = jest
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(() => {
+        throw new Error("quota exceeded");
+      });
+    try {
+      const mount = mkMount();
+      renderCurriculumSurface(mount, teacherSession());
+      expect(() => click(mount, "filter-grade-7")).not.toThrow();
+      // In-memory selection still applies for this page load.
+      expect(gradeOf(mount, "7")).toBe("true");
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

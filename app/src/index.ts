@@ -75,6 +75,10 @@ import { createAssignmentsReopenCallable } from "./assignments/detail/reopen-wir
 import { createAssignmentsUpdateDraftCallable } from "./assignments/detail/update-wire";
 import { createAssignmentsPublishCallable } from "./assignments/detail/publish-wire";
 import {
+  createLoadClassRoster,
+  type LoadClassRoster,
+} from "./classes/classRoster";
+import {
   createAccommodationsListStudentsCallable,
   createAccommodationsGetCallable,
   createAccommodationsSetCallable,
@@ -277,6 +281,9 @@ async function run(): Promise<void> {
   let accommodationsListStudents: AccommodationsListStudentsCallable | null = null;
   let accommodationsGet: AccommodationsGetCallable | null = null;
   let accommodationsSet: AccommodationsSetCallable | null = null;
+  // Sprint 29G.5P: teacher Students-tab roster reader. Bound to the active
+  // teacher session so the class workspace can list real active enrollments.
+  let loadClassRoster: LoadClassRoster | null = null;
   // Sprint 24B Phase 2: primary Import Class from Google Classroom
   // orchestration dependencies. Composed from the certified
   // Integrations callable seam (lmsProvidersList,
@@ -580,6 +587,7 @@ async function run(): Promise<void> {
       accommodationsListStudents = createAccommodationsListStudentsCallable(functions);
       accommodationsGet = createAccommodationsGetCallable(functions);
       accommodationsSet = createAccommodationsSetCallable(functions);
+      loadClassRoster = createLoadClassRoster(functions);
       if (runToken !== currentRunToken) return;
       importFromClassroom = Object.freeze({
         callables: integrations.callables,
@@ -962,6 +970,7 @@ async function run(): Promise<void> {
     activateClass: () => activateClass,
     syncRoster: () => syncRoster,
     refreshRoster: () => integrations?.callables.refreshRoster ?? null,
+    loadRoster: () => loadClassRoster,
     // Slice 7 / G19: dark until Slices 2-6 are production-verified.
     listStudents: () => (G19_GATE_OPEN ? accommodationsListStudents : null),
     getAccommodation: () => (G19_GATE_OPEN ? accommodationsGet : null),

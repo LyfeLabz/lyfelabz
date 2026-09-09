@@ -14,6 +14,7 @@ import type {
   ImportState,
 } from "../../classes/importFromClassroom";
 import { createImportFromClassroom } from "../../classes/importFromClassroom";
+import type { LoadClassRoster } from "../../classes/classRoster";
 import type { IntegrationsLmsClass } from "../../settings/integrations/types";
 import type { TeacherDefaultGrade } from "../../teacherPreferences/types";
 import { isTeacherDefaultGrade } from "../../teacherPreferences/types";
@@ -163,6 +164,11 @@ export type ClassesSurfaceDeps = {
   readonly refreshRoster?:
     | ((input: { readonly classId: string }) => Promise<unknown>)
     | null;
+  // Sprint 29G.5P: teacher Students-tab roster reader. When wired, the class
+  // workspace's Students tab lists the real active canonical enrollments for
+  // the class (via `enrollmentsListForClass`). Null in test harnesses that do
+  // not exercise the roster; in that case the tab shows its empty state.
+  readonly loadRoster?: LoadClassRoster | null;
   // Sprint 28.6C: the session-scoped teacher assignment-detail seam (the same
   // one Curriculum uses). The Classes surface reads `list()` - already
   // hydrated once from `assignmentsTeacherList`, which carries `classId` - to
@@ -274,6 +280,7 @@ export function renderClassesSurface(
   const activateClass = deps.activateClass ?? null;
   const syncRoster = deps.syncRoster ?? null;
   const refreshRoster = deps.refreshRoster ?? null;
+  const loadRoster = deps.loadRoster ?? null;
   const assignmentDetail = deps.assignmentDetail ?? null;
   const assignmentSummary = deps.assignmentSummary ?? null;
   const navigateToSurface = deps.navigateToSurface ?? null;
@@ -488,6 +495,7 @@ export function renderClassesSurface(
           onCancelSetup,
           activateClass !== null,
           assignmentsView,
+          loadRoster,
         );
         return;
       }
@@ -2096,6 +2104,7 @@ function renderClassWorkspaceState(
   onCancelSetup: () => void,
   canActivate: boolean,
   assignmentsView: ClassAssignmentsView,
+  loadRoster: LoadClassRoster | null,
 ): void {
   const workspace = doc.createElement("div");
   workspace.className = "shell-class-workspace";
@@ -2180,7 +2189,7 @@ function renderClassWorkspaceState(
   // sections are Assignments (the default) and Students; a stale `snapshot`
   // tab defensively renders Assignments rather than an empty surface.
   if (tab === "roster") {
-    renderRosterSurface(doc, surfaceMount);
+    renderRosterSurface(doc, surfaceMount, summary.id, loadRoster);
   } else {
     renderClassAssignmentsSurface(doc, surfaceMount, summary, assignmentsView);
   }
@@ -2564,10 +2573,31 @@ function renderClassNavigation(
   return nav;
 }
 
-function renderRosterSurface(doc: Document, mount: HTMLElement): void {
+// Sprint 29G.5P: render the empty state exactly "No students yet." Shown ONLY
+// when there are genuinely zero active enrolled students (or when no roster
+// reader is wired, e.g. a test harness). A load failure uses the distinct
+// error state below, never this, so a failure can never masquerade as "no
+// students" (Part A requirement 8).
+function appendRosterEmptyState(doc: Document, container: HTMLElement): void {
+  const empty = doc.createElement("div");
+  empty.className = "shell-roster-empty";
+  empty.setAttribute("data-testid", "roster-empty");
+  empty.setAttribute("role", "status");
+  const emptyMsg = doc.createElement("p");
+  emptyMsg.className = "shell-roster-empty-message";
+  emptyMsg.textContent = "No students yet.";
+  empty.appendChild(emptyMsg);
+  container.appendChild(empty);
+}
+
+function renderRosterSurface(
+  doc: Document,
+  mount: HTMLElement,
+  classId: string,
+  loadRoster: LoadClassRoster | null,
+): void {
   // Sprint 28.6H (Finding 3/5): section heading is "Students" (the class
-  // identity is the workspace header). No prototype/product-marketing copy;
-  // a real empty state until a roster is wired.
+  // identity is the workspace header).
   const headline = doc.createElement("h2");
   headline.id = "surface-headline";
   headline.className = "shell-welcome shell-roster-headline";
@@ -2581,21 +2611,75 @@ function renderRosterSurface(doc: Document, mount: HTMLElement): void {
     // ignored
   }
 
-  // Sprint 28.6H.4 (Part B): the empty state is exactly "No students yet."
-  // The class-code explanatory sentence is removed - it over-explained and was
-  // too specific to manually joined LyfeLabz classes now that Google Classroom
-  // roster import exists.
-  const empty = doc.createElement("div");
-  empty.className = "shell-roster-empty";
-  empty.setAttribute("data-testid", "roster-empty");
-  empty.setAttribute("role", "status");
+  // The list/loading/error/empty states live in a dedicated body so an async
+  // result can replace the loading placeholder without disturbing the heading.
+  const body = doc.createElement("div");
+  body.className = "shell-roster-body";
+  mount.appendChild(body);
 
-  const emptyMsg = doc.createElement("p");
-  emptyMsg.className = "shell-roster-empty-message";
-  emptyMsg.textContent = "No students yet.";
-  empty.appendChild(emptyMsg);
+  // No roster reader wired (test harnesses that do not exercise the roster):
+  // fall back to the genuine empty state rather than a spinner that never
+  // resolves.
+  if (loadRoster === null) {
+    appendRosterEmptyState(doc, body);
+    return;
+  }
 
-  mount.appendChild(empty);
+  const loading = doc.createElement("p");
+  loading.className = "shell-roster-loading";
+  loading.setAttribute("data-testid", "roster-loading");
+  loading.setAttribute("role", "status");
+  loading.textContent = "Loading students…";
+  body.appendChild(loading);
+
+  // Guard against a stale async result after the surface is torn down on a
+  // tab switch: only mutate the DOM while this body is still connected.
+  const applyIfLive = (render: () => void): void => {
+    if (!body.isConnected) return;
+    body.replaceChildren();
+    render();
+  };
+
+  void loadRoster({ classId })
+    .then((result) => {
+      applyIfLive(() => {
+        if (result.students.length === 0) {
+          appendRosterEmptyState(doc, body);
+          return;
+        }
+        const list = doc.createElement("ul");
+        list.className = "shell-roster-list";
+        list.setAttribute("data-testid", "roster-list");
+        for (const student of result.students) {
+          const item = doc.createElement("li");
+          item.className = "shell-roster-student";
+          item.setAttribute("data-testid", "roster-student");
+          item.setAttribute("data-student-id", student.studentId);
+          const name = doc.createElement("span");
+          name.className = "shell-roster-student-name";
+          name.textContent = student.studentDisplayName;
+          item.appendChild(name);
+          list.appendChild(item);
+        }
+        body.appendChild(list);
+      });
+    })
+    .catch(() => {
+      // Failure must NOT render the "No students yet." empty state, which
+      // would falsely imply an empty class (Part A requirement 8).
+      applyIfLive(() => {
+        const error = doc.createElement("div");
+        error.className = "shell-roster-error";
+        error.setAttribute("data-testid", "roster-error");
+        error.setAttribute("role", "status");
+        const errorMsg = doc.createElement("p");
+        errorMsg.className = "shell-roster-error-message";
+        errorMsg.textContent =
+          "We couldn't load your students. Please try again.";
+        error.appendChild(errorMsg);
+        body.appendChild(error);
+      });
+    });
 }
 
 function appendHeadline(

@@ -16,6 +16,12 @@ export {
   type EnrollmentsTeacherAddResponse,
 } from "./enrollments-teacher-add";
 export {
+  enrollmentsListForClass,
+  type EnrollmentsListForClassRequest,
+  type EnrollmentsListForClassResponse,
+  type EnrollmentsListForClassStudent,
+} from "./enrollments-list-for-class";
+export {
   createRosterDisplayNameResolver,
   FALLBACK_ROSTER_DISPLAY_NAME,
   normalizeDisplayName,

@@ -3,6 +3,7 @@ import type { ListClasses } from "../../classes/listClasses";
 import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
+import type { LoadClassRoster } from "../../classes/classRoster";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
   AccommodationsListStudentsCallable,
@@ -195,6 +196,9 @@ export type SurfaceDeps = {
   readonly refreshRoster?: () =>
     | ((input: { readonly classId: string }) => Promise<unknown>)
     | null;
+  // Sprint 29G.5P: getter for the teacher Students-tab roster reader
+  // (`enrollmentsListForClass`). Same rebind semantics as refreshRoster.
+  readonly loadRoster?: () => LoadClassRoster | null;
   // Slice 7: Student Services accommodation callable getters (G19-gated).
   readonly listStudents?: () => AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: () => AccommodationsGetCallable | null;
@@ -996,6 +1000,8 @@ export const makeActiveTeacherSurface =
       deps.syncRoster !== undefined ? deps.syncRoster() : null;
     const refreshRoster =
       deps.refreshRoster !== undefined ? deps.refreshRoster() : null;
+    const loadRoster =
+      deps.loadRoster !== undefined ? deps.loadRoster() : null;
     const listStudents =
       deps.listStudents !== undefined ? deps.listStudents() : null;
     const getAccommodation =
@@ -1016,6 +1022,7 @@ export const makeActiveTeacherSurface =
       activateClass,
       syncRoster,
       refreshRoster,
+      loadRoster,
       listStudents,
       getAccommodation,
       setAccommodation,

@@ -1999,3 +1999,163 @@ describe("29G.5K-3: automatic class-open roster freshness", () => {
     ).toBeNull();
   });
 });
+
+describe("Sprint 29G.5P: teacher Students tab roster", () => {
+  const ROSTER_CLASS_ID = "roster-class-1";
+  const rosterActiveSummary: ClassSummary = Object.freeze({
+    id: ROSTER_CLASS_ID,
+    title: "Roster Science",
+    status: "active" as const,
+    grade: "6",
+    block: "E",
+    isLmsLinked: true,
+  });
+
+  const openStudentsTab = async (
+    mount: HTMLElement,
+    extra: Partial<Parameters<typeof renderClassesSurface>[2]>,
+  ): Promise<void> => {
+    renderClassesSurface(mount, teacher, {
+      listClasses: async (): Promise<ReadonlyArray<ClassSummary>> => [
+        rosterActiveSummary,
+      ],
+      ...extra,
+    });
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        `[data-testid=class-card-${ROSTER_CLASS_ID}]`,
+      )!
+      .click();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")!
+      .click();
+    await flush();
+  };
+
+  test("renders the active enrolled students for the opened class", async () => {
+    const mount = mkMount();
+    const loadRoster = jest.fn(async (input: { classId: string }) => ({
+      classId: input.classId,
+      students: [
+        { studentId: "s-alpha", studentDisplayName: "Alpha Student" },
+        { studentId: "s-bravo", studentDisplayName: "Bravo Student" },
+      ],
+    }));
+    await openStudentsTab(mount, { loadRoster });
+    await flush();
+
+    // Correct class population is requested.
+    expect(loadRoster).toHaveBeenCalledTimes(1);
+    expect(loadRoster).toHaveBeenCalledWith({ classId: ROSTER_CLASS_ID });
+
+    const list = mount.querySelector("[data-testid=roster-list]");
+    expect(list).not.toBeNull();
+    const names = Array.from(
+      mount.querySelectorAll<HTMLElement>(
+        "[data-testid=roster-student] .shell-roster-student-name",
+      ),
+    ).map((n) => n.textContent);
+    expect(names).toEqual(["Alpha Student", "Bravo Student"]);
+    // Not the empty state.
+    expect(mount.querySelector("[data-testid=roster-empty]")).toBeNull();
+    expect(mount.querySelector("[data-testid=roster-error]")).toBeNull();
+  });
+
+  test("zero active enrollments shows the genuine empty state", async () => {
+    const mount = mkMount();
+    const loadRoster = jest.fn(async (input: { classId: string }) => ({
+      classId: input.classId,
+      students: [],
+    }));
+    await openStudentsTab(mount, { loadRoster });
+    await flush();
+
+    const empty = mount.querySelector("[data-testid=roster-empty]");
+    expect(empty).not.toBeNull();
+    expect(empty!.textContent).toBe("No students yet.");
+    expect(mount.querySelector("[data-testid=roster-list]")).toBeNull();
+    expect(mount.querySelector("[data-testid=roster-error]")).toBeNull();
+  });
+
+  test("a load failure shows an error state, never a false 'No students yet.'", async () => {
+    const mount = mkMount();
+    const loadRoster = jest.fn(async () => {
+      throw new Error("callable failed");
+    });
+    await openStudentsTab(mount, { loadRoster });
+    await flush();
+
+    const error = mount.querySelector("[data-testid=roster-error]");
+    expect(error).not.toBeNull();
+    expect(error!.textContent).toMatch(/couldn't load your students/i);
+    // The empty state must NOT appear on failure.
+    expect(mount.querySelector("[data-testid=roster-empty]")).toBeNull();
+    expect(mount.querySelector("[data-testid=roster-list]")).toBeNull();
+  });
+
+  test("shows a loading state until the roster resolves", async () => {
+    const mount = mkMount();
+    let resolve!: (v: {
+      classId: string;
+      students: ReadonlyArray<{ studentId: string; studentDisplayName: string }>;
+    }) => void;
+    const loadRoster = jest.fn(
+      () =>
+        new Promise<{
+          classId: string;
+          students: ReadonlyArray<{
+            studentId: string;
+            studentDisplayName: string;
+          }>;
+        }>((r) => {
+          resolve = r;
+        }),
+    );
+    await openStudentsTab(mount, { loadRoster });
+    // Still pending: loading placeholder is visible, no empty/list/error yet.
+    expect(mount.querySelector("[data-testid=roster-loading]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=roster-empty]")).toBeNull();
+
+    resolve({
+      classId: ROSTER_CLASS_ID,
+      students: [{ studentId: "s1", studentDisplayName: "Only Student" }],
+    });
+    await flush();
+    expect(mount.querySelector("[data-testid=roster-loading]")).toBeNull();
+    expect(mount.querySelector("[data-testid=roster-list]")).not.toBeNull();
+  });
+
+  test("renders only studentId + display name; extra response fields are not surfaced", async () => {
+    const mount = mkMount();
+    const loadRoster = jest.fn(async (input: { classId: string }) => ({
+      classId: input.classId,
+      students: [
+        {
+          studentId: "s1",
+          studentDisplayName: "Real Name",
+          // Adversarial extra fields that must never render.
+          email: "leak@example.com",
+          identityHash: "a".repeat(64),
+        } as { studentId: string; studentDisplayName: string },
+      ],
+    }));
+    await openStudentsTab(mount, { loadRoster });
+    await flush();
+
+    const html = mount.innerHTML;
+    expect(html).toContain("Real Name");
+    expect(html).not.toContain("leak@example.com");
+    expect(html).not.toContain("a".repeat(64));
+  });
+
+  test("without a roster reader wired, the empty state is shown (harness fallback)", async () => {
+    const mount = mkMount();
+    await openStudentsTab(mount, {});
+    await flush();
+    expect(mount.querySelector("[data-testid=roster-empty]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=roster-loading]")).toBeNull();
+  });
+});
