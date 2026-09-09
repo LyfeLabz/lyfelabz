@@ -123,6 +123,14 @@ describe("Sprint 29E.2 public legal surfaces", () => {
 
   // ── Firebase Hosting configuration ─────────────────────────────────────────
 
+  test("Firebase Hosting has a predeploy hook that builds the App bundle", () => {
+    const config = JSON.parse(read("firebase.json")) as {
+      hosting?: { predeploy?: string[] };
+    };
+    const predeploy = config.hosting?.predeploy ?? [];
+    expect(predeploy.some((cmd) => cmd.includes("npm --prefix app run build"))).toBe(true);
+  });
+
   test("Firebase Hosting redirects /privacy to the canonical apex URL (301)", () => {
     const config = JSON.parse(read("firebase.json")) as {
       hosting?: { redirects?: Array<{ source: string; destination: string; type: number }> };
