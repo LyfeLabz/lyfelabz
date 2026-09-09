@@ -13,12 +13,13 @@
  *      launch parameters handed off by the launcher; nothing in the
  *      lesson body participates.
  *
- *   2. In assignment mode, lazy-loads the certified active runtime
- *      bundle (assets/lyfelabz-assessment-runtime-active.js). The
- *      bundle carries Firebase Auth, Firebase Functions, and the
- *      orchestrator that drives the certified session lifecycle
- *      (assessmentSessionsBegin, assessmentSessionsAutosave,
- *      assessmentAttemptsFinalize, assessmentAttemptGet).
+ *   2. In assignment mode, loads the shared host-aware Firebase client
+ *      configuration, then lazy-loads the certified active runtime bundle
+ *      (assets/lyfelabz-assessment-runtime-active.js). The bundle carries
+ *      Firebase Auth, Firebase Functions, and the orchestrator that drives
+ *      the certified session lifecycle (assessmentSessionsBegin,
+ *      assessmentSessionsAutosave, assessmentAttemptsFinalize,
+ *      assessmentAttemptGet).
  *
  * In standalone mode the shim is fully inert: no dynamic script
  * injection, no Firebase initialization, no network traffic beyond the
@@ -38,17 +39,6 @@
 (function () {
   'use strict';
 
-  if (typeof window !== 'undefined' && !window.__lyfelabzFirebaseConfig) {
-    window.__lyfelabzFirebaseConfig = {
-      apiKey: 'AIzaSyDIQrzMKo3CfSzTgVON3PtvxW2jFrDECzc',
-      authDomain: 'lyfelabz-prod.firebaseapp.com',
-      projectId: 'lyfelabz-prod',
-      appId: '1:182791689935:web:047a9e33cc45b9567809ba',
-      messagingSenderId: '182791689935',
-      storageBucket: 'lyfelabz-prod.firebasestorage.app'
-    };
-  }
-
   // The shim advertises a distinct version identifier from the active
   // bundle. The active bundle's bootstrap gate replaces any runtime whose
   // version does not match its own compiled VERSION; if the shim shared
@@ -61,6 +51,7 @@
   var NAMESPACE = 'lyfelabz';
   var RUNTIME_KEY = 'assessmentRuntime';
   var LESSON_QUIZ_KEY = 'lessonQuiz';
+  var FIREBASE_CONFIG = '/assets/lyfelabz-firebase-config.js';
   var ACTIVE_BUNDLE = '/assets/lyfelabz-assessment-runtime-active.js';
   var OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 
@@ -199,13 +190,53 @@
   try {
     var doc = window.document;
     if (!doc || !doc.createElement) return;
-    var script = doc.createElement('script');
-    script.src = ACTIVE_BUNDLE;
-    script.defer = true;
-    script.async = false;
-    script.setAttribute('data-lyfelabz-runtime', 'active');
     var parent = doc.head || doc.body || doc.documentElement;
-    if (parent && parent.appendChild) parent.appendChild(script);
+    if (!parent || !parent.appendChild) return;
+
+    function loadActiveBundle() {
+      var script = doc.createElement('script');
+      script.src = ACTIVE_BUNDLE;
+      script.defer = true;
+      script.async = false;
+      script.setAttribute('data-lyfelabz-runtime', 'active');
+      parent.appendChild(script);
+    }
+
+    function hasUsableFirebaseConfig() {
+      try {
+        var config = window.__lyfelabzFirebaseConfig;
+        return !!config &&
+          typeof config === 'object' &&
+          typeof config.apiKey === 'string' && config.apiKey.length > 0 &&
+          typeof config.authDomain === 'string' && config.authDomain.length > 0 &&
+          typeof config.projectId === 'string' && config.projectId.length > 0;
+      } catch (_err) {
+        return false;
+      }
+    }
+
+    function loadActiveBundleIfConfigured() {
+      if (hasUsableFirebaseConfig()) loadActiveBundle();
+    }
+
+    // The authenticated shell and lesson runtime share one authoritative
+    // environment selector. Lesson pages are fresh documents, so when the
+    // shell's injected global is absent or unusable, load that same selector
+    // and wait for it before allowing the active bundle to initialize Firebase.
+    // The load event is not sufficient by itself: if selector execution failed
+    // without installing a usable configuration, leave the stub in place and
+    // fail closed. An already installed valid configuration is preserved.
+    if (!hasUsableFirebaseConfig()) {
+      var configScript = doc.createElement('script');
+      configScript.src = FIREBASE_CONFIG;
+      configScript.async = false;
+      configScript.onload = loadActiveBundleIfConfigured;
+      configScript.setAttribute('data-lyfelabz-runtime', 'firebase-config');
+      parent.appendChild(configScript);
+      return;
+    }
+
+    loadActiveBundle();
   } catch (_err) {
     // A DOM failure here leaves the inert stub in place; the lesson
     // page still functions as a standalone instructional resource.
