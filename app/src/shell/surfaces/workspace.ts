@@ -4,6 +4,7 @@ import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
 import type { LoadClassRosterAccessor } from "../../classes/classRoster";
+import type { AttemptsListForClassCallable } from "../../assignments/detail/attempts-wire";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
   AssignmentsCallables,
@@ -114,6 +115,11 @@ export type WorkspaceDeps = {
   // Forwarded into the Classes surface so the Students tab lists real active
   // enrollments. Null in harnesses that do not exercise the roster.
   readonly loadRoster?: LoadClassRosterAccessor | null;
+  // Student Detail V1: lazy accessor for assessmentAttemptsListForClass.
+  // Follows the LoadClassRosterAccessor pattern to avoid null-snapshot on
+  // router assembly before Functions init. Null in harnesses that do not
+  // exercise Student Detail.
+  readonly loadAttempts?: (() => AttemptsListForClassCallable | null) | null;
   // Slice 7: Student Services accommodation seams. Optional; absent until
   // G19 production gate is satisfied (Slices 2-6 production-verified).
   readonly listStudents?: AccommodationsListStudentsCallable | null;
@@ -197,6 +203,7 @@ export const WORKSPACE_SURFACES: Readonly<
         syncRoster: deps.syncRoster ?? null,
         refreshRoster: deps.refreshRoster ?? null,
         loadRoster: deps.loadRoster ?? null,
+        loadAttempts: deps.loadAttempts ?? null,
         // Sprint 28.6C: class-scoped Assignments section reuse.
         assignmentDetail: deps.assignmentDetail ?? null,
         assignmentSummary: deps.assignmentSummary ?? null,

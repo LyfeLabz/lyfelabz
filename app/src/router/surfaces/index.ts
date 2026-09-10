@@ -4,6 +4,7 @@ import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
 import type { LoadClassRosterAccessor } from "../../classes/classRoster";
+import type { AttemptsListForClassCallable } from "../../assignments/detail/attempts-wire";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
   AccommodationsListStudentsCallable,
@@ -199,6 +200,11 @@ export type SurfaceDeps = {
   // Sprint 29G.5P: getter for the teacher Students-tab roster reader
   // (`enrollmentsListForClass`). Same rebind semantics as refreshRoster.
   readonly loadRoster?: LoadClassRosterAccessor;
+  // Student Detail V1: getter for the assessmentAttemptsListForClass
+  // accessor. Same lazy-pass-through semantics as loadRoster - do NOT
+  // resolve the accessor here; pass it through so the Students surface
+  // resolves it lazily after Functions init.
+  readonly loadAttempts?: () => AttemptsListForClassCallable | null;
   // Slice 7: Student Services accommodation callable getters (G19-gated).
   readonly listStudents?: () => AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: () => AccommodationsGetCallable | null;
@@ -1006,6 +1012,11 @@ export const makeActiveTeacherSurface =
     // reached the Students surface permanently. The accessor is resolved lazily
     // when the Students tab renders (after init).
     const loadRoster: LoadClassRosterAccessor | null = deps.loadRoster ?? null;
+    // Student Detail V1: same lazy-accessor pattern as loadRoster. Do NOT call
+    // deps.loadAttempts() here; pass the accessor through so the Student Detail
+    // surface resolves it lazily after Functions init.
+    const loadAttempts: (() => AttemptsListForClassCallable | null) | null =
+      deps.loadAttempts ?? null;
     const listStudents =
       deps.listStudents !== undefined ? deps.listStudents() : null;
     const getAccommodation =
@@ -1027,6 +1038,7 @@ export const makeActiveTeacherSurface =
       syncRoster,
       refreshRoster,
       loadRoster,
+      loadAttempts,
       listStudents,
       getAccommodation,
       setAccommodation,

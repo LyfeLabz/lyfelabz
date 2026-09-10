@@ -44,6 +44,10 @@ import {
   isRenderableCard,
 } from "./shared/activeAssignments";
 import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
+import type {
+  AttemptsListForClassCallable,
+  CompletedAttemptSummary,
+} from "../../assignments/detail/attempts-wire";
 import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
@@ -202,6 +206,10 @@ export type ClassesSurfaceDeps = {
   readonly setClassManagementIntent?:
     | ((intent: ClassManagementIntent | null) => void)
     | null;
+  // Student Detail V1: lazy accessor for assessmentAttemptsListForClass.
+  // Follows the LoadClassRosterAccessor pattern (Sprint 29G.5P) to avoid
+  // null-snapshot on router assembly before Functions init.
+  readonly loadAttempts?: (() => AttemptsListForClassCallable | null) | null;
 };
 
 // Sprint 28.6H (Finding 2): the class-card status label map was removed with
@@ -243,6 +251,8 @@ type ClassesState =
       readonly selectedId: string;
       readonly tab: ClassWorkspaceTab;
       readonly setupForm: SetupFormState | null;
+      readonly selectedStudentId: string | null;
+      readonly selectedStudentDisplayName: string | null;
     };
 
 // Grade/block always begin empty; the teacher must choose explicitly for
@@ -281,6 +291,7 @@ export function renderClassesSurface(
   const syncRoster = deps.syncRoster ?? null;
   const refreshRoster = deps.refreshRoster ?? null;
   const loadRoster = deps.loadRoster ?? null;
+  const loadAttempts = deps.loadAttempts ?? null;
   const assignmentDetail = deps.assignmentDetail ?? null;
   const assignmentSummary = deps.assignmentSummary ?? null;
   const navigateToSurface = deps.navigateToSurface ?? null;
@@ -496,6 +507,12 @@ export function renderClassesSurface(
           activateClass !== null,
           assignmentsView,
           loadRoster,
+          s.selectedStudentId,
+          s.selectedStudentDisplayName,
+          onSelectStudent,
+          onBackFromStudent,
+          loadAttempts,
+          listAllAssignments,
         );
         return;
       }
@@ -522,6 +539,8 @@ export function renderClassesSurface(
       selectedId: classId,
       tab: isNeedsSetup ? "setup" : "assignments",
       setupForm: isNeedsSetup ? emptySetupForm() : null,
+      selectedStudentId: null,
+      selectedStudentDisplayName: null,
     };
     rerender();
     // Sprint 29G.5K-3: best-effort membership freshness on class open.
@@ -650,6 +669,8 @@ export function renderClassesSurface(
             selectedId: targetClassId,
             tab: "setup",
             setupForm: emptySetupForm(),
+            selectedStudentId: null,
+            selectedStudentDisplayName: null,
           };
           rerender();
         })
@@ -837,6 +858,36 @@ export function renderClassesSurface(
       selectedId: state.selectedId,
       tab,
       setupForm: tab === "setup" ? (state.setupForm ?? emptySetupForm()) : null,
+      selectedStudentId: null,
+      selectedStudentDisplayName: null,
+    };
+    rerender();
+  };
+
+  const onSelectStudent = (studentId: string, displayName: string): void => {
+    if (state.kind !== "workspace") return;
+    state = {
+      kind: "workspace",
+      classes: state.classes,
+      selectedId: state.selectedId,
+      tab: state.tab,
+      setupForm: state.setupForm,
+      selectedStudentId: studentId,
+      selectedStudentDisplayName: displayName,
+    };
+    rerender();
+  };
+
+  const onBackFromStudent = (): void => {
+    if (state.kind !== "workspace") return;
+    state = {
+      kind: "workspace",
+      classes: state.classes,
+      selectedId: state.selectedId,
+      tab: state.tab,
+      setupForm: state.setupForm,
+      selectedStudentId: null,
+      selectedStudentDisplayName: null,
     };
     rerender();
   };
@@ -863,6 +914,8 @@ export function renderClassesSurface(
       selectedId: state.selectedId,
       tab: state.tab,
       setupForm: Object.freeze({ ...state.setupForm, ...patch }),
+      selectedStudentId: state.selectedStudentId,
+      selectedStudentDisplayName: state.selectedStudentDisplayName,
     };
     // No rerender. Native select controls already reflect the change.
   };
@@ -898,6 +951,8 @@ export function renderClassesSurface(
           ...setupForm,
           error: "Choose a grade before you finish setup.",
         }),
+        selectedStudentId: null,
+        selectedStudentDisplayName: null,
       };
       rerender();
       return;
@@ -912,6 +967,8 @@ export function renderClassesSurface(
           ...setupForm,
           error: "Choose a class block before you finish setup.",
         }),
+        selectedStudentId: null,
+        selectedStudentDisplayName: null,
       };
       rerender();
       return;
@@ -926,6 +983,8 @@ export function renderClassesSurface(
         submitting: true,
         error: null,
       }),
+      selectedStudentId: null,
+      selectedStudentDisplayName: null,
     };
     rerender();
     const classId = current.selectedId;
@@ -958,6 +1017,8 @@ export function renderClassesSurface(
               selectedId: classId,
               tab: "assignments",
               setupForm: null,
+              selectedStudentId: null,
+              selectedStudentDisplayName: null,
             };
             // Sprint 24B Phase 2B.8. Automatic initial roster sync for
             // an LMS-linked class. Fires strictly AFTER activation
@@ -1010,6 +1071,8 @@ export function renderClassesSurface(
             submitting: false,
             error: message,
           }),
+          selectedStudentId: null,
+          selectedStudentDisplayName: null,
         };
         rerender();
       });
@@ -1046,6 +1109,8 @@ export function renderClassesSurface(
                 ? restore.tab
                 : "assignments",
             setupForm: null,
+            selectedStudentId: null,
+            selectedStudentDisplayName: null,
           };
           rerender();
           return;
@@ -2105,6 +2170,12 @@ function renderClassWorkspaceState(
   canActivate: boolean,
   assignmentsView: ClassAssignmentsView,
   loadRoster: LoadClassRosterAccessor | null,
+  selectedStudentId: string | null,
+  selectedStudentDisplayName: string | null,
+  onSelectStudent: (studentId: string, displayName: string) => void,
+  onBackFromStudent: () => void,
+  loadAttempts: (() => AttemptsListForClassCallable | null) | null,
+  listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
 ): void {
   const workspace = doc.createElement("div");
   workspace.className = "shell-class-workspace";
@@ -2189,7 +2260,20 @@ function renderClassWorkspaceState(
   // sections are Assignments (the default) and Students; a stale `snapshot`
   // tab defensively renders Assignments rather than an empty surface.
   if (tab === "roster") {
-    renderRosterSurface(doc, surfaceMount, summary.id, loadRoster);
+    if (selectedStudentId !== null && selectedStudentDisplayName !== null) {
+      renderStudentDetailSurface(
+        doc,
+        surfaceMount,
+        summary.id,
+        selectedStudentId,
+        selectedStudentDisplayName,
+        onBackFromStudent,
+        loadAttempts,
+        listAssignments,
+      );
+    } else {
+      renderRosterSurface(doc, surfaceMount, summary.id, loadRoster, onSelectStudent);
+    }
   } else {
     renderClassAssignmentsSurface(doc, surfaceMount, summary, assignmentsView);
   }
@@ -2595,6 +2679,7 @@ function renderRosterSurface(
   mount: HTMLElement,
   classId: string,
   loadRoster: LoadClassRosterAccessor | null,
+  onSelectStudent: (studentId: string, displayName: string) => void,
 ): void {
   // Sprint 28.6H (Finding 3/5): section heading is "Students" (the class
   // identity is the workspace header).
@@ -2666,13 +2751,20 @@ function renderRosterSurface(
         list.setAttribute("data-testid", "roster-list");
         for (const student of result.students) {
           const item = doc.createElement("li");
-          item.className = "shell-roster-student";
-          item.setAttribute("data-testid", "roster-student");
-          item.setAttribute("data-student-id", student.studentId);
+          item.className = "shell-roster-item";
+          const btn = doc.createElement("button");
+          btn.type = "button";
+          btn.className = "shell-roster-student";
+          btn.setAttribute("data-testid", "roster-student");
+          btn.setAttribute("data-student-id", student.studentId);
           const name = doc.createElement("span");
           name.className = "shell-roster-student-name";
           name.textContent = student.studentDisplayName;
-          item.appendChild(name);
+          btn.appendChild(name);
+          btn.addEventListener("click", () => {
+            onSelectStudent(student.studentId, student.studentDisplayName);
+          });
+          item.appendChild(btn);
           list.appendChild(item);
         }
         body.appendChild(list);
@@ -2694,6 +2786,314 @@ function renderRosterSurface(
         body.appendChild(error);
       });
     });
+}
+
+// PDR-029a/b best-attempt selection for Student Detail V1.
+// Tie-breaking: highest percentage → highest attemptNumber → latest submittedAt
+// → ascending attemptId (final deterministic fallback).
+function selectBestAttempt(
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+): CompletedAttemptSummary | null {
+  if (attempts.length === 0) return null;
+  return [...attempts].reduce((best, attempt) => {
+    if (attempt.percentage > best.percentage) return attempt;
+    if (attempt.percentage < best.percentage) return best;
+    if (attempt.attemptNumber > best.attemptNumber) return attempt;
+    if (attempt.attemptNumber < best.attemptNumber) return best;
+    if (attempt.submittedAt > best.submittedAt) return attempt;
+    if (attempt.submittedAt < best.submittedAt) return best;
+    return attempt.attemptId < best.attemptId ? attempt : best;
+  });
+}
+
+// The canonical earliest attempt, per the same attemptNumber ordering the
+// backend uses to assign attemptNumber at finalize time (§ assessment
+// scoring contract: attemptNumber = priorCount + 1, assigned strictly in
+// submission order). Used for both "first score" and (unchanged) the
+// existing latest-date computation's sibling.
+function selectFirstAttempt(
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+): CompletedAttemptSummary | null {
+  if (attempts.length === 0) return null;
+  return [...attempts].reduce((first, attempt) =>
+    attempt.attemptNumber < first.attemptNumber ? attempt : first,
+  );
+}
+
+// The canonical most-recent attempt by submittedAt - the same ordering
+// already used for the existing "latest date" field. A deterministic
+// tie-break (attemptNumber, then attemptId) covers the structurally
+// impossible case of two attempts sharing a submittedAt millisecond.
+function selectLatestAttempt(
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+): CompletedAttemptSummary | null {
+  if (attempts.length === 0) return null;
+  return [...attempts].reduce((latest, attempt) => {
+    if (attempt.submittedAt > latest.submittedAt) return attempt;
+    if (attempt.submittedAt < latest.submittedAt) return latest;
+    if (attempt.attemptNumber > latest.attemptNumber) return attempt;
+    if (attempt.attemptNumber < latest.attemptNumber) return latest;
+    return attempt.attemptId > latest.attemptId ? attempt : latest;
+  });
+}
+
+// Percentage-point growth (never relative/percent-change) between the first
+// and latest canonical attempt, rounded the same way each score is rounded
+// for display so the printed delta always equals printedLatest - printedFirst.
+function formatGrowthPoints(firstPercentage: number, latestPercentage: number): string {
+  const delta = Math.round(latestPercentage) - Math.round(firstPercentage);
+  if (delta > 0) return `+${delta} pts`;
+  if (delta < 0) return `${delta} pts`;
+  return "0 pts";
+}
+
+type StudentDetailMetric = {
+  readonly key: string;
+  readonly label: string;
+  readonly value: string;
+  readonly testid: string;
+};
+
+// The six Student Detail assignment-summary metrics, in the fixed display
+// order. Mirrors the `buildMetrics` shape in
+// app/src/assignments/summary/card.ts (the whole-class assignment summary
+// this presentation is modeled on) purely for label/value consistency; the
+// values themselves are unrelated (per-student, not aggregate) and are
+// computed by the same first/latest/best/growth derivation this module
+// already owns.
+function buildStudentDetailMetrics(
+  best: CompletedAttemptSummary | null,
+  first: CompletedAttemptSummary | null,
+  latest: CompletedAttemptSummary | null,
+  attemptCount: number,
+): ReadonlyArray<StudentDetailMetric> {
+  return Object.freeze([
+    Object.freeze({
+      key: "best-score",
+      label: "Best score",
+      value: best !== null ? `${Math.round(best.percentage)}%` : "—",
+      testid: "student-detail-best-score",
+    }),
+    Object.freeze({
+      key: "first-score",
+      label: "First score",
+      value: first !== null ? `${Math.round(first.percentage)}%` : "—",
+      testid: "student-detail-first-score",
+    }),
+    Object.freeze({
+      key: "latest-score",
+      label: "Latest score",
+      value: latest !== null ? `${Math.round(latest.percentage)}%` : "—",
+      testid: "student-detail-latest-score",
+    }),
+    Object.freeze({
+      key: "growth",
+      label: "Growth",
+      value:
+        first !== null && latest !== null
+          ? formatGrowthPoints(first.percentage, latest.percentage)
+          : "—",
+      testid: "student-detail-growth",
+    }),
+    Object.freeze({
+      key: "attempts",
+      label: "Attempts",
+      value: String(attemptCount),
+      testid: "student-detail-attempt-count",
+    }),
+    Object.freeze({
+      key: "latest-date",
+      label: "Latest date",
+      value: latest !== null ? formatAttemptDate(latest.submittedAt) : "—",
+      testid: "student-detail-latest-date",
+    }),
+  ]);
+}
+
+function formatAttemptDate(ts: number): string {
+  const d = new Date(ts);
+  return [
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+    String(d.getFullYear()),
+  ].join("/");
+}
+
+function renderStudentDetailSurface(
+  doc: Document,
+  mount: HTMLElement,
+  classId: string,
+  studentId: string,
+  studentDisplayName: string,
+  onBack: () => void,
+  loadAttempts: (() => AttemptsListForClassCallable | null) | null,
+  listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
+): void {
+  const detail = doc.createElement("div");
+  detail.className = "shell-student-detail";
+  detail.setAttribute("data-testid", "student-detail");
+  mount.appendChild(detail);
+
+  const backBtn = doc.createElement("button");
+  backBtn.type = "button";
+  backBtn.className = "shell-student-detail-back";
+  backBtn.setAttribute("data-testid", "student-detail-back");
+  backBtn.textContent = "Back to Students";
+  backBtn.addEventListener("click", () => { onBack(); });
+  detail.appendChild(backBtn);
+
+  const heading = doc.createElement("h2");
+  heading.id = "surface-headline";
+  heading.className = "shell-welcome shell-student-detail-name";
+  heading.tabIndex = -1;
+  heading.setAttribute("data-testid", "student-detail-name");
+  heading.textContent = studentDisplayName;
+  detail.appendChild(heading);
+  try { heading.focus({ preventScroll: true }); } catch { /* ignored */ }
+
+  const body = doc.createElement("div");
+  body.className = "shell-student-detail-body";
+  body.setAttribute("data-testid", "student-detail-body");
+  detail.appendChild(body);
+
+  // No attempts accessor wired (harness path): show the empty state.
+  if (loadAttempts === null) {
+    appendStudentDetailEmpty(doc, body);
+    return;
+  }
+
+  // Resolve the accessor lazily to avoid null-snapshot during assembly.
+  const callable = loadAttempts();
+
+  const loading = doc.createElement("p");
+  loading.className = "shell-student-detail-loading";
+  loading.setAttribute("data-testid", "student-detail-loading");
+  loading.setAttribute("role", "status");
+  loading.textContent = "Loading student work…";
+  body.appendChild(loading);
+
+  // Accessor not ready yet (init in progress): keep the loading state.
+  if (callable === null) {
+    return;
+  }
+
+  const applyIfLive = (render: () => void): void => {
+    if (!body.isConnected) return;
+    body.replaceChildren();
+    render();
+  };
+
+  void callable({ classId })
+    .then((result) => {
+      applyIfLive(() => {
+        const studentAttempts = result.attempts.filter(
+          (a) => a.studentId === studentId,
+        );
+        if (studentAttempts.length === 0) {
+          appendStudentDetailEmpty(doc, body);
+          return;
+        }
+
+        // Group by assignmentId.
+        const byAssignment = new Map<string, CompletedAttemptSummary[]>();
+        for (const attempt of studentAttempts) {
+          const group = byAssignment.get(attempt.assignmentId);
+          if (group !== undefined) {
+            group.push(attempt);
+          } else {
+            byAssignment.set(attempt.assignmentId, [attempt]);
+          }
+        }
+
+        const registry = listAssignments();
+        const list = doc.createElement("ul");
+        list.className = "shell-student-detail-assignments";
+        list.setAttribute("data-testid", "student-detail-assignments");
+
+        for (const [assignmentId, attempts] of byAssignment) {
+          const title =
+            registry.find((a) => a.assignmentId === assignmentId)?.title ??
+            "Assignment";
+          const best = selectBestAttempt(attempts);
+          const first = selectFirstAttempt(attempts);
+          const latest = selectLatestAttempt(attempts);
+
+          const li = doc.createElement("li");
+          li.className = "shell-student-detail-assignment";
+          li.setAttribute("data-testid", "student-detail-assignment");
+          li.setAttribute("data-assignment-id", assignmentId);
+
+          const titleEl = doc.createElement("div");
+          titleEl.className = "shell-student-detail-assignment-title";
+          titleEl.setAttribute("data-testid", "student-detail-assignment-title");
+          titleEl.textContent = title;
+          li.appendChild(titleEl);
+
+          // Individual compact metric boxes, mirroring the established
+          // whole-class `renderAssignmentSummaryCard` metric-grid pattern
+          // (app/src/assignments/summary/card.ts: <dl> of label/value
+          // cells) rather than a single inline text row.
+          const metricsGrid = doc.createElement("dl");
+          metricsGrid.className = "shell-student-detail-metric-grid";
+          metricsGrid.setAttribute("data-testid", "student-detail-metrics");
+          li.appendChild(metricsGrid);
+
+          for (const metric of buildStudentDetailMetrics(
+            best,
+            first,
+            latest,
+            attempts.length,
+          )) {
+            const cell = doc.createElement("div");
+            cell.className = "shell-student-detail-metric";
+            cell.setAttribute(
+              "data-testid",
+              `student-detail-metric-${metric.key}`,
+            );
+
+            const term = doc.createElement("dt");
+            term.className = "shell-student-detail-metric-label";
+            term.textContent = metric.label;
+            cell.appendChild(term);
+
+            const value = doc.createElement("dd");
+            value.className = "shell-student-detail-metric-value";
+            value.setAttribute("data-testid", metric.testid);
+            value.textContent = metric.value;
+            cell.appendChild(value);
+
+            metricsGrid.appendChild(cell);
+          }
+
+          list.appendChild(li);
+        }
+
+        body.appendChild(list);
+      });
+    })
+    .catch(() => {
+      applyIfLive(() => {
+        const error = doc.createElement("div");
+        error.className = "shell-student-detail-error";
+        error.setAttribute("data-testid", "student-detail-error");
+        error.setAttribute("role", "status");
+        const msg = doc.createElement("p");
+        msg.textContent = "We couldn't load student work. Please try again.";
+        error.appendChild(msg);
+        body.appendChild(error);
+      });
+    });
+}
+
+function appendStudentDetailEmpty(doc: Document, container: HTMLElement): void {
+  const empty = doc.createElement("div");
+  empty.className = "shell-student-detail-empty";
+  empty.setAttribute("data-testid", "student-detail-empty");
+  empty.setAttribute("role", "status");
+  const msg = doc.createElement("p");
+  msg.textContent = "No completed work yet.";
+  empty.appendChild(msg);
+  container.appendChild(empty);
 }
 
 function appendHeadline(

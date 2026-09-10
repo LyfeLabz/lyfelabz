@@ -971,6 +971,7 @@ async function run(): Promise<void> {
     syncRoster: () => syncRoster,
     refreshRoster: () => integrations?.callables.refreshRoster ?? null,
     loadRoster: () => loadClassRoster,
+    loadAttempts: () => attemptsListForClass,
     // Slice 7 / G19: dark until Slices 2-6 are production-verified.
     listStudents: () => (G19_GATE_OPEN ? accommodationsListStudents : null),
     getAccommodation: () => (G19_GATE_OPEN ? accommodationsGet : null),

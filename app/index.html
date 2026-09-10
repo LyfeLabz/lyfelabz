@@ -3368,6 +3368,150 @@
     margin: 0.5rem 0 0 0;
     max-width: 42rem;
   }
+
+  /* Student Detail V1 UX polish: the roster list and Back control reuse the
+     established shell-ss-* (Student Services) compact-row and back-link
+     language verbatim, rather than inventing a new visual style. Prior to
+     this pass, `.shell-roster-list`/`.shell-roster-student`/
+     `.shell-student-detail-back` carried no rules at all, so the browser's
+     UA defaults (bulleted <ul>, oversized bordered <button>) were showing
+     through. */
+  .shell-roster-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .shell-roster-item {
+    border-top: 1px solid var(--tw-hairline-soft);
+  }
+  .shell-roster-item:last-child {
+    border-bottom: 1px solid var(--tw-hairline-soft);
+  }
+  .shell-roster-student {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 0.1rem;
+    background: transparent;
+    border: none;
+    margin: 0;
+    text-align: left;
+    font: inherit;
+    font-weight: 600;
+    color: var(--tw-ink);
+    cursor: pointer;
+  }
+  .shell-roster-student:hover,
+  .shell-roster-student:focus-visible { text-decoration: underline; }
+  .shell-roster-student:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+    border-radius: 3px;
+  }
+  .shell-roster-loading,
+  .shell-roster-empty-message,
+  .shell-roster-error-message {
+    color: var(--tw-ink-muted);
+    margin: 0.5rem 0 0 0;
+  }
+
+  /* Student Detail V1 UX polish: "Back to Students" is a compact,
+     secondary, link-style control - matches shell-ss-back-btn - so it does
+     not visually compete with the student name heading or the class tabs. */
+  .shell-student-detail-back {
+    background: transparent;
+    border: none;
+    color: var(--tw-nav-edge);
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.2rem 0;
+    margin: 0 0 0.5rem 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+  }
+  .shell-student-detail-back:hover,
+  .shell-student-detail-back:focus-visible { text-decoration: underline; }
+  .shell-student-detail-back:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+    border-radius: 3px;
+  }
+  .shell-student-detail-name { margin: 0 0 0.5rem 0; }
+  .shell-student-detail-body { margin: 0; }
+  .shell-student-detail-loading,
+  .shell-student-detail-empty p,
+  .shell-student-detail-error p {
+    color: var(--tw-ink-muted);
+    margin: 0;
+  }
+
+  /* Student Detail V1 metric refinement: per-assignment instructional
+     summary. Compact card + flex-wrap metric row, matching the existing
+     shell-snapshot-group / shell-snapshot-context card-and-stat-row
+     language rather than a new visual system. */
+  .shell-student-detail-assignments {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .shell-student-detail-assignment {
+    padding: 0.7rem 0.85rem;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card, 8px);
+  }
+  .shell-student-detail-assignment-title {
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0 0 0.35rem 0;
+  }
+  /* Student Detail metric boxes: a narrow mirror of the whole-class
+     `.shell-assignment-summary-grid` / `-metric` / `-metric-label` /
+     `-metric-value` pattern (app/src/assignments/summary/card.ts), reusing
+     the same tokens (surface-alt, hairline, radius-control) and typography
+     hierarchy so per-student and whole-class reporting read as the same
+     product. Not shared classes directly: the two summaries render
+     different (per-student vs aggregate) data in different DOM contexts,
+     so a narrowly-scoped mirror avoids coupling them to one shared rule. */
+  .shell-student-detail-metric-grid {
+    display: grid;
+    /* auto-fit (not auto-fill): empty tracks beyond the six real metrics
+       collapse to zero width instead of reserving blank column space, so
+       the six 1fr tracks expand to fill the full card width on desktop.
+       Still wraps to fewer columns per row as available width shrinks. */
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.6rem;
+    margin: 0;
+  }
+  .shell-student-detail-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.55rem 0.7rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-student-detail-metric-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tw-ink-muted);
+    margin: 0;
+  }
+  .shell-student-detail-metric-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--tw-ink);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
   .shell-snapshot-region { margin: 0.5rem 0 0 0; }
   .shell-snapshot-empty {
     color: var(--tw-ink-muted);
