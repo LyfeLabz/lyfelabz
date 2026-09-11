@@ -187,6 +187,7 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
 - **Teacher Platform v1 UX is FROZEN as of Sprint 28.5 (2026-08-20).**
 - Recent certified workstreams (by commit): Sprint 25 (LMS assignment publication), Sprint 26 (LMS UX hardening), Sprint 27 (student classroom lifecycle + deep links), Sprint 28 (teacher UX + v2 curriculum hardening, including the Phase 5A v2 migration and v2 results hardening), Sprint 28.5 (student + teacher workspace polish + cross-platform certification).
 - **Next:** Sprint 29 (not yet defined in this document).
+- **Persistent student differentiation:** Slices 1-6 implemented and staging-certified; Slice 7 teacher activation UI implemented but held dark (`G19_GATE_OPEN = false` in `app/src/index.ts`); the production G19 gate is not yet satisfied and differentiated delivery is disabled in production. See the differentiation routing row in §13.
 - **Production certification:** the platform is certified through the Sprint 28.5 cross-platform certification. LMS publication has been exercised against **real** Google Classroom coursework (there is no runtime test-double seam, so browser certification of the LMS path hits real Google — plan LMS cert work accordingly).
 - **Test baselines:** Functions 91 suites / 1708 tests pass; App and Rules suites certified per their sprint reports.
 
@@ -209,6 +210,7 @@ Read this document first, then route to the single strongest canonical source fo
 | Student deep links, assignment publication, resolver, publication callables | `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`; `PDR_030_LMS_ASSIGNMENT_PUBLICATION.md` |
 | Assessment sessions/attempts, ownership, answer-key custody, callables | `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`; `ASSESSMENT_PIPELINE_SPECIFICATION.md` |
 | Assessment item/answer-key/response shapes, scoring | `ASSESSMENT_SCORING_CONTRACT.md` |
+| Persistent student differentiation (reading accessibility, presentation variants, launch grants, delivery outcome) | `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (+ `DIFFERENTIATION_CURRENT_STATE_SURFACE_MAP.md`, `DIFFERENTIATION_F1_CODE_VERIFICATION.md`, `DIFFERENTIATION_STAGING_CERTIFICATION_RUNBOOK.md`, `DIFFERENTIATION_PRODUCTION_CERTIFICATION_RUNBOOK.md`). Status: Slices 1-6 implemented and staging-certified; Slice 7 (teacher activation UI) implemented but **dark** (`G19_GATE_OPEN = false`); production G19 gate **not yet satisfied**; differentiated delivery disabled in production. |
 | District security boundary, cross-district enforcement | `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` |
 | Cloud Function authority boundaries | `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` |
 | Assign workflow / Assignment Dialog | `ASSIGN_EXPERIENCE.md` |
