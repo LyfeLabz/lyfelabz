@@ -13,6 +13,7 @@
     "public": ".",
     "ignore": [
       "firebase.json",
+      "firebase.marketing.json",
       ".firebaserc",
       "**/.*",
       "**/node_modules/**",
@@ -21,6 +22,8 @@
       "blog/**",
       "lesson-sources/**",
       "mission-control/**",
+      "scripts/marketing-hosting/**",
+      "dist/marketing/**",
       "wonderbox/**",
       "app/lessons/variants/manifest.json",
       "**/*.md",

@@ -3,6 +3,14 @@
     "default": "lyfelabz-prod",
     "staging": "lyfelabz-staging"
   },
-  "targets": {},
+  "targets": {
+    "lyfelabz-prod": {
+      "hosting": {
+        "marketing": [
+          "lyfelabz-marketing"
+        ]
+      }
+    }
+  },
   "etags": {}
 }

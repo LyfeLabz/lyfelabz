@@ -1789,7 +1789,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
   <p style="margin-top:1rem;font-size:0.72rem;color:rgba(180,200,220,0.35);letter-spacing:0.05em;">© 2026 LyfeLabz · Educational Use</p>
 
-  <!-- Last updated badge -->
+  <!-- Update cadence -->
   <div id="last-updated-bar" style="
     margin-top: 1.2rem;
     font-size: 0.72rem;
@@ -1802,25 +1802,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     gap: 0.45rem;
   ">
     <span style="opacity:0.5;">⟳</span>
-    <span id="last-updated-text">Checking for updates…</span>
+    <span id="last-updated-text">New content is added throughout the year</span>
   </div>
-  <script>
-    fetch('https://api.github.com/repos/lyfelabz/lyfelabz/commits?per_page=1')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        var el = document.getElementById('last-updated-text');
-        if(!el || !data[0]) return;
-        var raw = data[0].commit.author.date;
-        var d   = new Date(raw);
-        var opts = { year:'numeric', month:'long', day:'numeric',
-                     hour:'2-digit', minute:'2-digit', timeZoneName:'short' };
-        el.textContent = 'Site last updated · ' + d.toLocaleDateString('en-US', opts);
-      })
-      .catch(function(){
-        var el = document.getElementById('last-updated-text');
-        if(el) el.textContent = 'Site last updated · unavailable';
-      });
-  </script>
 </footer>
 
 <!-- ===== FILTER LOGIC ===== -->

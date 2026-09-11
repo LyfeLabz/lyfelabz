@@ -1,0 +1,32 @@
+{
+  "hosting": {
+    "target": "marketing",
+    "public": "dist/marketing",
+    "predeploy": [
+      "node scripts/marketing-hosting/build.cjs"
+    ],
+    "ignore": [],
+    "redirects": [
+      {
+        "source": "/app",
+        "destination": "https://app.lyfelabz.com/app/",
+        "type": 301
+      },
+      {
+        "source": "/app/",
+        "destination": "https://app.lyfelabz.com/app/",
+        "type": 301
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/privacy",
+        "destination": "/privacy.html"
+      },
+      {
+        "source": "/terms",
+        "destination": "/terms.html"
+      }
+    ]
+  }
+}
