@@ -48,16 +48,19 @@ const ruleBody = (css: string, selector: string): string | null => {
 };
 
 describe("B6 - /app/teacher served document is the file we assert on", () => {
-  test("hosting serves root index.html and rewrites /app/** to /app/index.html", () => {
+  test("curated hosting includes app/index.html and rewrites /app/teacher to it", () => {
     const cfg = JSON.parse(fs.readFileSync(FIREBASE_JSON, "utf8"));
-    // public "." means the repo root is the web root, so /app/index.html is
-    // the on-disk app/index.html we read above.
-    expect(cfg.hosting.public).toBe(".");
+    expect(cfg.hosting.public).toBe("dist/app-hosting");
     const rewrite = cfg.hosting.rewrites.find(
-      (r: { source: string }) => r.source === "/app/**",
+      (r: { source: string }) => r.source === "/app/teacher",
     );
     expect(rewrite).toBeDefined();
     expect(rewrite.destination).toBe("/app/index.html");
+    expect(
+      cfg.hosting.rewrites.some(
+        (r: { source: string }) => r.source === "/app/**",
+      ),
+    ).toBe(false);
   });
 });
 

@@ -24,7 +24,7 @@
  *
  * HOW IT MODELS HOSTING
  * ---------------------
- * `firebase-tools` enumerates the deployable file set with
+ * For the legacy repository-root layout, `firebase-tools` enumerates the deployable file set with
  * `glob.sync("**\/*", { cwd, dot:true, follow:true, ignore, nodir:true,
  * posix:true })` (firebase-tools `listFiles`), where `ignore` is a small set
  * of built-in defaults concatenated with `hosting.ignore` from
@@ -33,7 +33,9 @@
  * `glob` uses), so a path is "would-be-served" iff `glob` would NOT ignore
  * it. We deliberately do not touch the filesystem or the network: the
  * question "is this relative path excluded by these patterns?" is a pure
- * function of the path and the ignore list.
+ * function of the path and the ignore list. The curated `dist/app-hosting`
+ * layout makes its explicit artifact builder the primary boundary; these
+ * ignore assertions remain defense in depth for the private manifest.
  */
 
 "use strict";
@@ -95,12 +97,13 @@ function readHostingIgnore(repoRoot = paths.REPO_ROOT) {
   if (!hosting || typeof hosting !== "object") {
     fail("firebase.json has no hosting configuration");
   }
-  // A missing `public` other than the repo root would change what these
-  // relative paths mean; the LyfeLabz site serves the repo root (".").
-  if (hosting.public !== ".") {
+  // Support both the historical repository-root layout and the curated
+  // Phase 7B artifact. In the curated layout, the app-hosting builder and
+  // its tests prove retained HTML inclusion; this verifier preserves the
+  // exact private-manifest exclusion as an independent defense-in-depth gate.
+  if (hosting.public !== "." && hosting.public !== "dist/app-hosting") {
     fail(
-      `hosting.public is ${JSON.stringify(hosting.public)}; this verifier assumes the ` +
-        'repo-root ("." ) hosting layout that maps app/lessons/variants/** to /app/lessons/variants/**',
+      `hosting.public is ${JSON.stringify(hosting.public)}; expected "." or "dist/app-hosting"`,
     );
   }
   const ignore = Array.isArray(hosting.ignore) ? hosting.ignore : [];

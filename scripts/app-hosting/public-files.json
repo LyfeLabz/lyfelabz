@@ -1,0 +1,229 @@
+{
+  "composedManifests": [
+    "scripts/marketing-hosting/public-files.json"
+  ],
+  "files": [
+    "app/dist/bundle.js",
+    "app/index.html",
+    "app/lessons/lesson_biological-evolution.html",
+    "app/lessons/lesson_body-systems.html",
+    "app/lessons/lesson_carbon-cycle.html",
+    "app/lessons/lesson_cell-types.html",
+    "app/lessons/lesson_chemical-reactions.html",
+    "app/lessons/lesson_choosing-materials.html",
+    "app/lessons/lesson_communication-systems.html",
+    "app/lessons/lesson_conducting-experiments.html",
+    "app/lessons/lesson_continental-drift.html",
+    "app/lessons/lesson_design-tradeoffs.html",
+    "app/lessons/lesson_designing-to-scale.html",
+    "app/lessons/lesson_digital-signals.html",
+    "app/lessons/lesson_earthquakes.html",
+    "app/lessons/lesson_earths-layers.html",
+    "app/lessons/lesson_earths-place-in-the-universe.html",
+    "app/lessons/lesson_eclipses.html",
+    "app/lessons/lesson_ecosystem-stability.html",
+    "app/lessons/lesson_energy-flow.html",
+    "app/lessons/lesson_energy-transfer.html",
+    "app/lessons/lesson_engineering-design.html",
+    "app/lessons/lesson_engineering-systems.html",
+    "app/lessons/lesson_forms-of-energy.html",
+    "app/lessons/lesson_gravity.html",
+    "app/lessons/lesson_heat-transfer.html",
+    "app/lessons/lesson_hotspot-volcanoes.html",
+    "app/lessons/lesson_human-impacts.html",
+    "app/lessons/lesson_innovation-and-sustainability.html",
+    "app/lessons/lesson_introduction-to-electricity.html",
+    "app/lessons/lesson_layers-of-time.html",
+    "app/lessons/lesson_measuring-matter.html",
+    "app/lessons/lesson_nature-of-waves.html",
+    "app/lessons/lesson_organelles.html",
+    "app/lessons/lesson_parts-of-an-ecosystem.html",
+    "app/lessons/lesson_phases-of-the-moon.html",
+    "app/lessons/lesson_photosynthesis.html",
+    "app/lessons/lesson_physical-properties.html",
+    "app/lessons/lesson_plate-tectonics.html",
+    "app/lessons/lesson_pure-substances-and-mixtures.html",
+    "app/lessons/lesson_renewable-and-nonrenewable-resources.html",
+    "app/lessons/lesson_reproductive-success.html",
+    "app/lessons/lesson_structural-systems.html",
+    "app/lessons/lesson_sun-earth-moon.html",
+    "app/lessons/lesson_technology-and-society.html",
+    "app/lessons/lesson_transportation-systems.html",
+    "app/lessons/lesson_types-of-volcanoes.html",
+    "app/lessons/lesson_water-cycle.html",
+    "app/lessons/lesson_wave-behavior.html",
+    "app/lessons/lesson_weathering-and-erosion.html",
+    "app/lessons/lesson_what-is-life.html",
+    "app/lms-callback.html"
+  ],
+  "copies": [
+    {
+      "source": "about_learning-science.html",
+      "destination": "app/lessons/about_learning-science.html"
+    },
+    {
+      "source": "about_lyfelabz.html",
+      "destination": "app/lessons/about_lyfelabz.html"
+    },
+    {
+      "source": "about_privacy.html",
+      "destination": "app/lessons/about_privacy.html"
+    },
+    {
+      "source": "body-system-diseases.html",
+      "destination": "app/lessons/body-system-diseases.html"
+    },
+    {
+      "source": "body-system-interactions.html",
+      "destination": "app/lessons/body-system-interactions.html"
+    },
+    {
+      "source": "challenge_welcome-to-floatia.html",
+      "destination": "app/lessons/challenge_welcome-to-floatia.html"
+    },
+    {
+      "source": "disease_circulatory.html",
+      "destination": "app/lessons/disease_circulatory.html"
+    },
+    {
+      "source": "disease_digestive.html",
+      "destination": "app/lessons/disease_digestive.html"
+    },
+    {
+      "source": "disease_excretory.html",
+      "destination": "app/lessons/disease_excretory.html"
+    },
+    {
+      "source": "disease_immune.html",
+      "destination": "app/lessons/disease_immune.html"
+    },
+    {
+      "source": "disease_muscular.html",
+      "destination": "app/lessons/disease_muscular.html"
+    },
+    {
+      "source": "disease_nervous.html",
+      "destination": "app/lessons/disease_nervous.html"
+    },
+    {
+      "source": "disease_respiratory.html",
+      "destination": "app/lessons/disease_respiratory.html"
+    },
+    {
+      "source": "disease_skeletal.html",
+      "destination": "app/lessons/disease_skeletal.html"
+    },
+    {
+      "source": "extension_body-systems.html",
+      "destination": "app/lessons/extension_body-systems.html"
+    },
+    {
+      "source": "extension_chernobyl-frogs.html",
+      "destination": "app/lessons/extension_chernobyl-frogs.html"
+    },
+    {
+      "source": "extension_fossil-hunt.html",
+      "destination": "app/lessons/extension_fossil-hunt.html"
+    },
+    {
+      "source": "extension_hidden-world-of-matter.html",
+      "destination": "app/lessons/extension_hidden-world-of-matter.html"
+    },
+    {
+      "source": "extension_moon-tonight.html",
+      "destination": "app/lessons/extension_moon-tonight.html"
+    },
+    {
+      "source": "extension_neuron-explorer.html",
+      "destination": "app/lessons/extension_neuron-explorer.html"
+    },
+    {
+      "source": "extension_virus.html",
+      "destination": "app/lessons/extension_virus.html"
+    },
+    {
+      "source": "favicon.ico",
+      "destination": "app/lessons/favicon.ico"
+    },
+    {
+      "source": "game_is-it-alive.html",
+      "destination": "app/lessons/game_is-it-alive.html"
+    },
+    {
+      "source": "game_photon-runner.html",
+      "destination": "app/lessons/game_photon-runner.html"
+    },
+    {
+      "source": "app/index.html",
+      "destination": "app/lessons/index.html"
+    },
+    {
+      "source": "investigation_amplitude-challenge.html",
+      "destination": "app/lessons/investigation_amplitude-challenge.html"
+    },
+    {
+      "source": "investigation_cell-energy.html",
+      "destination": "app/lessons/investigation_cell-energy.html"
+    },
+    {
+      "source": "investigation_gray-zone.html",
+      "destination": "app/lessons/investigation_gray-zone.html"
+    },
+    {
+      "source": "investigation_population-patterns.html",
+      "destination": "app/lessons/investigation_population-patterns.html"
+    },
+    {
+      "source": "investigation_protein-pathway.html",
+      "destination": "app/lessons/investigation_protein-pathway.html"
+    },
+    {
+      "source": "simulation_beetle-island.html",
+      "destination": "app/lessons/simulation_beetle-island.html"
+    },
+    {
+      "source": "simulation_eclipse-alignment.html",
+      "destination": "app/lessons/simulation_eclipse-alignment.html"
+    },
+    {
+      "source": "simulation_floatlandia-fracture.html",
+      "destination": "app/lessons/simulation_floatlandia-fracture.html"
+    },
+    {
+      "source": "simulation_gravity-wells.html",
+      "destination": "app/lessons/simulation_gravity-wells.html"
+    },
+    {
+      "source": "system_circulatory.html",
+      "destination": "app/lessons/system_circulatory.html"
+    },
+    {
+      "source": "system_digestive.html",
+      "destination": "app/lessons/system_digestive.html"
+    },
+    {
+      "source": "system_excretory.html",
+      "destination": "app/lessons/system_excretory.html"
+    },
+    {
+      "source": "system_immune.html",
+      "destination": "app/lessons/system_immune.html"
+    },
+    {
+      "source": "system_muscular.html",
+      "destination": "app/lessons/system_muscular.html"
+    },
+    {
+      "source": "system_nervous.html",
+      "destination": "app/lessons/system_nervous.html"
+    },
+    {
+      "source": "system_respiratory.html",
+      "destination": "app/lessons/system_respiratory.html"
+    },
+    {
+      "source": "system_skeletal.html",
+      "destination": "app/lessons/system_skeletal.html"
+    }
+  ]
+}

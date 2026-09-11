@@ -142,9 +142,17 @@ test('marketing Hosting config is isolated from the existing application config'
   assert.equal(marketing.hosting.redirects.some((rule) => rule.source === '/app/package.json'), false);
   assert.equal(marketing.hosting.redirects.some((rule) => rule.source === '/app/foo/bar'), false);
 
-  assert.equal(application.hosting.public, '.');
+  assert.equal(application.hosting.public, 'dist/app-hosting');
   assert.equal(application.hosting.target, undefined);
-  assert.deepEqual(application.hosting.rewrites, [{ source: '/app/**', destination: '/app/index.html' }]);
+  assert.deepEqual(application.hosting.rewrites, [
+    { source: '/app/signin', destination: '/app/index.html' },
+    { source: '/app/onboarding', destination: '/app/index.html' },
+    { source: '/app/pending', destination: '/app/index.html' },
+    { source: '/app/teacher', destination: '/app/index.html' },
+    { source: '/app/student', destination: '/app/index.html' },
+    { source: '/app/a/**', destination: '/app/index.html' }
+  ]);
+  assert.equal(application.hosting.rewrites.some((rule) => rule.source === '/app/**'), false);
   assert.equal(application.hosting.ignore.includes('firebase.marketing.json'), true);
   assert.equal(application.hosting.ignore.includes('scripts/marketing-hosting/**'), true);
   assert.equal(application.hosting.ignore.includes('dist/marketing/**'), true);

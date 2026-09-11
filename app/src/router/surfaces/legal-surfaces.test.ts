@@ -162,16 +162,23 @@ describe("Sprint 29E.2 public legal surfaces", () => {
     expect(terms).toBeUndefined();
   });
 
-  test("the /app/** rewrite is preserved", () => {
+  test("only the certified application shell routes rewrite to /app/index.html", () => {
     const config = JSON.parse(read("firebase.json")) as {
       hosting?: { rewrites?: Array<{ source: string; destination: string }> };
     };
     const rewrites = config.hosting?.rewrites ?? [];
-    expect(
-      rewrites.some(
-        (r) => r.source === "/app/**" && r.destination === "/app/index.html",
-      ),
-    ).toBe(true);
+    const applicationRewrites = rewrites.filter(
+      (r) => r.destination === "/app/index.html",
+    );
+    expect(applicationRewrites.map((r) => r.source)).toEqual([
+      "/app/signin",
+      "/app/onboarding",
+      "/app/pending",
+      "/app/teacher",
+      "/app/student",
+      "/app/a/**",
+    ]);
+    expect(rewrites.some((r) => r.source === "/app/**")).toBe(false);
   });
 
   // ── Link integrity ─────────────────────────────────────────────────────────

@@ -8,9 +8,9 @@
   },
   "hosting": {
     "predeploy": [
-      "npm --prefix app run build"
+      "npm --prefix app run build && node scripts/app-hosting/build.cjs"
     ],
-    "public": ".",
+    "public": "dist/app-hosting",
     "ignore": [
       "firebase.json",
       "firebase.marketing.json",
@@ -47,7 +47,27 @@
     ],
     "rewrites": [
       {
-        "source": "/app/**",
+        "source": "/app/signin",
+        "destination": "/app/index.html"
+      },
+      {
+        "source": "/app/onboarding",
+        "destination": "/app/index.html"
+      },
+      {
+        "source": "/app/pending",
+        "destination": "/app/index.html"
+      },
+      {
+        "source": "/app/teacher",
+        "destination": "/app/index.html"
+      },
+      {
+        "source": "/app/student",
+        "destination": "/app/index.html"
+      },
+      {
+        "source": "/app/a/**",
         "destination": "/app/index.html"
       }
     ]
