@@ -9,6 +9,8 @@ import { createTestEnvironment } from "./setup";
 
 const SELF_UID = "self-uid";
 const OTHER_UID = "other-uid";
+const SCHOOL_ID = "school-a";
+const DISTRICT_ID = "district-a";
 
 // Provisioning-and-activation-shaped seed: every server-managed field
 // enumerated in the Sprint 2 Data Model is present so that the
@@ -166,6 +168,72 @@ describe("Firestore Rules: users/{uid}", () => {
       const db = testEnv.authenticatedContext(SELF_UID).firestore();
       await assertFails(
         updateDoc(doc(db, "users", OTHER_UID), { displayName: "Hacked" }),
+      );
+    });
+  });
+
+  // Phase 8G.7 - suspended users must not retain self-update capability.
+  // The self GET remains ungated (suspended bootstrap); only the update
+  // requires canonical active status.
+  describe("Phase 8G.7 suspension self-update enforcement", () => {
+    async function suspendUser(
+      uid: string,
+      role: "teacher" | "student",
+    ): Promise<void> {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", uid), {
+          authUid: uid,
+          status: "suspended",
+          role,
+          schoolId: SCHOOL_ID,
+          displayName: "Suspended User",
+          createdAt: new Date("2026-01-01T00:00:00Z"),
+        });
+      });
+    }
+
+    it("allows an active user to self-update displayName (gate preserved)", async () => {
+      // seededUserDoc sets status: "active", so the update rule should pass.
+      const db = testEnv.authenticatedContext(SELF_UID).firestore();
+      await assertSucceeds(
+        updateDoc(doc(db, "users", SELF_UID), { displayName: "New Name" }),
+      );
+    });
+
+    it("allows a suspended teacher to read their own record (bootstrap preserved)", async () => {
+      await suspendUser(SELF_UID, "teacher");
+      const db = testEnv.authenticatedContext(SELF_UID).firestore();
+      await assertSucceeds(getDoc(doc(db, "users", SELF_UID)));
+    });
+
+    it("denies a suspended teacher from self-updating displayName (no claims)", async () => {
+      await suspendUser(SELF_UID, "teacher");
+      const db = testEnv.authenticatedContext(SELF_UID).firestore();
+      await assertFails(
+        updateDoc(doc(db, "users", SELF_UID), { displayName: "New Name" }),
+      );
+    });
+
+    it("denies a suspended teacher with stale claims from self-updating displayName", async () => {
+      await suspendUser(SELF_UID, "teacher");
+      const STALE_TEACHER_TOKEN = {
+        role: "teacher",
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+      };
+      const db = testEnv
+        .authenticatedContext(SELF_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(
+        updateDoc(doc(db, "users", SELF_UID), { displayName: "New Name" }),
+      );
+    });
+
+    it("denies a suspended student from self-updating displayName", async () => {
+      await suspendUser(SELF_UID, "student");
+      const db = testEnv.authenticatedContext(SELF_UID).firestore();
+      await assertFails(
+        updateDoc(doc(db, "users", SELF_UID), { displayName: "New Name" }),
       );
     });
   });
