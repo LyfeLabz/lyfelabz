@@ -446,4 +446,191 @@ describe("Sprint 24B Phase 1: Settings > Integrations account-level scope", () =
     await flush();
     expect(calls).toEqual([]);
   });
+
+  // ---- Phase 8F.1: Disconnect confirmation (Part B) ----
+
+  test("Phase 8F.1: first Disconnect click does NOT invoke callable - shows confirmation", async () => {
+    const disconnectMock = jest.fn().mockResolvedValue({ alreadyRevoked: false });
+    const mount = mkMount();
+    renderIntegrationsSurface(
+      mount,
+      makeDeps({ disconnect: disconnectMock }),
+      { onExit: () => undefined },
+    );
+    await flush();
+    await flush();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-googleClassroom]",
+    )!.click();
+
+    expect(disconnectMock).not.toHaveBeenCalled();
+    expect(
+      mount.querySelector("[data-testid=integrations-disconnect-confirm-googleClassroom]"),
+    ).not.toBeNull();
+  });
+
+  test("Phase 8F.1: confirmation message is present and concise", async () => {
+    const mount = mkMount();
+    renderIntegrationsSurface(mount, makeDeps(), { onExit: () => undefined });
+    await flush();
+    await flush();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-googleClassroom]",
+    )!.click();
+
+    const msg = mount.querySelector(
+      "[data-testid=integrations-disconnect-confirm-msg-googleClassroom]",
+    );
+    expect(msg).not.toBeNull();
+    expect(msg!.textContent).toContain("LyfeLabz classes");
+    expect(msg!.textContent).toContain("preserved");
+    expect(msg!.textContent).toContain("reconnect");
+    // No em dash (CLAUDE.md style rule).
+    expect(msg!.textContent).not.toContain("—");
+  });
+
+  test("Phase 8F.1: confirmation has role=alert for accessibility", async () => {
+    const mount = mkMount();
+    renderIntegrationsSurface(mount, makeDeps(), { onExit: () => undefined });
+    await flush();
+    await flush();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-googleClassroom]",
+    )!.click();
+
+    const confirm = mount.querySelector(
+      "[data-testid=integrations-disconnect-confirm-googleClassroom]",
+    );
+    expect(confirm?.getAttribute("role")).toBe("alert");
+  });
+
+  test("Phase 8F.1: Cancel performs no callable call and returns to connected state", async () => {
+    const disconnectMock = jest.fn().mockResolvedValue({ alreadyRevoked: false });
+    const mount = mkMount();
+    renderIntegrationsSurface(
+      mount,
+      makeDeps({ disconnect: disconnectMock }),
+      { onExit: () => undefined },
+    );
+    await flush();
+    await flush();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-googleClassroom]",
+    )!.click();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-cancel-googleClassroom]",
+    )!.click();
+
+    expect(disconnectMock).not.toHaveBeenCalled();
+    // Confirmation is gone; disconnect button is back.
+    expect(
+      mount.querySelector("[data-testid=integrations-disconnect-confirm-googleClassroom]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=integrations-disconnect-googleClassroom]"),
+    ).not.toBeNull();
+  });
+
+  test("Phase 8F.1: confirmed Disconnect invokes callable exactly once with the authoritative connection ID", async () => {
+    const disconnectMock = jest.fn().mockResolvedValue({ alreadyRevoked: false });
+    const mount = mkMount();
+    renderIntegrationsSurface(
+      mount,
+      makeDeps({ disconnect: disconnectMock }),
+      { onExit: () => undefined },
+    );
+    await flush();
+    await flush();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-googleClassroom]",
+    )!.click();
+
+    const confirmBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-confirm-btn-googleClassroom]",
+    )!;
+    confirmBtn.click();
+    // Try clicking again - double-submission guard must block it.
+    confirmBtn.click();
+
+    await flush();
+    await flush();
+
+    expect(disconnectMock).toHaveBeenCalledTimes(1);
+    expect(disconnectMock).toHaveBeenCalledWith({ connectionId: "conn-1" });
+  });
+
+  test("Phase 8F.1: successful disconnect refreshes to Not connected", async () => {
+    const disconnectMock = jest.fn().mockResolvedValue({ alreadyRevoked: false });
+    const mount = mkMount();
+    renderIntegrationsSurface(
+      mount,
+      makeDeps({
+        disconnect: disconnectMock,
+        describeConnections: jest
+          .fn()
+          .mockResolvedValueOnce(Object.freeze([activeConnection]))
+          .mockResolvedValueOnce(Object.freeze([])),
+      }),
+      { onExit: () => undefined },
+    );
+    await flush();
+    await flush();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-googleClassroom]",
+    )!.click();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-confirm-btn-googleClassroom]",
+    )!.click();
+
+    await flush();
+    await flush();
+    await flush();
+
+    const statusPill = mount.querySelector(
+      "[data-testid=integrations-status-googleClassroom]",
+    );
+    expect(statusPill?.textContent).toBe("Not connected");
+  });
+
+  test("Phase 8F.1: failed disconnect is retryable and does not falsely render Not connected", async () => {
+    const disconnectMock = jest.fn().mockRejectedValue(new Error("network error"));
+    const mount = mkMount();
+    renderIntegrationsSurface(
+      mount,
+      makeDeps({ disconnect: disconnectMock }),
+      { onExit: () => undefined },
+    );
+    await flush();
+    await flush();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-googleClassroom]",
+    )!.click();
+
+    mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-disconnect-confirm-btn-googleClassroom]",
+    )!.click();
+
+    await flush();
+    await flush();
+
+    // Error notice rendered, not "Not connected".
+    const statusPill = mount.querySelector(
+      "[data-testid=integrations-status-googleClassroom]",
+    );
+    expect(statusPill?.textContent).toBe("Connected");
+    expect(mount.querySelector("[data-testid=integrations-error]")).not.toBeNull();
+    // Disconnect button is available again for retry.
+    expect(
+      mount.querySelector("[data-testid=integrations-disconnect-googleClassroom]"),
+    ).not.toBeNull();
+  });
 });

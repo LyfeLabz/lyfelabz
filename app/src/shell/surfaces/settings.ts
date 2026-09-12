@@ -1,5 +1,6 @@
 import type { Session } from "../../session/types";
 import type { IntegrationsDeps } from "../../settings/integrations/types";
+import { renderIntegrationsSurface } from "../../settings/integrations/integrations";
 import type { ClassManagementIntent } from "./classes";
 import { compactGradeBlock } from "./classes";
 import type { ListClasses } from "../../classes/listClasses";
@@ -93,6 +94,11 @@ export function renderSettingsSurface(
   session: ActiveTeacher,
   deps: SettingsDeps = { integrations: null },
 ): void {
+  // Subview routing: "root" renders the tabbed Settings surface;
+  // "integrations" delegates to the existing integrations management surface
+  // (connection status, Disconnect, Reconnect) with its own Back control.
+  let subview: "root" | "integrations" = "root";
+
   // Sprint 28.6H.5 (Part E): Settings now has two tab categories. Class
   // Management is the default; Student Services is a deliberate, inert
   // architecture placeholder for future student-support configuration. Tab
@@ -169,12 +175,17 @@ export function renderSettingsSurface(
   let ssSelectedStudentId: string | null = null;
   let studentDetailState: StudentDetailState | null = null;
 
-  // Sprint 28.6H.7 (Part C/E): Settings no longer renders a proactive Google
-  // Classroom connection subview or a connection-status line. `draw()` always
-  // renders the root decision surface; Google Classroom authorization is
-  // handled contextually by the certified Import flow on the Classes surface.
   const draw = (): void => {
     container.textContent = "";
+    if (subview === "integrations" && deps.integrations !== null) {
+      renderIntegrationsSurface(container, deps.integrations, {
+        onExit: () => {
+          subview = "root";
+          draw();
+        },
+      });
+      return;
+    }
     drawRoot();
   };
 
@@ -220,6 +231,21 @@ export function renderSettingsSurface(
       openClassManagement?.("import");
     });
     importActions.appendChild(importBtn);
+
+    if (deps.integrations !== null) {
+      const manageBtn = doc.createElement("button");
+      manageBtn.type = "button";
+      manageBtn.className =
+        "shell-settings-class-action shell-settings-class-action--secondary";
+      manageBtn.setAttribute("data-testid", "settings-manage-connection");
+      manageBtn.textContent = "Manage connection";
+      manageBtn.addEventListener("click", () => {
+        subview = "integrations";
+        draw();
+      });
+      importActions.appendChild(manageBtn);
+    }
+
     section.appendChild(importActions);
 
     return section;

@@ -57,6 +57,10 @@ export function renderIntegrationsSurface(
 
   let state: ViewState = { kind: "loading" };
   let notice: Notice = null;
+  // Disconnect confirmation state: connectionId awaiting explicit confirm,
+  // and a guard that prevents double-submission while the callable is in flight.
+  let disconnectPending: string | null = null;
+  let disconnectSubmitting = false;
 
   const container = doc.createElement("div");
   container.className = "shell-integrations";
@@ -275,6 +279,10 @@ export function renderIntegrationsSurface(
         void onConnect(provider);
       });
       actions.appendChild(connectBtn);
+    } else if (disconnectPending === active.connectionId) {
+      // Show inline confirmation - no callable has been invoked yet.
+      li.appendChild(renderDisconnectConfirmation(active, provider));
+      return li;
     } else {
       // Reconnect is the primary recovery action, offered only in the
       // action-needed state so a healthy connection is not cluttered with a
@@ -305,7 +313,7 @@ export function renderIntegrationsSurface(
       );
       disconnectBtn.textContent = "Disconnect";
       disconnectBtn.addEventListener("click", () => {
-        void onDisconnect(active);
+        initiateDisconnect(active);
       });
       actions.appendChild(disconnectBtn);
     }
@@ -414,19 +422,87 @@ export function renderIntegrationsSurface(
     }
   };
 
+  const renderDisconnectConfirmation = (
+    connection: IntegrationsConnection,
+    provider: IntegrationsProvider,
+  ): HTMLElement => {
+    const wrap = doc.createElement("div");
+    wrap.className = "shell-integrations-disconnect-confirm";
+    wrap.setAttribute(
+      "data-testid",
+      `integrations-disconnect-confirm-${provider.providerId}`,
+    );
+    wrap.setAttribute("role", "alert");
+
+    const msg = doc.createElement("p");
+    msg.className = "shell-status";
+    msg.setAttribute(
+      "data-testid",
+      `integrations-disconnect-confirm-msg-${provider.providerId}`,
+    );
+    msg.textContent =
+      "Disconnecting removes access to Classroom import, roster sync, and assignment publication until you reconnect. Your LyfeLabz classes, assignments, and history are preserved.";
+    wrap.appendChild(msg);
+
+    const confirmActions = doc.createElement("div");
+    confirmActions.className = "shell-integrations-actions";
+
+    const confirmBtn = doc.createElement("button");
+    confirmBtn.type = "button";
+    confirmBtn.className = "shell-lesson-toggle shell-lesson-toggle-inactive";
+    confirmBtn.setAttribute(
+      "data-testid",
+      `integrations-disconnect-confirm-btn-${provider.providerId}`,
+    );
+    confirmBtn.textContent = `Disconnect ${provider.displayName}`;
+    confirmBtn.disabled = disconnectSubmitting;
+    confirmBtn.addEventListener("click", () => {
+      if (disconnectSubmitting) return;
+      disconnectSubmitting = true;
+      void onDisconnect(connection);
+    });
+    confirmActions.appendChild(confirmBtn);
+
+    const cancelBtn = doc.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "shell-lesson-toggle shell-lesson-toggle-active";
+    cancelBtn.setAttribute(
+      "data-testid",
+      `integrations-disconnect-cancel-${provider.providerId}`,
+    );
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", () => {
+      disconnectPending = null;
+      render();
+    });
+    confirmActions.appendChild(cancelBtn);
+
+    wrap.appendChild(confirmActions);
+    return wrap;
+  };
+
+  const initiateDisconnect = (connection: IntegrationsConnection): void => {
+    disconnectPending = connection.connectionId;
+    disconnectSubmitting = false;
+    render();
+  };
+
   const onDisconnect = async (
     connection: IntegrationsConnection,
   ): Promise<void> => {
+    disconnectPending = null;
     notice = { kind: "info", message: "Disconnecting..." };
     render();
     try {
       await deps.callables.disconnect({ connectionId: connection.connectionId });
+      disconnectSubmitting = false;
       notice = {
         kind: "info",
         message: "Disconnected. Your LyfeLabz data is preserved.",
       };
       await refreshAfterMutation();
     } catch (err) {
+      disconnectSubmitting = false;
       notice = { kind: "error", message: describeGenericError(err) };
       render();
     }

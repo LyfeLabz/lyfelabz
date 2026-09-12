@@ -604,11 +604,11 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     expect(intents).toEqual(["import", "create"]);
   });
 
-  test("the primary Class Management surface exposes NO Connected / Not connected / Manage connection (Sprint 28.6H.7 Part C/E, N#24-26)", async () => {
+  test("the primary Class Management surface exposes NO proactive connection status but shows Manage connection when integrations are wired (Phase 8F.1)", async () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher, wiredDeps([activeConnection]));
     await flush();
-    // No connection-status line and no Manage connection control.
+    // No proactive connection-status line (Connected / Not connected pills).
     expect(
       mount.querySelector("[data-testid=settings-classroom-connection]"),
     ).toBeNull();
@@ -621,15 +621,74 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     const text = mount.textContent ?? "";
     expect(text).not.toContain("Connected");
     expect(text).not.toContain("Not connected");
-    expect(text).not.toContain("Manage connection");
-    // The Google Classroom section still exists and its Import Class entry
-    // point is present (contextual authorization happens on click).
+    // Manage connection IS now present (Phase 8F.1 restore).
+    expect(
+      mount.querySelector("[data-testid=settings-manage-connection]"),
+    ).not.toBeNull();
+    expect(text).toContain("Manage connection");
+    // The Google Classroom section still exists and Import Class is present.
     expect(
       mount.querySelector("[data-testid=settings-classroom-heading]")!.textContent,
     ).toBe("Google Classroom");
     expect(
       mount.querySelector("[data-testid=settings-import-class]"),
     ).not.toBeNull();
+  });
+
+  test("Phase 8F.1: Manage connection not shown when integrations are unwired (null)", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, { integrations: null });
+    expect(
+      mount.querySelector("[data-testid=settings-manage-connection]"),
+    ).toBeNull();
+    // Google Classroom section still present.
+    expect(
+      mount.querySelector("[data-testid=settings-classroom-heading]"),
+    ).not.toBeNull();
+  });
+
+  test("Phase 8F.1: clicking Manage connection opens the existing integrations surface", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps([activeConnection]));
+    await flush();
+    const manageBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=settings-manage-connection]",
+    )!;
+    expect(manageBtn).not.toBeNull();
+    manageBtn.click();
+    await flush();
+    await flush();
+    // The integrations surface is now mounted (has its own testid).
+    expect(
+      mount.querySelector("[data-testid=integrations-surface]"),
+    ).not.toBeNull();
+    // The Settings root tabs are no longer visible.
+    expect(
+      mount.querySelector("[data-testid=settings-tabs]"),
+    ).toBeNull();
+  });
+
+  test("Phase 8F.1: Back to Settings from integrations returns to the Settings root", async () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps([activeConnection]));
+    await flush();
+    mount.querySelector<HTMLButtonElement>("[data-testid=settings-manage-connection]")!.click();
+    await flush();
+    await flush();
+    // Back button is provided by the integrations surface.
+    const backBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=integrations-back]",
+    )!;
+    expect(backBtn).not.toBeNull();
+    backBtn.click();
+    await flush();
+    // Settings root is restored.
+    expect(
+      mount.querySelector("[data-testid=settings-tabs]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=integrations-surface]"),
+    ).toBeNull();
   });
 
   test("with no active connection, the surface still shows no connection UI (Part C/E)", async () => {

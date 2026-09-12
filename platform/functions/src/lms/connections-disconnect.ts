@@ -105,9 +105,11 @@ async function handler(
     );
   }
 
-  // Best-effort upstream revocation. The mirror is still marked `revoked`
-  // if the upstream call fails; a residual upstream grant is followed up
-  // by the operational runbook (LMS_INTEGRATION_ARCHITECTURE.md §10.3.3).
+  // Best-effort upstream grant revocation. The local token bundle is
+  // deleted in a separate step below so an upstream exception cannot
+  // leave LyfeLabz retaining a usable credential after disconnect
+  // proceeds. A residual upstream grant is followed up by the
+  // operational runbook (LMS_INTEGRATION_ARCHITECTURE.md §10.3.3).
   try {
     const store = getLmsTokenStore();
     const bundle = await store.resolve(existing.tokenRef);
@@ -116,7 +118,6 @@ async function handler(
       accessToken: bundle.accessToken,
       refreshToken: bundle.refreshToken,
     });
-    await store.revoke(existing.tokenRef);
   } catch (err) {
     safeLog(() =>
       log.warn("lms.upstreamRevocationFailed", {
@@ -124,6 +125,26 @@ async function handler(
         connectionId,
         error: (err as Error)?.message,
       }),
+    );
+  }
+
+  // Local credential invalidation - authoritative. Unlike upstream
+  // revocation, a local token-store failure is not swallowed: we must
+  // not mark the connection revoked or emit a success audit event while
+  // a usable credential bundle may still exist in the token store.
+  try {
+    await getLmsTokenStore().revoke(existing.tokenRef);
+  } catch (err) {
+    safeLog(() =>
+      log.warn("lms.localTokenRevocationFailed", {
+        actorUserId: actor.uid,
+        connectionId,
+        error: (err as Error)?.message,
+      }),
+    );
+    throw new PlatformError(
+      "lms.localTokenRevocationFailed",
+      "Local credential invalidation failed. The disconnect operation can be retried.",
     );
   }
 
