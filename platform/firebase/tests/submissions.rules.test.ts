@@ -54,6 +54,15 @@ describe("Firestore Rules: submissions/{submissionId}", () => {
     await testEnv.clearFirestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      // Phase 8G.1: teacher-read branches require an active teacher record.
+      await setDoc(doc(db, "users", TEACHER_UID), {
+        authUid: TEACHER_UID,
+        status: "active",
+        role: "teacher",
+        schoolId: SCHOOL_ID,
+        displayName: "Active Teacher",
+        createdAt: new Date("2026-08-15T00:00:00Z"),
+      });
 
       await setDoc(doc(db, "submissions", SUBMISSION_ID), {
         assignmentId: ASSIGNMENT_ID,
@@ -286,6 +295,48 @@ describe("Firestore Rules: submissions/{submissionId}", () => {
           responses: [],
         }),
       );
+    });
+  });
+
+  describe("Phase 8G.1 suspension enforcement", () => {
+    async function suspendTeacher(uid: string) {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", uid), {
+          authUid: uid,
+          status: "suspended",
+          role: "teacher",
+          schoolId: SCHOOL_ID,
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+    }
+    const STALE_TEACHER_TOKEN = { role: "teacher", schoolId: SCHOOL_ID };
+    it("denies a suspended owning teacher (stale claim) from getting a submission", async () => {
+      await suspendTeacher(TEACHER_UID);
+      const db = testEnv
+        .authenticatedContext(TEACHER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "submissions", SUBMISSION_ID)));
+    });
+    it("denies a suspended owning teacher (stale claim) from listing their submissions", async () => {
+      await suspendTeacher(TEACHER_UID);
+      const db = testEnv
+        .authenticatedContext(TEACHER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(
+        getDocs(
+          query(
+            collection(db, "submissions"),
+            where("teacherId", "==", TEACHER_UID),
+          ),
+        ),
+      );
+    });
+    it("still allows the submitting student to get their own submission (student isolation preserved)", async () => {
+      await suspendTeacher(TEACHER_UID);
+      const db = testEnv.authenticatedContext(STUDENT_UID).firestore();
+      await assertSucceeds(getDoc(doc(db, "submissions", SUBMISSION_ID)));
     });
   });
 });

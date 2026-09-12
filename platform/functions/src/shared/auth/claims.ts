@@ -111,6 +111,38 @@ export async function writeCustomClaims(
   return claims;
 }
 
+// The single canonical path for CLEARING a user's custom claims.
+//
+// Suspension (and any future lifecycle transition out of `active`) must
+// leave the user with no authorization custom claims: after a successful
+// clear the user carries no `role`, `schoolId`, or `districtId` claim, so a
+// freshly minted ID token confers no teacher (or other) authorization. The
+// active-only invariant on `writeCustomClaims` means it can never be used to
+// express the cleared state, so this is its deliberate counterpart.
+//
+// Idempotent by construction: the Admin SDK replaces the claim payload
+// atomically, so clearing an already-cleared user is a safe no-op. This is
+// relied on by the idempotent suspension replay, which re-runs the Auth
+// cleanup to repair a partially completed prior suspension.
+//
+// `setCustomUserClaims(uid, null)` is the documented way to remove all
+// custom claims; passing `null` (rather than `{}`) erases the claims block
+// entirely.
+export async function clearCustomClaims(uid: string): Promise<void> {
+  if (!isNonEmptyString(uid)) {
+    throw new PlatformError("claims.invalidUid", "uid must be a non-empty string.");
+  }
+  try {
+    await getAdminAuth().setCustomUserClaims(uid, null);
+  } catch (err) {
+    throw new PlatformError(
+      "claims.clearFailed",
+      "Failed to clear custom claims.",
+      err,
+    );
+  }
+}
+
 // Normalized read view of a caller's current custom claims. Only canonical,
 // non-empty values survive; every absent or malformed field is `undefined`.
 // This is the read counterpart to `writeCustomClaims`, so a caller that must

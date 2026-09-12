@@ -36,7 +36,7 @@ export type LmsConnectionsDescribeResponse = {
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsConnectionsDescribeResponse> {
-  const actor = assertAuthenticatedTeacherForLms(request);
+  const actor = await assertAuthenticatedTeacherForLms(request);
   try {
     const snapshot = await lmsConnectionsCollectionRef()
       .where("teacherId", "==", actor.uid)

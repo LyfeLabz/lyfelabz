@@ -27,7 +27,7 @@ The account lifecycle is a closed set of five states. It applies to every user d
 - **`provisioned`** - The account has a Firebase Auth identity and a user document created by the authentication trigger. It carries no role, no school, and no display name yet. It cannot access authenticated surfaces beyond reading its own record.
 - **`pendingVerification`** - The user has requested activation as a teacher and is awaiting review by a Platform Administrator. Role and school are recorded on the document but the account is not yet authorized.
 - **`active`** - The account is fully activated. Role and school are stamped. Custom claims have been issued. All role-appropriate authorization applies.
-- **`suspended`** - The account is temporarily withheld from active use through an administrative action. History is preserved. Reserved for future administrative workflows.
+- **`suspended`** - The account is temporarily withheld from active use through an administrative action. Firebase Auth identity, the canonical user record, teacher-owned instructional data, LMS connections, and all history are preserved. For teachers this transition is implemented by the `teachersSuspend` administrative callable (Phase 8G.1); on suspension its custom claims are cleared and its refresh tokens revoked, and the authorization boundaries consult authoritative `status` so access fails closed immediately. Reinstatement (`suspended` -> `active`) remains a separate future workflow.
 - **`archived`** - The account has reached end-of-life. History is preserved for attribution. Reserved for future administrative workflows.
 
 Only these five values are permitted. Additions require a formal amendment to this document.
@@ -81,7 +81,7 @@ Every transition is written by exactly one Cloud Function and produces exactly o
 | `provisioned` | `pendingVerification` | `teachersRequestVerification` | `teachers.verificationRequested` |
 | `pendingVerification` | `active` | `teachersApproveVerification` | `teachers.verificationApproved` |
 | `pendingVerification` | `provisioned` | `teachersDenyVerification` | `teachers.verificationDenied` |
-| `active` | `suspended` | (reserved, future sprint) | `users.suspended` |
+| `active` | `suspended` | `teachersSuspend` (teachers; Phase 8G.1) | `users.suspended` |
 | `suspended` | `active` | (reserved, future sprint) | `users.reinstated` |
 | `active` | `archived` | (reserved, future sprint) | `users.archived` |
 | `suspended` | `archived` | (reserved, future sprint) | `users.archived` |
@@ -102,8 +102,14 @@ The `status` field on `users/{uid}` answers one question: where is this account 
 **Audit events represent what happened to the account.**
 The `auditEvents` collection is the authoritative record of every meaningful occurrence, whether or not it changed lifecycle state. Approvals, denials, rejections, and reinstatements are all events. Some of them also change state; the audit event is the source of truth for the occurrence regardless.
 
-**Authorization comes from custom claims.**
-Firestore Security Rules and Cloud Function callers determine what an actor may do by consulting the custom claims on the authenticated identity token. Claims are issued only when `status` is `active` and carry only `role` and `schoolId` (see Cloud Function Charter §2). The absence of claims is the canonical signal that no active authorization applies.
+**Authorization comes from custom claims, and suspension is enforced against authoritative status.**
+Firestore Security Rules and Cloud Function callers consult the custom claims on the authenticated identity token as a convenience cache. Claims are issued only when `status` is `active` and carry the canonical `{ role, schoolId, districtId }` shape - all three non-empty strings - written through the single `writeCustomClaims` helper (see Cloud Function Charter §2). The absence of claims is the canonical signal that no active authorization applies.
+
+Claims are a cache, not the source of truth. An already-issued ID token keeps its (possibly stale) claims until it expires, so any authorization that must fail closed on a lifecycle or tenant change is enforced against authoritative Firestore state rather than the token:
+
+- **Lifecycle (Phase 8G.1).** The boundaries affected by suspension - the shared LMS actor gate and the teacher-side Firestore Rules - consult the authoritative `users/{uid}.status`, so a suspended teacher fails closed immediately even while a stale teacher token is still live.
+- **Tenant context (Phase 8G.3).** The LMS actor gate derives the caller's authoritative tenant context (`schoolId` from `users/{uid}`, `districtId` from the canonical `schools/{schoolId}` document) instead of trusting the token's tenant claims, so stale tenant claims cannot redirect a teacher into an obsolete school/district context.
+- **Administrative transitions (Phase 8G.3).** `teachersSuspend` validates the administrator's authoritative `users/{adminUid}` record and the target's context inside the same transaction that performs the lifecycle write, so an administrator who is concurrently suspended or demoted cannot complete a suspension.
 
 **Current account state comes from Firestore.**
 The current `status` value on `users/{uid}` is the authoritative account state. It is never inferred from token contents, never inferred from URL structure, and never inferred from client-side UI. Client code that needs to know the lifecycle state reads the user document; server code that needs to know reads the user document under privileged credentials.

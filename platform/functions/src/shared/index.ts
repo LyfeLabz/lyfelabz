@@ -1,15 +1,20 @@
 export {
+  buildAuditEventWrite,
   writeAuditEvent,
+  writeAuditEventInTransaction,
+  type BuiltAuditEvent,
   type WriteAuditEventInput,
   type WriteAuditEventResult,
 } from "./audit/write-audit-event";
 export {
+  clearCustomClaims,
   readCustomClaims,
   writeCustomClaims,
   type CanonicalCustomClaims,
   type CustomClaimsView,
   type WriteCustomClaimsInput,
 } from "./auth/claims";
+export { revokeUserRefreshTokens } from "./auth/refresh-tokens";
 export {
   PLATFORM_CONFIG_COLLECTION,
   TEACHER_PILOT_ALLOWLIST_DOC_ID,
@@ -383,6 +388,7 @@ export {
   type TeacherDenialWrite,
   type TeacherPilotActivationWrite,
   type TeacherProfile,
+  type TeacherSuspensionWrite,
   type TeacherVerificationRequestWrite,
   type UserProvisioningWrite,
   type UserRecord,

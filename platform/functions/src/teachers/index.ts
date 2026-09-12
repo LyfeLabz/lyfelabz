@@ -25,3 +25,8 @@ export {
   type TeacherPreferencesUpdateRequest,
   type TeacherPreferencesUpdateResponse,
 } from "./teacher-preferences-update";
+export {
+  teachersSuspend,
+  type TeachersSuspendRequest,
+  type TeachersSuspendResponse,
+} from "./teachers-suspend";

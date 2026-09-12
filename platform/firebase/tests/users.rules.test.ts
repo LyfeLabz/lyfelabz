@@ -56,6 +56,25 @@ describe("Firestore Rules: users/{uid}", () => {
       await assertSucceeds(getDoc(doc(db, "users", SELF_UID)));
     });
 
+    // Phase 8G.1 - suspended bootstrap compatibility. The self users/{uid}
+    // read is intentionally NOT gated by the active-teacher enforcement so a
+    // suspended teacher can still read their own record to render the
+    // suspension/refusal experience.
+    it("allows a suspended teacher to read their own record (bootstrap compatibility)", async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", SELF_UID), {
+          authUid: SELF_UID,
+          status: "suspended",
+          role: "teacher",
+          schoolId: "school-a",
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-01-01T00:00:00Z"),
+        });
+      });
+      const db = testEnv.authenticatedContext(SELF_UID).firestore();
+      await assertSucceeds(getDoc(doc(db, "users", SELF_UID)));
+    });
+
     it("denies cross-user read", async () => {
       const db = testEnv.authenticatedContext(SELF_UID).firestore();
       await assertFails(getDoc(doc(db, "users", OTHER_UID)));

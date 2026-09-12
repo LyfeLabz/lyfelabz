@@ -24,16 +24,16 @@ export type LmsProvidersListResponse = {
   }[];
 };
 
-function handler(
+async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsProvidersListResponse> {
-  assertAuthenticatedTeacherForLms(request);
-  return Promise.resolve({
+  await assertAuthenticatedTeacherForLms(request);
+  return {
     providers: listRegisteredProviders().map((p) => ({
       providerId: p.providerId,
       displayName: p.displayName,
     })),
-  });
+  };
 }
 
 export const lmsProvidersList = platformCallable(handler);

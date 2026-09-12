@@ -52,6 +52,15 @@ describe("Firestore Rules: LMS collections (Sprint 8D.1)", () => {
     await testEnv.clearFirestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      // Phase 8G.1: teacher-read branches require an active teacher record.
+      await setDoc(doc(db, "users", OWNER_UID), {
+        authUid: OWNER_UID,
+        status: "active",
+        role: "teacher",
+        schoolId: "school-a",
+        displayName: "Active Teacher",
+        createdAt: new Date("2026-08-15T00:00:00Z"),
+      });
       // Provider directory (reference data; readable by any signed-in caller).
       await setDoc(doc(db, "lmsProviders", PROVIDER_ID), {
         providerId: PROVIDER_ID,
@@ -133,18 +142,35 @@ describe("Firestore Rules: LMS collections (Sprint 8D.1)", () => {
   });
 
   describe("lmsProviders (reference data)", () => {
-    it("any signed-in caller may get a provider", async () => {
-      const db = testEnv.authenticatedContext(OTHER_TEACHER_UID).firestore();
+    it("an active signed-in caller may get a provider", async () => {
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
       await assertSucceeds(getDoc(doc(db, "lmsProviders", PROVIDER_ID)));
     });
 
-    it("any signed-in caller may list providers", async () => {
+    it("an active signed-in caller may list providers", async () => {
       const db = testEnv.authenticatedContext(OWNER_UID).firestore();
       await assertSucceeds(getDocs(collection(db, "lmsProviders")));
     });
 
     it("denies unauthenticated get and list", async () => {
       const db = testEnv.unauthenticatedContext().firestore();
+      await assertFails(getDoc(doc(db, "lmsProviders", PROVIDER_ID)));
+      await assertFails(getDocs(collection(db, "lmsProviders")));
+    });
+
+    // Phase 8G.3 - suspension enforcement on the shared authenticated surface.
+    it("denies a suspended caller (stale teacher claim) get and list", async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", OWNER_UID), {
+          authUid: OWNER_UID,
+          status: "suspended",
+          role: "teacher",
+          schoolId: "school-a",
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
       await assertFails(getDoc(doc(db, "lmsProviders", PROVIDER_ID)));
       await assertFails(getDocs(collection(db, "lmsProviders")));
     });
@@ -389,6 +415,85 @@ describe("Firestore Rules: LMS collections (Sprint 8D.1)", () => {
       await assertFails(getDocs(collection(db, "lmsRosterLinks")));
       await assertFails(
         getDoc(doc(db, "lmsRosterLinks", "nonexistent-id")),
+      );
+    });
+  });
+
+  describe("Phase 8G.1 suspension enforcement", () => {
+    async function suspendTeacher(uid: string) {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", uid), {
+          authUid: uid,
+          status: "suspended",
+          role: "teacher",
+          schoolId: "school-a",
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+    }
+    const STALE_TEACHER_TOKEN = { role: "teacher", schoolId: "school-a" };
+    it("denies a suspended owning teacher (stale claim) from getting their connection", async () => {
+      await suspendTeacher(OWNER_UID);
+      const db = testEnv
+        .authenticatedContext(OWNER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "lmsConnections", CONNECTION_ID)));
+    });
+    it("denies a suspended owning teacher (stale claim) from listing their connections", async () => {
+      await suspendTeacher(OWNER_UID);
+      const db = testEnv
+        .authenticatedContext(OWNER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(
+        getDocs(
+          query(
+            collection(db, "lmsConnections"),
+            where("teacherId", "==", OWNER_UID),
+          ),
+        ),
+      );
+    });
+    it("denies a suspended owning teacher (stale claim) from getting their class link", async () => {
+      await suspendTeacher(OWNER_UID);
+      const db = testEnv
+        .authenticatedContext(OWNER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "lmsClassLinks", LINK_ID)));
+    });
+    it("denies a suspended owning teacher (stale claim) from listing their class links", async () => {
+      await suspendTeacher(OWNER_UID);
+      const db = testEnv
+        .authenticatedContext(OWNER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(
+        getDocs(
+          query(
+            collection(db, "lmsClassLinks"),
+            where("ownerUid", "==", OWNER_UID),
+          ),
+        ),
+      );
+    });
+    it("denies a suspended owning teacher (stale claim) from getting their publication", async () => {
+      await suspendTeacher(OWNER_UID);
+      const db = testEnv
+        .authenticatedContext(OWNER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "lmsAssignmentPublications", PUBLICATION_ID)));
+    });
+    it("denies a suspended owning teacher (stale claim) from listing their publications", async () => {
+      await suspendTeacher(OWNER_UID);
+      const db = testEnv
+        .authenticatedContext(OWNER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(
+        getDocs(
+          query(
+            collection(db, "lmsAssignmentPublications"),
+            where("ownerUid", "==", OWNER_UID),
+          ),
+        ),
       );
     });
   });

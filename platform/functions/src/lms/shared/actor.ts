@@ -1,16 +1,19 @@
 import type { CallableRequest } from "firebase-functions/v2/https";
 
-import { PlatformError } from "../../shared";
+import { PlatformError, schoolDocRef, userRecordDocRef } from "../../shared";
 
 export type LmsAuthenticatedTeacher = {
   readonly uid: string;
+  // Phase 8G.3: `schoolId` and `districtId` are the AUTHORITATIVE tenant
+  // context resolved from canonical Firestore records (the caller's
+  // `users/{uid}` record and its `schools/{schoolId}` document), never from
+  // the caller's ID-token claims. Both are always present on a successful
+  // return; a caller whose canonical tenant context cannot be resolved is
+  // refused. LMS callables use these values for ownership checks and audit
+  // attribution, so a stale token claim cannot redirect a teacher into an
+  // obsolete school/district context.
   readonly schoolId: string;
-  // Sprint 11D I-5. Canonical `districtId` claim exposed so LMS callables
-  // can carry it onto audit events per DISTRICT_SECURITY_BOUNDARY_
-  // IMPLEMENTATION_CONTRACT.md §7. Optional at the type level so tokens
-  // written before district enforcement (pre-Sprint 9C) continue to
-  // authenticate; audit writes for such tokens omit the field.
-  readonly districtId?: string;
+  readonly districtId: string;
 };
 
 function isNonEmptyString(value: unknown): value is string {
@@ -18,14 +21,27 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 // Canonical caller check for every LMS callable per PDR-019 (§3.1 of the
-// architecture). Every LMS callable operates only for a teacher whose
-// canonical custom claims (`{ role: "teacher", schoolId }`) are present;
-// account-lifecycle state (`active`) is enforced upstream by the claims
-// writer per the certified PLATFORM_STATE_MACHINE.md. This helper is the
-// single canonical gate. No LMS callable ever re-derives claims itself.
-export function assertAuthenticatedTeacherForLms(
+// architecture).
+//
+// Phase 8G.1 established authoritative active-status enforcement; Phase 8G.3
+// extends it to authoritative TENANT context. The signed token is used only
+// as a cheap early gate (a caller must at least claim the `teacher` role);
+// every authorization-bearing value is then resolved from canonical records:
+//
+//   - active status and teacher role come from the caller's `users/{uid}`
+//     record (a suspended/demoted teacher with a stale token fails closed);
+//   - `schoolId` comes from that same record;
+//   - `districtId` comes from the canonical `schools/{schoolId}` document.
+//
+// Token `schoolId`/`districtId` claims are never trusted as the source of
+// truth, so a teacher carrying stale tenant claims cannot be redirected into
+// an obsolete school/district context. This mirrors the authoritative
+// derivation used by `requireDistrictContext` while preserving the `lms.*`
+// error surface the LMS callables already expose. This remains the single
+// canonical LMS actor gate; no LMS callable re-derives authorization itself.
+export async function assertAuthenticatedTeacherForLms(
   request: CallableRequest<unknown>,
-): LmsAuthenticatedTeacher {
+): Promise<LmsAuthenticatedTeacher> {
   const auth = request.auth;
   if (!auth || !isNonEmptyString(auth.uid)) {
     throw new PlatformError(
@@ -33,29 +49,54 @@ export function assertAuthenticatedTeacherForLms(
       "An authenticated caller is required.",
     );
   }
-  const token = auth.token as
-    | {
-        readonly role?: unknown;
-        readonly schoolId?: unknown;
-        readonly districtId?: unknown;
-      }
-    | undefined;
+  const token = auth.token as { readonly role?: unknown } | undefined;
+  // Cheap early gate only: the token must at least claim the teacher role.
+  // Authoritative role/status/tenant are resolved from canonical records
+  // below and override the token in every case.
   if (!token || token.role !== "teacher") {
     throw new PlatformError(
       "lms.unauthorized",
       "Caller must be an active teacher.",
     );
   }
-  if (!isNonEmptyString(token.schoolId)) {
+
+  // Authoritative status/role/school from the caller's canonical record. A
+  // missing, unreadable, structurally malformed (authUid mismatch),
+  // non-active, or non-teacher record fails closed regardless of token
+  // claims.
+  const userSnapshot = await userRecordDocRef(auth.uid).get();
+  const record = userSnapshot.exists ? userSnapshot.data() : undefined;
+  if (
+    !record ||
+    record.authUid !== auth.uid ||
+    record.status !== "active" ||
+    record.role !== "teacher" ||
+    !isNonEmptyString(record.schoolId)
+  ) {
     throw new PlatformError(
       "lms.unauthorized",
-      "Caller is missing a canonical schoolId claim.",
+      "Caller must be an active teacher.",
     );
   }
-  const districtId = isNonEmptyString(token.districtId)
-    ? token.districtId
+  const schoolId = record.schoolId;
+
+  // Authoritative district from the canonical school document. A missing
+  // school or a school without a district is an unresolvable tenant context
+  // and fails closed.
+  const schoolSnapshot = await schoolDocRef(schoolId).get();
+  const school = schoolSnapshot.exists
+    ? (schoolSnapshot.data() as
+        | (Record<string, unknown> & { districtId?: unknown })
+        | undefined)
     : undefined;
-  return { uid: auth.uid, schoolId: token.schoolId, districtId };
+  if (!school || !isNonEmptyString(school.districtId)) {
+    throw new PlatformError(
+      "lms.unauthorized",
+      "Caller's canonical school/district context could not be resolved.",
+    );
+  }
+
+  return { uid: auth.uid, schoolId, districtId: school.districtId };
 }
 
 export function requireNonEmptyString(

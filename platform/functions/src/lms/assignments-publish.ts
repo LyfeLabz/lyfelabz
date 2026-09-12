@@ -128,7 +128,7 @@ async function handler(
   // worker. The installer is idempotent and respects a test-injected
   // transport, so it is safe under both production and fixture seams.
   ensureGoogleClassroomProductionBindings();
-  const actor = assertAuthenticatedTeacherForLms(request);
+  const actor = await assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
       "lms.invalidRequest",

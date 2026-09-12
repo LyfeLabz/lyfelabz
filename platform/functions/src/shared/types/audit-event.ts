@@ -168,6 +168,19 @@ export const AUDIT_ACTIONS = [
   "identity.mappingRestored",
   "identity.migrationAttempted",
   "identity.migrationCompleted",
+  // Phase 8G.1 - canonical administrative teacher suspension. Emitted once
+  // by the `teachersSuspend` administrative callable on the durable
+  // `active` -> `suspended` transition (PLATFORM_STATE_MACHINE.md §3). The
+  // audit target is the `user`; the actor is the platform administrator.
+  // The payload carries only PII-free lifecycle context (`previousStatus`,
+  // `role`) and the prior authoritative school/district association is
+  // recorded through the top-level `schoolId`/`districtId` fields. It NEVER
+  // carries an email, an OAuth identifier, a token reference, or a free-form
+  // note. Exactly one event is written per transition; the idempotent
+  // already-suspended replay emits none. This is the ONLY transition audit
+  // action for suspension; reinstatement (`users.reinstated`) is a separate
+  // future workflow and is intentionally not implemented here.
+  "users.suspended",
   // F5.2 Persistent Student Differentiation, Slice 1. Emitted by
   // `accommodationsSet` on every ACCEPTED state-changing write to a
   // student's `studentAccommodations/{studentId}` record (activation,

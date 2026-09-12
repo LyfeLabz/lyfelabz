@@ -121,7 +121,7 @@ async function handler(
   // callable having already run in the same worker. The installer is
   // idempotent and respects a test-injected transport.
   ensureGoogleClassroomProductionBindings();
-  const actor = assertAuthenticatedTeacherForLms(request);
+  const actor = await assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
       "lms.invalidRequest",

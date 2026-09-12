@@ -44,6 +44,15 @@ describe("Firestore Rules: assignments/{assignmentId}", () => {
     await testEnv.clearFirestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      // Phase 8G.1: teacher-read branches require an active teacher record.
+      await setDoc(doc(db, "users", OWNER_UID), {
+        authUid: OWNER_UID,
+        status: "active",
+        role: "teacher",
+        schoolId: SCHOOL_ID,
+        displayName: "Active Teacher",
+        createdAt: new Date("2026-08-15T00:00:00Z"),
+      });
       await setDoc(doc(db, "assignments", ASSIGNMENT_ID), {
         classId: CLASS_ID,
         teacherId: OWNER_UID,
@@ -213,6 +222,33 @@ describe("Firestore Rules: assignments/{assignmentId}", () => {
           status: "draft",
           createdAt: new Date("2026-08-15T00:00:00Z"),
         }),
+      );
+    });
+  });
+
+  describe("Phase 8G.1 suspension enforcement", () => {
+    async function suspendTeacher(uid: string) {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", uid), {
+          authUid: uid,
+          status: "suspended",
+          role: "teacher",
+          schoolId: SCHOOL_ID,
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+    }
+    it("denies a suspended owning teacher from getting their assignment", async () => {
+      await suspendTeacher(OWNER_UID);
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
+      await assertFails(getDoc(doc(db, "assignments", ASSIGNMENT_ID)));
+    });
+    it("denies a suspended owning teacher from listing their assignments", async () => {
+      await suspendTeacher(OWNER_UID);
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
+      await assertFails(
+        getDocs(query(collection(db, "assignments"), where("teacherId", "==", OWNER_UID))),
       );
     });
   });

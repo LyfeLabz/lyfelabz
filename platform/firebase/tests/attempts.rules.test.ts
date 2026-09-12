@@ -112,6 +112,15 @@ describe("Firestore Rules: attempts/{attemptId}", () => {
     await testEnv.clearFirestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      // Phase 8G.1: teacher-read branches require an active teacher record.
+      await setDoc(doc(db, "users", TEACHER_UID), {
+        authUid: TEACHER_UID,
+        status: "active",
+        role: "teacher",
+        schoolId: SCHOOL_ID,
+        displayName: "Active Teacher",
+        createdAt: new Date("2026-08-15T00:00:00Z"),
+      });
 
       // Backend-seeded attempt owned by (STUDENT_UID) in class (CLASS_ID)
       // taught by (TEACHER_UID). This is the fixture the positive Rules
@@ -326,6 +335,35 @@ describe("Firestore Rules: attempts/{attemptId}", () => {
         .authenticatedContext(TEACHER_UID, OWNER_TEACHER_TOKEN)
         .firestore();
       await assertFails(deleteDoc(doc(db, "attempts", OWNER_ATTEMPT_ID)));
+    });
+  });
+
+  describe("Phase 8G.1 suspension enforcement", () => {
+    async function suspendTeacher(uid: string) {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", uid), {
+          authUid: uid,
+          status: "suspended",
+          role: "teacher",
+          schoolId: SCHOOL_ID,
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+    }
+    it("denies a suspended owning teacher (stale claim) from getting an attempt", async () => {
+      await suspendTeacher(TEACHER_UID);
+      const db = testEnv
+        .authenticatedContext(TEACHER_UID, OWNER_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "attempts", OWNER_ATTEMPT_ID)));
+    });
+    it("still allows the owning student to get their own attempt (student isolation preserved)", async () => {
+      await suspendTeacher(TEACHER_UID);
+      const db = testEnv
+        .authenticatedContext(STUDENT_UID, OWNER_STUDENT_TOKEN)
+        .firestore();
+      await assertSucceeds(getDoc(doc(db, "attempts", OWNER_ATTEMPT_ID)));
     });
   });
 });

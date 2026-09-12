@@ -14,6 +14,21 @@ rules_version = '2';
 // Every collection not matched below inherits the terminal deny rule at
 // the bottom of the file. New rules must be additive and narrowly scoped;
 // existing rules must not be weakened.
+//
+// Phase 8G.1 - teacher suspension enforcement. Every direct teacher-read
+// branch (classes, enrollments, assignments, submissions, attempts, the LMS
+// mirror collections, and the teacher preferences subdoc) additionally
+// requires the caller to be an `active` `teacher` in their canonical
+// `users/{uid}` record via `callerIsActiveTeacher()`. This makes suspension
+// fail closed at the Rules layer even while a stale teacher token claim is
+// still live. The self `users/{uid}` read is intentionally left ungated so
+// the suspended/refusal bootstrap can still read the caller's own status.
+//
+// Phase 8G.3 - shared authenticated read surfaces (schools, lmsProviders,
+// assessments, assessmentRevisions) are read by more than one active role,
+// so they are gated by `callerIsActiveUser()` (active status, any role)
+// rather than the teacher-only gate. A `suspended` user therefore loses these
+// reads too, while active students, teachers, and administrators keep them.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -26,6 +41,46 @@ service cloud.firestore {
 
     function isSelf(uid) {
       return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Phase 8G.1 - authoritative active-teacher enforcement.
+    //
+    // A suspended teacher can keep a stale `role: "teacher"` token claim in
+    // an already-issued ID token and still match an owner field
+    // (`teacherId`/`ownerUid`) on a resource, so owner-match and claim alone
+    // no longer prove active authorization. Every direct teacher-read branch
+    // additionally requires the caller's canonical `users/{uid}` record to be
+    // an `active` `teacher`, evaluated here with a single cached document
+    // access. Suspension therefore fails closed at the Rules layer
+    // immediately, without waiting for the stale token to expire.
+    //
+    // The self `users/{uid}` read that the suspended/refusal bootstrap
+    // depends on is intentionally NOT gated by this helper, so a suspended
+    // teacher can still read their own record to discover their status.
+    function callerUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Phase 8G.3 - authoritative active-user gate for SHARED authenticated
+    // read surfaces (schools, lmsProviders, assessments, assessmentRevisions)
+    // that are legitimately read by more than one active role. It requires the
+    // caller's canonical `users/{uid}` record to exist and be `active`, so a
+    // `suspended` (or otherwise non-active) user cannot retain these reads
+    // merely because `request.auth` is still valid or stale claims remain. It
+    // does NOT constrain role, so active students, teachers, and
+    // administrators keep their existing access. It reads the same
+    // `users/{uid}` document as `callerIsActiveTeacher()`; Firestore caches
+    // that document access within a single request, so composing the two adds
+    // no additional document access.
+    function callerIsActiveUser() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && callerUserData().status == 'active';
+    }
+
+    function callerIsActiveTeacher() {
+      return callerIsActiveUser()
+        && callerUserData().role == 'teacher';
     }
 
     // Sprint 2 fixed allowlist of self-mutable fields on users/{uid}.
@@ -69,7 +124,7 @@ service cloud.firestore {
     //     denied explicitly rather than through the terminal deny alone,
     //     to document the callable-only writer contract at the surface.
     match /users/{uid}/preferences/teacher {
-      allow get: if isSelf(uid);
+      allow get: if isSelf(uid) && callerIsActiveTeacher();
       allow create, update, delete: if false;
     }
 
@@ -82,7 +137,7 @@ service cloud.firestore {
     // allowlist is enforced by the write path (server-only) rather than
     // by the read rule. List and every write are denied.
     match /schools/{schoolId} {
-      allow get: if isSignedIn();
+      allow get: if callerIsActiveUser();
     }
 
     // ---------- classes/{classId} ----------
@@ -110,9 +165,11 @@ service cloud.firestore {
     //     against classes/{classId} is denied by the terminal deny rule.
     match /classes/{classId} {
       allow get: if isSignedIn()
-        && resource.data.teacherId == request.auth.uid;
+        && resource.data.teacherId == request.auth.uid
+        && callerIsActiveTeacher();
       allow list: if isSignedIn()
-        && resource.data.teacherId == request.auth.uid;
+        && resource.data.teacherId == request.auth.uid
+        && callerIsActiveTeacher();
     }
 
     // ---------- enrollments/{enrollmentId} ----------
@@ -152,6 +209,7 @@ service cloud.firestore {
         || (
           exists(/databases/$(database)/documents/classes/$(resource.data.classId))
           && get(/databases/$(database)/documents/classes/$(resource.data.classId)).data.teacherId == request.auth.uid
+          && callerIsActiveTeacher()
         )
       );
       allow list: if isSignedIn() && (
@@ -159,6 +217,7 @@ service cloud.firestore {
         || (
           exists(/databases/$(database)/documents/classes/$(resource.data.classId))
           && get(/databases/$(database)/documents/classes/$(resource.data.classId)).data.teacherId == request.auth.uid
+          && callerIsActiveTeacher()
         )
       );
     }
@@ -192,9 +251,11 @@ service cloud.firestore {
     //     deny rule.
     match /assignments/{assignmentId} {
       allow get: if isSignedIn()
-        && resource.data.teacherId == request.auth.uid;
+        && resource.data.teacherId == request.auth.uid
+        && callerIsActiveTeacher();
       allow list: if isSignedIn()
-        && resource.data.teacherId == request.auth.uid;
+        && resource.data.teacherId == request.auth.uid
+        && callerIsActiveTeacher();
 
       // ---------- assignments/{assignmentId}/recipients/{studentId} ----------
       //
@@ -264,11 +325,17 @@ service cloud.firestore {
     match /submissions/{submissionId} {
       allow get: if isSignedIn() && (
         resource.data.studentId == request.auth.uid
-        || resource.data.teacherId == request.auth.uid
+        || (
+          resource.data.teacherId == request.auth.uid
+          && callerIsActiveTeacher()
+        )
       );
       allow list: if isSignedIn() && (
         resource.data.studentId == request.auth.uid
-        || resource.data.teacherId == request.auth.uid
+        || (
+          resource.data.teacherId == request.auth.uid
+          && callerIsActiveTeacher()
+        )
       );
     }
 
@@ -281,7 +348,7 @@ service cloud.firestore {
     // Settings > Integrations surface without hardcoding provider
     // identifiers on the client. Every write is server-only.
     match /lmsProviders/{providerId} {
-      allow get, list: if isSignedIn();
+      allow get, list: if callerIsActiveUser();
     }
 
     // ---------- lmsConnections/{connectionId} ----------
@@ -309,9 +376,11 @@ service cloud.firestore {
     //     Cloud Function trust boundary and therefore bypass Rules.
     match /lmsConnections/{connectionId} {
       allow get: if isSignedIn()
-        && resource.data.teacherId == request.auth.uid;
+        && resource.data.teacherId == request.auth.uid
+        && callerIsActiveTeacher();
       allow list: if isSignedIn()
-        && resource.data.teacherId == request.auth.uid;
+        && resource.data.teacherId == request.auth.uid
+        && callerIsActiveTeacher();
     }
 
     // ---------- lmsClassLinks/{linkId} ----------
@@ -333,9 +402,11 @@ service cloud.firestore {
     //     through the Admin SDK from the Cloud Function trust boundary.
     match /lmsClassLinks/{linkId} {
       allow get: if isSignedIn()
-        && resource.data.ownerUid == request.auth.uid;
+        && resource.data.ownerUid == request.auth.uid
+        && callerIsActiveTeacher();
       allow list: if isSignedIn()
-        && resource.data.ownerUid == request.auth.uid;
+        && resource.data.ownerUid == request.auth.uid
+        && callerIsActiveTeacher();
     }
 
     // ---------- lmsAssignmentPublications/{publicationId} ----------
@@ -360,9 +431,11 @@ service cloud.firestore {
     //     boundary and therefore bypasses Rules.
     match /lmsAssignmentPublications/{publicationId} {
       allow get: if isSignedIn()
-        && resource.data.ownerUid == request.auth.uid;
+        && resource.data.ownerUid == request.auth.uid
+        && callerIsActiveTeacher();
       allow list: if isSignedIn()
-        && resource.data.ownerUid == request.auth.uid;
+        && resource.data.ownerUid == request.auth.uid
+        && callerIsActiveTeacher();
     }
 
     // ---------- Assessment helpers ----------
@@ -407,7 +480,7 @@ service cloud.firestore {
     //     (`deployAssessmentRevision`) is the sole writer and runs through
     //     the Admin SDK, bypassing Rules.
     match /assessments/{assessmentId} {
-      allow get: if isSignedIn();
+      allow get: if callerIsActiveUser();
     }
 
     // ---------- assessmentRevisions/{revisionId} ----------
@@ -425,7 +498,7 @@ service cloud.firestore {
     //   - All client writes denied. `deployAssessmentRevision` creates the
     //     document under Admin SDK authority and never mutates it.
     match /assessmentRevisions/{revisionId} {
-      allow get: if isSignedIn();
+      allow get: if callerIsActiveUser();
     }
 
     // ---------- assessmentAnswerKeys/{revisionId} ----------
@@ -507,7 +580,10 @@ service cloud.firestore {
     match /attempts/{attemptId} {
       allow get: if isSignedIn()
         && matchesResourceDistrict()
-        && (isOwningStudent() || isOwningTeacher());
+        && (
+          isOwningStudent()
+          || (isOwningTeacher() && callerIsActiveTeacher())
+        );
       allow create, update, delete: if false;
     }
 

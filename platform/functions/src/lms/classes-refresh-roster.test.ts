@@ -20,6 +20,28 @@ jest.mock("../shared", () => {
     platformCallable: (_options: unknown, handler: unknown) =>
       typeof _options === "function" ? _options : handler,
     PlatformError,
+    // Phase 8G.1/8G.3: the LMS actor gate resolves the caller's authoritative
+    // active-teacher status from users/{uid} and authoritative tenant context
+    // from schools/{schoolId}. Provide both so the gate admits the
+    // authenticated teacher these tests already set up.
+    userRecordDocRef: (uid: string) => ({
+      get: () => ({
+        exists: true,
+        data: () => ({
+          authUid: uid,
+          status: "active",
+          role: "teacher",
+          schoolId: "school-a",
+          createdAt: {},
+        }),
+      }),
+    }),
+    schoolDocRef: () => ({
+      get: () => ({
+        exists: true,
+        data: () => ({ districtId: "district-a", createdAt: {} }),
+      }),
+    }),
     log: { info: mockLogInfo, warn: jest.fn(), error: jest.fn() },
     writeAuditEvent: mockWriteAuditEvent,
   };

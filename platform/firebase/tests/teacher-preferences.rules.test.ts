@@ -44,6 +44,15 @@ describe("Firestore Rules: users/{uid}/preferences/teacher", () => {
     await testEnv.clearFirestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      // Phase 8G.1: teacher-read branches require an active teacher record.
+      await setDoc(doc(db, "users", SELF_UID), {
+        authUid: SELF_UID,
+        status: "active",
+        role: "teacher",
+        schoolId: "school-a",
+        displayName: "Active Teacher",
+        createdAt: new Date("2026-08-15T00:00:00Z"),
+      });
       await setDoc(
         doc(db, "users", SELF_UID, "preferences", "teacher"),
         seededPreferencesDoc(),
@@ -72,6 +81,25 @@ describe("Firestore Rules: users/{uid}/preferences/teacher", () => {
 
     it("denies unauthenticated read", async () => {
       const db = testEnv.unauthenticatedContext().firestore();
+      await assertFails(
+        getDoc(doc(db, "users", SELF_UID, "preferences", "teacher")),
+      );
+    });
+
+    // Phase 8G.1 - suspension enforcement. A suspended teacher cannot read
+    // even their own preference document.
+    it("denies a suspended teacher reading their own preference document", async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", SELF_UID), {
+          authUid: SELF_UID,
+          status: "suspended",
+          role: "teacher",
+          schoolId: "school-a",
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+      const db = testEnv.authenticatedContext(SELF_UID).firestore();
       await assertFails(
         getDoc(doc(db, "users", SELF_UID, "preferences", "teacher")),
       );

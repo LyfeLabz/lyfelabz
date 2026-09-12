@@ -154,7 +154,7 @@ async function handler(
   // test has already installed a fixture transport / config, so unit
   // tests keep working unchanged.
   ensureGoogleClassroomProductionBindings();
-  const actor = assertAuthenticatedTeacherForLms(request);
+  const actor = await assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
       "lms.invalidRequest",

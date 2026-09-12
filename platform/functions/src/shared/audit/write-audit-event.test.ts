@@ -1,5 +1,6 @@
 const mockAdd = jest.fn();
-const mockAuditCollectionRef = jest.fn(() => ({ add: mockAdd }));
+const mockDoc = jest.fn(() => ({ id: "evt-doc-1" }));
+const mockAuditCollectionRef = jest.fn(() => ({ add: mockAdd, doc: mockDoc }));
 
 jest.mock("../firestore/typed-ref", () => ({
   auditEventsCollectionRef: () => mockAuditCollectionRef(),
@@ -15,7 +16,11 @@ jest.mock("firebase-admin/firestore", () => ({
 
 import { PlatformError } from "../errors/platform-error";
 import { AUDIT_ACTIONS } from "../types/audit-event";
-import { writeAuditEvent, type WriteAuditEventInput } from "./write-audit-event";
+import {
+  writeAuditEvent,
+  writeAuditEventInTransaction,
+  type WriteAuditEventInput,
+} from "./write-audit-event";
 
 function validInput(
   overrides: Partial<WriteAuditEventInput> = {},
@@ -412,5 +417,66 @@ describe("writeAuditEvent", () => {
     expect(result.record).not.toHaveProperty("districtId");
     const written = mockAdd.mock.calls[0][0] as Record<string, unknown>;
     expect(written).not.toHaveProperty("districtId");
+  });
+});
+
+describe("writeAuditEventInTransaction", () => {
+  beforeEach(() => {
+    mockAdd.mockReset();
+    mockDoc.mockClear();
+    mockAuditCollectionRef.mockClear();
+  });
+
+  it("enlists the canonical write via tx.set on a fresh doc ref and returns its id", () => {
+    const txSet = jest.fn();
+    const tx = { set: txSet } as never;
+
+    const result = writeAuditEventInTransaction(tx, validInput());
+
+    expect(mockDoc).toHaveBeenCalledTimes(1);
+    expect(mockAdd).not.toHaveBeenCalled();
+    expect(txSet).toHaveBeenCalledTimes(1);
+    const [ref, write] = txSet.mock.calls[0];
+    expect(ref).toEqual({ id: "evt-doc-1" });
+    expect(write).toEqual({
+      actorUserId: "user-abc",
+      actorRole: "student",
+      action: "students.activated",
+      targetType: "user",
+      targetId: "user-abc",
+      schoolId: "school-123",
+      occurredAt: SERVER_TIMESTAMP_SENTINEL,
+    });
+    expect(result.eventId).toBe("evt-doc-1");
+  });
+
+  it("validates synchronously and never touches the transaction on invalid input", () => {
+    const txSet = jest.fn();
+    const tx = { set: txSet } as never;
+    expect(() =>
+      writeAuditEventInTransaction(tx, validInput({ actorUserId: "  " })),
+    ).toThrow(PlatformError);
+    expect(txSet).not.toHaveBeenCalled();
+  });
+
+  it("accepts the users.suspended action with school/district context and payload", () => {
+    const txSet = jest.fn();
+    const tx = { set: txSet } as never;
+    writeAuditEventInTransaction(
+      tx,
+      validInput({
+        actorRole: "platformAdministrator",
+        action: "users.suspended",
+        targetType: "user",
+        targetId: "uid-teacher",
+        schoolId: "school-1",
+        districtId: "district-1",
+        payload: { previousStatus: "active", role: "teacher" },
+      }),
+    );
+    const [, write] = txSet.mock.calls[0];
+    expect(write.action).toBe("users.suspended");
+    expect(write.districtId).toBe("district-1");
+    expect(write.payload).toEqual({ previousStatus: "active", role: "teacher" });
   });
 });

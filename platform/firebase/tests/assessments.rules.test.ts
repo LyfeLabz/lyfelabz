@@ -47,6 +47,24 @@ describe("Firestore Rules: assessments/{assessmentId}", () => {
     await testEnv.clearFirestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      // Phase 8G.3: shared authenticated read surfaces require an active
+      // canonical user record for the caller.
+      await setDoc(doc(db, "users", STUDENT_UID), {
+        authUid: STUDENT_UID,
+        status: "active",
+        role: "student",
+        schoolId: "school-a",
+        displayName: "Active Student",
+        createdAt: new Date("2026-01-01T00:00:00Z"),
+      });
+      await setDoc(doc(db, "users", TEACHER_UID), {
+        authUid: TEACHER_UID,
+        status: "active",
+        role: "teacher",
+        schoolId: "school-a",
+        displayName: "Active Teacher",
+        createdAt: new Date("2026-01-01T00:00:00Z"),
+      });
       await setDoc(doc(db, "assessments", ASSESSMENT_ID), {
         assessmentId: ASSESSMENT_ID,
         activityId: "lesson_g7_earths-layers",
@@ -74,6 +92,42 @@ describe("Firestore Rules: assessments/{assessmentId}", () => {
     it("denies collection enumeration of assessments", async () => {
       const db = testEnv.authenticatedContext(TEACHER_UID, TEACHER_TOKEN).firestore();
       await assertFails(getDocs(collection(db, "assessments")));
+    });
+
+    // Phase 8G.3 - suspension enforcement on the shared authenticated surface.
+    it("denies a suspended teacher carrying stale teacher claims", async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", TEACHER_UID), {
+          authUid: TEACHER_UID,
+          status: "suspended",
+          role: "teacher",
+          schoolId: "school-a",
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-01-01T00:00:00Z"),
+        });
+      });
+      // TEACHER_TOKEN still carries role: teacher (stale claim).
+      const db = testEnv
+        .authenticatedContext(TEACHER_UID, TEACHER_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "assessments", ASSESSMENT_ID)));
+    });
+
+    it("denies a suspended student", async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", STUDENT_UID), {
+          authUid: STUDENT_UID,
+          status: "suspended",
+          role: "student",
+          schoolId: "school-a",
+          displayName: "Suspended Student",
+          createdAt: new Date("2026-01-01T00:00:00Z"),
+        });
+      });
+      const db = testEnv
+        .authenticatedContext(STUDENT_UID, STUDENT_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "assessments", ASSESSMENT_ID)));
     });
   });
 

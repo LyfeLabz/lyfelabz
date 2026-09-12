@@ -41,6 +41,15 @@ describe("Firestore Rules: classes/{classId}", () => {
     await testEnv.clearFirestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      // Phase 8G.1: teacher-read branches require an active teacher record.
+      await setDoc(doc(db, "users", OWNER_UID), {
+        authUid: OWNER_UID,
+        status: "active",
+        role: "teacher",
+        schoolId: SCHOOL_ID,
+        displayName: "Owner Teacher",
+        createdAt: new Date("2026-08-15T00:00:00Z"),
+      });
       await setDoc(doc(db, "classes", CLASS_ID), {
         teacherId: OWNER_UID,
         schoolId: SCHOOL_ID,
@@ -94,6 +103,49 @@ describe("Firestore Rules: classes/{classId}", () => {
 
     it("denies an unauthenticated caller from getting any class", async () => {
       const db = testEnv.unauthenticatedContext().firestore();
+      await assertFails(getDoc(doc(db, "classes", CLASS_ID)));
+    });
+
+    // Phase 8G.1 - suspension enforcement.
+    it("denies a suspended owning teacher (stale claim) from getting their class", async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", OWNER_UID), {
+          authUid: OWNER_UID,
+          status: "suspended",
+          role: "teacher",
+          schoolId: SCHOOL_ID,
+          displayName: "Owner Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
+      await assertFails(getDoc(doc(db, "classes", CLASS_ID)));
+    });
+
+    it("denies a suspended owning teacher from listing their classes", async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", OWNER_UID), {
+          authUid: OWNER_UID,
+          status: "suspended",
+          role: "teacher",
+          schoolId: SCHOOL_ID,
+          displayName: "Owner Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
+      await assertFails(
+        getDocs(
+          query(collection(db, "classes"), where("teacherId", "==", OWNER_UID)),
+        ),
+      );
+    });
+
+    it("denies an owning teacher with no canonical user record (fails closed)", async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await deleteDoc(doc(ctx.firestore(), "users", OWNER_UID));
+      });
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
       await assertFails(getDoc(doc(db, "classes", CLASS_ID)));
     });
   });

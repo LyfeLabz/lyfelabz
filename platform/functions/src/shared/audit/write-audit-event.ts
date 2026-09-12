@@ -1,4 +1,8 @@
-import { FieldValue } from "firebase-admin/firestore";
+import {
+  FieldValue,
+  type DocumentReference,
+  type Transaction,
+} from "firebase-admin/firestore";
 
 import { PlatformError } from "../errors/platform-error";
 import { auditEventsCollectionRef } from "../firestore/typed-ref";
@@ -100,9 +104,26 @@ function isValidAction(value: unknown): value is AuditAction {
 //
 // Downstream Firestore failures are wrapped as `audit.writeFailed` with
 // the original cause preserved.
-export async function writeAuditEvent(
+//
+// The validation and canonical-shape construction are factored into
+// `buildAuditEventWrite` so there is still exactly ONE place that decides
+// what a valid audit event looks like. Both the fire-and-forget
+// `writeAuditEvent` (its own `.add()`) and the transaction-aware
+// `writeAuditEventInTransaction` (a caller-provided `tx.set()`) consume
+// that single builder, so a transaction-scoped audit write can never drift
+// from the canonical shape or vocabulary the standalone writer enforces.
+export type BuiltAuditEvent = {
+  readonly write: AuditEventWrite;
+  readonly record: Omit<AuditEventWrite, "occurredAt">;
+};
+
+// Validate the input and construct the canonical write. This performs no I/O
+// and allocates no document reference, so it is safe to call inside a
+// Firestore transaction body (the transaction writer allocates the ref
+// itself via `.doc()`).
+export function buildAuditEventWrite(
   input: WriteAuditEventInput,
-): Promise<WriteAuditEventResult> {
+): BuiltAuditEvent {
   if (!isNonEmptyString(input.actorUserId)) {
     throw new PlatformError(
       "audit.invalidActorUserId",
@@ -193,9 +214,16 @@ export async function writeAuditEvent(
     occurredAt: FieldValue.serverTimestamp(),
   };
 
+  return { write, record: canonical };
+}
+
+export async function writeAuditEvent(
+  input: WriteAuditEventInput,
+): Promise<WriteAuditEventResult> {
+  const { write, record } = buildAuditEventWrite(input);
   try {
     const ref = await auditEventsCollectionRef().add(write);
-    return { eventId: ref.id, record: canonical };
+    return { eventId: ref.id, record };
   } catch (err) {
     throw new PlatformError(
       "audit.writeFailed",
@@ -203,4 +231,24 @@ export async function writeAuditEvent(
       err,
     );
   }
+}
+
+// Transaction-aware audit writer. Enlists the canonical audit event into a
+// caller-provided Firestore transaction via `tx.set`, so the audit event
+// commits atomically with the state transition that produced it and cannot
+// exist without that transition (or the transition without it). Firestore
+// requires all reads in a transaction to precede all writes, so the caller
+// must have completed its transactional reads before calling this. The
+// returned `eventId` is the id the event will carry once the transaction
+// commits; if the transaction aborts, no event is written. Input validation
+// throws synchronously (aborting the enclosing transaction) exactly as the
+// standalone writer does.
+export function writeAuditEventInTransaction(
+  tx: Transaction,
+  input: WriteAuditEventInput,
+): WriteAuditEventResult {
+  const { write, record } = buildAuditEventWrite(input);
+  const ref: DocumentReference<AuditEventWrite> = auditEventsCollectionRef().doc();
+  tx.set(ref, write);
+  return { eventId: ref.id, record };
 }

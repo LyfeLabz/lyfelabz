@@ -68,4 +68,5 @@ export {
   teachersApproveVerification,
   teachersDenyVerification,
   teachersRequestVerification,
+  teachersSuspend,
 } from "./teachers";

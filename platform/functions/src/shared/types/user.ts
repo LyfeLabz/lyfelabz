@@ -115,6 +115,20 @@ export type StudentActivationWrite = {
   readonly status: "active";
 };
 
+// Write shape for the administrative teacher-suspension callable
+// (teachersSuspend), Phase 8G.1. Conforms to the transition table in
+// PLATFORM_STATE_MACHINE.md §3: an `active` teacher moves to `suspended`.
+// Suspension is a temporary administrative withholding of access, so the
+// write advances ONLY `status`. Every other field on the record - authUid,
+// role, schoolId, displayName, profile, and all instructional associations -
+// is preserved so identity, teacher-owned data, and history survive the
+// transition unchanged (custom-claim clearing and refresh-token revocation
+// are performed separately through the Firebase Auth SDK, not on this
+// document).
+export type TeacherSuspensionWrite = {
+  readonly status: "suspended";
+};
+
 // Write shape for the direct allowlisted pilot-teacher activation callable
 // (teachersActivatePilot), Sprint 29G.5C. Conforms to Data Model §3.1: the
 // activation-required fields (role, schoolId, displayName) are written on

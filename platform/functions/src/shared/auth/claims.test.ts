@@ -16,7 +16,11 @@ jest.mock("firebase-admin/auth", () => ({
 }));
 
 import { PlatformError } from "../errors/platform-error";
-import { readCustomClaims, writeCustomClaims } from "./claims";
+import {
+  clearCustomClaims,
+  readCustomClaims,
+  writeCustomClaims,
+} from "./claims";
 
 function validInput(overrides: Partial<Parameters<typeof writeCustomClaims>[0]> = {}) {
   return {
@@ -263,5 +267,43 @@ describe("readCustomClaims", () => {
       code: "claims.invalidUid",
     });
     expect(mockGetUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("clearCustomClaims", () => {
+  beforeEach(() => {
+    mockSetCustomUserClaims.mockReset();
+    mockGetUser.mockReset();
+  });
+
+  it("clears all custom claims by writing null", async () => {
+    mockSetCustomUserClaims.mockResolvedValueOnce(undefined);
+    await expect(clearCustomClaims("uid-abc")).resolves.toBeUndefined();
+    expect(mockSetCustomUserClaims).toHaveBeenCalledTimes(1);
+    expect(mockSetCustomUserClaims).toHaveBeenCalledWith("uid-abc", null);
+  });
+
+  it("is idempotent: a second clear writes null again without error", async () => {
+    mockSetCustomUserClaims.mockResolvedValue(undefined);
+    await clearCustomClaims("uid-abc");
+    await clearCustomClaims("uid-abc");
+    expect(mockSetCustomUserClaims).toHaveBeenNthCalledWith(1, "uid-abc", null);
+    expect(mockSetCustomUserClaims).toHaveBeenNthCalledWith(2, "uid-abc", null);
+  });
+
+  it("rejects an empty uid with claims.invalidUid and does not call setCustomUserClaims", async () => {
+    await expect(clearCustomClaims("  ")).rejects.toMatchObject({
+      name: "PlatformError",
+      code: "claims.invalidUid",
+    });
+    expect(mockSetCustomUserClaims).not.toHaveBeenCalled();
+  });
+
+  it("wraps a downstream failure as claims.clearFailed", async () => {
+    mockSetCustomUserClaims.mockRejectedValueOnce(new Error("auth down"));
+    await expect(clearCustomClaims("uid-abc")).rejects.toMatchObject({
+      name: "PlatformError",
+      code: "claims.clearFailed",
+    });
   });
 });

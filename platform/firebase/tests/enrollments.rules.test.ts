@@ -50,6 +50,15 @@ describe("Firestore Rules: enrollments/{enrollmentId}", () => {
     await testEnv.clearFirestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const db = ctx.firestore();
+      // Phase 8G.1: teacher-read branches require an active teacher record.
+      await setDoc(doc(db, "users", TEACHER_UID), {
+        authUid: TEACHER_UID,
+        status: "active",
+        role: "teacher",
+        schoolId: SCHOOL_ID,
+        displayName: "Active Teacher",
+        createdAt: new Date("2026-08-15T00:00:00Z"),
+      });
 
       await setDoc(doc(db, "classes", CLASS_ID), {
         teacherId: TEACHER_UID,
@@ -282,6 +291,47 @@ describe("Firestore Rules: enrollments/{enrollmentId}", () => {
           enrolledAt: new Date("2026-08-20T00:00:00Z"),
         }),
       );
+    });
+  });
+
+  describe("Phase 8G.1 suspension enforcement", () => {
+    async function suspendTeacher(uid: string) {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "users", uid), {
+          authUid: uid,
+          status: "suspended",
+          role: "teacher",
+          schoolId: SCHOOL_ID,
+          displayName: "Suspended Teacher",
+          createdAt: new Date("2026-08-15T00:00:00Z"),
+        });
+      });
+    }
+    // Stale teacher token: even carrying a live-looking teacher claim, the
+    // record-based gate denies a suspended teacher.
+    const STALE_TEACHER_TOKEN = { role: "teacher", schoolId: SCHOOL_ID };
+    it("denies a suspended class-owning teacher (stale claim) from getting an enrollment", async () => {
+      await suspendTeacher(TEACHER_UID);
+      const db = testEnv
+        .authenticatedContext(TEACHER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(getDoc(doc(db, "enrollments", ENROLLMENT_ID)));
+    });
+    it("denies a suspended class-owning teacher (stale claim) from listing a class roster", async () => {
+      await suspendTeacher(TEACHER_UID);
+      const db = testEnv
+        .authenticatedContext(TEACHER_UID, STALE_TEACHER_TOKEN)
+        .firestore();
+      await assertFails(
+        getDocs(
+          query(collection(db, "enrollments"), where("classId", "==", CLASS_ID)),
+        ),
+      );
+    });
+    it("still allows the enrolled student to get their own enrollment (student isolation preserved)", async () => {
+      await suspendTeacher(TEACHER_UID);
+      const db = testEnv.authenticatedContext(STUDENT_UID).firestore();
+      await assertSucceeds(getDoc(doc(db, "enrollments", ENROLLMENT_ID)));
     });
   });
 });

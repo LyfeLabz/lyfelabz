@@ -22,6 +22,28 @@ jest.mock("../shared", () => {
     platformCallable: (_options: unknown, handler: unknown) =>
       typeof _options === "function" ? _options : handler,
     PlatformError,
+    // Phase 8G.1/8G.3: the LMS actor gate resolves the caller's authoritative
+    // active-teacher status from users/{uid} and authoritative tenant context
+    // from schools/{schoolId}. Provide both so the gate admits the
+    // authenticated teacher these tests already set up.
+    userRecordDocRef: (uid: string) => ({
+      get: () => ({
+        exists: true,
+        data: () => ({
+          authUid: uid,
+          status: "active",
+          role: "teacher",
+          schoolId: "school-a",
+          createdAt: {},
+        }),
+      }),
+    }),
+    schoolDocRef: () => ({
+      get: () => ({
+        exists: true,
+        data: () => ({ districtId: "district-a", createdAt: {} }),
+      }),
+    }),
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     writeAuditEvent: mockWriteAuditEvent,
   };
@@ -200,19 +222,22 @@ describe("lmsClassesSyncRoster callable (Sprint 23C)", () => {
     });
   });
 
-  it("does not require a districtId claim (Sprint 11D I-5 backwards-compat)", async () => {
+  it("resolves districtId authoritatively even when the token omits the claim (Phase 8G.3)", async () => {
+    // Phase 8G.3: tenant context is derived from canonical records, not the
+    // token. A teacher whose token omits districtId still operates under the
+    // authoritative district resolved from schools/{schoolId}.
     mockSynchronize.mockResolvedValueOnce(baseSummary());
     await __lmsClassesSyncRosterHandler(
       makeRequest({ token: { role: "teacher", schoolId: "school-a" } }),
     );
     expect(mockSynchronize).toHaveBeenCalledWith({
-      actor: { uid: "teacher-1", schoolId: "school-a" },
+      actor: { uid: "teacher-1", schoolId: "school-a", districtId: "district-a" },
       classId: "class-1",
     });
     const auditCall = mockWriteAuditEvent.mock.calls[0][0] as Record<
       string,
       unknown
     >;
-    expect(auditCall.districtId).toBeUndefined();
+    expect(auditCall.districtId).toBe("district-a");
   });
 });

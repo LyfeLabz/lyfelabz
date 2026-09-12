@@ -136,7 +136,7 @@ async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsConnectionsCompleteResponse> {
   ensureGoogleClassroomProductionBindings();
-  const actor = assertAuthenticatedTeacherForLms(request);
+  const actor = await assertAuthenticatedTeacherForLms(request);
   if (request.data === null || typeof request.data !== "object") {
     throw new PlatformError(
       "lms.invalidRequest",
