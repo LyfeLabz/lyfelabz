@@ -6,20 +6,25 @@
 // dance. This is a beta-only shortcut owned by the repo owner and is
 // NEVER exported from the Cloud Functions bundle.
 //
+// No production identity (email, UID, or project id) is hard-coded here
+// (Phase 8G.12A, Correction 10). The target email and the Firebase project
+// are BOTH explicit operator inputs; the project is never defaulted to a
+// production project id.
+//
 // Prerequisites:
-//   1. The target user has already signed in at least once at
-//      https://lyfelabz-prod.web.app/app/ with the target Google
-//      account. `authOnUserCreate` will have written a `provisioned`
-//      users/{uid} document.
-//   2. Application Default Credentials are available locally. The
-//      easiest way is:
-//        gcloud auth application-default login
-//      (or set GOOGLE_APPLICATION_CREDENTIALS to a service-account
-//      JSON key with Firebase Admin permissions on lyfelabz-prod).
-//   3. Run from repo root:
+//   1. The target user has already signed in at least once at the app with
+//      the target Google account. `authOnUserCreate` will have written a
+//      `provisioned` users/{uid} document.
+//   2. Application Default Credentials are available locally. The easiest way
+//      is `gcloud auth application-default login` (or set
+//      GOOGLE_APPLICATION_CREDENTIALS to a service-account JSON key with
+//      Firebase Admin permissions on the target project).
+//   3. Run from repo root, supplying the project (via GCLOUD_PROJECT or the
+//      --project flag) and the target email explicitly:
 //        npm --prefix platform/functions run build
-//        node platform/functions/lib/scripts/bootstrap-beta-teacher.js \
-//          --email cgbreezy7@gmail.com
+//        GCLOUD_PROJECT=<project-id> \
+//          node platform/functions/lib/scripts/bootstrap-beta-teacher.js \
+//          --email <teacher-google-email>
 //
 // After running: the target user must SIGN OUT and back in so their
 // ID token picks up the new custom claims.
@@ -28,7 +33,23 @@ import { initializeApp, applicationDefault, getApps } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
-const PROJECT_ID = process.env.GCLOUD_PROJECT ?? "lyfelabz-prod";
+// Resolve the Firebase project explicitly from operator input (the --project
+// flag or the GCLOUD_PROJECT environment variable). There is no hard-coded
+// production project fallback: if neither is provided the script fails closed
+// rather than silently targeting a default project.
+export function resolveBetaProjectId(input: {
+  envProject?: string | undefined;
+  argProject?: string | undefined;
+}): string {
+  const candidate = (input.argProject ?? input.envProject ?? "").trim();
+  if (candidate.length === 0) {
+    throw new Error(
+      "Missing project id: pass --project <id> or set GCLOUD_PROJECT.",
+    );
+  }
+  return candidate;
+}
+
 export const BETA_DISTRICT_ID = "district-beta";
 export const BETA_SCHOOL_ID = "school-beta";
 // The canonical `requireDistrictContext` helper resolves a school's
@@ -53,6 +74,7 @@ export const BETA_SCHOOL: {
 type Args = {
   email: string;
   displayName?: string;
+  project?: string;
 };
 
 function parseArgs(argv: readonly string[]): Args {
@@ -66,6 +88,9 @@ function parseArgs(argv: readonly string[]): Args {
     } else if (flag === "--name" && value) {
       args.displayName = value;
       i++;
+    } else if (flag === "--project" && value) {
+      args.project = value;
+      i++;
     }
   }
   if (!args.email) {
@@ -76,23 +101,27 @@ function parseArgs(argv: readonly string[]): Args {
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv);
+  const projectId = resolveBetaProjectId({
+    envProject: process.env.GCLOUD_PROJECT,
+    argProject: args.project,
+  });
 
   if (getApps().length === 0) {
     initializeApp({
       credential: applicationDefault(),
-      projectId: PROJECT_ID,
+      projectId,
     });
   }
 
   const auth = getAuth();
   const db = getFirestore();
 
-  console.log(`[bootstrap] project=${PROJECT_ID} email=${args.email}`);
+  console.log(`[bootstrap] project=${projectId} email=${args.email}`);
 
   const user = await auth.getUserByEmail(args.email).catch(() => null);
   if (!user) {
     throw new Error(
-      `No Firebase Auth user found for ${args.email}. Sign in once at https://lyfelabz-prod.web.app/app/ first, then re-run.`,
+      `No Firebase Auth user found for ${args.email}. Sign in once at the app first, then re-run.`,
     );
   }
   const uid = user.uid;
@@ -149,7 +178,7 @@ async function main(): Promise<void> {
 
   console.log("");
   console.log("[bootstrap] DONE. Next steps:");
-  console.log("  1. Sign OUT at https://lyfelabz-prod.web.app/app/");
+  console.log("  1. Sign OUT of the app.");
   console.log("  2. Sign back in with " + args.email);
   console.log("     (The new ID token will carry the teacher claims.)");
 }

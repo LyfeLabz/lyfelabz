@@ -2,12 +2,15 @@ import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertActivePlatformAdministratorInTransaction,
   platformCallable,
   PlatformError,
   log,
+  requireActivePlatformAdministrator,
+  runFirestoreTransaction,
   schoolCreationDocRef,
   schoolDocRef,
-  writeAuditEvent,
+  writeAuditEventInTransaction,
   type SchoolCreationWrite,
   type SchoolRecord,
 } from "../shared";
@@ -72,26 +75,6 @@ function isNonEmptyStringArray(value: unknown): value is readonly string[] {
     value.length > 0 &&
     value.every((entry) => isNonEmptyString(entry))
   );
-}
-
-function assertAuthenticatedAdministrator(
-  request: CallableRequest<unknown>,
-): { readonly uid: string } {
-  const auth = request.auth;
-  if (!auth || !isNonEmptyString(auth.uid)) {
-    throw new PlatformError(
-      "schools.unauthenticated",
-      "An authenticated caller is required.",
-    );
-  }
-  const token = auth.token as { readonly role?: unknown } | undefined;
-  if (!token || token.role !== "platformAdministrator") {
-    throw new PlatformError(
-      "schools.unauthorized",
-      "Caller must be a Platform Administrator.",
-    );
-  }
-  return { uid: auth.uid };
 }
 
 function validateRequest(data: unknown): SchoolsCreateRequest {
@@ -268,13 +251,23 @@ function safeLog(fn: () => void): void {
 // Data Model §7.2).
 //
 // Every side effect flows through the canonical shared helpers:
-//   - existing-record read via `schoolDocRef(schoolId).get()`    (typed ref)
-//   - creation write via `schoolCreationDocRef(schoolId).set(...)` (typed ref)
-//   - audit event via `writeAuditEvent({...})`                   (§5 helper)
+//   - administrator revalidation via `assertActivePlatformAdministratorInTransaction`
+//   - existing-record read via `tx.get(schoolDocRef(schoolId))`  (typed ref)
+//   - creation write via `tx.set(schoolCreationDocRef(schoolId), ...)` (typed ref)
+//   - audit event via `writeAuditEventInTransaction(tx, {...})`  (§5 helper)
 //
 // The callable never touches Firestore through `getAdminFirestore()`
 // without going through a typed-ref builder, never issues custom claims,
 // and never adds an `auditEvents` document directly.
+//
+// Phase 8G.12A - transactional administrator authority. The cheap
+// pre-transaction guard (`requireActivePlatformAdministrator`) provides early
+// rejection but is NOT the authoritative mutation-time check. The
+// administrator is re-validated against canonical Firestore INSIDE the same
+// transaction that creates the school and writes the audit, so an
+// administrator who is demoted/suspended after the cheap guard passes but
+// before the transaction commits cannot create a school: the transaction
+// observes the demotion and writes nothing.
 //
 // Idempotency: an existing schools/{schoolId} whose canonical fields match
 // the request returns a success response with `alreadyCreated: true`. No
@@ -285,60 +278,83 @@ function safeLog(fn: () => void): void {
 async function schoolsCreateHandler(
   request: CallableRequest<unknown>,
 ): Promise<SchoolsCreateResponse> {
-  const { uid: actorUserId } = assertAuthenticatedAdministrator(request);
+  // Phase 8G.12 admin-claim hardening (cheap pre-transaction gate): reject a
+  // caller who is not an authoritatively active `platformAdministrator` before
+  // opening a transaction. The authoritative check is re-run in the
+  // transaction below.
+  const { uid: actorUserId } = await requireActivePlatformAdministrator(
+    request,
+    {
+      unauthenticatedCode: "schools.unauthenticated",
+      unauthorizedCode: "schools.unauthorized",
+    },
+  );
   const input = validateRequest(request.data);
 
-  const existingSnapshot = await schoolDocRef(input.schoolId).get();
-  if (existingSnapshot.exists) {
-    const existing = existingSnapshot.data();
-    if (existing && existingMatchesRequest(existing, input)) {
-      safeLog(() =>
-        log.info("schools.createIdempotent", {
-          actorUserId,
-          schoolId: input.schoolId,
-        }),
-      );
-      return { schoolId: input.schoolId, alreadyCreated: true };
-    }
-    throw new PlatformError(
-      "schools.conflict",
-      "A school with this id already exists with different canonical fields.",
-    );
-  }
+  const outcome = await runFirestoreTransaction<{ alreadyCreated: boolean }>(
+    async (tx) => {
+      // -- Reads (all before any write, per Firestore transaction rules) --
 
-  const creation: SchoolCreationWrite = {
-    name: input.name,
-    shortName: input.shortName,
-    timezone: input.timezone,
-    createdAt: FieldValue.serverTimestamp(),
-    ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
-    ...(input.gradeLevels !== undefined
-      ? { gradeLevels: input.gradeLevels }
-      : {}),
-    ...(input.brandingRef !== undefined
-      ? { brandingRef: input.brandingRef }
-      : {}),
-  };
+      // Authoritative, mutation-time administrator revalidation. Closes the
+      // demotion race: a caller demoted/suspended after the cheap guard is
+      // refused here and no school or audit is written.
+      await assertActivePlatformAdministratorInTransaction(tx, actorUserId, {
+        unauthorizedCode: "schools.unauthorized",
+      });
 
-  await schoolCreationDocRef(input.schoolId).set(creation);
+      const existingSnapshot = await tx.get(schoolDocRef(input.schoolId));
+      if (existingSnapshot.exists) {
+        const existing = existingSnapshot.data();
+        if (existing && existingMatchesRequest(existing, input)) {
+          return { alreadyCreated: true };
+        }
+        throw new PlatformError(
+          "schools.conflict",
+          "A school with this id already exists with different canonical fields.",
+        );
+      }
 
-  await writeAuditEvent({
-    actorUserId,
-    actorRole: "platformAdministrator",
-    action: "schools.created",
-    targetType: "school",
-    targetId: input.schoolId,
-    schoolId: input.schoolId,
-  });
+      // -- Writes --
+
+      const creation: SchoolCreationWrite = {
+        name: input.name,
+        shortName: input.shortName,
+        timezone: input.timezone,
+        createdAt: FieldValue.serverTimestamp(),
+        ...(input.districtId !== undefined
+          ? { districtId: input.districtId }
+          : {}),
+        ...(input.gradeLevels !== undefined
+          ? { gradeLevels: input.gradeLevels }
+          : {}),
+        ...(input.brandingRef !== undefined
+          ? { brandingRef: input.brandingRef }
+          : {}),
+      };
+
+      tx.set(schoolCreationDocRef(input.schoolId), creation);
+
+      writeAuditEventInTransaction(tx, {
+        actorUserId,
+        actorRole: "platformAdministrator",
+        action: "schools.created",
+        targetType: "school",
+        targetId: input.schoolId,
+        schoolId: input.schoolId,
+      });
+
+      return { alreadyCreated: false };
+    },
+  );
 
   safeLog(() =>
-    log.info("schools.created", {
+    log.info(outcome.alreadyCreated ? "schools.createIdempotent" : "schools.created", {
       actorUserId,
       schoolId: input.schoolId,
     }),
   );
 
-  return { schoolId: input.schoolId, alreadyCreated: false };
+  return { schoolId: input.schoolId, alreadyCreated: outcome.alreadyCreated };
 }
 
 export const schoolsCreate = platformCallable(schoolsCreateHandler);

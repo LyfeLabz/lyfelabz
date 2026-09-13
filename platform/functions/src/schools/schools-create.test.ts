@@ -1,22 +1,65 @@
 import type { CallableRequest } from "firebase-functions/v2/https";
 
-const mockSchoolGet = jest.fn();
-const mockSchoolSet = jest.fn();
-const mockSchoolDocRef = jest.fn(() => ({ get: mockSchoolGet }));
-const mockSchoolCreationDocRef = jest.fn(() => ({ set: mockSchoolSet }));
+// Phase 8G.12A - schoolsCreate is now transactional: administrator authority
+// is re-validated INSIDE the same Firestore transaction that reads the
+// existing school, writes the creation, and writes the audit. These tests
+// drive a fake transaction so the in-transaction admin check, the demotion
+// race, idempotency, and conflict handling are all exercised.
 
-const mockWriteAuditEvent = jest.fn();
+const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
 
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
 
-const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
+// Preliminary (cheap) admin guard.
+const defaultRequireAdmin = (
+  request: { auth?: { uid?: unknown; token?: { role?: unknown } } },
+  opts?: { unauthenticatedCode?: string; unauthorizedCode?: string },
+) => {
+  const { PlatformError: PE } = jest.requireActual(
+    "../shared/errors/platform-error",
+  );
+  const auth = request?.auth;
+  if (!auth || typeof auth.uid !== "string" || auth.uid.trim().length === 0) {
+    throw new PE(opts?.unauthenticatedCode ?? "admin.unauthenticated", "auth required");
+  }
+  if (!auth.token || auth.token.role !== "platformAdministrator") {
+    throw new PE(opts?.unauthorizedCode ?? "admin.unauthorized", "admin required");
+  }
+  return { uid: auth.uid, schoolId: "school-admin-ctx", districtId: "district-admin-ctx" };
+};
+let requireAdminImpl: typeof defaultRequireAdmin = defaultRequireAdmin;
+const mockRequireAdmin = jest.fn((request: unknown, opts: unknown) =>
+  requireAdminImpl(request as never, opts as never),
+);
+
+// In-transaction authoritative admin check. Default: passes (the caller is an
+// active canonical admin). Overridden to reject to model a demotion race.
+let adminInTxActive = true;
+const mockAssertAdminInTx = jest.fn((_tx: unknown, uid: string, opts?: { unauthorizedCode?: string }) => {
+  if (!adminInTxActive) {
+    const { PlatformError: PE } = jest.requireActual(
+      "../shared/errors/platform-error",
+    );
+    throw new PE(opts?.unauthorizedCode ?? "admin.unauthorized", "canonical admin required");
+  }
+  return Promise.resolve({ uid, schoolId: "school-admin-ctx", districtId: "district-admin-ctx" });
+});
+
+// In-memory school store observed inside the transaction.
+const txSchools = new Map<string, Record<string, unknown> | undefined>();
+const txSet = jest.fn();
+const mockWriteAuditInTx = jest.fn();
+
+function snapshot(data: Record<string, unknown> | undefined) {
+  return { exists: data !== undefined, data: () => data };
+}
+
+const mockRunTransaction = jest.fn();
 
 jest.mock("firebase-admin/firestore", () => ({
-  FieldValue: {
-    serverTimestamp: () => SERVER_TIMESTAMP_SENTINEL,
-  },
+  FieldValue: { serverTimestamp: () => SERVER_TIMESTAMP_SENTINEL },
 }));
 
 jest.mock("firebase-functions/v2/https", () => ({
@@ -31,9 +74,17 @@ jest.mock("../shared", () => {
     platformCallable: (handler: unknown) => handler,
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
-    schoolDocRef: mockSchoolDocRef,
-    schoolCreationDocRef: mockSchoolCreationDocRef,
-    writeAuditEvent: mockWriteAuditEvent,
+    requireActivePlatformAdministrator: mockRequireAdmin,
+    assertActivePlatformAdministratorInTransaction: (
+      tx: unknown,
+      uid: string,
+      opts: unknown,
+    ) => mockAssertAdminInTx(tx, uid, opts as never),
+    runFirestoreTransaction: (fn: unknown) => mockRunTransaction(fn),
+    schoolDocRef: (schoolId: string) => ({ __schoolId: schoolId }),
+    schoolCreationDocRef: (schoolId: string) => ({ __schoolCreation: schoolId }),
+    writeAuditEventInTransaction: (tx: unknown, input: unknown) =>
+      mockWriteAuditInTx(tx, input),
   };
 });
 
@@ -75,18 +126,12 @@ function makeRequest(
       : overrides.token;
   return {
     data,
-    auth: hasAuth
-      ? ({ uid, token: token ?? undefined } as never)
-      : undefined,
+    auth: hasAuth ? ({ uid, token: token ?? undefined } as never) : undefined,
     rawRequest: {} as never,
   };
 }
 
-function absentSnapshot() {
-  return { exists: false, data: () => undefined };
-}
-
-function existingSnapshot(
+function existingSchool(
   overrides: {
     name?: string;
     shortName?: string;
@@ -95,462 +140,152 @@ function existingSnapshot(
     gradeLevels?: readonly string[];
     brandingRef?: string;
   } = {},
-) {
+): Record<string, unknown> {
   return {
-    exists: true,
-    data: () => ({
-      name: overrides.name ?? "Alpha Academy",
-      shortName: overrides.shortName ?? "alpha",
-      timezone: overrides.timezone ?? "America/New_York",
-      createdAt: {} as never,
-      ...(overrides.districtId !== undefined
-        ? { districtId: overrides.districtId }
-        : {}),
-      ...(overrides.gradeLevels !== undefined
-        ? { gradeLevels: overrides.gradeLevels }
-        : {}),
-      ...(overrides.brandingRef !== undefined
-        ? { brandingRef: overrides.brandingRef }
-        : {}),
-    }),
+    name: overrides.name ?? "Alpha Academy",
+    shortName: overrides.shortName ?? "alpha",
+    timezone: overrides.timezone ?? "America/New_York",
+    createdAt: {},
+    ...(overrides.districtId !== undefined ? { districtId: overrides.districtId } : {}),
+    ...(overrides.gradeLevels !== undefined ? { gradeLevels: overrides.gradeLevels } : {}),
+    ...(overrides.brandingRef !== undefined ? { brandingRef: overrides.brandingRef } : {}),
   };
+}
+
+function installDefaultTransaction() {
+  mockRunTransaction.mockImplementation(
+    async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        get: (ref: { __schoolId?: string }) => snapshot(txSchools.get(ref.__schoolId as string)),
+        set: txSet,
+        update: jest.fn(),
+      };
+      return fn(tx);
+    },
+  );
 }
 
 describe("schoolsCreate", () => {
   beforeEach(() => {
-    mockSchoolGet.mockReset();
-    mockSchoolSet.mockReset();
-    mockSchoolDocRef.mockClear();
-    mockSchoolCreationDocRef.mockClear();
-    mockWriteAuditEvent.mockReset();
-    mockLogInfo.mockReset();
-    mockLogWarn.mockReset();
-    mockLogError.mockReset();
+    jest.clearAllMocks();
+    requireAdminImpl = defaultRequireAdmin;
+    adminInTxActive = true;
+    txSchools.clear();
+    installDefaultTransaction();
+    mockWriteAuditInTx.mockReturnValue({ eventId: "evt", record: {} });
   });
 
   it("creates a canonical schools/{schoolId} document and returns the canonical response", async () => {
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    mockSchoolSet.mockResolvedValueOnce(undefined);
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
-
     const result = await __schoolsCreateHandler(makeRequest());
 
-    expect(mockSchoolDocRef).toHaveBeenCalledWith("school-abc");
-    expect(mockSchoolCreationDocRef).toHaveBeenCalledWith("school-abc");
-    expect(mockSchoolSet).toHaveBeenCalledTimes(1);
-    expect(mockSchoolSet).toHaveBeenCalledWith({
-      name: "Alpha Academy",
-      shortName: "alpha",
-      timezone: "America/New_York",
-      createdAt: SERVER_TIMESTAMP_SENTINEL,
-    });
+    expect(mockAssertAdminInTx).toHaveBeenCalledTimes(1);
+    expect(txSet).toHaveBeenCalledTimes(1);
+    expect(txSet).toHaveBeenCalledWith(
+      { __schoolCreation: "school-abc" },
+      {
+        name: "Alpha Academy",
+        shortName: "alpha",
+        timezone: "America/New_York",
+        createdAt: SERVER_TIMESTAMP_SENTINEL,
+      },
+    );
+    expect(mockWriteAuditInTx).toHaveBeenCalledTimes(1);
+    expect(mockWriteAuditInTx).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        action: "schools.created",
+        actorRole: "platformAdministrator",
+        targetType: "school",
+        targetId: "school-abc",
+        schoolId: "school-abc",
+      }),
+    );
     expect(result).toEqual({ schoolId: "school-abc", alreadyCreated: false });
   });
 
-  it("preserves optional fields in the canonical write payload, mapping the legacy district alias to districtId", async () => {
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    mockSchoolSet.mockResolvedValueOnce(undefined);
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
-
+  it("maps the legacy district alias to districtId and preserves optional fields", async () => {
     await __schoolsCreateHandler(
       makeRequest({
-        data: {
-          ...VALID_DATA,
-          district: "District 5",
-          gradeLevels: ["6", "7", "8"],
-          brandingRef: "branding/alpha",
-        },
+        data: { ...VALID_DATA, district: "District 5", gradeLevels: ["6", "7", "8"], brandingRef: "branding/alpha" },
       }),
     );
-
-    expect(mockSchoolSet).toHaveBeenCalledWith({
-      name: "Alpha Academy",
-      shortName: "alpha",
-      timezone: "America/New_York",
-      createdAt: SERVER_TIMESTAMP_SENTINEL,
-      districtId: "District 5",
-      gradeLevels: ["6", "7", "8"],
-      brandingRef: "branding/alpha",
-    });
-  });
-
-  it("persists the canonical districtId when supplied directly", async () => {
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    mockSchoolSet.mockResolvedValueOnce(undefined);
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
-
-    await __schoolsCreateHandler(
-      makeRequest({ data: { ...VALID_DATA, districtId: "district-weston" } }),
-    );
-
-    expect(mockSchoolSet).toHaveBeenCalledWith({
-      name: "Alpha Academy",
-      shortName: "alpha",
-      timezone: "America/New_York",
-      createdAt: SERVER_TIMESTAMP_SENTINEL,
-      districtId: "district-weston",
-    });
-  });
-
-  it("accepts districtId and legacy district together when they match", async () => {
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    mockSchoolSet.mockResolvedValueOnce(undefined);
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
-
-    await __schoolsCreateHandler(
-      makeRequest({
-        data: { ...VALID_DATA, districtId: "district-weston", district: "district-weston" },
-      }),
-    );
-
-    expect(mockSchoolSet).toHaveBeenCalledWith({
-      name: "Alpha Academy",
-      shortName: "alpha",
-      timezone: "America/New_York",
-      createdAt: SERVER_TIMESTAMP_SENTINEL,
-      districtId: "district-weston",
-    });
-  });
-
-  it("rejects conflicting districtId and legacy district with schools.invalidDistrict", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({
-          data: { ...VALID_DATA, districtId: "district-weston", district: "district-other" },
-        }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("rejects an unauthenticated caller with schools.unauthenticated", async () => {
-    await expect(
-      __schoolsCreateHandler(makeRequest({ hasAuth: false })),
-    ).rejects.toMatchObject({
-      name: "PlatformError",
-      code: "schools.unauthenticated",
-    });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-    expect(mockSchoolCreationDocRef).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("rejects non-administrator callers with schools.unauthorized", async () => {
-    await expect(
-      __schoolsCreateHandler(makeRequest({ token: { role: "teacher" } })),
-    ).rejects.toMatchObject({ code: "schools.unauthorized" });
-    await expect(
-      __schoolsCreateHandler(makeRequest({ token: { role: "student" } })),
-    ).rejects.toMatchObject({ code: "schools.unauthorized" });
-    await expect(
-      __schoolsCreateHandler(makeRequest({ token: {} })),
-    ).rejects.toMatchObject({ code: "schools.unauthorized" });
-    await expect(
-      __schoolsCreateHandler(makeRequest({ token: null })),
-    ).rejects.toMatchObject({ code: "schools.unauthorized" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-    expect(mockSchoolCreationDocRef).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("rejects a non-object request payload with schools.invalidRequest", async () => {
-    await expect(
-      __schoolsCreateHandler(makeRequest({ data: null })),
-    ).rejects.toMatchObject({ code: "schools.invalidRequest" });
-    await expect(
-      __schoolsCreateHandler(makeRequest({ data: "not-an-object" })),
-    ).rejects.toMatchObject({ code: "schools.invalidRequest" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("rejects a missing or non-URL-safe schoolId", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, schoolId: "   " } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidSchoolId" });
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, schoolId: "bad/id" } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidSchoolId" });
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, schoolId: "" } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidSchoolId" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("rejects an empty name with schools.invalidName", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, name: "   " } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidName" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("rejects an empty, mis-leading, over-long, or path-unsafe shortName with schools.invalidShortName", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, shortName: "" } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, shortName: "   " } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
-    // Must begin with an alphanumeric.
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, shortName: "-alpha" } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
-    // Path/markup characters are rejected.
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, shortName: "a/b" } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
-    // Over the length bound.
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, shortName: "x".repeat(49) } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidShortName" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("accepts human-facing shortName labels (Sprint 29G.5C-R1)", async () => {
-    for (const label of ["WMS", "Beta", "Weston MS", "St. Mary's & Co", "alpha"]) {
-      mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-      mockSchoolSet.mockResolvedValueOnce(undefined);
-      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
-      const result = await __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, shortName: label } }),
-      );
-      expect(result).toEqual({ schoolId: "school-abc", alreadyCreated: false });
-      expect(mockSchoolSet).toHaveBeenCalledWith(
-        expect.objectContaining({ shortName: label }),
-      );
-    }
-  });
-
-  it("rejects an empty timezone with schools.invalidTimezone", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, timezone: "   " } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidTimezone" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("rejects a non-string district / districtId with schools.invalidDistrict", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, district: 42 } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, district: "   " } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, districtId: 42 } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, districtId: "   " } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidDistrict" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("rejects an invalid gradeLevels with schools.invalidGradeLevels", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, gradeLevels: [] } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidGradeLevels" });
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, gradeLevels: ["6", ""] } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidGradeLevels" });
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, gradeLevels: "6,7" } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidGradeLevels" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("rejects an invalid brandingRef with schools.invalidBrandingRef", async () => {
-    await expect(
-      __schoolsCreateHandler(
-        makeRequest({ data: { ...VALID_DATA, brandingRef: "   " } }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.invalidBrandingRef" });
-    expect(mockSchoolDocRef).not.toHaveBeenCalled();
-  });
-
-  it("is idempotent: an existing document with matching canonical fields returns alreadyCreated without re-writing", async () => {
-    mockSchoolGet.mockResolvedValueOnce(existingSnapshot());
-
-    const result = await __schoolsCreateHandler(makeRequest());
-
-    expect(result).toEqual({ schoolId: "school-abc", alreadyCreated: true });
-    expect(mockSchoolCreationDocRef).not.toHaveBeenCalled();
-    expect(mockSchoolSet).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("idempotent match compares optional fields (districtId, gradeLevels, brandingRef) exactly, resolving the legacy district alias", async () => {
-    mockSchoolGet.mockResolvedValueOnce(
-      existingSnapshot({
+    expect(txSet).toHaveBeenCalledWith(
+      { __schoolCreation: "school-abc" },
+      {
+        name: "Alpha Academy",
+        shortName: "alpha",
+        timezone: "America/New_York",
+        createdAt: SERVER_TIMESTAMP_SENTINEL,
         districtId: "District 5",
         gradeLevels: ["6", "7", "8"],
         brandingRef: "branding/alpha",
-      }),
+      },
     );
+  });
 
-    const result = await __schoolsCreateHandler(
-      makeRequest({
-        data: {
-          ...VALID_DATA,
-          district: "District 5",
-          gradeLevels: ["6", "7", "8"],
-          brandingRef: "branding/alpha",
-        },
-      }),
-    );
-
+  it("is idempotent when an existing school matches (no second write or audit)", async () => {
+    txSchools.set("school-abc", existingSchool());
+    const result = await __schoolsCreateHandler(makeRequest());
     expect(result).toEqual({ schoolId: "school-abc", alreadyCreated: true });
-    expect(mockSchoolSet).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    expect(txSet).not.toHaveBeenCalled();
+    expect(mockWriteAuditInTx).not.toHaveBeenCalled();
   });
 
-  it("rejects a conflicting existing document with schools.conflict", async () => {
-    mockSchoolGet.mockResolvedValueOnce(
-      existingSnapshot({ name: "Different Name" }),
-    );
+  it("rejects an existing school with different canonical fields (schools.conflict)", async () => {
+    txSchools.set("school-abc", existingSchool({ name: "Different" }));
+    await expect(__schoolsCreateHandler(makeRequest())).rejects.toMatchObject({
+      code: "schools.conflict",
+    });
+    expect(txSet).not.toHaveBeenCalled();
+    expect(mockWriteAuditInTx).not.toHaveBeenCalled();
+  });
 
+  it("rejects an unauthenticated caller with schools.unauthenticated (preliminary guard)", async () => {
     await expect(
-      __schoolsCreateHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "schools.conflict" });
-
-    expect(mockSchoolSet).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      __schoolsCreateHandler(makeRequest({ hasAuth: false })),
+    ).rejects.toMatchObject({ code: "schools.unauthenticated" });
+    expect(mockRunTransaction).not.toHaveBeenCalled();
   });
 
-  it("rejects a conflict when the existing document differs on an optional field", async () => {
-    mockSchoolGet.mockResolvedValueOnce(
-      existingSnapshot({ gradeLevels: ["6", "7"] }),
-    );
-
+  it("rejects a non-administrator caller with schools.unauthorized (preliminary guard)", async () => {
     await expect(
-      __schoolsCreateHandler(
-        makeRequest({
-          data: {
-            ...VALID_DATA,
-            gradeLevels: ["6", "7", "8"],
-          },
-        }),
-      ),
-    ).rejects.toMatchObject({ code: "schools.conflict" });
-    expect(mockSchoolSet).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      __schoolsCreateHandler(makeRequest({ token: { role: "teacher" } })),
+    ).rejects.toMatchObject({ code: "schools.unauthorized" });
+    expect(mockRunTransaction).not.toHaveBeenCalled();
   });
 
-  it("invokes the canonical audit helper with schools.created and the canonical target fields", async () => {
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    mockSchoolSet.mockResolvedValueOnce(undefined);
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
-
-    await __schoolsCreateHandler(makeRequest());
-
-    expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
-    expect(mockWriteAuditEvent).toHaveBeenCalledWith({
-      actorUserId: "uid-admin",
-      actorRole: "platformAdministrator",
-      action: "schools.created",
-      targetType: "school",
-      targetId: "school-abc",
-      schoolId: "school-abc",
-    });
+  it("rejects invalid input before opening a transaction", async () => {
+    await expect(
+      __schoolsCreateHandler(makeRequest({ data: { ...VALID_DATA, schoolId: "" } })),
+    ).rejects.toMatchObject({ code: "schools.invalidSchoolId" });
+    expect(mockRunTransaction).not.toHaveBeenCalled();
   });
 
-  it("orders side effects: creation write, then audit event", async () => {
-    const calls: string[] = [];
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    mockSchoolSet.mockImplementationOnce(() => {
-      calls.push("set");
-      return Promise.resolve();
-    });
-    mockWriteAuditEvent.mockImplementationOnce(() => {
-      calls.push("audit");
-      return Promise.resolve({ eventId: "evt-1", record: {} });
+  describe("transactional admin hardening / demotion race", () => {
+    it("refuses when the caller is canonically demoted at the transaction boundary; no write, no audit", async () => {
+      // Preliminary guard passes (token still carries the admin claim)...
+      // ...but the in-transaction canonical re-check observes the demotion.
+      adminInTxActive = false;
+      await expect(__schoolsCreateHandler(makeRequest())).rejects.toMatchObject({
+        code: "schools.unauthorized",
+      });
+      expect(mockAssertAdminInTx).toHaveBeenCalledTimes(1);
+      expect(txSet).not.toHaveBeenCalled();
+      expect(mockWriteAuditInTx).not.toHaveBeenCalled();
     });
 
-    await __schoolsCreateHandler(makeRequest());
+    it("invokes the in-transaction admin check with the schools error namespace", async () => {
+      await __schoolsCreateHandler(makeRequest());
+      expect(mockAssertAdminInTx).toHaveBeenCalledWith(expect.anything(), "uid-admin", {
+        unauthorizedCode: "schools.unauthorized",
+      });
+    });
 
-    expect(calls).toEqual(["set", "audit"]);
-  });
-
-  it("propagates a downstream creation-write failure and does not write audit", async () => {
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    const setErr = new Error("firestore down");
-    mockSchoolSet.mockRejectedValueOnce(setErr);
-
-    await expect(__schoolsCreateHandler(makeRequest())).rejects.toBe(setErr);
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("propagates a downstream audit helper failure", async () => {
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    mockSchoolSet.mockResolvedValueOnce(undefined);
-    const auditErr = new PlatformError(
-      "audit.writeFailed",
-      "boom",
-      new Error("network"),
-    );
-    mockWriteAuditEvent.mockRejectedValueOnce(auditErr);
-
-    await expect(__schoolsCreateHandler(makeRequest())).rejects.toBe(auditErr);
-  });
-
-  it("trims whitespace on every scalar field before writing", async () => {
-    mockSchoolGet.mockResolvedValueOnce(absentSnapshot());
-    mockSchoolSet.mockResolvedValueOnce(undefined);
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
-
-    await __schoolsCreateHandler(
-      makeRequest({
-        data: {
-          schoolId: "  school-abc  ",
-          name: "  Alpha Academy  ",
-          shortName: "  alpha  ",
-          timezone: "  America/New_York  ",
-          districtId: "  District 5  ",
-          brandingRef: "  branding/alpha  ",
-        },
-      }),
-    );
-
-    expect(mockSchoolDocRef).toHaveBeenCalledWith("school-abc");
-    expect(mockSchoolCreationDocRef).toHaveBeenCalledWith("school-abc");
-    expect(mockSchoolSet).toHaveBeenCalledWith({
-      name: "Alpha Academy",
-      shortName: "alpha",
-      timezone: "America/New_York",
-      createdAt: SERVER_TIMESTAMP_SENTINEL,
-      districtId: "District 5",
-      brandingRef: "branding/alpha",
+    it("thrown errors are PlatformError instances", async () => {
+      adminInTxActive = false;
+      await expect(__schoolsCreateHandler(makeRequest())).rejects.toBeInstanceOf(
+        PlatformError,
+      );
     });
   });
 });

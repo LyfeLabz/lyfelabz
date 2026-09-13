@@ -19,6 +19,31 @@ const mockRunInventory = jest.fn();
 const mockRunBackfill = jest.fn();
 const mockLogInfo = jest.fn();
 
+// Phase 8G.12: authoritative administrator guard mocked to reproduce the
+// request-boundary claim check (its canonical behavior is proven in
+// require-active-platform-administrator.test.ts) and to return the caller
+// uid; overridable so a guard rejection can be simulated.
+const defaultRequireAdmin = (
+  request: { auth?: { uid?: unknown; token?: { role?: unknown } } },
+  opts?: { unauthenticatedCode?: string; unauthorizedCode?: string },
+) => {
+  const { PlatformError: PE } = jest.requireActual(
+    "../shared/errors/platform-error",
+  );
+  const auth = request?.auth;
+  if (!auth || typeof auth.uid !== "string" || auth.uid.trim().length === 0) {
+    throw new PE(opts?.unauthenticatedCode ?? "admin.unauthenticated", "auth required");
+  }
+  if (!auth.token || auth.token.role !== "platformAdministrator") {
+    throw new PE(opts?.unauthorizedCode ?? "admin.unauthorized", "admin required");
+  }
+  return { uid: auth.uid, schoolId: "school-admin-ctx", districtId: "district-admin-ctx" };
+};
+let requireAdminImpl: typeof defaultRequireAdmin = defaultRequireAdmin;
+const mockRequireAdmin = jest.fn((request: unknown, opts: unknown) =>
+  requireAdminImpl(request as never, opts as never),
+);
+
 jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
@@ -26,6 +51,7 @@ jest.mock("../shared", () => {
   return {
     PlatformError,
     platformCallable: (handler: unknown) => handler,
+    requireActivePlatformAdministrator: mockRequireAdmin,
     log: { info: mockLogInfo, warn: jest.fn(), error: jest.fn() },
   };
 });
@@ -320,5 +346,70 @@ describe("identityMigrationRunProductionInventory - handler log payload", () => 
     expect(logged).not.toContain("hash-a");
     expect(logged).not.toMatch(/email/i);
     expect(logged).not.toMatch(/providerAccountId/i);
+  });
+});
+
+describe("identityMigrationRunProductionInventory - authoritative admin hardening (Phase 8G.12)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    requireAdminImpl = defaultRequireAdmin;
+  });
+
+  test("a stale admin token denied by the canonical guard never runs the inventory", async () => {
+    requireAdminImpl = () => {
+      const { PlatformError: PE } = jest.requireActual(
+        "../shared/errors/platform-error",
+      );
+      throw new PE("identity.productionInventory.forbidden", "canonical admin required");
+    };
+    await expect(
+      identityMigrationRunProductionInventoryHandler(
+        makeRequest({ uid: "uid-admin", role: "platformAdministrator" }),
+      ),
+    ).rejects.toMatchObject({ code: "identity.productionInventory.forbidden" });
+    expect(mockRunInventory).not.toHaveBeenCalled();
+    expect(mockRunBackfill).not.toHaveBeenCalled();
+  });
+
+  test("the guard is invoked with the identity inventory error namespace", async () => {
+    mockRunInventory.mockResolvedValueOnce(inventorySummaryFixture());
+    await identityMigrationRunProductionInventoryHandler(
+      makeRequest({ uid: "uid-admin", role: "platformAdministrator" }),
+    );
+    expect(mockRequireAdmin).toHaveBeenCalledWith(expect.anything(), {
+      unauthenticatedCode: "identity.productionInventory.unauthenticated",
+      unauthorizedCode: "identity.productionInventory.forbidden",
+    });
+  });
+});
+
+describe("identityMigrationRunProductionInventory - per-page revalidation (Phase 8G.12A)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    requireAdminImpl = defaultRequireAdmin;
+  });
+
+  test("a page call by a now-demoted administrator is refused before the inventory runs", async () => {
+    // Page 1: valid administrator, inventory runs.
+    mockRunInventory.mockResolvedValueOnce(inventorySummaryFixture({ nextPageToken: "page-2" }));
+    const page1 = await identityMigrationRunProductionInventoryHandler(
+      makeRequest({ uid: "uid-admin", role: "platformAdministrator" }),
+    );
+    expect(page1.nextPageToken).toBe("page-2");
+    expect(mockRunInventory).toHaveBeenCalledTimes(1);
+
+    // Between pages the administrator is canonically demoted; the guard now
+    // rejects. The next page call must be refused WITHOUT running the
+    // inventory again, so a demoted admin cannot continue a long scan.
+    requireAdminImpl = () => {
+      const { PlatformError: PE } = jest.requireActual("../shared/errors/platform-error");
+      throw new PE("identity.productionInventory.forbidden", "demoted mid-scan");
+    };
+    await expect(
+      identityMigrationRunProductionInventoryHandler(
+        makeRequest({ uid: "uid-admin", role: "platformAdministrator" }, { pageToken: "page-2" }),
+      ),
+    ).rejects.toMatchObject({ code: "identity.productionInventory.forbidden" });
+    expect(mockRunInventory).toHaveBeenCalledTimes(1); // not called for page 2
   });
 });

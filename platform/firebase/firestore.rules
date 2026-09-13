@@ -788,6 +788,26 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- platformAdminBootstrap/{docId} ----------
+    //
+    // Phase 8G.12A - durable first-platform-administrator bootstrap lineage.
+    // The singleton `platformAdminBootstrap/initial` document records the
+    // lineage of the first-admin role transition (target UID, previous role,
+    // school/district, correlation id, state). It is written and read ONLY by
+    // the operator bootstrap tool running under Admin SDK authority, which
+    // bypasses Rules. It confers no authorization by itself, but it is
+    // security-sensitive evidence and the serialization point for the
+    // first-admin lifecycle, so every client role is denied every operation.
+    //
+    // This block uses an explicit `allow read, write: if false;` pattern
+    // (mirroring `auditEvents`, `externalIdentities`, `launchGrants`) so the
+    // server-only intent is documented at the surface and cannot be relaxed by
+    // a broader accidental edit. `read` covers both `get` and `list`, so
+    // collection enumeration is denied as well.
+    match /platformAdminBootstrap/{docId} {
+      allow read, write: if false;
+    }
+
     // ---------- Terminal default-deny ----------
     match /{document=**} {
       allow read, write: if false;

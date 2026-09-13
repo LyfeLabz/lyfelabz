@@ -1,3 +1,5 @@
+import type { DocumentReference, Transaction } from "firebase-admin/firestore";
+
 import { PlatformError } from "../errors/platform-error";
 import { getAdminFirestore } from "../firestore/admin";
 
@@ -74,6 +76,34 @@ function refuse(): never {
   );
 }
 
+// Typed reference to the singleton `platformConfig/teacherPilotAllowlist`
+// document, so the allowlist can be read transactionally (Phase 8G.12A). The
+// document is denied to every client role at the Rules layer.
+export function teacherPilotAllowlistDocRef(): DocumentReference<TeacherPilotAllowlistDoc> {
+  // TeacherPilotAllowlistDoc has only optional fields, so the SDK's
+  // DocumentReference<DocumentData> is assignable to it without a cast.
+  return getAdminFirestore()
+    .collection(PLATFORM_CONFIG_COLLECTION)
+    .doc(TEACHER_PILOT_ALLOWLIST_DOC_ID);
+}
+
+// Pure allowlist membership predicate. Returns `true` only when `doc` carries
+// a non-empty `emails` array containing `email` (after normalization). A
+// missing/malformed document, an empty array, or an absent/malformed email
+// yields `false` (fail closed at the call site). This is the single source of
+// truth for the membership decision, shared by the standalone and
+// transaction-aware asserts so they can never diverge.
+export function isTeacherPilotAllowlisted(
+  doc: TeacherPilotAllowlistDoc | undefined,
+  email: string | undefined,
+): boolean {
+  const candidate = normalizeEmail(email);
+  if (candidate === undefined) return false;
+  const rawEmails = doc?.emails;
+  if (!Array.isArray(rawEmails) || rawEmails.length === 0) return false;
+  return rawEmails.some((entry) => normalizeEmail(entry) === candidate);
+}
+
 // Read the pilot allowlist and assert that `email` is a member. Throws
 // `teachers.pilotNotAllowlisted` when the account is not permitted, when the
 // configuration document is absent or malformed, or when no verified email
@@ -84,28 +114,29 @@ function refuse(): never {
 export async function assertTeacherPilotAllowlisted(
   email: string | undefined,
 ): Promise<void> {
-  const candidate = normalizeEmail(email);
-  if (candidate === undefined) {
-    // No server-trusted, verified email to match. Fail closed rather than
-    // authorize an identity we cannot confirm.
-    refuse();
-  }
+  // Fail closed without reading Firestore when there is no verified email to
+  // match: authorize nothing we cannot confirm, and avoid a needless read.
+  if (normalizeEmail(email) === undefined) refuse();
+  const snapshot = await teacherPilotAllowlistDocRef().get();
+  const data = snapshot.exists ? snapshot.data() : undefined;
+  if (!isTeacherPilotAllowlisted(data, email)) refuse();
+}
 
-  const snapshot = await getAdminFirestore()
-    .collection(PLATFORM_CONFIG_COLLECTION)
-    .doc(TEACHER_PILOT_ALLOWLIST_DOC_ID)
-    .get();
-
-  if (!snapshot.exists) refuse();
-
-  const data = snapshot.data() as TeacherPilotAllowlistDoc | undefined;
-  const rawEmails = data?.emails;
-  if (!Array.isArray(rawEmails) || rawEmails.length === 0) refuse();
-
-  const allowlisted = rawEmails.some(
-    (entry) => normalizeEmail(entry) === candidate,
-  );
-  if (!allowlisted) refuse();
+// Transaction-aware counterpart used by `teachersApproveVerification` so the
+// allowlist membership check is evaluated INSIDE the same transaction as the
+// administrator re-validation and the status transition. Reads the allowlist
+// document through the caller-provided transaction (a read, so it must precede
+// the transaction's writes) and refuses with the same non-secret error. The
+// membership decision is the shared `isTeacherPilotAllowlisted` predicate, so
+// it cannot drift from the standalone assert.
+export async function assertTeacherPilotAllowlistedInTransaction(
+  tx: Transaction,
+  email: string | undefined,
+): Promise<void> {
+  if (normalizeEmail(email) === undefined) refuse();
+  const snapshot = await tx.get(teacherPilotAllowlistDocRef());
+  const data = snapshot.exists ? snapshot.data() : undefined;
+  if (!isTeacherPilotAllowlisted(data, email)) refuse();
 }
 
 // Non-secret refusal used when the pilot school is not configured. Kept

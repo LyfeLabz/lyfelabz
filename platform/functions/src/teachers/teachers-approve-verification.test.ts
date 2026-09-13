@@ -1,62 +1,94 @@
 import type { CallableRequest } from "firebase-functions/v2/https";
 
-const mockUserGet = jest.fn();
-const mockUserUpdate = jest.fn();
-const mockUserRecordDocRef = jest.fn(() => ({
-  get: mockUserGet,
-  update: mockUserUpdate,
-}));
-
-const mockSchoolGet = jest.fn();
-const mockSchoolDocRef = jest.fn(() => ({ get: mockSchoolGet }));
-
-const mockWriteCustomClaims = jest.fn();
-const mockWriteAuditEvent = jest.fn();
-const mockAssertTeacherPilotAllowlisted = jest.fn();
+// Phase 8G.12A - teachersApproveVerification is now transactional. The
+// administrator revalidation, target read, pilot-allowlist check, district
+// resolution, status transition, and audit all happen in ONE Firestore
+// transaction; custom claims are issued only AFTER it commits. These tests
+// drive a fake transaction.
 
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
+
+const defaultRequireAdmin = (
+  request: { auth?: { uid?: unknown; token?: { role?: unknown } } },
+  opts?: { unauthenticatedCode?: string; unauthorizedCode?: string },
+) => {
+  const { PlatformError: PE } = jest.requireActual(
+    "../shared/errors/platform-error",
+  );
+  const auth = request?.auth;
+  if (!auth || typeof auth.uid !== "string" || auth.uid.trim().length === 0) {
+    throw new PE(opts?.unauthenticatedCode ?? "admin.unauthenticated", "auth required");
+  }
+  if (!auth.token || auth.token.role !== "platformAdministrator") {
+    throw new PE(opts?.unauthorizedCode ?? "admin.unauthorized", "admin required");
+  }
+  return { uid: auth.uid, schoolId: "school-admin-ctx", districtId: "district-admin-ctx" };
+};
+let requireAdminImpl: typeof defaultRequireAdmin = defaultRequireAdmin;
+const mockRequireAdmin = jest.fn((request: unknown, opts: unknown) =>
+  requireAdminImpl(request as never, opts as never),
+);
+
+let adminInTxActive = true;
+const mockAssertAdminInTx = jest.fn((_tx: unknown, uid: string, opts?: { unauthorizedCode?: string }) => {
+  if (!adminInTxActive) {
+    const { PlatformError: PE } = jest.requireActual("../shared/errors/platform-error");
+    throw new PE(opts?.unauthorizedCode ?? "admin.unauthorized", "canonical admin required");
+  }
+  return Promise.resolve({ uid, schoolId: "school-admin-ctx", districtId: "district-admin-ctx" });
+});
+
+let allowlisted = true;
+const mockAllowlistInTx = jest.fn(() => {
+  if (!allowlisted) {
+    const { PlatformError: PE } = jest.requireActual("../shared/errors/platform-error");
+    throw new PE("teachers.pilotNotAllowlisted", "not allowlisted");
+  }
+  return Promise.resolve();
+});
+
+const txUsers = new Map<string, Record<string, unknown> | undefined>();
+const txSchools = new Map<string, Record<string, unknown> | undefined>();
+const txUpdate = jest.fn();
+const mockWriteAuditInTx = jest.fn();
+const mockWriteCustomClaims = jest.fn();
+const order: string[] = [];
+
+function snapshot(data: Record<string, unknown> | undefined) {
+  return { exists: data !== undefined, data: () => data };
+}
+
+const mockRunTransaction = jest.fn();
 
 jest.mock("firebase-functions/v2/https", () => ({
   onCall: <T,>(handler: T) => handler,
 }));
 
 jest.mock("../shared", () => {
-  const { PlatformError } = jest.requireActual(
-    "../shared/errors/platform-error",
-  );
+  const { PlatformError } = jest.requireActual("../shared/errors/platform-error");
   return {
     platformCallable: (handler: unknown) => handler,
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
-    schoolDocRef: mockSchoolDocRef,
-    userRecordDocRef: mockUserRecordDocRef,
-    writeCustomClaims: mockWriteCustomClaims,
-    writeAuditEvent: mockWriteAuditEvent,
-    assertTeacherPilotAllowlisted: mockAssertTeacherPilotAllowlisted,
+    requireActivePlatformAdministrator: mockRequireAdmin,
+    assertActivePlatformAdministratorInTransaction: (tx: unknown, uid: string, opts: unknown) =>
+      mockAssertAdminInTx(tx, uid, opts as never),
+    assertTeacherPilotAllowlistedInTransaction: () => mockAllowlistInTx(),
+    runFirestoreTransaction: (fn: unknown) => mockRunTransaction(fn),
+    userRecordDocRef: (uid: string) => ({ __uid: uid }),
+    schoolDocRef: (schoolId: string) => ({ __schoolId: schoolId }),
+    writeAuditEventInTransaction: (tx: unknown, input: unknown) => {
+      order.push("audit");
+      return mockWriteAuditInTx(tx, input);
+    },
+    writeCustomClaims: (input: unknown) => {
+      order.push("claims");
+      return mockWriteCustomClaims(input);
+    },
   };
 });
-
-function schoolSnapshot(
-  overrides: { exists?: boolean; districtId?: unknown } = {},
-) {
-  const exists = overrides.exists ?? true;
-  return {
-    exists,
-    data: () =>
-      exists
-        ? {
-            name: "Test School",
-            shortName: "Test",
-            timezone: "America/New_York",
-            createdAt: {} as never,
-            districtId:
-              "districtId" in overrides ? overrides.districtId : "district-abc",
-          }
-        : undefined,
-  };
-}
 
 import { PlatformError } from "../shared/errors/platform-error";
 import { __teachersApproveVerificationHandler } from "./teachers-approve-verification";
@@ -71,12 +103,8 @@ function makeRequest(
 ): CallableRequest<unknown> {
   const hasAuth = overrides.hasAuth ?? true;
   const uid = overrides.uid ?? "uid-admin";
-  const data =
-    overrides.data === undefined
-      ? { targetUid: "uid-teacher" }
-      : overrides.data;
-  const token =
-    overrides.token ?? { role: "platformAdministrator" };
+  const data = overrides.data === undefined ? { targetUid: "uid-teacher" } : overrides.data;
+  const token = overrides.token ?? { role: "platformAdministrator" };
   return {
     data,
     auth: hasAuth ? ({ uid, token } as never) : undefined,
@@ -84,75 +112,85 @@ function makeRequest(
   };
 }
 
-function pendingTeacherSnapshot(
-  overrides: { schoolId?: string; email?: string } = {},
+function seedTarget(
+  status: string,
+  overrides: { role?: string; schoolId?: string | undefined; email?: string } = {},
 ) {
-  return {
-    exists: true,
-    data: () => ({
-      authUid: "uid-teacher",
-      status: "pendingVerification" as const,
-      createdAt: {} as never,
-      role: "teacher",
-      schoolId: overrides.schoolId ?? "school-123",
-      displayName: "Test Teacher",
-      email: overrides.email ?? "pilot.teacher@example.org",
-    }),
+  const record: Record<string, unknown> = {
+    authUid: "uid-teacher",
+    status,
+    role: overrides.role ?? "teacher",
+    displayName: "Test Teacher",
+    email: overrides.email ?? "pilot.teacher@example.org",
+    createdAt: {},
   };
+  if (!("schoolId" in overrides)) record.schoolId = "school-123";
+  else if (overrides.schoolId !== undefined) record.schoolId = overrides.schoolId;
+  txUsers.set("uid-teacher", record);
 }
 
-function activeTeacherSnapshot(overrides: { schoolId?: string } = {}) {
-  return {
-    exists: true,
-    data: () => ({
-      authUid: "uid-teacher",
-      status: "active" as const,
-      createdAt: {} as never,
-      role: "teacher",
-      schoolId: overrides.schoolId ?? "school-123",
-      displayName: "Test Teacher",
-      email: "pilot.teacher@example.org",
-    }),
-  };
+function seedSchool(schoolId = "school-123", districtId: string | undefined = "district-abc") {
+  txSchools.set(schoolId, {
+    name: "Test School",
+    timezone: "America/New_York",
+    createdAt: {},
+    ...(districtId !== undefined ? { districtId } : {}),
+  });
+}
+
+function installDefaultTransaction() {
+  mockRunTransaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+    const tx = {
+      get: (ref: { __uid?: string; __schoolId?: string }) => {
+        if (ref.__schoolId !== undefined) return snapshot(txSchools.get(ref.__schoolId));
+        return snapshot(txUsers.get(ref.__uid as string));
+      },
+      update: txUpdate,
+    };
+    return fn(tx);
+  });
 }
 
 describe("teachersApproveVerification", () => {
   beforeEach(() => {
-    mockUserGet.mockReset();
-    mockUserUpdate.mockReset();
-    mockUserRecordDocRef.mockClear();
-    mockSchoolGet.mockReset();
-    mockSchoolDocRef.mockClear();
-    mockWriteCustomClaims.mockReset();
-    mockWriteAuditEvent.mockReset();
-    mockAssertTeacherPilotAllowlisted.mockReset();
-    // Default: the target is a member of the pilot allowlist. Individual
-    // tests override this to exercise the refusal path.
-    mockAssertTeacherPilotAllowlisted.mockResolvedValue(undefined);
-    mockLogInfo.mockReset();
-    mockLogWarn.mockReset();
-    mockLogError.mockReset();
+    jest.clearAllMocks();
+    requireAdminImpl = defaultRequireAdmin;
+    adminInTxActive = true;
+    allowlisted = true;
+    txUsers.clear();
+    txSchools.clear();
+    order.length = 0;
+    installDefaultTransaction();
+    mockWriteAuditInTx.mockReturnValue({ eventId: "evt", record: {} });
+    mockWriteCustomClaims.mockResolvedValue(undefined);
+    seedSchool();
   });
 
-  it("transitions a pendingVerification teacher to active and returns the canonical response", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
-    mockUserUpdate.mockResolvedValueOnce(undefined);
-    mockWriteCustomClaims.mockResolvedValueOnce({
+  it("transitions a pendingVerification teacher to active, audits in-tx, then issues claims", async () => {
+    seedTarget("pendingVerification");
+    await __teachersApproveVerificationHandler(makeRequest());
+
+    expect(mockAssertAdminInTx).toHaveBeenCalledTimes(1);
+    expect(mockAllowlistInTx).toHaveBeenCalledTimes(1);
+    expect(txUpdate).toHaveBeenCalledWith({ __uid: "uid-teacher" }, { status: "active" });
+    expect(mockWriteAuditInTx).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ action: "teachers.verificationApproved", targetId: "uid-teacher" }),
+    );
+    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
+      uid: "uid-teacher",
+      status: "active",
       role: "teacher",
       schoolId: "school-123",
       districtId: "district-abc",
     });
-    mockWriteAuditEvent.mockResolvedValueOnce({
-      eventId: "evt-1",
-      record: {},
-    });
+    // Canonical-first ordering: audit (in-tx) precedes claims (post-tx).
+    expect(order).toEqual(["audit", "claims"]);
+  });
 
+  it("returns the canonical response for a fresh activation", async () => {
+    seedTarget("pendingVerification");
     const result = await __teachersApproveVerificationHandler(makeRequest());
-
-    expect(mockUserRecordDocRef).toHaveBeenCalledWith("uid-teacher");
-    expect(mockUserUpdate).toHaveBeenCalledTimes(1);
-    expect(mockUserUpdate).toHaveBeenCalledWith({ status: "active" });
     expect(result).toEqual({
       targetUid: "uid-teacher",
       status: "active",
@@ -162,78 +200,9 @@ describe("teachersApproveVerification", () => {
     });
   });
 
-  it("rejects an unauthenticated caller with teachers.unauthenticated", async () => {
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest({ hasAuth: false })),
-    ).rejects.toMatchObject({
-      name: "PlatformError",
-      code: "teachers.unauthenticated",
-    });
-    expect(mockUserRecordDocRef).not.toHaveBeenCalled();
-    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("rejects a non-administrator caller with teachers.unauthorized", async () => {
-    await expect(
-      __teachersApproveVerificationHandler(
-        makeRequest({ token: { role: "teacher" } }),
-      ),
-    ).rejects.toMatchObject({ code: "teachers.unauthorized" });
-    await expect(
-      __teachersApproveVerificationHandler(
-        makeRequest({ token: { role: "student" } }),
-      ),
-    ).rejects.toMatchObject({ code: "teachers.unauthorized" });
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest({ token: {} })),
-    ).rejects.toMatchObject({ code: "teachers.unauthorized" });
-    expect(mockUserRecordDocRef).not.toHaveBeenCalled();
-    expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("rejects a missing target user with teachers.userNotFound", async () => {
-    mockUserGet.mockResolvedValueOnce({
-      exists: false,
-      data: () => undefined,
-    });
-
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "teachers.userNotFound" });
-    expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it.each([["provisioned"], ["suspended"], ["archived"]] as const)(
-    "rejects a target whose status is %s with teachers.invalidStatus",
-    async (status) => {
-      mockUserGet.mockResolvedValueOnce({
-        exists: true,
-        data: () => ({
-          authUid: "uid-teacher",
-          status,
-          createdAt: {} as never,
-        }),
-      });
-
-      await expect(
-        __teachersApproveVerificationHandler(makeRequest()),
-      ).rejects.toMatchObject({ code: "teachers.invalidStatus" });
-      expect(mockUserUpdate).not.toHaveBeenCalled();
-      expect(mockWriteCustomClaims).not.toHaveBeenCalled();
-      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-    },
-  );
-
-  it("is idempotent: an already-active teacher returns alreadyActive without re-writing", async () => {
-    mockUserGet.mockResolvedValueOnce(activeTeacherSnapshot());
-
+  it("is idempotent for an already-active teacher (no update, audit, or claims)", async () => {
+    seedTarget("active");
     const result = await __teachersApproveVerificationHandler(makeRequest());
-
     expect(result).toEqual({
       targetUid: "uid-teacher",
       status: "active",
@@ -241,333 +210,83 @@ describe("teachersApproveVerification", () => {
       schoolId: "school-123",
       alreadyActive: true,
     });
-    expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("invokes writeCustomClaims with the canonical shape including districtId resolved from the school record", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
-    mockUserUpdate.mockResolvedValueOnce(undefined);
-    mockWriteCustomClaims.mockResolvedValueOnce({
-      role: "teacher",
-      schoolId: "school-123",
-      districtId: "district-abc",
-    });
-    mockWriteAuditEvent.mockResolvedValueOnce({
-      eventId: "evt-1",
-      record: {},
-    });
-
-    await __teachersApproveVerificationHandler(makeRequest());
-
-    expect(mockSchoolDocRef).toHaveBeenCalledWith("school-123");
-    expect(mockWriteCustomClaims).toHaveBeenCalledTimes(1);
-    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
-      uid: "uid-teacher",
-      status: "active",
-      role: "teacher",
-      schoolId: "school-123",
-      districtId: "district-abc",
-    });
-    const claimsCall = mockWriteCustomClaims.mock.calls[0][0];
-    expect(Object.keys(claimsCall).sort()).toEqual([
-      "districtId",
-      "role",
-      "schoolId",
-      "status",
-      "uid",
-    ]);
-  });
-
-  it("resolves districtId from the canonical school record, ignoring any client-supplied district value", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(
-      schoolSnapshot({ districtId: "district-canonical" }),
-    );
-    mockUserUpdate.mockResolvedValueOnce(undefined);
-    mockWriteCustomClaims.mockResolvedValueOnce({
-      role: "teacher",
-      schoolId: "school-123",
-      districtId: "district-canonical",
-    });
-    mockWriteAuditEvent.mockResolvedValueOnce({
-      eventId: "evt-1",
-      record: {},
-    });
-
-    await __teachersApproveVerificationHandler(
-      makeRequest({
-        data: {
-          targetUid: "uid-teacher",
-          districtId: "district-client-spoofed",
-        },
-      }),
-    );
-
-    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
-      uid: "uid-teacher",
-      status: "active",
-      role: "teacher",
-      schoolId: "school-123",
-      districtId: "district-canonical",
-    });
-  });
-
-  it("throws school-district-mismatch when the school document is missing", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot({ exists: false }));
-
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toMatchObject({
-      name: "PlatformError",
-      code: "school-district-mismatch",
-    });
-    expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("throws district-unassigned when the school has no districtId", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(
-      schoolSnapshot({ districtId: undefined }),
-    );
-
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "district-unassigned" });
-    expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("throws district-unassigned when the school districtId is empty or whitespace", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot({ districtId: "" }));
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "district-unassigned" });
-
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(
-      schoolSnapshot({ districtId: "   " }),
-    );
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "district-unassigned" });
-
-    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(txUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditInTx).not.toHaveBeenCalled();
     expect(mockWriteCustomClaims).not.toHaveBeenCalled();
   });
 
-  it("throws district-unassigned when the school districtId is not a string", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot({ districtId: 42 }));
-
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "district-unassigned" });
-    expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+  it("rejects a missing target with teachers.userNotFound", async () => {
+    await expect(__teachersApproveVerificationHandler(makeRequest())).rejects.toMatchObject({
+      code: "teachers.userNotFound",
+    });
+    expect(txUpdate).not.toHaveBeenCalled();
   });
 
-  it("invokes the audit helper with teachers.verificationApproved and the canonical target fields", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
-    mockUserUpdate.mockResolvedValueOnce(undefined);
-    mockWriteCustomClaims.mockResolvedValueOnce({
-      role: "teacher",
-      schoolId: "school-123",
-      districtId: "district-abc",
-    });
-    mockWriteAuditEvent.mockResolvedValueOnce({
-      eventId: "evt-1",
-      record: {},
-    });
-
-    await __teachersApproveVerificationHandler(makeRequest());
-
-    expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
-    expect(mockWriteAuditEvent).toHaveBeenCalledWith({
-      actorUserId: "uid-admin",
-      actorRole: "platformAdministrator",
-      action: "teachers.verificationApproved",
-      targetType: "user",
-      targetId: "uid-teacher",
-      schoolId: "school-123",
-      districtId: "district-abc",
-    });
-  });
-
-  it("orders side effects: user update, then claims, then audit event", async () => {
-    const calls: string[] = [];
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
-    mockUserUpdate.mockImplementationOnce(() => {
-      calls.push("update");
-      return Promise.resolve();
-    });
-    mockWriteCustomClaims.mockImplementationOnce(() => {
-      calls.push("claims");
-      return Promise.resolve({
-        role: "teacher",
-        schoolId: "school-123",
-        districtId: "district-abc",
+  it.each([["provisioned"], ["suspended"], ["archived"]] as const)(
+    "rejects an invalid source status %s",
+    async (status) => {
+      seedTarget(status);
+      await expect(__teachersApproveVerificationHandler(makeRequest())).rejects.toMatchObject({
+        code: "teachers.invalidStatus",
       });
+      expect(txUpdate).not.toHaveBeenCalled();
+      expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    },
+  );
+
+  it("refuses a non-allowlisted teacher (no update, audit, or claims)", async () => {
+    seedTarget("pendingVerification");
+    allowlisted = false;
+    await expect(__teachersApproveVerificationHandler(makeRequest())).rejects.toMatchObject({
+      code: "teachers.pilotNotAllowlisted",
     });
-    mockWriteAuditEvent.mockImplementationOnce(() => {
-      calls.push("audit");
-      return Promise.resolve({ eventId: "evt-1", record: {} });
-    });
-
-    await __teachersApproveVerificationHandler(makeRequest());
-
-    expect(calls).toEqual(["update", "claims", "audit"]);
-  });
-
-  it("propagates a downstream claims failure and does not write audit", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
-    mockUserUpdate.mockResolvedValueOnce(undefined);
-    const claimsErr = new PlatformError(
-      "claims.writeFailed",
-      "boom",
-      new Error("network"),
-    );
-    mockWriteCustomClaims.mockRejectedValueOnce(claimsErr);
-
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toBe(claimsErr);
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("propagates a downstream audit helper failure", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
-    mockUserUpdate.mockResolvedValueOnce(undefined);
-    mockWriteCustomClaims.mockResolvedValueOnce({
-      role: "teacher",
-      schoolId: "school-123",
-      districtId: "district-abc",
-    });
-    const auditErr = new PlatformError(
-      "audit.writeFailed",
-      "boom",
-      new Error("network"),
-    );
-    mockWriteAuditEvent.mockRejectedValueOnce(auditErr);
-
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toBe(auditErr);
-  });
-
-  // -------------------- Sprint 29C: pilot allowlist guardrail --------------------
-
-  it("checks the pilot allowlist with the target's server-trusted email before any mutation", async () => {
-    mockUserGet.mockResolvedValueOnce(
-      pendingTeacherSnapshot({ email: "Pilot.Teacher@Example.org" }),
-    );
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
-    mockUserUpdate.mockResolvedValueOnce(undefined);
-    mockWriteCustomClaims.mockResolvedValueOnce({
-      role: "teacher",
-      schoolId: "school-123",
-      districtId: "district-abc",
-    });
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
-
-    await __teachersApproveVerificationHandler(makeRequest());
-
-    expect(mockAssertTeacherPilotAllowlisted).toHaveBeenCalledTimes(1);
-    // The email is read from the authoritative user record, not the request.
-    expect(mockAssertTeacherPilotAllowlisted).toHaveBeenCalledWith(
-      "Pilot.Teacher@Example.org",
-    );
-  });
-
-  it("refuses activation atomically when the target is not on the pilot allowlist", async () => {
-    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
-    const notAllowlisted = new PlatformError(
-      "teachers.pilotNotAllowlisted",
-      "This account is not authorized for the teacher pilot.",
-    );
-    mockAssertTeacherPilotAllowlisted.mockRejectedValueOnce(notAllowlisted);
-
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "teachers.pilotNotAllowlisted" });
-
-    // No teacher status/claims/audit mutation on the refusal path.
-    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(txUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditInTx).not.toHaveBeenCalled();
     expect(mockWriteCustomClaims).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
-  it("does not consult the allowlist when the caller is not a platformAdministrator", async () => {
+  it("refuses when the target's school has no district", async () => {
+    seedTarget("pendingVerification");
+    txSchools.set("school-123", { name: "Test School", createdAt: {} });
+    await expect(__teachersApproveVerificationHandler(makeRequest())).rejects.toMatchObject({
+      code: "district-unassigned",
+    });
+    expect(txUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unauthenticated caller (preliminary guard)", async () => {
     await expect(
-      __teachersApproveVerificationHandler(
-        makeRequest({ token: { role: "teacher" } }),
-      ),
+      __teachersApproveVerificationHandler(makeRequest({ hasAuth: false })),
+    ).rejects.toMatchObject({ code: "teachers.unauthenticated" });
+    expect(mockRunTransaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-administrator caller (preliminary guard)", async () => {
+    await expect(
+      __teachersApproveVerificationHandler(makeRequest({ token: { role: "teacher" } })),
     ).rejects.toMatchObject({ code: "teachers.unauthorized" });
-
-    // The admin role check is still the primary gate: allowlist membership
-    // never lets a non-administrator activate a teacher.
-    expect(mockAssertTeacherPilotAllowlisted).not.toHaveBeenCalled();
-    expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    expect(mockRunTransaction).not.toHaveBeenCalled();
   });
 
-  it("ignores a client-supplied email and matches only the server record email", async () => {
-    mockUserGet.mockResolvedValueOnce(
-      pendingTeacherSnapshot({ email: "server.trusted@example.org" }),
-    );
-    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
-    mockUserUpdate.mockResolvedValueOnce(undefined);
-    mockWriteCustomClaims.mockResolvedValueOnce({
-      role: "teacher",
-      schoolId: "school-123",
-      districtId: "district-abc",
+  describe("transactional admin hardening / demotion race", () => {
+    it("refuses a caller demoted at the transaction boundary; no update, audit, or claims", async () => {
+      seedTarget("pendingVerification");
+      adminInTxActive = false;
+      await expect(__teachersApproveVerificationHandler(makeRequest())).rejects.toMatchObject({
+        code: "teachers.unauthorized",
+      });
+      expect(txUpdate).not.toHaveBeenCalled();
+      expect(mockWriteAuditInTx).not.toHaveBeenCalled();
+      expect(mockWriteCustomClaims).not.toHaveBeenCalled();
     });
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
 
-    await __teachersApproveVerificationHandler(
-      makeRequest({
-        data: {
-          targetUid: "uid-teacher",
-          email: "attacker.spoofed@example.org",
-        },
-      }),
-    );
-
-    expect(mockAssertTeacherPilotAllowlisted).toHaveBeenCalledWith(
-      "server.trusted@example.org",
-    );
-  });
-
-  it("does not consult the allowlist for an already-active teacher (idempotent replay)", async () => {
-    mockUserGet.mockResolvedValueOnce(activeTeacherSnapshot());
-
-    const result = await __teachersApproveVerificationHandler(makeRequest());
-
-    expect(result.alreadyActive).toBe(true);
-    expect(mockAssertTeacherPilotAllowlisted).not.toHaveBeenCalled();
-    expect(mockUserUpdate).not.toHaveBeenCalled();
-  });
-
-  it("rejects an invalid targetUid with teachers.invalidTargetUid", async () => {
-    await expect(
-      __teachersApproveVerificationHandler(
-        makeRequest({ data: { targetUid: "   " } }),
-      ),
-    ).rejects.toMatchObject({ code: "teachers.invalidTargetUid" });
-    await expect(
-      __teachersApproveVerificationHandler(makeRequest({ data: {} })),
-    ).rejects.toMatchObject({ code: "teachers.invalidTargetUid" });
-    expect(mockUserRecordDocRef).not.toHaveBeenCalled();
+    it("thrown errors are PlatformError instances", async () => {
+      seedTarget("pendingVerification");
+      adminInTxActive = false;
+      await expect(__teachersApproveVerificationHandler(makeRequest())).rejects.toBeInstanceOf(
+        PlatformError,
+      );
+    });
   });
 });

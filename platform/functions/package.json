@@ -13,6 +13,7 @@
     "lint": "eslint --ext .ts src",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:emulator": "firebase emulators:exec --only firestore --config ../../firebase.json --project demo-bootstrap \"jest --config jest.emulator.config.cjs --runInBand\"",
     "deploy:assessment": "node lib/scripts/deploy-assessment.js",
     "publish:variant": "node lib/scripts/publish-variant.js",
     "prepare:astra004-hosting": "npm run build && node lib/scripts/astra004-hosting-prepare.js",

@@ -19,6 +19,9 @@ export {
   PLATFORM_CONFIG_COLLECTION,
   TEACHER_PILOT_ALLOWLIST_DOC_ID,
   assertTeacherPilotAllowlisted,
+  assertTeacherPilotAllowlistedInTransaction,
+  isTeacherPilotAllowlisted,
+  teacherPilotAllowlistDocRef,
   normalizeEmail,
   resolvePilotSchoolId,
   type TeacherPilotAllowlistDoc,
@@ -33,6 +36,12 @@ export {
   type DistrictClaimToken,
   type DistrictContext,
 } from "./auth/require-district-context";
+export {
+  requireActivePlatformAdministrator,
+  assertActivePlatformAdministratorInTransaction,
+  type ActivePlatformAdministratorContext,
+  type RequireActivePlatformAdministratorOptions,
+} from "./auth/require-active-platform-administrator";
 export {
   DISTRICT_ERROR_IDS,
   isDistrictErrorId,
@@ -286,6 +295,21 @@ export {
   type SchoolCreationWrite,
   type SchoolRecord,
 } from "./types/school";
+export {
+  PLATFORM_ADMIN_BOOTSTRAP_COLLECTION,
+  INITIAL_BOOTSTRAP_DOC_ID,
+  PLATFORM_ADMIN_BOOTSTRAP_VERSION,
+  isCanonicalTimestamp,
+  type BootstrapLineageState,
+  type PlatformAdminBootstrapRecord,
+  type PlatformAdminBootstrapCreationWrite,
+  type PlatformAdminBootstrapRollbackWrite,
+} from "./types/platform-admin-bootstrap";
+export {
+  platformAdminBootstrapDocRef,
+  platformAdminBootstrapCreationDocRef,
+  platformAdminBootstrapRollbackDocRef,
+} from "./firestore/typed-ref";
 export {
   SUBMISSIONS_COLLECTION,
   type SubmissionCreationWrite,

@@ -2,11 +2,14 @@ import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertActivePlatformAdministratorInTransaction,
   platformCallable,
   PlatformError,
   log,
+  requireActivePlatformAdministrator,
+  runFirestoreTransaction,
   userRecordDocRef,
-  writeAuditEvent,
+  writeAuditEventInTransaction,
   type TeacherDenialWrite,
   type UserRecord,
 } from "../shared";
@@ -33,26 +36,6 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function assertAuthenticatedAdministrator(
-  request: CallableRequest<unknown>,
-): { readonly uid: string } {
-  const auth = request.auth;
-  if (!auth || !isNonEmptyString(auth.uid)) {
-    throw new PlatformError(
-      "teachers.unauthenticated",
-      "An authenticated caller is required.",
-    );
-  }
-  const token = auth.token as { readonly role?: unknown } | undefined;
-  if (!token || token.role !== "platformAdministrator") {
-    throw new PlatformError(
-      "teachers.unauthorized",
-      "Caller must be a Platform Administrator.",
-    );
-  }
-  return { uid: auth.uid };
-}
-
 function validateRequest(
   data: unknown,
 ): TeachersDenyVerificationRequest {
@@ -70,24 +53,6 @@ function validateRequest(
     );
   }
   return { targetUid: payload.targetUid.trim() };
-}
-
-async function loadUserRecord(uid: string): Promise<UserRecord> {
-  const snapshot = await userRecordDocRef(uid).get();
-  if (!snapshot.exists) {
-    throw new PlatformError(
-      "teachers.userNotFound",
-      "Target teacher was not found.",
-    );
-  }
-  const data = snapshot.data();
-  if (!data) {
-    throw new PlatformError(
-      "teachers.userNotFound",
-      "Target teacher record was empty.",
-    );
-  }
-  return data;
 }
 
 function safeLog(fn: () => void): void {
@@ -116,6 +81,13 @@ function safeLog(fn: () => void): void {
 // displayName) are no longer present. Those fields are cleared using the
 // canonical `FieldValue.delete()` sentinel on the same typed reference.
 //
+// Phase 8G.12A - transactional administrator authority. The administrator
+// re-validation, the target read, the `pendingVerification` -> `provisioned`
+// update, and the `teachers.verificationDenied` audit all commit in ONE
+// Firestore transaction, so an administrator demoted/suspended after the cheap
+// pre-transaction guard cannot deny a teacher (the transaction observes the
+// demotion and writes nothing).
+//
 // Idempotency: an already-`provisioned` target returns a success response
 // with `alreadyProvisioned: true`. No second update is performed and no
 // second `teachers.verificationDenied` audit event is emitted. The state
@@ -123,12 +95,87 @@ function safeLog(fn: () => void): void {
 async function teachersDenyVerificationHandler(
   request: CallableRequest<unknown>,
 ): Promise<TeachersDenyVerificationResponse> {
-  const { uid: actorUserId } = assertAuthenticatedAdministrator(request);
+  // Phase 8G.12 admin-claim hardening (cheap pre-transaction gate). The
+  // authoritative check is re-run inside the transaction below.
+  const { uid: actorUserId } = await requireActivePlatformAdministrator(
+    request,
+    {
+      unauthenticatedCode: "teachers.unauthenticated",
+      unauthorizedCode: "teachers.unauthorized",
+    },
+  );
   const { targetUid } = validateRequest(request.data);
 
-  const target = await loadUserRecord(targetUid);
+  const outcome = await runFirestoreTransaction<{
+    readonly alreadyProvisioned: boolean;
+    readonly schoolId: string | null;
+  }>(async (tx) => {
+    // -- Reads (all before any write, per Firestore transaction rules) --
 
-  if (target.status === "provisioned") {
+    // Authoritative, mutation-time administrator revalidation (closes the
+    // demotion race).
+    await assertActivePlatformAdministratorInTransaction(tx, actorUserId, {
+      unauthorizedCode: "teachers.unauthorized",
+    });
+
+    const targetSnapshot = await tx.get(userRecordDocRef(targetUid));
+    const target: UserRecord | undefined = targetSnapshot.exists
+      ? targetSnapshot.data()
+      : undefined;
+    if (!target) {
+      throw new PlatformError(
+        "teachers.userNotFound",
+        "Target teacher was not found.",
+      );
+    }
+
+    if (target.status === "provisioned") {
+      return { alreadyProvisioned: true, schoolId: null };
+    }
+
+    if (target.status !== "pendingVerification") {
+      throw new PlatformError(
+        "teachers.invalidStatus",
+        `Denial requires target status "pendingVerification" (current: "${target.status}").`,
+      );
+    }
+    if (target.role !== "teacher") {
+      throw new PlatformError(
+        "teachers.invalidTargetRole",
+        'Denial target must have role "teacher".',
+      );
+    }
+    if (!isNonEmptyString(target.schoolId)) {
+      throw new PlatformError(
+        "teachers.invalidTargetSchoolId",
+        "Denial target must have a schoolId recorded.",
+      );
+    }
+    const schoolId = target.schoolId;
+
+    // -- Writes --
+
+    const denial: TeacherDenialWrite = {
+      status: "provisioned",
+      role: FieldValue.delete(),
+      schoolId: FieldValue.delete(),
+      displayName: FieldValue.delete(),
+    };
+    tx.update(userRecordDocRef(targetUid), denial);
+
+    writeAuditEventInTransaction(tx, {
+      actorUserId,
+      actorRole: "platformAdministrator",
+      action: "teachers.verificationDenied",
+      targetType: "user",
+      targetId: targetUid,
+      schoolId,
+    });
+
+    return { alreadyProvisioned: false, schoolId };
+  });
+
+  if (outcome.alreadyProvisioned) {
     safeLog(() =>
       log.info("teachers.verificationDenyIdempotent", {
         actorUserId,
@@ -143,58 +190,18 @@ async function teachersDenyVerificationHandler(
     };
   }
 
-  if (target.status !== "pendingVerification") {
-    throw new PlatformError(
-      "teachers.invalidStatus",
-      `Denial requires target status "pendingVerification" (current: "${target.status}").`,
-    );
-  }
-
-  if (target.role !== "teacher") {
-    throw new PlatformError(
-      "teachers.invalidTargetRole",
-      "Denial target must have role \"teacher\".",
-    );
-  }
-
-  if (!isNonEmptyString(target.schoolId)) {
-    throw new PlatformError(
-      "teachers.invalidTargetSchoolId",
-      "Denial target must have a schoolId recorded.",
-    );
-  }
-
-  const schoolId = target.schoolId;
-
-  const denial: TeacherDenialWrite = {
-    status: "provisioned",
-    role: FieldValue.delete(),
-    schoolId: FieldValue.delete(),
-    displayName: FieldValue.delete(),
-  };
-  await userRecordDocRef(targetUid).update(denial);
-
-  await writeAuditEvent({
-    actorUserId,
-    actorRole: "platformAdministrator",
-    action: "teachers.verificationDenied",
-    targetType: "user",
-    targetId: targetUid,
-    schoolId,
-  });
-
   safeLog(() =>
     log.info("teachers.verificationDenied", {
       actorUserId,
       targetUid,
-      schoolId,
+      schoolId: outcome.schoolId,
     }),
   );
 
   return {
     targetUid,
     status: "provisioned",
-    schoolId,
+    schoolId: outcome.schoolId,
     alreadyProvisioned: false,
   };
 }

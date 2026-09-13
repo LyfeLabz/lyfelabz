@@ -23,6 +23,13 @@ import {
 } from "../types/assignment-recipient";
 import { AUDIT_EVENTS_COLLECTION, type AuditEventWrite } from "../types/audit-event";
 import {
+  PLATFORM_ADMIN_BOOTSTRAP_COLLECTION,
+  INITIAL_BOOTSTRAP_DOC_ID,
+  type PlatformAdminBootstrapRecord,
+  type PlatformAdminBootstrapCreationWrite,
+  type PlatformAdminBootstrapRollbackWrite,
+} from "../types/platform-admin-bootstrap";
+import {
   CLASSES_COLLECTION,
   type ClassActivationWrite,
   type ClassArchiveWrite,
@@ -202,6 +209,30 @@ export function schoolCreationDocRef(
   return getAdminFirestore()
     .collection(SCHOOLS_COLLECTION)
     .doc(schoolId) as DocumentReference<SchoolCreationWrite>;
+}
+
+// Phase 8G.12A - typed references for the singleton first-administrator
+// bootstrap lineage document `platformAdminBootstrap/initial`. The read ref
+// is typed as `PlatformAdminBootstrapRecord`; the creation and rollback refs
+// carry the write shapes so `FieldValue.serverTimestamp()` is used at the
+// write boundary. All three address the same singleton document id, whose
+// fixed value is the serialization point for concurrent first-admin attempts.
+export function platformAdminBootstrapDocRef(): DocumentReference<PlatformAdminBootstrapRecord> {
+  return getAdminFirestore()
+    .collection(PLATFORM_ADMIN_BOOTSTRAP_COLLECTION)
+    .doc(INITIAL_BOOTSTRAP_DOC_ID) as DocumentReference<PlatformAdminBootstrapRecord>;
+}
+
+export function platformAdminBootstrapCreationDocRef(): DocumentReference<PlatformAdminBootstrapCreationWrite> {
+  return getAdminFirestore()
+    .collection(PLATFORM_ADMIN_BOOTSTRAP_COLLECTION)
+    .doc(INITIAL_BOOTSTRAP_DOC_ID) as DocumentReference<PlatformAdminBootstrapCreationWrite>;
+}
+
+export function platformAdminBootstrapRollbackDocRef(): DocumentReference<PlatformAdminBootstrapRollbackWrite> {
+  return getAdminFirestore()
+    .collection(PLATFORM_ADMIN_BOOTSTRAP_COLLECTION)
+    .doc(INITIAL_BOOTSTRAP_DOC_ID) as DocumentReference<PlatformAdminBootstrapRollbackWrite>;
 }
 
 // Collection-level typed reference for classes. Used by the

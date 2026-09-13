@@ -181,6 +181,22 @@ export const AUDIT_ACTIONS = [
   // action for suspension; reinstatement (`users.reinstated`) is a separate
   // future workflow and is intentionally not implemented here.
   "users.suspended",
+  // Phase 8G.12 - canonical administrative role transition. Emitted once,
+  // atomically with the durable `users/{uid}.role` change, by the
+  // operator-only first-platform-administrator bootstrap mechanism (and its
+  // paired rollback). The audit target is the `user`; the actor role is the
+  // `system` sentinel and the actor id is a stable, non-PII operator/bootstrap
+  // identifier (no human UID, email, or token). The payload carries only
+  // PII-free transition context (`previousRole`, `newRole`, `reason`); the
+  // authoritative school/district association is recorded through the
+  // top-level `schoolId`/`districtId` fields. It NEVER carries an email, an
+  // OAuth identifier, a token reference, or a free-form note. Exactly one
+  // event is written per role transition: a fresh bootstrap emits one on the
+  // `role`-change transition, and an idempotent repair replay (canonical role
+  // already transitioned, only Auth claims/token cleanup outstanding) emits
+  // NONE. `reason` is a low-cardinality category (`initialBootstrap`,
+  // `rollback`), never free text.
+  "users.roleChanged",
   // F5.2 Persistent Student Differentiation, Slice 1. Emitted by
   // `accommodationsSet` on every ACCEPTED state-changing write to a
   // student's `studentAccommodations/{studentId}` record (activation,

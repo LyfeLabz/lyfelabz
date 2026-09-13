@@ -1,13 +1,16 @@
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  assertTeacherPilotAllowlisted,
+  assertActivePlatformAdministratorInTransaction,
+  assertTeacherPilotAllowlistedInTransaction,
   platformCallable,
   PlatformError,
   log,
+  requireActivePlatformAdministrator,
+  runFirestoreTransaction,
   schoolDocRef,
   userRecordDocRef,
-  writeAuditEvent,
+  writeAuditEventInTransaction,
   writeCustomClaims,
   type TeacherApprovalWrite,
   type UserRecord,
@@ -36,26 +39,6 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function assertAuthenticatedAdministrator(
-  request: CallableRequest<unknown>,
-): { readonly uid: string } {
-  const auth = request.auth;
-  if (!auth || !isNonEmptyString(auth.uid)) {
-    throw new PlatformError(
-      "teachers.unauthenticated",
-      "An authenticated caller is required.",
-    );
-  }
-  const token = auth.token as { readonly role?: unknown } | undefined;
-  if (!token || token.role !== "platformAdministrator") {
-    throw new PlatformError(
-      "teachers.unauthorized",
-      "Caller must be a Platform Administrator.",
-    );
-  }
-  return { uid: auth.uid };
-}
-
 function validateRequest(
   data: unknown,
 ): TeachersApproveVerificationRequest {
@@ -75,51 +58,6 @@ function validateRequest(
   return { targetUid: payload.targetUid.trim() };
 }
 
-async function loadUserRecord(uid: string): Promise<UserRecord> {
-  const snapshot = await userRecordDocRef(uid).get();
-  if (!snapshot.exists) {
-    throw new PlatformError(
-      "teachers.userNotFound",
-      "Target teacher was not found.",
-    );
-  }
-  const data = snapshot.data();
-  if (!data) {
-    throw new PlatformError(
-      "teachers.userNotFound",
-      "Target teacher record was empty.",
-    );
-  }
-  return data;
-}
-
-async function resolveSchoolDistrictId(schoolId: string): Promise<string> {
-  const snapshot = await schoolDocRef(schoolId).get();
-  if (!snapshot.exists) {
-    throw new PlatformError(
-      "school-district-mismatch",
-      "The target teacher's active school could not be resolved.",
-    );
-  }
-  const school = snapshot.data() as
-    | (Record<string, unknown> & { districtId?: unknown })
-    | undefined;
-  if (!school) {
-    throw new PlatformError(
-      "school-district-mismatch",
-      "The target teacher's active school record was unreadable.",
-    );
-  }
-  const districtId = school.districtId;
-  if (typeof districtId !== "string" || districtId.trim().length === 0) {
-    throw new PlatformError(
-      "district-unassigned",
-      "The target teacher's active school is not assigned to a district.",
-    );
-  }
-  return districtId;
-}
-
 function safeLog(fn: () => void): void {
   try {
     fn();
@@ -137,10 +75,22 @@ function safeLog(fn: () => void): void {
 // Platform Administrator (Sprint 2 §7.7).
 //
 // Every side effect flows through the canonical shared helpers:
-//   - target read via `userRecordDocRef(uid).get()`              (typed ref)
-//   - status update via `userRecordDocRef(uid).update(...)`      (typed ref)
+//   - administrator revalidation via `assertActivePlatformAdministratorInTransaction`
+//   - target read/update via `tx.get`/`tx.update(userRecordDocRef(uid), ...)`
+//   - allowlist read via `assertTeacherPilotAllowlistedInTransaction(tx, ...)`
+//   - audit event via `writeAuditEventInTransaction(tx, {...})`  (§5 helper)
 //   - custom claims via `writeCustomClaims({...})`               (§4 helper)
-//   - audit event via `writeAuditEvent({...})`                   (§5 helper)
+//
+// Phase 8G.12A - transactional administrator authority. The administrator
+// authority check, the target read, the allowlist check, the district
+// resolution, the `pendingVerification` -> `active` status update, and the
+// `teachers.verificationApproved` audit all happen in ONE Firestore
+// transaction. An administrator demoted/suspended after the cheap
+// pre-transaction guard but before the transaction commits is observed by the
+// in-transaction re-validation, so the status transition and its audit do not
+// commit. Custom claims (an Auth-side write, not part of the Firestore
+// transaction) are issued only AFTER the durable transaction commits, so a
+// refused transaction never issues teacher claims.
 //
 // Idempotency: an already-`active` teacher with role `teacher` and a
 // present `schoolId` returns a success response with `alreadyActive: true`.
@@ -149,96 +99,150 @@ function safeLog(fn: () => void): void {
 async function teachersApproveVerificationHandler(
   request: CallableRequest<unknown>,
 ): Promise<TeachersApproveVerificationResponse> {
-  const { uid: actorUserId } = assertAuthenticatedAdministrator(request);
+  // Phase 8G.12 admin-claim hardening (cheap pre-transaction gate): reject a
+  // non-administrator caller before opening a transaction. The authoritative
+  // check is re-run inside the transaction below.
+  const { uid: actorUserId } = await requireActivePlatformAdministrator(
+    request,
+    {
+      unauthenticatedCode: "teachers.unauthenticated",
+      unauthorizedCode: "teachers.unauthorized",
+    },
+  );
   const { targetUid } = validateRequest(request.data);
 
-  const target = await loadUserRecord(targetUid);
+  type ApproveOutcome =
+    | { readonly alreadyActive: true; readonly schoolId: string }
+    | {
+        readonly alreadyActive: false;
+        readonly schoolId: string;
+        readonly districtId: string;
+      };
 
-  if (
-    target.status === "active" &&
-    target.role === "teacher" &&
-    isNonEmptyString(target.schoolId)
-  ) {
+  const outcome = await runFirestoreTransaction<ApproveOutcome>(async (tx) => {
+    // -- Reads (all before any write, per Firestore transaction rules) --
+
+    // Authoritative, mutation-time administrator revalidation (closes the
+    // demotion race): a caller demoted/suspended after the cheap guard is
+    // refused here and no status transition or audit is written.
+    await assertActivePlatformAdministratorInTransaction(tx, actorUserId, {
+      unauthorizedCode: "teachers.unauthorized",
+    });
+
+    const targetSnapshot = await tx.get(userRecordDocRef(targetUid));
+    const target: UserRecord | undefined = targetSnapshot.exists
+      ? targetSnapshot.data()
+      : undefined;
+    if (!target) {
+      throw new PlatformError(
+        "teachers.userNotFound",
+        "Target teacher was not found.",
+      );
+    }
+
+    if (
+      target.status === "active" &&
+      target.role === "teacher" &&
+      isNonEmptyString(target.schoolId)
+    ) {
+      return { alreadyActive: true, schoolId: target.schoolId };
+    }
+
+    if (target.status !== "pendingVerification") {
+      throw new PlatformError(
+        "teachers.invalidStatus",
+        `Approval requires target status "pendingVerification" (current: "${target.status}").`,
+      );
+    }
+    if (target.role !== "teacher") {
+      throw new PlatformError(
+        "teachers.invalidTargetRole",
+        'Approval target must have role "teacher".',
+      );
+    }
+    if (!isNonEmptyString(target.schoolId)) {
+      throw new PlatformError(
+        "teachers.invalidTargetSchoolId",
+        "Approval target must have a schoolId recorded.",
+      );
+    }
+    const schoolId = target.schoolId;
+
+    // Sprint 29C pilot allowlist guardrail, now evaluated inside the same
+    // transaction. The target email is read from the authoritative
+    // `users/{uid}` record, never the request payload.
+    await assertTeacherPilotAllowlistedInTransaction(tx, target.email);
+
+    // District resolution, read transactionally from the canonical school.
+    const schoolSnapshot = await tx.get(schoolDocRef(schoolId));
+    const school = schoolSnapshot.exists
+      ? (schoolSnapshot.data() as
+          | (Record<string, unknown> & { districtId?: unknown })
+          | undefined)
+      : undefined;
+    if (!school) {
+      throw new PlatformError(
+        "school-district-mismatch",
+        "The target teacher's active school could not be resolved.",
+      );
+    }
+    const districtId = school.districtId;
+    if (typeof districtId !== "string" || districtId.trim().length === 0) {
+      throw new PlatformError(
+        "district-unassigned",
+        "The target teacher's active school is not assigned to a district.",
+      );
+    }
+
+    // -- Writes --
+
+    const approval: TeacherApprovalWrite = { status: "active" };
+    tx.update(userRecordDocRef(targetUid), approval);
+
+    writeAuditEventInTransaction(tx, {
+      actorUserId,
+      actorRole: "platformAdministrator",
+      action: "teachers.verificationApproved",
+      targetType: "user",
+      targetId: targetUid,
+      schoolId,
+      districtId,
+    });
+
+    return { alreadyActive: false, schoolId, districtId };
+  });
+
+  if (outcome.alreadyActive) {
     safeLog(() =>
       log.info("teachers.verificationApproveIdempotent", {
         actorUserId,
         targetUid,
-        schoolId: target.schoolId,
+        schoolId: outcome.schoolId,
       }),
     );
     return {
       targetUid,
       status: "active",
       role: "teacher",
-      schoolId: target.schoolId,
+      schoolId: outcome.schoolId,
       alreadyActive: true,
     };
   }
 
-  if (target.status !== "pendingVerification") {
-    throw new PlatformError(
-      "teachers.invalidStatus",
-      `Approval requires target status "pendingVerification" (current: "${target.status}").`,
-    );
-  }
-
-  if (target.role !== "teacher") {
-    throw new PlatformError(
-      "teachers.invalidTargetRole",
-      "Approval target must have role \"teacher\".",
-    );
-  }
-
-  if (!isNonEmptyString(target.schoolId)) {
-    throw new PlatformError(
-      "teachers.invalidTargetSchoolId",
-      "Approval target must have a schoolId recorded.",
-    );
-  }
-
-  // Sprint 29C - pilot allowlist guardrail (belt-and-suspenders).
-  //
-  // Even after a Platform Administrator authorizes this approval, teacher
-  // activation is refused unless the target's server-trusted email is a
-  // member of the pilot allowlist. The email is read from the authoritative
-  // `users/{uid}` record (populated by `authOnUserCreate` from the
-  // Google/Firebase Auth identity), never from the caller's request payload,
-  // so allowlist membership cannot be spoofed by a client. This check runs
-  // BEFORE any status update, claims write, or audit event, so a refusal
-  // leaves no partial activation: `users/{uid}.status` is unchanged and no
-  // teacher claims are issued. The admin approval above remains the primary
-  // authorization; this is a second, independent gate.
-  await assertTeacherPilotAllowlisted(target.email);
-
-  const schoolId = target.schoolId;
-  const districtId = await resolveSchoolDistrictId(schoolId);
-
-  const approval: TeacherApprovalWrite = { status: "active" };
-  await userRecordDocRef(targetUid).update(approval);
-
+  // Auth-side claims issuance AFTER the durable transaction commits.
   await writeCustomClaims({
     uid: targetUid,
     status: "active",
     role: "teacher",
-    schoolId,
-    districtId,
-  });
-
-  await writeAuditEvent({
-    actorUserId,
-    actorRole: "platformAdministrator",
-    action: "teachers.verificationApproved",
-    targetType: "user",
-    targetId: targetUid,
-    schoolId,
-    districtId,
+    schoolId: outcome.schoolId,
+    districtId: outcome.districtId,
   });
 
   safeLog(() =>
     log.info("teachers.verificationApproved", {
       actorUserId,
       targetUid,
-      schoolId,
+      schoolId: outcome.schoolId,
     }),
   );
 
@@ -246,7 +250,7 @@ async function teachersApproveVerificationHandler(
     targetUid,
     status: "active",
     role: "teacher",
-    schoolId,
+    schoolId: outcome.schoolId,
     alreadyActive: false,
   };
 }

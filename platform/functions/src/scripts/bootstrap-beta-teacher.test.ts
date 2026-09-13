@@ -34,3 +34,24 @@ describe("bootstrap-beta-teacher canonical shape", () => {
     expect(BETA_SCHOOL.timezone).toBe("America/New_York");
   });
 });
+
+import { resolveBetaProjectId } from "./bootstrap-beta-teacher";
+
+describe("bootstrap-beta-teacher project resolution (Phase 8G.12A)", () => {
+  it("prefers the explicit --project argument", () => {
+    expect(
+      resolveBetaProjectId({ envProject: "env-proj", argProject: "arg-proj" }),
+    ).toBe("arg-proj");
+  });
+
+  it("falls back to GCLOUD_PROJECT when no argument is given", () => {
+    expect(resolveBetaProjectId({ envProject: "env-proj" })).toBe("env-proj");
+  });
+
+  it("fails closed when neither is provided (no hard-coded production default)", () => {
+    expect(() => resolveBetaProjectId({})).toThrow(/Missing project id/);
+    expect(() => resolveBetaProjectId({ envProject: "  " })).toThrow(
+      /Missing project id/,
+    );
+  });
+});

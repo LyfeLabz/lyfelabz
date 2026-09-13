@@ -4,6 +4,7 @@ import {
   PlatformError,
   log,
   platformCallable,
+  requireActivePlatformAdministrator,
 } from "../shared";
 
 import {
@@ -53,7 +54,6 @@ import {
 //   pagination ordering, which is Firebase Auth's contract) an
 //   identical sample array.
 
-const CALLER_ROLE_ADMIN = "platformAdministrator";
 const MAX_PAGE_SIZE = 1000;
 const MIN_PAGE_SIZE = 1;
 const MAX_COLLISION_SAMPLE_LIMIT = 500;
@@ -81,26 +81,6 @@ function safeLog(fn: () => void): void {
   } catch {
     // Observability, not lifecycle.
   }
-}
-
-function assertAuthenticatedAdministrator(
-  request: CallableRequest<unknown>,
-): { readonly uid: string } {
-  const auth = request.auth;
-  if (!auth || !isNonEmptyString(auth.uid)) {
-    throw new PlatformError(
-      "identity.productionInventory.unauthenticated",
-      "An authenticated caller is required.",
-    );
-  }
-  const token = auth.token as { readonly role?: unknown } | undefined;
-  if (!token || token.role !== CALLER_ROLE_ADMIN) {
-    throw new PlatformError(
-      "identity.productionInventory.forbidden",
-      "Caller must be a Platform Administrator.",
-    );
-  }
-  return { uid: auth.uid };
 }
 
 function validateRequest(
@@ -181,7 +161,25 @@ function projectResponse(
 async function identityMigrationRunProductionInventoryHandler(
   request: CallableRequest<unknown>,
 ): Promise<IdentityMigrationRunProductionInventoryResponse> {
-  const actor = assertAuthenticatedAdministrator(request);
+  // Phase 8G.12 admin-claim hardening: authoritative canonical administrator
+  // check (active `platformAdministrator` in Firestore) before the
+  // production Firebase Auth inventory runs, so a stale administrator token
+  // cannot drive the migration surface after a canonical demotion/suspension.
+  //
+  // Phase 8G.12A revocation semantics (read-only, no transaction): this
+  // callable scans exactly ONE Firebase Auth page per invocation and returns
+  // `nextPageToken`; the operator drives pagination by re-invoking with the
+  // returned cursor. The authoritative administrator revalidation therefore
+  // runs at every page boundary (once per call). An administrator demoted or
+  // suspended mid-inventory is refused on their very next page call, so a
+  // demoted administrator cannot continue an arbitrarily long privileged
+  // inventory. The operation is read-only and idempotent, so a Firestore
+  // transaction would add no safety here; bounded per-page revalidation is the
+  // correct control.
+  const actor = await requireActivePlatformAdministrator(request, {
+    unauthenticatedCode: "identity.productionInventory.unauthenticated",
+    unauthorizedCode: "identity.productionInventory.forbidden",
+  });
   const opts = validateRequest(request.data);
 
   const summary = await runInventory({
