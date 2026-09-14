@@ -55,7 +55,7 @@ Lessons in the build pipeline also exist in `lesson-sources/` and `app/lessons/`
 | 7.MS-LS1-4 | Explain how animal behaviors and specialized plant structures increase the probability of successful reproduction | Primary | lesson_reproductive-success.html | Single badged lesson. |
 | 7.MS-LS2-1 | Analyze data on effects of resource abundance and scarcity on organisms and population size | Primary | investigation_population-patterns.html | An interactive investigation built around the PE's data-analysis verb - a good verb match. No standalone lesson; consider whether a reviewer expects lesson-level instruction behind the investigation. |
 | 7.MS-LS2-2 | Describe competitive, predatory, parasitic, and mutually beneficial relationships across ecosystems | Primary | lesson_parts-of-an-ecosystem.html | Single badged lesson. |
-| 7.MS-LS2-3 | Model matter and energy transfer among living and nonliving parts of an ecosystem; both are conserved | Primary | lesson_carbon-cycle.html, lesson_energy-flow.html; Partial: investigation_cell-energy.html, lesson_photosynthesis.html | Two badged lessons split the PE (matter cycling / energy flow). investigation_cell-energy carries an un-prefixed MS-LS2-3 badge - a Grade 6 cells investigation that reaches into this Grade 7 PE; treat as a candidate Grade 7 crossover pending curriculum confirmation. Photosynthesis is Partial here via its content (see Notes & Caveats for its invalid badge). |
+| 7.MS-LS2-3 | Model matter and energy transfer among living and nonliving parts of an ecosystem; both are conserved | Primary | lesson_carbon-cycle.html, lesson_energy-flow.html, lesson_photosynthesis.html | Three badged lessons: matter cycling (carbon cycle), energy flow, and photosynthesis as the entry point of matter/energy transfer (rebadged from the invalid 7.MS-LS1-6 to 7.MS-LS2-3 on 2026-09-14). investigation_cell-energy.html is confirmed Grade 6 content and is not counted toward this PE (see Notes & Caveats). |
 | 7.MS-LS2-4 | Analyze data showing that disruptions to any ecosystem component shift all its populations | Primary | lesson_ecosystem-stability.html, lesson_human-impacts.html | Two badged lessons: natural disruptions (stability) and human-made (impacts). |
 | 7.MS-LS2-5 | Evaluate competing design solutions for protecting an ecosystem; discuss benefits and limitations | Gap | - | No coverage. Note this is an engineering-practice PE inside LS; the Grade 7 decision-matrix lesson (7.MS-ETS1-2, lesson_design-tradeoffs.html) is the natural method to apply to an ecosystem-protection scenario. |
 | 7.MS-LS2-6(MA) | Explain how changes to an ecosystem's biodiversity may limit the availability of resources humans use | Primary | lesson_human-impacts.html | Badged alongside LS2-4; biodiversity-to-human-resources link addressed. |
@@ -65,9 +65,9 @@ Lessons in the build pipeline also exist in `lesson-sources/` and `app/lessons/`
 | Standard Code | Standard Description | Coverage | File(s) | Notes |
 |---|---|---|---|---|
 | 7.MS-PS2-3 | Analyze data on the effect of distance and charge magnitude on electric force strength | Primary | lesson_introduction-to-electricity.html | Badged; includes attractive and repulsive forces. |
-| 7.MS-PS2-5 | Argue from evidence that fields exist between masses, magnets, and charges without contact | Primary | lesson_introduction-to-electricity.html | Badged on the same lesson as PS2-3. simulation_gravity-wells.html (Grade 6, 6.MS-PS2-4) visualizes mass fields and is a ready-made Partial support if cross-listed. |
+| 7.MS-PS2-5 | Argue from evidence that fields exist between masses, magnets, and charges without contact | Primary | lesson_introduction-to-electricity.html | Badged on the same lesson as PS2-3. The Grade 6 gravity-wells simulation visualizes mass fields and can serve as accessible background, but it is not a Grade 7 asset. |
 | 7.MS-PS3-1 | Construct and interpret graphs of relationships among kinetic energy, mass, and speed | Gap | - | No coverage. The unbadged ball-run challenge sequence (rolling-ball energy) is raw material for the data/graphing work this PE requires. |
-| 7.MS-PS3-2 | Model the relationship between relative positions of interacting objects and their potential energy | Gap | - | No coverage. simulation_gravity-wells.html is nearly this PE's model (position in a gravity well vs. potential energy) but is badged only to Grade 6 PS2-4. |
+| 7.MS-PS3-2 | Model the relationship between relative positions of interacting objects and their potential energy | Gap | - | Grade 6 gravity-wells simulation is accessible to Grade 7 students but is not a Grade 7 lesson. Requires dedicated Grade 7 energy-of-motion content. |
 | 7.MS-PS3-3 | Design, construct, and test a device to minimize or maximize thermal energy transfer | Gap | - | No coverage. A natural engineering companion to lesson_heat-transfer.html (insulated box / solar cooker design task). |
 | 7.MS-PS3-4 | Investigate relationships among energy transferred, type of matter, mass, and temperature change | Primary | lesson_heat-transfer.html | Badged. PE verb is "conduct an investigation"; a hands-on lab task would strengthen verb alignment. |
 | 7.MS-PS3-5 | Present evidence that when an object's kinetic energy changes, energy is transferred to or from it | Primary | lesson_energy-transfer.html | Badged. |
@@ -113,9 +113,10 @@ true builds.
 1. **7.MS-PS3-1 - kinetic energy, mass, speed graphs.** No coverage. Roadmap:
    a data-and-graphs lesson; the ball-run sequence supplies the phenomenon.
 2. **7.MS-PS3-2 - relative position and potential energy.** No coverage.
-   Roadmap: a lesson that could lean on simulation_gravity-wells.html as its
-   interactive (position in a well vs. stored energy), plus magnets/charges
-   examples per the clarification.
+   Requires dedicated Grade 7 energy-of-motion content; the Grade 6
+   gravity-wells simulation is accessible to Grade 7 students as background
+   but is not a Grade 7 lesson. The new lesson needs its own model, plus
+   magnets/charges examples per the clarification.
 3. **7.MS-PS3-3 - design a thermal-transfer device.** No coverage. Roadmap: an
    engineering task attached to lesson_heat-transfer.html (insulated box or
    solar cooker); also generates ETS-practice evidence.
@@ -148,10 +149,10 @@ on-ramp - expansion points, not cold starts:
 | 7.MS-ESS2-2 (surface change, plate processes) | 6.MS-ESS2-3 (lesson_continental-drift.html) | Already realized: lesson_plate-tectonics.html badges both codes - drift introduces the evidence, tectonics explains the mechanism. The model bridge for all others. |
 | 7.MS-ESS2-4 (Sun + gravity drive water cycle) | 6.MS-PS2-4 (lesson_gravity.html) | Gravity as the driver of water's downhill paths; the Grade 6 gravity claim is a named prerequisite in the PE itself. |
 | 7.MS-ESS3-2 (forecast from geologic patterns) | 6.MS-ESS1-4 (lesson_layers-of-time.html) | Reading geologic evidence for patterns is the Grade 6 skill this PE scales up to prediction. |
-| 7.MS-LS2-3 (ecosystem matter/energy transfer) | 6.MS-LS1-2 (lesson_organelles.html, investigation_cell-energy.html) | Chloroplasts/mitochondria at cell scale become producers/consumers at ecosystem scale. investigation_cell-energy already physically spans both grades' codes. |
+| 7.MS-LS2-3 (ecosystem matter/energy transfer) | 6.MS-LS1-2 (lesson_organelles.html, investigation_cell-energy.html) | Chloroplasts/mitochondria at cell scale become producers/consumers at ecosystem scale. investigation_cell-energy (confirmed Grade 6) teaches the cell-scale half of this bridge. |
 | 7.MS-LS1-4 (reproductive success) | 6.MS-LS4-1/4-2 (lesson_biological-evolution.html) | Anatomical-evidence reasoning extends to behaviors/structures that boost reproduction. |
 | 7.MS-PS2-5 (fields without contact) | 6.MS-PS2-4 (lesson_gravity.html, simulation_gravity-wells.html) | The PE explicitly includes fields between masses; the Grade 6 gravity cluster is its first case. |
-| 7.MS-PS3-2 (position and potential energy) | 6.MS-PS2-4 (simulation_gravity-wells.html) | The existing simulation is nearly this PE's required model. |
+| 7.MS-PS3-2 (position and potential energy) | 6.MS-PS2-4 (simulation_gravity-wells.html) | The Grade 6 simulation gives students the gravity-well intuition the new Grade 7 lesson will formalize; it is a bridge, not the lesson. |
 | 7.MS-PS3-4/3-6(MA) (thermal energy) | 6.MS-PS1-7(MA) particulate model (lesson_measuring-matter.html) | Temperature as average particle kinetic energy builds directly on the Grade 6 particle model. |
 | 7.MS-ETS1-2/1-4/1-7(MA) (evaluate, iterate, prototype) | 6.MS-ETS1-1, 6.MS-ETS2-1/2-2/2-3(MA) (engineering arc + Floatia capstone) | Grade 6 defines problems and builds a first prototype; Grade 7 adds systematic evaluation and iterative optimization. |
 | 7.MS-ETS3-1(MA) (communication system components) | 6.MS-PS4-3 (lesson_digital-signals.html) | Encoder/transmitter/decoder vocabulary begins in the Grade 6 digitized-signals lesson - the cleanest cross-grade narrative in the catalog. |
@@ -189,22 +190,21 @@ Strongest existing Grade 7 content for the eventual submission narrative:
    grade assignments (e.g., "MS-ETS1-2, MS-ETS1-4, and MS-ETS1-7(MA) are found
    in grade 7") and exclusions: **MS-LS1-6, MS-LS1-8, and MS-ETS1-3 from NGSS
    are not included in the MA framework at any grade.**
-2. **Invalid badge on lesson_photosynthesis.html.** The lesson badges
-   `7.MS-LS1-6` (lines 797, 802), a code the framework explicitly does not
-   include - the same class of error the June 2026 cleanup removed from
-   investigation_cell-energy.html (`6.MS-LS1-6`). The lesson's content is
-   legitimate Grade 7 material; the correct home for its PE claim is
-   7.MS-LS2-3 (photosynthesis as the entry point of matter/energy transfer in
-   ecosystems). Flagged only - no page was modified in this pass.
-3. **investigation_cell-energy.html** carries an un-prefixed `MS-LS2-3` badge
-   alongside its Grade 6 codes (6.MS-LS1-2, 8.MS-LS1-7). Per current direction
-   it is treated as a candidate Grade 7 crossover file pending curriculum
-   confirmation; it is listed as Partial for 7.MS-LS2-3 and its badge remains
-   un-prefixed.
+2. **lesson_photosynthesis.html badge corrected.** The lesson previously
+   badged `7.MS-LS1-6`, a code the framework explicitly does not include. On
+   2026-09-14 all four badges were replaced with `7.MS-LS2-3` through the
+   lesson-build pipeline; the lesson now counts as badged Primary support for
+   that PE.
+3. **investigation_cell-energy.html is confirmed Grade 6 content** and is not
+   counted toward any Grade 7 standard. It still carries an un-prefixed
+   `MS-LS2-3` badge alongside its Grade 6 codes (6.MS-LS1-2, 8.MS-LS1-7); for
+   submission polish that badge should either be removed or relabeled as a
+   Looking Ahead reference (like the file's 8.MS-LS1-7 treatment), since a
+   bare Grade 7 code on a Grade 6 page invites reviewer confusion.
 4. **simulation_gravity-wells.html** retains an un-prefixed `MS-ESS1-2` badge
    (a Grade 8 code, kept un-prefixed by explicit decision on 2026-09-14). It is
-   cited here only as raw material for 7.MS-PS3-2, which would be a new badge,
-   not a reinterpretation of the existing one.
+   a Grade 6 asset and is not counted toward any Grade 7 standard; it appears
+   in this map only as bridge/background context for 7.MS-PS3-2 and PS2-5.
 5. **Unbadged pages with inferred alignment.** challenge_ball-run_day1-5.html
    and challenge_slow-motion-ball-run.html (ETS1-4/1-7, possibly PS3-1/3-5),
    simulation_floatlandia-fracture.html (ESS2-2), lesson_ragebaiting.html
