@@ -140,6 +140,12 @@ export type GoogleClassroomCourseWorkCreateRequest = {
   readonly description?: string;
   readonly link: string;
   readonly topicId?: string;
+  // Sprint 30A.1 - Classroom maximum point value. Additive optional field;
+  // absent means ungraded. Per Google's documented CourseWork contract,
+  // omitting `maxPoints` (not sending `0`) is the correct representation
+  // for ungraded coursework, so this field is included in the request body
+  // only when present here.
+  readonly maxPoints?: number;
   // Optional abort signal (Sprint 25 Phase 1, §2.3 Correction 3). The
   // adapter supplies an AbortController-backed signal so the coursework
   // POST is genuinely cancelled when the adapter-level timeout fires,
@@ -841,6 +847,11 @@ export function createHttpsGoogleClassroomTransport(
       };
       if (input.description !== undefined) bodyObj.description = input.description;
       if (input.topicId !== undefined) bodyObj.topicId = input.topicId;
+      // Sprint 30A.1: send `maxPoints` only when graded. Never send `0` as
+      // the ungraded representation - omission is LyfeLabz's contract for
+      // ungraded coursework (Google treats zero-or-unspecified the same,
+      // but LyfeLabz's own contract is omission, never a synthetic zero).
+      if (input.maxPoints !== undefined) bodyObj.maxPoints = input.maxPoints;
       const parsed = (await callUpstream(
         fetchImpl,
         classroomUrl(

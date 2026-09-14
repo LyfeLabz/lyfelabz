@@ -1,5 +1,11 @@
 import type { Session } from "../../session/types";
 import type { ListClasses } from "../../classes/listClasses";
+import type {
+  UpdateTeacherClassOrder,
+  ReadTeacherClassColors,
+} from "../../classes/classOrder";
+import type { UpdateClassMetadata } from "../../classes/updateClassMetadata";
+import type { UpdateClassColor } from "../../classes/updateClassColor";
 import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
@@ -77,6 +83,19 @@ export type WorkspaceDeps = {
   // When null the Assign Experience runs UI-only session state (test
   // harness path). The entry point wires the real seam.
   readonly assignments?: AssignmentsCallables | null;
+  // Sprint 30A.1 human-review finalization: canonical teacher class-order
+  // writer, consumed by the Classes workspace's reorder affordance (drag
+  // + keyboard). Curriculum's Assign dialog only ever displayed this
+  // order and never wrote it, even before the finalization moved
+  // reordering here - Classes is now the sole editor of this preference.
+  readonly updateClassOrder?: UpdateTeacherClassOrder | null;
+  // Sprint 30A.1 Class Settings V1: canonical class-metadata writer
+  // (title/grade/block, the certified `classesUpdateMetadata` callable)
+  // and the teacher-owned per-class color preference (read + write),
+  // both consumed by the Classes workspace's Class Settings modal.
+  readonly updateClassMetadata?: UpdateClassMetadata | null;
+  readonly updateClassColor?: UpdateClassColor | null;
+  readonly readClassColors?: ReadTeacherClassColors | null;
   // Sprint 13B remediation: entry-point seam that lets the Curriculum
   // surface register published assignment metadata and open the
   // certified Assignment Detail surface via the entry-point opener.
@@ -213,6 +232,13 @@ export const WORKSPACE_SURFACES: Readonly<
         // Sprint 28.6F: class-management intent one-shot (Settings entry point).
         getClassManagementIntent: deps.getClassManagementIntent ?? null,
         setClassManagementIntent: deps.setClassManagementIntent ?? null,
+        // Sprint 30A.1 human-review finalization: canonical teacher
+        // class-order writer, now consumed by the Classes workspace's own
+        // reorder affordance (moved here from Assign).
+        updateClassOrder: deps.updateClassOrder ?? null,
+        updateClassMetadata: deps.updateClassMetadata ?? null,
+        updateClassColor: deps.updateClassColor ?? null,
+        readClassColors: deps.readClassColors ?? null,
       }),
   }),
   settings: Object.freeze({

@@ -219,6 +219,7 @@ export {
   type AssignmentReopenWrite,
   type AssignmentRecord,
   type AssignmentStatus,
+  type ClassroomGradingConfig,
 } from "./types/assignment";
 export {
   ASSIGNMENT_RECIPIENTS_SUBCOLLECTION,
@@ -392,10 +393,15 @@ export {
   type RevokeResult,
 } from "./identity/external-identity-store";
 export {
+  CLASS_COLOR_TOKENS,
   TEACHER_DEFAULT_GRADE_VALUES,
   TEACHER_PREFERENCES_DOC_ID,
   TEACHER_PREFERENCES_SUBCOLLECTION,
+  isClassColorToken,
   isTeacherDefaultGrade,
+  type ClassColorToken,
+  type TeacherClassColorSetWrite,
+  type TeacherClassOrderSetWrite,
   type TeacherDefaultGrade,
   type TeacherPreferencesClearWrite,
   type TeacherPreferencesDoc,

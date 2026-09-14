@@ -15,6 +15,7 @@ import {
   type AssignmentMode,
   type AssignmentRecord,
   type ClassRecord,
+  type ClassroomGradingConfig,
 } from "../shared";
 
 // Client-supplied request payload for assignmentsCreateDraft. The teacher
@@ -36,6 +37,10 @@ export type AssignmentsCreateDraftRequest = {
   readonly instructions?: string;
   readonly windowClosesAt?: string;
   readonly availableAt?: string;
+  // Sprint 30A.1 - optional Classroom grading configuration. Absent means
+  // ungraded (no inference, no default object manufactured). See the field
+  // comment on `AssignmentRecord.classroomGrading` for the full contract.
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 // Return payload of a successful draft-creation call. `alreadyCreated` is
@@ -72,6 +77,60 @@ async function assertActiveTeacherInDistrict(
   return { uid: context.uid, schoolId: context.schoolId, districtId: context.districtId };
 }
 
+// Sprint 30A.1 - validates an optional `classroomGrading` payload at the
+// trusted server boundary. Rejects (never coerces) any structurally
+// invalid combination: an unrecognized key, "ungraded" carrying a
+// `maxPoints`, or "graded" with a missing/non-integer/non-positive
+// `maxPoints`. A malformed `mode` value is also rejected. This is the
+// single, sole gate that keeps `ClassroomGradingConfig`'s invalid states
+// (representable at the JS/Firestore boundary even though the TS type
+// forbids them) from ever reaching a Firestore write.
+function validateClassroomGradingConfig(value: unknown): ClassroomGradingConfig {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new PlatformError(
+      "assignments.invalidClassroomGrading",
+      "classroomGrading, when supplied, must be a structured object.",
+    );
+  }
+  const payload = value as Record<string, unknown>;
+  for (const key of Object.keys(payload)) {
+    if (key !== "mode" && key !== "maxPoints") {
+      throw new PlatformError(
+        "assignments.invalidClassroomGrading",
+        `classroomGrading contains an unrecognized field: "${key}".`,
+      );
+    }
+  }
+  if (payload.mode === "ungraded") {
+    if (payload.maxPoints !== undefined) {
+      throw new PlatformError(
+        "assignments.invalidClassroomGrading",
+        'classroomGrading.maxPoints must not be supplied when mode is "ungraded".',
+      );
+    }
+    return { mode: "ungraded" };
+  }
+  if (payload.mode === "graded") {
+    const maxPoints = payload.maxPoints;
+    if (
+      typeof maxPoints !== "number" ||
+      !Number.isFinite(maxPoints) ||
+      !Number.isInteger(maxPoints) ||
+      maxPoints <= 0
+    ) {
+      throw new PlatformError(
+        "assignments.invalidClassroomGrading",
+        'classroomGrading.maxPoints must be a positive integer when mode is "graded".',
+      );
+    }
+    return { mode: "graded", maxPoints };
+  }
+  throw new PlatformError(
+    "assignments.invalidClassroomGrading",
+    'classroomGrading.mode must be "graded" or "ungraded".',
+  );
+}
+
 function parseIsoTimestamp(value: unknown, field: string): Timestamp {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new PlatformError(
@@ -98,6 +157,7 @@ type ValidatedRequest = {
   readonly instructions?: string;
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 function validateRequest(data: unknown): ValidatedRequest {
@@ -171,6 +231,7 @@ function validateRequest(data: unknown): ValidatedRequest {
     instructions?: string;
     windowClosesAt?: Timestamp;
     availableAt?: Timestamp;
+    classroomGrading?: ClassroomGradingConfig;
   } = { assignmentId, classId, lessonSlug, mode };
 
   if (payload.title !== undefined) {
@@ -214,6 +275,10 @@ function validateRequest(data: unknown): ValidatedRequest {
     out.availableAt = parseIsoTimestamp(payload.availableAt, "AvailableAt");
   }
 
+  if (payload.classroomGrading !== undefined) {
+    out.classroomGrading = validateClassroomGradingConfig(payload.classroomGrading);
+  }
+
   return out;
 }
 
@@ -244,6 +309,19 @@ function timestampsEqual(
   return a.toMillis() === b.toMillis();
 }
 
+function classroomGradingEqual(
+  a: ClassroomGradingConfig | undefined,
+  b: ClassroomGradingConfig | undefined,
+): boolean {
+  if (a === undefined && b === undefined) return true;
+  if (a === undefined || b === undefined) return false;
+  if (a.mode !== b.mode) return false;
+  if (a.mode === "graded" && b.mode === "graded") {
+    return a.maxPoints === b.maxPoints;
+  }
+  return true;
+}
+
 function existingMatchesRequest(
   existing: AssignmentRecord,
   actor: { uid: string; schoolId: string },
@@ -261,6 +339,9 @@ function existingMatchesRequest(
   }
   if (!timestampsEqual(existing.windowClosesAt, input.windowClosesAt)) return false;
   if (!timestampsEqual(existing.availableAt, input.availableAt)) return false;
+  if (!classroomGradingEqual(existing.classroomGrading, input.classroomGrading)) {
+    return false;
+  }
   return true;
 }
 
@@ -352,6 +433,9 @@ async function assignmentsCreateDraftHandler(
       : {}),
     ...(input.availableAt !== undefined
       ? { availableAt: input.availableAt }
+      : {}),
+    ...(input.classroomGrading !== undefined
+      ? { classroomGrading: input.classroomGrading }
       : {}),
   };
 

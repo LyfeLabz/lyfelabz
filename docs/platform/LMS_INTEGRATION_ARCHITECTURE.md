@@ -147,7 +147,7 @@ The Curriculum surface, the Classes list, the class workspace, Present Mode, and
 
 The Assign Experience (`ASSIGN_EXPERIENCE.md`) is the single canonical origin of LyfeLabz assignment records. LMS integration does not create a second assign workflow.
 
-LMS integration extends the Assign Experience in exactly one way: an optional Google Classroom topic selector and an optional "Also publish to Google Classroom" affordance in the Assignment Dialog. Both are additive controls on the same one dialog. Both are visible only when the teacher has an active `lmsConnections` record for that class's linked LMS provider. Neither affordance affects the LyfeLabz assignment record, which remains authoritative for LyfeLabz-side scheduling, activation, and Practice/Classroom mode semantics per PDR-010.
+LMS integration extends the Assign Experience in exactly one way: an optional Google Classroom topic selector on the class row in the Assignment Dialog, visible only when the teacher has an active `lmsConnections` record for that class's linked LMS provider. Sprint 30A.1's second human-review correction removed a formerly separate "Also publish to Google Classroom" affordance: selecting an LMS-linked class for the Assign action - the same selection checkbox every row already has - is now the publication decision. Neither the topic selector nor class selection affects the LyfeLabz assignment record, which remains authoritative for LyfeLabz-side scheduling, activation, and Practice/Classroom mode semantics per PDR-010.
 
 Publishing to the LMS is a side effect of an assignment record, not an alternate assign path. A LyfeLabz assignment can exist without an LMS publication. An LMS publication cannot exist without a LyfeLabz assignment.
 
@@ -430,7 +430,7 @@ The following capabilities are described in §3 through §9 but are not authoriz
 - roster synchronization,
 - assignment publication,
 - assignment refresh,
-- grade synchronization,
+- grade synchronization (outbound, LyfeLabz-initiated only - see the Sprint 30A note below; this is a distinct capability from the permanently out-of-scope inbound item in §11.3),
 - automatic synchronization,
 - background jobs,
 - webhooks,
@@ -443,13 +443,15 @@ The following capabilities are described in §3 through §9 but are not authoriz
 
 Each capability retains the shape described in §3 through §9. Its addition to the shipped surface requires its own sprint specification. Expansion by implementation is prohibited under PDR-020c.
 
+**Sprint 30A note on "grade synchronization."** Sprint 30A is the sprint specification that reaches this item, narrowly: it authorizes (a) Sprint 30A.1, teacher-configured Classroom grading configuration (Graded/Ungraded, and a `maxPoints` value sent at coursework-creation time - implemented; no score is transmitted by this slice), and (b) Sprint 30A.2, a future, LyfeLabz-initiated, best-score grade-passback capability scoped to coursework LyfeLabz itself published (not yet implemented as of Sprint 30A.1). Neither authorizes reading a Classroom-authored grade into LyfeLabz as authoritative, and neither authorizes any capability beyond these two - that remains governed by §11.3 below.
+
 ### 11.3 Out-of-Scope Architecture
 
 The following are explicitly out of scope for LMS integration, permanently or until a separate decision record redefines them:
 
 - LMS integration as an identity provider for LyfeLabz.
 - LMS-authored LyfeLabz assignments (bidirectional publication).
-- LMS grade export as an authoritative LyfeLabz surface.
+- LMS grade export as an authoritative LyfeLabz surface - i.e., LyfeLabz reading a grade set or edited inside Classroom and treating it as authoritative internal state. This is the inbound direction and remains permanently out of scope. It is distinct from, and unaffected by, the outbound-only LyfeLabz-initiated passback authorized under §11.2's "grade synchronization" entry (Sprint 30A.2): LyfeLabz never reads a grade back out of Classroom under either capability.
 - LMS-driven curation of the LyfeLabz curriculum.
 - LMS-fed replacement of the LyfeLabz Practice Mode or Classroom Mode contract.
 - Any LMS surface that would require Present Mode to load Firebase SDKs.

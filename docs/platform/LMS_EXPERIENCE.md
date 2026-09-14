@@ -242,10 +242,9 @@ Every message is plain language. No stack trace. No jargon. No "please contact y
 
 Publishing a LyfeLabz assignment to Google Classroom happens inside the Assignment Dialog, not as a separate workflow.
 
-The dialog already shapes every class row. For an LMS-linked class row, two additional affordances appear:
+The dialog already shapes every class row. For an LMS-linked class row, one additional affordance appears: an optional Google Classroom topic selector, populated from the LMS class's topics.
 
-- an optional Google Classroom topic selector, populated from the LMS class's topics,
-- an "Also publish to Google Classroom" toggle, off by default until the teacher opts in for that class.
+Sprint 30A.1's second human-review correction removed the separate "Also publish to Google Classroom" toggle. Selecting an LMS-linked class for the Assign action (the same selection checkbox every class row already has) now is the publication decision - there is no second opt-in. Deselecting the class means neither a LyfeLabz assignment nor a Classroom coursework item is created for it.
 
 Publishing produces a Google Classroom assignment that links back to the LyfeLabz surface where the student performs the work. LyfeLabz does not duplicate its instructional experience inside Google Classroom. LyfeLabz does not post the answer key. LyfeLabz does not post analytics.
 

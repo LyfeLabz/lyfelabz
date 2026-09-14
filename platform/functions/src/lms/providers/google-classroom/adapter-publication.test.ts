@@ -224,6 +224,60 @@ describe("googleClassroomAdapter.publishAssignment (Sprint 25 Phase 1)", () => {
     expect(result.lmsAssignmentId.length).toBeGreaterThan(0);
   });
 
+  // Sprint 30A.1.
+  describe("Classroom grading configuration (Sprint 30A.1)", () => {
+    it("forwards maxPoints to the transport createCourseWork call when supplied (graded)", async () => {
+      const capturing = createFixtureGoogleClassroomTransport();
+      let capturedMaxPoints: number | undefined;
+      (capturing as unknown as Record<string, unknown>).createCourseWork = (req: {
+        maxPoints?: number;
+      }) => {
+        capturedMaxPoints = req.maxPoints;
+        return Promise.resolve({
+          id: "fixture-coursework-graded",
+          alternateLink: "https://classroom.google.com/c/fixture/a/graded/details",
+        });
+      };
+      setGoogleClassroomTransport(capturing);
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+
+      await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+        maxPoints: 20,
+      });
+
+      expect(capturedMaxPoints).toBe(20);
+    });
+
+    it("does not forward a maxPoints field to the transport when not supplied (ungraded)", async () => {
+      const capturing = createFixtureGoogleClassroomTransport();
+      let capturedRequest: Record<string, unknown> = {};
+      (capturing as unknown as Record<string, unknown>).createCourseWork = (
+        req: Record<string, unknown>,
+      ) => {
+        capturedRequest = req;
+        return Promise.resolve({
+          id: "fixture-coursework-ungraded",
+          alternateLink: "https://classroom.google.com/c/fixture/a/ungraded/details",
+        });
+      };
+      setGoogleClassroomTransport(capturing);
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+
+      await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+      });
+
+      expect(capturedRequest).not.toHaveProperty("maxPoints");
+    });
+  });
+
   it("includes lmsAssignmentUrl in the result when the upstream resource returns alternateLink", async () => {
     setupFixture();
     const result = await googleClassroomAdapter.publishAssignment({

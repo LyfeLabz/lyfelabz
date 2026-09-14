@@ -303,6 +303,18 @@ async function handler(
   }
 
   const title = titleOverride ?? assignment.title ?? assignment.lessonSlug;
+  // Sprint 30A.1 - Classroom grading configuration is read from the
+  // canonical assignment record, never from a second client-supplied
+  // value at publication time (the request contract above carries no
+  // grading field at all). Absent configuration behaves as ungraded: no
+  // inferred maxPoints, no default. `classroomGrading` is snapshotted onto
+  // the publication record below regardless of outcome, so the mirror
+  // durably records exactly what was in effect for this attempt.
+  const classroomGrading = assignment.classroomGrading;
+  const maxPoints =
+    classroomGrading !== undefined && classroomGrading.mode === "graded"
+      ? classroomGrading.maxPoints
+      : undefined;
   // Resolve a LIVE credential: an expired or near-expiry access token is
   // refreshed in place before the coursework POST (Sprint 25 credential-
   // refresh lifecycle, PDR-030h). This is the seam that lets an active
@@ -327,6 +339,7 @@ async function handler(
       ...(instructions !== undefined ? { instructions } : {}),
       lyfelabzAssignmentUrl,
       ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
+      ...(maxPoints !== undefined ? { maxPoints } : {}),
     });
   } catch (upstreamErr) {
     // Insufficient scope is non-terminal. No record is written and no
@@ -359,6 +372,7 @@ async function handler(
       connectionId: link.connectionId,
       lmsClassId: link.lmsClassId,
       ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
+      ...(classroomGrading !== undefined ? { classroomGrading } : {}),
       status: "failed",
       errorCode,
       errorMessage,
@@ -429,6 +443,7 @@ async function handler(
     connectionId: link.connectionId,
     lmsClassId: link.lmsClassId,
     ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
+    ...(classroomGrading !== undefined ? { classroomGrading } : {}),
     status: "succeeded",
     lmsAssignmentId: published.lmsAssignmentId,
     ...(published.lmsAssignmentUrl !== undefined

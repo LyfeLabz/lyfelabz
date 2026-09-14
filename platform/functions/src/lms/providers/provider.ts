@@ -131,6 +131,14 @@ export type LmsPublishAssignmentInput = {
   readonly instructions?: string;
   readonly lyfelabzAssignmentUrl: string;
   readonly lmsTopicId?: string;
+  // Sprint 30A.1 - the Classroom maximum point value, present only when
+  // the LyfeLabz assignment's `classroomGrading` is `{ mode: "graded" }`.
+  // Absent means ungraded: the adapter/transport must omit the upstream
+  // `maxPoints` field entirely rather than sending `0`, matching Google's
+  // documented "zero or unspecified means ungraded" contract while
+  // preserving LyfeLabz's own convention of never sending a synthetic
+  // zero for "ungraded".
+  readonly maxPoints?: number;
 };
 
 // The outcome of a successful publication. The upstream assignment

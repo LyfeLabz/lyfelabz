@@ -311,6 +311,98 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
     });
   });
 
+  describe("Sprint 30A.1: Classroom grading configuration", () => {
+    it("passes maxPoints to the adapter when the assignment is graded", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({
+          classroomGrading: { mode: "graded", maxPoints: 20 },
+        }),
+      );
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(publishAssignment).toHaveBeenCalledTimes(1);
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({
+        maxPoints: 20,
+      });
+      const written = mockPublicationCreationSet.mock.calls[0][0];
+      expect(written.classroomGrading).toEqual({
+        mode: "graded",
+        maxPoints: 20,
+      });
+    });
+
+    it("never sends a maxPoints field to the adapter when the assignment is ungraded", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({ classroomGrading: { mode: "ungraded" } }),
+      );
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty(
+        "maxPoints",
+      );
+      const written = mockPublicationCreationSet.mock.calls[0][0];
+      expect(written.classroomGrading).toEqual({ mode: "ungraded" });
+    });
+
+    it("never sends a maxPoints field to the adapter for a legacy assignment with no classroomGrading, and snapshots nothing", async () => {
+      setupHappyPath();
+      // makeAssignmentDoc() default carries no classroomGrading field.
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty(
+        "maxPoints",
+      );
+      const written = mockPublicationCreationSet.mock.calls[0][0];
+      expect(written).not.toHaveProperty("classroomGrading");
+    });
+
+    it("snapshots classroomGrading onto the failure record on a confirmed upstream failure", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({
+          classroomGrading: { mode: "graded", maxPoints: 20 },
+        }),
+      );
+      mockGetProviderAdapter.mockReturnValue({
+        publishAssignment: jest
+          .fn()
+          .mockRejectedValue(
+            new PlatformError("lms.upstreamCallFailed", "boom"),
+          ),
+      });
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(mockPublicationCreationSet).toHaveBeenCalledTimes(1);
+      const written = mockPublicationCreationSet.mock.calls[0][0];
+      expect(written.status).toBe("failed");
+      expect(written.classroomGrading).toEqual({
+        mode: "graded",
+        maxPoints: 20,
+      });
+    });
+  });
+
   describe("Sprint 27 Phase 4: server-authoritative deep-link URL", () => {
     function adapterInput() {
       const adapter = mockGetProviderAdapter.mock.results[0].value as {

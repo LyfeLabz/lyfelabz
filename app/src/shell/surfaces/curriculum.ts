@@ -8,6 +8,7 @@ import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
 import type {
   AssignmentsCallables,
+  ClassroomGradingInput,
   IntegrationsClassLink,
   IntegrationsDeps,
   IntegrationsLmsTopic,
@@ -132,10 +133,12 @@ export type CurriculumSurfaceDeps = {
   readonly listClasses: ListClasses;
   // Sprint 8D authorized scope expansion. When absent-or-null the
   // Assignment Dialog renders every class row unchanged
-  // (ASSIGN_EXPERIENCE.md §5 preserves the non-LMS shape). When
-  // present, LMS-linked class rows carry the topic selector and the
-  // "Also publish to Google Classroom" toggle described in §5's
-  // "LMS-linked class row shape" subsection.
+  // (ASSIGN_EXPERIENCE.md §5 preserves the non-LMS shape). When present,
+  // LMS-linked class rows carry the Google Classroom topic selector
+  // described in §5's "LMS-linked class row shape" subsection. Sprint
+  // 30A.1's second human-review correction removed the separate "Also
+  // publish to Google Classroom" opt-in: selecting an LMS-linked class
+  // for the Assign action now is the publication decision.
   readonly integrations?: IntegrationsDeps | null;
   // Sprint 8D.1 authoritative assignment lifecycle seam. When present,
   // confirming the dialog creates and publishes a persistent LyfeLabz
@@ -174,11 +177,21 @@ const DEFAULT_LIST_CLASSES: ListClasses = () =>
 
 const LESSONS: ReadonlyArray<SurfaceableLesson> = getSurfaceableLessons();
 
-// LyfeLabz standard quiz score. The canonical curriculum manifest does
-// not yet expose per-lesson quiz totals; a follow-up sprint will
-// surface a per-resource points value. Ten matches the ten-question
-// LyfeLabz quiz standard.
+// Sprint 30A.1 UX correction: Points is a teacher-selected Google
+// Classroom maximum point value, not a quiz-total-derived value. Ten is
+// simply a sensible default shown when the teacher first switches the
+// shared grading choice to Graded; it carries no relationship to any
+// lesson's quiz question count or scoring.
 const DEFAULT_POINTS = 10;
+
+// Sprint 30A.1. A Classroom maximum point value is valid only as a
+// positive integer - zero, negative, and fractional values are all
+// rejected server-side (assignments.invalidClassroomGrading), so the
+// dialog mirrors the same rule client-side to block submission before a
+// doomed request is ever sent.
+function isValidClassroomMaxPoints(points: number): boolean {
+  return Number.isInteger(points) && points > 0;
+}
 
 // Session-remembered defaults. Sprint 6E is UI-only, so these live in
 // module scope and are cleared by a full page reload. When the
@@ -195,20 +208,44 @@ const sessionPreferences: {
   lmsTopicId: "",
 };
 
+// Sprint 30A.1 UX correction (human review): Classroom grading
+// configuration (Graded/Ungraded and the Classroom maximum point value) is
+// NOT class-specific. It is a single choice for the whole Assign action,
+// applied identically to every selected class's assignment. It therefore
+// does NOT live on `RowConfig` - a per-class-card state object would let
+// classes drift out of sync with each other, which is exactly the mistake
+// human review rejected. See `SharedAssignConfig` and its home on
+// `Assignment` below.
+//
+// `RowConfig` retains only what genuinely varies by class: whether the
+// class is included in this Assign action, its scheduled release date/
+// time, and its Google Classroom topic selection.
+//
+// Second human-review correction (this pass): the per-class "Also publish
+// to Google Classroom" toggle is REMOVED. Selecting an LMS-linked class
+// for this Assign action now IS the publication decision - there is no
+// second opt-in. See `runAssignmentLifecycle`'s `wantsLms` derivation.
 type RowConfig = {
   enabled: boolean;
   date: string;
   time: string;
   topic: string;
-  points: number;
-  // Sprint 8D authorized additions. Present on every row so the dialog
-  // stays one dialog; only rendered for LMS-linked class rows per
-  // ASSIGN_EXPERIENCE.md §5.
-  publishToLms: boolean;
   lmsTopicId: string;
 };
 
+// Sprint 30A.1 UX correction: the shared, dialog-level Classroom grading
+// configuration for one Assign action. Exactly one of these exists per
+// open dialog (not one per class row). `points` is remembered even when
+// `graded` is false so a teacher who briefly switches to Ungraded and
+// back does not lose a previously-entered value - but it is read only
+// when `graded` is true; an Ungraded action never reads it.
+type SharedAssignConfig = {
+  graded: boolean;
+  points: number;
+};
+
 type Assignment = {
+  shared: SharedAssignConfig;
   rows: Map<string, RowConfig>;
 };
 
@@ -1307,6 +1344,17 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   footer.className = "shell-assign-footer";
   dialog.appendChild(footer);
 
+  // Sprint 30A.1 FINAL UI POLISH (human review): a compact confirmation of
+  // how many classes the Assign action will actually affect, updated live
+  // as checkboxes change. Text is set once `rowState` exists, in
+  // `updateConfirmState` below; appended first so it sits at the opposite
+  // end of the footer from Cancel/Assign (`.shell-assign-footer` pushes it
+  // there with `margin-right: auto`, not DOM reordering).
+  const selectedCount = doc.createElement("span");
+  selectedCount.className = "shell-assign-selected-count";
+  selectedCount.setAttribute("data-testid", "assign-selected-count");
+  footer.appendChild(selectedCount);
+
   const cancel = doc.createElement("button");
   cancel.type = "button";
   cancel.className = "shell-assign-cancel";
@@ -1376,55 +1424,256 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     return;
   }
 
+  // Second human-review correction: publication is no longer a separate
+  // per-class opt-in (there is no `publishToLms` field to force-reset
+  // anymore) - every remembered row field rehydrates as-is.
   const existing = sessionAssignments.get(lesson.slug);
   const rowState: Map<string, RowConfig> = new Map();
   for (const c of classes) {
     const prior = existing?.rows.get(c.id);
     rowState.set(
       c.id,
-      prior
-        ? // Classroom publication is opt-in per action (PDR-019a). The
-          // publish toggle must be OFF every time the dialog opens; a
-          // prior ON state must never be restored. Every other
-          // remembered field (enabled, date, time, points, topic,
-          // lmsTopicId) rehydrates from the prior row as before. This
-          // forced reset is the single field the whole-row persistence
-          // must never carry across opens.
-          { ...prior, publishToLms: false }
-        : {
-            enabled: true,
-            date: todayIsoDate(doc),
-            time: sessionPreferences.releaseTime,
-            topic: sessionPreferences.topic,
-            points: DEFAULT_POINTS,
-            publishToLms: false,
-            lmsTopicId: sessionPreferences.lmsTopicId,
-          },
+      prior ??
+        // Sprint 30A.1 UX correction: every eligible class is selected
+        // by default (`enabled: true`), matching the common "assign to
+        // all of my classes" workflow. The teacher may deselect any
+        // class below.
+        {
+          enabled: true,
+          date: todayIsoDate(doc),
+          time: sessionPreferences.releaseTime,
+          topic: sessionPreferences.topic,
+          lmsTopicId: sessionPreferences.lmsTopicId,
+        },
     );
   }
+
+  // Sprint 30A.1 UX correction: ONE shared grading configuration for the
+  // whole Assign action, rehydrated from the lesson's remembered state (an
+  // ordinary remembered preference, not force-reset on reopen) or defaulted
+  // to Ungraded for a lesson the teacher has never configured. Mutated in
+  // place by the shared-settings controls below and read once, at confirm
+  // time, to build the identical `classroomGrading` value sent for every
+  // selected class.
+  const shared: SharedAssignConfig = existing
+    ? { ...existing.shared }
+    : { graded: false, points: DEFAULT_POINTS };
 
   const linksByClassId =
     cachedClassLinks && cachedClassLinks.uid === session.uid
       ? cachedClassLinks.linksByClassId
       : new Map<string, IntegrationsClassLink>();
 
+  const sharedSettings = doc.createElement("div");
+  sharedSettings.className = "shell-assign-shared-settings";
+  sharedSettings.setAttribute("data-testid", "assign-shared-settings");
+  body.appendChild(sharedSettings);
+
+  const sharedHeading = doc.createElement("h4");
+  sharedHeading.className = "shell-assign-shared-heading";
+  sharedHeading.textContent = "Assignment settings";
+  sharedSettings.appendChild(sharedHeading);
+
+  // Sprint 30A.1 FINAL UI POLISH (human review): the original single
+  // "Graded in Google Classroom" checkbox read ambiguously (checked/
+  // unchecked never clearly stated the OTHER state). Human review
+  // required an explicit two-state control instead. A native radio pair
+  // is the smallest, most native way to say that - the browser already
+  // owns the mutually-exclusive semantics via a shared `name`, so no
+  // extra ARIA is needed beyond a `radiogroup` label naming the group's
+  // purpose. Exactly one Graded/Ungraded choice and one Points value for
+  // the whole Assign action - never per class. Ungraded by default per
+  // the locked product default.
+  const gradingGroup = doc.createElement("div");
+  gradingGroup.className = "shell-assign-grading";
+  gradingGroup.setAttribute("role", "radiogroup");
+  gradingGroup.setAttribute("aria-label", "Grading");
+  sharedSettings.appendChild(gradingGroup);
+
+  const gradingName = "assign-shared-grading";
+  const makeGradingOption = (
+    value: "ungraded" | "graded",
+    optionLabel: string,
+    testid: string,
+  ): { wrapper: HTMLElement; input: HTMLInputElement } => {
+    const wrapper = doc.createElement("label");
+    wrapper.className = "shell-assign-grading-option";
+    const input = doc.createElement("input");
+    input.type = "radio";
+    input.name = gradingName;
+    input.value = value;
+    input.setAttribute("data-testid", testid);
+    wrapper.appendChild(input);
+    const text = doc.createElement("span");
+    text.textContent = optionLabel;
+    wrapper.appendChild(text);
+    gradingGroup.appendChild(wrapper);
+    return { wrapper, input };
+  };
+
+  const ungradedOption = makeGradingOption(
+    "ungraded",
+    "Ungraded",
+    "assign-shared-grading-ungraded",
+  );
+  const gradedOption = makeGradingOption(
+    "graded",
+    "Graded",
+    "assign-shared-grading-graded",
+  );
+  ungradedOption.input.checked = !shared.graded;
+  gradedOption.input.checked = shared.graded;
+
+  const refreshGradingActiveClasses = (): void => {
+    ungradedOption.wrapper.classList.toggle(
+      "shell-assign-grading-option-active",
+      !shared.graded,
+    );
+    gradedOption.wrapper.classList.toggle(
+      "shell-assign-grading-option-active",
+      shared.graded,
+    );
+  };
+
+  const pointsInput = fieldInput(doc, {
+    id: "assign-shared-points",
+    label: "Points",
+    type: "number",
+    value: String(shared.points),
+    min: 0,
+    onInput: (v) => {
+      const n = Number(v);
+      shared.points = Number.isFinite(n) && n >= 0 ? n : 0;
+      refreshSharedPointsValidation();
+    },
+  });
+  pointsInput.input.setAttribute("data-testid", "assign-shared-points");
+  sharedSettings.appendChild(pointsInput.wrapper);
+
+  // Sprint 30A.1: an unobtrusive inline validation message, shown only
+  // when Graded is checked and Points does not hold a valid Classroom
+  // maximum point value (a positive integer).
+  const pointsValidationMessage = doc.createElement("span");
+  pointsValidationMessage.className = "shell-assign-field-validation";
+  pointsValidationMessage.setAttribute(
+    "data-testid",
+    "assign-shared-points-invalid",
+  );
+  pointsValidationMessage.setAttribute("role", "alert");
+  pointsValidationMessage.textContent =
+    "Enter a whole number of points greater than 0.";
+  pointsValidationMessage.hidden = true;
+  sharedSettings.appendChild(pointsValidationMessage);
+
+  // Points is only "active" Classroom grading configuration when Graded
+  // is checked. When Ungraded, Points remains present but inert - it must
+  // never be read as a maxPoints value (the confirm handler below never
+  // reads `shared.points` unless `shared.graded` is true); the disabled
+  // state here is a visual/interaction cue only, not the enforcement
+  // boundary.
+  const refreshSharedPointsActiveState = (): void => {
+    pointsInput.input.disabled = !shared.graded;
+    pointsInput.wrapper.classList.toggle(
+      "shell-assign-field-inactive",
+      !shared.graded,
+    );
+  };
+
+  const refreshSharedPointsValidation = (): void => {
+    const showInvalid =
+      shared.graded && !isValidClassroomMaxPoints(shared.points);
+    pointsValidationMessage.hidden = !showInvalid;
+    if (showInvalid) {
+      pointsInput.input.setAttribute("aria-invalid", "true");
+    } else {
+      pointsInput.input.removeAttribute("aria-invalid");
+    }
+    updateConfirmState();
+  };
+
+  const onGradingChange = (): void => {
+    shared.graded = gradedOption.input.checked;
+    refreshGradingActiveClasses();
+    refreshSharedPointsActiveState();
+    refreshSharedPointsValidation();
+  };
+  ungradedOption.input.addEventListener("change", onGradingChange);
+  gradedOption.input.addEventListener("change", onGradingChange);
+  refreshGradingActiveClasses();
+
+  // Sprint 30A.1 UX correction: a compact column-header row above the
+  // class rows, so Class/Topic/Date/Time read as aligned columns rather
+  // than repeating a label inside every row. Purely presentational - it
+  // participates in the same grid as the rows (via `display:contents`)
+  // but carries no interactive control and no row testid.
+  const rowsHeader = doc.createElement("div");
+  rowsHeader.className = "shell-assign-rows-header";
+  rowsHeader.setAttribute("aria-hidden", "true");
+  // Sprint 30A.1 FINAL UI POLISH (human review): the row's leading
+  // control column is just the selection checkbox now (the reorder drag
+  // handle was removed from Assign entirely - see `renderRow` below), so
+  // the header row needs one leading blank cell for that column. "Topic"
+  // replaces the former "Google Classroom topic" heading - the column
+  // already sits beside "Class" in an Assign dialog the teacher opened
+  // for THIS Classroom-integrated workspace, so repeating "Google
+  // Classroom" in the heading was redundant per human review. Sprint
+  // 28.5D preserved: the Topic column (header included) never appears at
+  // all when no class in this dialog could possibly be LMS-linked (no
+  // `integrations` seam wired) - matching the per-row condition below
+  // that omits the column's cell entirely in that case, keeping the
+  // shared grid's columns aligned either way.
+  const headerLabels =
+    integrations !== null
+      ? ["", "Class", "Topic", "Date", "Time"]
+      : ["", "Class", "Date", "Time"];
+  for (const label of headerLabels) {
+    const cell = doc.createElement("span");
+    cell.textContent = label;
+    rowsHeader.appendChild(cell);
+  }
+
   const rowsHost = doc.createElement("div");
   rowsHost.className = "shell-assign-rows";
   rowsHost.setAttribute("data-testid", "assign-rows");
+  rowsHost.appendChild(rowsHeader);
   body.appendChild(rowsHost);
 
   const updateConfirmState = (): void => {
-    let anyEnabled = false;
-    for (const r of rowState.values()) if (r.enabled) anyEnabled = true;
-    confirm.disabled = !anyEnabled;
-    confirm.setAttribute("aria-disabled", anyEnabled ? "false" : "true");
+    let enabledCount = 0;
+    for (const r of rowState.values()) if (r.enabled) enabledCount += 1;
+    // Sprint 30A.1 UX correction: grading validity is now a single,
+    // dialog-level check (`shared`), never a per-row one - a Graded
+    // action with an invalid Points value blocks the whole Assign
+    // operation, not just one class's row. This is client-side defense
+    // in depth; the callable independently rejects the same malformed
+    // shape (assignments.invalidClassroomGrading).
+    const gradingValid =
+      !shared.graded || isValidClassroomMaxPoints(shared.points);
+    const canConfirm = enabledCount > 0 && gradingValid;
+    confirm.disabled = !canConfirm;
+    confirm.setAttribute("aria-disabled", canConfirm ? "false" : "true");
+    // Sprint 30A.1 FINAL UI POLISH (human review): a compact, always-
+    // current confirmation of how many classes this Assign action will
+    // affect, independent of grading validity - 0 selected classes still
+    // reads "0 classes selected" even while Assign is disabled for that
+    // same reason.
+    selectedCount.textContent =
+      enabledCount === 1 ? "1 class selected" : `${enabledCount} classes selected`;
   };
 
+  refreshSharedPointsActiveState();
+  refreshSharedPointsValidation();
+
+  // Sprint 30A.1 human-review finalization: class reordering now happens
+  // ONLY on the Classes workspace (see classes.ts). `classes` already
+  // arrives in the teacher's canonical order (computed once, upstream, by
+  // `createOrderedListClasses` at the entry point - see
+  // app/src/classes/classOrder.ts); Assign simply renders that order as
+  // received and applies no secondary sort of its own.
   for (const c of classes) {
     const link = linksByClassId.get(c.id) ?? null;
-    rowsHost.appendChild(
-      renderRow(doc, c, rowState, updateConfirmState, link, integrations),
-    );
+    const row = renderRow(doc, c, rowState, updateConfirmState, link, integrations);
+    rowsHost.appendChild(row);
   }
   updateConfirmState();
 
@@ -1436,6 +1685,12 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   let submissionInFlight = false;
   confirm.addEventListener("click", () => {
     if (submissionInFlight) return;
+    // Sprint 30A.1 UX correction: defense in depth mirroring the
+    // `updateConfirmState` gate above - a Graded action with an invalid
+    // Points value never proceeds, even if this handler is somehow
+    // reached with a stale disabled state. No class assignment request
+    // is made (Scenario D).
+    if (shared.graded && !isValidClassroomMaxPoints(shared.points)) return;
     submissionInFlight = true;
     confirm.disabled = true;
     confirm.setAttribute("aria-busy", "true");
@@ -1444,7 +1699,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     // reopened. This is the "temporary in-dialog form state" the sprint
     // authorizes retaining in session memory; the authoritative record
     // is the persistent LyfeLabz assignment produced below.
-    const stored: Assignment = { rows: new Map() };
+    const stored: Assignment = { shared: { ...shared }, rows: new Map() };
     let enabledCount = 0;
     let firstEnabledTime = "";
     let firstEnabledTopic = "";
@@ -1529,10 +1784,19 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         ? `Assigning ${lesson.title} to 1 class.`
         : `Assigning ${lesson.title} to ${enabledCount} classes.`,
     );
+    // Sprint 30A.1 UX correction: exactly one `classroomGrading` value is
+    // derived here, from the shared dialog-level configuration, and is
+    // supplied identically to every selected class below - never derived
+    // per row. Ungraded never carries a `maxPoints` value, so a stale
+    // Points entry can never be transmitted for an Ungraded action.
+    const classroomGrading: ClassroomGradingInput = shared.graded
+      ? { mode: "graded", maxPoints: shared.points }
+      : { mode: "ungraded" };
     void runAssignmentLifecycle({
       lesson,
       teacherUid: session.uid,
       enabledRows,
+      classroomGrading,
       assignments,
       integrations,
       assignmentDetail,
@@ -1559,8 +1823,32 @@ function renderRow(
   const cfg = rowState.get(cls.id);
   if (!cfg) throw new Error(`missing row state for class ${cls.id}`);
 
+  // Sprint 30A.1 UX correction: a compact, horizontally-aligned row
+  // rather than a tall stacked card. `row` is a `display:contents` grid
+  // item host (see the `.shell-assign-class-row` rule) so its direct
+  // children - checkbox, identity, topic, date, time - become columns of
+  // the SHARED grid defined on `.shell-assign-rows`, aligning every row's
+  // columns without a literal `<table>`.
+  //
+  // Sprint 30A.1 human-review finalization: this row previously also
+  // carried a drag handle for in-dialog reordering. Human review moved
+  // reordering to the Classes workspace (see classes.ts) - Assign now
+  // only DISPLAYS the canonical order it receives, so the handle, its
+  // native-drag wiring, and its keyboard bindings are removed entirely.
+  // The row's own root-cause investigation: `row` is a `display:contents`
+  // grid-item host (see `.shell-assign-class-row` above), and an element
+  // with `display:contents` generates no box of its own - only its
+  // children do. Native HTML5 drag-and-drop requires the dragged element
+  // to have a real, hit-testable box to originate the drag gesture from,
+  // so setting `draggable=true` on a `display:contents` element is
+  // unreliable across browsers: there is nothing for the browser to grab.
+  // This is why the prior Assign drag interaction never actually
+  // initiated a drag in the browser despite the handle, `pointerdown`,
+  // and `dragstart` wiring all being present. The Classes workspace does
+  // not have this problem (see classes.ts) because its cards are ordinary
+  // block-level elements with real boxes.
   const row = doc.createElement("div");
-  row.className = "shell-assign-row";
+  row.className = "shell-assign-class-row";
   row.setAttribute("data-testid", `assign-row-${cls.id}`);
   row.setAttribute("data-class-id", cls.id);
   if (link) {
@@ -1569,9 +1857,8 @@ function renderRow(
     row.setAttribute("data-lms-provider", link.providerId);
   }
 
-  // Enabled checkbox + class identity.
-  const header = doc.createElement("label");
-  header.className = "shell-assign-row-header";
+  const checkboxWrapper = doc.createElement("label");
+  checkboxWrapper.className = "shell-assign-row-select";
   const checkbox = doc.createElement("input");
   checkbox.type = "checkbox";
   checkbox.checked = cfg.enabled;
@@ -1580,66 +1867,26 @@ function renderRow(
     "aria-label",
     `Include ${cls.title} in this assignment`,
   );
-  header.appendChild(checkbox);
-  const label = doc.createElement("span");
-  label.className = "shell-assign-row-label";
-  label.textContent =
-    cls.grade.length > 0
-      ? `${cls.title} · Grade ${cls.grade}`
-      : cls.title;
-  header.appendChild(label);
-  row.appendChild(header);
+  checkboxWrapper.appendChild(checkbox);
+  row.appendChild(checkboxWrapper);
 
-  const fields = doc.createElement("div");
-  fields.className = "shell-assign-row-fields";
-  row.appendChild(fields);
-
-  const dateInput = fieldInput(doc, {
-    id: `assign-row-date-${cls.id}`,
-    label: "Date",
-    type: "date",
-    value: cfg.date,
-    onInput: (v) => {
-      cfg.date = v;
-    },
-  });
-  fields.appendChild(dateInput.wrapper);
-
-  const timeInput = fieldInput(doc, {
-    id: `assign-row-time-${cls.id}`,
-    label: "Release time",
-    type: "time",
-    value: cfg.time,
-    onInput: (v) => {
-      cfg.time = v;
-    },
-  });
-  fields.appendChild(timeInput.wrapper);
+  const identity = doc.createElement("span");
+  identity.className = "shell-assign-row-identity";
+  identity.textContent =
+    cls.grade.length > 0 ? `${cls.title} · Grade ${cls.grade}` : cls.title;
+  row.appendChild(identity);
 
   // For LMS-linked classes, the Google Classroom topic field is a
   // populated dropdown per ASSIGN_EXPERIENCE.md §5 ("LMS-linked class
-  // row shape").
-  //
-  // Sprint 28.5D (microcopy): a manual (non-LMS) LyfeLabz class has no
-  // Google Classroom to publish to, so the free-text "Google Classroom
-  // topic" field that used to render for it was inert and mildly confusing
-  // (28.5C audit §11/§23). It is now omitted for non-LMS rows. This is a
-  // presentation-only conditional keyed on the same class/LMS state the
-  // dialog already resolves (`link && integrations`); no stored value,
-  // submit payload, or LMS-linked publication behavior changes. The
-  // remembered-topic preference plumbing (`cfg.topic`) is retained but
-  // simply never surfaced for a manual class.
+  // row shape"). A manual (non-LMS) class has no Google Classroom to
+  // publish to, so it renders an inert placeholder in the same column
+  // instead (keeping every row's columns aligned in the shared grid).
   let lmsTopicSelect: HTMLSelectElement | null = null;
   if (link && integrations !== null) {
-    const wrapper = doc.createElement("label");
-    wrapper.className = "shell-assign-field shell-assign-lms-topic-field";
-    const caption = doc.createElement("span");
-    caption.className = "shell-assign-field-label";
-    caption.textContent = "Google Classroom topic";
-    wrapper.appendChild(caption);
     const select = doc.createElement("select");
-    select.className = "shell-assign-lms-topic-select";
+    select.className = "shell-assign-lms-topic-select shell-assign-row-topic";
     select.setAttribute("data-testid", `assign-row-lms-topic-${cls.id}`);
+    select.setAttribute("aria-label", `${cls.title} Google Classroom topic`);
     const noneOption = doc.createElement("option");
     noneOption.value = "";
     noneOption.textContent = "No topic";
@@ -1654,8 +1901,7 @@ function renderRow(
       const v = select.value;
       cfg.lmsTopicId = v === "__loading" ? "" : v;
     });
-    wrapper.appendChild(select);
-    fields.appendChild(wrapper);
+    row.appendChild(select);
     lmsTopicSelect = select;
     void ensureTopics(link.linkId, integrations).then(() => {
       const topics = cachedTopicsByLinkId.get(link.linkId) ?? [];
@@ -1680,62 +1926,52 @@ function renderRow(
         cfg.lmsTopicId = "";
       }
     });
+  } else if (integrations !== null) {
+    // Only render the empty-topic placeholder when integrations are wired
+    // at all (some other row in this same dialog may be LMS-linked and
+    // show a real select, so this row still needs a cell to keep the
+    // shared grid's columns aligned). When integrations are entirely
+    // absent, no row in the dialog gets a topic cell at all - see the
+    // matching header-column condition in `openDialog` - preserving the
+    // Sprint 28.5D rule that a manual-only teacher never sees a "Google
+    // Classroom topic" affordance anywhere in the dialog.
+    const placeholder = doc.createElement("span");
+    placeholder.className = "shell-assign-row-topic shell-assign-row-topic-empty";
+    placeholder.setAttribute("aria-hidden", "true");
+    placeholder.textContent = "—";
+    row.appendChild(placeholder);
   }
 
-  const pointsInput = fieldInput(doc, {
-    id: `assign-row-points-${cls.id}`,
-    label: "Points",
-    type: "number",
-    value: String(cfg.points),
-    min: 0,
-    onInput: (v) => {
-      const n = Number(v);
-      cfg.points = Number.isFinite(n) && n >= 0 ? n : 0;
-    },
+  const dateInput = doc.createElement("input");
+  dateInput.type = "date";
+  dateInput.className = "shell-assign-row-date";
+  dateInput.id = `assign-row-date-${cls.id}`;
+  dateInput.setAttribute("data-testid", `assign-row-date-${cls.id}`);
+  dateInput.setAttribute("aria-label", `${cls.title} release date`);
+  dateInput.value = cfg.date;
+  dateInput.addEventListener("input", () => {
+    cfg.date = dateInput.value;
   });
-  fields.appendChild(pointsInput.wrapper);
+  row.appendChild(dateInput);
 
-  // Sprint 8D authorized addition. The publish toggle is present only
-  // for LMS-linked rows per ASSIGN_EXPERIENCE.md §5. It is off by
-  // default until the teacher opts in for that class (PDR-019a
-  // "integration is opt-in per teacher, per class, per action").
-  let publishCheckbox: HTMLInputElement | null = null;
-  if (link && integrations !== null) {
-    const publishWrapper = doc.createElement("label");
-    publishWrapper.className = "shell-assign-field shell-assign-lms-publish-field";
-    publishCheckbox = doc.createElement("input");
-    publishCheckbox.type = "checkbox";
-    publishCheckbox.checked = cfg.publishToLms;
-    publishCheckbox.setAttribute(
-      "data-testid",
-      `assign-row-lms-publish-${cls.id}`,
-    );
-    publishCheckbox.setAttribute(
-      "aria-label",
-      `Also publish ${cls.title} to Google Classroom`,
-    );
-    publishWrapper.appendChild(publishCheckbox);
-    const publishLabel = doc.createElement("span");
-    publishLabel.className = "shell-assign-field-label";
-    publishLabel.textContent = "Also publish to Google Classroom";
-    publishWrapper.appendChild(publishLabel);
-    publishCheckbox.addEventListener("change", () => {
-      cfg.publishToLms = publishCheckbox!.checked;
-    });
-    fields.appendChild(publishWrapper);
-  }
+  const timeInput = doc.createElement("input");
+  timeInput.type = "time";
+  timeInput.className = "shell-assign-row-time";
+  timeInput.id = `assign-row-time-${cls.id}`;
+  timeInput.setAttribute("data-testid", `assign-row-time-${cls.id}`);
+  timeInput.setAttribute("aria-label", `${cls.title} release time`);
+  timeInput.value = cfg.time;
+  timeInput.addEventListener("input", () => {
+    cfg.time = timeInput.value;
+  });
+  row.appendChild(timeInput);
 
   const setRowEnabled = (enabled: boolean): void => {
     cfg.enabled = enabled;
     row.setAttribute("data-enabled", enabled ? "true" : "false");
     row.classList.toggle("shell-assign-row-disabled", !enabled);
-    const controls: HTMLElement[] = [
-      dateInput.input,
-      timeInput.input,
-      pointsInput.input,
-    ];
+    const controls: HTMLElement[] = [dateInput, timeInput];
     if (lmsTopicSelect) controls.push(lmsTopicSelect);
-    if (publishCheckbox) controls.push(publishCheckbox);
     for (const el of controls) {
       (el as HTMLInputElement | HTMLSelectElement).disabled = !enabled;
     }
@@ -1852,6 +2088,11 @@ async function runAssignmentLifecycle(input: {
     readonly cfg: RowConfig;
     readonly link: IntegrationsClassLink | null;
   }[];
+  // Sprint 30A.1 UX correction: ONE shared grading configuration for the
+  // whole Assign action, derived once by the caller from the dialog-level
+  // shared settings - never per class. Applied identically to every
+  // selected class below.
+  readonly classroomGrading: ClassroomGradingInput;
   readonly assignments: AssignmentsCallables;
   readonly integrations: IntegrationsDeps | null;
   readonly assignmentDetail: CurriculumAssignmentDetailSeam | null;
@@ -1864,6 +2105,7 @@ async function runAssignmentLifecycle(input: {
     lesson,
     teacherUid,
     enabledRows,
+    classroomGrading,
     assignments,
     integrations,
     assignmentDetail,
@@ -1893,11 +2135,22 @@ async function runAssignmentLifecycle(input: {
         row.classId,
         nonce,
       );
-      const wantsLms =
-        row.link !== null && row.cfg.publishToLms && integrations !== null;
+      // Second human-review correction: selecting an LMS-linked class for
+      // this Assign action IS the publication decision - there is no
+      // second "Also publish to Google Classroom" opt-in to check
+      // anymore. A selected class with no link, or with LMS deps absent,
+      // never attempts publication (a non-existent link can never be
+      // invented client-side).
+      const wantsLms = row.link !== null && integrations !== null;
 
       // Step 1: authoritative draft. If this fails, no publish and no
       // LMS side effect.
+      //
+      // Sprint 30A.1 UX correction: the same `classroomGrading` value -
+      // the one shared choice for the whole Assign action - is sent
+      // explicitly on every selected class's draft creation, never
+      // inferred and never omitted, so a new assignment is never left to
+      // fall back on the server's legacy-absence convention.
       try {
         await assignments.createDraft({
           assignmentId,
@@ -1905,6 +2158,7 @@ async function runAssignmentLifecycle(input: {
           lessonSlug: lesson.slug,
           mode: "classroom",
           title: lesson.title,
+          classroomGrading,
         });
       } catch {
         // Draft creation failed: nothing durable was saved for this class.

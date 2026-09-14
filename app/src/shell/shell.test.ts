@@ -884,7 +884,11 @@ describe("Assign Experience - Sprint 6E", () => {
     expect(c2?.checked).toBe(true);
   });
 
-  test("assignment date defaults to today, points to the quiz default, release time to the session default", async () => {
+  // Sprint 30A.1 UX correction: Points is a shared, dialog-level Google
+  // Classroom maximum point value (default 10), not a per-class,
+  // quiz-total-derived value. The date/release-time defaults remain
+  // per-class-row, unaffected by that correction.
+  test("assignment date defaults to today, shared grading Points defaults to 10, release time to the session default", async () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, { listClasses: listTwo });
     mount
@@ -903,7 +907,7 @@ describe("Assign Experience - Sprint 6E", () => {
     expect(date?.value).toBe(expected);
     expect(
       document.querySelector<HTMLInputElement>(
-        "[data-testid=assign-row-points-c1]",
+        "[data-testid=assign-shared-points]",
       )?.value,
     ).toBe("10");
     expect(
@@ -1010,10 +1014,9 @@ describe("Assign Experience - Sprint 6E", () => {
         "[data-testid=assign-row-enabled-c2]",
       )?.checked,
     ).toBe(false);
-    // B5: revisiting a row must never surface a publish toggle in the ON
-    // state. With no LMS integration wired here the toggle is absent (an
-    // un-checkable, effectively-OFF control); the LMS-linked reopen path
-    // asserts the same OFF invariant in curriculum.lms-publish.test.ts.
+    // Sprint 30A.1's second human-review correction removed the per-class
+    // publish toggle entirely - it can never exist, checked or otherwise,
+    // regardless of whether LMS integration is wired.
     expect(
       document.querySelectorAll(
         "[data-testid^=assign-row-lms-publish-]:checked",
@@ -2020,12 +2023,9 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
       )
       ?.click();
     await flush();
-    // Enable the LMS publish toggle on the linked class row.
-    const pub = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-lms-publish-c1]",
-    );
-    pub!.checked = true;
-    pub!.dispatchEvent(new Event("change"));
+    // c1 is LMS-linked and selected by default - Sprint 30A.1's second
+    // human-review correction removed the separate publish toggle, so
+    // confirming alone is enough to trigger LMS-side publication for it.
     document
       .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
       ?.click();
@@ -2067,11 +2067,9 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
       )
       ?.click();
     await flush();
-    const pub = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-lms-publish-c1]",
-    );
-    pub!.checked = true;
-    pub!.dispatchEvent(new Event("change"));
+    // c1 is LMS-linked; Sprint 30A.1's second human-review correction
+    // removed the separate publish toggle, so being selected (the
+    // default) is sufficient to trigger LMS-side publication for it.
     // Only c1 selected so we isolate the failure path.
     const c2Cb = document.querySelector<HTMLInputElement>(
       "[data-testid=assign-row-enabled-c2]",
@@ -2103,11 +2101,9 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
       )
       ?.click();
     await flush();
-    const pub = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-lms-publish-c1]",
-    );
-    pub!.checked = true;
-    pub!.dispatchEvent(new Event("change"));
+    // c1 is LMS-linked; Sprint 30A.1's second human-review correction
+    // removed the separate publish toggle, so being selected (the
+    // default) is sufficient to trigger LMS-side publication for it.
     document
       .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
       ?.click();
@@ -2137,11 +2133,9 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
       )
       ?.click();
     await flush();
-    const pub = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-lms-publish-c1]",
-    );
-    pub!.checked = true;
-    pub!.dispatchEvent(new Event("change"));
+    // c1 is LMS-linked; Sprint 30A.1's second human-review correction
+    // removed the separate publish toggle, so being selected (the
+    // default) is sufficient to trigger LMS-side publication for it.
     document
       .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
       ?.click();
@@ -2189,11 +2183,9 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
       )
       ?.click();
     await flush();
-    const pub = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-lms-publish-c1]",
-    );
-    pub!.checked = true;
-    pub!.dispatchEvent(new Event("change"));
+    // c1 is LMS-linked; Sprint 30A.1's second human-review correction
+    // removed the separate publish toggle, so being selected (the
+    // default) is sufficient to trigger LMS-side publication for it.
     // Only c1 selected so the aggregate suffix is a single line.
     const c2Cb = document.querySelector<HTMLInputElement>(
       "[data-testid=assign-row-enabled-c2]",
@@ -2298,14 +2290,9 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
     );
     t2!.value = "t2";
     t2!.dispatchEvent(new Event("change"));
-    // Enable both publishToLms toggles.
-    for (const cid of ["c1", "c2"]) {
-      const pub = document.querySelector<HTMLInputElement>(
-        `[data-testid=assign-row-lms-publish-${cid}]`,
-      );
-      pub!.checked = true;
-      pub!.dispatchEvent(new Event("change"));
-    }
+    // Both classes are LMS-linked and selected by default - Sprint 30A.1's
+    // second human-review correction removed the separate publish toggle,
+    // so both auto-publish on confirm.
     document
       .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
       ?.click();

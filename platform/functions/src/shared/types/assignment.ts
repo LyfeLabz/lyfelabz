@@ -17,11 +17,39 @@ export type AssignmentStatus = "draft" | "published" | "closed" | "archived";
 
 // Canonical assignment mode per Data Model §3.6 and Cloud Function Charter
 // §2.5. LyfeLabz has two runtime modes: Practice Mode (client-only, no
-// persistence) and Classroom Mode (server-finalized, persisted). The word
-// "graded" is deliberately not used at any layer per PDR-010; a
-// `classroom`-mode assignment is not a "graded assignment," it is a
-// Classroom Mode surface.
+// persistence) and Classroom Mode (server-finalized, persisted).
+//
+// PDR-010 amendment (Sprint 30A.1): PDR-010's original blanket prohibition
+// on the word "graded" is narrowed, not repealed. Sprint 30A authorizes
+// "Graded"/"Ungraded" strictly as teacher-facing Classroom grading
+// terminology, carried exclusively by `ClassroomGradingConfig` below. The
+// invariant PDR-010 actually protects remains fully intact: `mode` itself
+// never takes a "graded" value, and `mode: "classroom"` still means only
+// "this assignment is a server-finalized, persisted Classroom Mode
+// surface" - it does not mean, and must never be read to mean, "this
+// assignment is graded." A `classroom`-mode assignment may be Graded or
+// Ungraded; a `practice`-mode assignment carries no grading configuration
+// at all (Practice Mode never publishes to Classroom).
 export type AssignmentMode = "practice" | "classroom";
+
+// Sprint 30A.1 - Classroom grading configuration. Orthogonal to `mode`:
+// `mode: "classroom"` describes the delivery/surface (server-finalized,
+// persisted) and never implies grading by itself. This type is the sole
+// carrier of the teacher's Graded/Ungraded choice and, when graded, the
+// Classroom maximum point value. The discriminated union makes an invalid
+// combination ("ungraded" carrying `maxPoints`, or "graded" missing/with a
+// non-positive-integer `maxPoints`) unrepresentable in the type system; the
+// callable boundary additionally rejects a malformed payload shape at
+// runtime (JS/Firestore do not enforce TS types), so no invalid state can
+// reach either layer.
+export type ClassroomGradingConfig =
+  | {
+      readonly mode: "graded";
+      readonly maxPoints: number;
+    }
+  | {
+      readonly mode: "ungraded";
+    };
 
 // Canonical assignment record shape per Data Model §3.6.
 //
@@ -72,6 +100,18 @@ export type AssignmentRecord = {
   // transitions (both narrow lifecycle writes intentionally exclude
   // `publishedAt`). Absent on assignments never published (drafts).
   readonly publishedAt?: Timestamp;
+  // Sprint 30A.1 - additive optional Classroom grading configuration.
+  // Absent means: legacy assignment predating this field, or an assignment
+  // created by a client that never supplied a choice. Absence MUST behave
+  // as ungraded for every Classroom publication/passback purpose - no
+  // inferred maxPoints, no migration, no backfill. Writable only through
+  // `assignmentsCreateDraft` (at creation) and `assignmentsUpdateDraft`
+  // (while still `draft`); both callables already refuse to write to a
+  // non-draft record, so this field is structurally frozen from the moment
+  // the assignment leaves `draft` - before any Classroom coursework can
+  // exist for it (LMS publication is a later, separate step). No new
+  // freeze mechanism is required beyond that existing status gate.
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 // Write shape for the draft-creation callable (assignmentsCreateDraft).
@@ -97,6 +137,8 @@ export type AssignmentCreationWrite = {
   readonly instructions?: string;
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
+  // Sprint 30A.1 - see the field comment on `AssignmentRecord.classroomGrading`.
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 // Write shape for the draft-update callable (assignmentsUpdateDraft).
@@ -115,6 +157,12 @@ export type AssignmentDraftUpdateWrite = {
   readonly mode?: AssignmentMode;
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
+  // Sprint 30A.1 - see the field comment on `AssignmentRecord.classroomGrading`.
+  // Writable here only while the record is still `draft` (the callable
+  // itself enforces this per §7.6, the same gate every other field on this
+  // write shape already relies on), which is what freezes the configuration
+  // before any Classroom publication can occur.
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 // Write shape for the publish callable (assignmentsPublish). Conforms to

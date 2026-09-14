@@ -440,7 +440,7 @@ Required fields:
 - schoolId: Denormalized from the class for administrative queries.
 - lessonSlug: The lesson slug being assigned.
 - lessonVersion: The specific version being surfaced. Freezing the version at record creation protects students from mid-window content changes.
-- mode: `practice` or `classroom`. Aligns with the Practice Mode and Classroom Mode terminology already documented in CLAUDE.md. There is no `graded` mode.
+- mode: `practice` or `classroom`. Aligns with the Practice Mode and Classroom Mode terminology already documented in CLAUDE.md. There is no `graded` mode; the `mode` field itself never carries grading information (see `classroomGrading` below, added by Sprint 30A.1, which is orthogonal to `mode`).
 - status: `draft`, `published`, `closed`, `archived`. `archived` is the terminal state that removes the record from active teacher views while preserving history so past submissions remain resolvable.
 - createdAt: For auditing.
 
@@ -451,6 +451,7 @@ Optional fields:
 - windowClosesAt: Optional. When present, defines the moment after which the record leaves active student views. This is not a due date; the platform does not render "due," "late," or "overdue" language to students or teachers, and finalization is not blocked by the window closing. See PDR-010.
 - availableAt: Optional. If present, the record is hidden from students until this time.
 - lmsPublicationRef: Optional reference to the most recent `lmsAssignmentPublications/{publicationId}` mirror document for this assignment. Reserved by the ratified LMS integration architecture. Absent on every pre-existing assignment. Presence records that publication has been attempted; success or failure is recorded on the referenced publication document. Publication is a side effect per PDR-019d; the assignment record remains authoritative.
+- classroomGrading: Optional (Sprint 30A.1). The teacher's Google Classroom grading configuration for this assignment: either `{ mode: "graded", maxPoints: <positive integer> }` or `{ mode: "ungraded" }`. Absent on every pre-existing assignment and on any assignment whose creating client never supplied a choice; absence behaves as ungraded for every Classroom publication/passback purpose - never inferred, never defaulted to a specific point value. Writable only through `assignmentsCreateDraft` and `assignmentsUpdateDraft`, and only while the record is still `draft` - the record is therefore frozen before any Classroom coursework can exist for it. Authorized narrowly by the Sprint 30A.1 amendment to PDR-010 (`LYFELABZ_PLATFORM_DECISIONS.md` §PDR-010); orthogonal to `mode`, which never carries grading information.
 
 Relationships: References one class, one teacher, one school, and one lesson version. Has many submissions.
 

@@ -202,6 +202,15 @@ export type IntegrationsCallables = {
 // attempted. Injected separately from IntegrationsCallables because the
 // lifecycle exists whether or not any of the teacher's classes are
 // LMS-linked (ASSIGN_EXPERIENCE.md §5 preserves the non-LMS shape).
+// Sprint 30A.1 - client-side mirror of the server's
+// `ClassroomGradingConfig` (platform/functions/src/shared/types/assignment.ts).
+// Not imported from the functions package - the client and server type
+// trees are separate, matching every other field on this input (`mode`
+// above is likewise a hand-mirrored literal union, not an import).
+export type ClassroomGradingInput =
+  | { readonly mode: "graded"; readonly maxPoints: number }
+  | { readonly mode: "ungraded" };
+
 export type AssignmentsCreateDraftInput = {
   readonly assignmentId: string;
   readonly classId: string;
@@ -211,6 +220,10 @@ export type AssignmentsCreateDraftInput = {
   readonly instructions?: string;
   readonly windowClosesAt?: string;
   readonly availableAt?: string;
+  // Sprint 30A.1 - optional Classroom grading configuration. Absent means
+  // ungraded (server-side default for compatibility); the Assign dialog
+  // always sends an explicit value going forward (see curriculum.ts).
+  readonly classroomGrading?: ClassroomGradingInput;
 };
 
 export type AssignmentsCreateDraftOutput = {

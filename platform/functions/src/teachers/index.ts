@@ -26,6 +26,16 @@ export {
   type TeacherPreferencesUpdateResponse,
 } from "./teacher-preferences-update";
 export {
+  teacherClassOrderUpdate,
+  type TeacherClassOrderUpdateRequest,
+  type TeacherClassOrderUpdateResponse,
+} from "./teacher-class-order-update";
+export {
+  teacherClassColorUpdate,
+  type TeacherClassColorUpdateRequest,
+  type TeacherClassColorUpdateResponse,
+} from "./teacher-class-color-update";
+export {
   teachersSuspend,
   type TeachersSuspendRequest,
   type TeachersSuspendResponse,

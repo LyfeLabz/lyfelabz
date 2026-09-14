@@ -367,6 +367,150 @@ describe("assignmentsCreateDraft", () => {
     ).rejects.toMatchObject({ code: "assignments.invalidAvailableAt" });
   });
 
+  describe("Sprint 30A.1: classroomGrading validation", () => {
+    it("accepts graded with a positive integer maxPoints and writes it verbatim", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(absentAssignmentSnapshot());
+      mockAssignmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+      await __assignmentsCreateDraftHandler(
+        makeRequest({
+          data: {
+            ...VALID_DATA,
+            classroomGrading: { mode: "graded", maxPoints: 20 },
+          },
+        }),
+      );
+
+      const written = mockAssignmentSet.mock.calls[0][0];
+      expect(written.classroomGrading).toEqual({ mode: "graded", maxPoints: 20 });
+    });
+
+    it("accepts ungraded without maxPoints and writes it verbatim", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(absentAssignmentSnapshot());
+      mockAssignmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+      await __assignmentsCreateDraftHandler(
+        makeRequest({
+          data: { ...VALID_DATA, classroomGrading: { mode: "ungraded" } },
+        }),
+      );
+
+      const written = mockAssignmentSet.mock.calls[0][0];
+      expect(written.classroomGrading).toEqual({ mode: "ungraded" });
+    });
+
+    it("accepts legacy absence of classroomGrading (no field written)", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(absentAssignmentSnapshot());
+      mockAssignmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+      await __assignmentsCreateDraftHandler(makeRequest());
+
+      const written = mockAssignmentSet.mock.calls[0][0];
+      expect(written).not.toHaveProperty("classroomGrading");
+    });
+
+    it("rejects graded with maxPoints 0", async () => {
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({
+            data: {
+              ...VALID_DATA,
+              classroomGrading: { mode: "graded", maxPoints: 0 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects graded with a negative maxPoints", async () => {
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({
+            data: {
+              ...VALID_DATA,
+              classroomGrading: { mode: "graded", maxPoints: -5 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects graded with a fractional maxPoints", async () => {
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({
+            data: {
+              ...VALID_DATA,
+              classroomGrading: { mode: "graded", maxPoints: 2.5 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects graded with a missing maxPoints", async () => {
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({
+            data: { ...VALID_DATA, classroomGrading: { mode: "graded" } },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects ungraded carrying a maxPoints", async () => {
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({
+            data: {
+              ...VALID_DATA,
+              classroomGrading: { mode: "ungraded", maxPoints: 10 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects an unrecognized classroomGrading key", async () => {
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({
+            data: {
+              ...VALID_DATA,
+              classroomGrading: { mode: "graded", maxPoints: 10, extra: true },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects a malformed mode value", async () => {
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({
+            data: { ...VALID_DATA, classroomGrading: { mode: "sort-of" } },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects a non-object classroomGrading", async () => {
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({
+            data: { ...VALID_DATA, classroomGrading: "graded" },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+  });
+
   it("rejects a class-not-found target", async () => {
     mockClassGet.mockResolvedValueOnce({ exists: false, data: () => undefined });
     await expect(

@@ -112,6 +112,26 @@ const UNLISTED_TEACHER = {
 const MANUAL_CLASS_ID = "ux-class-science";
 const LMS_CLASS_ID = "ux-class-classroom";
 
+// Sprint 30A.1 FINAL UI POLISH: two additional manual classes, added
+// solely so the local human reviewer can evaluate the real four-row
+// Assign dialog density/layout (the original two-class fixture was too
+// thin to judge that). Both are plain LyfeLabz classes with a join code
+// (enrollmentSource "manual", the Data Model default) - NOT Google
+// Classroom-linked. Deliberately not LMS-linked: doing that safely would
+// require either a real `lmsClassLinks` + `lmsConnections` + OAuth token
+// record (fake infrastructure this seed does not otherwise support) or
+// would cause the Assign dialog to eagerly call the live
+// `lmsClassesListTopics` callable, which reaches the real Google
+// Classroom API - both are out of bounds for a local-only fixture. See
+// the Sprint 30A.1 final UI polish report for how this is documented to
+// the reviewer: all four classes show the inert Topic placeholder,
+// exactly like this seed's pre-existing `LMS_CLASS_ID` already does
+// today (it carries `enrollmentSource: "lms"` metadata but no
+// `lmsClassLinks` record either, so it has never actually rendered a
+// live topic select in this local review - unchanged by this pass).
+const EXTRA_CLASS_1_ID = "ux-class-ecology";
+const EXTRA_CLASS_2_ID = "ux-class-physics";
+
 // The four assessments this review depends on. Every one has a committed
 // canonical payload and a v2 lesson artifact. `what-is-life` is the
 // designated live-completion assignment (the certified pilot); the other
@@ -403,6 +423,33 @@ async function seedClasses(db, log) {
     createdAt: FieldValue.serverTimestamp(),
   });
   log(`[ux-seed]   LMS-shaped class ${LMS_CLASS_ID} (UX Review Classroom, Google Classroom linked)`);
+
+  // Sprint 30A.1 FINAL UI POLISH: two more manual classes purely for
+  // Assign-dialog density review (see the constants' comment above for
+  // why these are manual, not LMS-linked).
+  await db.collection("classes").doc(EXTRA_CLASS_1_ID).set({
+    teacherId: TEACHER.uid,
+    schoolId: SCHOOL_ID,
+    title: "UX Review Ecology",
+    grade: "7",
+    block: "C",
+    joinCode: "UXECO7",
+    status: "active",
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  log(`[ux-seed]   manual class ${EXTRA_CLASS_1_ID} (UX Review Ecology, join code UXECO7)`);
+
+  await db.collection("classes").doc(EXTRA_CLASS_2_ID).set({
+    teacherId: TEACHER.uid,
+    schoolId: SCHOOL_ID,
+    title: "UX Review Physics",
+    grade: "7",
+    block: "D",
+    joinCode: "UXPHY7",
+    status: "active",
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  log(`[ux-seed]   manual class ${EXTRA_CLASS_2_ID} (UX Review Physics, join code UXPHY7)`);
 }
 
 async function seedEnrollment(db, classId, student, log) {
@@ -584,7 +631,9 @@ async function main() {
   log(`[ux-seed]   student google-linked: ${s.providerData.some((p) => p.providerId === "google.com")}`);
 
   log("\n[ux-seed] COMPLETE.");
-  log("[ux-seed]   Teacher: UX Review Teacher (" + TEACHER.email + ")");
+  log("[ux-seed]   Teacher: UX Review Teacher (" + TEACHER.email + ") - 4 active classes for Assign-dialog review");
+  log("[ux-seed]   Classes: UX Review Science (6-A), UX Review Classroom (6-B), UX Review Ecology (7-C), UX Review Physics (7-D)");
+  log("[ux-seed]   Note: none of the 4 carry a real lmsClassLinks record, so every row's Topic column shows the inert placeholder locally (avoids a live Google Classroom call).");
   log("[ux-seed]   Student: UX Review Student (" + STUDENT.email + ")");
   log("[ux-seed]   Late:    Late Review Student (" + LATE_STUDENT.email + ")");
   log("[ux-seed]   Pilot (allowlisted, provisioned): " + PILOT_TEACHER.email + " -> Continue as Teacher activates directly");

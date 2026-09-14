@@ -1,5 +1,11 @@
 import type { Session } from "../session/types";
 import type { ListClasses } from "../classes/listClasses";
+import type {
+  UpdateTeacherClassOrder,
+  ReadTeacherClassColors,
+} from "../classes/classOrder";
+import type { UpdateClassMetadata } from "../classes/updateClassMetadata";
+import type { UpdateClassColor } from "../classes/updateClassColor";
 import type { CreateClass } from "../classes/createClass";
 import type { ActivateClass } from "../classes/activateClass";
 import type { SyncRoster } from "../classes/syncRoster";
@@ -67,6 +73,15 @@ export type ShellDeps = {
   // Sprint 8D.1: authoritative assignment lifecycle callables consumed
   // by the Assign Experience.
   readonly assignments?: AssignmentsCallables | null;
+  // Sprint 30A.1 UX correction: canonical teacher class-order writer,
+  // consumed by the Assign dialog's reorder control. Null in tests that
+  // do not exercise reordering.
+  readonly updateClassOrder?: UpdateTeacherClassOrder | null;
+  // Sprint 30A.1 Class Settings V1, consumed by the Classes workspace's
+  // Class Settings modal. Null in tests that do not exercise it.
+  readonly updateClassMetadata?: UpdateClassMetadata | null;
+  readonly updateClassColor?: UpdateClassColor | null;
+  readonly readClassColors?: ReadTeacherClassColors | null;
   // Sprint 13B remediation: entry-point seam that lets the Curriculum
   // surface register published assignment metadata and open the
   // certified Assignment Detail surface.
@@ -157,6 +172,10 @@ export function mountTeacherShell(
     snapshotPreview: deps.snapshotPreview ?? null,
     integrations: deps.integrations ?? null,
     assignments: deps.assignments ?? null,
+    updateClassOrder: deps.updateClassOrder ?? null,
+    updateClassMetadata: deps.updateClassMetadata ?? null,
+    updateClassColor: deps.updateClassColor ?? null,
+    readClassColors: deps.readClassColors ?? null,
     assignmentDetail: deps.assignmentDetail ?? null,
     assignmentSummary: deps.assignmentSummary ?? null,
     lessonSummary: deps.lessonSummary ?? null,

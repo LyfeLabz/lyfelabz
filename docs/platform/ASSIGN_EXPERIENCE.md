@@ -63,7 +63,9 @@ Assigning is a preparation ritual. Between the copier and the bell, a teacher de
 
 The Assign Experience is designed around this ritual.
 
-One dialog schedules every selected class. Every class is selected by default because the common case is "make this available to every block that will meet today." Each class row is independently configurable because the common case is not the only case. The default assignment date is always Today because assigning today is what teachers do most. Release time and Google Classroom topic remember the teacher's last-used preferences because a teacher's schedule usually repeats. Points default to the total possible quiz score for the lesson because that is the value a teacher will type if LyfeLabz does not type it for her.
+One dialog schedules every selected class. Every class is selected by default because the common case is "make this available to every block that will meet today." Each class row is independently configurable for what genuinely varies by class - release date and time, Google Classroom topic, and Classroom publication opt-in - because the common case is not the only case. The default assignment date is always Today because assigning today is what teachers do most. Release time and Google Classroom topic remember the teacher's last-used preferences because a teacher's schedule usually repeats.
+
+**Sprint 30A.1 correction.** Google Classroom grading configuration - Graded/Ungraded and, when Graded, the Classroom maximum point value ("Points") - is deliberately NOT per-row. It is one shared choice for the whole Assign action, applied identically to every selected class, because the same lesson graded 20 points in one section and 10 in another (or graded in one section and ungraded in another) is not a state the LyfeLabz workflow supports. Points is a teacher-selected value (default 10), not a value derived from the lesson's quiz total - LyfeLabz does not compute or expose a per-lesson quiz-total default.
 
 LyfeLabz remembers preferences. LyfeLabz does not assume today's schedule. Those two rules together preserve the teacher's control: the platform makes the common case fast without ever quietly making a decision the teacher wanted to make.
 
@@ -146,38 +148,61 @@ Every row exposes, at minimum, the values a teacher would reasonably want to rev
 - The class identity, including grade and block, so the teacher can recognize the row at a glance.
 - The release time for the assignment in that class. Release time is a per-day teacher decision. LyfeLabz never assumes it from a bell schedule.
 - The Google Classroom topic under which the assignment should be published, where a Google Classroom integration is in use.
-- The points that will be recorded for the resource. Points default to the total possible quiz score for the lesson.
 - A single-click deselection for the row, in case the teacher does not want to assign this resource to this class today.
 
 The release time is prefilled with the teacher's last-used release time for that class. LyfeLabz remembers preferences: a teacher who consistently releases first block Grade 7 at 7:45 sees 7:45 in that row every time she opens the dialog. The default is a memory, not a guess.
 
 The Google Classroom topic is prefilled with the teacher's last-used topic. Where Google Classroom integration is not in use, the field is absent from the row. It is not shown as a disabled control.
 
-The points value is prefilled with the total possible quiz score for the resource. If the resource does not have a quiz, the field is absent from the row.
+Every prefilled value is editable in place. The teacher can change the release time in one row without changing it in any other row. She can change the Google Classroom topic in one row without changing it in any other row. There is no "sync across rows" toggle, because independent per-row configuration is the design for what genuinely varies by class.
 
-Every prefilled value is editable in place. The teacher can change the release time in one row without changing it in any other row. She can change the Google Classroom topic in one row without changing it in any other row. She can change points in one row without changing them in any other row. There is no "sync across rows" toggle, because independent per-row configuration is the design.
+**Sprint 30A.1 correction.** Google Classroom grading configuration (Graded/Ungraded and, when Graded, the Classroom maximum point value) is NOT a class-row value - it does not appear in this section's list above. It is a single, shared choice for the whole Assign action, configured once above the class rows and applied identically to every selected class. See "Sprint 30A.1: Shared Grading Configuration" below.
 
 Exceptions are handled inside the same dialog. A teacher who is releasing Grade 6 first thing in the morning to five blocks but wants to release the sixth block later does not open a second dialog for the sixth block. She changes the sixth-block row in place. Exceptions should never require a second workflow.
 
 ### Design Rules
 
-- Each class row is independently configurable. Values in one row never quietly propagate to another.
+- Each class row is independently configurable for what genuinely varies by class. Values in one row never quietly propagate to another.
 - Release time is a per-day teacher decision. It is prefilled from the teacher's remembered preference, never inferred from a bell schedule.
 - Google Classroom topic is prefilled from the teacher's remembered preference. It is absent when Google Classroom is not in use.
-- Points default to the total possible quiz score. The field is absent when the resource has no quiz.
+- Google Classroom grading configuration is a shared, dialog-level setting, never a per-row one (Sprint 30A.1).
 - Every prefilled value is editable in place.
 - Exceptions are handled inside the same dialog. There is never a second dialog for edge cases.
 
+### Sprint 30A.1: Shared Grading Configuration
+
+Google Classroom grading configuration is deliberately excluded from the per-row shape above. A teacher chooses, once, for the whole Assign action:
+
+- **Ungraded** (default) or **Graded**.
+- When Graded, a single Classroom maximum point value ("Points"), a teacher-selected value defaulting to 10 - never a value derived from the lesson's quiz total, and never independently configurable per class.
+
+This single choice is applied identically to every selected class's assignment. There is no supported state where one selected class is Graded at one point value and another is Ungraded, or Graded at a different point value, within the same Assign action. Deselecting a class removes it from the operation entirely; it never receives a partial or divergent grading configuration.
+
 ### LMS-linked class row shape
 
-When the ratified LMS integration architecture (`LMS_INTEGRATION_ARCHITECTURE.md`, PDR-019) is implemented, the shape of a class row for an LMS-linked class carries two additional affordances alongside the release time, points, and deselection controls already described:
+The shape of a class row for an LMS-linked class carries one additional affordance alongside the release time and deselection controls already described:
 
 - A Google Classroom topic selector, prefilled with the teacher's last-used topic for that class and populated from the linked LMS class's topics. Where a class is not LMS-linked, this control is absent from the row, not shown as a disabled control.
-- An "Also publish to Google Classroom" toggle, off by default until the teacher opts in for that class. When on, confirming the dialog publishes the LyfeLabz assignment to the linked LMS as a side effect of scheduling, per PDR-019d.
+
+Sprint 30A.1's second human-review correction removed a formerly separate "Also publish to Google Classroom" toggle. Selecting an LMS-linked class for the Assign action - the same selection checkbox every row already has - now is the publication decision; confirming the dialog publishes the LyfeLabz assignment to the linked LMS as a side effect of scheduling, per PDR-019d, for every selected LMS-linked class. Deselecting the class means neither the LyfeLabz assignment nor the Classroom coursework item is created for it.
 
 The affordances are additive. Every rule in Section 5 continues to apply to LMS-linked rows: independent per-row configuration, prefill from remembered preferences, in-place edits, no propagation across rows, and no second workflow. The dialog remains one dialog. There is no "publish to Google Classroom" wizard, no "Google Classroom settings" secondary panel, and no LMS-specific dialog. The Assign Experience is one workflow whether or not any of the teacher's classes are LMS-linked.
 
 Rows for classes that are not LMS-linked are unchanged.
+
+### Sprint 30A.1: Canonical Class Order
+
+The order class rows appear in is a teacher preference, not an Assign-specific setting. **Class order is edited on the Classes workspace, not inside Assign** (human-review finalization): a teacher reorders her classes there (drag a card's handle, or use the left/right arrow keys while the handle has focus), and that order is saved as her canonical class order - the single order used everywhere her classes are listed, including the Assign dialog. The Assign dialog only ever displays this order; it applies no secondary sort of its own and offers no way to edit it (an earlier draft of this feature put a drag handle inside Assign, but human review found reordering belongs where the teacher already manages her classes). There is no separate ordering preference per surface.
+
+A teacher who has never set a custom order sees a deterministic fallback: classes carrying her own block/period metadata sort by that value (numerically or alphabetically, whichever the value is), then by title; classes with no block metadata sort after those with one, by title. A newly added or newly imported class is appended after her existing custom order rather than disturbing it. Deselecting a class for one Assign action never changes its position in the canonical order.
+
+### Sprint 30A.1: Class Settings (V1)
+
+The Classes workspace is also where a teacher edits a class's own presentation: a small settings gear on each class tile opens **Class Settings**, covering exactly four fields - display name, grade, block, and a curated color accent. Editing any of them never changes the canonical class order (§ above); it edits that one class's own fields in place.
+
+Display name, grade, and block are the same teacher-owned fields the Create Class form already writes - editing them here can never rename, resection, or otherwise touch a linked Google Classroom course, because the LyfeLabz class record never mirrors a Classroom course's own name in the first place. Color has no equivalent on the class record at all: it is a per-teacher presentation preference (like class order), chosen from a small closed palette rather than a free-form picker, and it renders as a restrained accent on the class tile - never a Google Classroom-visible change.
+
+Assign reflects the display name, grade, and block a teacher saves here (it reads the same class record), but never gains a color control of its own; color is a Classes-workspace-only presentation choice.
 
 ---
 
@@ -227,7 +252,7 @@ The Confirmation is not a report ritual. It is the closing punctuation on a prep
 
 ### LMS-side publication outcomes
 
-When a row's "Also publish to Google Classroom" toggle is on, the confirmation surface names the publication outcome alongside the LyfeLabz scheduling outcome. The LyfeLabz assignment is authoritative; publication is a side effect per PDR-019d. The confirmation reads either:
+When a selected class row is LMS-linked, the confirmation surface names the publication outcome alongside the LyfeLabz scheduling outcome. The LyfeLabz assignment is authoritative; publication is a side effect per PDR-019d. The confirmation reads either:
 
 - "The LyfeLabz assignment was scheduled. Publishing to Google Classroom succeeded."
 - "The LyfeLabz assignment was scheduled. Publishing to Google Classroom did not succeed."
@@ -261,7 +286,7 @@ Clicking:
 
 reopens the Assignment Dialog with the current information already populated. The dialog is the same dialog. It is not a "manage assignment" dialog and it is not a "view assignment" screen. It is the Assign Experience, opened with today's state.
 
-The teacher sees, per class row, exactly what she scheduled: which classes were included, what release time she chose, which Google Classroom topic she selected, and what points value she recorded. She can change any of them. She can deselect a class to remove the assignment for that class. She can add a class that she previously deselected. She can confirm the dialog again and the platform updates the assignments to match.
+The teacher sees, per class row, exactly what she scheduled for that class: which classes were included, what release time she chose, and which Google Classroom topic she selected. She sees the shared grading configuration (Graded/Ungraded, and Points when Graded) once, above the rows (Sprint 30A.1). She can change any of them. She can deselect a class to remove the assignment for that class. She can add a class that she previously deselected. She can confirm the dialog again and the platform updates the assignments to match.
 
 Removing an assignment is not a separate workflow. It is a deselection inside the same dialog. If a teacher wants to unassign a lesson from every class, she deselects every row and confirms. There is no dedicated Unassign control on the curriculum card. Unassign is not a first-class verb; it is the consequence of the teacher's edits.
 
@@ -306,7 +331,7 @@ Every section above ends with a small Design Rules block distilled from that mom
 
 **Common-case defaults, one-gesture overrides.** Every prefilled value is editable in place. The dialog never forces a teacher to accept a value it can safely default, and never hides an override behind a second gesture.
 
-**Points default to the total possible quiz score.** Where the resource has a quiz, the points field is prefilled with the correct value. Where the resource has no quiz, the field is absent.
+**Grading configuration is shared, not per-row (Sprint 30A.1).** Graded/Ungraded and the Classroom maximum point value ("Points") are configured once for the whole Assign action and applied identically to every selected class. Points is a teacher-selected value (default 10), not a quiz-total-derived value.
 
 **Exceptions live inside the dialog.** A one-off release time, a skipped block, or a different topic are per-row edits. They are not a second workflow.
 
@@ -336,7 +361,7 @@ Backend scheduling of releases (the mechanism that turns a chosen release time i
 
 Additional publishing targets (for example, a future Canvas integration or a district-owned announcement channel) will follow the same pattern. Each additional target that the platform commits to supporting appears as a per-row control, or as an implicit consequence of confirming the dialog, without changing the overall shape of the workflow. Adding a target must not turn one dialog into two.
 
-The set of assignable resource types will grow. Extensions, investigations, simulations, engineering challenges, and future resource types share the same dialog, the same per-row configuration, and the same confirmation shape. Points defaults may vary per resource type (an engineering challenge may not have a quiz), and any per-type variation lives inside the same dialog as an absent or differently defaulted field. The workflow is one workflow regardless of resource type.
+The set of assignable resource types will grow. Extensions, investigations, simulations, engineering challenges, and future resource types share the same dialog, the same per-class-row configuration for what genuinely varies by class, and the same shared grading configuration and confirmation shape (Sprint 30A.1). Points is a teacher-selected Classroom maximum point value, not derived from any resource type's content; the workflow is one workflow regardless of resource type.
 
 The class workspace surfaces described in Chapters 5 and 6 of the Teacher Journey (the Snapshot and the spreadsheet-style view) are downstream consumers of assignments produced by this workflow. They read the records the Assign Experience produces. They never provide an alternate way to create those records. The Assign Experience remains the single canonical origin.
 

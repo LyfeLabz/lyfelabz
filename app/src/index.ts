@@ -1,5 +1,20 @@
 import { createFirestoreListClasses } from "./classes/listClasses";
 import {
+  createFirestoreReadTeacherClassOrder,
+  createFirebaseUpdateTeacherClassOrder,
+  createFirestoreReadTeacherClassColors,
+  createOrderedListClasses,
+  type UpdateTeacherClassOrder,
+} from "./classes/classOrder";
+import {
+  createFirebaseUpdateClassMetadata,
+  type UpdateClassMetadata,
+} from "./classes/updateClassMetadata";
+import {
+  createFirebaseUpdateClassColor,
+  type UpdateClassColor,
+} from "./classes/updateClassColor";
+import {
   createFirebaseCreateClass,
   type CreateClass,
 } from "./classes/createClass";
@@ -176,12 +191,29 @@ async function run(): Promise<void> {
   const auth = getFirebaseAuth();
   const db = getFirebaseFirestore();
 
-  const listClasses = createFirestoreListClasses(db);
+  // Sprint 30A.1 UX correction: `listClasses` is composed with the
+  // teacher's canonical class order once, here, so every consumer reached
+  // through the route table (the Classes workspace and the Assign
+  // dialog's class list) sees the identical, already-ordered list with no
+  // ordering logic of its own. This is the single source of truth for
+  // class display order across the app.
+  const listClasses = createOrderedListClasses(
+    createFirestoreListClasses(db),
+    createFirestoreReadTeacherClassOrder(db),
+  );
+  // Sprint 30A.1 Class Settings V1: the teacher's per-class color
+  // accents, read directly (not composed into `listClasses` the way
+  // `classOrder` is) since color is presentation-only and consumed only
+  // by the Classes workspace's card rendering, never by Assign.
+  const readClassColors = createFirestoreReadTeacherClassColors(db);
   const onLaunchPresentMode = createBrowserLaunchPresentMode(window);
 
   let currentRunToken = 0;
   let integrations: IntegrationsDeps | null = null;
   let assignments: AssignmentsCallables | null = null;
+  let updateClassOrder: UpdateTeacherClassOrder | null = null;
+  let updateClassMetadata: UpdateClassMetadata | null = null;
+  let updateClassColor: UpdateClassColor | null = null;
   // Sprint 13A: certified `assessmentAssignmentSummary` callable seam
   // consumed by the reusable Assignment Summary card. Rebound per
   // active-teacher session so cross-session state cannot leak.
@@ -565,6 +597,9 @@ async function run(): Promise<void> {
         },
       });
       assignments = createAssignmentsCallables(functions);
+      updateClassOrder = createFirebaseUpdateTeacherClassOrder(functions);
+      updateClassMetadata = createFirebaseUpdateClassMetadata(functions);
+      updateClassColor = createFirebaseUpdateClassColor(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
       lessonSummary = createLessonSummaryCallable(functions);
       assignmentClose = createAssignmentsCloseCallable(functions);
@@ -960,6 +995,10 @@ async function run(): Promise<void> {
     onLaunchPresentMode,
     integrations: () => integrations,
     assignments: () => assignments,
+    updateClassOrder: () => updateClassOrder,
+    updateClassMetadata: () => updateClassMetadata,
+    updateClassColor: () => updateClassColor,
+    readClassColors: () => readClassColors,
     assignmentDetail: () => assignmentDetailSeam,
     assignmentSummary: () => assignmentSummary,
     lessonSummary: () => lessonSummary,

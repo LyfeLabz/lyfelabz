@@ -1,5 +1,11 @@
 import type { RouteSurface } from "../router";
 import type { ListClasses } from "../../classes/listClasses";
+import type {
+  UpdateTeacherClassOrder,
+  ReadTeacherClassColors,
+} from "../../classes/classOrder";
+import type { UpdateClassMetadata } from "../../classes/updateClassMetadata";
+import type { UpdateClassColor } from "../../classes/updateClassColor";
 import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
@@ -129,6 +135,20 @@ export type SurfaceDeps = {
     | AssignmentsCallables
     | null
     | (() => AssignmentsCallables | null);
+  // Sprint 30A.1 UX correction: canonical teacher class-order writer.
+  // Always a getter (never a bare value) because `UpdateTeacherClassOrder`
+  // is itself a function type - a bare-value-or-getter union would be
+  // ambiguous to resolve by `typeof`. Same per-session-rebind rationale as
+  // `assignments`. Null/absent in tests/harnesses that do not exercise
+  // reordering - the Assign dialog's reorder control simply does not
+  // persist in that case.
+  readonly updateClassOrder?: () => UpdateTeacherClassOrder | null;
+  // Sprint 30A.1 Class Settings V1. Same "always a getter" rationale as
+  // `updateClassOrder`: each of these is itself a function type, so a
+  // bare-value-or-getter union would be ambiguous to resolve by `typeof`.
+  readonly updateClassMetadata?: () => UpdateClassMetadata | null;
+  readonly updateClassColor?: () => UpdateClassColor | null;
+  readonly readClassColors?: () => ReadTeacherClassColors | null;
   // Sprint 13B remediation. Same getter pattern as `integrations` /
   // `assignments` so per-session state (registry, opener) can rebind
   // across reruns without rebuilding the route table.
@@ -984,6 +1004,16 @@ export const makeActiveTeacherSurface =
       typeof deps.assignments === "function"
         ? deps.assignments()
         : (deps.assignments ?? null);
+    const updateClassOrder =
+      deps.updateClassOrder !== undefined ? deps.updateClassOrder() : null;
+    const updateClassMetadata =
+      deps.updateClassMetadata !== undefined
+        ? deps.updateClassMetadata()
+        : null;
+    const updateClassColor =
+      deps.updateClassColor !== undefined ? deps.updateClassColor() : null;
+    const readClassColors =
+      deps.readClassColors !== undefined ? deps.readClassColors() : null;
     const assignmentDetail =
       typeof deps.assignmentDetail === "function"
         ? deps.assignmentDetail()
@@ -1029,6 +1059,10 @@ export const makeActiveTeacherSurface =
       onLaunchPresentMode: deps.onLaunchPresentMode,
       integrations,
       assignments,
+      updateClassOrder,
+      updateClassMetadata,
+      updateClassColor,
+      readClassColors,
       assignmentDetail,
       assignmentSummary,
       lessonSummary,

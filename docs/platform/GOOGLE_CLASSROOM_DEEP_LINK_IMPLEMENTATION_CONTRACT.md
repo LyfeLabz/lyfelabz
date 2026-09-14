@@ -261,7 +261,7 @@ Publication is a teacher gesture inside the Assign Experience (`ASSIGN_EXPERIENC
 Lifecycle for one publication attempt against one target class:
 
 1. The teacher opens the Assignment Dialog and produces an assignment for a class. Activation and publication remain separate under PDR-024f.
-2. The teacher toggles "Also publish to Google Classroom" on the class row (`LMS_EXPERIENCE.md` §15).
+2. The teacher selects the LMS-linked class for this Assign action (the same selection checkbox every class row has - Sprint 30A.1's second human-review correction removed the formerly separate "Also publish to Google Classroom" toggle; selection alone is now the publication decision, per `LMS_EXPERIENCE.md` §15).
 3. The client invokes `lmsAssignmentPublish` with the LyfeLabz `assignmentId`, the target LMS `lmsClassLinkId`, an optional `providerTopicId`, and a client-supplied idempotency marker.
 4. `lmsAssignmentPublish` performs the transaction described in §11.1.
 5. On success, the callable returns the `publicationId`, the `providerCourseWorkId`, and the `providerCourseWorkAlternateLink`.
@@ -418,7 +418,7 @@ The following invariants MUST hold across every operation named in this contract
 - **No cross-teacher publication.** `lmsAssignmentPublish` refuses when the caller is not the assignment's `teacherId`.
 - **No student-authored publication.** No callable in this contract is authorized for `role === "student"` except `lmsDeepLinkResolve`.
 - **No answer-key exposure.** No callable emits any answer-key material into Classroom, into a callable response, into an audit event, or into a URL. This is a restatement of `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §15 into the Classroom surface.
-- **No score exposure through Classroom.** LyfeLabz does not push a score, item-level correctness, or feedback payload into Classroom under any circumstance. Grade-back is out of scope permanently under `LMS_INTEGRATION_ARCHITECTURE.md` §11.3.
+- **No score exposure through Classroom via this contract.** `lmsAssignmentsPublish`, as amended by Sprint 30A.1, sends only the teacher-configured Classroom maximum point value (`maxPoints`, a capacity the teacher chose, never a score) when the assignment is Graded; it never pushes a score, item-level correctness, or feedback payload into Classroom, under any circumstance. Sprint 30A explicitly authorizes a separate, narrowly-scoped, LyfeLabz-initiated best-score grade-passback capability (see `LMS_INTEGRATION_ARCHITECTURE.md` §11.2's "grade synchronization" entry and §11.3's amended note) as a future sprint (30A.2); it is NOT implemented by this contract or by Sprint 30A.1, and its own implementation will require its own contract amendment naming the exact score-bearing payload and its confidentiality boundary. Until that amendment lands, no callable named in this contract may push a score.
 - **No client storage of publication tokens.** OAuth tokens remain server-only per PDR-019e. No callable returns a token, a refresh token, an OAuth code, or a signed request to the client.
 - **Referer is not authorization.** The deep-link resolver MUST NOT trust `Referer` as an authorization signal (§8.4).
 - **Preview environment does not publish to production Classroom.** No callable in a preview environment produces a Classroom coursework record in a production Classroom class. Preview publication targets an authorized Google Workspace for Education test instance or a Google Classroom API test double, per `LMS_INTEGRATION_ARCHITECTURE.md` §10.3.5 and §10.3.6.
@@ -563,7 +563,7 @@ The implementation sprint that lands the deep-link and publication paths MUST ad
 This contract does not introduce:
 
 - Bidirectional publication. LyfeLabz never reads Classroom-authored coursework as a LyfeLabz assignment. This is permanent under PDR-019d.
-- Grade export to Classroom. LyfeLabz does not push a score or a completion signal into Classroom under any circumstance. This is permanent under `LMS_INTEGRATION_ARCHITECTURE.md` §11.3.
+- Grade export to Classroom. This contract, including its Sprint 30A.1 amendment, does not push a score or a completion signal into Classroom under any circumstance - only a teacher-configured point capacity (`maxPoints`) when the assignment is Graded. Unlike the other items in this list, this is not permanent: Sprint 30A has explicitly authorized a narrowly-scoped, LyfeLabz-initiated best-score grade-passback capability as a future sprint (30A.2, not yet built), per `LMS_INTEGRATION_ARCHITECTURE.md` §11.2's "grade synchronization" entry. Its implementation requires its own contract amendment; until then, no callable named in this contract pushes a score.
 - Automatic synchronization of publications. Publication is a teacher gesture per PDR-019c. No scheduled job in this contract publishes on the teacher's behalf.
 - A second-provider adapter (Canvas, Schoology, Microsoft Teams for Education). The provider abstraction is preserved (§5); an adapter is a future sprint under `LMS_INTEGRATION_ARCHITECTURE.md` §4.2.
 - A LyfeLabz-side co-teacher role or a Classroom-derived co-teacher authorization. Any co-teacher capability requires a superseding PDR.

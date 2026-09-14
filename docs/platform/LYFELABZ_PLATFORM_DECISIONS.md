@@ -558,6 +558,16 @@ The **user-facing vocabulary** is bound by the following rules, which are load-b
 
 This amendment reconciles PDR-010's philosophy with the practical need for a stable schema name. The intent of PDR-010 is unchanged; only the terminology boundary between schema and UI is made explicit.
 
+### Terminology Amendment (Sprint 30A.1)
+
+Sprint 30A authorizes a second, narrow carve-out from the 2026-07-07 amendment's word list above: **"Graded" and "Ungraded" are now authorized teacher-facing vocabulary, but strictly and only for Google Classroom grading configuration** (whether a published Classroom coursework item carries a maximum point value, and what that value is). This is a narrowing of the prohibition, not a repeal of it:
+
+- The words "Graded" and "Ungraded" may appear in Teacher UI **only** in the context of the Classroom-publication control introduced in Sprint 30A.1 (the per-class-row choice in the Assign dialog and its confirmation copy). They remain forbidden everywhere else the 2026-07-07 amendment already forbids them (e.g., they must never describe curation, activation, LyfeLabz-internal quiz scoring, or the assignment lifecycle generally).
+- `AssignmentRecord.mode` is untouched: it continues to take exactly `"practice" | "classroom"`, never `"graded"`. Grading configuration is carried on a separate, additive, orthogonal field (`classroomGrading`, of type `ClassroomGradingConfig`) so that `mode: "classroom"` continues to mean only "this is a server-finalized, persisted Classroom Mode surface" and never means, and must never be read to mean, "this assignment is graded." A `classroom`-mode assignment may be Graded or Ungraded; a `practice`-mode assignment carries no grading configuration at all.
+- This carve-out does not authorize "due," "late," "overdue," "required," "assigned," or any other word the 2026-07-07 amendment forbids. Those remain fully prohibited.
+
+This amendment reconciles PDR-010 with Sprint 30A's product authorization to introduce teacher-facing Graded/Ungraded Classroom grading configuration and (in a later slice) best-score Google Classroom grade passback. The load-bearing invariant PDR-010 protects - that LyfeLabz's own assignment model never becomes LMS due-date/compliance semantics - is unaffected: this carve-out concerns only how a LyfeLabz assignment is represented inside a third-party LMS the teacher explicitly opted to publish to, never how LyfeLabz itself models or displays the assignment.
+
 ### Rationale
 
 This is the structural expression of the platform's identity (PDR-001). The three-layer model matches how teachers actually think about their curriculum. Preservation of public access is the invariant that keeps LyfeLabz honest.

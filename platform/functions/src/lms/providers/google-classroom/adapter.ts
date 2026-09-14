@@ -668,6 +668,7 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
           : {}),
         link: input.lyfelabzAssignmentUrl,
         ...(input.lmsTopicId !== undefined ? { topicId: input.lmsTopicId } : {}),
+        ...(input.maxPoints !== undefined ? { maxPoints: input.maxPoints } : {}),
         signal: controller.signal,
       });
       workPromise.catch(() => undefined);

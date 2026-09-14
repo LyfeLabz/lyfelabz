@@ -12,6 +12,7 @@ import {
   type AssignmentDraftUpdateWrite,
   type AssignmentMode,
   type AssignmentRecord,
+  type ClassroomGradingConfig,
 } from "../shared";
 
 // Client-supplied request payload for assignmentsUpdateDraft. Only the
@@ -30,6 +31,10 @@ export type AssignmentsUpdateDraftRequest = {
   readonly mode?: AssignmentMode;
   readonly windowClosesAt?: string;
   readonly availableAt?: string;
+  // Sprint 30A.1 - see the field comment on `AssignmentRecord.classroomGrading`.
+  // Writable here only while the record is still `draft` (enforced below,
+  // same gate as every other field on this callable).
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 // Return payload of a successful draft-update call. `alreadyUpdated` is
@@ -63,6 +68,57 @@ async function assertActiveTeacherInDistrict(
   return { uid: context.uid, schoolId: context.schoolId, districtId: context.districtId };
 }
 
+// Sprint 30A.1 - see the identical validator in assignments-create-draft.ts
+// for the full rationale. Duplicated deliberately per this file's existing
+// convention of self-contained validation (mirrors `isNonEmptyString`,
+// `parseIsoTimestamp`, etc., which are already duplicated across the two
+// sibling callables rather than factored into a shared helper module).
+function validateClassroomGradingConfig(value: unknown): ClassroomGradingConfig {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new PlatformError(
+      "assignments.invalidClassroomGrading",
+      "classroomGrading, when supplied, must be a structured object.",
+    );
+  }
+  const payload = value as Record<string, unknown>;
+  for (const key of Object.keys(payload)) {
+    if (key !== "mode" && key !== "maxPoints") {
+      throw new PlatformError(
+        "assignments.invalidClassroomGrading",
+        `classroomGrading contains an unrecognized field: "${key}".`,
+      );
+    }
+  }
+  if (payload.mode === "ungraded") {
+    if (payload.maxPoints !== undefined) {
+      throw new PlatformError(
+        "assignments.invalidClassroomGrading",
+        'classroomGrading.maxPoints must not be supplied when mode is "ungraded".',
+      );
+    }
+    return { mode: "ungraded" };
+  }
+  if (payload.mode === "graded") {
+    const maxPoints = payload.maxPoints;
+    if (
+      typeof maxPoints !== "number" ||
+      !Number.isFinite(maxPoints) ||
+      !Number.isInteger(maxPoints) ||
+      maxPoints <= 0
+    ) {
+      throw new PlatformError(
+        "assignments.invalidClassroomGrading",
+        'classroomGrading.maxPoints must be a positive integer when mode is "graded".',
+      );
+    }
+    return { mode: "graded", maxPoints };
+  }
+  throw new PlatformError(
+    "assignments.invalidClassroomGrading",
+    'classroomGrading.mode must be "graded" or "ungraded".',
+  );
+}
+
 function parseIsoTimestamp(value: unknown, field: string): Timestamp {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new PlatformError(
@@ -88,6 +144,7 @@ type ValidatedRequest = {
   readonly mode?: AssignmentMode;
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 function validateRequest(data: unknown): ValidatedRequest {
@@ -121,6 +178,7 @@ function validateRequest(data: unknown): ValidatedRequest {
     mode?: AssignmentMode;
     windowClosesAt?: Timestamp;
     availableAt?: Timestamp;
+    classroomGrading?: ClassroomGradingConfig;
   } = { assignmentId };
 
   if (payload.title !== undefined) {
@@ -194,13 +252,18 @@ function validateRequest(data: unknown): ValidatedRequest {
     out.availableAt = parseIsoTimestamp(payload.availableAt, "AvailableAt");
   }
 
+  if (payload.classroomGrading !== undefined) {
+    out.classroomGrading = validateClassroomGradingConfig(payload.classroomGrading);
+  }
+
   if (
     out.title === undefined &&
     out.instructions === undefined &&
     out.lessonSlug === undefined &&
     out.mode === undefined &&
     out.windowClosesAt === undefined &&
-    out.availableAt === undefined
+    out.availableAt === undefined &&
+    out.classroomGrading === undefined
   ) {
     throw new PlatformError(
       "assignments.invalidRequest",
@@ -238,6 +301,19 @@ function timestampsEqual(
   return a.toMillis() === b.toMillis();
 }
 
+function classroomGradingEqual(
+  a: ClassroomGradingConfig | undefined,
+  b: ClassroomGradingConfig | undefined,
+): boolean {
+  if (a === undefined && b === undefined) return true;
+  if (a === undefined || b === undefined) return false;
+  if (a.mode !== b.mode) return false;
+  if (a.mode === "graded" && b.mode === "graded") {
+    return a.maxPoints === b.maxPoints;
+  }
+  return true;
+}
+
 function computeDiff(
   existing: AssignmentRecord,
   input: ValidatedRequest,
@@ -252,6 +328,7 @@ function computeDiff(
     mode?: AssignmentMode;
     windowClosesAt?: Timestamp;
     availableAt?: Timestamp;
+    classroomGrading?: ClassroomGradingConfig;
   } = {};
   const changedFields: string[] = [];
 
@@ -290,6 +367,13 @@ function computeDiff(
   ) {
     write.availableAt = input.availableAt;
     changedFields.push("availableAt");
+  }
+  if (
+    input.classroomGrading !== undefined &&
+    !classroomGradingEqual(input.classroomGrading, existing.classroomGrading)
+  ) {
+    write.classroomGrading = input.classroomGrading;
+    changedFields.push("classroomGrading");
   }
 
   return { write, changedFields };

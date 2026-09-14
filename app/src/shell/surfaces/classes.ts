@@ -1,6 +1,22 @@
 import type { Session } from "../../session/types";
 import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
+import type {
+  UpdateTeacherClassOrder,
+  ReadTeacherClassColors,
+} from "../../classes/classOrder";
+import type { UpdateClassMetadata } from "../../classes/updateClassMetadata";
+import type { UpdateClassColor } from "../../classes/updateClassColor";
+import type { ClassColorToken } from "../../classes/classColor";
+import { CLASS_COLOR_TOKENS, CLASS_COLOR_LABELS } from "../../classes/classColor";
+// Sprint 30A.1 human-review finalization: imports the pure reorder
+// arithmetic from classOrderMath.ts directly, NOT from classOrder.ts -
+// that file also defines Firebase-backed factories that import
+// `firebase/firestore` / `firebase/functions` at module scope, and this
+// module carries a "no firebase/* import" invariant (see the header
+// comment above) so it stays reachable from plain-node Jest suites that
+// do not polyfill `fetch`.
+import { moveClassId } from "../../classes/classOrderMath";
 import type { CreateClass, CreateClassResult } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type {
@@ -17,7 +33,10 @@ import { createImportFromClassroom } from "../../classes/importFromClassroom";
 import type { LoadClassRosterAccessor } from "../../classes/classRoster";
 import type { IntegrationsLmsClass } from "../../settings/integrations/types";
 import type { TeacherDefaultGrade } from "../../teacherPreferences/types";
-import { isTeacherDefaultGrade } from "../../teacherPreferences/types";
+import {
+  isTeacherDefaultGrade,
+  TEACHER_DEFAULT_GRADE_VALUES,
+} from "../../teacherPreferences/types";
 // Sprint 28.6H.3 (Task B1): Overview/Snapshot is removed from the class
 // workspace, so `renderSnapshotSurface` is no longer mounted here. The
 // `SnapshotPreview` type is retained on the deps contract (dormant) so the
@@ -210,6 +229,32 @@ export type ClassesSurfaceDeps = {
   // Follows the LoadClassRosterAccessor pattern (Sprint 29G.5P) to avoid
   // null-snapshot on router assembly before Functions init.
   readonly loadAttempts?: (() => AttemptsListForClassCallable | null) | null;
+  // Sprint 30A.1 human-review finalization: canonical teacher class-order
+  // writer. The Classes workspace is now the sole place a teacher edits
+  // class order (drag or keyboard, see `renderClassCard`); the Assign
+  // dialog only ever displays whatever order `listClasses` hands it. When
+  // absent-or-null, reordering still updates the visual order for this
+  // mount (a local, in-memory reorder) but is not persisted - the next
+  // fresh load reverts to the last-persisted or fallback order.
+  readonly updateClassOrder?: UpdateTeacherClassOrder | null;
+  // Sprint 30A.1 Class Settings V1. `updateClassMetadata` writes the
+  // canonical, teacher-owned `title`/`grade`/`block` fields on
+  // `classes/{classId}` through the certified `classesUpdateMetadata`
+  // callable - the exact same server-side ownership/validation boundary
+  // the Create Class form already uses. This NEVER reaches Google
+  // Classroom: those three fields are LyfeLabz-owned even for a
+  // Classroom-linked class (the class record has no mirrored provider
+  // title at all). `updateClassColor` and `readClassColors` are the
+  // teacher-owned presentation-only color accent, a preference kept
+  // alongside `classOrder` (see classOrder.ts) rather than on the class
+  // record, because a class may be co-taught and a color choice is one
+  // teacher's own presentation preference, not a fact about the class.
+  // Absent-or-null disables Class Settings' corresponding capability
+  // gracefully (see `openClassSettings`); in that case the gear still
+  // opens the modal, but the affected field's control is inert.
+  readonly updateClassMetadata?: UpdateClassMetadata | null;
+  readonly updateClassColor?: UpdateClassColor | null;
+  readonly readClassColors?: ReadTeacherClassColors | null;
 };
 
 // Sprint 28.6H (Finding 2): the class-card status label map was removed with
@@ -299,6 +344,10 @@ export function renderClassesSurface(
   const setClassesReturn = deps.setClassesReturn ?? null;
   const getClassManagementIntent = deps.getClassManagementIntent ?? null;
   const setClassManagementIntent = deps.setClassManagementIntent ?? null;
+  const updateClassOrder = deps.updateClassOrder ?? null;
+  const updateClassMetadata = deps.updateClassMetadata ?? null;
+  const updateClassColor = deps.updateClassColor ?? null;
+  const readClassColors = deps.readClassColors ?? null;
 
   // Sprint 28.6C: the whole-teacher assignment registry, already hydrated once
   // from `assignmentsTeacherList` (which carries `classId`). Reading it is a
@@ -442,6 +491,23 @@ export function renderClassesSurface(
 
   let state: ClassesState = { kind: "loading" };
   let importController: ImportController | null = null;
+  // Sprint 30A.1 human-review finalization: class-card reorder state.
+  // `draggedClassId` is only meaningful between a card's `dragstart` and
+  // its `drop`; `classOrderError` is a small, non-blocking notice shown
+  // when the last reorder failed to persist (the visual order itself is
+  // never rolled back - see `persistClassOrder`).
+  let draggedClassId: string | null = null;
+  let classOrderError: string | null = null;
+  // Sprint 30A.1 Class Settings V1. The teacher's own per-class color
+  // accents, loaded once alongside the class list (see the `listClasses`
+  // load below) and kept in this closure so a save can update just the
+  // one changed entry without a full reload. Absent id = no color.
+  let classColors: Readonly<Record<string, ClassColorToken>> = {};
+  // The currently-open Class Settings overlay, if any. Appended to
+  // `doc.body` directly (outside `mount`, mirroring the Assign dialog
+  // pattern) so `rerender()`'s `mount.textContent = ""` never disturbs
+  // it while it's open.
+  let settingsOverlay: HTMLElement | null = null;
 
   const rerender = (): void => {
     if (!mount.isConnected) return;
@@ -478,6 +544,12 @@ export function renderClassesSurface(
           navigateToSurface !== null
             ? () => navigateToSurface("settings")
             : null,
+          onCardDragStart,
+          onCardDrop,
+          onCardMove,
+          classOrderError,
+          openClassSettings,
+          classColors,
         );
         return;
       case "workspace": {
@@ -521,6 +593,164 @@ export function renderClassesSurface(
 
   const idleImportState = (): ImportState =>
     Object.freeze({ kind: "idle" as const });
+
+  // Sprint 30A.1 human-review finalization: class-card reordering. Moved
+  // here from the Assign dialog (see curriculum.ts's root-cause comment on
+  // `renderRow`) - reordering is edited ONLY on Classes now, and used
+  // everywhere the canonical ordered class list is read, Assign included.
+  //
+  // Persistence failure handling is intentionally different from Assign's
+  // old best-effort/silent approach: the visual reorder is never rolled
+  // back (an unpredictable revert would be more confusing than a stale
+  // save), but a failed save now surfaces a small, dismissible-by-retry
+  // notice rather than claiming success silently. The canonical Firestore
+  // preference is simply left unchanged by a failed write - the next
+  // successful reorder (or a fresh load elsewhere) is unaffected.
+  const persistClassOrder = (orderedIds: readonly string[]): void => {
+    if (!updateClassOrder) return;
+    void updateClassOrder(orderedIds)
+      .then(() => {
+        if (classOrderError !== null) {
+          classOrderError = null;
+          rerender();
+        }
+      })
+      .catch(() => {
+        classOrderError =
+          "Couldn't save the new class order. Try reordering again.";
+        rerender();
+      });
+  };
+
+  const reorderClasses = (id: string, beforeId: string | null): void => {
+    if (state.kind !== "list") return;
+    const orderedIds = state.classes.map((c) => c.id);
+    const nextIds = moveClassId(orderedIds, id, beforeId);
+    if (nextIds === orderedIds) return;
+    const byId = new Map(state.classes.map((c) => [c.id, c] as const));
+    const nextClasses = nextIds
+      .map((cid) => byId.get(cid))
+      .filter((c): c is ClassSummary => c !== undefined);
+    state = { ...state, classes: nextClasses };
+    rerender();
+    persistClassOrder(nextIds);
+  };
+
+  const onCardDragStart = (id: string): void => {
+    draggedClassId = id;
+  };
+
+  const onCardDrop = (id: string): void => {
+    if (draggedClassId && draggedClassId !== id) {
+      reorderClasses(draggedClassId, id);
+    }
+    draggedClassId = null;
+  };
+
+  // Grid reading order (human review): the canonical order is a single
+  // linear list; ArrowLeft/ArrowRight move a card one position earlier/
+  // later in that list, matching how a multi-column grid's reading order
+  // (left-to-right, then top-to-bottom) already renders it - a card at
+  // the end of a row moves to the start of the next, and vice versa. The
+  // responsive column count never changes the underlying linear order.
+  const onCardMove = (id: string, direction: -1 | 1): void => {
+    if (state.kind !== "list") return;
+    const orderedIds = state.classes.map((c) => c.id);
+    const idx = orderedIds.indexOf(id);
+    const targetIdx = idx + direction;
+    if (idx === -1 || targetIdx < 0 || targetIdx >= orderedIds.length) return;
+    const beforeId =
+      direction === -1 ? orderedIds[targetIdx] : (orderedIds[targetIdx + 1] ?? null);
+    reorderClasses(id, beforeId);
+    // Keep keyboard focus on the same card's handle after it moves (the
+    // rerender above rebuilds the DOM synchronously, so the new handle
+    // already exists by the time this runs).
+    doc
+      .querySelector<HTMLButtonElement>(`[data-testid=class-card-drag-${id}]`)
+      ?.focus();
+  };
+
+  // Sprint 30A.1 Class Settings V1. The overlay is appended to
+  // `doc.body` directly (mirroring the Assign dialog pattern) so it is
+  // unaffected by this surface's own `rerender()` wipe-and-rebuild cycle.
+  const closeClassSettings = (): void => {
+    if (settingsOverlay?.parentNode) {
+      settingsOverlay.parentNode.removeChild(settingsOverlay);
+    }
+    settingsOverlay = null;
+  };
+
+  const openClassSettings = (classId: string): void => {
+    if (state.kind !== "list") return;
+    const summary = state.classes.find((c) => c.id === classId);
+    if (!summary || summary.status !== "active") return;
+    closeClassSettings();
+
+    settingsOverlay = renderClassSettingsModal(doc, summary, classColors[classId] ?? null, {
+      canEditMetadata: updateClassMetadata !== null,
+      canEditColor: updateClassColor !== null,
+      onCancel: closeClassSettings,
+      // Resolving closes the modal (handled here, not by the modal
+      // itself, since only this closure can update `state`/`classColors`
+      // and call `rerender()`); rejecting leaves the modal open with the
+      // thrown message shown inline - see the modal's own catch.
+      onSave: async (patch) => {
+        if (
+          updateClassMetadata &&
+          (patch.title !== undefined ||
+            patch.grade !== undefined ||
+            patch.block !== undefined)
+        ) {
+          await updateClassMetadata({
+            classId,
+            ...(patch.title !== undefined ? { title: patch.title } : {}),
+            ...(patch.grade !== undefined ? { grade: patch.grade } : {}),
+            ...(patch.block !== undefined ? { block: patch.block } : {}),
+          });
+        }
+        if (updateClassColor && patch.color !== undefined) {
+          await updateClassColor(classId, patch.color);
+        }
+
+        // Both writes (if any) succeeded - apply them locally so the
+        // card reflects the change immediately, without a full reload.
+        // Canonical class ORDER is untouched: this only replaces one
+        // array element's fields in place, never the array's order.
+        if (state.kind === "list") {
+          const idx = state.classes.findIndex((c) => c.id === classId);
+          if (idx !== -1) {
+            const existing = state.classes[idx];
+            if (existing.status === "active") {
+              const updated: ClassSummary = {
+                ...existing,
+                ...(patch.title !== undefined ? { title: patch.title } : {}),
+                ...(patch.grade !== undefined ? { grade: patch.grade } : {}),
+                ...(patch.block !== undefined ? { block: patch.block } : {}),
+              };
+              const nextClasses = state.classes.slice();
+              nextClasses[idx] = updated;
+              state = { ...state, classes: nextClasses };
+            }
+          }
+        }
+        if (patch.color !== undefined) {
+          const nextColors: Record<string, ClassColorToken> = {
+            ...classColors,
+          };
+          if (patch.color === "none") {
+            delete nextColors[classId];
+          } else {
+            nextColors[classId] = patch.color;
+          }
+          classColors = Object.freeze(nextColors);
+        }
+
+        closeClassSettings();
+        rerender();
+      },
+    });
+    doc.body.appendChild(settingsOverlay);
+  };
 
   const onOpenClass = (classId: string): void => {
     if (state.kind !== "list") return;
@@ -1080,6 +1310,23 @@ export function renderClassesSurface(
 
   rerender();
 
+  // Sprint 30A.1 Class Settings V1. Loaded independently of the class
+  // list itself: a failure or slow read here never blocks or breaks the
+  // Classes workspace from loading - color is a presentation
+  // convenience, exactly like `classOrder` already is. Re-rendering only
+  // when still in the "list" state (never mid-workspace-view or
+  // mid-settings-edit) avoids clobbering a state transition that
+  // happened while this was in flight.
+  if (readClassColors) {
+    void readClassColors(session.uid)
+      .then((colors) => {
+        if (!mount.isConnected) return;
+        classColors = colors;
+        if (state.kind === "list") rerender();
+      })
+      .catch(() => undefined);
+  }
+
   void deps
     .listClasses(session.uid)
     .then((classes) => {
@@ -1326,6 +1573,17 @@ function renderListState(
   // zero-class Classes landing (the operational landing no longer hosts any
   // class-administration control). Null in harnesses without the seam.
   onGoToSettings: (() => void) | null,
+  // Sprint 30A.1 human-review finalization: class-card reorder wiring
+  // (drag + keyboard), threaded down to each card. See `renderClassCard`.
+  onCardDragStart: (classId: string) => void,
+  onCardDrop: (classId: string) => void,
+  onCardMove: (classId: string, direction: -1 | 1) => void,
+  classOrderError: string | null,
+  // Sprint 30A.1 Class Settings V1: opens the settings modal for a card's
+  // gear, and the teacher's saved per-class color accents (absent id =
+  // no color, render neutral).
+  onOpenSettings: (classId: string) => void,
+  classColors: Readonly<Record<string, ClassColorToken>>,
 ): void {
   const hasClasses = classes.length > 0;
 
@@ -1520,13 +1778,39 @@ function renderListState(
   region.setAttribute("data-testid", "classes-region");
   mount.appendChild(region);
 
+  // Sprint 30A.1 human-review finalization: a failed reorder save never
+  // reverts the visual order (see `persistClassOrder` in
+  // renderClassesSurface) but does surface a small, honest notice instead
+  // of claiming success silently.
+  if (classOrderError !== null) {
+    const err = doc.createElement("p");
+    err.className = "shell-classes-order-error";
+    err.setAttribute("data-testid", "classes-order-error");
+    err.setAttribute("role", "alert");
+    err.textContent = classOrderError;
+    region.appendChild(err);
+  }
+
   const list = doc.createElement("ul");
   list.className = "shell-classes-list";
   list.setAttribute("data-testid", "classes-list");
   list.setAttribute("role", "list");
 
   for (const summary of classes) {
-    list.appendChild(renderClassCard(doc, summary, onOpen));
+    list.appendChild(
+      renderClassCard(
+        doc,
+        summary,
+        onOpen,
+        {
+          onDragStart: onCardDragStart,
+          onDrop: onCardDrop,
+          onMove: onCardMove,
+        },
+        onOpenSettings,
+        classColors[summary.id] ?? null,
+      ),
+    );
   }
   region.appendChild(list);
 }
@@ -2040,23 +2324,150 @@ function renderJoinCodePanel(
   return panel;
 }
 
+// Sprint 30A.1 human-review finalization: the class-card reorder
+// affordance, moved here from the (removed) Assign dialog drag handle.
+// See the root-cause comment on `renderRow` in curriculum.ts: the prior
+// Assign row was a `display:contents` grid-item host, which generates no
+// box of its own, so native drag-and-drop never had anything to
+// originate the drag gesture from. `<li class="shell-classes-item">` is
+// an ordinary block-level element with a real box, so the identical
+// pointer-down/native-drag/keyboard pattern works here.
+type ClassCardReorderControls = {
+  readonly onDragStart: (classId: string) => void;
+  readonly onDrop: (classId: string) => void;
+  readonly onMove: (classId: string, direction: -1 | 1) => void;
+};
+
+// Human review (targeted finalization): the drag handle and the new
+// settings gear both live INSIDE the card tile itself now (upper-right /
+// lower-right corners), not floating above it. Because they must be real,
+// independently-focusable `<button>` elements and HTML forbids nesting
+// interactive controls inside a native `<button>`, the card's own
+// clickable region is a `<div role="button" tabindex="0">` instead of a
+// `<button>` - the standard "card with corner action buttons" pattern
+// (the same shape as, e.g., a Trello card's overflow menu). Each corner
+// control stops propagation on `click` so activating it (by click OR by
+// Enter/Space, which browsers turn into a synthetic click on a button)
+// never also fires the card's own "open the class" handler.
 function renderClassCard(
   doc: Document,
   summary: ClassSummary,
   onOpen: (classId: string) => void,
+  reorder: ClassCardReorderControls,
+  onOpenSettings: (classId: string) => void,
+  color: ClassColorToken | null,
 ): HTMLElement {
   const li = doc.createElement("li");
   li.className = "shell-classes-item";
+  li.setAttribute("data-class-id", summary.id);
 
-  const card = doc.createElement("button");
-  card.type = "button";
+  const card = doc.createElement("div");
   card.className = "shell-card shell-class-card";
+  card.setAttribute("role", "button");
+  card.setAttribute("tabindex", "0");
   card.setAttribute("data-testid", `class-card-${summary.id}`);
   card.setAttribute("data-class-id", summary.id);
-  card.setAttribute(
+  card.setAttribute("aria-label", `Open ${summary.title}`);
+  if (color !== null) {
+    card.setAttribute("data-class-color", color);
+  }
+  card.addEventListener("click", () => {
+    onOpen(summary.id);
+  });
+  card.addEventListener("keydown", (ev) => {
+    // Native <button> activates on both Enter and Space; replicate that
+    // here since the card is a role="button" div, not a real button.
+    if (ev.key === "Enter" || ev.key === " ") {
+      ev.preventDefault();
+      onOpen(summary.id);
+    }
+  });
+
+  // Drag handle: `draggable` is toggled true only while the pointer is
+  // actually down on the handle, so grabbing anywhere else on the card
+  // (including to open it) never starts a drag. The handle is a child of
+  // `card` for layout (absolutely positioned in the card's upper-right
+  // corner, see `.shell-class-drag-handle`) but `li` remains the element
+  // that actually drags - real drag-and-drop needs a real box to
+  // originate from, and `li` (unlike Assign's old `display:contents`
+  // row) has one.
+  const dragHandle = doc.createElement("button");
+  dragHandle.type = "button";
+  dragHandle.className = "shell-class-drag-handle";
+  dragHandle.setAttribute("data-testid", `class-card-drag-${summary.id}`);
+  dragHandle.setAttribute(
     "aria-label",
-    `Open ${summary.title}`,
+    `Reorder ${summary.title}. Use the left and right arrow keys to move it, or drag.`,
   );
+  dragHandle.textContent = "⠿";
+  dragHandle.draggable = false;
+  dragHandle.addEventListener("pointerdown", (ev) => {
+    ev.stopPropagation();
+    li.draggable = true;
+  });
+  const resetDraggable = (): void => {
+    li.draggable = false;
+  };
+  dragHandle.addEventListener("pointerup", resetDraggable);
+  dragHandle.addEventListener("pointercancel", resetDraggable);
+  dragHandle.addEventListener("click", (ev) => {
+    // A plain click/Enter/Space on the handle (no actual drag) must
+    // never also open the card.
+    ev.stopPropagation();
+  });
+  li.addEventListener("dragstart", (ev) => {
+    ev.dataTransfer?.setData("text/plain", summary.id);
+    if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "move";
+    reorder.onDragStart(summary.id);
+  });
+  li.addEventListener("dragend", resetDraggable);
+  li.addEventListener("dragover", (ev) => {
+    // Required so the browser treats this element as a valid drop
+    // target; no per-hover state is needed because reorder resolution
+    // happens once, on drop.
+    ev.preventDefault();
+  });
+  li.addEventListener("drop", (ev) => {
+    ev.preventDefault();
+    resetDraggable();
+    reorder.onDrop(summary.id);
+  });
+  dragHandle.addEventListener("keydown", (ev) => {
+    if (ev.key === "ArrowLeft") {
+      ev.preventDefault();
+      ev.stopPropagation();
+      reorder.onMove(summary.id, -1);
+    } else if (ev.key === "ArrowRight") {
+      ev.preventDefault();
+      ev.stopPropagation();
+      reorder.onMove(summary.id, 1);
+    }
+  });
+  card.appendChild(dragHandle);
+
+  // Settings gear: opens the Class Settings modal for this class. Same
+  // stop-propagation discipline as the drag handle. Suppressed for any
+  // class that is not `active` - a needsSetup class has no grade/block
+  // yet, and the `classesUpdateMetadata` callable's own eligibility gate
+  // (`assertClassSupports("editMetadata", ...)`) only permits `active`,
+  // refusing both `needsSetup` and `archived`. There is nothing this
+  // modal could successfully save for either case.
+  if (summary.status === "active") {
+    const settingsButton = doc.createElement("button");
+    settingsButton.type = "button";
+    settingsButton.className = "shell-class-settings-button";
+    settingsButton.setAttribute("data-testid", `class-card-settings-${summary.id}`);
+    settingsButton.setAttribute(
+      "aria-label",
+      `Class settings for ${summary.title}`,
+    );
+    settingsButton.textContent = "⚙";
+    settingsButton.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      onOpenSettings(summary.id);
+    });
+    card.appendChild(settingsButton);
+  }
 
   const title = doc.createElement("h3");
   title.className = "shell-class-title";
@@ -2127,12 +2538,307 @@ function renderClassCard(
   // needed here. Backend activation/status semantics are unchanged; this is a
   // presentation-only removal.
 
-  card.addEventListener("click", () => {
-    onOpen(summary.id);
-  });
-
   li.appendChild(card);
   return li;
+}
+
+// Sprint 30A.1 Class Settings V1.
+//
+// Data model (determined by inspecting the actual canonical types before
+// implementing, per the sprint instructions):
+//   - `title`, `grade`, `block` are already teacher-owned canonical
+//     fields on `classes/{classId}` (platform/functions/src/shared/types
+//     /class.ts) - the same fields the Create Class form writes at
+//     creation. Nothing in the class record ever mirrors a Google
+//     Classroom course's own name/section/grade, so editing these three
+//     through the existing `classesUpdateMetadata` callable can never
+//     rename or otherwise touch the linked Classroom course. This modal
+//     reuses that callable verbatim rather than inventing a second write
+//     path.
+//   - `color` is NOT a class-record field. It is modeled as a teacher-
+//     owned PRESENTATION preference, stored on the SAME
+//     `users/{uid}/preferences/teacher` document `classOrder` already
+//     lives on (see classOrder.ts / teacher-class-color-update.ts) -
+//     because a class can be co-taught (`coTeacherIds`), a color choice
+//     is one teacher's own personal presentation preference, not a fact
+//     about the class the way title/grade/block are.
+export type ClassSettingsPatch = {
+  readonly title?: string;
+  readonly grade?: string;
+  readonly block?: string;
+  readonly color?: ClassColorToken | "none";
+};
+
+type ClassSettingsModalDeps = {
+  readonly canEditMetadata: boolean;
+  readonly canEditColor: boolean;
+  readonly onCancel: () => void;
+  // Resolving closes the modal (the caller is responsible for actually
+  // removing it, since only the caller can update its own state);
+  // rejecting keeps the modal open and shows the rejection's message.
+  readonly onSave: (patch: ClassSettingsPatch) => Promise<void>;
+};
+
+const MAX_CLASS_TITLE_LENGTH = 60;
+
+function describeClassSettingsError(err: unknown): string {
+  if (err && typeof err === "object" && "code" in err) {
+    const code = String((err as { code?: unknown }).code);
+    if (code.includes("invalidTitle")) return "Enter a class name.";
+    if (code.includes("invalidGrade")) return "Choose a valid grade.";
+    if (code.includes("invalidBlock")) return "Choose a valid block.";
+    if (code.includes("invalidColor")) return "Choose a valid color.";
+    if (code.includes("forbidden")) {
+      return "You do not have permission to edit this class.";
+    }
+  }
+  return "Could not save class settings. Please try again.";
+}
+
+function renderClassSettingsModal(
+  doc: Document,
+  summary: Extract<ClassSummary, { status: "active" }>,
+  currentColor: ClassColorToken | null,
+  deps: ClassSettingsModalDeps,
+): HTMLElement {
+  const overlay = doc.createElement("div");
+  overlay.className = "shell-classes-settings-overlay";
+  overlay.setAttribute("data-testid", "classes-settings-overlay");
+
+  const dialog = doc.createElement("div");
+  dialog.className = "shell-classes-settings-dialog";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "classes-settings-title");
+  dialog.setAttribute("data-testid", "classes-settings-dialog");
+  overlay.appendChild(dialog);
+
+  const close = (): void => {
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    doc.removeEventListener("keydown", onKey);
+  };
+  const onKey = (ev: KeyboardEvent): void => {
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      close();
+      deps.onCancel();
+    }
+  };
+  doc.addEventListener("keydown", onKey);
+  overlay.addEventListener("click", (ev) => {
+    if (ev.target === overlay) {
+      close();
+      deps.onCancel();
+    }
+  });
+
+  const title = doc.createElement("h3");
+  title.id = "classes-settings-title";
+  title.className = "shell-classes-create-heading";
+  title.setAttribute("data-testid", "classes-settings-title");
+  title.textContent = "Class settings";
+  dialog.appendChild(title);
+
+  const formEl = doc.createElement("form");
+  formEl.className = "shell-form";
+
+  const titleLabel = doc.createElement("label");
+  titleLabel.textContent = "Display name";
+  const titleInput = doc.createElement("input");
+  titleInput.type = "text";
+  titleInput.value = summary.title;
+  titleInput.maxLength = MAX_CLASS_TITLE_LENGTH;
+  titleInput.disabled = !deps.canEditMetadata;
+  titleInput.setAttribute("data-testid", "classes-settings-title-input");
+  titleLabel.appendChild(titleInput);
+  formEl.appendChild(titleLabel);
+
+  const gradeLabel = doc.createElement("label");
+  gradeLabel.textContent = "Grade";
+  const gradeSelect = doc.createElement("select");
+  gradeSelect.setAttribute("data-testid", "classes-settings-grade");
+  gradeSelect.disabled = !deps.canEditMetadata;
+  for (const g of TEACHER_DEFAULT_GRADE_VALUES) {
+    const opt = doc.createElement("option");
+    opt.value = g;
+    opt.textContent = g;
+    if (g === summary.grade) opt.selected = true;
+    gradeSelect.appendChild(opt);
+  }
+  gradeLabel.appendChild(gradeSelect);
+  formEl.appendChild(gradeLabel);
+
+  const blockLabel = doc.createElement("label");
+  blockLabel.textContent = "Block";
+  const blockSelect = doc.createElement("select");
+  blockSelect.setAttribute("data-testid", "classes-settings-block");
+  blockSelect.disabled = !deps.canEditMetadata;
+  // Sprint 30A.1 human review: "do not assume all districts use letters" -
+  // but the existing canonical validator
+  // (platform/functions/src/classes/classes-update-metadata.ts,
+  // BLOCK_PATTERN) already only accepts a single letter A-G, the exact
+  // vocabulary the Create Class form already uses. Reusing it verbatim
+  // (rather than inventing a broader "Period 2"-style schema this
+  // sprint's server contract does not accept) is what "respect the
+  // existing block representation" means in practice here.
+  for (const b of ["A", "B", "C", "D", "E", "F", "G"]) {
+    const opt = doc.createElement("option");
+    opt.value = b;
+    opt.textContent = b;
+    if (b === summary.block) opt.selected = true;
+    blockSelect.appendChild(opt);
+  }
+  blockLabel.appendChild(blockSelect);
+  formEl.appendChild(blockLabel);
+
+  // Color: a curated palette, never a free-form picker. "None" clears a
+  // previously-saved color back to the neutral default.
+  const colorLabel = doc.createElement("span");
+  colorLabel.className = "shell-classes-settings-color-label";
+  colorLabel.textContent = "Color";
+  formEl.appendChild(colorLabel);
+
+  const colorPicker = doc.createElement("div");
+  colorPicker.className = "shell-classes-settings-color-picker";
+  colorPicker.setAttribute("role", "radiogroup");
+  colorPicker.setAttribute("aria-label", "Color");
+  formEl.appendChild(colorPicker);
+
+  let selectedColor: ClassColorToken | "none" = currentColor ?? "none";
+  const colorButtons: Map<ClassColorToken | "none", HTMLButtonElement> =
+    new Map();
+
+  const refreshColorSelection = (): void => {
+    for (const [token, btn] of colorButtons) {
+      const isSelected = token === selectedColor;
+      btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
+      btn.classList.toggle("shell-classes-settings-color-selected", isSelected);
+    }
+  };
+
+  const makeColorButton = (
+    token: ClassColorToken | "none",
+    label: string,
+  ): void => {
+    const btn = doc.createElement("button");
+    btn.type = "button";
+    btn.className = "shell-classes-settings-color-swatch";
+    if (token !== "none") {
+      btn.setAttribute("data-class-color", token);
+    } else {
+      btn.classList.add("shell-classes-settings-color-none");
+    }
+    btn.setAttribute("data-testid", `classes-settings-color-${token}`);
+    btn.setAttribute("aria-label", `Color: ${label}`);
+    btn.disabled = !deps.canEditColor;
+    btn.addEventListener("click", () => {
+      selectedColor = token;
+      refreshColorSelection();
+    });
+    colorPicker.appendChild(btn);
+    colorButtons.set(token, btn);
+  };
+
+  makeColorButton("none", "None");
+  for (const token of CLASS_COLOR_TOKENS) {
+    makeColorButton(token, CLASS_COLOR_LABELS[token]);
+  }
+  refreshColorSelection();
+
+  const errorMessage = doc.createElement("p");
+  errorMessage.className = "shell-classes-create-error";
+  errorMessage.setAttribute("data-testid", "classes-settings-error");
+  errorMessage.setAttribute("role", "alert");
+  errorMessage.hidden = true;
+  formEl.appendChild(errorMessage);
+
+  const actions = doc.createElement("div");
+  actions.className = "shell-classes-create-actions";
+
+  const save = doc.createElement("button");
+  save.type = "submit";
+  save.setAttribute("data-testid", "classes-settings-save");
+  save.textContent = "Save";
+  actions.appendChild(save);
+
+  const cancel = doc.createElement("button");
+  cancel.type = "button";
+  cancel.className = "shell-classes-create-cancel";
+  cancel.setAttribute("data-testid", "classes-settings-cancel");
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", () => {
+    // Cancel makes no mutation and restores nothing, because nothing was
+    // ever mutated - every field above is local form state until Save.
+    close();
+    deps.onCancel();
+  });
+  actions.appendChild(cancel);
+
+  formEl.appendChild(actions);
+  dialog.appendChild(formEl);
+
+  let submitting = false;
+  formEl.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    if (submitting) return;
+
+    const trimmedTitle = titleInput.value.trim();
+    if (deps.canEditMetadata) {
+      if (trimmedTitle.length === 0) {
+        errorMessage.textContent = "Enter a class name.";
+        errorMessage.hidden = false;
+        return;
+      }
+      if (trimmedTitle.length > MAX_CLASS_TITLE_LENGTH) {
+        errorMessage.textContent = `Class names must be ${MAX_CLASS_TITLE_LENGTH} characters or fewer.`;
+        errorMessage.hidden = false;
+        return;
+      }
+    }
+
+    const patch: ClassSettingsPatch = {
+      ...(deps.canEditMetadata && trimmedTitle !== summary.title
+        ? { title: trimmedTitle }
+        : {}),
+      ...(deps.canEditMetadata && gradeSelect.value !== summary.grade
+        ? { grade: gradeSelect.value }
+        : {}),
+      ...(deps.canEditMetadata && blockSelect.value !== (summary.block ?? "")
+        ? { block: blockSelect.value }
+        : {}),
+      ...(deps.canEditColor && selectedColor !== (currentColor ?? "none")
+        ? { color: selectedColor }
+        : {}),
+    };
+
+    // Idempotent no-op: nothing actually changed, so there is nothing to
+    // save. Close exactly as Cancel would, without a network request.
+    if (Object.keys(patch).length === 0) {
+      close();
+      deps.onCancel();
+      return;
+    }
+
+    submitting = true;
+    save.disabled = true;
+    save.setAttribute("aria-busy", "true");
+    errorMessage.hidden = true;
+    deps.onSave(patch).catch((err: unknown) => {
+      submitting = false;
+      save.disabled = false;
+      save.removeAttribute("aria-busy");
+      errorMessage.textContent = describeClassSettingsError(err);
+      errorMessage.hidden = false;
+    });
+  });
+
+  try {
+    titleInput.focus({ preventScroll: true });
+  } catch {
+    // ignored
+  }
+
+  return overlay;
 }
 
 // Sprint 24B Phase 2B.8. Ephemeral roster-sync state for the currently

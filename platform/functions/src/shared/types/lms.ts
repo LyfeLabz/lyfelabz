@@ -1,5 +1,7 @@
 import type { FieldValue, Timestamp } from "firebase-admin/firestore";
 
+import type { ClassroomGradingConfig } from "./assignment";
+
 // Canonical top-level collection identifiers for the LMS Integration
 // Foundation. Each collection is subordinate to the certified records it
 // mirrors per Data Model §2.9.a and Amendment §3.4. None is authoritative
@@ -189,6 +191,19 @@ export type LmsAssignmentPublicationRecord = {
   readonly errorCode?: string;
   readonly errorMessage?: string;
   readonly publishedAt: Timestamp;
+  // Sprint 30A.1 - additive optional snapshot of the Classroom grading
+  // configuration that was actually in effect on the LyfeLabz assignment at
+  // the moment of THIS publication attempt (copied verbatim from
+  // `AssignmentRecord.classroomGrading`, never independently re-validated
+  // here). The canonical assignment field remains the source of truth for
+  // teacher-facing configuration; this snapshot exists only so the mirror
+  // record durably answers "what did we actually tell Classroom" for audit
+  // and future grade-passback purposes, independent of whatever the
+  // assignment record says later. Absent when the assignment carried no
+  // explicit grading configuration at publish time (treated as ungraded,
+  // matching the assignment-record absence convention). Never retried or
+  // rewritten - a publication record is append-one-per-attempt.
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 export type LmsAssignmentPublicationCreationWrite = {
@@ -206,6 +221,8 @@ export type LmsAssignmentPublicationCreationWrite = {
   readonly errorCode?: string;
   readonly errorMessage?: string;
   readonly publishedAt: FieldValue;
+  // Sprint 30A.1 - see the field comment on `LmsAssignmentPublicationRecord.classroomGrading`.
+  readonly classroomGrading?: ClassroomGradingConfig;
 };
 
 // -------------------- lmsRosterMemberships/{linkId__identityHash} --------------------

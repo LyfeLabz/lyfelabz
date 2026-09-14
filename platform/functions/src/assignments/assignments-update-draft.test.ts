@@ -305,6 +305,176 @@ describe("assignmentsUpdateDraft", () => {
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
+  describe("Sprint 30A.1: classroomGrading validation and freeze", () => {
+    it("accepts graded with a positive integer maxPoints and writes it verbatim", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
+      mockAssignmentUpdate.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+      await __assignmentsUpdateDraftHandler(
+        makeRequest({
+          data: {
+            assignmentId: ASSIGNMENT_ID,
+            classroomGrading: { mode: "graded", maxPoints: 20 },
+          },
+        }),
+      );
+
+      expect(mockAssignmentUpdate).toHaveBeenCalledWith({
+        classroomGrading: { mode: "graded", maxPoints: 20 },
+      });
+    });
+
+    it("accepts ungraded without maxPoints and writes it verbatim", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingAssignmentSnapshot({
+          classroomGrading: { mode: "graded", maxPoints: 20 },
+        }),
+      );
+      mockAssignmentUpdate.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+      await __assignmentsUpdateDraftHandler(
+        makeRequest({
+          data: {
+            assignmentId: ASSIGNMENT_ID,
+            classroomGrading: { mode: "ungraded" },
+          },
+        }),
+      );
+
+      expect(mockAssignmentUpdate).toHaveBeenCalledWith({
+        classroomGrading: { mode: "ungraded" },
+      });
+    });
+
+    it("is idempotent when the submitted classroomGrading already matches", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingAssignmentSnapshot({
+          classroomGrading: { mode: "graded", maxPoints: 20 },
+        }),
+      );
+
+      const result = await __assignmentsUpdateDraftHandler(
+        makeRequest({
+          data: {
+            assignmentId: ASSIGNMENT_ID,
+            classroomGrading: { mode: "graded", maxPoints: 20 },
+          },
+        }),
+      );
+
+      expect(result.alreadyUpdated).toBe(true);
+      expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    });
+
+    it("rejects graded with maxPoints 0", async () => {
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({
+            data: {
+              assignmentId: ASSIGNMENT_ID,
+              classroomGrading: { mode: "graded", maxPoints: 0 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects graded with a negative maxPoints", async () => {
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({
+            data: {
+              assignmentId: ASSIGNMENT_ID,
+              classroomGrading: { mode: "graded", maxPoints: -5 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects graded with a fractional maxPoints", async () => {
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({
+            data: {
+              assignmentId: ASSIGNMENT_ID,
+              classroomGrading: { mode: "graded", maxPoints: 2.5 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects graded with a missing maxPoints", async () => {
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({
+            data: {
+              assignmentId: ASSIGNMENT_ID,
+              classroomGrading: { mode: "graded" },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects ungraded carrying a maxPoints", async () => {
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({
+            data: {
+              assignmentId: ASSIGNMENT_ID,
+              classroomGrading: { mode: "ungraded", maxPoints: 10 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    it("rejects an unrecognized classroomGrading key", async () => {
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({
+            data: {
+              assignmentId: ASSIGNMENT_ID,
+              classroomGrading: { mode: "graded", maxPoints: 10, extra: true },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidClassroomGrading" });
+    });
+
+    // Phase 6 freeze invariant: classroomGrading is writable only through
+    // this callable, and only while the record is still `draft`. Once
+    // status has advanced past `draft` (which always happens before any
+    // Classroom coursework can exist for the assignment - see
+    // lms/assignments-publish.ts), the existing status gate below already
+    // refuses every field on this write shape, classroomGrading included.
+    // No new mechanism was added for this: the pre-existing
+    // `assignments.invalidStatus` gate is the freeze enforcement.
+    it("refuses to change classroomGrading once the assignment is no longer draft (freeze after publication)", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingAssignmentSnapshot({
+          status: "published",
+          classroomGrading: { mode: "graded", maxPoints: 20 },
+        }),
+      );
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({
+            data: {
+              assignmentId: ASSIGNMENT_ID,
+              classroomGrading: { mode: "graded", maxPoints: 999 },
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidStatus" });
+      expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    });
+  });
+
   it("rejects an update against an archived assignment", async () => {
     mockAssignmentGet.mockResolvedValueOnce(
       existingAssignmentSnapshot({ status: "archived" }),

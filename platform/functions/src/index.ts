@@ -63,6 +63,8 @@ export {
 } from "./students";
 export { submissionsCreate, submissionsFinalize } from "./submissions";
 export {
+  teacherClassColorUpdate,
+  teacherClassOrderUpdate,
   teacherPreferencesUpdate,
   teachersActivatePilot,
   teachersApproveVerification,

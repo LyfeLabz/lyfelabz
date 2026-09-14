@@ -314,6 +314,89 @@ describe("createHttpsGoogleClassroomTransport", () => {
         "UNAUTHENTICATED",
       );
     });
+
+    // Sprint 30A.1: maxPoints must be sent as a top-level CourseWork field
+    // only when the caller supplies it (graded); omitted entirely - never
+    // sent as `0` - when the caller does not (ungraded or legacy-absent).
+    // workType and state are unaffected by this slice.
+    describe("createCourseWork", () => {
+      it("includes maxPoints in the request body when supplied (graded)", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({
+            id: "fixture-coursework-1",
+            alternateLink: "https://classroom.google.com/c/fake",
+          }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment Title",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+          maxPoints: 20,
+        });
+        const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
+        expect(body.maxPoints).toBe(20);
+      });
+
+      it("omits maxPoints entirely from the request body when not supplied (ungraded)", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({
+            id: "fixture-coursework-1",
+            alternateLink: "https://classroom.google.com/c/fake",
+          }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment Title",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        });
+        const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
+        expect(body).not.toHaveProperty("maxPoints");
+      });
+
+      it("never sends maxPoints as 0 as the ungraded representation", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({
+            id: "fixture-coursework-1",
+            alternateLink: "https://classroom.google.com/c/fake",
+          }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment Title",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        });
+        const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
+        expect(body.maxPoints).not.toBe(0);
+        expect(body).not.toHaveProperty("maxPoints");
+      });
+    });
   });
 
   // Real-Google insufficient-scope error shape (Sprint 25 certification
