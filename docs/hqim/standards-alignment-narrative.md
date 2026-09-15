@@ -157,10 +157,11 @@ evidence that this program was authored to the Massachusetts standards rather
 than adapted to them.
 
 Second, the platform's assessment architecture is built for evidence integrity.
-Student submissions are finalized server-side, stored under an immutable
-submission pattern, and governed by an archive-never-delete policy. Once a
-student submits, the record of what they submitted cannot be modified after the
-fact, by the student, the teacher, or the platform's own client code. For an
+Student attempts are finalized server-side by a dedicated Cloud Function,
+stored as immutable, ownership-stamped attempt records, and governed by an
+immutability guarantee. Once a student submits, the record of what they
+submitted cannot be modified after the fact, by the student, the teacher, any
+administrative action, or any client operation. For an
 assessment-bearing curriculum, this means the student work a reviewer or
 district examines is exactly the work as it was submitted, which is an
 integrity guarantee that most static or LMS-embedded curricula cannot make.
