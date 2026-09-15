@@ -14,6 +14,7 @@ import {
   enrollmentDocRef,
   log,
   requireDistrictContext,
+  roundHalfToEven2,
   runFirestoreTransaction,
   writeAuditEvent,
   ASSESSMENT_SCHEMA_VERSION_V1,
@@ -28,6 +29,8 @@ import {
 } from "../shared";
 
 import { isCanonicalRecipient } from "../assignments/assignment-recipients";
+import { synchronizeGradePassback } from "../lms/grade-passback/engine";
+import { googleClassroomProductionSecrets } from "../lms/providers/google-classroom/config-firebase";
 
 // Grace period per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7.1 and
 // ASSESSMENT_PIPELINE_SPECIFICATION.md §7.1: one hour after
@@ -280,24 +283,10 @@ export function attemptIdFor(
 }
 
 // Round-half-to-even (banker's rounding) at two decimal places per
-// ASSESSMENT_SCORING_CONTRACT.md §11.1. Implemented locally so scoring is
-// deterministic across Node runtimes and independent of any `toFixed`
-// rounding drift.
-function roundHalfToEven2(value: number): number {
-  const scaled = value * 100;
-  const floor = Math.floor(scaled);
-  const diff = scaled - floor;
-  const EPS = 1e-9;
-  let rounded: number;
-  if (diff > 0.5 + EPS) {
-    rounded = floor + 1;
-  } else if (diff < 0.5 - EPS) {
-    rounded = floor;
-  } else {
-    rounded = floor % 2 === 0 ? floor : floor + 1;
-  }
-  return rounded / 100;
-}
+// ASSESSMENT_SCORING_CONTRACT.md §11.1. Extracted to
+// `shared/math/round-half-to-even.ts` (Sprint 30A.2) so the Google
+// Classroom grade-passback earned-points calculation reuses the identical
+// tested contract instead of a second implementation. No behavior change.
 
 type ScoringResult = {
   readonly score: number;
@@ -960,6 +949,35 @@ async function assessmentAttemptsFinalizeHandler(
         attemptNumber: outcome.attemptNumber,
       }),
     );
+
+    // Sprint 30A.2 - Google Classroom best-score grade passback. Fires
+    // strictly AFTER the canonical attempt transaction above has
+    // committed, and ONLY on a genuine new-attempt write (never on an
+    // idempotent replay, which would otherwise redundantly re-launch a
+    // sync for an attempt set that has not changed). The synchronizer
+    // itself no-ops immediately for an ungraded or legacy-absent
+    // `classroomGrading` configuration, so this call is cheap for the
+    // overwhelming majority of practice/ungraded attempts. It NEVER
+    // throws: any failure (including a Classroom outage) is caught here
+    // and cannot alter, delay-fail, or roll back the already-committed
+    // attempt or the response already prepared for the student. A failed
+    // or deferred sync remains retryable by the teacher (`lmsGradePassbacksRetry`)
+    // or by the student's next attempt.
+    try {
+      await synchronizeGradePassback({
+        assignmentId: outcome.sessionContext.assignmentId,
+        studentId: actor.uid,
+      });
+    } catch (err) {
+      safeLog(() =>
+        log.warn("lms.gradePassbackFinalizeHookFailed", {
+          actorUserId: actor.uid,
+          attemptId: outcome.attemptId,
+          assignmentId: outcome.sessionContext.assignmentId,
+          errorCode: err instanceof PlatformError ? err.code : "unknown",
+        }),
+      );
+    }
   } else {
     safeLog(() =>
       log.info("assessmentAttempts.finalizeIdempotent", {
@@ -973,6 +991,7 @@ async function assessmentAttemptsFinalizeHandler(
 }
 
 export const assessmentAttemptsFinalize = platformCallable(
+  { secrets: [...googleClassroomProductionSecrets] },
   assessmentAttemptsFinalizeHandler,
 );
 

@@ -40,6 +40,9 @@ import type {
   GoogleClassroomStudentListRequest,
   GoogleClassroomStudentListResponse,
   GoogleClassroomStudentResource,
+  GoogleClassroomStudentSubmissionGradePatchRequest,
+  GoogleClassroomStudentSubmissionListRequest,
+  GoogleClassroomStudentSubmissionListResponse,
   GoogleClassroomTopicListRequest,
   GoogleClassroomTopicListResponse,
   GoogleClassroomTopicResource,
@@ -179,11 +182,30 @@ export type FixtureFailureMode =
   | "temporary-unavailable"
   | "malformed";
 
+// Sprint 30A.2 - fixture-seeded StudentSubmission. Tests choose which
+// (courseId, courseWorkId, userId) triples resolve to a submission and
+// which don't (an unseeded triple yields zero results, exercising the
+// "no submission yet" safe path). Seeding more than one entry for the
+// SAME triple deliberately exercises the ">1 unexpected result" rejection
+// path.
+export type FixtureStudentSubmissionSeed = {
+  readonly courseId: string;
+  readonly courseWorkId: string;
+  readonly userId: string;
+  readonly submissionId: string;
+};
+
 export type GoogleClassroomFixtureOptions = {
   readonly failureMode?: FixtureFailureMode;
   readonly refreshTokenFailureMode?: FixtureFailureMode;
   readonly authorizationCode?: string;
   readonly refreshToken?: string;
+  readonly studentSubmissions?: readonly FixtureStudentSubmissionSeed[];
+  // Sprint 30A.2 - a distinct, independently-selectable failure mode for
+  // `listStudentSubmissions` / `patchStudentSubmissionGrade` so a test can
+  // exercise "publish succeeds, grade passback fails" without also
+  // failing every other transport operation.
+  readonly gradePassbackFailureMode?: FixtureFailureMode;
 };
 
 // Snapshot of the fixture's mutable state so tests can inspect what
@@ -202,6 +224,15 @@ export type GoogleClassroomFixtureCallLog = {
   readonly createdCourseWorkByCourse: Readonly<
     Record<string, readonly GoogleClassroomCourseWorkResource[]>
   >;
+  readonly listStudentSubmissionsCalls: number;
+  readonly patchStudentSubmissionGradeCalls: number;
+  // Every grade-patch call this fixture instance observed, in call order.
+  // Concurrency tests inspect this to prove upstream call ORDER, not just
+  // final Firestore state, per Sprint 30A.2 Phase 12.
+  readonly gradePatchCallOrder: readonly {
+    readonly submissionId: string;
+    readonly earnedPoints: number;
+  }[];
 };
 
 export function createFixtureGoogleClassroomTransport(
@@ -225,11 +256,17 @@ export function createFixtureGoogleClassroomTransport(
   let studentListCalls = 0;
   let topicListCalls = 0;
   let courseWorkCreateCalls = 0;
+  let listStudentSubmissionsCalls = 0;
+  let patchStudentSubmissionGradeCalls = 0;
   const revokedTokens: string[] = [];
   const createdCourseWorkByCourse: Record<
     string,
     GoogleClassroomCourseWorkResource[]
   > = {};
+  const studentSubmissionSeeds = options.studentSubmissions ?? [];
+  const gradePassbackFailureMode = options.gradePassbackFailureMode ?? "none";
+  const gradePatchCallOrder: { submissionId: string; earnedPoints: number }[] =
+    [];
 
   function paginateCourses(
     pageToken: string | undefined,
@@ -462,6 +499,40 @@ export function createFixtureGoogleClassroomTransport(
       return Promise.resolve(created);
     },
 
+    async listStudentSubmissions(
+      input: GoogleClassroomStudentSubmissionListRequest,
+    ): Promise<GoogleClassroomStudentSubmissionListResponse> {
+      listStudentSubmissionsCalls += 1;
+      applyFailureMode(gradePassbackFailureMode, "listStudentSubmissions");
+      requireAccessToken(input.accessToken, "listStudentSubmissions");
+      const matches = studentSubmissionSeeds.filter(
+        (seed) =>
+          seed.courseId === input.courseId &&
+          seed.courseWorkId === input.courseWorkId &&
+          seed.userId === input.userId,
+      );
+      return Promise.resolve({
+        studentSubmissions: matches.map((seed) => ({
+          id: seed.submissionId,
+          userId: seed.userId,
+          courseWorkId: seed.courseWorkId,
+        })),
+      });
+    },
+
+    async patchStudentSubmissionGrade(
+      input: GoogleClassroomStudentSubmissionGradePatchRequest,
+    ): Promise<void> {
+      patchStudentSubmissionGradeCalls += 1;
+      applyFailureMode(gradePassbackFailureMode, "patchStudentSubmissionGrade");
+      requireAccessToken(input.accessToken, "patchStudentSubmissionGrade");
+      gradePatchCallOrder.push({
+        submissionId: input.submissionId,
+        earnedPoints: input.earnedPoints,
+      });
+      return Promise.resolve();
+    },
+
     log(): GoogleClassroomFixtureCallLog {
       const frozenCreated: Record<
         string,
@@ -482,6 +553,9 @@ export function createFixtureGoogleClassroomTransport(
         courseWorkCreateCalls,
         revokedTokens: [...revokedTokens],
         createdCourseWorkByCourse: frozenCreated,
+        listStudentSubmissionsCalls,
+        patchStudentSubmissionGradeCalls,
+        gradePatchCallOrder: [...gradePatchCallOrder],
       };
     },
   };

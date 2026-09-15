@@ -430,7 +430,6 @@ The following capabilities are described in §3 through §9 but are not authoriz
 - roster synchronization,
 - assignment publication,
 - assignment refresh,
-- grade synchronization (outbound, LyfeLabz-initiated only - see the Sprint 30A note below; this is a distinct capability from the permanently out-of-scope inbound item in §11.3),
 - automatic synchronization,
 - background jobs,
 - webhooks,
@@ -443,7 +442,7 @@ The following capabilities are described in §3 through §9 but are not authoriz
 
 Each capability retains the shape described in §3 through §9. Its addition to the shipped surface requires its own sprint specification. Expansion by implementation is prohibited under PDR-020c.
 
-**Sprint 30A note on "grade synchronization."** Sprint 30A is the sprint specification that reaches this item, narrowly: it authorizes (a) Sprint 30A.1, teacher-configured Classroom grading configuration (Graded/Ungraded, and a `maxPoints` value sent at coursework-creation time - implemented; no score is transmitted by this slice), and (b) Sprint 30A.2, a future, LyfeLabz-initiated, best-score grade-passback capability scoped to coursework LyfeLabz itself published (not yet implemented as of Sprint 30A.1). Neither authorizes reading a Classroom-authored grade into LyfeLabz as authoritative, and neither authorizes any capability beyond these two - that remains governed by §11.3 below.
+**Sprint 30A note on "grade synchronization" (implemented).** Sprint 30A is the sprint specification that reaches this item. Sprint 30A.1 authorized and implemented teacher-configured Classroom grading configuration (Graded/Ungraded, and a `maxPoints` value sent at coursework-creation time; no score is transmitted by that slice). Sprint 30A.2 authorized and implemented the outbound, LyfeLabz-initiated, best-score grade-passback capability scoped to coursework LyfeLabz itself published: LyfeLabz preserves every valid quiz attempt; Classroom receives only the single best valid LyfeLabz normalized performance for a graded assignment, scaled to the teacher-selected `maxPoints` (`earnedPoints = bestPercentage / 100 * maxPoints`, half-even rounded to 2 decimal places). The passback value is monotonic - a later lower-scoring attempt never lowers the value Classroom already has, and the synchronization engine (`platform/functions/src/lms/grade-passback/engine.ts`) structurally prevents a stale/lower outbound write from racing a newer/higher one via a per-(assignment, student) lease. A narrow teacher-facing manual retry exists for the no-background-queue case. Neither slice authorizes reading a Classroom-authored grade into LyfeLabz as authoritative, and neither authorizes any capability beyond these two - that remains governed by §11.3 below.
 
 ### 11.3 Out-of-Scope Architecture
 
@@ -451,7 +450,7 @@ The following are explicitly out of scope for LMS integration, permanently or un
 
 - LMS integration as an identity provider for LyfeLabz.
 - LMS-authored LyfeLabz assignments (bidirectional publication).
-- LMS grade export as an authoritative LyfeLabz surface - i.e., LyfeLabz reading a grade set or edited inside Classroom and treating it as authoritative internal state. This is the inbound direction and remains permanently out of scope. It is distinct from, and unaffected by, the outbound-only LyfeLabz-initiated passback authorized under §11.2's "grade synchronization" entry (Sprint 30A.2): LyfeLabz never reads a grade back out of Classroom under either capability.
+- LMS grade export as an authoritative LyfeLabz surface - i.e., LyfeLabz reading a grade set or edited inside Classroom and treating it as authoritative internal state. This is the inbound direction and remains permanently out of scope. It is distinct from, and unaffected by, the outbound-only LyfeLabz-initiated grade passback implemented under §11.2's Sprint 30A note (Sprint 30A.2): LyfeLabz never reads a grade back out of Classroom under either capability.
 - LMS-driven curation of the LyfeLabz curriculum.
 - LMS-fed replacement of the LyfeLabz Practice Mode or Classroom Mode contract.
 - Any LMS surface that would require Present Mode to load Firebase SDKs.

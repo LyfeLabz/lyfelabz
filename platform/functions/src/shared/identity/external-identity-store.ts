@@ -552,6 +552,34 @@ export async function listExternalIdentitiesForUser(
   return out;
 }
 
+// Sprint 30A.2 - server-only resolution of a LyfeLabz user's raw upstream
+// provider account id, used exclusively by the Google Classroom
+// grade-passback synchronization engine to resolve a student's Classroom
+// account id (equivalent to the Firebase Auth `google.com` provider UID,
+// per Sprint 23C-I) so it can look up that student's StudentSubmission.
+// Returns null - never throws - for the "cannot safely resolve" case so
+// the caller can fail the sync gracefully rather than crash: zero active
+// mappings (student never linked, or was revoked), or more than one
+// active mapping for the provider (should be structurally impossible per
+// invariant #2 above; treated defensively as unresolvable rather than
+// guessing which one is authoritative). The raw provider account id is
+// returned to this function's caller ONLY; it is never logged, never
+// persisted into `lmsGradePassbacks`, and never returned across any
+// client callable boundary.
+export async function resolveActiveProviderAccountIdForUser(
+  userId: string,
+  providerId: ExternalIdentityProviderId,
+): Promise<string | null> {
+  const validatedUser = assertValidUserId(userId);
+  const validatedProvider = assertValidProviderId(providerId);
+  const records = await listExternalIdentitiesForUser(validatedUser);
+  const active = records.filter(
+    (r) => r.providerId === validatedProvider && r.status === "active",
+  );
+  if (active.length !== 1) return null;
+  return active[0].providerAccountId;
+}
+
 // Full reconciliation for a single user: align the persisted mapping
 // state for `userId` with the observed provider link state. For each
 // approved provider:

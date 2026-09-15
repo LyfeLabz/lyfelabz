@@ -26,6 +26,20 @@ jest.mock("firebase-functions/v2/https", () => ({
 const mockRequireDistrictContext = jest.fn();
 const mockWriteAuditEvent = jest.fn();
 const mockRunTransaction = jest.fn();
+// Sprint 30A.2 - the grade-passback synchronization engine is exercised by
+// its own dedicated test suite (`lms/grade-passback/engine.test.ts`); here
+// it is mocked so this file continues to test ONLY the finalize
+// transaction/idempotency contract, and so the mocked `runFirestoreTransaction`
+// above (which this file's fixtures drive deterministically) is not also
+// invoked a second, unrelated time by a real engine call.
+const mockSynchronizeGradePassback = jest.fn();
+jest.mock("../lms/grade-passback/engine", () => ({
+  synchronizeGradePassback: (...args: unknown[]) =>
+    mockSynchronizeGradePassback(...args),
+}));
+jest.mock("../lms/providers/google-classroom/config-firebase", () => ({
+  googleClassroomProductionSecrets: [],
+}));
 
 const mockAssignmentDocRef = jest.fn((id: string) => ({ __kind: "assignment", id }));
 const mockEnrollmentDocRef = jest.fn((id: string) => ({ __kind: "enrollment", id }));
@@ -75,10 +89,15 @@ jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
   );
+  const { roundHalfToEven2 } = jest.requireActual(
+    "../shared/math/round-half-to-even",
+  );
   return {
-    platformCallable: (handler: unknown) => handler,
+    platformCallable: (optionsOrHandler: unknown, maybeHandler?: unknown) =>
+      typeof optionsOrHandler === "function" ? optionsOrHandler : maybeHandler,
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
+    roundHalfToEven2,
     ASSESSMENT_SCHEMA_VERSION_V1: 1,
     requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
@@ -368,6 +387,8 @@ describe("assessmentAttemptsFinalize", () => {
     mockWriteAuditEvent.mockReset();
     mockWriteAuditEvent.mockResolvedValue({ eventId: "evt-1" });
     mockRunTransaction.mockReset();
+    mockSynchronizeGradePassback.mockReset();
+    mockSynchronizeGradePassback.mockResolvedValue({ outcome: "notApplicable" });
     mockAssignmentDocRef.mockClear();
     mockEnrollmentDocRef.mockClear();
     mockSessionDocRef.mockClear();
@@ -585,6 +606,26 @@ describe("assessmentAttemptsFinalize", () => {
     expect(txSets).toHaveLength(0);
     expect(txDeletes).toHaveLength(0);
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    // Sprint 30A.2: an idempotent replay must not redundantly re-launch a
+    // grade-passback sync for an attempt set that has not changed.
+    expect(mockSynchronizeGradePassback).not.toHaveBeenCalled();
+  });
+
+  it("Sprint 30A.2: a genuine new-attempt write triggers the grade-passback synchronizer with the assignment and student", async () => {
+    await __assessmentAttemptsFinalizeHandler(makeRequest());
+    expect(mockSynchronizeGradePassback).toHaveBeenCalledTimes(1);
+    expect(mockSynchronizeGradePassback).toHaveBeenCalledWith({
+      assignmentId: ASSIGNMENT_ID,
+      studentId: STUDENT_UID,
+    });
+  });
+
+  it("Sprint 30A.2: a grade-passback synchronizer failure never alters the finalize response", async () => {
+    mockSynchronizeGradePassback.mockRejectedValueOnce(new Error("boom"));
+    const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+    expect(result.replay).toBe(false);
+    expect(result.attemptId).toBe(ATTEMPT_ID);
+    expect(result.score).toBeDefined();
   });
 
   it("refuses a non-student caller with role-forbidden", async () => {

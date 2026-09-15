@@ -151,6 +151,50 @@ export type LmsPublishedAssignment = {
   readonly lmsAssignmentUrl?: string;
 };
 
+// -------------------- Grade passback (Sprint 30A.2) --------------------
+//
+// Minimum vendor-neutral surface required for outbound-only, best-score
+// Google Classroom grade passback (LYFELABZ_PLATFORM_DECISIONS.md Sprint
+// 30A.2). LyfeLabz remains the sole source of truth for "what is the best
+// performance"; these operations never read a grade back from the LMS as
+// authoritative and never mutate coursework, roster, or submission state
+// beyond the two named grade fields.
+
+// The minimum input needed to resolve a student's upstream Classroom
+// StudentSubmission for one coursework item. `studentProviderAccountId`
+// is the same opaque upstream account identifier used by
+// `LmsRosterStudent.providerAccountId` (never a LyfeLabz Firebase UID,
+// never an email); the caller resolves it server-side from the certified
+// external identity bridge before calling this method.
+export type LmsResolveStudentSubmissionInput = {
+  readonly accessToken: string;
+  readonly lmsClassId: string;
+  readonly lmsAssignmentId: string;
+  readonly studentProviderAccountId: string;
+};
+
+// `null` means "no submission exists yet for this student" (handled
+// safely by the caller, e.g. the student never opened the Classroom
+// assignment). The adapter never fabricates a submission id.
+export type LmsResolvedStudentSubmission = {
+  readonly submissionId: string;
+} | null;
+
+// The minimum input needed to write the two Classroom grade fields to one
+// StudentSubmission. `earnedPoints` is the single value written to BOTH
+// `draftGrade` and `assignedGrade` (never `assignedGrade` alone); the
+// caller computes this value from LyfeLabz's own best-attempt percentage
+// and the teacher-selected `classroomGrading` max points - it is never a
+// value read from Classroom, never a raw attempt `score`, and never
+// client-supplied.
+export type LmsPatchStudentSubmissionGradeInput = {
+  readonly accessToken: string;
+  readonly lmsClassId: string;
+  readonly lmsAssignmentId: string;
+  readonly submissionId: string;
+  readonly earnedPoints: number;
+};
+
 // -------------------- Provider adapter interface --------------------
 
 export interface LmsProviderAdapter {
@@ -265,4 +309,24 @@ export interface LmsProviderAdapter {
   publishAssignment(
     input: LmsPublishAssignmentInput,
   ): Promise<LmsPublishedAssignment>;
+
+  // Resolve the student's upstream StudentSubmission for one coursework
+  // item, or `null` when none exists yet. Sprint 30A.2 grade-passback
+  // surface. Never returns more than one submission: an adapter that
+  // observes more than one matching upstream result for the same
+  // (course, courseWork, student) rejects the operation with a
+  // vendor-neutral `PlatformError` rather than guessing which one is
+  // authoritative.
+  resolveStudentSubmission(
+    input: LmsResolveStudentSubmissionInput,
+  ): Promise<LmsResolvedStudentSubmission>;
+
+  // Write the LyfeLabz-computed best-score earned-points value to BOTH
+  // `draftGrade` and `assignedGrade` on one StudentSubmission, using the
+  // documented Classroom update mask. Sprint 30A.2 grade-passback surface.
+  // Never mutates submission state (never turns in, returns, or reclaims
+  // the submission) and never touches coursework or roster.
+  patchStudentSubmissionGrade(
+    input: LmsPatchStudentSubmissionGradeInput,
+  ): Promise<void>;
 }

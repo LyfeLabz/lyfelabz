@@ -268,6 +268,13 @@ The five collections below are reserved by `LMS_INTEGRATION_ARCHITECTURE.md` and
 - One document per publication attempt from a LyfeLabz assignment to an LMS. Carries the outcome and the LMS assignment identifier where the attempt succeeded.
 - A LyfeLabz assignment may hold zero, one, or more publication records over its lifetime (successive attempts).
 
+**lmsGradePassbacks** (Sprint 30A.2, live)
+
+- One document per (assignment, student) pair, keyed `{assignmentId}__{studentId}`. Canonical synchronization state for outbound-only Google Classroom best-score grade passback: LyfeLabz preserves every valid quiz attempt; this record tracks only the current desired best performance and the confirmed-synced state, never a duplicate of attempt history or answer content.
+- Carries a monotonic `syncGeneration`/`lastSyncedGeneration` fencing pair and a bounded, expiring lease (`leaseOwnerToken`/`leaseGeneration`/`leaseExpiresAt`) that together ensure at most one worker actively writes to Classroom for a given pair at a time, and that a stale/lower write can never follow a newer/higher one. See `platform/functions/src/lms/grade-passback/engine.ts` for the full protocol.
+- Sole writer is the grade-passback synchronization engine (server-only, Admin SDK). The owning teacher may `get`/`list` their own records (denormalized `ownerUid`); no client ever writes this collection.
+- Never carries a raw Google provider account id, an OAuth token, a Classroom StudentSubmission id beyond an opaque cache, answer-key content, or student answers.
+
 None of these records is authoritative for the upstream LMS state. All are mirroring records. The upstream LMS remains the authoritative source for classroom identity, teacher ownership, and roster per PDR-019b. The mirror is the operational read-side for LyfeLabz surfaces.
 
 Garbage-collection contract. Unlinking a class marks the mirror records `unlinked` and preserves them. Deleting a class (an administrative operation) cascades to the mirror through a server-only path. Historical mirror records are retained for audit under PDR-013.

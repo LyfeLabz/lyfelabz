@@ -6,6 +6,9 @@ import type {
 import type {
   AssignmentDetailMetadata,
   AssignmentDetailMetadataReader,
+  AssignmentGradePassbackRetryResult,
+  AssignmentGradePassbackSeam,
+  AssignmentGradePassbackStatus,
   AssignmentLmsPublicationState,
   AssignmentLmsRetrySeam,
   AssignmentStatus,
@@ -155,6 +158,16 @@ export type AssignmentDetailDeps = {
   // publication that did not succeed, so the pre-Phase-3 detail surface is
   // unchanged.
   readonly lmsRetry?: AssignmentLmsRetrySeam;
+  // Sprint 30A.2: optional per-student Google Classroom grade-passback
+  // retry seam. When supplied, the Submitted roster group reads the
+  // coarse current status for each student and renders a small inline
+  // status line + Retry action ONLY for a student whose sync is
+  // `pending`/`syncing`/`failed`; a `synced` or absent status renders
+  // nothing extra, so the ordinary case stays uncluttered. Absent for
+  // assignments with no grading configured (the reader naturally returns
+  // an empty map), so the pre-Sprint-30A.2 roster is unchanged when the
+  // seam is not supplied.
+  readonly gradePassback?: AssignmentGradePassbackSeam;
 };
 
 const STATUS_LABEL: Readonly<Record<AssignmentStatus, string>> = Object.freeze({
@@ -1138,6 +1151,7 @@ function renderReady(
       shared.recipientListCallable,
       shared.attemptsListForClassCallable,
       shared.summaryCallable,
+      deps.gradePassback,
     );
   }
 
@@ -1205,6 +1219,7 @@ async function renderRosterPanel(
   recipientCallable: AssignmentRecipientListCallable,
   attemptsCallable: AttemptsListForClassCallable,
   summaryCallable: AssignmentSummaryCallable,
+  gradePassback: AssignmentGradePassbackSeam | undefined,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -1264,6 +1279,22 @@ async function renderRosterPanel(
 
   loading.remove();
 
+  // Sprint 30A.2: best-effort grade-passback status read. A failure here
+  // never turns the roster into an error state (the surface simply
+  // renders as if no student had a passback record yet, matching the
+  // "absent means nothing to show" contract).
+  let gradePassbackStatuses: ReadonlyMap<string, AssignmentGradePassbackStatus> =
+    new Map();
+  if (gradePassback !== undefined) {
+    try {
+      gradePassbackStatuses = await gradePassback.statusesReader({
+        assignmentId: metadata.assignmentId,
+      });
+    } catch {
+      gradePassbackStatuses = new Map();
+    }
+  }
+
   // Sprint 16 Slice 4: a published assignment with zero recipients is
   // a calm empty state, not three empty group headers. The `Roster`
   // heading remains as the stable section landmark.
@@ -1306,6 +1337,13 @@ async function renderRosterPanel(
     summary.completedStudents,
     grouping.submitted,
     true,
+    gradePassback === undefined
+      ? undefined
+      : {
+          statuses: gradePassbackStatuses,
+          retry: (studentId) =>
+            gradePassback.retry({ assignmentId: metadata.assignmentId, studentId }),
+        },
   );
   appendRosterGroup(
     doc,
@@ -1608,6 +1646,19 @@ function renderLateRecipientLifecycleNote(
   mount.appendChild(host);
 }
 
+// Sprint 30A.2 - calm, coarse copy for the per-student grade-passback
+// status line. Never exposes a raw Google error, a Classroom submission
+// id, OAuth details, or internal lease/generation state - only these
+// four fixed strings ever render.
+const GRADE_PASSBACK_STATUS_LINE: Readonly<
+  Record<AssignmentGradePassbackStatus, string>
+> = Object.freeze({
+  pending: "Classroom grade sync pending.",
+  syncing: "Syncing to Classroom...",
+  synced: "Synced to Classroom.",
+  failed: "Classroom grade sync did not succeed.",
+});
+
 function appendRosterGroup(
   doc: Document,
   host: HTMLElement,
@@ -1623,6 +1674,12 @@ function appendRosterGroup(
       }
   >,
   showPercentage: boolean,
+  gradePassback?: {
+    readonly statuses: ReadonlyMap<string, AssignmentGradePassbackStatus>;
+    readonly retry: (
+      studentId: string,
+    ) => Promise<AssignmentGradePassbackRetryResult>;
+  },
 ): void {
   const group = doc.createElement("div");
   group.className = `shell-assignment-detail-roster-group shell-assignment-detail-roster-${key}`;
@@ -1677,12 +1734,98 @@ function appendRosterGroup(
         pct.textContent = `${Math.round(row.percentage * 10) / 10}%`;
         li.appendChild(pct);
       }
+      // Sprint 30A.2: render the grade-passback status line + Retry action
+      // ONLY when there is something useful to show. A `synced` status
+      // and an absent status (never attempted, or an ungraded/legacy
+      // assignment) both render nothing extra, so the ordinary row stays
+      // uncluttered.
+      const initialStatus = gradePassback?.statuses.get(row.studentId);
+      if (
+        gradePassback !== undefined &&
+        (initialStatus === "pending" ||
+          initialStatus === "syncing" ||
+          initialStatus === "failed")
+      ) {
+        appendGradePassbackControl(
+          doc,
+          li,
+          row.studentId,
+          initialStatus,
+          gradePassback.retry,
+        );
+      }
       list.appendChild(li);
     }
     group.appendChild(list);
   }
 
   host.appendChild(group);
+}
+
+// Sprint 30A.2 - self-contained per-row grade-passback status + Retry
+// control. Owns its own tiny idle/pending lock so a double-click cannot
+// issue two concurrent retries for the same student, mirroring the
+// idle/pending lock convention `performLmsRetry` already established for
+// the assignment-level publication retry. Updates only this row's own
+// two elements in place; it never triggers a roster refetch, so a retry
+// for one student can never disturb another student's row.
+function appendGradePassbackControl(
+  doc: Document,
+  li: HTMLElement,
+  studentId: string,
+  initialStatus: AssignmentGradePassbackStatus,
+  retry: (studentId: string) => Promise<AssignmentGradePassbackRetryResult>,
+): void {
+  let locked = false;
+
+  const status = doc.createElement("span");
+  status.className = "shell-assignment-detail-roster-grade-status";
+  status.setAttribute(
+    "data-testid",
+    `assignment-detail-roster-grade-status-${studentId}`,
+  );
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.textContent = GRADE_PASSBACK_STATUS_LINE[initialStatus];
+  li.appendChild(status);
+
+  const button = doc.createElement("button");
+  button.type = "button";
+  button.className = "shell-assignment-detail-roster-grade-retry";
+  button.setAttribute(
+    "data-testid",
+    `assignment-detail-roster-grade-retry-${studentId}`,
+  );
+  button.textContent = "Retry";
+  li.appendChild(button);
+
+  button.addEventListener("click", () => {
+    if (locked) return;
+    locked = true;
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    void retry(studentId)
+      .then((next) => {
+        if (next === "synced" || next === "notApplicable") {
+          status.remove();
+          button.remove();
+          return;
+        }
+        status.textContent =
+          next === "pending"
+            ? GRADE_PASSBACK_STATUS_LINE.pending
+            : GRADE_PASSBACK_STATUS_LINE.failed;
+        locked = false;
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+      })
+      .catch(() => {
+        status.textContent = GRADE_PASSBACK_STATUS_LINE.failed;
+        locked = false;
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+      });
+  });
 }
 
 async function renderQuestionSummaryPanel(

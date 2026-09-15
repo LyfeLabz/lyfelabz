@@ -62,6 +62,10 @@ import {
   type LmsRosterMembershipRemovalWrite,
 } from "../types/lms";
 import {
+  LMS_GRADE_PASSBACKS_COLLECTION,
+  type LmsGradePassbackRecord,
+} from "../types/lms-grade-passback";
+import {
   ENROLLMENTS_COLLECTION,
   type EnrollmentCreationWrite,
   type EnrollmentRecord,
@@ -907,6 +911,32 @@ export function lmsAssignmentPublicationCreationDocRef(
     .doc(
       publicationId,
     ) as DocumentReference<LmsAssignmentPublicationCreationWrite>;
+}
+
+// -------------------- lmsGradePassbacks references (Sprint 30A.2) --------------------
+//
+// Server-only Google Classroom best-score grade-passback synchronization
+// state. One document per (assignmentId, studentId) pair, keyed by
+// `lmsGradePassbackIdFor` in `lms/shared/ids.ts`. The sole writer is the
+// grade-passback synchronization engine (`lms/grade-passback/engine.ts`);
+// no client ever writes this collection. See
+// `shared/types/lms-grade-passback.ts` for the full field-by-field
+// rationale and the monotonicity/concurrency invariants this ref
+// supports.
+export function lmsGradePassbacksCollectionRef(): CollectionReference<LmsGradePassbackRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(
+      LMS_GRADE_PASSBACKS_COLLECTION,
+    ) as CollectionReference<LmsGradePassbackRecord>;
+}
+
+export function lmsGradePassbackDocRef(
+  gradePassbackId: string,
+): DocumentReference<LmsGradePassbackRecord> {
+  return getAdminFirestore()
+    .collection(LMS_GRADE_PASSBACKS_COLLECTION)
+    .doc(gradePassbackId) as DocumentReference<LmsGradePassbackRecord>;
 }
 
 // -------------------- lmsRosterMemberships references (Sprint 29G.5K) --------------------

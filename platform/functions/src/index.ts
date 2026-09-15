@@ -43,6 +43,7 @@ export {
 } from "./enrollments";
 export {
   lmsAssignmentsPublish,
+  lmsGradePassbacksRetry,
   lmsDeepLinkResolve,
   lmsClassesDiscover,
   lmsClassesImport,

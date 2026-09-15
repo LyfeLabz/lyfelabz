@@ -442,6 +442,38 @@ service cloud.firestore {
         && callerIsActiveTeacher();
     }
 
+    // ---------- lmsGradePassbacks/{assignmentId__studentId} ----------
+    //
+    // Sprint 30A.2 - Google Classroom best-score grade-passback
+    // synchronization state. One document per (assignment, student) pair.
+    // Mirrors the `lmsAssignmentPublications` pattern exactly: the owning
+    // teacher is the sole client-side reader, scoped through the
+    // denormalized `ownerUid`. The student is intentionally NOT granted
+    // read access - no concrete product requirement has proven a student
+    // needs to see this internal synchronization state, and the narrower
+    // default is preferred per the specification.
+    //
+    // Reads:
+    //   - `get`: the owning teacher may read the passback state for an
+    //     assignment they own. Ownership is authorized on the document's
+    //     `ownerUid` denormalization.
+    //   - `list`: the owning teacher may list only passback records they
+    //     own.
+    //
+    // Writes:
+    //   - All client writes remain denied. The grade-passback
+    //     synchronization engine (`lms/grade-passback/engine.ts`) is the
+    //     sole writer, through the Admin SDK from the Cloud Function trust
+    //     boundary, and therefore bypasses Rules.
+    match /lmsGradePassbacks/{gradePassbackId} {
+      allow get: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && callerIsActiveTeacher();
+      allow list: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && callerIsActiveTeacher();
+    }
+
     // ---------- Assessment helpers ----------
     //
     // Sprint 12B Slice 1 (PDR-025, PDR-026). Small, stateless helpers used

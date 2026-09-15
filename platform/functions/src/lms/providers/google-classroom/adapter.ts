@@ -5,8 +5,10 @@ import type {
   LmsDiscoveredClass,
   LmsOAuthAuthorizationRequest,
   LmsOAuthGrant,
+  LmsPatchStudentSubmissionGradeInput,
   LmsProviderAdapter,
   LmsPublishedAssignment,
+  LmsResolvedStudentSubmission,
   LmsRosterStudent,
   LmsTopic,
 } from "../provider";
@@ -688,6 +690,158 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
       };
     } catch (err) {
       throw translateUpstreamError(err, "publishAssignment");
+    } finally {
+      if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
+    }
+  },
+
+  // Sprint 30A.2 - resolve the student's upstream StudentSubmission for one
+  // coursework item. Filters the upstream response defensively: only a
+  // result whose `userId` matches the requested student and whose
+  // `courseWorkId` matches the requested coursework is honored. Zero
+  // matching results returns `null` (safe: the student may never have
+  // opened the Classroom assignment). More than one matching result is
+  // rejected as a malformed response rather than guessed at.
+  //
+  // Bounded, AbortController-backed timeout across the WHOLE bounded
+  // pagination loop (§2.3 Correction 3 precedent, same timer-lifecycle
+  // ownership as `publishAssignment`): a hang on any page must not
+  // consume the entire Cloud Functions execution budget, and - load-
+  // bearing for the grade-passback concurrency proof - this bound must
+  // stay comfortably under `LEASE_TTL_MS` in `lms/grade-passback/
+  // engine.ts` so a worker's own network calls always time out and
+  // release the lease long before that lease could ever be reclaimed as
+  // expired by another worker.
+  async resolveStudentSubmission(
+    input,
+  ): Promise<LmsResolvedStudentSubmission> {
+    let transport;
+    try {
+      transport = getGoogleClassroomTransport();
+    } catch (err) {
+      throw translateUpstreamError(err, "resolveStudentSubmission");
+    }
+    const RESOLVE_SUBMISSION_TIMEOUT_MS = 15_000;
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    const matches: string[] = [];
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          controller.abort();
+          reject(
+            new PlatformError(
+              "lms.upstreamCallFailed",
+              "Google Classroom resolveStudentSubmission exceeded the 15s timeout.",
+            ),
+          );
+        }, RESOLVE_SUBMISSION_TIMEOUT_MS);
+      });
+      timeoutPromise.catch(() => undefined);
+
+      const workPromise = (async () => {
+        let pageToken: string | undefined = undefined;
+        // Bounded pagination: a single student has at most one submission
+        // per coursework item in ordinary operation; this bound defends
+        // against a runaway upstream cursor loop.
+        const MAX_PAGES = 10;
+        for (let page = 0; page < MAX_PAGES; page += 1) {
+          const response = await transport.listStudentSubmissions({
+            accessToken: input.accessToken,
+            courseId: input.lmsClassId,
+            courseWorkId: input.lmsAssignmentId,
+            userId: input.studentProviderAccountId,
+            signal: controller.signal,
+            ...(pageToken !== undefined ? { pageToken } : {}),
+          });
+          for (const submission of response.studentSubmissions ?? []) {
+            if (
+              submission === null ||
+              typeof submission !== "object" ||
+              typeof submission.id !== "string" ||
+              submission.id.trim().length === 0
+            ) {
+              throw new PlatformError(
+                "lms.upstreamMalformedResponse",
+                "Google Classroom returned a malformed studentSubmission entry for resolveStudentSubmission.",
+              );
+            }
+            if (
+              submission.userId === input.studentProviderAccountId &&
+              submission.courseWorkId === input.lmsAssignmentId
+            ) {
+              matches.push(submission.id);
+            }
+          }
+          if (!response.nextPageToken) return;
+          pageToken = response.nextPageToken;
+        }
+      })();
+      workPromise.catch(() => undefined);
+
+      await Promise.race([workPromise, timeoutPromise]);
+    } catch (err) {
+      throw translateUpstreamError(err, "resolveStudentSubmission");
+    } finally {
+      if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
+    }
+    if (matches.length === 0) return null;
+    if (matches.length > 1) {
+      throw new PlatformError(
+        "lms.upstreamMalformedResponse",
+        "Google Classroom returned more than one matching studentSubmission for resolveStudentSubmission.",
+      );
+    }
+    return { submissionId: matches[0] };
+  },
+
+  // Sprint 30A.2 - write the LyfeLabz-computed best-score earned-points
+  // value to both `draftGrade` and `assignedGrade` with the documented
+  // update mask. Bounded, AbortController-backed timeout mirroring
+  // `publishAssignment` (§2.3 Correction 3 precedent): a hang on the
+  // grade PATCH must not consume the entire Cloud Functions execution
+  // budget, and the timer-lifecycle ownership follows the identical
+  // try/finally structure so a synchronous transport throw still clears
+  // the timer.
+  async patchStudentSubmissionGrade(
+    input: LmsPatchStudentSubmissionGradeInput,
+  ): Promise<void> {
+    let transport;
+    try {
+      transport = getGoogleClassroomTransport();
+    } catch (err) {
+      throw translateUpstreamError(err, "patchStudentSubmissionGrade");
+    }
+    const GRADE_PATCH_TIMEOUT_MS = 15_000;
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          controller.abort();
+          reject(
+            new PlatformError(
+              "lms.upstreamCallFailed",
+              "Google Classroom patchStudentSubmissionGrade exceeded the 15s timeout.",
+            ),
+          );
+        }, GRADE_PATCH_TIMEOUT_MS);
+      });
+      timeoutPromise.catch(() => undefined);
+
+      const workPromise = transport.patchStudentSubmissionGrade({
+        accessToken: input.accessToken,
+        courseId: input.lmsClassId,
+        courseWorkId: input.lmsAssignmentId,
+        submissionId: input.submissionId,
+        earnedPoints: input.earnedPoints,
+        signal: controller.signal,
+      });
+      workPromise.catch(() => undefined);
+
+      await Promise.race([workPromise, timeoutPromise]);
+    } catch (err) {
+      throw translateUpstreamError(err, "patchStudentSubmissionGrade");
     } finally {
       if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
     }

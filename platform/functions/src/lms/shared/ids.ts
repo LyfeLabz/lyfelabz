@@ -69,3 +69,15 @@ export function lmsRosterMembershipIdFor(
 ): string {
   return `${linkId}__${identityHash}`;
 }
+
+// Sprint 30A.2 - one document per (assignment, student) pair per
+// `shared/types/lms-grade-passback.ts`. Both components are ownership-
+// immutable at the mirror boundary, so the document id is deterministic
+// and every worker for a given pair derives the identical id without a
+// lookup.
+export function lmsGradePassbackIdFor(
+  assignmentId: string,
+  studentId: string,
+): string {
+  return `${assignmentId}__${studentId}`;
+}

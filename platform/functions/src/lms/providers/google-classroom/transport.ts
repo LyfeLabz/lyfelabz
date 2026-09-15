@@ -160,6 +160,49 @@ export type GoogleClassroomCourseWorkResource = {
   readonly alternateLink?: string;
 };
 
+// Sprint 30A.2 - Google Classroom grade passback. Narrow subset of the
+// `studentSubmissions` REST v1 payloads: only what the adapter actually
+// reads. `userId` on the resource is Classroom's own internal id for the
+// student on this submission; it is read only for defensive filtering
+// (never persisted, never logged) so a malformed multi-student response
+// can be rejected rather than trusted blindly.
+export type GoogleClassroomStudentSubmissionListRequest = {
+  readonly accessToken: string;
+  readonly courseId: string;
+  readonly courseWorkId: string;
+  readonly userId: string;
+  readonly pageToken?: string;
+  readonly pageSize?: number;
+  // Optional abort signal, mirroring `GoogleClassroomCourseWorkCreateRequest`
+  // (§2.3 Correction 3 precedent). The adapter supplies one AbortController
+  // shared across every page of one `resolveStudentSubmission` call so the
+  // whole bounded operation - not just a single page - is genuinely
+  // cancelled when the adapter-level timeout fires.
+  readonly signal?: AbortSignal;
+};
+
+export type GoogleClassroomStudentSubmissionResource = {
+  readonly id: string;
+  readonly userId: string;
+  readonly courseWorkId: string;
+};
+
+export type GoogleClassroomStudentSubmissionListResponse = {
+  readonly studentSubmissions?: readonly GoogleClassroomStudentSubmissionResource[];
+  readonly nextPageToken?: string;
+};
+
+export type GoogleClassroomStudentSubmissionGradePatchRequest = {
+  readonly accessToken: string;
+  readonly courseId: string;
+  readonly courseWorkId: string;
+  readonly submissionId: string;
+  // The SAME value written to both `draftGrade` and `assignedGrade`
+  // (never `assignedGrade` alone) per the locked Sprint 30A.2 contract.
+  readonly earnedPoints: number;
+  readonly signal?: AbortSignal;
+};
+
 // Minimum shape of https://classroom.googleapis.com/v1/userProfiles/me.
 // Read once at completeOAuth time so the vendor-neutral grant record can
 // carry `upstreamAccountIdentifier` (Amendment §6.1 personal-account
@@ -215,6 +258,14 @@ export interface GoogleClassroomTransport {
   createCourseWork(
     input: GoogleClassroomCourseWorkCreateRequest,
   ): Promise<GoogleClassroomCourseWorkResource>;
+
+  listStudentSubmissions(
+    input: GoogleClassroomStudentSubmissionListRequest,
+  ): Promise<GoogleClassroomStudentSubmissionListResponse>;
+
+  patchStudentSubmissionGrade(
+    input: GoogleClassroomStudentSubmissionGradePatchRequest,
+  ): Promise<void>;
 }
 
 // -------------------- Binding --------------------
@@ -253,6 +304,12 @@ class UnboundGoogleClassroomTransport implements GoogleClassroomTransport {
   }
   createCourseWork(): never {
     this.unbound("createCourseWork");
+  }
+  listStudentSubmissions(): never {
+    this.unbound("listStudentSubmissions");
+  }
+  patchStudentSubmissionGrade(): never {
+    this.unbound("patchStudentSubmissionGrade");
   }
 }
 
@@ -357,7 +414,7 @@ export class GoogleClassroomHttpsError extends Error {
 export type HttpsFetch = (
   input: string,
   init: {
-    readonly method: "GET" | "POST";
+    readonly method: "GET" | "POST" | "PATCH";
     readonly headers?: Record<string, string>;
     readonly body?: string;
     readonly signal?: AbortSignal;
@@ -620,7 +677,7 @@ async function callUpstream(
   fetchImpl: HttpsFetch,
   endpoint: string,
   init: {
-    readonly method: "GET" | "POST";
+    readonly method: "GET" | "POST" | "PATCH";
     readonly headers?: Record<string, string>;
     readonly body?: string;
     readonly signal?: AbortSignal;
@@ -870,6 +927,53 @@ export function createHttpsGoogleClassroomTransport(
         },
       )) as GoogleClassroomCourseWorkResource;
       return parsed;
+    },
+
+    async listStudentSubmissions(input) {
+      const parsed = (await callUpstream(
+        fetchImpl,
+        classroomUrl(
+          `/courses/${encodeURIComponent(input.courseId)}/courseWork/${encodeURIComponent(input.courseWorkId)}/studentSubmissions`,
+          {
+            userId: input.userId,
+            ...(input.pageToken ? { pageToken: input.pageToken } : {}),
+            ...(input.pageSize !== undefined
+              ? { pageSize: String(input.pageSize) }
+              : {}),
+          },
+        ),
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${input.accessToken}` },
+          ...(input.signal !== undefined ? { signal: input.signal } : {}),
+        },
+      )) as GoogleClassroomStudentSubmissionListResponse;
+      return parsed;
+    },
+
+    async patchStudentSubmissionGrade(input) {
+      // Sprint 30A.2: write the SAME earned-points value to both fields
+      // with the documented update mask, per the locked grade-passback
+      // contract. Never turns in, returns, or reclaims the submission.
+      await callUpstream(
+        fetchImpl,
+        classroomUrl(
+          `/courses/${encodeURIComponent(input.courseId)}/courseWork/${encodeURIComponent(input.courseWorkId)}/studentSubmissions/${encodeURIComponent(input.submissionId)}`,
+          { updateMask: "draftGrade,assignedGrade" },
+        ),
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${input.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            draftGrade: input.earnedPoints,
+            assignedGrade: input.earnedPoints,
+          }),
+          ...(input.signal !== undefined ? { signal: input.signal } : {}),
+        },
+      );
     },
   };
 }

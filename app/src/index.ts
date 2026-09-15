@@ -1,3 +1,4 @@
+import { configureGoogleSignInProvider } from "./session/googleSignInProvider";
 import { createFirestoreListClasses } from "./classes/listClasses";
 import {
   createFirestoreReadTeacherClassOrder,
@@ -14,6 +15,8 @@ import {
   createFirebaseUpdateClassColor,
   type UpdateClassColor,
 } from "./classes/updateClassColor";
+import { createReadGradePassbackStatuses } from "./lms/gradePassbackStatuses";
+import { createFirebaseGradePassbackRetry } from "./lms/gradePassbackRetry";
 import {
   createFirebaseCreateClass,
   type CreateClass,
@@ -497,6 +500,40 @@ async function run(): Promise<void> {
               integrations,
             }) ?? undefined)
           : undefined,
+      // Sprint 30A.2: per-student Google Classroom grade-passback retry.
+      // The status read is a direct Firestore query (authorized by the
+      // certified `lmsGradePassbacks` Rules block, no callable needed);
+      // the retry action is the certified `lmsGradePassbacksRetry`
+      // callable, resolved lazily (mirroring this file's existing
+      // `getFunctions()` convention) so this synchronous render path
+      // never needs to await the Functions SDK up front. Wired only for
+      // an active-teacher session, matching `lmsRetry` above.
+      gradePassback:
+        lastActiveTeacher !== null
+          ? {
+              statusesReader: createReadGradePassbackStatuses(
+                db,
+                lastActiveTeacher.uid,
+              ),
+              retry: async (input) => {
+                const { getFunctions, connectFunctionsEmulator } =
+                  await import("firebase/functions");
+                const functions = getFunctions();
+                if (
+                  typeof window !== "undefined" &&
+                  (window.location.hostname === "localhost" ||
+                    window.location.hostname === "127.0.0.1")
+                ) {
+                  try {
+                    connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+                  } catch {
+                    // already connected
+                  }
+                }
+                return createFirebaseGradePassbackRetry(functions)(input);
+              },
+            }
+          : undefined,
       onStatusChange: (metadata) => {
         assignmentDetailRegistry.register(metadata);
         // Sprint 16 Slice 1: when Curriculum owns the mount, refresh the
@@ -799,6 +836,7 @@ async function run(): Promise<void> {
     const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } =
       await import("firebase/auth");
     const provider = new GoogleAuthProvider();
+    configureGoogleSignInProvider(provider);
     try {
       await signInWithPopup(auth, provider);
     } catch (err) {

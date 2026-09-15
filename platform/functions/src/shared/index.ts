@@ -207,6 +207,7 @@ export {
 export { runFirestoreTransaction } from "./firestore/transaction";
 export { createFirestoreBatch } from "./firestore/batch";
 export { log, type LogPayload } from "./logging/logger";
+export { roundHalfToEven2 } from "./math/round-half-to-even";
 export {
   ASSIGNMENTS_COLLECTION,
   type AssignmentArchiveWrite,
@@ -284,6 +285,15 @@ export {
   type LmsRosterMembershipRemovalWrite,
   type LmsRosterMembershipStatus,
 } from "./types/lms";
+export {
+  LMS_GRADE_PASSBACKS_COLLECTION,
+  type LmsGradePassbackRecord,
+  type LmsGradePassbackStatus,
+} from "./types/lms-grade-passback";
+export {
+  lmsGradePassbacksCollectionRef,
+  lmsGradePassbackDocRef,
+} from "./firestore/typed-ref";
 export {
   ENROLLMENTS_COLLECTION,
   type EnrollmentCreationWrite,
@@ -376,6 +386,7 @@ export {
   reconcileExternalIdentityForUser,
   resolveActiveExternalIdentity,
   resolveActiveUserIdByExternalIdentityDocId,
+  resolveActiveProviderAccountIdForUser,
   restoreExternalIdentity,
   revokeExternalIdentity,
   type CreateOrConfirmInput,

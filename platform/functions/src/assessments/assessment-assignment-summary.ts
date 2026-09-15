@@ -18,6 +18,11 @@ import {
   type ClassRecord,
 } from "../shared";
 
+import {
+  selectHighestCompletedAttempt,
+  type SelectedCompletedAttempt,
+} from "./best-attempt";
+
 // Client-supplied request payload for assessmentAssignmentSummary. The
 // assignment identifier is the only accepted field; the loaded assignment
 // document, its referenced class, and the verified caller context together
@@ -80,33 +85,6 @@ const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
-}
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
-}
-
-// PDR-029 tie-break policy rule 3 compares the canonical completion
-// timestamp on each attempt. The certified attempt record freezes exactly
-// one completion instant: `submittedAt`, stamped by the sole authorized
-// writer (`assessmentAttemptsFinalize`) via `FieldValue.serverTimestamp()`
-// per `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` sections 7 and 21. The
-// ratified policy names this instant "completedAt"; the on-disk
-// representation is `submittedAt`. Nothing else on the attempt or session
-// record is a valid substitute: session `startedAt` is not the completion
-// instant, and Firestore document creation time is not part of the
-// certified schema. We convert the timestamp to a finite millisecond
-// number so the comparison remains total and deterministic.
-function completedAtMillis(value: unknown): number | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value === "object" && value !== null) {
-    const maybe = value as { toMillis?: () => unknown };
-    if (typeof maybe.toMillis === "function") {
-      const raw = maybe.toMillis();
-      if (typeof raw === "number" && Number.isFinite(raw)) return raw;
-    }
-  }
-  return null;
 }
 
 function validateRequest(
@@ -200,88 +178,13 @@ async function loadClass(classId: string): Promise<ClassRecord> {
   return data;
 }
 
-// Selects the score-metric-bearing attempt for a single completed student
-// per PDR-029 section 6. The canonical order is:
-//   1. Higher `percentage` wins.
-//   2. Higher `attemptNumber` wins.
-//   3. Later `completedAt` (on-disk `submittedAt`) wins when both
-//      attempts carry comparable timestamps. A valid timestamp outranks a
-//      missing or malformed timestamp.
-//   4. Ascending `attemptId` wins as the final deterministic fallback so
-//      the selection never depends on Firestore document ordering.
-// `AssessmentAttemptRecord.percentage`, `attemptNumber`, `score`,
-// `maxScore`, and `submittedAt` are all frozen at finalize. Raw `score`
-// MUST NOT be used for comparison because `maxScore` may differ across
-// assessment revisions (PDR-029 section 5).
-export type SelectedCompletedAttempt = {
-  readonly attemptId: string;
-  readonly percentage: number;
-  readonly score: number;
-  readonly maxScore: number;
-  readonly attemptNumber: number;
-  readonly completedAtMillis: number | null;
-};
-
-export function selectHighestCompletedAttempt(
-  attempts: readonly {
-    readonly id: string;
-    readonly data: AssessmentAttemptRecord;
-  }[],
-): SelectedCompletedAttempt | null {
-  let best: SelectedCompletedAttempt | null = null;
-  for (const { id, data } of attempts) {
-    if (!isFiniteNumber(data.percentage)) continue;
-    if (!isFiniteNumber(data.score)) continue;
-    if (!isFiniteNumber(data.maxScore)) continue;
-    if (!isFiniteNumber(data.attemptNumber)) continue;
-    const candidate: SelectedCompletedAttempt = {
-      attemptId: id,
-      percentage: data.percentage,
-      score: data.score,
-      maxScore: data.maxScore,
-      attemptNumber: data.attemptNumber,
-      completedAtMillis: completedAtMillis(data.submittedAt),
-    };
-    if (best === null) {
-      best = candidate;
-      continue;
-    }
-    // Rule 1: higher percentage wins.
-    if (candidate.percentage > best.percentage) {
-      best = candidate;
-      continue;
-    }
-    if (candidate.percentage < best.percentage) continue;
-    // Rule 2: higher attemptNumber wins.
-    if (candidate.attemptNumber > best.attemptNumber) {
-      best = candidate;
-      continue;
-    }
-    if (candidate.attemptNumber < best.attemptNumber) continue;
-    // Rule 3: later completedAt wins. A valid finite timestamp outranks
-    // a missing or malformed timestamp so a well-formed record never
-    // loses to a malformed peer.
-    const candTs = candidate.completedAtMillis;
-    const bestTs = best.completedAtMillis;
-    if (candTs !== null && bestTs === null) {
-      best = candidate;
-      continue;
-    }
-    if (candTs === null && bestTs !== null) continue;
-    if (candTs !== null && bestTs !== null) {
-      if (candTs > bestTs) {
-        best = candidate;
-        continue;
-      }
-      if (candTs < bestTs) continue;
-    }
-    // Rule 4: ascending attemptId is the final deterministic fallback.
-    if (candidate.attemptId < best.attemptId) {
-      best = candidate;
-    }
-  }
-  return best;
-}
+// Extracted (Sprint 30A.2, mechanical extraction, no behavior change) to
+// `./best-attempt` so the Google Classroom grade-passback synchronization
+// engine can import the identical authoritative implementation. Re-exported
+// here (imported above, re-exported below) so every existing caller of
+// this module (including `assessment-lesson-summary.ts` and this file's
+// own tests) continues to resolve the same symbol unchanged.
+export { selectHighestCompletedAttempt, type SelectedCompletedAttempt };
 
 // Deterministic rounding rule for the reported percentages: round to the
 // nearest integer using half-up rounding. Repository convention keeps

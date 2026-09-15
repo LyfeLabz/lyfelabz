@@ -13,6 +13,12 @@ if (isFunctionsRuntime()) {
 }
 
 export { lmsAssignmentsPublish } from "./assignments-publish";
+export {
+  lmsGradePassbacksRetry,
+  type LmsGradePassbacksRetryRequest,
+  type LmsGradePassbacksRetryResponse,
+  type LmsGradePassbacksRetryStatus,
+} from "./lms-grade-passbacks-retry";
 export { lmsDeepLinkResolve } from "./deep-link-resolve";
 export { lmsClassesDiscover } from "./classes-discover";
 export { lmsClassesImport } from "./classes-import";

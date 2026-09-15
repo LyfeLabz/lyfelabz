@@ -168,3 +168,37 @@ export type AssignmentLmsRetrySeam = {
   readonly retry: () => Promise<AssignmentLmsPublicationState>;
   readonly onReconnect?: () => void;
 };
+
+// Sprint 30A.2 - Google Classroom best-score grade-passback: per-student
+// manual retry seam for the roster. Distinct from `AssignmentLmsRetrySeam`
+// above (which retries the assignment-level Classroom *publication*):
+// this seam retries per-student *grade synchronization* for an already-
+// published, graded assignment. `statusesReader` returns the coarse
+// current status for every student in this assignment who has a
+// passback record at all (a student with no record - never attempted,
+// or an ungraded assignment - is simply absent from the map, which the
+// surface renders as "nothing to show," never as an error). `retry`
+// never accepts or sends a grade value; it only recomputes and re-syncs
+// the current canonical best through the exact same monotonic engine
+// attempt finalization uses.
+export type AssignmentGradePassbackStatus = "pending" | "syncing" | "synced" | "failed";
+
+export type AssignmentGradePassbackStatusesReader = (input: {
+  readonly assignmentId: string;
+}) => Promise<ReadonlyMap<string, AssignmentGradePassbackStatus>>;
+
+export type AssignmentGradePassbackRetryResult =
+  | "synced"
+  | "pending"
+  | "failed"
+  | "notApplicable";
+
+export type AssignmentGradePassbackRetryCallable = (input: {
+  readonly assignmentId: string;
+  readonly studentId: string;
+}) => Promise<AssignmentGradePassbackRetryResult>;
+
+export type AssignmentGradePassbackSeam = {
+  readonly statusesReader: AssignmentGradePassbackStatusesReader;
+  readonly retry: AssignmentGradePassbackRetryCallable;
+};

@@ -207,6 +207,36 @@ export const AUDIT_ACTIONS = [
   // equal-value write is a true no-op and emits NO audit event - this
   // action is written only when the record actually changed.
   "accommodations.configurationChanged",
+  // Sprint 30A.2 - Google Classroom best-score grade passback. Emitted by
+  // the grade-passback synchronization engine (invoked either as a
+  // post-commit side effect of `assessmentAttemptsFinalize` or by the
+  // teacher-facing manual retry callable) ONLY after a genuine synchronize
+  // attempt actually acquired the synchronization lease and reached a
+  // terminal upstream outcome - never on a no-op evaluation (ungraded,
+  // legacy-absent, no publication, no attempts, deferred-to-another-
+  // worker, or already-synced). The actor is the `system` sentinel with
+  // the affected student as `actorUserId`, mirroring the
+  // `auth.userProvisioned` convention for background system work. The
+  // payload NEVER carries a raw Google provider account id, an OAuth
+  // token, a Classroom StudentSubmission id, or answer-key/item content.
+  //
+  // `lms.gradePassbackSucceeded`: the computed best-score earned-points
+  // value was confirmed written to Classroom. Payload carries only
+  // `providerId` and the confirmed `earnedPoints`.
+  "lms.gradePassbackSucceeded",
+  // `lms.gradePassbackFailed`: the synchronize attempt did not reach a
+  // confirmed upstream success (identity resolution, submission
+  // resolution, or the grade PATCH itself failed). Payload carries only
+  // `providerId` and a bounded `errorCode`; never a raw Google error
+  // message.
+  "lms.gradePassbackFailed",
+  // `lms.gradePassbackRetryRequested`: a teacher invoked the narrow manual
+  // retry callable for one (assignment, student) pair. Emitted once per
+  // retry request regardless of outcome; the outcome itself is recorded
+  // separately by the succeeded/failed events above when the retry
+  // actually reaches the synchronization engine. Payload carries only the
+  // targeted `studentId` and the bounded result category.
+  "lms.gradePassbackRetryRequested",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
