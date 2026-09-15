@@ -23,10 +23,9 @@ framework's own arc from Structure and Function in Grade 6 to Systems and
 Cycles in Grade 7. The program is organized as seven conceptual families that
 span both years rather than as isolated topic units: Living Systems, Life Over
 Time, Dynamic Earth, Sun, Gravity, and Earth's Cycles, Matter and Its
-Particles, Energy, Waves, and Fields, and Engineered Systems. (This
-seven-family spine is inferred from the program's coverage maps and the natural
-clustering of its lesson files; it is the organizing frame of this document,
-not a separately published concept map.) Within every family, lessons share one
+Particles, Energy, Waves, and Fields, and Engineered Systems. (The seven-family spine is defined
+in `docs/curriculum/concept-families.md`, the program's concept-family
+reference.) Within every family, lessons share one
 instructional architecture: a mystery-driven entry phenomenon, prediction
 before revelation, and vocabulary that emerges after observation rather than
 preceding it, so that students earn each term through the scientific practice

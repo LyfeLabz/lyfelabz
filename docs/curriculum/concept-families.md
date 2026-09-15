@@ -1,13 +1,13 @@
 ---
 title: LyfeLabz Concept Families
-status: DRAFT - INFERRED, NOT RATIFIED
+status: RATIFIED 2026-09-14
 provenance: >
   These seven families were inferred on 2026-09-14 from
   docs/grade6-coverage-map.md, docs/grade7-coverage-map.md, and the natural
   clustering of repository lesson files while drafting
   docs/hqim/scope-and-sequence.md. No published concept map defined them.
-  The curriculum author must ratify (or rename/restructure) these families
-  before they appear in any formal HQIM submission document.
+  Ratified by curriculum author 2026-09-14. All seven family names and unit
+  assignments confirmed.
 ---
 
 # LyfeLabz Concept Families
