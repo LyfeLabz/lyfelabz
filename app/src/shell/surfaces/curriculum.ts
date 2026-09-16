@@ -26,6 +26,7 @@ import {
 } from "../../curriculum/curriculumManifest";
 import type {
   AssignmentDetailMetadata,
+  AssignmentDetailStudentSelection,
   AssignmentStatus,
 } from "../../assignments/detail/types";
 import type {
@@ -95,6 +96,17 @@ export type CurriculumAssignmentDetailSeam = {
   readonly setOutletController?: (
     controller: TeacherShellOutletController | null,
   ) => void;
+  // Student Progress & Assignment Membership Phase A, Slice 3: the shell
+  // registers a bounded controller here (mirroring `setOutletController`)
+  // so the entry-point Assignment Detail opener can hand a student
+  // selection made inside Assignment Detail's roster back to the shell,
+  // which records it as a one-shot intent and navigates to Classes. When
+  // absent-or-unset (a shell built without this seam, or a harness that
+  // does not exercise student navigation), a click on a roster name is
+  // simply inert. See TeacherShellStudentSelectionController.
+  readonly setStudentSelectionController?: (
+    controller: TeacherShellStudentSelectionController | null,
+  ) => void;
 };
 
 // Sprint 28.5D (D2A): the bounded surface-render seam exposed by the
@@ -106,6 +118,22 @@ export type CurriculumAssignmentDetailSeam = {
 // machine; it is a single "render this into my outlet" call.
 export type TeacherShellOutletController = {
   readonly show: (render: (host: HTMLElement) => void) => void;
+};
+
+// Student Progress & Assignment Membership Phase A, Slice 3:
+// `AssignmentDetailStudentSelection` is defined in
+// `../../assignments/detail/types` (imported above) since the Assignment
+// Detail surface itself also depends on it; re-exported here so existing
+// consumers of this module's seam types keep one import source.
+export type { AssignmentDetailStudentSelection };
+
+// The bounded seam the Teacher Workspace shell registers so the entry-point
+// Assignment Detail opener can hand off a student selection. Mirrors
+// `TeacherShellOutletController`'s "single bounded call" shape: not a
+// router, not a history stack, just "record this intent and navigate to
+// Classes" - the shell owns exactly how that happens.
+export type TeacherShellStudentSelectionController = {
+  readonly selectStudent: (selection: AssignmentDetailStudentSelection) => void;
 };
 
 // Curriculum surface. The teacher curriculum landing page introduced by

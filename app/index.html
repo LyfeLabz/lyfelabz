@@ -3360,6 +3360,17 @@
     border-radius: var(--tw-radius-card);
     box-shadow: var(--tw-shadow-card);
   }
+  /* Student Progress & Assignment Membership Phase A, Slice 1: the whole
+     card is a clickable/keyboard shortcut to "Open assignment". The cursor
+     and focus-visible ring are the only new affordances; the card's resting
+     appearance is unchanged so it stays familiar next to every other card. */
+  .shell-active-assignment-card-clickable {
+    cursor: pointer;
+  }
+  .shell-active-assignment-card-clickable:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
   .shell-active-assignment-title {
     font-size: 1.02rem;
     font-weight: 600;
@@ -3585,6 +3596,40 @@
     border-radius: 3px;
   }
   .shell-student-detail-name { margin: 0 0 0.5rem 0; }
+  /* Student Progress & Assignment Membership Phase A, Slice 2: Previous /
+     Next, styled as a small secondary-control pair matching the existing
+     shell-student-detail-back link language rather than a new button
+     system. */
+  .shell-student-detail-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin: 0 0 0.75rem 0;
+  }
+  .shell-student-detail-nav-prev,
+  .shell-student-detail-nav-next {
+    background: transparent;
+    border: none;
+    color: var(--tw-nav-edge);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.2rem 0.1rem;
+    cursor: pointer;
+  }
+  .shell-student-detail-nav-prev:hover,
+  .shell-student-detail-nav-prev:focus-visible,
+  .shell-student-detail-nav-next:hover,
+  .shell-student-detail-nav-next:focus-visible {
+    text-decoration: underline;
+  }
+  .shell-student-detail-nav-prev:focus-visible,
+  .shell-student-detail-nav-next:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+    border-radius: 3px;
+  }
+  .shell-student-detail-nav-next { margin-left: auto; }
   .shell-student-detail-body { margin: 0; }
   .shell-student-detail-loading,
   .shell-student-detail-empty p,
@@ -3615,6 +3660,39 @@
     font-weight: 600;
     color: var(--tw-ink);
     margin: 0 0 0.35rem 0;
+  }
+  /* Student Progress & Assignment Membership Phase A, Slice 4/9: the
+     already-existing published-date convention (see
+     .shell-active-assignment-date) reused as a secondary line so a teacher
+     can tell two same-lesson cards apart without any new concept. */
+  .shell-student-detail-assignment-meta {
+    margin: 0 0 0.35rem 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.85rem;
+  }
+  .shell-student-detail-assignment-status {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  /* Restrained, calm status tints mirroring the completed-assignment-card
+     precedent (.shell-active-assignment-card-complete): a pale tint fill
+     plus a matching-hue border, never a saturated banner or badge. Amber
+     for genuinely in-progress work; a deliberately lower-alpha, calmer red
+     for not-started so it reads as informational, not an error. */
+  .shell-student-detail-assignment-in-progress {
+    background: rgba(255, 176, 32, 0.08);
+    border-color: rgba(153, 105, 4, 0.3);
+  }
+  .shell-student-detail-assignment-in-progress .shell-student-detail-assignment-status {
+    color: #8a5a04;
+  }
+  .shell-student-detail-assignment-not-started {
+    background: rgba(220, 61, 61, 0.05);
+    border-color: rgba(153, 30, 30, 0.22);
+  }
+  .shell-student-detail-assignment-not-started .shell-student-detail-assignment-status {
+    color: #a33a3a;
   }
   /* Student Detail metric boxes: a narrow mirror of the whole-class
      `.shell-assignment-summary-grid` / `-metric` / `-metric-label` /

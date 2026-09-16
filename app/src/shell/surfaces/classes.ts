@@ -52,6 +52,7 @@ import { invalidateCurriculumClassCache } from "./curriculum";
 import type {
   CurriculumAssignmentDetailSeam,
   AssignmentDetailOpenOptions,
+  AssignmentDetailStudentSelection,
 } from "./curriculum";
 import type { WorkspaceSurfaceKey } from "../navigation";
 // Sprint 28.6C: the class-scoped Assignments section reuses the certified
@@ -61,12 +62,17 @@ import type { WorkspaceSurfaceKey } from "../navigation";
 import {
   renderActiveAssignmentsSection,
   isRenderableCard,
+  formatLocalDate,
 } from "./shared/activeAssignments";
 import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
 import type {
   AttemptsListForClassCallable,
   CompletedAttemptSummary,
 } from "../../assignments/detail/attempts-wire";
+import type {
+  AssessmentStudentAssignmentsForClassCallable,
+  StudentExpectedAssignment,
+} from "../../assignments/detail/studentAssignments-wire";
 import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
@@ -215,6 +221,19 @@ export type ClassesSurfaceDeps = {
   readonly setClassesReturn?:
     | ((loc: ClassWorkspaceReturn | null) => void)
     | null;
+  // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned
+  // student-selection intent one-shot (see shell.ts
+  // `classesStudentIntent`). Read once on mount to open Student Detail
+  // pre-selected, with an assignment-origin `studentDetailOrigin`, when the
+  // teacher arrived via an Assignment Detail roster-name click; cleared
+  // immediately after consumption. Absent in harnesses that do not
+  // exercise that path.
+  readonly getClassesStudentIntent?:
+    | (() => AssignmentDetailStudentSelection | null)
+    | null;
+  readonly setClassesStudentIntent?:
+    | ((intent: AssignmentDetailStudentSelection | null) => void)
+    | null;
   // Sprint 28.6F: class-management intent one-shot (see shell.ts). Read once
   // on mount so a Settings "Import" / "Create" choice opens the matching
   // control here (the SAME workflow the `+ Add a class` entry uses); cleared
@@ -229,6 +248,17 @@ export type ClassesSurfaceDeps = {
   // Follows the LoadClassRosterAccessor pattern (Sprint 29G.5P) to avoid
   // null-snapshot on router assembly before Functions init.
   readonly loadAttempts?: (() => AttemptsListForClassCallable | null) | null;
+  // Student Progress & Assignment Membership Phase A, Slice 4: lazy
+  // accessor for the certified `assessmentStudentAssignmentsForClass`
+  // callable. Supplies the set of assignments a student is an expected
+  // recipient of (independent of whether they have attempted anything) so
+  // Student Detail can render In Progress / Not Started cards instead of
+  // treating unattempted assigned work as indistinguishable from no work at
+  // all. Absent-or-null degrades gracefully: Student Detail still renders
+  // exactly the pre-Slice-4 Completed-only view driven by `loadAttempts`.
+  readonly loadExpectedAssignments?:
+    | (() => AssessmentStudentAssignmentsForClassCallable | null)
+    | null;
   // Sprint 30A.1 human-review finalization: canonical teacher class-order
   // writer. The Classes workspace is now the sole place a teacher edits
   // class order (drag or keyboard, see `renderClassCard`); the Assign
@@ -298,6 +328,29 @@ type ClassesState =
       readonly setupForm: SetupFormState | null;
       readonly selectedStudentId: string | null;
       readonly selectedStudentDisplayName: string | null;
+      // Student Progress & Assignment Membership Phase A, Slice 2: the
+      // Students-tab roster, captured the moment it is fetched so
+      // Previous/Next can walk it without a second fetch. Optional so the
+      // ~15 other "workspace" state constructions in this module (tab
+      // switches, setup, dialogs) do not need to name a field they never
+      // touch; undefined/null both mean "no roster fetched yet in this
+      // mount."
+      readonly rosterSnapshot?: ReadonlyArray<{
+        readonly studentId: string;
+        readonly studentDisplayName: string;
+      }> | null;
+      // Student Progress & Assignment Membership Phase A, Slices 2-3: how
+      // Student Detail was entered, established once at entry and preserved
+      // unchanged by Previous/Next (REQUIRED correction to the approved
+      // spec: neighbor navigation must never reset this). "roster" is the
+      // Students-tab click path (Back returns to the Students list); the
+      // assignment-origin variant (Slice 3) is the Assignment Detail
+      // roster-name click path (Back returns to that exact assignment).
+      // Optional for the same reason as `rosterSnapshot`; meaningful only
+      // while `selectedStudentId` is non-null.
+      readonly studentDetailOrigin?:
+        | "roster"
+        | { readonly kind: "assignment"; readonly assignmentId: string };
     };
 
 // Grade/block always begin empty; the teacher must choose explicitly for
@@ -337,11 +390,14 @@ export function renderClassesSurface(
   const refreshRoster = deps.refreshRoster ?? null;
   const loadRoster = deps.loadRoster ?? null;
   const loadAttempts = deps.loadAttempts ?? null;
+  const loadExpectedAssignments = deps.loadExpectedAssignments ?? null;
   const assignmentDetail = deps.assignmentDetail ?? null;
   const assignmentSummary = deps.assignmentSummary ?? null;
   const navigateToSurface = deps.navigateToSurface ?? null;
   const getClassesReturn = deps.getClassesReturn ?? null;
   const setClassesReturn = deps.setClassesReturn ?? null;
+  const getClassesStudentIntent = deps.getClassesStudentIntent ?? null;
+  const setClassesStudentIntent = deps.setClassesStudentIntent ?? null;
   const getClassManagementIntent = deps.getClassManagementIntent ?? null;
   const setClassManagementIntent = deps.setClassManagementIntent ?? null;
   const updateClassOrder = deps.updateClassOrder ?? null;
@@ -581,9 +637,14 @@ export function renderClassesSurface(
           loadRoster,
           s.selectedStudentId,
           s.selectedStudentDisplayName,
+          s.rosterSnapshot ?? null,
+          s.studentDetailOrigin ?? "roster",
           onSelectStudent,
           onBackFromStudent,
+          onNavigateToNeighbor,
+          onRosterLoaded,
           loadAttempts,
+          loadExpectedAssignments,
           listAllAssignments,
         );
         return;
@@ -1104,8 +1165,53 @@ export function renderClassesSurface(
       setupForm: state.setupForm,
       selectedStudentId: studentId,
       selectedStudentDisplayName: displayName,
+      rosterSnapshot: state.rosterSnapshot,
+      studentDetailOrigin: "roster",
     };
     rerender();
+  };
+
+  // Student Progress & Assignment Membership Phase A, Slice 2: Previous /
+  // Next selection. Distinct from `onSelectStudent` (the Students-list
+  // entry point) because it must NOT establish a fresh "roster" origin -
+  // the required correction to the approved spec is that neighbor
+  // navigation preserves whatever origin Student Detail was already
+  // entered with, so "Back" keeps resolving to the same place (the plain
+  // Students list, or the originating Assignment Detail) regardless of how
+  // many times the teacher clicks Previous/Next in between.
+  const onNavigateToNeighbor = (
+    studentId: string,
+    displayName: string,
+  ): void => {
+    if (state.kind !== "workspace") return;
+    state = {
+      kind: "workspace",
+      classes: state.classes,
+      selectedId: state.selectedId,
+      tab: state.tab,
+      setupForm: state.setupForm,
+      selectedStudentId: studentId,
+      selectedStudentDisplayName: displayName,
+      rosterSnapshot: state.rosterSnapshot,
+      studentDetailOrigin: state.studentDetailOrigin,
+    };
+    rerender();
+  };
+
+  // Student Progress & Assignment Membership Phase A, Slice 2: captures the
+  // Students-tab roster the moment it resolves, so Previous/Next can walk
+  // it without a second fetch. Deliberately does NOT call `rerender()` -
+  // this fires from inside `renderRosterSurface`'s own async resolution,
+  // which has already rendered the list itself; this is a silent
+  // background state capture, not a visible transition.
+  const onRosterLoaded = (
+    students: ReadonlyArray<{
+      readonly studentId: string;
+      readonly studentDisplayName: string;
+    }>,
+  ): void => {
+    if (state.kind !== "workspace") return;
+    state = { ...state, rosterSnapshot: students };
   };
 
   const onBackFromStudent = (): void => {
@@ -1331,6 +1437,59 @@ export function renderClassesSurface(
     .listClasses(session.uid)
     .then((classes) => {
       if (!mount.isConnected) return;
+      // Student Progress & Assignment Membership Phase A, Slice 3: one-shot
+      // student-selection restore. When the teacher just arrived from an
+      // Assignment Detail roster-name click, land directly on that
+      // student's Student Detail with an assignment-origin
+      // `studentDetailOrigin` so Back returns to that exact assignment
+      // (not the plain Students list). Consumed exactly once. Falls back
+      // to the ordinary list/restore path when the target class is no
+      // longer active (e.g. archived between the click and this mount).
+      const studentIntent = getClassesStudentIntent?.() ?? null;
+      if (studentIntent !== null) {
+        setClassesStudentIntent?.(null);
+        const target = classes.find(
+          (c) => c.id === studentIntent.classId && c.status === "active",
+        );
+        if (target !== undefined) {
+          state = {
+            kind: "workspace",
+            classes,
+            selectedId: studentIntent.classId,
+            tab: "roster",
+            setupForm: null,
+            selectedStudentId: studentIntent.studentId,
+            selectedStudentDisplayName: studentIntent.studentDisplayName,
+            rosterSnapshot: null,
+            studentDetailOrigin: {
+              kind: "assignment",
+              assignmentId: studentIntent.returnToAssignmentId,
+            },
+          };
+          rerender();
+          // Student Progress & Assignment Membership Phase A, Slice 3: this
+          // mount never visited the Students tab, so no roster has been
+          // fetched yet (`rosterSnapshot: null` above means Previous/Next
+          // render absent for now, per the Slice 2 "missing snapshot"
+          // safety default). Fetch it now, in the background, so
+          // Previous/Next become available a moment later without a
+          // teacher-visible loading state of their own - Student Detail's
+          // own attempts-driven loading state is unaffected either way.
+          if (loadRoster !== null) {
+            const loader = loadRoster();
+            if (loader !== null) {
+              void loader({ classId: studentIntent.classId })
+                .then((result) => {
+                  if (!mount.isConnected) return;
+                  onRosterLoaded(result.students);
+                  rerender();
+                })
+                .catch(() => undefined);
+            }
+          }
+          return;
+        }
+      }
       // Sprint 28.6C: one-shot return-context restore. When the teacher just
       // came back from Assignment Detail opened inside a class, re-land in that
       // class's recorded section (Assignments) instead of the class list. The
@@ -2878,9 +3037,26 @@ function renderClassWorkspaceState(
   loadRoster: LoadClassRosterAccessor | null,
   selectedStudentId: string | null,
   selectedStudentDisplayName: string | null,
+  rosterSnapshot: ReadonlyArray<{
+    readonly studentId: string;
+    readonly studentDisplayName: string;
+  }> | null,
+  studentDetailOrigin:
+    | "roster"
+    | { readonly kind: "assignment"; readonly assignmentId: string },
   onSelectStudent: (studentId: string, displayName: string) => void,
   onBackFromStudent: () => void,
+  onNavigateToNeighbor: (studentId: string, displayName: string) => void,
+  onRosterLoaded: (
+    students: ReadonlyArray<{
+      readonly studentId: string;
+      readonly studentDisplayName: string;
+    }>,
+  ) => void,
   loadAttempts: (() => AttemptsListForClassCallable | null) | null,
+  loadExpectedAssignments:
+    | (() => AssessmentStudentAssignmentsForClassCallable | null)
+    | null,
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
 ): void {
   const workspace = doc.createElement("div");
@@ -2973,12 +3149,24 @@ function renderClassWorkspaceState(
         summary.id,
         selectedStudentId,
         selectedStudentDisplayName,
+        rosterSnapshot,
+        studentDetailOrigin,
         onBackFromStudent,
+        onNavigateToNeighbor,
+        (assignmentId: string) => assignmentsView.open(summary.id, assignmentId),
         loadAttempts,
+        loadExpectedAssignments,
         listAssignments,
       );
     } else {
-      renderRosterSurface(doc, surfaceMount, summary.id, loadRoster, onSelectStudent);
+      renderRosterSurface(
+        doc,
+        surfaceMount,
+        summary.id,
+        loadRoster,
+        onSelectStudent,
+        onRosterLoaded,
+      );
     }
   } else {
     renderClassAssignmentsSurface(doc, surfaceMount, summary, assignmentsView);
@@ -3386,6 +3574,12 @@ function renderRosterSurface(
   classId: string,
   loadRoster: LoadClassRosterAccessor | null,
   onSelectStudent: (studentId: string, displayName: string) => void,
+  onRosterLoaded: (
+    students: ReadonlyArray<{
+      readonly studentId: string;
+      readonly studentDisplayName: string;
+    }>,
+  ) => void,
 ): void {
   // Sprint 28.6H (Finding 3/5): section heading is "Students" (the class
   // identity is the workspace header).
@@ -3447,6 +3641,10 @@ function renderRosterSurface(
 
   void loader({ classId })
     .then((result) => {
+      // Student Progress & Assignment Membership Phase A, Slice 2: capture
+      // the roster (server-sorted order, unchanged) for Previous/Next,
+      // regardless of which render branch below fires.
+      onRosterLoaded(result.students);
       applyIfLive(() => {
         if (result.students.length === 0) {
           appendRosterEmptyState(doc, body);
@@ -3631,8 +3829,20 @@ function renderStudentDetailSurface(
   classId: string,
   studentId: string,
   studentDisplayName: string,
+  roster: ReadonlyArray<{
+    readonly studentId: string;
+    readonly studentDisplayName: string;
+  }> | null,
+  studentDetailOrigin:
+    | "roster"
+    | { readonly kind: "assignment"; readonly assignmentId: string },
   onBack: () => void,
+  onNavigateToNeighbor: (studentId: string, displayName: string) => void,
+  onOpenOriginatingAssignment: (assignmentId: string) => void,
   loadAttempts: (() => AttemptsListForClassCallable | null) | null,
+  loadExpectedAssignments:
+    | (() => AssessmentStudentAssignmentsForClassCallable | null)
+    | null,
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
 ): void {
   const detail = doc.createElement("div");
@@ -3640,12 +3850,30 @@ function renderStudentDetailSurface(
   detail.setAttribute("data-testid", "student-detail");
   mount.appendChild(detail);
 
+  // Student Progress & Assignment Membership Phase A, Slice 3 (REQUIRED
+  // correction): Back resolves according to the origin Student Detail was
+  // ENTERED with - established once and preserved unchanged by Previous /
+  // Next (see `onNavigateToNeighbor`, which never touches
+  // `studentDetailOrigin`). Entering from the plain Students list ("roster")
+  // returns to that list; entering from an Assignment Detail roster-name
+  // click returns to that exact originating assignment, however many
+  // students were visited via Previous/Next in between.
   const backBtn = doc.createElement("button");
   backBtn.type = "button";
   backBtn.className = "shell-student-detail-back";
   backBtn.setAttribute("data-testid", "student-detail-back");
-  backBtn.textContent = "Back to Students";
-  backBtn.addEventListener("click", () => { onBack(); });
+  if (studentDetailOrigin === "roster") {
+    backBtn.textContent = "Back to Students";
+    backBtn.addEventListener("click", () => {
+      onBack();
+    });
+  } else {
+    backBtn.textContent = "Back to assignment";
+    const originAssignmentId = studentDetailOrigin.assignmentId;
+    backBtn.addEventListener("click", () => {
+      onOpenOriginatingAssignment(originAssignmentId);
+    });
+  }
   detail.appendChild(backBtn);
 
   const heading = doc.createElement("h2");
@@ -3656,6 +3884,57 @@ function renderStudentDetailSurface(
   heading.textContent = studentDisplayName;
   detail.appendChild(heading);
   try { heading.focus({ preventScroll: true }); } catch { /* ignored */ }
+
+  // Student Progress & Assignment Membership Phase A, Slice 2: Previous /
+  // Next, walking the exact server-sorted roster order already fetched for
+  // the Students list - no independent client sort, no second fetch. Absent
+  // entirely (not merely disabled) when no roster snapshot is available yet
+  // (e.g. entered via a future Assignment Detail path in a mount that never
+  // fetched the Students-tab roster) or the current student is not found in
+  // it, rather than guessing at adjacency.
+  const currentIndex =
+    roster === null ? -1 : roster.findIndex((s) => s.studentId === studentId);
+  if (roster !== null && currentIndex !== -1) {
+    const nav = doc.createElement("div");
+    nav.className = "shell-student-detail-nav";
+    nav.setAttribute("data-testid", "student-detail-nav");
+
+    if (currentIndex > 0) {
+      const prev = roster[currentIndex - 1]!;
+      const prevBtn = doc.createElement("button");
+      prevBtn.type = "button";
+      prevBtn.className = "shell-student-detail-nav-prev";
+      prevBtn.setAttribute("data-testid", "student-detail-prev");
+      prevBtn.setAttribute(
+        "aria-label",
+        `Previous student: ${prev.studentDisplayName}`,
+      );
+      prevBtn.textContent = "← Previous";
+      prevBtn.addEventListener("click", () => {
+        onNavigateToNeighbor(prev.studentId, prev.studentDisplayName);
+      });
+      nav.appendChild(prevBtn);
+    }
+
+    if (currentIndex < roster.length - 1) {
+      const next = roster[currentIndex + 1]!;
+      const nextBtn = doc.createElement("button");
+      nextBtn.type = "button";
+      nextBtn.className = "shell-student-detail-nav-next";
+      nextBtn.setAttribute("data-testid", "student-detail-next");
+      nextBtn.setAttribute(
+        "aria-label",
+        `Next student: ${next.studentDisplayName}`,
+      );
+      nextBtn.textContent = "Next →";
+      nextBtn.addEventListener("click", () => {
+        onNavigateToNeighbor(next.studentId, next.studentDisplayName);
+      });
+      nav.appendChild(nextBtn);
+    }
+
+    if (nav.childElementCount > 0) detail.appendChild(nav);
+  }
 
   const body = doc.createElement("div");
   body.className = "shell-student-detail-body";
@@ -3689,18 +3968,35 @@ function renderStudentDetailSurface(
     render();
   };
 
-  void callable({ classId })
-    .then((result) => {
+  // Student Progress & Assignment Membership Phase A, Slice 4: the expected-
+  // assignments accessor is resolved and fetched alongside attempts, but its
+  // failure or absence degrades gracefully to "no additional expected work
+  // known" rather than turning the whole surface into an error state -
+  // exactly the same "best-effort, never blocks the primary view" posture
+  // the certified grade-passback status read already uses on Assignment
+  // Detail. Only a failure of the attempts fetch (the pre-existing,
+  // certified data source) produces the error state.
+  const expectedCallable =
+    loadExpectedAssignments === null ? null : loadExpectedAssignments();
+  const expectedAssignmentsPromise: Promise<
+    ReadonlyArray<StudentExpectedAssignment>
+  > =
+    expectedCallable === null
+      ? Promise.resolve([])
+      : expectedCallable({ classId, studentId })
+          .then((r) => r.assignments)
+          .catch(() => []);
+
+  void Promise.all([callable({ classId }), expectedAssignmentsPromise])
+    .then(([result, expectedAssignments]) => {
       applyIfLive(() => {
         const studentAttempts = result.attempts.filter(
           (a) => a.studentId === studentId,
         );
-        if (studentAttempts.length === 0) {
-          appendStudentDetailEmpty(doc, body);
-          return;
-        }
 
-        // Group by assignmentId.
+        // Group completed attempts by assignmentId. Unchanged from the
+        // pre-Slice-4 implementation: this remains the sole source of
+        // "completed" and of Best/First/Latest/Growth/Attempts/Latest Date.
         const byAssignment = new Map<string, CompletedAttemptSummary[]>();
         for (const attempt of studentAttempts) {
           const group = byAssignment.get(attempt.assignmentId);
@@ -3711,15 +4007,32 @@ function renderStudentDetailSurface(
           }
         }
 
+        // Assignments the student is expected to complete but has not
+        // completed: present in the recipient-derived expected set, absent
+        // from `byAssignment`. Preserves every historical completed
+        // attempt even if, for any reason, its assignmentId is absent from
+        // the expected set (attempts survive roster/recipient changes per
+        // `assessmentAttemptsListForClass`'s own documented invariant).
+        const notCompleted = expectedAssignments.filter(
+          (a) => !byAssignment.has(a.assignmentId),
+        );
+
+        if (byAssignment.size === 0 && notCompleted.length === 0) {
+          appendStudentDetailEmpty(doc, body);
+          return;
+        }
+
         const registry = listAssignments();
+        const resolveTitle = (assignmentId: string): string =>
+          registry.find((a) => a.assignmentId === assignmentId)?.title ??
+          "Assignment";
+
         const list = doc.createElement("ul");
         list.className = "shell-student-detail-assignments";
         list.setAttribute("data-testid", "student-detail-assignments");
 
         for (const [assignmentId, attempts] of byAssignment) {
-          const title =
-            registry.find((a) => a.assignmentId === assignmentId)?.title ??
-            "Assignment";
+          const title = resolveTitle(assignmentId);
           const best = selectBestAttempt(attempts);
           const first = selectFirstAttempt(attempts);
           const latest = selectLatestAttempt(attempts);
@@ -3728,12 +4041,9 @@ function renderStudentDetailSurface(
           li.className = "shell-student-detail-assignment";
           li.setAttribute("data-testid", "student-detail-assignment");
           li.setAttribute("data-assignment-id", assignmentId);
+          li.setAttribute("data-assignment-status", "completed");
 
-          const titleEl = doc.createElement("div");
-          titleEl.className = "shell-student-detail-assignment-title";
-          titleEl.setAttribute("data-testid", "student-detail-assignment-title");
-          titleEl.textContent = title;
-          li.appendChild(titleEl);
+          appendAssignmentCardTitle(doc, li, title, registry, assignmentId);
 
           // Individual compact metric boxes, mirroring the established
           // whole-class `renderAssignmentSummaryCard` metric-grid pattern
@@ -3774,6 +4084,35 @@ function renderStudentDetailSurface(
           list.appendChild(li);
         }
 
+        // In Progress / Not Started cards: no metrics grid is ever
+        // rendered, so no score can ever be fabricated for either state.
+        for (const { assignmentId, hasLiveSession } of notCompleted) {
+          const title = resolveTitle(assignmentId);
+          const statusKind = hasLiveSession ? "in-progress" : "not-started";
+
+          const li = doc.createElement("li");
+          li.className = `shell-student-detail-assignment shell-student-detail-assignment-${statusKind}`;
+          li.setAttribute(
+            "data-testid",
+            `student-detail-assignment-${statusKind}`,
+          );
+          li.setAttribute("data-assignment-id", assignmentId);
+          li.setAttribute("data-assignment-status", statusKind);
+
+          appendAssignmentCardTitle(doc, li, title, registry, assignmentId);
+
+          const status = doc.createElement("p");
+          status.className = "shell-student-detail-assignment-status";
+          status.setAttribute(
+            "data-testid",
+            `student-detail-assignment-status-${assignmentId}`,
+          );
+          status.textContent = hasLiveSession ? "In progress" : "Not started";
+          li.appendChild(status);
+
+          list.appendChild(li);
+        }
+
         body.appendChild(list);
       });
     })
@@ -3791,13 +4130,47 @@ function renderStudentDetailSurface(
     });
 }
 
+// Student Progress & Assignment Membership Phase A, Slice 9: repeated
+// assignment instances for the same lesson are never merged in Phase A, so
+// every card carries a secondary line built from already-hydrated,
+// non-PII assignment metadata (status + published date) whenever the
+// registry has it, letting a teacher tell two "Engineering Design" cards
+// apart without inventing an occurrence concept. Absent metadata (e.g. no
+// registry entry) renders no secondary line at all - never a fabricated one.
+function appendAssignmentCardTitle(
+  doc: Document,
+  li: HTMLElement,
+  title: string,
+  registry: ReadonlyArray<AssignmentDetailMetadata>,
+  assignmentId: string,
+): void {
+  const titleEl = doc.createElement("div");
+  titleEl.className = "shell-student-detail-assignment-title";
+  titleEl.setAttribute("data-testid", "student-detail-assignment-title");
+  titleEl.textContent = title;
+  li.appendChild(titleEl);
+
+  const meta = registry.find((a) => a.assignmentId === assignmentId);
+  if (meta === undefined || typeof meta.publishedAt !== "number") return;
+  const dateEl = doc.createElement("p");
+  dateEl.className = "shell-student-detail-assignment-meta";
+  dateEl.setAttribute(
+    "data-testid",
+    `student-detail-assignment-meta-${assignmentId}`,
+  );
+  const statusLabel =
+    meta.status === "closed" ? "Closed" : meta.status === "draft" ? "Draft" : "Published";
+  dateEl.textContent = `${statusLabel} ${formatLocalDate(new Date(meta.publishedAt))}`;
+  li.appendChild(dateEl);
+}
+
 function appendStudentDetailEmpty(doc: Document, container: HTMLElement): void {
   const empty = doc.createElement("div");
   empty.className = "shell-student-detail-empty";
   empty.setAttribute("data-testid", "student-detail-empty");
   empty.setAttribute("role", "status");
   const msg = doc.createElement("p");
-  msg.textContent = "No completed work yet.";
+  msg.textContent = "No assignments yet.";
   empty.appendChild(msg);
   container.appendChild(empty);
 }

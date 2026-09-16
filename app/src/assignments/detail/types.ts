@@ -202,3 +202,18 @@ export type AssignmentGradePassbackSeam = {
   readonly statusesReader: AssignmentGradePassbackStatusesReader;
   readonly retry: AssignmentGradePassbackRetryCallable;
 };
+
+// Student Progress & Assignment Membership Phase A, Slice 3: the fact a
+// teacher selected a student from this Assignment Detail's roster, carrying
+// enough to both open that student's Student Detail (`classId`,
+// `studentId`, `studentDisplayName`) and to let Student Detail's Back
+// control return to the exact originating assignment
+// (`returnToAssignmentId`) rather than the plain Students list. No student
+// PII ever leaves this in-memory object - it is never serialized into a URL
+// or persisted storage.
+export type AssignmentDetailStudentSelection = {
+  readonly classId: string;
+  readonly studentId: string;
+  readonly studentDisplayName: string;
+  readonly returnToAssignmentId: string;
+};

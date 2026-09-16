@@ -80,6 +80,16 @@ const attemptsListForClassCallable: AttemptsListForClassCallable = async () => (
 
 function renderWithGradePassback(
   gradePassback: AssignmentGradePassbackSeam | undefined,
+  // Student Progress & Assignment Membership Phase A, Slice 3: optional
+  // student-navigation seam, so this file's certified 30A.2 fixtures can
+  // also prove the name-click and Retry-click controls never trigger one
+  // another.
+  onSelectStudent?: (selection: {
+    readonly classId: string;
+    readonly studentId: string;
+    readonly studentDisplayName: string;
+    readonly returnToAssignmentId: string;
+  }) => void,
 ): { mount: HTMLElement } {
   const mount = mkMount();
   renderAssignmentDetail(mount, {
@@ -89,6 +99,7 @@ function renderWithGradePassback(
     recipientListCallable,
     attemptsListForClassCallable,
     gradePassback,
+    onSelectStudent,
   });
   return { mount };
 }
@@ -273,6 +284,60 @@ describe("assignment detail - Google Classroom grade-passback retry (Sprint 30A.
     expect(
       mount.querySelector("[data-testid=assignment-detail-roster-error]"),
     ).toBeNull();
+    expect(statusEl(mount)).toBeNull();
+    expect(retryBtn(mount)).toBeNull();
+  });
+});
+
+describe("Student Progress & Assignment Membership Phase A, Slice 3: name click and grade-passback Retry stay independent", () => {
+  test("clicking the student's name does not trigger a grade-passback retry", async () => {
+    const retryCalls: unknown[] = [];
+    const seam = makeSeam({ [STUDENT_ID]: "failed" }, async (input) => {
+      retryCalls.push(input);
+      return "synced";
+    });
+    const selections: unknown[] = [];
+    const { mount } = renderWithGradePassback(seam, (selection) => {
+      selections.push(selection);
+    });
+    await settle();
+
+    const nameBtn = mount.querySelector<HTMLButtonElement>(
+      `[data-testid=assignment-detail-roster-name-${STUDENT_ID}]`,
+    );
+    expect(nameBtn).not.toBeNull();
+    nameBtn!.click();
+
+    expect(selections.length).toBe(1);
+    expect(retryCalls.length).toBe(0);
+    // The Retry control is unaffected - still present, still enabled.
+    expect(retryBtn(mount)).not.toBeNull();
+    expect(retryBtn(mount)?.disabled).toBe(false);
+  });
+
+  test("clicking Retry does not navigate to Student Detail", async () => {
+    const selections: unknown[] = [];
+    const seam = makeSeam({ [STUDENT_ID]: "failed" }, async () => "synced");
+    const { mount } = renderWithGradePassback(seam, (selection) => {
+      selections.push(selection);
+    });
+    await settle();
+
+    retryBtn(mount)!.click();
+    await settle();
+
+    expect(selections.length).toBe(0);
+  });
+
+  test("Retry still functions normally (status clears on success) with onSelectStudent wired", async () => {
+    const seam = makeSeam({ [STUDENT_ID]: "failed" }, async () => "synced");
+    const { mount } = renderWithGradePassback(seam, () => undefined);
+    await settle();
+
+    expect(statusEl(mount)).not.toBeNull();
+    retryBtn(mount)!.click();
+    await settle();
+
     expect(statusEl(mount)).toBeNull();
     expect(retryBtn(mount)).toBeNull();
   });

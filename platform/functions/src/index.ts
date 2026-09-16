@@ -9,6 +9,7 @@ export {
   assessmentAttemptsListForClass,
   assessmentSessionsAutosave,
   assessmentSessionsBegin,
+  assessmentStudentAssignmentsForClass,
 } from "./assessments";
 export {
   assignmentsArchive,

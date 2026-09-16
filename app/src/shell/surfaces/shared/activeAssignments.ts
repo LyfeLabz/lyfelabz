@@ -664,6 +664,29 @@ function renderCard(
   });
   card.appendChild(openBtn);
 
+  // Student Progress & Assignment Membership Phase A, Slice 1: the whole
+  // card is a clickable/keyboard-operable shortcut to the same destination
+  // as "Open assignment". `openBtn` is the only nested interactive control
+  // (the "Show closed" toggle lives outside the card, in the section
+  // header) so the sole guard needed is against the button's own click
+  // bubbling into this listener and firing `open` twice. The Open button
+  // and its accessible name are unchanged, so a screen-reader user keeps
+  // the exact same explicit affordance as before; the card click is a
+  // pointer/keyboard convenience layered on top, not a replacement.
+  card.tabIndex = 0;
+  card.classList.add("shell-active-assignment-card-clickable");
+  card.addEventListener("click", (ev) => {
+    if (ev.target instanceof Node && openBtn.contains(ev.target)) return;
+    open(meta.assignmentId);
+  });
+  card.addEventListener("keydown", (ev) => {
+    if (ev.target instanceof Node && openBtn.contains(ev.target)) return;
+    if (ev.key === "Enter" || ev.key === " " || ev.key === "Spacebar") {
+      ev.preventDefault();
+      open(meta.assignmentId);
+    }
+  });
+
   return card;
 }
 

@@ -11,6 +11,7 @@ import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
 import type { LoadClassRosterAccessor } from "../../classes/classRoster";
 import type { AttemptsListForClassCallable } from "../../assignments/detail/attempts-wire";
+import type { AssessmentStudentAssignmentsForClassCallable } from "../../assignments/detail/studentAssignments-wire";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
   AssignmentsCallables,
@@ -25,6 +26,7 @@ import type { WorkspaceSurfaceKey } from "../navigation";
 import {
   renderCurriculumSurface,
   type CurriculumAssignmentDetailSeam,
+  type AssignmentDetailStudentSelection,
 } from "./curriculum";
 import {
   renderClassesSurface,
@@ -139,6 +141,13 @@ export type WorkspaceDeps = {
   // router assembly before Functions init. Null in harnesses that do not
   // exercise Student Detail.
   readonly loadAttempts?: (() => AttemptsListForClassCallable | null) | null;
+  // Student Progress & Assignment Membership Phase A, Slice 4: lazy
+  // accessor for assessmentStudentAssignmentsForClass. Forwarded into the
+  // Classes surface so Student Detail can render In Progress / Not Started
+  // cards. Null in harnesses that do not exercise the new callable.
+  readonly loadExpectedAssignments?:
+    | (() => AssessmentStudentAssignmentsForClassCallable | null)
+    | null;
   // Slice 7: Student Services accommodation seams. Optional; absent until
   // G19 production gate is satisfied (Slices 2-6 production-verified).
   readonly listStudents?: AccommodationsListStudentsCallable | null;
@@ -155,6 +164,18 @@ export type WorkspaceDeps = {
   // just before opening Detail. Absent in harnesses that do not exercise it.
   readonly getClassesReturn?: (() => ClassWorkspaceReturn | null) | null;
   readonly setClassesReturn?: ((loc: ClassWorkspaceReturn | null) => void) | null;
+  // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned
+  // student-selection intent seam (see shell.ts `classesStudentIntent`).
+  // The Classes surface reads it once on mount to open Student Detail
+  // pre-selected with an assignment-origin `studentDetailOrigin` when a
+  // teacher arrived via an Assignment Detail roster-name click. Absent in
+  // harnesses that do not exercise that path.
+  readonly getClassesStudentIntent?:
+    | (() => AssignmentDetailStudentSelection | null)
+    | null;
+  readonly setClassesStudentIntent?:
+    | ((intent: AssignmentDetailStudentSelection | null) => void)
+    | null;
   // Sprint 28.6F: the single class-management opener. Settings' "Classes &
   // Google Classroom" section calls it to open the shared Import / Create
   // workflow that lives on the Classes surface (one implementation, two
@@ -223,12 +244,15 @@ export const WORKSPACE_SURFACES: Readonly<
         refreshRoster: deps.refreshRoster ?? null,
         loadRoster: deps.loadRoster ?? null,
         loadAttempts: deps.loadAttempts ?? null,
+        loadExpectedAssignments: deps.loadExpectedAssignments ?? null,
         // Sprint 28.6C: class-scoped Assignments section reuse.
         assignmentDetail: deps.assignmentDetail ?? null,
         assignmentSummary: deps.assignmentSummary ?? null,
         navigateToSurface: deps.navigateToSurface ?? null,
         getClassesReturn: deps.getClassesReturn ?? null,
         setClassesReturn: deps.setClassesReturn ?? null,
+        getClassesStudentIntent: deps.getClassesStudentIntent ?? null,
+        setClassesStudentIntent: deps.setClassesStudentIntent ?? null,
         // Sprint 28.6F: class-management intent one-shot (Settings entry point).
         getClassManagementIntent: deps.getClassManagementIntent ?? null,
         setClassManagementIntent: deps.setClassManagementIntent ?? null,

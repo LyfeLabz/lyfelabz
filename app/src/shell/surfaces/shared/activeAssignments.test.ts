@@ -127,6 +127,65 @@ describe("renderActiveAssignmentsSection", () => {
     expect(opened).toEqual(["p1"]);
   });
 
+  test("Student Progress Phase A Slice 1: clicking the card body opens the correct assignment", () => {
+    const mount = mkMount();
+    const opened: string[] = [];
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: (id) => {
+        opened.push(id);
+      },
+    });
+    const card = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignment-card-p1]",
+    );
+    // Click the title, not the Open button, to exercise the card-level
+    // click rather than the pre-existing button click.
+    mount
+      .querySelector<HTMLElement>("[data-testid=active-assignment-title-p1]")
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(opened).toEqual(["p1"]);
+    expect(card?.tabIndex).toBe(0);
+  });
+
+  test("Student Progress Phase A Slice 1: clicking Open assignment fires exactly once, not twice", () => {
+    const mount = mkMount();
+    const opened: string[] = [];
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: (id) => {
+        opened.push(id);
+      },
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=active-assignment-open-p1]",
+      )
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(opened).toEqual(["p1"]);
+  });
+
+  test("Student Progress Phase A Slice 1: Enter and Space on the focused card open the assignment", () => {
+    const mount = mkMount();
+    const opened: string[] = [];
+    renderActiveAssignmentsSection(mount, {
+      listRegistry: () => [meta({ assignmentId: "p1" })],
+      open: (id) => {
+        opened.push(id);
+      },
+    });
+    const card = mount.querySelector<HTMLElement>(
+      "[data-testid=active-assignment-card-p1]",
+    );
+    card?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    );
+    card?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+    );
+    expect(opened).toEqual(["p1", "p1"]);
+  });
+
   test("card carries region a11y attributes", () => {
     const mount = mkMount();
     renderActiveAssignmentsSection(mount, {

@@ -11,6 +11,7 @@ import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
 import type { LoadClassRosterAccessor } from "../../classes/classRoster";
 import type { AttemptsListForClassCallable } from "../../assignments/detail/attempts-wire";
+import type { AssessmentStudentAssignmentsForClassCallable } from "../../assignments/detail/studentAssignments-wire";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
   AccommodationsListStudentsCallable,
@@ -225,6 +226,12 @@ export type SurfaceDeps = {
   // resolve the accessor here; pass it through so the Students surface
   // resolves it lazily after Functions init.
   readonly loadAttempts?: () => AttemptsListForClassCallable | null;
+  // Student Progress & Assignment Membership Phase A, Slice 4: getter for
+  // the assessmentStudentAssignmentsForClass accessor. Same lazy-pass-
+  // through semantics as loadAttempts.
+  readonly loadExpectedAssignments?: () =>
+    | AssessmentStudentAssignmentsForClassCallable
+    | null;
   // Slice 7: Student Services accommodation callable getters (G19-gated).
   readonly listStudents?: () => AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: () => AccommodationsGetCallable | null;
@@ -1047,6 +1054,11 @@ export const makeActiveTeacherSurface =
     // surface resolves it lazily after Functions init.
     const loadAttempts: (() => AttemptsListForClassCallable | null) | null =
       deps.loadAttempts ?? null;
+    // Student Progress & Assignment Membership Phase A, Slice 4: same
+    // lazy-accessor pass-through as loadAttempts.
+    const loadExpectedAssignments:
+      | (() => AssessmentStudentAssignmentsForClassCallable | null)
+      | null = deps.loadExpectedAssignments ?? null;
     const listStudents =
       deps.listStudents !== undefined ? deps.listStudents() : null;
     const getAccommodation =
@@ -1073,6 +1085,7 @@ export const makeActiveTeacherSurface =
       refreshRoster,
       loadRoster,
       loadAttempts,
+      loadExpectedAssignments,
       listStudents,
       getAccommodation,
       setAccommodation,

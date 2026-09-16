@@ -121,6 +121,7 @@ import {
 import { invalidateCurriculumClassCache } from "./shell/surfaces/curriculum";
 import type {
   TeacherShellOutletController,
+  TeacherShellStudentSelectionController,
   AssignmentDetailOpenOptions,
 } from "./shell/surfaces/curriculum";
 import {
@@ -129,6 +130,10 @@ import {
   type AttemptGetForTeacherCallable,
   type AttemptsListForClassCallable,
 } from "./assignments/detail/attempts-wire";
+import {
+  createAssessmentStudentAssignmentsForClassCallable,
+  type AssessmentStudentAssignmentsForClassCallable,
+} from "./assignments/detail/studentAssignments-wire";
 import type {
   AssignmentsCloseCallable,
   AssignmentsPublishCallable,
@@ -279,6 +284,11 @@ async function run(): Promise<void> {
   // attempts list consumed by the Assignment Detail roster grouping.
   let assignmentRecipientList: AssignmentRecipientListCallable | null = null;
   let attemptsListForClass: AttemptsListForClassCallable | null = null;
+  // Student Progress & Assignment Membership Phase A, Slice 4: certified
+  // per-student expected-assignment enumeration consumed by Student Detail.
+  let studentAssignmentsForClass:
+    | AssessmentStudentAssignmentsForClassCallable
+    | null = null;
   // Sprint 27 Phase 5: late-recipient affordance seams consumed by the
   // Assignment Detail "Students not yet assigned" section. Rebound per
   // active-teacher session so cross-session state cannot leak; null on any
@@ -363,6 +373,15 @@ async function run(): Promise<void> {
   // the opener falls back to the pre-28.5D `#app-root` mount (defensive; in
   // production Detail is only reachable from within a mounted shell).
   let teacherShellOutletController: TeacherShellOutletController | null = null;
+  // Student Progress & Assignment Membership Phase A, Slice 3: mirrors
+  // `teacherShellOutletController` exactly - the persistent Teacher
+  // Workspace shell registers a bounded student-selection controller here
+  // at mount so a roster-name click inside Assignment Detail can hand off
+  // to the shell (record the intent, navigate to Classes). Null before the
+  // shell mounts and on any non-teacher session; a click is simply inert
+  // in that harness window.
+  let teacherShellStudentSelectionController: TeacherShellStudentSelectionController | null =
+    null;
   // Sprint 16 Slice 4: session-scoped Curriculum scroll guard. The
   // guard captures the current Curriculum scroll offset when the
   // teacher opens Assignment Detail and restores it (clamped to the
@@ -534,6 +553,15 @@ async function run(): Promise<void> {
               },
             }
           : undefined,
+      // Student Progress & Assignment Membership Phase A, Slice 3: hand a
+      // roster-name click off to whatever student-selection controller the
+      // shell has registered (mirrors how `setOutletController` bridges
+      // the other direction). A harness/non-teacher window where no
+      // controller is registered yet makes this a safe no-op, matching
+      // `teacherShellOutletController`'s own guard.
+      onSelectStudent: (selection) => {
+        teacherShellStudentSelectionController?.selectStudent(selection);
+      },
       onStatusChange: (metadata) => {
         assignmentDetailRegistry.register(metadata);
         // Sprint 16 Slice 1: when Curriculum owns the mount, refresh the
@@ -592,6 +620,13 @@ async function run(): Promise<void> {
     setOutletController: (controller: TeacherShellOutletController | null) => {
       teacherShellOutletController = controller;
     },
+    // Student Progress & Assignment Membership Phase A, Slice 3: mirrors
+    // `setOutletController` exactly for the student-selection controller.
+    setStudentSelectionController: (
+      controller: TeacherShellStudentSelectionController | null,
+    ) => {
+      teacherShellStudentSelectionController = controller;
+    },
   });
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
@@ -648,6 +683,8 @@ async function run(): Promise<void> {
         createAssignmentRecipientCandidatesListCallable(functions);
       assignmentRecipientAdd = createAssignmentsRecipientAddCallable(functions);
       attemptsListForClass = createAttemptsListForClassCallable(functions);
+      studentAssignmentsForClass =
+        createAssessmentStudentAssignmentsForClassCallable(functions);
       attemptGetForTeacher = createAttemptGetForTeacherCallable(functions);
       createClass = createFirebaseCreateClass(functions);
       lmsCreateClass = createFirebaseLmsCreateClass(functions);
@@ -724,6 +761,7 @@ async function run(): Promise<void> {
       assignmentRecipientCandidatesList = null;
       assignmentRecipientAdd = null;
       attemptsListForClass = null;
+      studentAssignmentsForClass = null;
       attemptGetForTeacher = null;
       createClass = null;
       lmsCreateClass = null;
@@ -746,6 +784,7 @@ async function run(): Promise<void> {
       assignmentRecipientCandidatesList = null;
       assignmentRecipientAdd = null;
       attemptsListForClass = null;
+      studentAssignmentsForClass = null;
       attemptGetForTeacher = null;
       createClass = null;
       lmsCreateClass = null;
@@ -765,6 +804,7 @@ async function run(): Promise<void> {
     // its controller when it mounts later in this same dispatch; a non-teacher
     // session leaves it null so no stale, detached outlet can be reused.
     teacherShellOutletController = null;
+    teacherShellStudentSelectionController = null;
     // Sprint 16 Slice 4: any bootstrap transition (sign-out, teacher
     // swap, or a full auth-driven `rerun`) invalidates the pending
     // Curriculum scroll snapshot so no offset can restore against an
@@ -1049,6 +1089,7 @@ async function run(): Promise<void> {
     refreshRoster: () => integrations?.callables.refreshRoster ?? null,
     loadRoster: () => loadClassRoster,
     loadAttempts: () => attemptsListForClass,
+    loadExpectedAssignments: () => studentAssignmentsForClass,
     // Slice 7 / G19: dark until Slices 2-6 are production-verified.
     listStudents: () => (G19_GATE_OPEN ? accommodationsListStudents : null),
     getAccommodation: () => (G19_GATE_OPEN ? accommodationsGet : null),

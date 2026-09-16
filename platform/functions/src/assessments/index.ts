@@ -67,3 +67,9 @@ export {
   type AssessmentDeploymentItemInput,
   type AssessmentDeploymentResult,
 } from "./assessment-deployment";
+export {
+  assessmentStudentAssignmentsForClass,
+  type AssessmentStudentAssignmentsForClassRequest,
+  type AssessmentStudentAssignmentsForClassResponse,
+  type AssessmentStudentExpectedAssignment,
+} from "./assessment-student-assignments-for-class";

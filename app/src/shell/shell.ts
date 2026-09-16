@@ -11,6 +11,7 @@ import type { ActivateClass } from "../classes/activateClass";
 import type { SyncRoster } from "../classes/syncRoster";
 import type { LoadClassRosterAccessor } from "../classes/classRoster";
 import type { AttemptsListForClassCallable } from "../assignments/detail/attempts-wire";
+import type { AssessmentStudentAssignmentsForClassCallable } from "../assignments/detail/studentAssignments-wire";
 import type { ImportFromClassroomDeps } from "../classes/importFromClassroom";
 import type {
   AssignmentsCallables,
@@ -25,7 +26,10 @@ import type {
   ClassManagementIntent,
   ClassWorkspaceReturn,
 } from "./surfaces/classes";
-import type { CurriculumAssignmentDetailSeam } from "./surfaces/curriculum";
+import type {
+  CurriculumAssignmentDetailSeam,
+  AssignmentDetailStudentSelection,
+} from "./surfaces/curriculum";
 import type {
   AssignmentSummaryCallable,
   LessonSummaryCallable,
@@ -111,6 +115,11 @@ export type ShellDeps = {
   readonly loadRoster?: LoadClassRosterAccessor | null;
   // Student Detail V1: lazy accessor for assessmentAttemptsListForClass.
   readonly loadAttempts?: (() => AttemptsListForClassCallable | null) | null;
+  // Student Progress & Assignment Membership Phase A, Slice 4: lazy
+  // accessor for assessmentStudentAssignmentsForClass.
+  readonly loadExpectedAssignments?:
+    | (() => AssessmentStudentAssignmentsForClassCallable | null)
+    | null;
   // Slice 7: Student Services accommodation seams (G19-gated; optional).
   readonly listStudents?: AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: AccommodationsGetCallable | null;
@@ -166,6 +175,18 @@ export function mountTeacherShell(
   // the shell instance means it cannot leak across sessions or tests.
   let classManagementIntent: ClassManagementIntent | null = null;
 
+  // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned,
+  // ephemeral student-selection intent. Assignment Detail has no shared
+  // closure with Classes (it renders into this shell's outlet directly, see
+  // `setOutletController` below), so a roster-name click there hands off
+  // through this one-shot: the entry-point opener records the selection
+  // here and navigates to Classes, and the next Classes mount consumes and
+  // clears it, seeding Student Detail pre-selected with an
+  // assignment-origin `studentDetailOrigin` so Back returns to that exact
+  // assignment. Mirrors `classesReturn`'s one-shot shape exactly. Living on
+  // the shell instance means it cannot leak across sessions or tests.
+  let classesStudentIntent: AssignmentDetailStudentSelection | null = null;
+
   const workspaceDeps = {
     listClasses: deps.listClasses,
     onLaunchPresentMode: deps.onLaunchPresentMode,
@@ -186,6 +207,7 @@ export function mountTeacherShell(
     refreshRoster: deps.refreshRoster ?? null,
     loadRoster: deps.loadRoster ?? null,
     loadAttempts: deps.loadAttempts ?? null,
+    loadExpectedAssignments: deps.loadExpectedAssignments ?? null,
     listStudents: deps.listStudents ?? null,
     getAccommodation: deps.getAccommodation ?? null,
     setAccommodation: deps.setAccommodation ?? null,
@@ -201,6 +223,15 @@ export function mountTeacherShell(
     getClassesReturn: (): ClassWorkspaceReturn | null => classesReturn,
     setClassesReturn: (loc: ClassWorkspaceReturn | null): void => {
       classesReturn = loc;
+    },
+    // Student Progress & Assignment Membership Phase A, Slice 3:
+    // student-selection intent one-shot (see `classesStudentIntent`).
+    getClassesStudentIntent: (): AssignmentDetailStudentSelection | null =>
+      classesStudentIntent,
+    setClassesStudentIntent: (
+      intent: AssignmentDetailStudentSelection | null,
+    ): void => {
+      classesStudentIntent = intent;
     },
     // Sprint 28.6F: the single class-management opener. Settings calls it to
     // open the shared Import / Create workflow; it records the intent and
@@ -273,6 +304,20 @@ export function mountTeacherShell(
       showingDetail = true;
       outletHost.textContent = "";
       render(outletHost);
+    },
+  });
+
+  // Student Progress & Assignment Membership Phase A, Slice 3: register the
+  // student-selection controller the entry-point Assignment Detail opener
+  // hands a roster-name click off to. Recording the intent then navigating
+  // to Classes leaves Assignment Detail cleanly (the outlet is cleared and
+  // Classes mounts fresh, exactly like any other `navigateToSurface` call)
+  // and the fresh Classes mount consumes the intent to open Student Detail
+  // pre-selected. Guarded so a shell built without the seam is unaffected.
+  deps.assignmentDetail?.setStudentSelectionController?.({
+    selectStudent: (selection) => {
+      classesStudentIntent = selection;
+      navigateTo("classes");
     },
   });
 }

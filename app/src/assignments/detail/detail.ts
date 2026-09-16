@@ -6,6 +6,7 @@ import type {
 import type {
   AssignmentDetailMetadata,
   AssignmentDetailMetadataReader,
+  AssignmentDetailStudentSelection,
   AssignmentGradePassbackRetryResult,
   AssignmentGradePassbackSeam,
   AssignmentGradePassbackStatus,
@@ -168,6 +169,19 @@ export type AssignmentDetailDeps = {
   // an empty map), so the pre-Sprint-30A.2 roster is unchanged when the
   // seam is not supplied.
   readonly gradePassback?: AssignmentGradePassbackSeam;
+  // Student Progress & Assignment Membership Phase A, Slice 3: optional
+  // student-navigation seam. When supplied, every roster row's student
+  // name (Submitted, In Progress, and Not Started alike) becomes a
+  // clickable control that invokes this with enough to open that
+  // student's Student Detail and let its Back control return to this
+  // exact assignment. Independent of `gradePassback`: the name control and
+  // the grade-passback status/Retry control are separate sibling elements
+  // in each row, so one can never trigger the other. Absent-or-null
+  // renders names as plain, non-interactive text (the pre-Slice-3
+  // behavior).
+  readonly onSelectStudent?: (
+    selection: AssignmentDetailStudentSelection,
+  ) => void;
 };
 
 const STATUS_LABEL: Readonly<Record<AssignmentStatus, string>> = Object.freeze({
@@ -1145,6 +1159,21 @@ function renderReady(
     rosterHost.className = "shell-assignment-detail-roster";
     rosterHost.setAttribute("data-testid", "assignment-detail-roster-host");
     mount.appendChild(rosterHost);
+    // Student Progress & Assignment Membership Phase A, Slice 3: bind the
+    // student-navigation callback to this already-loaded assignment's
+    // `classId`/`assignmentId` so the roster panel and its rows only need
+    // to supply the clicked student's own identity.
+    const onSelectStudent =
+      deps.onSelectStudent === undefined
+        ? undefined
+        : (studentId: string, studentDisplayName: string): void => {
+            deps.onSelectStudent!({
+              classId: metadata.classId ?? "",
+              studentId,
+              studentDisplayName,
+              returnToAssignmentId: metadata.assignmentId,
+            });
+          };
     void renderRosterPanel(
       rosterHost,
       metadata,
@@ -1152,6 +1181,7 @@ function renderReady(
       shared.attemptsListForClassCallable,
       shared.summaryCallable,
       deps.gradePassback,
+      onSelectStudent,
     );
   }
 
@@ -1220,6 +1250,9 @@ async function renderRosterPanel(
   attemptsCallable: AttemptsListForClassCallable,
   summaryCallable: AssignmentSummaryCallable,
   gradePassback: AssignmentGradePassbackSeam | undefined,
+  onSelectStudent:
+    | ((studentId: string, studentDisplayName: string) => void)
+    | undefined,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -1344,6 +1377,7 @@ async function renderRosterPanel(
           retry: (studentId) =>
             gradePassback.retry({ assignmentId: metadata.assignmentId, studentId }),
         },
+    onSelectStudent,
   );
   appendRosterGroup(
     doc,
@@ -1353,6 +1387,8 @@ async function renderRosterPanel(
     summary.inProgressStudents,
     grouping.inProgress,
     false,
+    undefined,
+    onSelectStudent,
   );
   appendRosterGroup(
     doc,
@@ -1362,6 +1398,8 @@ async function renderRosterPanel(
     summary.notStartedStudents,
     grouping.notStarted,
     false,
+    undefined,
+    onSelectStudent,
   );
 
   const reconciliation = reconcileCounts({
@@ -1680,6 +1718,7 @@ function appendRosterGroup(
       studentId: string,
     ) => Promise<AssignmentGradePassbackRetryResult>;
   },
+  onSelectStudent?: (studentId: string, studentDisplayName: string) => void,
 ): void {
   const group = doc.createElement("div");
   group.className = `shell-assignment-detail-roster-group shell-assignment-detail-roster-${key}`;
@@ -1720,9 +1759,32 @@ function appendRosterGroup(
         "data-testid",
         `assignment-detail-roster-row-${row.studentId}`,
       );
-      const name = doc.createElement("span");
+      // Student Progress & Assignment Membership Phase A, Slice 3: the
+      // name is a clickable control (a plain button, styled as text) when
+      // a navigation seam is wired; otherwise it stays the pre-Slice-3
+      // static span. It is a sibling of the percentage span and the
+      // grade-passback status/Retry control below - never their ancestor
+      // or descendant - so a click on one can never trigger the other.
+      const name = doc.createElement(
+        onSelectStudent === undefined ? "span" : "button",
+      );
       name.className = "shell-assignment-detail-roster-name";
       name.textContent = row.studentDisplayName;
+      if (onSelectStudent !== undefined) {
+        const nameBtn = name as HTMLButtonElement;
+        nameBtn.type = "button";
+        nameBtn.setAttribute(
+          "data-testid",
+          `assignment-detail-roster-name-${row.studentId}`,
+        );
+        nameBtn.setAttribute(
+          "aria-label",
+          `Open student detail for ${row.studentDisplayName}`,
+        );
+        nameBtn.addEventListener("click", () => {
+          onSelectStudent(row.studentId, row.studentDisplayName);
+        });
+      }
       li.appendChild(name);
       if (
         showPercentage &&

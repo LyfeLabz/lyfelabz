@@ -3737,3 +3737,161 @@ describe("renderAssignmentDetail - Sprint 16 Slice 6 accessibility", () => {
     expect(document.activeElement).not.toBe(document.body);
   });
 });
+
+describe("renderAssignmentDetail - Student Progress & Assignment Membership Phase A, Slice 3 (student navigation)", () => {
+  const meta = (): AssignmentDetailMetadata =>
+    freezeMetadata({ classId: "class-1", status: "published" });
+
+  test("Submitted student's name is clickable and invokes onSelectStudent with the correct payload", async () => {
+    const mount = mkMount();
+    const selections: unknown[] = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta()),
+      summaryCallable: resolvingSummary(
+        freezeSummary({ completedStudents: 1, inProgressStudents: 0, notStartedStudents: 0, totalStudents: 1 }),
+      ),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([
+        mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 90 }),
+      ]).callable,
+      onSelectStudent: (selection) => {
+        selections.push(selection);
+      },
+    });
+    await flush();
+    await flush();
+    await flush();
+
+    const nameBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-roster-name-stu-1]",
+    );
+    expect(nameBtn).not.toBeNull();
+    expect(nameBtn!.tagName).toBe("BUTTON");
+    nameBtn!.click();
+
+    expect(selections).toEqual([
+      {
+        classId: "class-1",
+        studentId: "stu-1",
+        studentDisplayName: "Alice",
+        returnToAssignmentId: "assign-1",
+      },
+    ]);
+  });
+
+  test("In Progress student's name is clickable and invokes onSelectStudent with the correct payload", async () => {
+    const mount = mkMount();
+    const selections: unknown[] = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta()),
+      summaryCallable: resolvingSummary(
+        freezeSummary({ completedStudents: 0, inProgressStudents: 1, notStartedStudents: 0, totalStudents: 1 }),
+      ),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-2", studentDisplayName: "Bob" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+      onSelectStudent: (selection) => {
+        selections.push(selection);
+      },
+    });
+    await flush();
+    await flush();
+    await flush();
+
+    const nameBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-roster-name-stu-2]",
+    );
+    expect(nameBtn).not.toBeNull();
+    expect(
+      mount
+        .querySelector("[data-testid=assignment-detail-roster-group-in-progress]")
+        ?.contains(nameBtn),
+    ).toBe(true);
+    nameBtn!.click();
+
+    expect(selections).toEqual([
+      {
+        classId: "class-1",
+        studentId: "stu-2",
+        studentDisplayName: "Bob",
+        returnToAssignmentId: "assign-1",
+      },
+    ]);
+  });
+
+  test("Not Started student's name is clickable and invokes onSelectStudent with the correct payload", async () => {
+    const mount = mkMount();
+    const selections: unknown[] = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta()),
+      summaryCallable: resolvingSummary(
+        freezeSummary({ completedStudents: 0, inProgressStudents: 0, notStartedStudents: 1, totalStudents: 1 }),
+      ),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-3", studentDisplayName: "Cara" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+      onSelectStudent: (selection) => {
+        selections.push(selection);
+      },
+    });
+    await flush();
+    await flush();
+    await flush();
+
+    const nameBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-roster-name-stu-3]",
+    );
+    expect(nameBtn).not.toBeNull();
+    expect(
+      mount
+        .querySelector("[data-testid=assignment-detail-roster-group-not-started]")
+        ?.contains(nameBtn),
+    ).toBe(true);
+    nameBtn!.click();
+
+    expect(selections).toEqual([
+      {
+        classId: "class-1",
+        studentId: "stu-3",
+        studentDisplayName: "Cara",
+        returnToAssignmentId: "assign-1",
+      },
+    ]);
+  });
+
+  test("when onSelectStudent is not supplied, names render as static text with no click behavior (back-compat)", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta()),
+      summaryCallable: resolvingSummary(
+        freezeSummary({ completedStudents: 1, inProgressStudents: 0, notStartedStudents: 0, totalStudents: 1 }),
+      ),
+      recipientListCallable: spyingRecipients([
+        { studentId: "stu-1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([
+        mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 90 }),
+      ]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-name-stu-1]"),
+    ).toBeNull();
+    const group = mount.querySelector(
+      "[data-testid=assignment-detail-roster-group-submitted]",
+    );
+    expect(group?.textContent).toContain("Alice");
+    expect(group?.querySelector("button.shell-assignment-detail-roster-name")).toBeNull();
+  });
+});

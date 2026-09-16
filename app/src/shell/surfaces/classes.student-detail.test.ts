@@ -15,6 +15,7 @@ import type {
   AttemptsListForClassCallable,
   CompletedAttemptSummary,
 } from "../../assignments/detail/attempts-wire";
+import type { AssessmentStudentAssignmentsForClassCallable } from "../../assignments/detail/studentAssignments-wire";
 import { renderClassesSurface } from "./classes";
 
 const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
@@ -44,6 +45,7 @@ const activeClass: ClassSummary = Object.freeze({
 
 const STUDENT_A = { studentId: "s-alice", studentDisplayName: "Alice Adams" };
 const STUDENT_B = { studentId: "s-bob", studentDisplayName: "Bob Baker" };
+const STUDENT_C = { studentId: "s-carla", studentDisplayName: "Carla Chen" };
 
 const ASSIGNMENT_ID = "assign-001";
 
@@ -626,4 +628,485 @@ test("a loadAttempts accessor assigned AFTER assembly still reaches Student Deta
   ).not.toBeNull();
   expect(mount.querySelector("[data-testid=student-detail-loading]")).toBeNull();
   expect(mount.querySelector("[data-testid=student-detail-empty]")).toBeNull();
+});
+
+// ---------------------------------------------------------------------------
+// Student Progress & Assignment Membership Phase A, Slice 4: complete
+// Student Detail progress (Completed / In Progress / Not Started / true
+// empty), sourced from the new `assessmentStudentAssignmentsForClass`
+// callable layered on top of the unchanged attempts-derived Completed view.
+// ---------------------------------------------------------------------------
+
+const ASSIGN_IN_PROGRESS = "assign-in-progress";
+const ASSIGN_NOT_STARTED = "assign-not-started";
+
+function expectedAssignmentsFixture(
+  assignments: ReadonlyArray<{ assignmentId: string; hasLiveSession: boolean }>,
+): AssessmentStudentAssignmentsForClassCallable {
+  return async (input) => ({
+    classId: input.classId,
+    studentId: input.studentId,
+    assignments,
+  });
+}
+
+const noAttempts: AttemptsListForClassCallable = async (input) => ({
+  classId: input.classId,
+  attempts: [],
+});
+
+test("Slice 4: a genuinely unassigned student sees the true empty state, 'No assignments yet.'", async () => {
+  const mount = mkMount();
+  await openStudentsTab(
+    mount,
+    baseDeps(() => noAttempts, {
+      loadExpectedAssignments: () => expectedAssignmentsFixture([]),
+    }),
+  );
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  const empty = mount.querySelector<HTMLElement>(
+    "[data-testid=student-detail-empty]",
+  );
+  expect(empty).not.toBeNull();
+  expect(empty!.textContent).toBe("No assignments yet.");
+});
+
+test("Slice 4: an assignment with a live session and no attempt renders as In Progress with no fabricated score", async () => {
+  const mount = mkMount();
+  await openStudentsTab(
+    mount,
+    baseDeps(() => noAttempts, {
+      loadExpectedAssignments: () =>
+        expectedAssignmentsFixture([
+          { assignmentId: ASSIGN_IN_PROGRESS, hasLiveSession: true },
+        ]),
+    }),
+  );
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  const card = mount.querySelector<HTMLElement>(
+    "[data-testid=student-detail-assignment-in-progress]",
+  );
+  expect(card).not.toBeNull();
+  expect(card!.getAttribute("data-assignment-id")).toBe(ASSIGN_IN_PROGRESS);
+  expect(card!.getAttribute("data-assignment-status")).toBe("in-progress");
+  expect(card!.className).toContain(
+    "shell-student-detail-assignment-in-progress",
+  );
+  const status = mount.querySelector<HTMLElement>(
+    `[data-testid=student-detail-assignment-status-${ASSIGN_IN_PROGRESS}]`,
+  );
+  expect(status?.textContent).toBe("In progress");
+  // No metrics grid anywhere inside this card - no score can be fabricated.
+  expect(card!.querySelector("[data-testid=student-detail-metrics]")).toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail-empty]")).toBeNull();
+});
+
+test("Slice 4: an assignment with no attempt and no live session renders as Not Started with no fabricated score", async () => {
+  const mount = mkMount();
+  await openStudentsTab(
+    mount,
+    baseDeps(() => noAttempts, {
+      loadExpectedAssignments: () =>
+        expectedAssignmentsFixture([
+          { assignmentId: ASSIGN_NOT_STARTED, hasLiveSession: false },
+        ]),
+    }),
+  );
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  const card = mount.querySelector<HTMLElement>(
+    "[data-testid=student-detail-assignment-not-started]",
+  );
+  expect(card).not.toBeNull();
+  expect(card!.getAttribute("data-assignment-id")).toBe(ASSIGN_NOT_STARTED);
+  expect(card!.getAttribute("data-assignment-status")).toBe("not-started");
+  expect(card!.className).toContain(
+    "shell-student-detail-assignment-not-started",
+  );
+  const status = mount.querySelector<HTMLElement>(
+    `[data-testid=student-detail-assignment-status-${ASSIGN_NOT_STARTED}]`,
+  );
+  expect(status?.textContent).toBe("Not started");
+  expect(card!.querySelector("[data-testid=student-detail-metrics]")).toBeNull();
+});
+
+test("Slice 4: a completed assignment is never also shown as Not Started, even when both callables report it", async () => {
+  const mount = mkMount();
+  const callable: AttemptsListForClassCallable = async (input) => ({
+    classId: input.classId,
+    attempts: [makeAttempt({ assignmentId: ASSIGNMENT_ID })],
+  });
+  await openStudentsTab(
+    mount,
+    baseDeps(() => callable, {
+      loadExpectedAssignments: () =>
+        expectedAssignmentsFixture([
+          { assignmentId: ASSIGNMENT_ID, hasLiveSession: false },
+        ]),
+    }),
+  );
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  const completedCards = mount.querySelectorAll(
+    "[data-testid=student-detail-assignment]",
+  );
+  expect(completedCards.length).toBe(1);
+  expect(completedCards[0]!.getAttribute("data-assignment-status")).toBe(
+    "completed",
+  );
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-not-started]"),
+  ).toBeNull();
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-in-progress]"),
+  ).toBeNull();
+});
+
+test("Slice 4: Completed, In Progress, and Not Started can all render together as distinct cards", async () => {
+  const mount = mkMount();
+  const completedId = "assign-completed";
+  const callable: AttemptsListForClassCallable = async (input) => ({
+    classId: input.classId,
+    attempts: [makeAttempt({ assignmentId: completedId })],
+  });
+  await openStudentsTab(
+    mount,
+    baseDeps(() => callable, {
+      loadExpectedAssignments: () =>
+        expectedAssignmentsFixture([
+          { assignmentId: ASSIGN_IN_PROGRESS, hasLiveSession: true },
+          { assignmentId: ASSIGN_NOT_STARTED, hasLiveSession: false },
+        ]),
+    }),
+  );
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  expect(
+    mount.querySelectorAll("[data-testid=student-detail-assignment]").length,
+  ).toBe(1);
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-in-progress]"),
+  ).not.toBeNull();
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-not-started]"),
+  ).not.toBeNull();
+});
+
+test("Slice 4: two distinct assignment instances of the same lesson render as two separate, distinguishable cards", async () => {
+  const mount = mkMount();
+  const OLD_ID = "engineering-design-old";
+  const NEW_ID = "engineering-design-new";
+  const callable: AttemptsListForClassCallable = async (input) => ({
+    classId: input.classId,
+    attempts: [makeAttempt({ assignmentId: OLD_ID })],
+  });
+  const deps = baseDeps(() => callable, {
+    loadExpectedAssignments: () =>
+      expectedAssignmentsFixture([{ assignmentId: NEW_ID, hasLiveSession: false }]),
+    assignmentDetail: {
+      list: () => [
+        {
+          assignmentId: OLD_ID,
+          title: "Engineering Design",
+          status: "closed" as const,
+          className: "Science 6",
+          publishedAt: new Date(2026, 8, 3).getTime(),
+        },
+        {
+          assignmentId: NEW_ID,
+          title: "Engineering Design",
+          status: "published" as const,
+          className: "Science 6",
+          publishedAt: new Date(2026, 8, 16).getTime(),
+        },
+      ],
+      open: jest.fn(),
+      register: jest.fn(),
+      setOutletController: jest.fn(),
+    },
+  });
+
+  await openStudentsTab(mount, deps);
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  const oldCard = mount.querySelector<HTMLElement>(
+    `[data-assignment-id="${OLD_ID}"]`,
+  );
+  const newCard = mount.querySelector<HTMLElement>(
+    `[data-assignment-id="${NEW_ID}"]`,
+  );
+  expect(oldCard).not.toBeNull();
+  expect(newCard).not.toBeNull();
+  const oldMeta = mount.querySelector(
+    `[data-testid=student-detail-assignment-meta-${OLD_ID}]`,
+  );
+  const newMeta = mount.querySelector(
+    `[data-testid=student-detail-assignment-meta-${NEW_ID}]`,
+  );
+  expect(oldMeta?.textContent).toBe("Closed Sep 3, 2026");
+  expect(newMeta?.textContent).toBe("Published Sep 16, 2026");
+  expect(oldMeta?.textContent).not.toBe(newMeta?.textContent);
+});
+
+test("Slice 4: a failing expected-assignments callable degrades gracefully rather than showing an error", async () => {
+  const mount = mkMount();
+  const callable: AttemptsListForClassCallable = async (input) => ({
+    classId: input.classId,
+    attempts: [makeAttempt({ assignmentId: ASSIGNMENT_ID })],
+  });
+  const rejectingExpected: AssessmentStudentAssignmentsForClassCallable =
+    async () => {
+      throw new Error("network failure");
+    };
+  await openStudentsTab(
+    mount,
+    baseDeps(() => callable, {
+      loadExpectedAssignments: () => rejectingExpected,
+    }),
+  );
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  // The certified attempts-derived Completed view still renders normally.
+  expect(mount.querySelector("[data-testid=student-detail-error]")).toBeNull();
+  expect(
+    mount.querySelectorAll("[data-testid=student-detail-assignment]").length,
+  ).toBe(1);
+});
+
+test("Slice 4: absent loadExpectedAssignments accessor preserves the pre-Slice-4 Completed-only view", async () => {
+  const mount = mkMount();
+  const callable: AttemptsListForClassCallable = async (input) => ({
+    classId: input.classId,
+    attempts: [makeAttempt({ assignmentId: ASSIGNMENT_ID })],
+  });
+  await openStudentsTab(mount, baseDeps(() => callable));
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  expect(
+    mount.querySelectorAll("[data-testid=student-detail-assignment]").length,
+  ).toBe(1);
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-not-started]"),
+  ).toBeNull();
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-in-progress]"),
+  ).toBeNull();
+});
+
+// ---------------------------------------------------------------------------
+// Student Progress & Assignment Membership Phase A, Slice 2: Previous / Next
+// Student, using the exact roster order already fetched for the Students
+// list. No independent client sort, no additional fetch.
+// ---------------------------------------------------------------------------
+
+const mockLoadRosterThree = jest.fn(async (input: { classId: string }) => ({
+  classId: input.classId,
+  students: [STUDENT_A, STUDENT_B, STUDENT_C],
+}));
+
+function threeStudentDeps(
+  loadAttempts: ClassesSurfaceDeps["loadAttempts"] = () => noAttempts,
+): ClassesSurfaceDeps {
+  return {
+    listClasses: mockListClasses,
+    loadRoster: () => mockLoadRosterThree,
+    loadAttempts,
+  };
+}
+
+test("Slice 2: the middle student in a three-student roster shows both Previous and Next", async () => {
+  const mount = mkMount();
+  await openStudentsTab(mount, threeStudentDeps());
+  await clickStudent(mount, STUDENT_B.studentId);
+
+  expect(mount.querySelector("[data-testid=student-detail-prev]")).not.toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail-next]")).not.toBeNull();
+});
+
+test("Slice 2: the first student in the roster has no Previous control", async () => {
+  const mount = mkMount();
+  await openStudentsTab(mount, threeStudentDeps());
+  await clickStudent(mount, STUDENT_A.studentId);
+
+  expect(mount.querySelector("[data-testid=student-detail-prev]")).toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail-next]")).not.toBeNull();
+});
+
+test("Slice 2: the last student in the roster has no Next control", async () => {
+  const mount = mkMount();
+  await openStudentsTab(mount, threeStudentDeps());
+  await clickStudent(mount, STUDENT_C.studentId);
+
+  expect(mount.querySelector("[data-testid=student-detail-next]")).toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail-prev]")).not.toBeNull();
+});
+
+test("Slice 2: a one-student class shows neither Previous nor Next", async () => {
+  const mount = mkMount();
+  const mockLoadRosterOne = jest.fn(async (input: { classId: string }) => ({
+    classId: input.classId,
+    students: [STUDENT_A],
+  }));
+  await openStudentsTab(mount, {
+    listClasses: mockListClasses,
+    loadRoster: () => mockLoadRosterOne,
+    loadAttempts: () => noAttempts,
+  });
+  await clickStudent(mount, STUDENT_A.studentId);
+
+  expect(mount.querySelector("[data-testid=student-detail-prev]")).toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail-next]")).toBeNull();
+});
+
+test("Slice 2: clicking Next moves to the immediately following student and reloads Student Detail data", async () => {
+  const mount = mkMount();
+  const callable: AttemptsListForClassCallable = async (input) => ({
+    classId: input.classId,
+    attempts: [
+      makeAttempt({ assignmentId: ASSIGNMENT_ID, percentage: 55 }),
+      {
+        ...makeAttempt({ assignmentId: ASSIGNMENT_ID, percentage: 90 }),
+        attemptId: "atmp-bob",
+        studentId: STUDENT_B.studentId,
+        studentDisplayName: STUDENT_B.studentDisplayName,
+      },
+    ],
+  });
+  await openStudentsTab(mount, threeStudentDeps(() => callable));
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  mount
+    .querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!
+    .click();
+  await flush();
+
+  expect(
+    mount.querySelector("[data-testid=student-detail-name]")!.textContent,
+  ).toBe(STUDENT_B.studentDisplayName);
+  expect(
+    mount.querySelector("[data-testid=student-detail-best-score]")!.textContent,
+  ).toBe("90%");
+});
+
+test("Slice 2: clicking Previous moves to the immediately preceding student", async () => {
+  const mount = mkMount();
+  await openStudentsTab(mount, threeStudentDeps());
+  await clickStudent(mount, STUDENT_C.studentId);
+  await flush();
+
+  mount
+    .querySelector<HTMLButtonElement>("[data-testid=student-detail-prev]")!
+    .click();
+  await flush();
+
+  expect(
+    mount.querySelector("[data-testid=student-detail-name]")!.textContent,
+  ).toBe(STUDENT_B.studentDisplayName);
+});
+
+test("Slice 2: Previous/Next order matches exactly the order rendered in the plain Students list", async () => {
+  const mount = mkMount();
+  await openStudentsTab(mount, threeStudentDeps());
+
+  const listOrder = Array.from(
+    mount.querySelectorAll<HTMLElement>("[data-testid=roster-student]"),
+  ).map((el) => el.getAttribute("data-student-id"));
+  expect(listOrder).toEqual([
+    STUDENT_A.studentId,
+    STUDENT_B.studentId,
+    STUDENT_C.studentId,
+  ]);
+
+  await clickStudent(mount, STUDENT_A.studentId);
+  mount
+    .querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!
+    .click();
+  await flush();
+  expect(
+    mount.querySelector("[data-testid=student-detail-name]")!.textContent,
+  ).toBe(STUDENT_B.studentDisplayName);
+});
+
+test("Slice 2: rapid Next then Previous leaves only the last-requested student's data visible, never a stale intermediate render", async () => {
+  const mount = mkMount();
+  const hangingCallable: AttemptsListForClassCallable = () =>
+    new Promise(() => undefined);
+  await openStudentsTab(mount, threeStudentDeps(() => hangingCallable));
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  mount
+    .querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!
+    .click();
+  // Do not await the hanging fetch; immediately navigate back before it
+  // could ever resolve.
+  mount
+    .querySelector<HTMLButtonElement>("[data-testid=student-detail-prev]")!
+    .click();
+  await flush();
+
+  // Back at Alice (the first student in the roster): Previous must be
+  // absent, and the stale in-flight Bob fetch (which never resolves) must
+  // never overwrite this render.
+  expect(
+    mount.querySelector("[data-testid=student-detail-name]")!.textContent,
+  ).toBe(STUDENT_A.studentDisplayName);
+  expect(mount.querySelector("[data-testid=student-detail-prev]")).toBeNull();
+});
+
+test("Slice 2: when the selected student is absent from the loaded roster snapshot, Previous/Next render nothing", async () => {
+  const mount = mkMount();
+  const mockLoadRosterWithoutA = jest.fn(async (input: { classId: string }) => ({
+    classId: input.classId,
+    students: [STUDENT_B, STUDENT_C],
+  }));
+  await openStudentsTab(mount, {
+    listClasses: mockListClasses,
+    loadRoster: () => mockLoadRosterWithoutA,
+    loadAttempts: () => noAttempts,
+  });
+  await clickStudent(mount, STUDENT_B.studentId);
+  await flush();
+  expect(mount.querySelector("[data-testid=student-detail-prev]")).toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail-next]")).not.toBeNull();
+});
+
+// ---------------------------------------------------------------------------
+// REQUIRED CORRECTION: Previous/Next must preserve studentDetailOrigin.
+// "Students -> Student A -> Next Student B -> Back" must return to Students,
+// not strand the teacher or silently change what Back does.
+// ---------------------------------------------------------------------------
+
+test("Slice 2 origin correction: Students -> Student A -> Next -> Back returns to the plain Students list", async () => {
+  const mount = mkMount();
+  await openStudentsTab(mount, threeStudentDeps());
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  mount
+    .querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!
+    .click();
+  await flush();
+  expect(
+    mount.querySelector("[data-testid=student-detail-name]")!.textContent,
+  ).toBe(STUDENT_B.studentDisplayName);
+
+  mount
+    .querySelector<HTMLButtonElement>("[data-testid=student-detail-back]")!
+    .click();
+  await flush();
+
+  expect(mount.querySelector("[data-testid=roster-list]")).not.toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
 });
