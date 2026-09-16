@@ -3048,7 +3048,36 @@
     border-bottom: 1px solid var(--tw-hairline-soft);
   }
   .shell-assignment-detail-roster-row:last-child { border-bottom: 0; }
-  .shell-assignment-detail-roster-name { color: var(--tw-ink); }
+  .shell-assignment-detail-roster-name {
+    color: var(--tw-ink);
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    text-align: left;
+  }
+  /* Student Progress & Assignment Membership Phase A, Slice 3 aesthetic
+     polish: when the seam is wired the name renders as a real <button>
+     (for keyboard/Tab accessibility) but should read as a lightweight
+     clickable name, not a form/action button - the same teal text-link
+     language already used for `.shell-student-detail-back` /
+     `.shell-student-detail-nav-prev` / `-next`, not a new visual system.
+     Scoped to the button element only, so the plain-text `<span>` case
+     (no onSelectStudent wired) is completely unaffected. */
+  button.shell-assignment-detail-roster-name {
+    color: var(--tw-nav-edge);
+    cursor: pointer;
+  }
+  button.shell-assignment-detail-roster-name:hover,
+  button.shell-assignment-detail-roster-name:focus-visible {
+    text-decoration: underline;
+  }
+  button.shell-assignment-detail-roster-name:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+    border-radius: 3px;
+  }
   .shell-assignment-detail-roster-percentage {
     color: var(--tw-ink-muted);
     font-variant-numeric: tabular-nums;
