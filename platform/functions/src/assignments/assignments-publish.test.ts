@@ -15,6 +15,24 @@ const mockRecipientRefFactory = jest.fn(
 );
 const mockAssignmentRecipientCreationDocRef = jest.fn(mockRecipientRefFactory);
 
+// Historical Assignment Resolution, Implementation Slice 5. The read ref is
+// mocked even though the current implementation never calls it - several
+// tests below assert exactly that (proof that publication never reads,
+// validates, or depends on any prior pointer value).
+const mockAssignmentsCurrentDocRef = jest.fn(
+  (classId: string, lessonSlug: string) => ({
+    __kind: "currentPointerReadRef",
+    classId,
+    lessonSlug,
+  }),
+);
+const mockCurrentSetRefFactory = jest.fn((classId: string, lessonSlug: string) => ({
+  __kind: "currentPointerRef",
+  classId,
+  lessonSlug,
+}));
+const mockAssignmentsCurrentSetDocRef = jest.fn(mockCurrentSetRefFactory);
+
 const mockEnrollmentsGet = jest.fn();
 const mockEnrollmentsWhere = jest.fn(() => ({ get: mockEnrollmentsGet }));
 const mockEnrollmentsCollectionRef = jest.fn(() => ({
@@ -62,6 +80,8 @@ jest.mock("../shared", () => {
     assignmentDocRef: mockAssignmentDocRef,
     assignmentPublishDocRef: mockAssignmentPublishDocRef,
     assignmentRecipientCreationDocRef: mockAssignmentRecipientCreationDocRef,
+    assignmentsCurrentDocRef: mockAssignmentsCurrentDocRef,
+    assignmentsCurrentSetDocRef: mockAssignmentsCurrentSetDocRef,
     enrollmentsCollectionRef: mockEnrollmentsCollectionRef,
     createFirestoreBatch: mockCreateFirestoreBatch,
     requireDistrictContext: mockRequireDistrictContext,
@@ -160,6 +180,9 @@ describe("assignmentsPublish", () => {
     mockAssignmentPublishDocRef.mockClear();
     mockAssignmentRecipientCreationDocRef.mockClear();
     mockAssignmentRecipientCreationDocRef.mockImplementation(mockRecipientRefFactory);
+    mockAssignmentsCurrentDocRef.mockClear();
+    mockAssignmentsCurrentSetDocRef.mockClear();
+    mockAssignmentsCurrentSetDocRef.mockImplementation(mockCurrentSetRefFactory);
     mockEnrollmentsGet.mockReset();
     mockEnrollmentsWhere.mockClear();
     mockEnrollmentsCollectionRef.mockClear();
@@ -200,7 +223,8 @@ describe("assignmentsPublish", () => {
         publishedAt: SERVER_TIMESTAMP_SENTINEL,
         assessmentRevisionId: ASSESSMENT_REVISION_ID,
       });
-      expect(mockBatchSet).toHaveBeenCalledTimes(3);
+      // 3 recipients + 1 Current pointer, all through the same batch.
+      expect(mockBatchSet).toHaveBeenCalledTimes(4);
       for (const studentId of ["student-1", "student-2", "student-3"]) {
         expect(mockBatchSet).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -222,6 +246,27 @@ describe("assignmentsPublish", () => {
           },
         );
       }
+      // Historical Assignment Resolution, Implementation Slice 5. The
+      // Current pointer advances atomically with the publish transition,
+      // through the same batch, with exactly the canonical eight-field
+      // shape and no extra fields.
+      expect(mockAssignmentsCurrentSetDocRef).toHaveBeenCalledWith(CLASS_ID, LESSON_SLUG);
+      expect(mockBatchSet).toHaveBeenCalledWith(
+        expect.objectContaining({ __kind: "currentPointerRef" }),
+        {
+          classId: CLASS_ID,
+          lessonSlug: LESSON_SLUG,
+          assignmentId: ASSIGNMENT_ID,
+          teacherId: TEACHER_UID,
+          schoolId: SCHOOL_ID,
+          setAt: SERVER_TIMESTAMP_SENTINEL,
+          setBy: TEACHER_UID,
+          source: "publish",
+        },
+      );
+      // The Current pointer is never read: a malformed, stale, or missing
+      // prior value is never a precondition for publication advancement.
+      expect(mockAssignmentsCurrentDocRef).not.toHaveBeenCalled();
       expect(mockBatchCommit).toHaveBeenCalledTimes(1);
       expect(mockWriteAuditEvent).toHaveBeenCalledWith({
         actorUserId: TEACHER_UID,
@@ -253,7 +298,13 @@ describe("assignmentsPublish", () => {
 
       const result = await __assignmentsPublishHandler(makeRequest());
 
-      expect(mockBatchSet).not.toHaveBeenCalled();
+      // Zero recipients, but the Current pointer still advances - it is
+      // not conditioned on there being any recipients to snapshot.
+      expect(mockBatchSet).toHaveBeenCalledTimes(1);
+      expect(mockBatchSet).toHaveBeenCalledWith(
+        expect.objectContaining({ __kind: "currentPointerRef" }),
+        expect.objectContaining({ assignmentId: ASSIGNMENT_ID, source: "publish" }),
+      );
       expect(mockBatchUpdate).toHaveBeenCalledTimes(1);
       expect(mockBatchCommit).toHaveBeenCalledTimes(1);
       expect(mockWriteAuditEvent).toHaveBeenCalledWith(
@@ -278,7 +329,8 @@ describe("assignmentsPublish", () => {
 
       await __assignmentsPublishHandler(makeRequest());
 
-      expect(mockBatchSet).toHaveBeenCalledTimes(2);
+      // 2 deduplicated recipients + 1 Current pointer.
+      expect(mockBatchSet).toHaveBeenCalledTimes(3);
     });
 
     it("excludes inactive, transferred, withdrawn, and archived enrollments", async () => {
@@ -296,7 +348,8 @@ describe("assignmentsPublish", () => {
 
       await __assignmentsPublishHandler(makeRequest());
 
-      expect(mockBatchSet).toHaveBeenCalledTimes(1);
+      // 1 eligible recipient + 1 Current pointer.
+      expect(mockBatchSet).toHaveBeenCalledTimes(2);
       expect(mockBatchSet).toHaveBeenCalledWith(
         expect.objectContaining({ studentId: "student-active" }),
         expect.objectContaining({ studentId: "student-active" }),
@@ -318,7 +371,8 @@ describe("assignmentsPublish", () => {
 
       await __assignmentsPublishHandler(makeRequest());
 
-      expect(mockBatchSet).toHaveBeenCalledTimes(1);
+      // 1 eligible recipient + 1 Current pointer.
+      expect(mockBatchSet).toHaveBeenCalledTimes(2);
       expect(mockBatchSet).toHaveBeenCalledWith(
         expect.objectContaining({ studentId: "student-good" }),
         expect.objectContaining({ studentId: "student-good" }),
@@ -368,6 +422,31 @@ describe("assignmentsPublish", () => {
       ).rejects.toThrow("firestore unavailable");
       expect(mockWriteAuditEvent).not.toHaveBeenCalled();
     });
+
+    // Requirement 8 (Slice 5): there is no publication-success/pointer-
+    // failure split state, because both writes are enqueued on the SAME
+    // batch and Firestore batches commit all-or-nothing. The Current
+    // pointer set was already enqueued (proving it was part of what failed
+    // to commit, not skipped or deferred), and the caller never observes
+    // the assignment as published when the shared commit fails.
+    it("a failed batch commit means neither the publish transition nor the Current pointer was applied", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockBatchCommit.mockRejectedValueOnce(new Error("firestore unavailable"));
+
+      await expect(
+        __assignmentsPublishHandler(makeRequest()),
+      ).rejects.toThrow("firestore unavailable");
+
+      // The pointer write was enqueued onto the batch before the commit
+      // that failed - it was never a separate, independently-committed
+      // operation that could have "succeeded anyway."
+      expect(mockBatchSet).toHaveBeenCalledWith(
+        expect.objectContaining({ __kind: "currentPointerRef" }),
+        expect.objectContaining({ source: "publish" }),
+      );
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    });
   });
 
   describe("idempotency and lifecycle", () => {
@@ -405,6 +484,8 @@ describe("assignmentsPublish", () => {
         __assignmentsPublishHandler(makeRequest()),
       ).rejects.toMatchObject({ code: "assignments.invalidTransition" });
       expect(mockCreateFirestoreBatch).not.toHaveBeenCalled();
+      // Requirement 7 (Slice 5): an invalid transition never advances Current.
+      expect(mockBatchSet).not.toHaveBeenCalled();
       expect(mockEnrollmentsGet).not.toHaveBeenCalled();
     });
   });
@@ -482,6 +563,12 @@ describe("assignmentsPublish", () => {
       await expect(
         __assignmentsPublishHandler(makeRequest()),
       ).rejects.toMatchObject({ code: "assignments.forbidden" });
+
+      // Requirement 7 (Slice 5): unauthorized publication never advances
+      // Current - the batch (and therefore the pointer write it would
+      // otherwise carry) is never created.
+      expect(mockCreateFirestoreBatch).not.toHaveBeenCalled();
+      expect(mockBatchSet).not.toHaveBeenCalled();
     });
 
     it("rejects an invalid assignmentId payload", async () => {
@@ -503,6 +590,10 @@ describe("assignmentsPublish", () => {
       await expect(
         __assignmentsPublishHandler(makeRequest()),
       ).rejects.toMatchObject({ code: "assignments.notFound" });
+
+      // Requirement 7 (Slice 5): a missing assignment never advances Current.
+      expect(mockCreateFirestoreBatch).not.toHaveBeenCalled();
+      expect(mockBatchSet).not.toHaveBeenCalled();
     });
 
     it("orders side effects: batch commit, then audit", async () => {
@@ -523,6 +614,157 @@ describe("assignmentsPublish", () => {
       await __assignmentsPublishHandler(makeRequest());
 
       expect(calls).toEqual(["commit", "audit"]);
+    });
+  });
+
+  // Historical Assignment Resolution, Implementation Slice 5. Automatic
+  // Current advancement on publication. Unlike `assignmentsCurrentSet`
+  // (Slice 4), this path carries NO CAS, reads no prior pointer value, and
+  // cannot be blocked by any prior pointer state - see the handler-level
+  // comment in assignments-publish.ts for the full rationale.
+  describe("Current pointer advancement (Slice 5)", () => {
+    it("replaces an existing Current selection unconditionally - no CAS, no read of the prior value", async () => {
+      // Current was previously X (a different assignment entirely); this
+      // call publishes a brand new draft Y for the same class/lesson. The
+      // implementation never reads the prior pointer at all, so there is
+      // nothing to seed for "Current = X" - that is exactly the point this
+      // test documents and asserts.
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockBatchCommit.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "e", record: {} });
+
+      const result = await __assignmentsPublishHandler(makeRequest());
+
+      expect(result.alreadyPublished).toBe(false);
+      expect(mockAssignmentsCurrentDocRef).not.toHaveBeenCalled();
+      expect(mockBatchSet).toHaveBeenCalledWith(
+        expect.objectContaining({ __kind: "currentPointerRef" }),
+        expect.objectContaining({ assignmentId: ASSIGNMENT_ID, source: "publish" }),
+      );
+    });
+
+    // Requirements 3 and 4: a malformed, stale, closed-referencing, or
+    // entirely missing prior Current pointer must never block a genuine
+    // new publication. Mechanically, all four hypothetical prior states
+    // collapse to the identical proof here: this implementation never
+    // calls the pointer READ ref at all, for any prior state, so none of
+    // them can possibly gate or alter this write. Four separately-mocked
+    // "prior pointer" fixtures would exercise no different code path than
+    // this single assertion already does; asserting the read ref was never
+    // invoked is the strongest and most honest proof available; a
+    // separately-mocked "prior state" would only assert the same thing
+    // through a longer path.
+    it("a malformed, stale, closed-referencing, or missing prior Current pointer cannot block publication, because it is never read", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockBatchCommit.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "e", record: {} });
+
+      const result = await __assignmentsPublishHandler(makeRequest());
+
+      expect(result.alreadyPublished).toBe(false);
+      expect(mockAssignmentsCurrentDocRef).not.toHaveBeenCalled();
+    });
+
+    it("writes exactly the canonical eight-field pointer shape, source \"publish\", and no extra fields", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockBatchCommit.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "e", record: {} });
+
+      await __assignmentsPublishHandler(makeRequest());
+
+      const [, pointerWrite] = mockBatchSet.mock.calls.find(
+        ([ref]) => (ref as { __kind?: string }).__kind === "currentPointerRef",
+      ) as [unknown, Record<string, unknown>];
+      expect(Object.keys(pointerWrite).sort()).toEqual(
+        ["assignmentId", "classId", "lessonSlug", "schoolId", "setAt", "setBy", "source", "teacherId"].sort(),
+      );
+      expect(pointerWrite).toEqual({
+        classId: CLASS_ID,
+        lessonSlug: LESSON_SLUG,
+        assignmentId: ASSIGNMENT_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        setAt: SERVER_TIMESTAMP_SENTINEL,
+        setBy: TEACHER_UID,
+        source: "publish",
+      });
+    });
+
+    // Requirement 6: structural atomicity proof, not merely "two mock calls
+    // both happened to succeed." A fresh batch object is created per call
+    // (rather than reusing the shared `mockBatch` singleton used elsewhere
+    // in this file) so this test can prove the publish-transition update
+    // and the Current-pointer set are both method calls on the SAME single
+    // object instance returned by the ONE `createFirestoreBatch()` call for
+    // this handler invocation - not two independently-created atomic
+    // regions that merely both happened to succeed.
+    it("issues the publish transition and the Current pointer set on the identical batch instance from one createFirestoreBatch() call", async () => {
+      const freshBatch = {
+        update: jest.fn(),
+        set: jest.fn(),
+        commit: jest.fn().mockResolvedValue(undefined),
+      };
+      mockCreateFirestoreBatch.mockReset();
+      mockCreateFirestoreBatch.mockImplementationOnce(() => freshBatch);
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "e", record: {} });
+
+      await __assignmentsPublishHandler(makeRequest());
+
+      expect(mockCreateFirestoreBatch).toHaveBeenCalledTimes(1);
+      expect(freshBatch.update).toHaveBeenCalledTimes(1);
+      // Zero recipients + exactly 1 Current pointer set, both via the same
+      // `freshBatch.set` method.
+      expect(freshBatch.set).toHaveBeenCalledTimes(1);
+      expect(freshBatch.set).toHaveBeenCalledWith(
+        expect.objectContaining({ __kind: "currentPointerRef" }),
+        expect.objectContaining({ source: "publish" }),
+      );
+      expect(freshBatch.commit).toHaveBeenCalledTimes(1);
+
+      mockCreateFirestoreBatch.mockImplementation(() => mockBatch);
+    });
+
+    // Race semantics (locked, not a defect): two distinct, independently
+    // legitimate drafts (Y then Z) for the same class/lesson are each
+    // published. Each publication unconditionally and atomically writes
+    // itself as Current; whichever commit is applied last is the one the
+    // pointer ends up naming. No CAS is used to prevent this. Both
+    // assignments remain valid, independently published historical
+    // records.
+    it("two sequential legitimate publications for the same class/lesson: the later one's commit determines Current (last-write-wins, by design)", async () => {
+      const Y = "assign-y";
+      const Z = "assign-z";
+
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockBatchCommit.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "e1", record: {} });
+      const resultY = await __assignmentsPublishHandler(
+        makeRequest({ data: { assignmentId: Y } }),
+      );
+
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockBatchCommit.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "e2", record: {} });
+      const resultZ = await __assignmentsPublishHandler(
+        makeRequest({ data: { assignmentId: Z } }),
+      );
+
+      expect(resultY).toEqual({ assignmentId: Y, status: "published", alreadyPublished: false });
+      expect(resultZ).toEqual({ assignmentId: Z, status: "published", alreadyPublished: false });
+      // Both publications independently and successfully wrote themselves
+      // as Current; the later commit (Z) is what the pointer document ends
+      // up naming, which is the intended, locked outcome, not a race bug.
+      const pointerWrites = mockBatchSet.mock.calls
+        .filter(([ref]) => (ref as { __kind?: string }).__kind === "currentPointerRef")
+        .map(([, data]) => (data as { assignmentId: string }).assignmentId);
+      expect(pointerWrites).toEqual([Y, Z]);
     });
   });
 });

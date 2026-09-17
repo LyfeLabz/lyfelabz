@@ -7,11 +7,13 @@ import {
   assignmentDocRef,
   assignmentPublishDocRef,
   assignmentRecipientCreationDocRef,
+  assignmentsCurrentSetDocRef,
   createFirestoreBatch,
   log,
   requireDistrictContext,
   resolveCurrentAssessmentRevisionId,
   writeAuditEvent,
+  type AssignmentCurrentWrite,
   type AssignmentPublishWrite,
   type AssignmentRecord,
 } from "../shared";
@@ -118,11 +120,48 @@ function safeLog(fn: () => void): void {
 //   - record read via `assignmentDocRef(...).get()`               (typed ref)
 //   - enrollment population read via `enrollmentsCollectionRef(...)`
 //                                                                 (§7 helper)
-//   - atomic status transition and recipient snapshot via one
-//     `createFirestoreBatch()` commit; the publish write uses
-//     `assignmentPublishDocRef(...)` and each recipient write uses
+//   - atomic status transition, Current-pointer advancement, and recipient
+//     snapshot via one `createFirestoreBatch()` commit; the publish write
+//     uses `assignmentPublishDocRef(...)`, the Current pointer write uses
+//     `assignmentsCurrentSetDocRef(...)`, and each recipient write uses
 //     `assignmentRecipientCreationDocRef(...)`
 //   - audit event via `writeAuditEvent({...})`                    (§5 helper)
+//
+// Historical Assignment Resolution, Implementation Slice 5. Every
+// successful `draft -> published` transition atomically advances the
+// Current pointer at `classes/{classId}/assignmentsCurrent/{lessonSlug}` to
+// name this newly published assignment, in the SAME batch commit as the
+// publish transition itself - never a separate, best-effort write after
+// the fact. This is deliberately UNCONDITIONAL with respect to whatever
+// value the pointer previously held: the assignment being published here is
+// a genuinely new, teacher-authorized instructional occurrence, and the
+// successful publication of a new occurrence is itself sufficient
+// authority to become Current, per the architecture's own "a genuinely
+// newly published occurrence becomes Current in the same atomic commit
+// that publishes it" invariant.
+//
+// This intentionally differs from `assignmentsCurrentSet` (Slice 4), which
+// requires an explicit, teacher-supplied `expectedCurrentAssignmentId`
+// compare-and-swap for every DELIBERATE Current change. Publication
+// advancement is not a "change Current" action at all from the teacher's
+// perspective - it is an inherent, automatic consequence of publishing -
+// so it carries no CAS, reads no prior pointer value, and cannot be
+// rejected by a stale, malformed, or missing prior pointer. A pointer that
+// is currently absent, stale, malformed, or pointed at a closed or deleted
+// assignment is never read, never validated, and never a precondition for
+// this write: publication authoritatively REPLACES whatever the pointer
+// previously held. `resolveValidCurrentAssignmentId` (Slice 3) is
+// deliberately not called anywhere on this path.
+//
+// Race semantics (locked): if two distinct, independently legitimate draft
+// assignments for the same (classId, lessonSlug) are published through two
+// concurrent calls, each publication atomically and unconditionally writes
+// itself as Current; whichever underlying Firestore commit is applied last
+// is the one the pointer ends up naming. This is intentional, not a defect
+// - CAS is deliberately not used here to prevent it. Both assignments
+// remain valid, independently published historical records; a teacher can
+// use the Slice 4 `assignmentsCurrentSet` "Change current assignment" flow
+// afterward to select whichever one they intend as Current.
 //
 // First-publication detection: the assignment record's current `status`
 // field is the sole first-publication signal. `draft` -> `published`
@@ -253,6 +292,30 @@ async function assignmentsPublishHandler(
     assessmentRevisionId,
   };
   batch.update(assignmentPublishDocRef(input.assignmentId), publishWrite);
+
+  // Historical Assignment Resolution, Implementation Slice 5. Unconditional
+  // Current-pointer advancement, atomic with the publish transition above -
+  // see the handler-level comment for the full rationale (no CAS, no read
+  // of any prior pointer value, source "publish" records why it advanced).
+  // Ownership fields are sourced from the assignment's own frozen
+  // `teacherId`/`schoolId` (already verified equal to `actor.uid`/
+  // `actor.schoolId` above), exactly mirroring how `context` below sources
+  // the same two fields for the recipient snapshot.
+  const currentPointerWrite: AssignmentCurrentWrite = {
+    classId: existing.classId,
+    lessonSlug: existing.lessonSlug,
+    assignmentId: input.assignmentId,
+    teacherId: existing.teacherId,
+    schoolId: existing.schoolId,
+    setAt: FieldValue.serverTimestamp(),
+    setBy: actor.uid,
+    source: "publish",
+  };
+  batch.set(
+    assignmentsCurrentSetDocRef(existing.classId, existing.lessonSlug),
+    currentPointerWrite,
+  );
+
   for (const studentId of population) {
     batch.set(
       assignmentRecipientCreationDocRef(input.assignmentId, studentId),
