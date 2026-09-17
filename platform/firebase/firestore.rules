@@ -174,6 +174,48 @@ service cloud.firestore {
       allow list: if isSignedIn()
         && resource.data.teacherId == request.auth.uid
         && callerIsActiveTeacher();
+
+      // ---------- classes/{classId}/assignmentsCurrent/{lessonSlug} ----------
+      //
+      // Historical Assignment Resolution, Implementation Slice 2. The
+      // dedicated, server-authoritative Current-assignment pointer for one
+      // (classId, lessonSlug) pair (see
+      // `platform/functions/src/shared/types/assignment-current.ts` for the
+      // full data-model contract). The document identifier is the canonical
+      // `lessonSlug`, nested under its owning class, so exactly one pointer
+      // exists per (classId, lessonSlug) pair by construction - two
+      // Firestore path segments, never a concatenated composite id.
+      //
+      // Zero direct client access for ANY role, unconditionally. A pointer
+      // never creates authority the referenced assignment does not already
+      // have; every reader that treats it as authoritative independently
+      // re-validates the referenced assignment (ownership, class, lesson,
+      // `published` status) at the moment it is consulted. Exposing the raw
+      // pointer to any client, including the owning teacher, would disclose
+      // internal resolution state for no functional benefit and would
+      // invite a client to treat a value it read earlier as still current,
+      // which is exactly the staleness hazard this record exists to close.
+      // The sole planned writers (`assignmentsPublish`'s atomic advance and
+      // the `assignmentsCurrentSet` callable, both later slices) run through
+      // the Admin SDK from the Cloud Function trust boundary and therefore
+      // bypass Rules entirely; the sole planned readers
+      // (`assignmentsLifecycleState` and `assignmentsCurrentRecipientsReconcile`,
+      // also later slices) do the same.
+      //
+      // This block uses the explicit `allow read, write: if false;` pattern
+      // (mirroring `presentationVariants`, `launchGrants`,
+      // `platformAdminBootstrap`, `studentAccommodations`,
+      // `assessmentAnswerKeys`, `externalIdentities`, and `auditEvents`) so
+      // the server-only intent is documented at the surface and cannot be
+      // relaxed by a broader accidental edit. `read` covers both `get` and
+      // `list`; `write` covers `create`, `update`, and `delete`. There is no
+      // exception for ownership, school, district, role, assignment
+      // ownership, or class ownership: the owning teacher has exactly the
+      // same zero direct access as a student, another teacher, or an
+      // unauthenticated caller.
+      match /assignmentsCurrent/{lessonSlugId} {
+        allow read, write: if false;
+      }
     }
 
     // ---------- enrollments/{enrollmentId} ----------

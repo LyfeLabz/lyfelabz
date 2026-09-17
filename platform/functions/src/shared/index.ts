@@ -230,6 +230,16 @@ export {
   type AssignmentRecipientStatus,
 } from "./types/assignment-recipient";
 export {
+  ASSIGNMENTS_CURRENT_SUBCOLLECTION,
+  type AssignmentCurrentRecord,
+  type AssignmentCurrentSource,
+  type AssignmentCurrentWrite,
+} from "./types/assignment-current";
+export {
+  assignmentsCurrentDocRef,
+  assignmentsCurrentSetDocRef,
+} from "./firestore/typed-ref";
+export {
   AUDIT_ACTIONS,
   AUDIT_EVENTS_COLLECTION,
   type ActorRole,

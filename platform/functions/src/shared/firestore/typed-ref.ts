@@ -21,6 +21,11 @@ import {
   type AssignmentRecipientCreationWrite,
   type AssignmentRecipientRecord,
 } from "../types/assignment-recipient";
+import {
+  ASSIGNMENTS_CURRENT_SUBCOLLECTION,
+  type AssignmentCurrentRecord,
+  type AssignmentCurrentWrite,
+} from "../types/assignment-current";
 import { AUDIT_EVENTS_COLLECTION, type AuditEventWrite } from "../types/audit-event";
 import {
   PLATFORM_ADMIN_BOOTSTRAP_COLLECTION,
@@ -327,6 +332,50 @@ export function classArchiveDocRef(
   return getAdminFirestore()
     .collection(CLASSES_COLLECTION)
     .doc(classId) as DocumentReference<ClassArchiveWrite>;
+}
+
+// -------------------- Historical Assignment Resolution --------------------
+//
+// Typed references for the Current-assignment pointer record family at
+// `classes/{classId}/assignmentsCurrent/{lessonSlug}` (Implementation
+// Slice 1; see `../types/assignment-current` for the full contract). The
+// subcollection lives inside the class ownership boundary and the document
+// identifier is the canonical `lessonSlug`, so exactly one pointer exists
+// per (classId, lessonSlug) pair by construction - two Firestore path
+// segments, never a concatenated composite id.
+//
+// Read typed reference. Callers that need to write the pointer use
+// `assignmentsCurrentSetDocRef` below so that the `FieldValue`-safe write
+// shape is preserved at the write boundary while this reference remains
+// typed as `AssignmentCurrentRecord`.
+export function assignmentsCurrentDocRef(
+  classId: string,
+  lessonSlug: string,
+): DocumentReference<AssignmentCurrentRecord> {
+  return getAdminFirestore()
+    .collection(CLASSES_COLLECTION)
+    .doc(classId)
+    .collection(ASSIGNMENTS_CURRENT_SUBCOLLECTION)
+    .doc(lessonSlug) as DocumentReference<AssignmentCurrentRecord>;
+}
+
+// Set-write typed reference. Used with `.set()` by both planned writers: the
+// atomic, unconditional write inside `assignmentsPublish`'s existing batch
+// on every successful `draft -> published` transition, and the compare-and-
+// swap-guarded write inside the `assignmentsCurrentSet` callable (both
+// later slices). There is one write reference because both writers produce
+// the identical `AssignmentCurrentWrite` shape; the concurrency discipline
+// that distinguishes "unconditional" from "CAS-guarded" lives in the
+// callables, not in this reference.
+export function assignmentsCurrentSetDocRef(
+  classId: string,
+  lessonSlug: string,
+): DocumentReference<AssignmentCurrentWrite> {
+  return getAdminFirestore()
+    .collection(CLASSES_COLLECTION)
+    .doc(classId)
+    .collection(ASSIGNMENTS_CURRENT_SUBCOLLECTION)
+    .doc(lessonSlug) as DocumentReference<AssignmentCurrentWrite>;
 }
 
 // Audit-event document IDs are opaque and system-generated per Data Model
