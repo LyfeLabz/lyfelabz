@@ -21,6 +21,11 @@ export {
   type AssignmentsCurrentSetResponse,
 } from "./assignments-current-set";
 export {
+  assignmentsCurrentRecipientsReconcile,
+  type AssignmentsCurrentRecipientsReconcileRequest,
+  type AssignmentsCurrentRecipientsReconcileResponse,
+} from "./assignments-current-recipients-reconcile";
+export {
   assignmentsListForStudent,
   type AssignmentsListForStudentItem,
   type AssignmentsListForStudentRequest,

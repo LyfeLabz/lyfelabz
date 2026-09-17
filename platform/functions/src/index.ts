@@ -15,6 +15,7 @@ export {
   assignmentsArchive,
   assignmentsClose,
   assignmentsCreateDraft,
+  assignmentsCurrentRecipientsReconcile,
   assignmentsCurrentSet,
   assignmentsLifecycleState,
   assignmentsListForStudent,
