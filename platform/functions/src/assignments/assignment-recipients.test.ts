@@ -62,6 +62,25 @@ function makeAssignmentsQuery(
 }
 const mockAssignmentsCollectionRef = jest.fn(() => makeAssignmentsQuery([]));
 
+// Historical Assignment Resolution, Implementation Slice 6. A dedicated
+// fixture and fake for `reconcileAssignmentRecipients`'s
+// `assignmentRecipientsCollectionRef` call site (a collection scan of
+// `assignments/{assignmentId}/recipients`, distinct from the per-document
+// `assignmentRecipientDocRef` fakes above, which `ensureAssignmentRecipient`
+// itself still uses unchanged). Kept separate from `recipientsFixture`
+// (used by the `reconcileRecipientsForNewEnrollment` tests above) so
+// neither fixture's shape needs to grow to accommodate the other's fields.
+type ExistingRecipientRow = { readonly id: string; readonly data: Record<string, unknown> };
+const existingRecipientsFixture: ExistingRecipientRow[] = [];
+const mockAssignmentRecipientsCollectionRef = jest.fn((assignmentId: string) => ({
+  get: () =>
+    Promise.resolve({
+      docs: existingRecipientsFixture
+        .filter((row) => row.data.assignmentId === assignmentId)
+        .map((row) => ({ id: row.id, data: () => row.data })),
+    }),
+}));
+
 const SERVER_TIMESTAMP_SENTINEL = { __sentinel: "serverTimestamp" } as const;
 
 jest.mock("firebase-admin/firestore", () => ({
@@ -79,6 +98,7 @@ jest.mock("../shared", () => {
     enrollmentsCollectionRef: mockEnrollmentsCollectionRef,
     assignmentRecipientDocRef: mockAssignmentRecipientDocRef,
     assignmentRecipientCreationDocRef: mockAssignmentRecipientCreationDocRef,
+    assignmentRecipientsCollectionRef: mockAssignmentRecipientsCollectionRef,
     assignmentsCollectionRef: mockAssignmentsCollectionRef,
   };
 });
@@ -88,6 +108,7 @@ import {
   ensureAssignmentRecipient,
   isCanonicalRecipientData,
   loadInitialRecipientPopulation,
+  reconcileAssignmentRecipients,
   reconcileRecipientsForNewEnrollment,
   type RecipientOwnershipContext,
 } from "./assignment-recipients";
@@ -124,8 +145,10 @@ describe("assignment-recipients helpers", () => {
     mockAssignmentRecipientCreationDocRef.mockClear();
     mockAssignmentsGet.mockReset();
     mockAssignmentsCollectionRef.mockClear();
+    mockAssignmentRecipientsCollectionRef.mockClear();
     assignmentsFixture.length = 0;
     recipientsFixture.length = 0;
+    existingRecipientsFixture.length = 0;
 
     // Fixture-backed defaults, re-applied every test since `.mockReset()`
     // above clears any previously-set implementation. Pre-existing Slice 1
@@ -786,6 +809,216 @@ describe("assignment-recipients helpers", () => {
       // surface which deliberately excludes any Classroom, session, or
       // attempt-related function.
       expect(mockEnrollmentsCollectionRef).not.toHaveBeenCalled();
+    });
+  });
+
+  // Historical Assignment Resolution, Implementation Slice 6. Focused tests
+  // for the extracted engine itself, independent of any callable's own
+  // authorization wrapper - the engine trusts `context` completely and
+  // performs no authentication/ownership/status validation of its own (see
+  // the engine's doc comment). `assignments-recipients-reconcile.test.ts`
+  // separately proves the full public-callable contract is unaffected by
+  // this extraction (66 pre-existing tests, unmodified, still green).
+  describe("reconcileAssignmentRecipients (Historical Assignment Resolution, Slice 6 engine)", () => {
+    const ASSIGNMENT_ID = "assign-1";
+    const TEACHER_ID = "teacher-uid";
+    const DISTRICT_ID = "district-1";
+    const context: RecipientOwnershipContext = {
+      assignmentId: ASSIGNMENT_ID,
+      classId: CLASS_ID,
+      teacherId: TEACHER_ID,
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+      assignedBy: TEACHER_ID,
+    };
+
+    function seedExistingRecipient(
+      studentId: string,
+      overrides: Record<string, unknown> = {},
+    ): void {
+      existingRecipientsFixture.push({
+        id: studentId,
+        data: {
+          assignmentId: ASSIGNMENT_ID,
+          studentId,
+          classId: CLASS_ID,
+          teacherId: TEACHER_ID,
+          schoolId: SCHOOL_ID,
+          districtId: DISTRICT_ID,
+          status: "assigned",
+          ...overrides,
+        },
+      });
+    }
+
+    it("creates a canonical recipient for an active-enrolled student with no existing recipient", async () => {
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [activeEnrollmentDoc("student-1")],
+      });
+
+      const result = await reconcileAssignmentRecipients(context, "teacherReconcile");
+
+      expect(result).toEqual({ added: 1, alreadyCurrent: 0 });
+      expect(mockRecipientCreationSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assignmentId: ASSIGNMENT_ID,
+          studentId: "student-1",
+          source: "teacherReconcile",
+        }),
+      );
+    });
+
+    it("leaves a canonical existing recipient untouched and counts it as alreadyCurrent", async () => {
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [activeEnrollmentDoc("student-1")],
+      });
+      seedExistingRecipient("student-1");
+
+      const result = await reconcileAssignmentRecipients(context, "teacherReconcile");
+
+      expect(result).toEqual({ added: 0, alreadyCurrent: 1 });
+      expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    });
+
+    it("throws assignments.recipientIntegrityViolation for a malformed existing recipient and does not repair it", async () => {
+      // The recipient collection scan drops the malformed row from the
+      // "already canonical" set (cross-scope schoolId, which both the
+      // collection-scan filter AND `isCanonicalRecipientData` check), so the
+      // student is treated as missing and handed to
+      // `ensureAssignmentRecipient` - which re-reads the SAME document at
+      // its own doc path, finds it noncanonical by that same check, and
+      // fails closed exactly as Phase B established.
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [activeEnrollmentDoc("student-1")],
+      });
+      seedExistingRecipient("student-1", { schoolId: "wrong-school" });
+      mockRecipientGet.mockResolvedValueOnce({
+        exists: true,
+        data: () => ({
+          assignmentId: ASSIGNMENT_ID,
+          studentId: "student-1",
+          schoolId: "wrong-school",
+          districtId: DISTRICT_ID,
+          status: "assigned",
+        }),
+      });
+
+      await expect(
+        reconcileAssignmentRecipients(context, "teacherReconcile"),
+      ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+      expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    });
+
+    it("computes correct aggregate counts across multiple active enrollments (mixed missing and already-current)", async () => {
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [
+          activeEnrollmentDoc("student-a"),
+          activeEnrollmentDoc("student-b"),
+          activeEnrollmentDoc("student-c"),
+        ],
+      });
+      seedExistingRecipient("student-a");
+
+      const result = await reconcileAssignmentRecipients(context, "teacherReconcile");
+
+      expect(result).toEqual({ added: 2, alreadyCurrent: 1 });
+    });
+
+    it("excludes an inactive enrollment from the eligible population", async () => {
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [
+          activeEnrollmentDoc("student-active"),
+          activeEnrollmentDoc("student-inactive", { status: "transferred" }),
+        ],
+      });
+
+      const result = await reconcileAssignmentRecipients(context, "teacherReconcile");
+
+      expect(result).toEqual({ added: 1, alreadyCurrent: 0 });
+      expect(mockRecipientCreationSet).toHaveBeenCalledTimes(1);
+      expect(mockRecipientCreationSet).toHaveBeenCalledWith(
+        expect.objectContaining({ studentId: "student-active" }),
+      );
+    });
+
+    it("excludes malformed and cross-class/cross-school enrollment rows, preserving the existing skip behavior exactly", async () => {
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [
+          activeEnrollmentDoc("student-good"),
+          activeEnrollmentDoc(""),
+          activeEnrollmentDoc("student-cross-class", { classId: "class-other" }),
+          activeEnrollmentDoc("student-cross-school", { schoolId: "school-other" }),
+        ],
+      });
+
+      const result = await reconcileAssignmentRecipients(context, "teacherReconcile");
+
+      expect(result).toEqual({ added: 1, alreadyCurrent: 0 });
+      expect(mockRecipientCreationSet).toHaveBeenCalledWith(
+        expect.objectContaining({ studentId: "student-good" }),
+      );
+    });
+
+    it("running reconciliation again when all recipients are already canonical is a zero-write no-op", async () => {
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [activeEnrollmentDoc("student-1"), activeEnrollmentDoc("student-2")],
+      });
+      seedExistingRecipient("student-1");
+      seedExistingRecipient("student-2");
+
+      const result = await reconcileAssignmentRecipients(context, "teacherReconcile");
+
+      expect(result).toEqual({ added: 0, alreadyCurrent: 2 });
+      expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    });
+
+    it("stamps newly created recipients with exactly the source parameter it was called with", async () => {
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [activeEnrollmentDoc("student-1")],
+      });
+
+      await reconcileAssignmentRecipients(context, "manualAddition");
+
+      expect(mockRecipientCreationSet).toHaveBeenCalledWith(
+        expect.objectContaining({ source: "manualAddition" }),
+      );
+    });
+
+    // Preserves the exact pre-extraction partial-success semantics: the
+    // ensure-write loop is concurrent (Promise.all), not transactional. One
+    // student's integrity violation does not undo another, independent
+    // student's already-completed write in the same call.
+    it("preserves partial-success semantics: one integrity violation does not undo another student's already-completed write", async () => {
+      mockEnrollmentsGet.mockResolvedValueOnce({
+        docs: [activeEnrollmentDoc("student-good"), activeEnrollmentDoc("student-bad")],
+      });
+      seedExistingRecipient("student-bad", { schoolId: "wrong-school" });
+      mockRecipientGet.mockImplementation((assignmentId: string, studentId: string) => {
+        if (studentId === "student-bad") {
+          return Promise.resolve({
+            exists: true,
+            data: () => ({
+              assignmentId,
+              studentId,
+              schoolId: "wrong-school",
+              districtId: DISTRICT_ID,
+              status: "assigned",
+            }),
+          });
+        }
+        return Promise.resolve({ exists: false });
+      });
+
+      await expect(
+        reconcileAssignmentRecipients(context, "teacherReconcile"),
+      ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+
+      // student-good's independent write already completed before the
+      // Promise.all rejected on student-bad's violation - it is not rolled
+      // back, exactly as the pre-extraction inline implementation behaved.
+      expect(mockRecipientCreationSet).toHaveBeenCalledWith(
+        expect.objectContaining({ studentId: "student-good" }),
+      );
     });
   });
 

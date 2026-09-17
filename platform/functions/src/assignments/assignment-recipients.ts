@@ -8,6 +8,7 @@ import {
   PlatformError,
   assignmentRecipientCreationDocRef,
   assignmentRecipientDocRef,
+  assignmentRecipientsCollectionRef,
   assignmentsCollectionRef,
   enrollmentsCollectionRef,
   type AssignmentRecipientCreationWrite,
@@ -360,4 +361,166 @@ export async function isCanonicalRecipient(
   const snapshot = await read(ref);
   if (!snapshot.exists) return false;
   return isCanonicalRecipientData(snapshot.data(), context);
+}
+
+// Historical Assignment Resolution, Implementation Slice 6. Extracted,
+// behavior-preserving, from `assignmentsRecipientsReconcile`'s handler body
+// (Student Progress & Assignment Membership, Phase B Core, Slice 2). This is
+// the identical active-enrollment predicate `loadInitialRecipientPopulation`
+// already applies, reused here by direct query rather than by calling that
+// function because `reconcileAssignmentRecipients` below needs the raw
+// filtered `studentId` set to diff against existing recipients, not that
+// function's already-deduplicated, already-sorted return array.
+async function loadActiveEnrolledStudentIds(
+  classId: string,
+  schoolId: string,
+): Promise<ReadonlySet<string>> {
+  const snapshot = await enrollmentsCollectionRef()
+    .where("classId", "==", classId)
+    .get();
+  const seen = new Set<string>();
+  for (const doc of snapshot.docs) {
+    const data = doc.data() as EnrollmentRecord | undefined;
+    if (!data) continue;
+    if (data.classId !== classId) continue;
+    if (data.schoolId !== schoolId) continue;
+    if (data.status !== "active") continue;
+    if (!isNonEmptyStringValue(data.studentId)) continue;
+    seen.add(data.studentId);
+  }
+  return seen;
+}
+
+// Existing canonical recipients for the assignment, defensively filtered
+// exactly as `assessmentAssignmentSummary`'s population read already is: the
+// recipient doc id must equal its own `studentId` field, and every
+// ownership field must match the authoritative reconciliation context. A
+// malformed or cross-scope row is silently dropped rather than amplified,
+// consistent with the defense-in-depth pattern used throughout this domain.
+//
+// Collapsed from the pre-extraction two-object shape
+// (`loadExistingRecipientStudentIds(assignmentId, classId, actor,
+// assignment)`, where `actor.schoolId` and `assignment.schoolId` were
+// checked as two separately-named fields) into the single flattened
+// `RecipientOwnershipContext.schoolId`. This is behavior-preserving, not a
+// weakening: every caller of `reconcileAssignmentRecipients` already
+// independently verifies `assignment.schoolId === actor.schoolId` (or the
+// Slice-3-resolver-guaranteed equivalent) before constructing this context,
+// so the two checks were always comparing values already proven equal by
+// that point - collapsing them removes a literally-redundant comparison
+// against an already-guaranteed-equal value, not a distinct security check.
+async function loadExistingRecipientStudentIds(
+  context: RecipientOwnershipContext,
+): Promise<ReadonlySet<string>> {
+  const snapshot = await assignmentRecipientsCollectionRef(
+    context.assignmentId,
+  ).get();
+  const seen = new Set<string>();
+  for (const doc of snapshot.docs) {
+    const data = doc.data() as AssignmentRecipientRecord | undefined;
+    if (!data) continue;
+    if (doc.id !== data.studentId) continue;
+    if (data.assignmentId !== context.assignmentId) continue;
+    if (data.classId !== context.classId) continue;
+    if (data.teacherId !== context.teacherId) continue;
+    if (data.schoolId !== context.schoolId) continue;
+    if (data.districtId !== context.districtId) continue;
+    if (data.status !== "assigned") continue;
+    if (!isNonEmptyStringValue(data.studentId)) continue;
+    seen.add(data.studentId);
+  }
+  return seen;
+}
+
+// Result of `reconcileAssignmentRecipients`: the identical two-count
+// aggregate shape `assignmentsRecipientsReconcile` has always returned.
+export type ReconcileAssignmentRecipientsResult = {
+  readonly added: number;
+  readonly alreadyCurrent: number;
+};
+
+// The shared reconciliation engine (Historical Assignment Resolution,
+// Implementation Slice 6). Given an ALREADY-AUTHORITATIVE
+// `RecipientOwnershipContext` and a canonical recipient source, brings the
+// named assignment's recipients up to date with the class's current active
+// enrollment: every active-enrolled student who is not yet a canonical
+// recipient gets one created; canonical recipients are left untouched;
+// integrity-violating (malformed/noncanonical) existing recipients cause
+// `ensureAssignmentRecipient` to throw `assignments.recipientIntegrityViolation`
+// exactly as before.
+//
+// This function performs NO authentication, NO role check, and NO
+// assignment/class ownership or status validation of its own - it trusts
+// `context` completely, mirroring `ensureAssignmentRecipient`'s own
+// documented contract exactly one layer up. Every fact `context` encodes
+// (that `context.assignmentId` genuinely belongs to `context.teacherId` /
+// `context.schoolId` / `context.classId`, and that the assignment is
+// eligible for reconciliation) MUST already be established by the caller
+// through the caller's own authorization sequence before this function is
+// invoked. It is deliberately NOT a second authorization surface: it is
+// reachable only from server-side code that has already done that work,
+// never exported as a Firebase callable, and never given a raw client
+// request or auth object.
+//
+// This is what makes the engine safe to reuse from a future
+// Current-resolution-based caller (Slice 7) that never accepts an
+// `assignmentId` from the client at all: that caller establishes context
+// through an entirely different chain (resolving and validating a live
+// Current pointer, per `resolveValidCurrentAssignmentId`/
+// `requireValidCurrentAssignmentId` in `./resolve-current-assignment.ts`)
+// and then constructs the identical `RecipientOwnershipContext` shape from
+// its own already-authoritative result - this function has no dependency
+// on, or awareness of, which authorization chain produced its input.
+//
+// Partial-success semantics are UNCHANGED from the pre-extraction inline
+// implementation: `ensureAssignmentRecipient` is invoked once per missing
+// student via `Promise.all`, concurrently, not transactionally. If one
+// student's call throws (e.g. an integrity violation on a different,
+// unrelated malformed existing recipient row does not occur here, since
+// only MISSING students are ensured - but a concurrent write racing this
+// call could still surface `assignments.recipientIntegrityViolation` for a
+// student whose recipient was concurrently created in a noncanonical shape
+// between this call's enrollment snapshot and its own write), the
+// `Promise.all` rejects immediately and this function propagates that
+// rejection; any other students' `ensureAssignmentRecipient` calls that had
+// already completed successfully in the same batch are NOT rolled back and
+// their writes remain. This was already true of the original inline
+// implementation and is preserved exactly, not "improved" into an
+// all-or-nothing operation.
+export async function reconcileAssignmentRecipients(
+  context: RecipientOwnershipContext,
+  source: AssignmentRecipientSource,
+): Promise<ReconcileAssignmentRecipientsResult> {
+  const [activeEnrolledStudentIds, existingRecipientStudentIds] =
+    await Promise.all([
+      loadActiveEnrolledStudentIds(context.classId, context.schoolId),
+      loadExistingRecipientStudentIds(context),
+    ]);
+
+  const missing = Array.from(activeEnrolledStudentIds).filter(
+    (studentId) => !existingRecipientStudentIds.has(studentId),
+  );
+
+  // Concurrency note (unchanged from the pre-extraction implementation):
+  // each `ensureAssignmentRecipient` call independently re-checks existence
+  // immediately before writing (Slice 1's own idempotency guarantee), so a
+  // concurrent reconcile (or a concurrent `assignmentsRecipientAdd`) racing
+  // on the same student can never result in two documents at the same
+  // (assignmentId, studentId) path - the recipient document id is
+  // deterministic, so "duplicate" is structurally impossible regardless of
+  // timing. `added` below counts only the students THIS invocation's own
+  // calls actually created; a student found already-missing in this call's
+  // initial snapshot but created by a concurrent caller a moment before
+  // this call's own write reads back as `added: false` from
+  // `ensureAssignmentRecipient` and is correctly folded into
+  // `alreadyCurrent`, not double-counted as newly added by both callers.
+  const results = await Promise.all(
+    missing.map((studentId) =>
+      ensureAssignmentRecipient(context, studentId, source),
+    ),
+  );
+  const added = results.filter((r) => r.added).length;
+  const alreadyCurrent = activeEnrolledStudentIds.size - added;
+
+  return { added, alreadyCurrent };
 }
