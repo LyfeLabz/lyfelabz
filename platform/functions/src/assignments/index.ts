@@ -16,6 +16,11 @@ export {
   type AssignmentsCreateDraftResponse,
 } from "./assignments-create-draft";
 export {
+  assignmentsCurrentSet,
+  type AssignmentsCurrentSetRequest,
+  type AssignmentsCurrentSetResponse,
+} from "./assignments-current-set";
+export {
   assignmentsListForStudent,
   type AssignmentsListForStudentItem,
   type AssignmentsListForStudentRequest,

@@ -122,7 +122,18 @@ function isNonEmptyString(value: unknown): value is string {
 // outside the closed `AssignmentCurrentSource` vocabulary is treated
 // identically to "no pointer" (fail closed) - it is never repaired,
 // overwritten, or partially trusted.
-function isWellFormedAssignmentCurrentRecord(
+//
+// Exported (Slice 4) for direct reuse by `assignments-current-set.ts`: that
+// callable needs this exact well-formedness guard for the LIVE pointer it
+// reads inside its CAS transaction, but must NOT reuse the rest of this
+// module's resolution chain, which additionally re-validates the live
+// eligibility of the pointer's REFERENCED assignment - a check that is
+// correct for "is there a currently valid Current" but wrong for "what is
+// the raw recorded CAS value," since a pointer that still well-formedly and
+// correctly names an assignment that has since closed is still a genuine,
+// comparable Current value for CAS purposes, not an equivalent-to-absent
+// state. No other behavior in this file changes.
+export function isWellFormedAssignmentCurrentRecord(
   data: FirebaseFirestore.DocumentData | undefined,
 ): data is AssignmentCurrentRecord {
   if (!data) return false;

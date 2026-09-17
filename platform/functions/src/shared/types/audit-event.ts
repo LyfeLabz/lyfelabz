@@ -59,6 +59,23 @@ export const AUDIT_ACTIONS = [
   // carries only the assignment/class identifiers and aggregate
   // added/alreadyCurrent counts.
   "assignments.recipientsReconciled",
+  // Historical Assignment Resolution, Implementation Slice 4. Emitted by
+  // the `assignmentsCurrentSet` callable ONLY when the compare-and-swap
+  // mutation actually changed which assignment is Current for a (classId,
+  // lessonSlug) pair - the idempotent same-value branch (the live pointer
+  // already names the requested assignment) writes no audit event, mirroring
+  // `accommodations.configurationChanged`'s "equal-value write is a true
+  // no-op" convention. Covers both the one-time explicit resolution of a
+  // legacy class with no prior pointer and every subsequent deliberate
+  // "Change current assignment" action; both are the same category of
+  // explicit teacher-initiated intent (see `AssignmentCurrentSource`), so
+  // both share this one action rather than two near-duplicate events. The
+  // audit target is the `assignment` newly made Current; the payload
+  // carries only `classId`, `lessonSlug`, `assignmentId`,
+  // `previousAssignmentId` (the prior live value, `null` on a first
+  // resolution), and `source: "teacherResolution"`. It never carries a
+  // student identifier, a Classroom identifier, or free text.
+  "assignments.currentChanged",
   "submissions.created",
   "submissions.finalized",
   "assessment.sessionBegan",
