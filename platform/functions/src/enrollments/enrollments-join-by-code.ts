@@ -15,6 +15,8 @@ import {
   type EnrollmentCreationWrite,
 } from "../shared";
 
+import { reconcileRecipientsForNewEnrollment } from "../assignments/assignment-recipients";
+
 // Client-supplied request payload for enrollmentsJoinByCode. A student
 // authenticates and submits a join code the teacher has shared with the
 // class. Ownership fields are never carried on the request: studentId is
@@ -261,6 +263,44 @@ async function enrollmentsJoinByCodeHandler(
       enrollmentId: id,
     }),
   );
+
+  // Phase B Core, Automatic Enrollment Reconciliation slice (Layer 1
+  // promptness only - see `reconcileRecipientsForNewEnrollment`'s own
+  // doc comment for the stronger Layer 2 guarantee that is NOT part of
+  // this call). This enrollment has just, for the first time, become
+  // active; best-effort add the student as a recipient of every currently
+  // published assignment in this class so a teacher does not need to
+  // manually reconcile merely because a new student joined. A failure
+  // here must never undo or fail the enrollment this callable already
+  // successfully created and is about to return - it is caught, logged
+  // safely (no PII beyond the same opaque studentId/classId identifiers
+  // every sibling log line in this domain already carries), and the
+  // enrollment response below is returned exactly as if this had
+  // succeeded.
+  try {
+    const result = await reconcileRecipientsForNewEnrollment({
+      classId,
+      studentId: actor.uid,
+      schoolId: actor.schoolId,
+      districtId: actor.districtId,
+    });
+    safeLog(() =>
+      log.info("enrollments.newEnrollmentRecipientsReconciled", {
+        studentId: actor.uid,
+        classId,
+        assignmentsConsidered: result.assignmentsConsidered,
+        recipientsAdded: result.recipientsAdded,
+      }),
+    );
+  } catch (err) {
+    safeLog(() =>
+      log.warn("enrollments.newEnrollmentRecipientReconciliationFailed", {
+        studentId: actor.uid,
+        classId,
+        error: err instanceof Error ? err.message : "unknown",
+      }),
+    );
+  }
 
   return { enrollmentId: id, classId, alreadyEnrolled: false };
 }

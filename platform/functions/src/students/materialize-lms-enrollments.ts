@@ -8,11 +8,13 @@ import {
   listActiveExternalIdentityHashesForUser,
   lmsRosterMembershipsCollectionRef,
   log,
+  schoolDocRef,
   writeAuditEvent,
   type EnrollmentCreationWrite,
 } from "../shared";
 
 import { enrollmentIdFor } from "../enrollments/enrollments-join-by-code";
+import { reconcileRecipientsForNewEnrollment } from "../assignments/assignment-recipients";
 
 // Sprint 29G.5K - zero-coordination enrollment materialization.
 //
@@ -36,6 +38,37 @@ import { enrollmentIdFor } from "../enrollments/enrollments-join-by-code";
 // `provisioned` student, BEFORE `resolveLmsSchoolId`, so the student's own
 // FIRST `Continue with Google Classroom` both enrolls and activates them -
 // with no teacher roster sync and no second student action.
+
+// Phase B Core, Automatic Enrollment Reconciliation slice. This function
+// has no `districtId` in scope at all today (its caller,
+// `studentsCompleteLmsOnboarding`, resolves `districtId` only AFTER this
+// function returns, from the school this function's own materialization
+// indirectly determines). `reconcileRecipientsForNewEnrollment` requires
+// a verified `districtId` (recipient records freeze it per PDR-029h), so
+// each newly-created enrollment below resolves it fresh from the same
+// trusted school record the roster-sync/onboarding paths already use for
+// the identical lookup - mirroring `resolveSchoolDistrictId` in
+// `students-complete-lms-onboarding.ts` exactly (there is no existing
+// shared export of that lookup to reuse instead of duplicating this one
+// narrow read).
+async function resolveDistrictId(schoolId: string): Promise<string> {
+  const snapshot = await schoolDocRef(schoolId).get();
+  if (!snapshot.exists) {
+    throw new PlatformError(
+      "students.schoolNotFound",
+      "Referenced school does not exist.",
+    );
+  }
+  const school = snapshot.data();
+  const districtId = school?.districtId;
+  if (typeof districtId !== "string" || districtId.trim().length === 0) {
+    throw new PlatformError(
+      "district-unassigned",
+      "The referenced school is not assigned to a district.",
+    );
+  }
+  return districtId;
+}
 
 export type MaterializeLmsEnrollmentsResult = {
   // Number of NEW active enrollments created this call (idempotent replays
@@ -168,6 +201,48 @@ export async function materializeLmsEnrollmentsFromMembership(input: {
       schoolId: target.schoolId,
       payload: { providerId: "googleClassroom", source: "lmsMembership" },
     });
+
+    // Phase B Core, Automatic Enrollment Reconciliation slice (Layer 1
+    // promptness only - see `reconcileRecipientsForNewEnrollment`'s own
+    // doc comment for the separate, not-yet-built Layer 2 guarantee).
+    // This enrollment has just, for the first time, become active;
+    // best-effort add the student as a recipient of every currently
+    // published assignment in this one class. Scoped to its own
+    // try/catch PER target so a reconciliation failure for one class can
+    // never prevent this loop from creating (or reconciling) the
+    // student's enrollment in any OTHER matched class, and never fails
+    // this already-successful enrollment creation.
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const districtId = await resolveDistrictId(target.schoolId);
+      // eslint-disable-next-line no-await-in-loop
+      const result = await reconcileRecipientsForNewEnrollment({
+        classId: target.classId,
+        studentId: uid,
+        schoolId: target.schoolId,
+        districtId,
+      });
+      try {
+        log.info("enrollments.newEnrollmentRecipientsReconciled", {
+          studentId: uid,
+          classId: target.classId,
+          assignmentsConsidered: result.assignmentsConsidered,
+          recipientsAdded: result.recipientsAdded,
+        });
+      } catch {
+        // Logging is observability, not lifecycle.
+      }
+    } catch (err) {
+      try {
+        log.warn("enrollments.newEnrollmentRecipientReconciliationFailed", {
+          studentId: uid,
+          classId: target.classId,
+          error: err instanceof Error ? err.message : "unknown",
+        });
+      } catch {
+        // Logging is observability, not lifecycle.
+      }
+    }
   }
 
   try {

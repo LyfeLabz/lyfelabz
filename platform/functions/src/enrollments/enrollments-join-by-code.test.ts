@@ -24,6 +24,18 @@ const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
 
+// Phase B Core, Automatic Enrollment Reconciliation slice: the internal
+// helper's own correctness is exercised by
+// `assignment-recipients.test.ts` (Part A). Here it is mocked at the
+// module boundary so these tests can assert only the integration contract:
+// is it invoked with the right trusted context on a genuinely new
+// enrollment, and does its failure never fail this callable.
+const mockReconcileRecipientsForNewEnrollment = jest.fn();
+
+jest.mock("../assignments/assignment-recipients", () => ({
+  reconcileRecipientsForNewEnrollment: mockReconcileRecipientsForNewEnrollment,
+}));
+
 const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
 
 jest.mock("firebase-admin/firestore", () => ({
@@ -159,6 +171,11 @@ describe("enrollmentsJoinByCode", () => {
     mockLogInfo.mockReset();
     mockLogWarn.mockReset();
     mockLogError.mockReset();
+    mockReconcileRecipientsForNewEnrollment.mockReset();
+    mockReconcileRecipientsForNewEnrollment.mockResolvedValue({
+      assignmentsConsidered: 0,
+      recipientsAdded: 0,
+    });
   });
 
   it("creates the canonical enrollment document and returns the canonical response", async () => {
@@ -443,6 +460,65 @@ describe("enrollmentsJoinByCode", () => {
     });
     expect(mockEnrollmentSet).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    expect(mockReconcileRecipientsForNewEnrollment).not.toHaveBeenCalled();
+  });
+
+  describe("Phase B Core, Automatic Enrollment Reconciliation", () => {
+    it("invokes reconciliation with the trusted context after a genuinely new active enrollment is created", async () => {
+      mockClassesQuery.get.mockResolvedValueOnce(classQuerySnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(absentSnapshot());
+      mockEnrollmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+      mockReconcileRecipientsForNewEnrollment.mockResolvedValueOnce({
+        assignmentsConsidered: 2,
+        recipientsAdded: 1,
+      });
+
+      const result = await __enrollmentsJoinByCodeHandler(makeRequest());
+
+      expect(mockReconcileRecipientsForNewEnrollment).toHaveBeenCalledWith({
+        classId: CLASS_ID,
+        studentId: STUDENT_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+      });
+      expect(result).toEqual({
+        enrollmentId: EXPECTED_ID,
+        classId: CLASS_ID,
+        alreadyEnrolled: false,
+      });
+    });
+
+    it("does not fail or roll back the enrollment when reconciliation fails", async () => {
+      mockClassesQuery.get.mockResolvedValueOnce(classQuerySnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(absentSnapshot());
+      mockEnrollmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+      mockReconcileRecipientsForNewEnrollment.mockRejectedValueOnce(
+        new Error("boom"),
+      );
+
+      const result = await __enrollmentsJoinByCodeHandler(makeRequest());
+
+      expect(result).toEqual({
+        enrollmentId: EXPECTED_ID,
+        classId: CLASS_ID,
+        alreadyEnrolled: false,
+      });
+      expect(mockLogWarn).toHaveBeenCalledWith(
+        "enrollments.newEnrollmentRecipientReconciliationFailed",
+        expect.objectContaining({ studentId: STUDENT_UID, classId: CLASS_ID }),
+      );
+    });
+
+    it("does not invoke reconciliation on an idempotent replay of an existing active enrollment", async () => {
+      mockClassesQuery.get.mockResolvedValueOnce(classQuerySnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(existingEnrollmentSnapshot());
+
+      await __enrollmentsJoinByCodeHandler(makeRequest());
+
+      expect(mockReconcileRecipientsForNewEnrollment).not.toHaveBeenCalled();
+    });
   });
 
   it("rejects a duplicate enrollment in a terminal status with enrollments.conflict", async () => {

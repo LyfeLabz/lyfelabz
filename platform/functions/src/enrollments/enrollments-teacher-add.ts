@@ -18,6 +18,7 @@ import {
 } from "../shared";
 
 import { enrollmentIdFor } from "./enrollments-join-by-code";
+import { reconcileRecipientsForNewEnrollment } from "../assignments/assignment-recipients";
 
 // Client-supplied request payload for enrollmentsTeacherAdd. A teacher
 // authenticates and names the (classId, studentId) pair to enroll. Ownership
@@ -294,6 +295,35 @@ async function enrollmentsTeacherAddHandler(
       enrollmentId: id,
     }),
   );
+
+  // Phase B Core, Automatic Enrollment Reconciliation slice (Layer 1
+  // promptness only). See the identical comment in
+  // `enrollments-join-by-code.ts` - the same best-effort, never-fails-the-
+  // enrollment posture applies here.
+  try {
+    const result = await reconcileRecipientsForNewEnrollment({
+      classId: input.classId,
+      studentId: input.studentId,
+      schoolId: classRecord.schoolId,
+      districtId: actor.districtId,
+    });
+    safeLog(() =>
+      log.info("enrollments.newEnrollmentRecipientsReconciled", {
+        studentId: input.studentId,
+        classId: input.classId,
+        assignmentsConsidered: result.assignmentsConsidered,
+        recipientsAdded: result.recipientsAdded,
+      }),
+    );
+  } catch (err) {
+    safeLog(() =>
+      log.warn("enrollments.newEnrollmentRecipientReconciliationFailed", {
+        studentId: input.studentId,
+        classId: input.classId,
+        error: err instanceof Error ? err.message : "unknown",
+      }),
+    );
+  }
 
   return {
     enrollmentId: id,

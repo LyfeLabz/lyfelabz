@@ -20,8 +20,12 @@ const mockSessionCreationDocRef = jest.fn(() => ({
   set: mockSessionCreate,
   create: mockSessionCreate,
 }));
+const mockRecipientCreationSet = jest.fn();
 const mockAssignmentRecipientDocRef = jest.fn(() => ({
   get: mockRecipientGet,
+}));
+const mockAssignmentRecipientCreationDocRef = jest.fn(() => ({
+  set: mockRecipientCreationSet,
 }));
 const mockStudentAccommodationDocRef = jest.fn(() => ({ get: mockAccommodationGet }));
 const mockLaunchGrantDocRef = jest.fn(() => ({ get: mockGrantGet }));
@@ -65,6 +69,7 @@ jest.mock("../shared", () => {
     assessmentSessionDocRef: mockSessionDocRef,
     assessmentSessionCreationDocRef: mockSessionCreationDocRef,
     assignmentRecipientDocRef: mockAssignmentRecipientDocRef,
+    assignmentRecipientCreationDocRef: mockAssignmentRecipientCreationDocRef,
     enrollmentsCollectionRef: jest.fn(),
     requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
@@ -301,11 +306,14 @@ describe("assessmentSessionsBegin", () => {
     mockSessionCreate.mockReset();
     mockRecipientGet.mockReset();
     mockRecipientGet.mockResolvedValue(recipientSnapshot());
+    mockRecipientCreationSet.mockReset();
+    mockRecipientCreationSet.mockResolvedValue(undefined);
     mockAssignmentDocRef.mockClear();
     mockEnrollmentDocRef.mockClear();
     mockSessionDocRef.mockClear();
     mockSessionCreationDocRef.mockClear();
     mockAssignmentRecipientDocRef.mockClear();
+    mockAssignmentRecipientCreationDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
     mockRequireDistrictContext.mockReset();
     mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
@@ -672,94 +680,19 @@ describe("assessmentSessionsBegin", () => {
   // `assessmentSessions.conflict` identifier so the caller observes the
   // same refusal identifier they would have observed on a mid-check
   // conflict.
-  // -------- Sprint 12E Slice 2B - PDR-029l recipient enforcement --------
+  // -------- Sprint 12E Slice 2B / Phase B Core Layer 2 - recipient enforcement --------
+  //
+  // Layer 2 self-heal replaces the old read-only `isCanonicalRecipient`
+  // refusal with `ensureAssignmentRecipient`: if the recipient doc is
+  // missing AFTER active enrollment is confirmed, it is idempotently
+  // created with source `lateJoinReconciliation`. If the doc already
+  // exists AND is canonical, `ensureAssignmentRecipient` returns
+  // `{added: false}` (no write). If the doc exists but is noncanonical,
+  // `ensureAssignmentRecipient` throws a fail-closed
+  // `assignments.recipientIntegrityViolation` error - it does NOT
+  // silently accept or overwrite malformed data.
 
-  it("recipient: refuses when no recipient document exists", async () => {
-    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
-    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
-    mockRecipientGet.mockReset();
-    mockRecipientGet.mockResolvedValueOnce(absentRecipientSnapshot());
-    await expect(
-      __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
-    expect(mockAssignmentRecipientDocRef).toHaveBeenCalledWith(
-      ASSIGNMENT_ID,
-      STUDENT_UID,
-    );
-    expect(mockSessionGet).not.toHaveBeenCalled();
-    expect(mockSessionCreate).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("recipient: refuses when the recipient document is malformed (empty data)", async () => {
-    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
-    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
-    mockRecipientGet.mockReset();
-    mockRecipientGet.mockResolvedValueOnce({
-      exists: true,
-      data: () => undefined,
-    });
-    await expect(
-      __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
-    expect(mockSessionCreate).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("recipient: refuses when the recipient names a different student", async () => {
-    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
-    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
-    mockRecipientGet.mockReset();
-    mockRecipientGet.mockResolvedValueOnce(
-      recipientSnapshot({ studentId: "someone-else" }),
-    );
-    await expect(
-      __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
-    expect(mockSessionCreate).not.toHaveBeenCalled();
-    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
-  });
-
-  it("recipient: refuses a cross-school recipient", async () => {
-    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
-    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
-    mockRecipientGet.mockReset();
-    mockRecipientGet.mockResolvedValueOnce(
-      recipientSnapshot({ schoolId: "other-school" }),
-    );
-    await expect(
-      __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
-    expect(mockSessionCreate).not.toHaveBeenCalled();
-  });
-
-  it("recipient: refuses a cross-district recipient", async () => {
-    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
-    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
-    mockRecipientGet.mockReset();
-    mockRecipientGet.mockResolvedValueOnce(
-      recipientSnapshot({ districtId: "other-district" }),
-    );
-    await expect(
-      __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
-    expect(mockSessionCreate).not.toHaveBeenCalled();
-  });
-
-  it("recipient: refuses when the recipient references a different assignment", async () => {
-    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
-    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
-    mockRecipientGet.mockReset();
-    mockRecipientGet.mockResolvedValueOnce(
-      recipientSnapshot({ assignmentId: "other-assignment" }),
-    );
-    await expect(
-      __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
-    expect(mockSessionCreate).not.toHaveBeenCalled();
-  });
-
-  it("recipient: creates a session when a canonical recipient exists", async () => {
+  it("recipient: creates a session when a canonical recipient exists (no recipient creation write)", async () => {
     mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
     mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
@@ -772,6 +705,333 @@ describe("assessmentSessionsBegin", () => {
       STUDENT_UID,
     );
     expect(mockRecipientGet).toHaveBeenCalledTimes(1);
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+  });
+
+  it("Layer 2 self-heal: missing recipient + active enrollment creates the recipient with source lateJoinReconciliation then begins session", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(absentRecipientSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-sh", record: {} });
+
+    const result = await __assessmentSessionsBeginHandler(makeRequest());
+
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false });
+    expect(mockAssignmentRecipientDocRef).toHaveBeenCalledWith(
+      ASSIGNMENT_ID,
+      STUDENT_UID,
+    );
+    expect(mockAssignmentRecipientCreationDocRef).toHaveBeenCalledWith(
+      ASSIGNMENT_ID,
+      STUDENT_UID,
+    );
+    expect(mockRecipientCreationSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assignmentId: ASSIGNMENT_ID,
+        studentId: STUDENT_UID,
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+        assignedBy: TEACHER_UID,
+        source: "lateJoinReconciliation",
+        status: "assigned",
+      }),
+    );
+    expect(mockSessionCreate).toHaveBeenCalled();
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "assessment.sessionBegan" }),
+    );
+  });
+
+  it("Layer 2: missing recipient + NO active enrollment refuses and creates zero recipients", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockReset();
+    mockEnrollmentGet.mockResolvedValueOnce(
+      { exists: false, data: () => undefined },
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
+    expect(mockRecipientGet).not.toHaveBeenCalled();
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Layer 2: missing recipient + inactive enrollment refuses and creates zero recipients", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockReset();
+    mockEnrollmentGet.mockResolvedValueOnce(
+      enrollmentSnapshot({ status: "withdrawn" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
+    expect(mockRecipientGet).not.toHaveBeenCalled();
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Layer 2: missing recipient + enrollment in a DIFFERENT class refuses and creates zero recipients", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    // The enrollment doc at `classId__studentId` does not exist because
+    // the student is enrolled in another class, not assignment.classId.
+    mockEnrollmentGet.mockReset();
+    mockEnrollmentGet.mockResolvedValueOnce(
+      { exists: false, data: () => undefined },
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
+    expect(mockRecipientGet).not.toHaveBeenCalled();
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Layer 2: assignment not published refuses BEFORE recipient repair", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(
+      assignmentSnapshot({ status: "draft" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignment-not-published" });
+    expect(mockEnrollmentGet).not.toHaveBeenCalled();
+    expect(mockRecipientGet).not.toHaveBeenCalled();
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Layer 2: recipient repair write fails => fails closed, zero sessions", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(absentRecipientSnapshot());
+    mockRecipientCreationSet.mockReset();
+    mockRecipientCreationSet.mockRejectedValueOnce(new Error("Firestore unavailable"));
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toThrow();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("Layer 2: repeated call after successful repair is idempotent", async () => {
+    // First call: self-heal creates recipient
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(absentRecipientSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+    await __assessmentSessionsBeginHandler(makeRequest());
+    expect(mockRecipientCreationSet).toHaveBeenCalledTimes(1);
+
+    // Second call: recipient now exists (mocked), session exists (idempotent)
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockResolvedValueOnce(recipientSnapshot());
+    mockSessionGet.mockResolvedValueOnce(existingLiveSessionSnapshot());
+    mockRecipientCreationSet.mockClear();
+    const result = await __assessmentSessionsBeginHandler(makeRequest());
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+  });
+
+  it("Layer 2: concurrent repair via deterministic doc path prevents duplicate recipients", async () => {
+    // The deterministic recipient doc path
+    // `assignments/{assignmentId}/recipients/{studentId}` makes structural
+    // duplication impossible. Two concurrent `ensureAssignmentRecipient`
+    // calls for the same (assignmentId, studentId): one creates via
+    // `.set()` (upsert), the other sees `exists: true` and skips. The
+    // shared primitive is tested exhaustively in
+    // `assignment-recipients.test.ts`; this test confirms the session-begin
+    // call site feeds the right arguments to the deterministic path.
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(absentRecipientSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockSessionCreate.mockResolvedValueOnce(undefined);
+    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-c", record: {} });
+
+    await __assessmentSessionsBeginHandler(makeRequest());
+
+    expect(mockAssignmentRecipientDocRef).toHaveBeenCalledWith(
+      ASSIGNMENT_ID,
+      STUDENT_UID,
+    );
+    expect(mockAssignmentRecipientCreationDocRef).toHaveBeenCalledWith(
+      ASSIGNMENT_ID,
+      STUDENT_UID,
+    );
+  });
+
+  it("Layer 2: existing recipient WITHOUT active enrollment still refuses access", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockReset();
+    mockEnrollmentGet.mockResolvedValueOnce(
+      { exists: false, data: () => undefined },
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
+    // The recipient check is never reached; enrollment is the gatekeeper.
+    expect(mockRecipientGet).not.toHaveBeenCalled();
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  // -------- Restored security tests: malformed/noncanonical recipient docs fail closed --------
+  //
+  // These tests prove that an existing recipient doc with mismatched
+  // ownership fields is rejected by `ensureAssignmentRecipient` (via the
+  // shared `isCanonicalRecipientData` predicate), resulting in a
+  // fail-closed PlatformError. No session is created, no recipient is
+  // overwritten. Active enrollment alone is NOT sufficient - the recipient
+  // doc must also be canonical.
+
+  it("Security: existing recipient with mismatched assignmentId fails closed - no session", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ assignmentId: "wrong-assignment" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Security: existing recipient with mismatched studentId fails closed - no session", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ studentId: "wrong-student" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Security: existing recipient with mismatched schoolId fails closed - no session", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ schoolId: "wrong-school" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Security: existing recipient with mismatched districtId fails closed - no session", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ districtId: "wrong-district" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Security: existing recipient with status removed fails closed - no session", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ status: "removed" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Security: existing recipient with undefined data fails closed - no session", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce({ exists: true, data: () => undefined });
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Security: malformed recipient is NOT silently overwritten with canonical values", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ schoolId: "wrong-school" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockAssignmentRecipientCreationDocRef).not.toHaveBeenCalled();
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+  });
+
+  it("Security: multiple mismatched fields still fail closed with a single integrity violation", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({
+        assignmentId: "wrong-assignment",
+        studentId: "wrong-student",
+        schoolId: "wrong-school",
+        districtId: "wrong-district",
+        status: "removed",
+      }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Security: empty-object recipient data fails closed - no session", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce({ exists: true, data: () => ({}) });
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.recipientIntegrityViolation" });
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("Security: recipient integrity violation is a PlatformError instance", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockRecipientGet.mockReset();
+    mockRecipientGet.mockResolvedValueOnce(
+      recipientSnapshot({ schoolId: "wrong-school" }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toBeInstanceOf(PlatformError);
   });
 
   it("I-3: maps a create-time ALREADY_EXISTS race to assessmentSessions.conflict", async () => {
@@ -1015,21 +1275,26 @@ describe("assessmentSessionsBegin", () => {
     ).rejects.toMatchObject({ code: "assessmentSessions.invalidRequest" });
   });
 
-  it("Slice 6 (tamper): a launchRef cannot bypass assignment authorization", async () => {
-    // A perfectly valid grant does not rescue a caller who is not a recipient:
-    // authorization runs to completion BEFORE any grant validation.
+  it("Slice 6 (tamper): a launchRef cannot bypass enrollment authorization", async () => {
+    // A perfectly valid grant does not rescue a caller who is not enrolled:
+    // enrollment authorization runs to completion BEFORE recipient repair or
+    // any grant validation.
     mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
-    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
-    mockRecipientGet.mockReset();
-    mockRecipientGet.mockResolvedValueOnce(absentRecipientSnapshot());
+    mockEnrollmentGet.mockReset();
+    mockEnrollmentGet.mockResolvedValueOnce(
+      { exists: false, data: () => undefined },
+    );
     mockGrantGet.mockResolvedValue(differentiatedGrantSnapshot());
 
     await expect(
       __assessmentSessionsBeginHandler(
         makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
       ),
-    ).rejects.toMatchObject({ code: "assessmentSessions.recipientRequired" });
-    // Grant validation is never reached; no session created.
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
+    // Enrollment failed — neither recipient repair nor grant validation
+    // is reached; no session created.
+    expect(mockRecipientGet).not.toHaveBeenCalled();
+    expect(mockRecipientCreationSet).not.toHaveBeenCalled();
     expect(mockGrantGet).not.toHaveBeenCalled();
     expect(mockSessionCreate).not.toHaveBeenCalled();
   });

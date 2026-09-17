@@ -49,6 +49,18 @@ export {
   type AssignmentsRecipientListResponse,
 } from "./assignments-recipient-list";
 export {
+  assignmentsRecipientsReconcile,
+  type AssignmentsRecipientsReconcileRequest,
+  type AssignmentsRecipientsReconcileResponse,
+} from "./assignments-recipients-reconcile";
+export {
+  assignmentsLifecycleState,
+  type AssignmentCandidate,
+  type AssignmentsLifecycleState,
+  type AssignmentsLifecycleStateRequest,
+  type AssignmentsLifecycleStateResponse,
+} from "./assignments-lifecycle-state";
+export {
   assignmentsTeacherList,
   type AssignmentsTeacherListItem,
   type AssignmentsTeacherListRequest,

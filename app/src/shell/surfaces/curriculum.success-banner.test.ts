@@ -72,6 +72,15 @@ const okAssignments = (): {
           alreadyPublished: false,
         };
       },
+      lifecycleState: async () => ({
+        state: "neverAssigned" as const,
+        candidates: [],
+      }),
+      recipientsReconcile: async (input) => ({
+        assignmentId: input.assignmentId,
+        added: 0,
+        alreadyCurrent: 0,
+      }),
     },
   };
 };
@@ -168,7 +177,7 @@ describe("B6 success banner - visibility after successful assignment", () => {
         "data-lesson-assigned",
       ),
     ).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
   });
 });
 

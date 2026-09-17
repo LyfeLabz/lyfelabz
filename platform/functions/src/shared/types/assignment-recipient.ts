@@ -15,13 +15,42 @@ export type AssignmentRecipientStatus = "assigned";
 // snapshot written during first assignment publication.
 // `manualAddition` is stamped on every recipient created explicitly by an
 // owning teacher through `assignmentsRecipientAdd` on an already-published
-// assignment.
+// assignment, naming exactly one student.
+// `teacherReconcile` (Student Progress & Assignment Membership, Phase B
+// Core Slice 2) is stamped on every recipient created through
+// `assignmentsRecipientsReconcile` - the intent-based "bring this
+// assignment's recipients up to date with the class's current active
+// enrollment" callable. It is deliberately distinct from
+// `manualAddition`: a reconcile call names no student at all (the server
+// derives the eligible population from active enrollment), so a recipient
+// stamped `teacherReconcile` must never be described to a teacher, in an
+// audit event, or in a log line as "the teacher selected this specific
+// student" - that claim is only ever true of `manualAddition`.
+//
+// `lateJoinReconciliation` (Student Progress & Assignment Membership,
+// Phase B Core, Automatic Enrollment Reconciliation slice) is stamped on
+// every recipient created automatically by
+// `reconcileRecipientsForNewEnrollment` immediately after one of the
+// enrollment-creation pathways (`enrollmentsJoinByCode`,
+// `enrollmentsTeacherAdd`, `materializeLmsEnrollmentsFromMembership`)
+// establishes a genuinely new active enrollment. Like `teacherReconcile`,
+// it names no single student-selection gesture; unlike `teacherReconcile`,
+// no teacher action triggered it at all - the triggering actor is the
+// enrollment event itself, not a teacher click. This is Layer 1
+// (enrollment-time promptness) only; the later Layer 2 convergence
+// guarantee inside `assessmentSessionsBegin` is a separate, not-yet-built
+// slice and may or may not introduce its own distinct source value when
+// it lands - that decision is deferred to that slice.
 //
 // `lmsImport` is enumerated in PDR-029h but is intentionally not accepted by
 // any Cloud Function in Sprint 12E Slice 2A. It is reserved for a future
 // slice that authorizes an LMS-side recipient writer with its own audit
 // event; adding it to the union today would allow no writer to stamp it.
-export type AssignmentRecipientSource = "classPublication" | "manualAddition";
+export type AssignmentRecipientSource =
+  | "classPublication"
+  | "manualAddition"
+  | "teacherReconcile"
+  | "lateJoinReconciliation";
 
 // Canonical assignment-recipient record shape per PDR-029h.
 //

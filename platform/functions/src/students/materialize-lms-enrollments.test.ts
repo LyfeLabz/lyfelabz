@@ -22,6 +22,16 @@ const mockEnrollmentCreationDocRef = jest.fn(() => ({
 const mockListHashes = jest.fn();
 const mockWriteAuditEvent = jest.fn();
 const mockLogInfo = jest.fn();
+const mockLogWarn = jest.fn();
+
+// Phase B Core, Automatic Enrollment Reconciliation slice: `schoolDocRef`
+// backs this file's new local `resolveDistrictId`, and
+// `reconcileRecipientsForNewEnrollment` is mocked at the module boundary
+// (its own correctness is covered by `assignment-recipients.test.ts` Part
+// A) so these tests assert only the integration contract.
+const mockSchoolGet = jest.fn();
+const mockSchoolDocRef = jest.fn(() => ({ get: mockSchoolGet }));
+const mockReconcileRecipientsForNewEnrollment = jest.fn();
 
 jest.mock("firebase-admin/firestore", () => ({
   FieldValue: { serverTimestamp: () => "__ts__" },
@@ -33,12 +43,13 @@ jest.mock("../shared", () => {
   );
   return {
     PlatformError,
-    log: { info: mockLogInfo, warn: jest.fn(), error: jest.fn() },
+    log: { info: mockLogInfo, warn: mockLogWarn, error: jest.fn() },
     classDocRef: mockClassDocRef,
     enrollmentCreationDocRef: mockEnrollmentCreationDocRef,
     enrollmentDocRef: mockEnrollmentDocRef,
     listActiveExternalIdentityHashesForUser: mockListHashes,
     lmsRosterMembershipsCollectionRef: mockMembershipsCollectionRef,
+    schoolDocRef: mockSchoolDocRef,
     writeAuditEvent: mockWriteAuditEvent,
   };
 });
@@ -46,6 +57,10 @@ jest.mock("../shared", () => {
 jest.mock("../enrollments/enrollments-join-by-code", () => ({
   enrollmentIdFor: (classId: string, studentId: string) =>
     `${classId}__${studentId}`,
+}));
+
+jest.mock("../assignments/assignment-recipients", () => ({
+  reconcileRecipientsForNewEnrollment: mockReconcileRecipientsForNewEnrollment,
 }));
 
 import { PlatformError } from "../shared/errors/platform-error";
@@ -97,6 +112,14 @@ function classSnap(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockEnrollmentGet.mockResolvedValue({ exists: false });
+  mockSchoolGet.mockResolvedValue({
+    exists: true,
+    data: () => ({ districtId: "district-1" }),
+  });
+  mockReconcileRecipientsForNewEnrollment.mockResolvedValue({
+    assignmentsConsidered: 0,
+    recipientsAdded: 0,
+  });
 });
 
 describe("materializeLmsEnrollmentsFromMembership", () => {
@@ -187,5 +210,63 @@ describe("materializeLmsEnrollmentsFromMembership", () => {
 
   it("ignores PlatformError typing import (sanity)", () => {
     expect(new PlatformError("x", "y").code).toBe("x");
+  });
+
+  describe("Phase B Core, Automatic Enrollment Reconciliation", () => {
+    it("invokes reconciliation with the resolved trusted districtId after a genuinely new active enrollment is materialized", async () => {
+      mockListHashes.mockResolvedValue([HASH]);
+      wireMemberships([membershipDoc("class-alpha")]);
+      mockClassGet.mockResolvedValue(classSnap());
+      mockReconcileRecipientsForNewEnrollment.mockResolvedValueOnce({
+        assignmentsConsidered: 2,
+        recipientsAdded: 1,
+      });
+
+      const result = await materializeLmsEnrollmentsFromMembership({ uid: UID });
+
+      expect(result.created).toBe(1);
+      expect(mockSchoolDocRef).toHaveBeenCalledWith("school-alpha");
+      expect(mockReconcileRecipientsForNewEnrollment).toHaveBeenCalledWith({
+        classId: "class-alpha",
+        studentId: UID,
+        schoolId: "school-alpha",
+        districtId: "district-1",
+      });
+    });
+
+    it("isolates a reconciliation failure for one class so it does not break materialization of an unrelated class", async () => {
+      mockListHashes.mockResolvedValue([HASH]);
+      wireMemberships([membershipDoc("class-alpha"), membershipDoc("class-beta")]);
+      mockClassGet.mockResolvedValue(classSnap());
+      mockReconcileRecipientsForNewEnrollment
+        .mockRejectedValueOnce(new Error("boom"))
+        .mockResolvedValueOnce({ assignmentsConsidered: 1, recipientsAdded: 1 });
+
+      const result = await materializeLmsEnrollmentsFromMembership({ uid: UID });
+
+      expect(result.created).toBe(2);
+      expect(result.matchedClasses).toBe(2);
+      expect(mockEnrollmentCreationSet).toHaveBeenCalledTimes(2);
+      expect(mockReconcileRecipientsForNewEnrollment).toHaveBeenCalledTimes(2);
+      expect(mockLogWarn).toHaveBeenCalledWith(
+        "enrollments.newEnrollmentRecipientReconciliationFailed",
+        expect.objectContaining({ studentId: UID }),
+      );
+    });
+
+    it("does not reconcile an already-existing active enrollment", async () => {
+      mockListHashes.mockResolvedValue([HASH]);
+      wireMemberships([membershipDoc("class-alpha")]);
+      mockClassGet.mockResolvedValue(classSnap());
+      mockEnrollmentGet.mockResolvedValue({
+        exists: true,
+        data: () => ({ status: "active" }),
+      });
+
+      const result = await materializeLmsEnrollmentsFromMembership({ uid: UID });
+
+      expect(result.created).toBe(0);
+      expect(mockReconcileRecipientsForNewEnrollment).not.toHaveBeenCalled();
+    });
   });
 });

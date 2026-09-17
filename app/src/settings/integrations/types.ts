@@ -242,6 +242,43 @@ export type AssignmentsPublishOutput = {
   readonly alreadyPublished: boolean;
 };
 
+export type AssignmentsLifecycleStateInput = {
+  readonly classId: string;
+  readonly lessonSlug: string;
+};
+
+export type AssignmentCandidate = {
+  readonly assignmentId: string;
+  readonly title: string;
+  readonly status: "draft" | "published" | "closed";
+  readonly publishedAt: number | null;
+  readonly recipientCount: number;
+  readonly activeEnrollmentCount: number;
+  readonly missingRecipientCount: number;
+};
+
+export type AssignmentsLifecycleState =
+  | "neverAssigned"
+  | "onePublishedFullyCurrent"
+  | "onePublishedMissingRecipients"
+  | "multiplePublished"
+  | "historicalOnly";
+
+export type AssignmentsLifecycleStateOutput = {
+  readonly state: AssignmentsLifecycleState;
+  readonly candidates: ReadonlyArray<AssignmentCandidate>;
+};
+
+export type AssignmentsRecipientsReconcileInput = {
+  readonly assignmentId: string;
+};
+
+export type AssignmentsRecipientsReconcileOutput = {
+  readonly assignmentId: string;
+  readonly added: number;
+  readonly alreadyCurrent: number;
+};
+
 export type AssignmentsCallables = {
   readonly createDraft: (
     input: AssignmentsCreateDraftInput,
@@ -249,6 +286,12 @@ export type AssignmentsCallables = {
   readonly publish: (
     input: AssignmentsPublishInput,
   ) => Promise<AssignmentsPublishOutput>;
+  readonly lifecycleState: (
+    input: AssignmentsLifecycleStateInput,
+  ) => Promise<AssignmentsLifecycleStateOutput>;
+  readonly recipientsReconcile: (
+    input: AssignmentsRecipientsReconcileInput,
+  ) => Promise<AssignmentsRecipientsReconcileOutput>;
 };
 
 // OAuth browser handoff. The Integrations surface never opens a popup

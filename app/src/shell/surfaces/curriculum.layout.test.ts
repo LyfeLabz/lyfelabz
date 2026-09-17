@@ -65,6 +65,15 @@ const makeAssignments = (): AssignmentsCallables => ({
     status: "published" as const,
     alreadyPublished: false,
   }),
+  lifecycleState: async () => ({
+    state: "neverAssigned" as const,
+    candidates: [],
+  }),
+  recipientsReconcile: async (input) => ({
+    assignmentId: input.assignmentId,
+    added: 0,
+    alreadyCurrent: 0,
+  }),
 });
 
 const makeDetailSeam = (
@@ -212,8 +221,7 @@ describe("Curriculum lesson-card layout & activation badge model", () => {
     const btn = card.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     )!;
-    // Sprint 28.6H.7 (Part B): an assigned lesson reads "Reassign".
-    expect(btn.textContent).toBe("Reassign");
+    expect(btn.textContent).toBe("Update Assignment");
     expect(card.getAttribute("data-lesson-assigned")).toBe("true");
     expect(card.contains(btn)).toBe(true);
     // The Assign control still lives inside the actions row.
@@ -252,13 +260,11 @@ describe("Curriculum lesson-card layout & activation badge model", () => {
     ).toBeNull();
     // Sprint 28.6H.7 (Part B): no visible "✓ Assigned" badge. The card records
     // the assignment-history signal on its dataset, and the primary action
-    // reads "Reassign" (muted green) and is enabled so the lesson stays
-    // re-assignable.
     expect(card.getAttribute("data-lesson-assigned")).toBe("true");
     const assign = card.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     )!;
-    expect(assign.textContent).toBe("Reassign");
+    expect(assign.textContent).toBe("Update Assignment");
     expect(assign.disabled).toBe(false);
   });
 

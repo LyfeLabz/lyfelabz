@@ -959,12 +959,9 @@ describe("Assign Experience - Sprint 6E", () => {
     const assign = mount.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     );
-    // Sprint 28.6H.7 (Part B): after a successful assignment the control reads
-    // "Reassign" (green outline, still fully re-assignable - no "✓ Assigned"
-    // badge, never disabled); the card records the history.
-    expect(assign?.textContent).toBe("Reassign");
+    expect(assign?.textContent).toBe("Update Assignment");
     expect(assign?.disabled).toBe(false);
-    expect(assign?.classList.contains("shell-lesson-reassign")).toBe(true);
+    expect(assign?.classList.contains("shell-lesson-assigned-action")).toBe(true);
     expect(
       assign?.closest<HTMLElement>("[data-lesson-slug]")?.getAttribute(
         "data-lesson-assigned",
@@ -1897,6 +1894,15 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
           publishes.push(input);
           return publishResult(input);
         },
+        lifecycleState: async () => ({
+          state: "neverAssigned" as const,
+          candidates: [],
+        }),
+        recipientsReconcile: async (input: { assignmentId: string }) => ({
+          assignmentId: input.assignmentId,
+          added: 0,
+          alreadyCurrent: 0,
+        }),
       },
       failDraftFor: (classId: string) => {
         const prior = createDraftResult;
@@ -2500,31 +2506,23 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(body).not.toMatch(/220,\s*132/); // not the pale-green rgba used by Classes
   });
 
-  test("Reassign is a green-OUTLINE action (transparent fill, green border + text), not solid/gray/disabled (Sprint 28.6H.8, Part B)", () => {
-    // The reassign rule uses the two-class selector so it wins over the base
-    // solid-green Assign regardless of source order.
-    const reassignMatch = shellHtml.match(
-      /\.shell-lesson-assign\.shell-lesson-reassign\s*\{([^}]+)\}/,
+  test("Update Assignment is a green-OUTLINE action (transparent fill, green border + text), not solid/gray/disabled", () => {
+    const assignedMatch = shellHtml.match(
+      /\.shell-lesson-assign\.shell-lesson-assigned-action\s*\{([^}]+)\}/,
     );
-    expect(reassignMatch).not.toBeNull();
-    const body = reassignMatch![1];
-    // Transparent fill (the assigned card's slate tint shows through), with the
-    // assignment-green border + text - NOT a solid fill, NOT gray.
+    expect(assignedMatch).not.toBeNull();
+    const body = assignedMatch![1];
     expect(body).toMatch(/background\s*:\s*transparent/);
     expect(body).toMatch(/color\s*:\s*#1f6b3d/);
     expect(body).toMatch(/border-color\s*:\s*#1f6b3d/);
-    // No solid-Assign micro-shadow in the resting state.
     expect(body).toMatch(/box-shadow\s*:\s*none/);
-    // The base Assign remains full-strength SOLID green.
     const baseMatch = shellHtml.match(/\n\s*\.shell-lesson-assign\s*\{([^}]+)\}/);
     expect(baseMatch![1]).toMatch(/background\s*:\s*#1f6b3d/);
-    // Hover adds a very light green wash (not gray, not disabled).
     expect(shellHtml).toMatch(
-      /\.shell-lesson-assign\.shell-lesson-reassign:hover[^{]*\{[^}]*background\s*:\s*rgba\(31,\s*107,\s*61/,
+      /\.shell-lesson-assign\.shell-lesson-assigned-action:hover[^{]*\{[^}]*background\s*:\s*rgba\(31,\s*107,\s*61/,
     );
-    // The focus ring is re-asserted on Reassign (visible focus preserved).
     expect(shellHtml).toMatch(
-      /\.shell-lesson-assign\.shell-lesson-reassign:focus-visible\s*\{[^}]*box-shadow/,
+      /\.shell-lesson-assign\.shell-lesson-assigned-action:focus-visible\s*\{[^}]*box-shadow/,
     );
   });
 

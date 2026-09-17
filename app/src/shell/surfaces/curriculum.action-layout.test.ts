@@ -143,7 +143,7 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
     // Again" (still fully active, same action); View Summary appears in
     // addition to it.
     expect(assign).not.toBeNull();
-    expect(assign!.textContent).toBe("Reassign");
+    expect(assign!.textContent).toBe("Update Assignment");
     expect(assign!.disabled).toBe(false);
     expect(summaryBtn).not.toBeNull();
   });

@@ -290,11 +290,9 @@ describe("Curriculum previously-assigned card state (Sprint 28.6H.6 Part C)", ()
       `[data-testid=lesson-assign-${LESSON.slug}]`,
     )!;
     expect(assign).not.toBeNull();
-    // Part B1: label becomes "Assign Again"; B2: still enabled.
-    expect(assign.textContent).toBe("Reassign");
+    expect(assign.textContent).toBe("Update Assignment");
     expect(assign.disabled).toBe(false);
-    // Part B3: the muted-green action class is applied (visual only).
-    expect(assign.classList.contains("shell-lesson-reassign")).toBe(true);
+    expect(assign.classList.contains("shell-lesson-assigned-action")).toBe(true);
     // Part B5: the assigned-card slate tint is preserved alongside.
     expect(card.classList.contains("shell-lesson-card-assigned")).toBe(true);
     // Preview is still present and unchanged.
@@ -313,7 +311,7 @@ describe("Curriculum previously-assigned card state (Sprint 28.6H.6 Part C)", ()
       `[data-testid=lesson-assign-${LESSON.slug}]`,
     )!;
     expect(assign.textContent).toBe("Assign");
-    expect(assign.classList.contains("shell-lesson-reassign")).toBe(false);
+    expect(assign.classList.contains("shell-lesson-assigned-action")).toBe(false);
   });
 
   test("clicking 'Reassign' invokes the same assignment workflow as Assign (Part B2)", () => {

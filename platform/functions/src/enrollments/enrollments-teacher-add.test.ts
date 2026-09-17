@@ -20,6 +20,16 @@ const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
 
+// Phase B Core, Automatic Enrollment Reconciliation slice: mocked at the
+// module boundary, same rationale as `enrollments-join-by-code.test.ts` -
+// the internal helper's own correctness is covered by
+// `assignment-recipients.test.ts` (Part A).
+const mockReconcileRecipientsForNewEnrollment = jest.fn();
+
+jest.mock("../assignments/assignment-recipients", () => ({
+  reconcileRecipientsForNewEnrollment: mockReconcileRecipientsForNewEnrollment,
+}));
+
 const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
 
 jest.mock("firebase-admin/firestore", () => ({
@@ -175,6 +185,11 @@ describe("enrollmentsTeacherAdd", () => {
     mockLogInfo.mockReset();
     mockLogWarn.mockReset();
     mockLogError.mockReset();
+    mockReconcileRecipientsForNewEnrollment.mockReset();
+    mockReconcileRecipientsForNewEnrollment.mockResolvedValue({
+      assignmentsConsidered: 0,
+      recipientsAdded: 0,
+    });
   });
 
   it("creates the canonical enrollment document and returns the canonical response", async () => {
@@ -415,6 +430,70 @@ describe("enrollmentsTeacherAdd", () => {
     });
     expect(mockEnrollmentSet).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    expect(mockReconcileRecipientsForNewEnrollment).not.toHaveBeenCalled();
+  });
+
+  describe("Phase B Core, Automatic Enrollment Reconciliation", () => {
+    it("invokes reconciliation with the trusted context after a genuinely new active enrollment is created", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockUserGet.mockResolvedValueOnce(studentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(absentEnrollmentSnapshot());
+      mockEnrollmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+      mockReconcileRecipientsForNewEnrollment.mockResolvedValueOnce({
+        assignmentsConsidered: 2,
+        recipientsAdded: 1,
+      });
+
+      const result = await __enrollmentsTeacherAddHandler(makeRequest());
+
+      expect(mockReconcileRecipientsForNewEnrollment).toHaveBeenCalledWith({
+        classId: CLASS_ID,
+        studentId: STUDENT_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+      });
+      expect(result).toEqual({
+        enrollmentId: EXPECTED_ID,
+        classId: CLASS_ID,
+        studentId: STUDENT_UID,
+        alreadyEnrolled: false,
+      });
+    });
+
+    it("does not fail or roll back the enrollment when reconciliation fails", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockUserGet.mockResolvedValueOnce(studentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(absentEnrollmentSnapshot());
+      mockEnrollmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+      mockReconcileRecipientsForNewEnrollment.mockRejectedValueOnce(
+        new Error("boom"),
+      );
+
+      const result = await __enrollmentsTeacherAddHandler(makeRequest());
+
+      expect(result).toEqual({
+        enrollmentId: EXPECTED_ID,
+        classId: CLASS_ID,
+        studentId: STUDENT_UID,
+        alreadyEnrolled: false,
+      });
+      expect(mockLogWarn).toHaveBeenCalledWith(
+        "enrollments.newEnrollmentRecipientReconciliationFailed",
+        expect.objectContaining({ studentId: STUDENT_UID, classId: CLASS_ID }),
+      );
+    });
+
+    it("does not invoke reconciliation on an idempotent replay of an existing active enrollment", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockUserGet.mockResolvedValueOnce(studentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(existingEnrollmentSnapshot());
+
+      await __enrollmentsTeacherAddHandler(makeRequest());
+
+      expect(mockReconcileRecipientsForNewEnrollment).not.toHaveBeenCalled();
+    });
   });
 
   it("rejects a duplicate enrollment in a terminal status with enrollments.conflict", async () => {

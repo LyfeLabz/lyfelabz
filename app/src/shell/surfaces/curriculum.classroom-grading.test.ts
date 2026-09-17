@@ -76,6 +76,15 @@ const okAssignments = (): {
       publish: async (input) => {
         return { assignmentId: input.assignmentId, status: "published", alreadyPublished: false };
       },
+      lifecycleState: async () => ({
+        state: "neverAssigned" as const,
+        candidates: [],
+      }),
+      recipientsReconcile: async (input) => ({
+        assignmentId: input.assignmentId,
+        added: 0,
+        alreadyCurrent: 0,
+      }),
     },
   };
 };

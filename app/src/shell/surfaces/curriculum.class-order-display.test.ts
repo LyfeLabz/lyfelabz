@@ -56,6 +56,15 @@ const okAssignments = (): AssignmentsCallables => ({
     status: "published",
     alreadyPublished: false,
   }),
+  lifecycleState: async () => ({
+    state: "neverAssigned" as const,
+    candidates: [],
+  }),
+  recipientsReconcile: async (input) => ({
+    assignmentId: input.assignmentId,
+    added: 0,
+    alreadyCurrent: 0,
+  }),
 });
 
 const mkMount = (): HTMLElement => {

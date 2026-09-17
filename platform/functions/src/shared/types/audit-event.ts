@@ -52,6 +52,13 @@ export const AUDIT_ACTIONS = [
   "assignments.reopened",
   "assignments.archived",
   "assignments.recipientAdded",
+  // Student Progress & Assignment Membership, Phase B Core, Slice 2.
+  // Emitted by `assignmentsRecipientsReconcile`, distinct from
+  // `assignments.recipientAdded` (which means "a teacher named one
+  // specific student"). This event never names a student; its payload
+  // carries only the assignment/class identifiers and aggregate
+  // added/alreadyCurrent counts.
+  "assignments.recipientsReconciled",
   "submissions.created",
   "submissions.finalized",
   "assessment.sessionBegan",

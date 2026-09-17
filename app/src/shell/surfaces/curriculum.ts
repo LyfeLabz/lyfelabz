@@ -8,6 +8,8 @@ import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
 import type {
   AssignmentsCallables,
+  AssignmentsLifecycleState,
+  AssignmentCandidate,
   ClassroomGradingInput,
   IntegrationsClassLink,
   IntegrationsDeps,
@@ -309,6 +311,70 @@ let classLinksInFlight: Promise<void> | null = null;
 const cachedTopicsByLinkId: Map<string, ReadonlyArray<IntegrationsLmsTopic>> =
   new Map();
 const topicsInFlightByLinkId: Map<string, Promise<void>> = new Map();
+
+type LifecycleStateEntry = {
+  readonly state: AssignmentsLifecycleState;
+  readonly candidates: ReadonlyArray<AssignmentCandidate>;
+  readonly error?: true;
+};
+
+const cachedLifecycleState: Map<string, LifecycleStateEntry> = new Map();
+
+function lifecycleCacheKey(classId: string, lessonSlug: string): string {
+  return `${classId}::${lessonSlug}`;
+}
+
+async function loadLifecycleStateForDialog(
+  assignments: AssignmentsCallables,
+  classIds: ReadonlyArray<string>,
+  lessonSlug: string,
+): Promise<Map<string, LifecycleStateEntry>> {
+  const result = new Map<string, LifecycleStateEntry>();
+  const toFetch: string[] = [];
+  for (const classId of classIds) {
+    const key = lifecycleCacheKey(classId, lessonSlug);
+    const cached = cachedLifecycleState.get(key);
+    if (cached) {
+      result.set(classId, cached);
+    } else {
+      toFetch.push(classId);
+    }
+  }
+  if (toFetch.length === 0) return result;
+  const settled = await Promise.allSettled(
+    toFetch.map(async (classId) => {
+      const resp = await assignments.lifecycleState({ classId, lessonSlug });
+      const entry: LifecycleStateEntry = {
+        state: resp.state,
+        candidates: resp.candidates,
+      };
+      cachedLifecycleState.set(lifecycleCacheKey(classId, lessonSlug), entry);
+      result.set(classId, entry);
+    }),
+  );
+  for (let i = 0; i < settled.length; i++) {
+    if (settled[i].status === "rejected") {
+      result.set(toFetch[i], {
+        state: "neverAssigned",
+        candidates: [],
+        error: true,
+      });
+    }
+  }
+  return result;
+}
+
+function invalidateLifecycleCache(lessonSlug?: string): void {
+  if (!lessonSlug) {
+    cachedLifecycleState.clear();
+    return;
+  }
+  for (const key of cachedLifecycleState.keys()) {
+    if (key.endsWith(`::${lessonSlug}`)) {
+      cachedLifecycleState.delete(key);
+    }
+  }
+}
 
 const GRADE_FILTERS: ReadonlyArray<{
   readonly key: GradeFilter;
@@ -879,23 +945,19 @@ export function renderCurriculumSurface(
   curriculumView.appendChild(returnLink);
 }
 
-// Sprint 28.6H.8 (Part A/B): apply the Assign vs Reassign presentation to the
-// action button. Never assigned -> solid full-strength green "Assign".
-// Previously assigned -> green-OUTLINE "Reassign" (still fully active; the
-// behavior / assignment workflow is identical). "Reassign" reads as an action,
-// never a disabled status; the outlined green class carries the receded,
-// secondary-assignment treatment while staying in the assignment-green family.
 function applyAssignState(
   btn: HTMLButtonElement,
   lesson: SurfaceableLesson,
   assigned: boolean,
 ): void {
-  btn.textContent = assigned ? "Reassign" : "Assign";
+  btn.textContent = assigned ? "Update Assignment" : "Assign";
   btn.setAttribute(
     "aria-label",
-    assigned ? `Reassign ${lesson.title}` : `Assign ${lesson.title}`,
+    assigned
+      ? `Update assignment for ${lesson.title}`
+      : `Assign ${lesson.title}`,
   );
-  btn.classList.toggle("shell-lesson-reassign", assigned);
+  btn.classList.toggle("shell-lesson-assigned-action", assigned);
 }
 
 function refreshAssignControl(
@@ -1428,12 +1490,30 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     ensureClassLinks(session.uid, integrations),
   ]);
   if (!overlay.isConnected) return;
-  body.removeChild(loading);
 
   const classes = (cachedClasses?.rows ?? []).filter(
     (c): c is Extract<ClassSummary, { status: "active" }> =>
       c.status === "active",
   );
+
+  let lifecycleByClass: Map<string, LifecycleStateEntry> = new Map();
+  if (assignments !== null && classes.length > 0) {
+    loading.textContent = "Checking assignment status";
+    try {
+      lifecycleByClass = await loadLifecycleStateForDialog(
+        assignments,
+        classes.map((c) => c.id),
+        lesson.slug,
+      );
+    } catch {
+      // Outer catch: loadLifecycleStateForDialog uses allSettled internally,
+      // so per-class failures are already marked with error: true in the
+      // result map. This catch guards only against unexpected structural
+      // failures; individual class rows render their own error state.
+    }
+  }
+  if (!overlay.isConnected) return;
+  body.removeChild(loading);
 
   if (classes.length === 0) {
     const empty = doc.createElement("p");
@@ -1698,9 +1778,27 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   // `createOrderedListClasses` at the entry point - see
   // app/src/classes/classOrder.ts); Assign simply renders that order as
   // received and applies no secondary sort of its own.
+  const rowLifecycleState: Map<string, LifecycleStateEntry> = new Map();
   for (const c of classes) {
     const link = linksByClassId.get(c.id) ?? null;
-    const row = renderRow(doc, c, rowState, updateConfirmState, link, integrations);
+    const lc: LifecycleStateEntry = lifecycleByClass.get(c.id) ?? {
+      state: "neverAssigned" as const,
+      candidates: [],
+    };
+    rowLifecycleState.set(c.id, lc);
+    const retryCtx = assignments
+      ? { assignments, lessonSlug: lesson.slug, rowLifecycleState, rowsHost }
+      : undefined;
+    const row = renderRow(
+      doc,
+      c,
+      rowState,
+      updateConfirmState,
+      link,
+      integrations,
+      lc,
+      retryCtx,
+    );
     rowsHost.appendChild(row);
   }
   updateConfirmState();
@@ -1784,15 +1882,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       return;
     }
 
-    // No callable seam wired -> UI-only lightweight harness path. The
-    // dialog still renders the "return, do not redirect" confirmation
-    // that ASSIGN_EXPERIENCE.md §7 requires. No LMS publication is
-    // attempted because there is no authoritative assignment ID to bind
-    // it to; this preserves the Sprint 8D.1 rule that LMS publication
-    // never runs before a successful LyfeLabz publication.
     if (assignments === null) {
-      // Sprint-sanctioned UI-only harness: no callable to fail, so the
-      // Assigned badge lights up synchronously with the summary.
       markPersisted(session.uid, lesson.slug);
       close();
       const summary =
@@ -1803,34 +1893,127 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       return;
     }
 
+    type EnabledRowWithLifecycle = EnabledRow & {
+      readonly lcState: AssignmentsLifecycleState;
+      readonly candidates: ReadonlyArray<AssignmentCandidate>;
+    };
+    const creationRows: EnabledRowWithLifecycle[] = [];
+    const updateRows: EnabledRowWithLifecycle[] = [];
+    const unselectedMultipleRows: string[] = [];
+    for (const r of enabledRows) {
+      const lc = rowLifecycleState.get(r.classId);
+      if (lc?.error) continue;
+      const state = lc?.state ?? "neverAssigned";
+      const enriched: EnabledRowWithLifecycle = {
+        ...r,
+        lcState: state,
+        candidates: lc?.candidates ?? [],
+      };
+      if (
+        state === "onePublishedMissingRecipients" ||
+        state === "onePublishedFullyCurrent"
+      ) {
+        updateRows.push(enriched);
+      } else if (state === "multiplePublished") {
+        const rowEl = rowsHost.querySelector<HTMLElement>(
+          `[data-class-id="${r.classId}"]`,
+        );
+        const selectedId =
+          rowEl?.getAttribute("data-selected-assignment") ?? null;
+        if (selectedId) {
+          updateRows.push({
+            ...enriched,
+            candidates: enriched.candidates.filter(
+              (c) => c.assignmentId === selectedId,
+            ),
+          });
+        } else {
+          unselectedMultipleRows.push(r.className);
+        }
+      } else {
+        creationRows.push(enriched);
+      }
+    }
+
+    if (unselectedMultipleRows.length > 0) {
+      submissionInFlight = false;
+      confirm.disabled = false;
+      confirm.removeAttribute("aria-busy");
+      let validationMsg = rowsHost.querySelector<HTMLElement>(
+        "[data-testid=assign-validation]",
+      );
+      if (!validationMsg) {
+        validationMsg = doc.createElement("p");
+        validationMsg.className = "shell-assign-validation";
+        validationMsg.setAttribute("data-testid", "assign-validation");
+        validationMsg.setAttribute("role", "alert");
+        rowsHost.parentElement?.insertBefore(validationMsg, rowsHost.nextSibling);
+      }
+      validationMsg.textContent =
+        "Choose the assignment you want to update.";
+      const firstUnselected = rowsHost.querySelector<HTMLElement>(
+        `[data-lifecycle-state="multiplePublished"] [role="radiogroup"] input[type="radio"]`,
+      );
+      try {
+        firstUnselected?.focus({ preventScroll: false });
+      } catch {
+        // ignored
+      }
+      return;
+    }
+
     close();
-    // Optimistic quiet-confirmation follows §7's "return, do not
-    // redirect" rule. The final per-class outcomes replace the pending
-    // line once the certified lifecycle resolves.
-    onConfirm(
-      enabledCount === 1
-        ? `Assigning ${lesson.title} to 1 class.`
-        : `Assigning ${lesson.title} to ${enabledCount} classes.`,
-    );
-    // Sprint 30A.1 UX correction: exactly one `classroomGrading` value is
-    // derived here, from the shared dialog-level configuration, and is
-    // supplied identically to every selected class below - never derived
-    // per row. Ungraded never carries a `maxPoints` value, so a stale
-    // Points entry can never be transmitted for an Ungraded action.
-    const classroomGrading: ClassroomGradingInput = shared.graded
-      ? { mode: "graded", maxPoints: shared.points }
-      : { mode: "ungraded" };
-    void runAssignmentLifecycle({
-      lesson,
-      teacherUid: session.uid,
-      enabledRows,
-      classroomGrading,
-      assignments,
-      integrations,
-      assignmentDetail,
-      onConfirm,
-      onLifecycleComplete,
-    });
+
+    const summaryParts: string[] = [];
+    if (creationRows.length > 0) {
+      summaryParts.push(
+        creationRows.length === 1
+          ? `Assigning ${lesson.title} to 1 class`
+          : `Assigning ${lesson.title} to ${creationRows.length} classes`,
+      );
+    }
+    if (updateRows.length > 0) {
+      summaryParts.push(
+        updateRows.length === 1
+          ? `Updating 1 class`
+          : `Updating ${updateRows.length} classes`,
+      );
+    }
+    onConfirm(summaryParts.join(". ") + ".");
+
+    invalidateLifecycleCache(lesson.slug);
+
+    if (creationRows.length > 0) {
+      const classroomGrading: ClassroomGradingInput = shared.graded
+        ? { mode: "graded", maxPoints: shared.points }
+        : { mode: "ungraded" };
+      void runAssignmentLifecycle({
+        lesson,
+        teacherUid: session.uid,
+        enabledRows: creationRows,
+        classroomGrading,
+        assignments,
+        integrations,
+        assignmentDetail,
+        onConfirm,
+        onLifecycleComplete,
+      });
+    }
+
+    if (updateRows.length > 0) {
+      void runReconcileUpdates({
+        lesson,
+        teacherUid: session.uid,
+        updateRows,
+        assignments,
+        onConfirm,
+        onLifecycleComplete: onLifecycleComplete
+          ? (ids) => {
+              if (creationRows.length === 0) onLifecycleComplete(ids);
+            }
+          : undefined,
+      });
+    }
   });
 
   try {
@@ -1847,6 +2030,13 @@ function renderRow(
   onChange: () => void,
   link: IntegrationsClassLink | null,
   integrations: IntegrationsDeps | null,
+  lifecycle?: LifecycleStateEntry,
+  retryContext?: {
+    assignments: AssignmentsCallables;
+    lessonSlug: string;
+    rowLifecycleState: Map<string, LifecycleStateEntry>;
+    rowsHost: HTMLElement;
+  },
 ): HTMLElement {
   const cfg = rowState.get(cls.id);
   if (!cfg) throw new Error(`missing row state for class ${cls.id}`);
@@ -1904,111 +2094,255 @@ function renderRow(
     cls.grade.length > 0 ? `${cls.title} · Grade ${cls.grade}` : cls.title;
   row.appendChild(identity);
 
-  // For LMS-linked classes, the Google Classroom topic field is a
-  // populated dropdown per ASSIGN_EXPERIENCE.md §5 ("LMS-linked class
-  // row shape"). A manual (non-LMS) class has no Google Classroom to
-  // publish to, so it renders an inert placeholder in the same column
-  // instead (keeping every row's columns aligned in the shared grid).
-  let lmsTopicSelect: HTMLSelectElement | null = null;
-  if (link && integrations !== null) {
-    const select = doc.createElement("select");
-    select.className = "shell-assign-lms-topic-select shell-assign-row-topic";
-    select.setAttribute("data-testid", `assign-row-lms-topic-${cls.id}`);
-    select.setAttribute("aria-label", `${cls.title} Google Classroom topic`);
-    const noneOption = doc.createElement("option");
-    noneOption.value = "";
-    noneOption.textContent = "No topic";
-    select.appendChild(noneOption);
-    const loadingOption = doc.createElement("option");
-    loadingOption.value = "__loading";
-    loadingOption.textContent = "Loading topics";
-    loadingOption.disabled = true;
-    loadingOption.selected = true;
-    select.appendChild(loadingOption);
-    select.addEventListener("change", () => {
-      const v = select.value;
-      cfg.lmsTopicId = v === "__loading" ? "" : v;
-    });
-    row.appendChild(select);
-    lmsTopicSelect = select;
-    void ensureTopics(link.linkId, integrations).then(() => {
-      const topics = cachedTopicsByLinkId.get(link.linkId) ?? [];
-      // Populate the select with the resolved topics. If the topic
-      // callable fails (either operationally not-yet-provisioned per
-      // PDR-020 §10.3 or an upstream error per §8), the "No topic"
-      // option remains the only usable choice; the row stays functional.
-      loadingOption.remove();
-      for (const t of topics) {
-        const opt = doc.createElement("option");
-        opt.value = t.lmsTopicId;
-        opt.textContent = t.name;
-        select.appendChild(opt);
-      }
-      if (
-        cfg.lmsTopicId &&
-        topics.some((t) => t.lmsTopicId === cfg.lmsTopicId)
-      ) {
-        select.value = cfg.lmsTopicId;
-      } else {
-        select.value = "";
-        cfg.lmsTopicId = "";
-      }
-    });
-  } else if (integrations !== null) {
-    // Only render the empty-topic placeholder when integrations are wired
-    // at all (some other row in this same dialog may be LMS-linked and
-    // show a real select, so this row still needs a cell to keep the
-    // shared grid's columns aligned). When integrations are entirely
-    // absent, no row in the dialog gets a topic cell at all - see the
-    // matching header-column condition in `openDialog` - preserving the
-    // Sprint 28.5D rule that a manual-only teacher never sees a "Google
-    // Classroom topic" affordance anywhere in the dialog.
-    const placeholder = doc.createElement("span");
-    placeholder.className = "shell-assign-row-topic shell-assign-row-topic-empty";
-    placeholder.setAttribute("aria-hidden", "true");
-    placeholder.textContent = "—";
-    row.appendChild(placeholder);
+  const isUnresolved = lifecycle?.error === true;
+  const lcState = isUnresolved ? "unresolved" : (lifecycle?.state ?? "neverAssigned");
+  row.setAttribute("data-lifecycle-state", lcState);
+
+  if (isUnresolved) {
+    cfg.enabled = false;
+    checkbox.checked = false;
+    checkbox.disabled = true;
+    checkbox.setAttribute(
+      "aria-label",
+      `${cls.title} - assignment status could not be determined`,
+    );
+    const errorBadge = doc.createElement("span");
+    errorBadge.className = "shell-assign-row-lifecycle shell-assign-lifecycle-error";
+    errorBadge.setAttribute("data-testid", `assign-row-lifecycle-${cls.id}`);
+    errorBadge.textContent = "Unable to check status";
+    row.appendChild(errorBadge);
+    if (retryContext) {
+      const retryBtn = doc.createElement("button");
+      retryBtn.type = "button";
+      retryBtn.className = "shell-assign-row-retry";
+      retryBtn.setAttribute("data-testid", `assign-row-retry-${cls.id}`);
+      retryBtn.textContent = "Retry";
+      retryBtn.setAttribute("aria-label", `Retry loading assignment status for ${cls.title}`);
+      retryBtn.addEventListener("click", () => {
+        retryBtn.disabled = true;
+        retryBtn.textContent = "Retrying…";
+        const ctx = retryContext;
+        void ctx.assignments
+          .lifecycleState({ classId: cls.id, lessonSlug: ctx.lessonSlug })
+          .then((resp) => {
+            const entry: LifecycleStateEntry = {
+              state: resp.state,
+              candidates: resp.candidates,
+            };
+            cachedLifecycleState.set(
+              lifecycleCacheKey(cls.id, ctx.lessonSlug),
+              entry,
+            );
+            ctx.rowLifecycleState.set(cls.id, entry);
+            const newRow = renderRow(
+              doc, cls, rowState, onChange, link, integrations, entry, ctx,
+            );
+            row.replaceWith(newRow);
+            onChange();
+          })
+          .catch(() => {
+            retryBtn.disabled = false;
+            retryBtn.textContent = "Retry";
+          });
+      });
+      row.appendChild(retryBtn);
+    }
+    return row;
   }
 
-  const dateInput = doc.createElement("input");
-  dateInput.type = "date";
-  dateInput.className = "shell-assign-row-date";
-  dateInput.id = `assign-row-date-${cls.id}`;
-  dateInput.setAttribute("data-testid", `assign-row-date-${cls.id}`);
-  dateInput.setAttribute("aria-label", `${cls.title} release date`);
-  dateInput.value = cfg.date;
-  dateInput.addEventListener("input", () => {
-    cfg.date = dateInput.value;
-  });
-  row.appendChild(dateInput);
+  const lifecycleBadge = doc.createElement("span");
+  lifecycleBadge.className = "shell-assign-row-lifecycle";
+  lifecycleBadge.setAttribute(
+    "data-testid",
+    `assign-row-lifecycle-${cls.id}`,
+  );
+  if (lcState === "onePublishedFullyCurrent") {
+    lifecycleBadge.textContent = "Up to date";
+    lifecycleBadge.classList.add("shell-assign-lifecycle-current");
+    cfg.enabled = false;
+    checkbox.checked = false;
+    checkbox.disabled = true;
+    checkbox.setAttribute(
+      "aria-label",
+      `${cls.title} assignment is up to date`,
+    );
+  } else if (lcState === "onePublishedMissingRecipients") {
+    const missing =
+      lifecycle?.candidates.find((c) => c.status === "published")
+        ?.missingRecipientCount ?? 0;
+    lifecycleBadge.textContent =
+      missing === 1
+        ? "1 student to add"
+        : `${missing} students to add`;
+    lifecycleBadge.classList.add("shell-assign-lifecycle-update");
+    checkbox.setAttribute(
+      "aria-label",
+      `Update assignment for ${cls.title}`,
+    );
+  } else if (lcState === "multiplePublished") {
+    lifecycleBadge.textContent = "Multiple assignments";
+    lifecycleBadge.classList.add("shell-assign-lifecycle-multiple");
+  } else if (lcState === "historicalOnly") {
+    lifecycleBadge.textContent = "Assign as new";
+    lifecycleBadge.classList.add("shell-assign-lifecycle-historical");
+  }
+  if (lifecycleBadge.textContent) {
+    row.appendChild(lifecycleBadge);
+  }
 
-  const timeInput = doc.createElement("input");
-  timeInput.type = "time";
-  timeInput.className = "shell-assign-row-time";
-  timeInput.id = `assign-row-time-${cls.id}`;
-  timeInput.setAttribute("data-testid", `assign-row-time-${cls.id}`);
-  timeInput.setAttribute("aria-label", `${cls.title} release time`);
-  timeInput.value = cfg.time;
-  timeInput.addEventListener("input", () => {
-    cfg.time = timeInput.value;
-  });
-  row.appendChild(timeInput);
+  const isCreationRow =
+    lcState === "neverAssigned" || lcState === "historicalOnly";
+  const isCurrentRow = lcState === "onePublishedFullyCurrent";
+  const isMultipleRow = lcState === "multiplePublished";
+
+  let lmsTopicSelect: HTMLSelectElement | null = null;
+  let dateInput: HTMLInputElement | null = null;
+  let timeInput: HTMLInputElement | null = null;
+
+  if (isCreationRow) {
+    if (link && integrations !== null) {
+      const select = doc.createElement("select");
+      select.className =
+        "shell-assign-lms-topic-select shell-assign-row-topic";
+      select.setAttribute("data-testid", `assign-row-lms-topic-${cls.id}`);
+      select.setAttribute(
+        "aria-label",
+        `${cls.title} Google Classroom topic`,
+      );
+      const noneOption = doc.createElement("option");
+      noneOption.value = "";
+      noneOption.textContent = "No topic";
+      select.appendChild(noneOption);
+      const loadingOption = doc.createElement("option");
+      loadingOption.value = "__loading";
+      loadingOption.textContent = "Loading topics";
+      loadingOption.disabled = true;
+      loadingOption.selected = true;
+      select.appendChild(loadingOption);
+      select.addEventListener("change", () => {
+        const v = select.value;
+        cfg.lmsTopicId = v === "__loading" ? "" : v;
+      });
+      row.appendChild(select);
+      lmsTopicSelect = select;
+      void ensureTopics(link.linkId, integrations).then(() => {
+        const topics = cachedTopicsByLinkId.get(link.linkId) ?? [];
+        loadingOption.remove();
+        for (const t of topics) {
+          const opt = doc.createElement("option");
+          opt.value = t.lmsTopicId;
+          opt.textContent = t.name;
+          select.appendChild(opt);
+        }
+        if (
+          cfg.lmsTopicId &&
+          topics.some((t) => t.lmsTopicId === cfg.lmsTopicId)
+        ) {
+          select.value = cfg.lmsTopicId;
+        } else {
+          select.value = "";
+          cfg.lmsTopicId = "";
+        }
+      });
+    } else if (integrations !== null) {
+      const placeholder = doc.createElement("span");
+      placeholder.className =
+        "shell-assign-row-topic shell-assign-row-topic-empty";
+      placeholder.setAttribute("aria-hidden", "true");
+      placeholder.textContent = "—";
+      row.appendChild(placeholder);
+    }
+
+    dateInput = doc.createElement("input");
+    dateInput.type = "date";
+    dateInput.className = "shell-assign-row-date";
+    dateInput.id = `assign-row-date-${cls.id}`;
+    dateInput.setAttribute("data-testid", `assign-row-date-${cls.id}`);
+    dateInput.setAttribute("aria-label", `${cls.title} release date`);
+    dateInput.value = cfg.date;
+    dateInput.addEventListener("input", () => {
+      cfg.date = dateInput!.value;
+    });
+    row.appendChild(dateInput);
+
+    timeInput = doc.createElement("input");
+    timeInput.type = "time";
+    timeInput.className = "shell-assign-row-time";
+    timeInput.id = `assign-row-time-${cls.id}`;
+    timeInput.setAttribute("data-testid", `assign-row-time-${cls.id}`);
+    timeInput.setAttribute("aria-label", `${cls.title} release time`);
+    timeInput.value = cfg.time;
+    timeInput.addEventListener("input", () => {
+      cfg.time = timeInput!.value;
+    });
+    row.appendChild(timeInput);
+  }
+
+  if (isMultipleRow && lifecycle) {
+    const published = lifecycle.candidates.filter(
+      (c) => c.status === "published",
+    );
+    const disambig = doc.createElement("div");
+    disambig.className = "shell-assign-row-disambig";
+    disambig.setAttribute("data-testid", `assign-row-disambig-${cls.id}`);
+    disambig.setAttribute("role", "radiogroup");
+    disambig.setAttribute(
+      "aria-label",
+      `Select which assignment to update for ${cls.title}`,
+    );
+    const radioName = `assign-disambig-${cls.id}`;
+    for (const candidate of published) {
+      const label = doc.createElement("label");
+      label.className = "shell-assign-disambig-option";
+      const radio = doc.createElement("input");
+      radio.type = "radio";
+      radio.name = radioName;
+      radio.value = candidate.assignmentId;
+      radio.setAttribute(
+        "data-testid",
+        `assign-disambig-${cls.id}-${candidate.assignmentId}`,
+      );
+      label.appendChild(radio);
+      const text = doc.createElement("span");
+      const dateStr = candidate.publishedAt
+        ? new Date(candidate.publishedAt).toLocaleDateString()
+        : "";
+      text.textContent = dateStr
+        ? `${candidate.title} (${dateStr})`
+        : candidate.title;
+      label.appendChild(text);
+      disambig.appendChild(label);
+      radio.addEventListener("change", () => {
+        if (radio.checked) {
+          row.setAttribute("data-selected-assignment", candidate.assignmentId);
+        }
+        onChange();
+      });
+    }
+    row.appendChild(disambig);
+  }
 
   const setRowEnabled = (enabled: boolean): void => {
     cfg.enabled = enabled;
     row.setAttribute("data-enabled", enabled ? "true" : "false");
     row.classList.toggle("shell-assign-row-disabled", !enabled);
-    const controls: HTMLElement[] = [dateInput, timeInput];
+    const controls: HTMLElement[] = [];
+    if (dateInput) controls.push(dateInput);
+    if (timeInput) controls.push(timeInput);
     if (lmsTopicSelect) controls.push(lmsTopicSelect);
     for (const el of controls) {
       (el as HTMLInputElement | HTMLSelectElement).disabled = !enabled;
     }
     onChange();
   };
-  setRowEnabled(cfg.enabled);
-  checkbox.addEventListener("change", () => {
-    setRowEnabled(checkbox.checked);
-  });
+  if (!isCurrentRow) {
+    setRowEnabled(cfg.enabled);
+    checkbox.addEventListener("change", () => {
+      setRowEnabled(checkbox.checked);
+    });
+  } else {
+    setRowEnabled(false);
+  }
 
   return row;
 }
@@ -2044,6 +2378,92 @@ function fieldInput(
   });
   wrapper.appendChild(input);
   return { wrapper, input };
+}
+
+// -----------------------------------------------------------------------------
+// Recipient reconciliation (Update Assignment path)
+// -----------------------------------------------------------------------------
+
+async function runReconcileUpdates(input: {
+  readonly lesson: SurfaceableLesson;
+  readonly teacherUid: string;
+  readonly updateRows: readonly {
+    readonly classId: string;
+    readonly className: string;
+    readonly lcState: AssignmentsLifecycleState;
+    readonly candidates: ReadonlyArray<AssignmentCandidate>;
+  }[];
+  readonly assignments: AssignmentsCallables;
+  readonly onConfirm: (summary: string) => void;
+  readonly onLifecycleComplete?: (
+    assignmentIds: ReadonlyArray<string>,
+  ) => void;
+}): Promise<void> {
+  const { lesson, teacherUid, updateRows, assignments, onConfirm, onLifecycleComplete } =
+    input;
+
+  const results = await Promise.allSettled(
+    updateRows.map(async (row) => {
+      const published = row.candidates.find((c) => c.status === "published");
+      if (!published) {
+        return { classId: row.classId, assignmentId: "", added: 0, failed: true };
+      }
+      try {
+        const resp = await assignments.recipientsReconcile({
+          assignmentId: published.assignmentId,
+        });
+        return {
+          classId: row.classId,
+          assignmentId: resp.assignmentId,
+          added: resp.added,
+          failed: false,
+        };
+      } catch {
+        return {
+          classId: row.classId,
+          assignmentId: published.assignmentId,
+          added: 0,
+          failed: true,
+        };
+      }
+    }),
+  );
+
+  const outcomes = results.map((r) =>
+    r.status === "fulfilled"
+      ? r.value
+      : { classId: "", assignmentId: "", added: 0, failed: true },
+  );
+
+  const succeeded = outcomes.filter((o) => !o.failed);
+  const failed = outcomes.filter((o) => o.failed);
+  const totalAdded = succeeded.reduce((sum, o) => sum + o.added, 0);
+
+  let summary: string;
+  if (failed.length === 0 && succeeded.length === 1) {
+    summary =
+      totalAdded === 0
+        ? `${lesson.title}: assignment is up to date.`
+        : totalAdded === 1
+          ? `${lesson.title}: added 1 student.`
+          : `${lesson.title}: added ${totalAdded} students.`;
+  } else if (failed.length === 0) {
+    summary =
+      totalAdded === 0
+        ? `${lesson.title}: all ${succeeded.length} assignments are up to date.`
+        : `${lesson.title}: updated ${succeeded.length} classes, added ${totalAdded} students.`;
+  } else if (succeeded.length === 0) {
+    summary = `${lesson.title}: update did not succeed. Please try again.`;
+  } else {
+    summary = `${lesson.title}: updated ${succeeded.length} of ${outcomes.length} classes. ${failed.length} did not succeed.`;
+  }
+
+  if (succeeded.length > 0) {
+    markPersisted(teacherUid, lesson.slug);
+  }
+
+  onConfirm(summary);
+  onLifecycleComplete?.(succeeded.map((o) => o.assignmentId));
 }
 
 // -----------------------------------------------------------------------------
@@ -2470,6 +2890,7 @@ export function invalidateCurriculumClassCache(): void {
   classesInFlight = null;
   cachedClassLinks = null;
   classLinksInFlight = null;
+  cachedLifecycleState.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -2493,6 +2914,7 @@ export function _resetCurriculumSessionStateForTest(): void {
   classLinksInFlight = null;
   cachedTopicsByLinkId.clear();
   topicsInFlightByLinkId.clear();
+  cachedLifecycleState.clear();
   sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
   sessionPreferences.topic = "";
   sessionPreferences.lmsTopicId = "";

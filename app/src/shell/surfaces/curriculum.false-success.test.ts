@@ -103,6 +103,15 @@ const makeAssignments = (
           alreadyPublished: false,
         };
       },
+      lifecycleState: async () => ({
+        state: "neverAssigned" as const,
+        candidates: [],
+      }),
+      recipientsReconcile: async (input) => ({
+        assignmentId: input.assignmentId,
+        added: 0,
+        alreadyCurrent: 0,
+      }),
     },
   };
 };
@@ -188,7 +197,7 @@ describe("Assign false-success guard", () => {
     await flush();
 
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
     expect(assignedState(btn)).toBe("true");
     expect(asn.publishes.length).toBeGreaterThan(0);
   });
@@ -328,6 +337,15 @@ describe("Assign false-success guard", () => {
           alreadyPublished: false,
         };
       },
+      lifecycleState: async () => ({
+        state: "neverAssigned" as const,
+        candidates: [],
+      }),
+      recipientsReconcile: async (input) => ({
+        assignmentId: input.assignmentId,
+        added: 0,
+        alreadyCurrent: 0,
+      }),
     };
     const detail = makeDetailSeam();
     const mount = mkMount();
@@ -356,7 +374,7 @@ describe("Assign false-success guard", () => {
     // One class published, so the badge is Assigned.
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
   });
 
   test("persisted assignment is rediscovered on remount (post-reload hydration)", () => {
@@ -379,7 +397,7 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
     expect(assignedState(btn)).toBe("true");
   });
 
@@ -406,6 +424,15 @@ describe("Assign false-success guard", () => {
           alreadyPublished: false,
         };
       },
+      lifecycleState: async () => ({
+        state: "neverAssigned" as const,
+        candidates: [],
+      }),
+      recipientsReconcile: async (input) => ({
+        assignmentId: input.assignmentId,
+        added: 0,
+        alreadyCurrent: 0,
+      }),
     };
     const detail = makeDetailSeam();
     const mount = mkMount();
@@ -424,7 +451,7 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
     expect(assignedState(btn)).toBe("true");
     expect(publishes.length).toBe(1);
   });
@@ -483,7 +510,7 @@ describe("Assign false-success guard", () => {
     );
     expect(buttons.length).toBe(1);
     expect(assignedState(buttons[0])).toBe("true");
-    expect(buttons[0]?.textContent).toBe("Reassign");
+    expect(buttons[0]?.textContent).toBe("Update Assignment");
     expect(assignedState(buttons[0])).toBe("true");
   });
 
@@ -544,6 +571,15 @@ describe("Assign outcome model - three-way multi-class mix", () => {
           alreadyPublished: false,
         };
       },
+      lifecycleState: async () => ({
+        state: "neverAssigned" as const,
+        candidates: [],
+      }),
+      recipientsReconcile: async (input) => ({
+        assignmentId: input.assignmentId,
+        added: 0,
+        alreadyCurrent: 0,
+      }),
     };
     const detail = makeDetailSeam();
     const mount = mkMount();
@@ -574,7 +610,7 @@ describe("Assign outcome model - three-way multi-class mix", () => {
     // A published class exists, so the badge is Assigned.
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
     // Exactly one draft was rejected; two drafts saved; one publish failed.
     expect(detail.registered).toHaveLength(1); // only the published class
   });
@@ -650,7 +686,7 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
     expect(assignedState(btn)).toBe("true");
   });
 
@@ -674,7 +710,7 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
     expect(assignedState(btn)).toBe("true");
   });
 
@@ -707,7 +743,7 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Reassign");
+    expect(btn?.textContent).toBe("Update Assignment");
     expect(assignedState(btn)).toBe("true");
   });
 

@@ -19,7 +19,10 @@ import {
   type SessionDeliveryFreeze,
 } from "../shared";
 
-import { isCanonicalRecipient } from "../assignments/assignment-recipients";
+import {
+  ensureAssignmentRecipient,
+  type RecipientOwnershipContext,
+} from "../assignments/assignment-recipients";
 import { resolveBeginDelivery } from "./resolve-begin-delivery";
 import { buildBeginDeliveryPorts } from "./begin-delivery-deps";
 
@@ -406,27 +409,37 @@ async function assessmentSessionsBeginHandler(
 
   await loadActiveEnrollment(assignment.classId, actor.uid);
 
-  // PDR-029l recipient enforcement. Assignment-linked session creation
-  // requires the caller to be a canonical recipient of the target
-  // assignment. Recipient membership is server-authoritative via the
-  // frozen `assignments/{assignmentId}/recipients/{studentId}` document
-  // (Sprint 12E Slice 2A) and no client-supplied ownership value
-  // participates. Fails closed on any anomaly (missing, malformed,
-  // wrong-owner, non-`assigned`) with the narrow refusal identifier so no
-  // session is created and no audit event is emitted.
-  const recipientOk = await isCanonicalRecipient(
-    {
-      assignmentId: input.assignmentId,
-      studentId: actor.uid,
-      schoolId: actor.schoolId,
-      districtId: actor.districtId,
-    },
-    (ref) => ref.get(),
+  // PDR-029l recipient enforcement (Phase B Core, Layer 2 self-heal).
+  // Assignment-linked session creation requires the caller to be a
+  // canonical recipient of the target assignment. Active enrollment in
+  // the assignment's exact class has already been positively established
+  // above (loadActiveEnrollment); a missing recipient at this point is a
+  // proven inconsistency between authoritative enrollment and recipient
+  // materialization (e.g. Layer 1 reconciliation raced or failed).
+  //
+  // Instead of refusing, idempotently create the canonical recipient
+  // document via the shared primitive. If the write itself fails (a
+  // Firestore/infrastructure error), fail closed - no session is created,
+  // no audit event is emitted, and the student may retry later.
+  const recipientContext: RecipientOwnershipContext = {
+    assignmentId: input.assignmentId,
+    classId: assignment.classId,
+    teacherId: assignment.teacherId,
+    schoolId: actor.schoolId,
+    districtId: actor.districtId,
+    assignedBy: assignment.teacherId,
+  };
+  const recipientResult = await ensureAssignmentRecipient(
+    recipientContext,
+    actor.uid,
+    "lateJoinReconciliation",
   );
-  if (!recipientOk) {
-    throw new PlatformError(
-      "assessmentSessions.recipientRequired",
-      "Caller is not a recipient of the referenced assignment.",
+  if (recipientResult.added) {
+    safeLog(() =>
+      log.info("assessmentSessions.recipientSelfHealed", {
+        assignmentId: input.assignmentId,
+        classId: assignment.classId,
+      }),
     );
   }
 

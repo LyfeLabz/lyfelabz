@@ -77,6 +77,15 @@ const okAssignments = (): {
         publishes.push(input.assignmentId);
         return { assignmentId: input.assignmentId, status: "published", alreadyPublished: false };
       },
+      lifecycleState: async () => ({
+        state: "neverAssigned" as const,
+        candidates: [],
+      }),
+      recipientsReconcile: async (input) => ({
+        assignmentId: input.assignmentId,
+        added: 0,
+        alreadyCurrent: 0,
+      }),
     },
   };
 };
@@ -536,6 +545,15 @@ describe("Assign dialog - LMS publication wiring (Sprint 25 Phase 3)", () => {
         publishes.push(input.assignmentId);
         return { assignmentId: input.assignmentId, status: "published", alreadyPublished: false };
       },
+      lifecycleState: async () => ({
+        state: "neverAssigned" as const,
+        candidates: [],
+      }),
+      recipientsReconcile: async (input) => ({
+        assignmentId: input.assignmentId,
+        added: 0,
+        alreadyCurrent: 0,
+      }),
     };
 
     // Links for BOTH classes: both are LMS-linked and selected by default,

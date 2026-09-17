@@ -4,8 +4,6 @@ import {
   platformCallable,
   PlatformError,
   assignmentDocRef,
-  assignmentRecipientCreationDocRef,
-  assignmentRecipientDocRef,
   classDocRef,
   enrollmentDocRef,
   log,
@@ -19,7 +17,7 @@ import {
 import { enrollmentIdFor } from "../enrollments/enrollments-join-by-code";
 
 import {
-  buildRecipientCreationWrite,
+  ensureAssignmentRecipient,
   type RecipientOwnershipContext,
 } from "./assignment-recipients";
 
@@ -308,11 +306,27 @@ async function assignmentsRecipientAddHandler(
     );
   }
 
-  const existing = await assignmentRecipientDocRef(
-    input.assignmentId,
+  const context: RecipientOwnershipContext = {
+    assignmentId: input.assignmentId,
+    classId: assignment.classId,
+    teacherId: assignment.teacherId,
+    schoolId: assignment.schoolId,
+    districtId: actor.districtId,
+    assignedBy: actor.uid,
+  };
+
+  // Phase B Core, Slice 1: the idempotent existence-check-then-write is
+  // now the single shared `ensureAssignmentRecipient` primitive. Every
+  // precondition it trusts (published assignment, internally-consistent
+  // class ownership, active enrollment) has already been established
+  // above by this handler's own certified PDR-029j sequence, unchanged.
+  const result = await ensureAssignmentRecipient(
+    context,
     input.studentId,
-  ).get();
-  if (existing.exists) {
+    "manualAddition",
+  );
+
+  if (!result.added) {
     safeLog(() =>
       log.info("assignments.recipientAddIdempotent", {
         actorUserId: actor.uid,
@@ -326,20 +340,6 @@ async function assignmentsRecipientAddHandler(
       added: false,
     };
   }
-
-  const context: RecipientOwnershipContext = {
-    assignmentId: input.assignmentId,
-    classId: assignment.classId,
-    teacherId: assignment.teacherId,
-    schoolId: assignment.schoolId,
-    districtId: actor.districtId,
-    assignedBy: actor.uid,
-  };
-
-  await assignmentRecipientCreationDocRef(
-    input.assignmentId,
-    input.studentId,
-  ).set(buildRecipientCreationWrite(context, input.studentId, "manualAddition"));
 
   await writeAuditEvent({
     actorUserId: actor.uid,

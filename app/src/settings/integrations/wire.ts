@@ -8,7 +8,9 @@ import type { ClassSummary } from "../../classes/types";
 import type {
   AssignmentsCallables,
   AssignmentsCreateDraftOutput,
+  AssignmentsLifecycleStateOutput,
   AssignmentsPublishOutput,
+  AssignmentsRecipientsReconcileOutput,
   IntegrationsCallables,
   IntegrationsClassLink,
   IntegrationsConnection,
@@ -311,6 +313,70 @@ export function createAssignmentsCallables(
         assignmentId,
         status: "published",
         alreadyPublished: data.alreadyPublished === true,
+      };
+      return Object.freeze(out);
+    },
+    lifecycleState: async (input) => {
+      const lifecycleState = httpsCallable(
+        functions,
+        "assignmentsLifecycleState",
+      );
+      const res = await lifecycleState(input);
+      const data = (res.data ?? {}) as CallableRecord;
+      const state = readString(data.state);
+      if (!state) {
+        throw new Error(
+          "assignmentsLifecycleState returned an unexpected shape.",
+        );
+      }
+      const candidates = Array.isArray(data.candidates)
+        ? data.candidates
+        : [];
+      const out: AssignmentsLifecycleStateOutput = {
+        state: state as AssignmentsLifecycleStateOutput["state"],
+        candidates: Object.freeze(
+          candidates.map((c: CallableRecord) =>
+            Object.freeze({
+              assignmentId: readString(c.assignmentId) ?? "",
+              title: readString(c.title) ?? "",
+              status: (readString(c.status) ?? "draft") as
+                "draft" | "published" | "closed",
+              publishedAt:
+                typeof c.publishedAt === "number" ? c.publishedAt : null,
+              recipientCount:
+                typeof c.recipientCount === "number" ? c.recipientCount : 0,
+              activeEnrollmentCount:
+                typeof c.activeEnrollmentCount === "number"
+                  ? c.activeEnrollmentCount
+                  : 0,
+              missingRecipientCount:
+                typeof c.missingRecipientCount === "number"
+                  ? c.missingRecipientCount
+                  : 0,
+            }),
+          ),
+        ),
+      };
+      return Object.freeze(out);
+    },
+    recipientsReconcile: async (input) => {
+      const reconcile = httpsCallable(
+        functions,
+        "assignmentsRecipientsReconcile",
+      );
+      const res = await reconcile(input);
+      const data = (res.data ?? {}) as CallableRecord;
+      const assignmentId = readString(data.assignmentId);
+      if (!assignmentId) {
+        throw new Error(
+          "assignmentsRecipientsReconcile returned an unexpected shape.",
+        );
+      }
+      const out: AssignmentsRecipientsReconcileOutput = {
+        assignmentId,
+        added: typeof data.added === "number" ? data.added : 0,
+        alreadyCurrent:
+          typeof data.alreadyCurrent === "number" ? data.alreadyCurrent : 0,
       };
       return Object.freeze(out);
     },
