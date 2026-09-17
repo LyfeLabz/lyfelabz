@@ -42,8 +42,15 @@ const twoClasses: ReadonlyArray<ClassSummary> = freeze([
   freeze({ id: "c2", title: "6B", grade: "6", status: "active" }),
 ] as ClassSummary[]);
 
+const threeClasses: ReadonlyArray<ClassSummary> = freeze([
+  freeze({ id: "c1", title: "6A", grade: "6", status: "active" }),
+  freeze({ id: "c2", title: "6B", grade: "6", status: "active" }),
+  freeze({ id: "c3", title: "7A", grade: "7", status: "active" }),
+] as ClassSummary[]);
+
 const listOne: ListClasses = () => Promise.resolve(oneClass);
 const listTwo: ListClasses = () => Promise.resolve(twoClasses);
+const listThree: ListClasses = () => Promise.resolve(threeClasses);
 
 const mkMount = (): HTMLElement => {
   const div = document.createElement("div");
@@ -1362,5 +1369,472 @@ describe("Curriculum lifecycle UI", () => {
     await flush();
     expect(asn.reconcileCalls).toContain("a-2");
     expect(asn.reconcileCalls).not.toContain("a-1");
+  });
+
+  // ---- Dialog UI layout tests (production multiplePublished repair) ----
+
+  // DL-1: multiplePublished renders a contained candidate-selection section
+  test("DL-1: multiplePublished renders disambig section as a contained block", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const disambig = document.querySelector(
+      "[data-testid=assign-row-disambig-c1]",
+    );
+    expect(disambig).not.toBeNull();
+    expect(disambig?.classList.contains("shell-assign-row-disambig")).toBe(true);
+    const heading = disambig?.querySelector(".shell-assign-row-disambig-heading");
+    expect(heading?.textContent).toBe("Choose assignment to update");
+  });
+
+  // DL-2: each candidate has one radio + associated label
+  test("DL-2: each candidate is a label wrapping a radio input and text", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1", title: "Earth's Layers" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const labels = document.querySelectorAll(
+      "[data-testid=assign-row-disambig-c1] .shell-assign-disambig-option",
+    );
+    expect(labels.length).toBe(2);
+    for (let i = 0; i < labels.length; i++) {
+      const label = labels[i];
+      expect(label.tagName).toBe("LABEL");
+      expect(label.querySelector('input[type="radio"]')).not.toBeNull();
+      expect(label.querySelector("span")).not.toBeNull();
+    }
+  });
+
+  // DL-3: disambig section is scoped inside the correct class row
+  test("DL-3: disambig section is a child of the correct class row", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const disambig = document.querySelector(
+      "[data-testid=assign-row-disambig-c1]",
+    );
+    const row = disambig?.closest("[data-class-id='c1']");
+    expect(row).not.toBeNull();
+  });
+
+  // DL-4: candidate content is NOT rendered as Topic/Date/Time controls
+  test("DL-4: multiplePublished row does not contain date or time inputs", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.querySelector(".shell-assign-row-date")).toBeNull();
+    expect(row?.querySelector(".shell-assign-row-time")).toBeNull();
+    expect(row?.querySelector(".shell-assign-row-topic")).toBeNull();
+  });
+
+  // DL-5: two multiplePublished classes render independent candidate groups
+  test("DL-5: two multiplePublished classes have independent disambig groups", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+      c2: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-3" }),
+          publishedCandidate({ assignmentId: "a-4" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const d1 = document.querySelector("[data-testid=assign-row-disambig-c1]");
+    const d2 = document.querySelector("[data-testid=assign-row-disambig-c2]");
+    expect(d1).not.toBeNull();
+    expect(d2).not.toBeNull();
+    const r1 = d1?.querySelectorAll('input[type="radio"]');
+    const r2 = d2?.querySelectorAll('input[type="radio"]');
+    expect(r1?.length).toBe(2);
+    expect(r2?.length).toBe(2);
+    const names1 = new Set(Array.from(r1!).map((r) => (r as HTMLInputElement).name));
+    const names2 = new Set(Array.from(r2!).map((r) => (r as HTMLInputElement).name));
+    expect(names1.size).toBe(1);
+    expect(names2.size).toBe(1);
+    expect([...names1][0]).not.toBe([...names2][0]);
+  });
+
+  // DL-6: selecting candidate in Class A does not alter Class B
+  test("DL-6: selecting in class A does not change class B", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+      c2: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-3" }),
+          publishedCandidate({ assignmentId: "a-4" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const radioA = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-disambig-c1-a-1]",
+    );
+    if (radioA) {
+      radioA.checked = true;
+      radioA.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    await flush();
+    const row1 = document.querySelector("[data-class-id='c1']");
+    const row2 = document.querySelector("[data-class-id='c2']");
+    expect(row1?.getAttribute("data-selected-assignment")).toBe("a-1");
+    expect(row2?.hasAttribute("data-selected-assignment")).toBe(false);
+  });
+
+  // DL-7: exact selected assignmentId reaches recipientsReconcile (covered by WS-16 but confirmed here)
+  test("DL-7: exact selected ID reconciled after selection", async () => {
+    const asn = makeAssignments(
+      {
+        c1: {
+          state: "multiplePublished",
+          candidates: [
+            publishedCandidate({ assignmentId: "a-1" }),
+            publishedCandidate({ assignmentId: "a-2" }),
+          ],
+        },
+      },
+      { reconcileAdded: 1 },
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-disambig-c1-a-2]",
+    );
+    if (radio) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    await flush();
+    clickConfirm();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.reconcileCalls).toEqual(["a-2"]);
+  });
+
+  // DL-8: no selection still produces validation (same as WS-13 but under layout suite)
+  test("DL-8: no selection shows validation on confirm", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    clickConfirm();
+    await flush();
+    const validation = document.querySelector("[data-testid=assign-validation]");
+    expect(validation?.textContent).toBe("Choose the assignment you want to update.");
+  });
+
+  // DL-9: no selection produces zero reconcile/create/publish
+  test("DL-9: no selection produces zero server calls", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    clickConfirm();
+    await flush();
+    await flush();
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.draftCalls).toHaveLength(0);
+  });
+
+  // DL-10: neverAssigned layout/creation behavior remains intact
+  test("DL-10: neverAssigned row shows date and time inputs", async () => {
+    const asn = makeAssignments();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.querySelector(".shell-assign-row-date")).not.toBeNull();
+    expect(row?.querySelector(".shell-assign-row-time")).not.toBeNull();
+    expect(row?.querySelector(".shell-assign-row-disambig")).toBeNull();
+  });
+
+  // DL-11: onePublishedMissingRecipients Update behavior intact
+  test("DL-11: onePublishedMissingRecipients shows Update badge, no disambig", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        candidates: [publishedCandidate({ missingRecipientCount: 3 })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
+    );
+    expect(badge?.textContent).toBe("3 students to add");
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.querySelector(".shell-assign-row-disambig")).toBeNull();
+  });
+
+  // DL-12: onePublishedFullyCurrent remains Up to date
+  test("DL-12: onePublishedFullyCurrent shows Up to date, no disambig", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedFullyCurrent",
+        candidates: [publishedCandidate({ missingRecipientCount: 0 })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
+    );
+    expect(badge?.textContent).toBe("Up to date");
+    expect(
+      document.querySelector("[data-class-id='c1'] .shell-assign-row-disambig"),
+    ).toBeNull();
+  });
+
+  // DL-13: historicalOnly remains Assign as new
+  test("DL-13: historicalOnly shows Assign as new, has date/time", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "historicalOnly",
+        candidates: [publishedCandidate({ status: "closed" })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
+    );
+    expect(badge?.textContent).toBe("Assign as new");
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.querySelector(".shell-assign-row-date")).not.toBeNull();
+    expect(row?.querySelector(".shell-assign-row-disambig")).toBeNull();
+  });
+
+  // DL-14: unresolved remains fail-closed with Retry
+  test("DL-14: unresolved row has retry, no disambig", async () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: makeFailingLifecycleSeam(),
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.getAttribute("data-lifecycle-state")).toBe("unresolved");
+    expect(row?.querySelector("[data-testid=assign-row-retry-c1]")).not.toBeNull();
+    expect(row?.querySelector(".shell-assign-row-disambig")).toBeNull();
+  });
+
+  // DL-15: accessible group/label semantics on disambig
+  test("DL-15: disambig has radiogroup role and aria-label for class", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const disambig = document.querySelector(
+      "[data-testid=assign-row-disambig-c1]",
+    );
+    expect(disambig?.getAttribute("role")).toBe("radiogroup");
+    expect(disambig?.getAttribute("aria-label")).toContain("6A");
+  });
+
+  // DL-16: dialog structurally valid with several multiplePublished classes
+  test("DL-16: three multiplePublished classes each have independent disambig", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2" }),
+        ],
+      },
+      c2: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-3" }),
+          publishedCandidate({ assignmentId: "a-4" }),
+          publishedCandidate({ assignmentId: "a-5" }),
+        ],
+      },
+      c3: {
+        state: "multiplePublished",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-6" }),
+          publishedCandidate({ assignmentId: "a-7" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listThree,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const d1 = document.querySelector("[data-testid=assign-row-disambig-c1]");
+    const d2 = document.querySelector("[data-testid=assign-row-disambig-c2]");
+    const d3 = document.querySelector("[data-testid=assign-row-disambig-c3]");
+    expect(d1).not.toBeNull();
+    expect(d2).not.toBeNull();
+    expect(d3).not.toBeNull();
+    expect(d1?.querySelectorAll('input[type="radio"]').length).toBe(2);
+    expect(d2?.querySelectorAll('input[type="radio"]').length).toBe(3);
+    expect(d3?.querySelectorAll('input[type="radio"]').length).toBe(2);
+    const allNames = new Set<string>();
+    for (const d of [d1, d2, d3]) {
+      const radios = d!.querySelectorAll('input[type="radio"]');
+      const name = (radios[0] as HTMLInputElement)?.name;
+      expect(allNames.has(name)).toBe(false);
+      allNames.add(name);
+    }
+    expect(allNames.size).toBe(3);
   });
 });

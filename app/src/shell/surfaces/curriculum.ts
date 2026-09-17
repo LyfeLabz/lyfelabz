@@ -2290,6 +2290,10 @@ function renderRow(
       "aria-label",
       `Select which assignment to update for ${cls.title}`,
     );
+    const heading = doc.createElement("div");
+    heading.className = "shell-assign-row-disambig-heading";
+    heading.textContent = "Choose assignment to update";
+    disambig.appendChild(heading);
     const radioName = `assign-disambig-${cls.id}`;
     for (const candidate of published) {
       const label = doc.createElement("label");
@@ -2308,9 +2312,14 @@ function renderRow(
         ? new Date(candidate.publishedAt).toLocaleDateString()
         : "";
       text.textContent = dateStr
-        ? `${candidate.title} (${dateStr})`
+        ? `${candidate.title} · ${dateStr}`
         : candidate.title;
       label.appendChild(text);
+      const meta = doc.createElement("span");
+      meta.className = "shell-assign-disambig-meta";
+      const rc = candidate.recipientCount;
+      meta.textContent = rc === 1 ? "1 recipient" : `${rc} recipients`;
+      label.appendChild(meta);
       disambig.appendChild(label);
       radio.addEventListener("change", () => {
         if (radio.checked) {

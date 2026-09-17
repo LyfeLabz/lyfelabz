@@ -1697,6 +1697,44 @@
     width: 100%;
     box-sizing: border-box;
   }
+  .shell-assign-row-disambig {
+    grid-column: 1 / -1;
+    background: #f7f7f7;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin: 0.1rem 0 0.35rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .shell-assign-row-disambig-heading {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 0.2rem;
+  }
+  .shell-assign-disambig-option {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    padding: 0.3rem 0.35rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #333;
+  }
+  .shell-assign-disambig-option:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .shell-assign-disambig-option input[type="radio"] {
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .shell-assign-disambig-option .shell-assign-disambig-meta {
+    font-size: 0.78rem;
+    color: #777;
+  }
   .shell-assign-footer {
     display: flex;
     align-items: center;
@@ -1802,6 +1840,10 @@
       flex: 1 1 8rem;
       min-width: 0;
       width: auto;
+    }
+    .shell-assign-row-disambig {
+      flex-basis: 100%;
+      margin-left: 0;
     }
   }
   /* Sprint 20 internal beta: Classes create-class + join-code panels.
