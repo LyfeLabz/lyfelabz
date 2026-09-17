@@ -18,6 +18,38 @@ const mockAssignmentRecipientsCollectionRef = jest.fn(() => ({
 const mockRequireDistrictContext = jest.fn();
 const mockLogInfo = jest.fn();
 
+// Historical Assignment Resolution, Implementation Slice 8. The real,
+// UNMOCKED Slice 3 resolver (`./resolve-current-assignment`) is exercised
+// directly by these two fakes, mirroring the same "genuine integration
+// coverage over a hand-rolled stand-in" convention already used elsewhere
+// in this domain (e.g. `assignments-current-recipients-reconcile.test.ts`
+// leaving the resolver unmocked). `mockAssignmentDocRef` deliberately reads
+// from the SAME `assignmentsFixture` array the existing collection-query
+// mock already uses below, so a test that seeds an assignment via
+// `seedAssignment` automatically makes it visible to the resolver's own
+// per-id lookup too, with no separate fixture to keep in sync.
+const pointerRegistry = new Map<string, { exists: boolean; data: () => unknown }>();
+function pointerKey(classId: string, lessonSlug: string): string {
+  return `${classId}/${lessonSlug}`;
+}
+const mockAssignmentsCurrentDocRef = jest.fn((classId: string, lessonSlug: string) => ({
+  get: () =>
+    Promise.resolve(
+      pointerRegistry.get(pointerKey(classId, lessonSlug)) ?? {
+        exists: false,
+        data: () => undefined,
+      },
+    ),
+}));
+const mockAssignmentDocRef = jest.fn((assignmentId: string) => ({
+  get: () => {
+    const row = assignmentsFixture.find((r) => r.id === assignmentId);
+    return Promise.resolve(
+      row ? { exists: true, data: () => row.data } : { exists: false, data: () => undefined },
+    );
+  },
+}));
+
 function makeAssignmentsQuery(
   filters: Array<{ field: string; value: unknown }>,
 ) {
@@ -66,6 +98,8 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: jest.fn(), error: jest.fn() },
     assignmentsCollectionRef: mockAssignmentsCollectionRef,
     assignmentRecipientsCollectionRef: mockAssignmentRecipientsCollectionRef,
+    assignmentsCurrentDocRef: mockAssignmentsCurrentDocRef,
+    assignmentDocRef: mockAssignmentDocRef,
     classDocRef: mockClassDocRef,
     enrollmentsCollectionRef: mockEnrollmentsCollectionRef,
     requireDistrictContext: mockRequireDistrictContext,
@@ -136,6 +170,26 @@ function seedAssignment(
       publishedAt: { toMillis: () => 1700000000000 },
       ...overrides,
     },
+  });
+}
+
+// Historical Assignment Resolution, Implementation Slice 8. Seeds a Current
+// pointer document for (CLASS_ID, LESSON_SLUG) by default; every field can
+// be overridden to model a malformed or cross-scope pointer.
+function seedPointer(overrides: Record<string, unknown> = {}): void {
+  pointerRegistry.set(pointerKey(CLASS_ID, LESSON_SLUG), {
+    exists: true,
+    data: () => ({
+      classId: CLASS_ID,
+      lessonSlug: LESSON_SLUG,
+      assignmentId: "assign-1",
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
+      setAt: {},
+      setBy: TEACHER_UID,
+      source: "publish",
+      ...overrides,
+    }),
   });
 }
 
@@ -245,6 +299,7 @@ describe("assignmentsLifecycleState", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     assignmentsFixture.length = 0;
+    pointerRegistry.clear();
     mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
     mockClassGet.mockResolvedValue(classSnapshot());
     mockRecipientsGet.mockResolvedValue({ docs: [] });
@@ -643,5 +698,211 @@ describe("assignmentsLifecycleState", () => {
     await expect(
       __assignmentsLifecycleStateHandler(makeRequest()),
     ).rejects.toBeInstanceOf(PlatformError);
+  });
+
+  // Historical Assignment Resolution, Implementation Slice 8. Current
+  // resolution is an additive, independent dimension: it never changes
+  // `state` or `candidates`, and neither of those ever changes it.
+  describe("Current resolution (Slice 8)", () => {
+    // 1. never assigned + no pointer
+    it("never assigned + no pointer: state unchanged, Current unresolved/null", async () => {
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.state).toBe("neverAssigned");
+      expect(result.candidates).toEqual([]);
+      expect(result.currentAssignmentId).toBeNull();
+      expect(result.currentAssignmentResolution).toBe("unresolved");
+    });
+
+    // 2. one published + no pointer - critically, no heuristic inference
+    it("one published + no pointer: lifecycle state unchanged, Current unresolved/null (no heuristic inference)", async () => {
+      seedAssignment("assign-1");
+      wireEnrollments([{ studentId: "student-1" }]);
+      wireRecipients("assign-1", [{ studentId: "student-1" }]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.state).toBe("onePublishedFullyCurrent");
+      expect(result.currentAssignmentId).toBeNull();
+      expect(result.currentAssignmentResolution).toBe("unresolved");
+    });
+
+    // 3. multiple published + no pointer
+    it("multiple published + no pointer: state multiplePublished, Current unresolved/null", async () => {
+      seedAssignment("assign-1");
+      seedAssignment("assign-2");
+      wireEnrollments([]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.state).toBe("multiplePublished");
+      expect(result.currentAssignmentId).toBeNull();
+      expect(result.currentAssignmentResolution).toBe("unresolved");
+    });
+
+    // 4. multiple published + valid Current
+    it("multiple published + valid Current: state remains multiplePublished, Current valid with exact pointer assignmentId", async () => {
+      seedAssignment("assign-1");
+      seedAssignment("assign-2");
+      seedPointer({ assignmentId: "assign-2" });
+      wireEnrollments([]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.state).toBe("multiplePublished");
+      expect(result.currentAssignmentId).toBe("assign-2");
+      expect(result.currentAssignmentResolution).toBe("valid");
+    });
+
+    // 5. one published + valid Current
+    it("one published + valid Current: existing onePublished state unchanged, Current valid with assignmentId", async () => {
+      seedAssignment("assign-1");
+      seedPointer({ assignmentId: "assign-1" });
+      wireEnrollments([{ studentId: "student-1" }]);
+      wireRecipients("assign-1", [{ studentId: "student-1" }]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.state).toBe("onePublishedFullyCurrent");
+      expect(result.currentAssignmentId).toBe("assign-1");
+      expect(result.currentAssignmentResolution).toBe("valid");
+    });
+
+    // 6. pointer malformed
+    it("pointer malformed: lifecycle state still computed normally, Current invalid/null", async () => {
+      seedAssignment("assign-1");
+      seedPointer({ source: "notARealSource" });
+      wireEnrollments([{ studentId: "student-1" }]);
+      wireRecipients("assign-1", [{ studentId: "student-1" }]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.state).toBe("onePublishedFullyCurrent");
+      expect(result.currentAssignmentId).toBeNull();
+      expect(result.currentAssignmentResolution).toBe("invalid");
+    });
+
+    // 7. pointer scope mismatch (class, lesson, teacher, school)
+    it.each([
+      ["class mismatch", { classId: "class-other" }],
+      ["lesson mismatch", { lessonSlug: "lesson_other" }],
+      ["teacher mismatch", { teacherId: "teacher-other" }],
+      ["school mismatch", { schoolId: "school-other" }],
+    ])("pointer scope mismatch (%s): Current invalid/null", async (_label, overrides) => {
+      seedAssignment("assign-1");
+      seedPointer(overrides);
+      wireEnrollments([]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.currentAssignmentId).toBeNull();
+      expect(result.currentAssignmentResolution).toBe("invalid");
+    });
+
+    // 8. pointer references missing assignment
+    it("pointer references a missing assignment: Current invalid/null", async () => {
+      seedPointer({ assignmentId: "assign-nonexistent" });
+      wireEnrollments([]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.currentAssignmentId).toBeNull();
+      expect(result.currentAssignmentResolution).toBe("invalid");
+    });
+
+    // 9. pointer references a non-published assignment
+    it.each(["draft", "closed", "archived"] as const)(
+      "pointer references a non-published (%s) assignment: Current invalid/null",
+      async (status) => {
+        seedAssignment("assign-1", { status });
+        seedPointer({ assignmentId: "assign-1" });
+        wireEnrollments([]);
+
+        const result = await __assignmentsLifecycleStateHandler(makeRequest());
+        expect(result.currentAssignmentId).toBeNull();
+        expect(result.currentAssignmentResolution).toBe("invalid");
+      },
+    );
+
+    // 10. historicalOnly + no pointer
+    it("historicalOnly + no pointer: state historicalOnly, Current unresolved/null", async () => {
+      seedAssignment("assign-1", { status: "closed" });
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.state).toBe("historicalOnly");
+      expect(result.currentAssignmentId).toBeNull();
+      expect(result.currentAssignmentResolution).toBe("unresolved");
+    });
+
+    // 11. historicalOnly + invalid pointer (pointer to a non-published assignment)
+    it("historicalOnly + invalid pointer: state historicalOnly, Current invalid/null", async () => {
+      seedAssignment("assign-1", { status: "closed" });
+      seedPointer({ assignmentId: "assign-1" });
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.state).toBe("historicalOnly");
+      expect(result.currentAssignmentId).toBeNull();
+      expect(result.currentAssignmentResolution).toBe("invalid");
+    });
+
+    // 12. no heuristic selection, explicit
+    it("one published candidate and no pointer never yields a non-null currentAssignmentId", async () => {
+      seedAssignment("assign-only");
+      wireEnrollments([]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(result.currentAssignmentId).toBeNull();
+    });
+
+    // 13. Current does not change lifecycle state - same fixture, with and
+    // without a valid pointer, must produce identical state/candidates.
+    it("identical fixture with vs. without a valid pointer produces identical state and candidates", async () => {
+      seedAssignment("assign-1");
+      seedAssignment("assign-2");
+      wireEnrollments([]);
+
+      const withoutPointer = await __assignmentsLifecycleStateHandler(makeRequest());
+
+      seedPointer({ assignmentId: "assign-1" });
+      const withPointer = await __assignmentsLifecycleStateHandler(makeRequest());
+
+      expect(withPointer.state).toBe(withoutPointer.state);
+      expect(withPointer.candidates).toEqual(withoutPointer.candidates);
+      // Only the additive Current fields differ.
+      expect(withoutPointer.currentAssignmentResolution).toBe("unresolved");
+      expect(withPointer.currentAssignmentResolution).toBe("valid");
+    });
+
+    // 14. authorization before Current read
+    it("wrong-owner class fails before Current is ever resolved", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot({ teacherId: "someone-else" }));
+
+      await expect(
+        __assignmentsLifecycleStateHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "assignments.forbidden" });
+      expect(mockAssignmentsCurrentDocRef).not.toHaveBeenCalled();
+    });
+
+    it("cross-school class fails before Current is ever resolved", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot({ schoolId: "school-other" }));
+
+      await expect(
+        __assignmentsLifecycleStateHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "assignments.forbidden" });
+      expect(mockAssignmentsCurrentDocRef).not.toHaveBeenCalled();
+    });
+
+    // 15. existing candidate contract preserved - no per-candidate Current flag
+    it("candidate shape is unchanged: no per-candidate isCurrent field, even when Current is valid", async () => {
+      seedAssignment("assign-1");
+      seedPointer({ assignmentId: "assign-1" });
+      wireEnrollments([{ studentId: "student-1" }]);
+      wireRecipients("assign-1", [{ studentId: "student-1" }]);
+
+      const result = await __assignmentsLifecycleStateHandler(makeRequest());
+      expect(Object.keys(result.candidates[0]).sort()).toEqual(
+        [
+          "assignmentId",
+          "title",
+          "status",
+          "publishedAt",
+          "recipientCount",
+          "activeEnrollmentCount",
+          "missingRecipientCount",
+        ].sort(),
+      );
+    });
   });
 });

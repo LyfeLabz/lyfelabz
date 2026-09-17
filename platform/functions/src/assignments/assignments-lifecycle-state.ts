@@ -17,6 +17,10 @@ import {
 } from "../shared";
 
 import { isCanonicalRecipientData } from "./assignment-recipients";
+import {
+  resolveValidCurrentAssignmentId,
+  type ResolveCurrentAssignmentResult,
+} from "./resolve-current-assignment";
 
 // Phase B Core, Curriculum Lifecycle Server/Data slice.
 //
@@ -29,6 +33,22 @@ import { isCanonicalRecipientData } from "./assignment-recipients";
 // any Firestore document. It never calls any Google Classroom API.
 // Recipient repair is performed only when the teacher explicitly
 // invokes `assignmentsRecipientsReconcile`.
+//
+// Historical Assignment Resolution, Implementation Slice 8. This callable
+// additionally reports Current-resolution as a second, independent
+// dimension alongside the five lifecycle states: `currentAssignmentId` and
+// `currentAssignmentResolution` (`"valid" | "unresolved" | "invalid"`, see
+// `CurrentAssignmentResolutionPublic`). Current is never used to compute
+// `state` or `candidates`, and neither of those is ever used to compute
+// Current - the two dimensions genuinely combine (e.g. `multiplePublished`
+// legitimately coexists with an `unresolved`, `valid`, or `invalid` Current
+// depending on whether and how the teacher has resolved history for this
+// class/lesson) rather than one gating or overriding the other. Resolution
+// uses the tolerant Slice 3 primitive
+// (`resolveValidCurrentAssignmentId`/`./resolve-current-assignment.ts`) and
+// performs NO automatic Current selection of any kind: a class with exactly
+// one published candidate and no pointer still reports `unresolved`, never
+// an inferred `valid`.
 
 export type AssignmentsLifecycleStateRequest = {
   readonly classId: string;
@@ -52,9 +72,26 @@ export type AssignmentsLifecycleState =
   | "multiplePublished"
   | "historicalOnly";
 
+// Historical Assignment Resolution, Implementation Slice 8. The public,
+// deliberately narrow Current-resolution vocabulary exposed by this
+// read-only callable - three values, never the Slice 3 resolver's twelve
+// internal unresolved-reason discriminants. `valid` and `invalid` are both
+// distinguishable "a pointer exists" states so the client can tell "no
+// pointer has ever been set for this legacy class/lesson" (`unresolved`)
+// apart from "a pointer exists but is contradictory" (`invalid`) - the two
+// are materially different situations even though both currently yield the
+// identical `currentAssignmentId: null`. See `mapCurrentResolution` below
+// for the exact, single place this collapsing happens.
+export type CurrentAssignmentResolutionPublic = "valid" | "unresolved" | "invalid";
+
 export type AssignmentsLifecycleStateResponse = {
   readonly state: AssignmentsLifecycleState;
   readonly candidates: ReadonlyArray<AssignmentCandidate>;
+  // Additive (Slice 8). Current is an independent resolution dimension,
+  // never influencing `state` or `candidates` above. `null` whenever
+  // `currentAssignmentResolution !== "valid"`.
+  readonly currentAssignmentId: string | null;
+  readonly currentAssignmentResolution: CurrentAssignmentResolutionPublic;
 };
 
 function isNonEmptyString(value: unknown): value is string {
@@ -163,6 +200,36 @@ async function loadCanonicalRecipientStudentIds(
   return seen;
 }
 
+// Maps the Slice 3 canonical resolver's internal, twelve-way discriminant
+// down to the three public values this callable exposes. Only the
+// `pointerMissing` reason - genuinely no pointer document at all - maps to
+// `unresolved`. Every other non-"valid" `resolution` value (malformed
+// pointer, any pointer/assignment scope mismatch, a missing referenced
+// assignment, or a non-published referenced assignment) maps to `invalid`:
+// a pointer document exists but contradicts what a valid Current must look
+// like, which is a materially different, contradictory state a client must
+// be able to fail safe on rather than treat identically to legacy
+// "never resolved" history. This is the ONE place that collapsing happens;
+// no second Current-validation vocabulary is introduced anywhere in this
+// file, and the detailed internal reason is never returned to the client.
+function mapCurrentResolution(
+  result: ResolveCurrentAssignmentResult,
+): {
+  readonly currentAssignmentId: string | null;
+  readonly currentAssignmentResolution: CurrentAssignmentResolutionPublic;
+} {
+  if (result.resolution === "valid") {
+    return {
+      currentAssignmentId: result.assignmentId,
+      currentAssignmentResolution: "valid",
+    };
+  }
+  if (result.resolution === "pointerMissing") {
+    return { currentAssignmentId: null, currentAssignmentResolution: "unresolved" };
+  }
+  return { currentAssignmentId: null, currentAssignmentResolution: "invalid" };
+}
+
 function deriveState(
   candidates: ReadonlyArray<AssignmentCandidate>,
 ): AssignmentsLifecycleState {
@@ -206,6 +273,27 @@ async function assignmentsLifecycleStateHandler(
     );
   }
 
+  // Historical Assignment Resolution, Implementation Slice 8. Current
+  // resolution is computed exactly once here, immediately after class
+  // authorization succeeds and unconditionally regardless of which of the
+  // five lifecycle states this call will ultimately return - the resolver
+  // uses the tolerant Slice 3 primitive (never throws for an unresolved
+  // Current, since this callable is read-only) and is a fully independent
+  // read from the lifecycle candidate computation below: it never
+  // influences `state` or `candidates`, and no lifecycle branch below ever
+  // inspects or repairs it. No pointer is written; no automatic Current
+  // selection of any kind occurs regardless of how many published
+  // candidates are found afterward.
+  const currentResolution = mapCurrentResolution(
+    await resolveValidCurrentAssignmentId({
+      classId: input.classId,
+      lessonSlug: input.lessonSlug,
+      teacherId: actor.uid,
+      schoolId: actor.schoolId,
+      districtId: actor.districtId,
+    }),
+  );
+
   const assignmentSnapshot = await assignmentsCollectionRef()
     .where("classId", "==", input.classId)
     .where("lessonSlug", "==", input.lessonSlug)
@@ -234,7 +322,7 @@ async function assignmentsLifecycleStateHandler(
         state: "neverAssigned",
       }),
     );
-    return { state: "neverAssigned", candidates: [] };
+    return { state: "neverAssigned", candidates: [], ...currentResolution };
   }
 
   const publishedAssignments = raw.filter(
@@ -344,7 +432,7 @@ async function assignmentsLifecycleStateHandler(
     }),
   );
 
-  return { state, candidates };
+  return { state, candidates, ...currentResolution };
 }
 
 export const assignmentsLifecycleState = platformCallable(
