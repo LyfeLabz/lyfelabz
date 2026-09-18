@@ -202,27 +202,23 @@ describe("candidate and history text colors were not touched by this patch (not 
 });
 
 // Historical Assignment Resolution, post-release UX patch (CURRENT marker
-// far-right alignment). Human verification found CURRENT rendering
-// immediately after the title/date/time, before recipient count. The fix
-// is CSS-driven, not a hard-coded offset: the marker is the LAST child of
-// the flex-row `.shell-assign-disambig-option` (verified structurally in
-// curriculum.lifecycle.test.ts), and `margin-left: auto` on the marker
-// consumes the row's remaining flexible space to push it to the far right
-// - responsive to any viewport width or candidate text length.
-describe("CURRENT marker far-right alignment is CSS-driven, not a hard-coded offset", () => {
-  test("the marker rule uses margin-left: auto, not absolute positioning or a fixed offset", () => {
-    const body = ruleBody(html, ".shell-assign-disambig-current-marker");
+// proximity + Current-row outline). The marker is the LAST child of the
+// flex-row `.shell-assign-disambig-option` (verified structurally in
+// curriculum.lifecycle.test.ts) - DOM order alone already puts it right
+// after recipient metadata, separated only by the row's ordinary
+// `gap: 0.4rem`. An earlier revision additionally applied
+// `margin-left: auto`, which pushed the marker away to the row's far right
+// edge; further human production feedback found that stranded too far
+// from the metadata it labels, so `margin-left: auto` was removed in this
+// patch - natural flex-gap proximity is sufficient and needs no extra
+// mechanism.
+describe("CURRENT marker sits at natural proximity to recipient metadata (no far-edge push)", () => {
+  test("the marker rule no longer applies margin-left: auto or any other push-to-edge mechanism", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-current-marker") as string;
     expect(body).not.toBeNull();
-    expect(body).toMatch(/margin-left:\s*auto\b/);
+    expect(body).not.toMatch(/margin-left/);
     expect(body).not.toMatch(/position:\s*absolute/);
     expect(body).not.toMatch(/left:\s*\d/);
-    expect(body).not.toMatch(/margin-left:\s*\d/);
-  });
-
-  test("the row remains a flex container, so margin-left: auto has an axis to push along", () => {
-    const body = ruleBody(html, ".shell-assign-disambig-option");
-    expect(body).not.toBeNull();
-    expect(body).toMatch(/display:\s*flex\b/);
   });
 
   test("the marker's own color/size/casing treatment is otherwise unchanged", () => {
@@ -230,5 +226,58 @@ describe("CURRENT marker far-right alignment is CSS-driven, not a hard-coded off
     expect(body).toMatch(/color:\s*#1f6b3d\b/);
     expect(body).toMatch(/text-transform:\s*uppercase\b/);
     expect(body).toMatch(/font-weight:\s*600\b/);
+  });
+
+  test("DOM order (pinned separately in curriculum.lifecycle.test.ts) plus the row's own gap is the only proximity mechanism", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-option") as string;
+    expect(body).toMatch(/gap:\s*0\.4rem\b/);
+  });
+});
+
+// Historical Assignment Resolution, post-release UX patch (Current-row
+// outline). A subtle rectangular green outline identifies which candidate
+// row is the valid Current occurrence, in addition to the textual CURRENT
+// marker - a state indicator, not a button or a claim that the row (or its
+// independently-disabled radio) is selectable. Keyed off the marker's own
+// existing DOM presence via `:has()` (already an established pattern in
+// this document), so it never duplicates the server-authoritative Current
+// determination in a second place.
+describe("Current-row outline identifies the Current candidate without implying interactivity", () => {
+  test("the outline rule targets rows containing the CURRENT marker via :has(), not a new JS-only class", () => {
+    const body = ruleBody(
+      html,
+      ".shell-assign-disambig-option:has(.shell-assign-disambig-current-marker)",
+    );
+    expect(body).not.toBeNull();
+    expect(body).toMatch(/border:\s*1px solid #1f6b3d\b/);
+  });
+
+  test("the outline reuses the existing green border token already used by this component family, not a new color", () => {
+    // `.shell-assign-row-set-current` / `.shell-assign-row-current-confirm`
+    // already use `border: 1px solid #1f6b3d` for the analogous "current
+    // green outline" treatment elsewhere in this same dialog.
+    const matches = rulesTouching(html, ".shell-assign-row-set-current");
+    expect(
+      matches.some((m) => /border:\s*1px solid #1f6b3d\b/.test(m.body)),
+    ).toBe(true);
+    const outlineBody = ruleBody(
+      html,
+      ".shell-assign-disambig-option:has(.shell-assign-disambig-current-marker)",
+    ) as string;
+    expect(outlineBody).toMatch(/#1f6b3d\b/);
+  });
+
+  test("no background fill was added - the row keeps its base (transparent/hover-only) background", () => {
+    const body = ruleBody(
+      html,
+      ".shell-assign-disambig-option:has(.shell-assign-disambig-current-marker)",
+    ) as string;
+    expect(body).not.toMatch(/background/);
+  });
+
+  test("the base row rule (shared by every candidate, Current or not) keeps its existing border-radius and padding untouched", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-option") as string;
+    expect(body).toMatch(/border-radius:\s*4px\b/);
+    expect(body).toMatch(/padding:\s*0\.3rem 0\.35rem\b/);
   });
 });

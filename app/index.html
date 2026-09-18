@@ -1749,6 +1749,23 @@
   .shell-assign-disambig-option:hover {
     background: rgba(0, 0, 0, 0.04);
   }
+  /* Historical Assignment Resolution, post-release UX patch. A subtle
+     rectangular outline on the row that IS the valid Current occurrence -
+     a state indicator, not a button/selectable affordance (the row's
+     radio for this exact candidate is independently disabled; the border
+     never implies otherwise). Reuses the same green already established as
+     a border color in this component family
+     (`.shell-assign-row-set-current`/`.shell-assign-row-current-confirm`
+     below), rather than a new value. Keyed off the marker's own existing
+     presence via `:has()` (already used elsewhere in this document, e.g.
+     `body:not(:has(#app-root > .shell-header))`) - the marker is only ever
+     rendered for the server-resolved Current candidate, so this never
+     duplicates that determination in a second place; it reads the DOM
+     state the render already produced. Background and row radius are left
+     exactly as the base rule above - only the border is added. */
+  .shell-assign-disambig-option:has(.shell-assign-disambig-current-marker) {
+    border: 1px solid #1f6b3d;
+  }
   .shell-assign-disambig-option input[type="radio"] {
     margin: 0;
     flex-shrink: 0;
@@ -1813,11 +1830,14 @@
   .shell-assign-disambig-current-marker {
     /* Historical Assignment Resolution, post-release UX patch. The marker
        is the last child of the flex-row `.shell-assign-disambig-option`
-       (see curriculum.ts); `margin-left: auto` consumes the row's
-       remaining flexible space so it lands at the far right - responsive
-       to any viewport width or candidate text length, no absolute
-       positioning, no hard-coded offset. */
-    margin-left: auto;
+       (see curriculum.ts), so it naturally follows the recipient metadata
+       with the row's ordinary `gap: 0.4rem` - no extra layout mechanism
+       needed. An earlier revision added `margin-left: auto` here, which
+       pushed the marker to the far right edge of the row; that read as
+       stranded far away from the metadata it labels, so it was removed
+       (human production feedback) in favor of this natural proximity, now
+       paired with the Current-row outline above for stronger, closer
+       state identification. */
     font-size: 0.72rem;
     font-weight: 600;
     color: #1f6b3d;
