@@ -1900,6 +1900,16 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
           currentAssignmentResolution: "unresolved" as const,
           candidates: [],
         }),
+        currentRecipientsReconcile: async (input: {
+          classId: string;
+          lessonSlug: string;
+        }) => ({
+          classId: input.classId,
+          lessonSlug: input.lessonSlug,
+          assignmentId: "",
+          added: 0,
+          alreadyCurrent: 0,
+        }),
         recipientsReconcile: async (input: { assignmentId: string }) => ({
           assignmentId: input.assignmentId,
           added: 0,

@@ -8,6 +8,7 @@ import type { ClassSummary } from "../../classes/types";
 import type {
   AssignmentsCallables,
   AssignmentsCreateDraftOutput,
+  AssignmentsCurrentRecipientsReconcileOutput,
   AssignmentsLifecycleStateOutput,
   AssignmentsPublishOutput,
   AssignmentsRecipientsReconcileOutput,
@@ -59,6 +60,19 @@ function readString(v: unknown): string | null {
 
 function readOptionalString(v: unknown): string | undefined {
   return typeof v === "string" && v.length > 0 ? v : undefined;
+}
+
+// Historical Assignment Resolution, Implementation Slice 10. Strict numeric
+// validation for `assignmentsCurrentRecipientsReconcile`'s aggregate counts
+// - deliberately stricter than the pre-existing lenient
+// `typeof v === "number" ? v : 0` convention used by
+// `assignmentsRecipientsReconcile`'s own parsing below (which silently
+// substitutes a default rather than rejecting). This new callable's own
+// contract calls for outright rejection of a negative or non-integer
+// count, so a genuinely malformed server response is never coerced into a
+// plausible-looking zero.
+function readNonNegativeInteger(v: unknown): number | null {
+  return typeof v === "number" && Number.isInteger(v) && v >= 0 ? v : null;
 }
 
 function parseProvider(
@@ -409,6 +423,47 @@ export function createAssignmentsCallables(
             }),
           ),
         ),
+      };
+      return Object.freeze(out);
+    },
+    // Historical Assignment Resolution, Implementation Slice 10. The
+    // request carries only `classId`/`lessonSlug` (see
+    // `AssignmentsCurrentRecipientsReconcileInput`) - there is no
+    // `assignmentId` field for this function to accept from a caller, so
+    // the browser is structurally incapable of naming a mutation target
+    // here at all. Response validation is strict end to end: every field,
+    // including the two aggregate counts, is rejected rather than
+    // defaulted if malformed, so a genuinely broken server response never
+    // silently becomes a plausible-looking zero.
+    currentRecipientsReconcile: async (input) => {
+      const currentReconcile = httpsCallable(
+        functions,
+        "assignmentsCurrentRecipientsReconcile",
+      );
+      const res = await currentReconcile(input);
+      const data = (res.data ?? {}) as CallableRecord;
+      const classId = readString(data.classId);
+      const lessonSlug = readString(data.lessonSlug);
+      const assignmentId = readString(data.assignmentId);
+      const added = readNonNegativeInteger(data.added);
+      const alreadyCurrent = readNonNegativeInteger(data.alreadyCurrent);
+      if (
+        !classId ||
+        !lessonSlug ||
+        !assignmentId ||
+        added === null ||
+        alreadyCurrent === null
+      ) {
+        throw new Error(
+          "assignmentsCurrentRecipientsReconcile returned an unexpected shape.",
+        );
+      }
+      const out: AssignmentsCurrentRecipientsReconcileOutput = {
+        classId,
+        lessonSlug,
+        assignmentId,
+        added,
+        alreadyCurrent,
       };
       return Object.freeze(out);
     },

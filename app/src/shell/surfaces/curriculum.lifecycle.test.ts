@@ -83,16 +83,22 @@ const makeAssignments = (
   opts: {
     reconcileAdded?: number;
     failReconcile?: boolean;
+    // Historical Assignment Resolution, Implementation Slice 10.
+    currentReconcileAdded?: number;
+    failCurrentReconcile?: boolean;
   } = {},
 ): {
   seam: AssignmentsCallables;
   reconcileCalls: string[];
+  currentReconcileCalls: Array<{ readonly classId: string; readonly lessonSlug: string }>;
   draftCalls: string[];
 } => {
   const reconcileCalls: string[] = [];
+  const currentReconcileCalls: Array<{ readonly classId: string; readonly lessonSlug: string }> = [];
   const draftCalls: string[] = [];
   return {
     reconcileCalls,
+    currentReconcileCalls,
     draftCalls,
     seam: {
       createDraft: async (input) => {
@@ -112,6 +118,31 @@ const makeAssignments = (
         const override = lcOverrides[input.classId];
         if (override) return override;
         return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
+      },
+      // Historical Assignment Resolution, Implementation Slice 10. Models
+      // the real server's own behavior: the request never carries an
+      // assignmentId, and the "resolved" assignmentId returned is whatever
+      // the fixture's own `currentAssignmentId` says Current is - exactly
+      // as the real `assignmentsCurrentRecipientsReconcile` independently
+      // resolves live Current server-side rather than trusting anything
+      // the client sent.
+      currentRecipientsReconcile: async (input) => {
+        currentReconcileCalls.push({
+          classId: input.classId,
+          lessonSlug: input.lessonSlug,
+        });
+        if (opts.failCurrentReconcile) {
+          throw new Error("current reconcile failed");
+        }
+        const resolvedAssignmentId =
+          lcOverrides[input.classId]?.currentAssignmentId ?? "a-resolved";
+        return {
+          classId: input.classId,
+          lessonSlug: input.lessonSlug,
+          assignmentId: resolvedAssignmentId,
+          added: opts.currentReconcileAdded ?? 0,
+          alreadyCurrent: 0,
+        };
       },
       recipientsReconcile: async (input) => {
         reconcileCalls.push(input.assignmentId);
@@ -156,6 +187,13 @@ const makeFailingLifecycleSeam = (): AssignmentsCallables => ({
   lifecycleState: async () => {
     throw new Error("network error");
   },
+  currentRecipientsReconcile: async (input) => ({
+    classId: input.classId,
+    lessonSlug: input.lessonSlug,
+    assignmentId: "",
+    added: 0,
+    alreadyCurrent: 0,
+  }),
   recipientsReconcile: async (input) => ({
     assignmentId: input.assignmentId,
     added: 0,
@@ -256,8 +294,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedMissingRecipients",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
         candidates: [publishedCandidate({ missingRecipientCount: 3 })],
       },
     });
@@ -342,7 +380,43 @@ describe("Curriculum lifecycle UI", () => {
     expect(badge?.textContent).toBe("Assign as new");
   });
 
-  test("multiplePublished row shows disambiguation radio group", async () => {
+  test("multiplePublished row with valid Current is actionable with no radio group", async () => {
+    // Historical Assignment Resolution, Implementation Slice 10: the old
+    // disambiguation radio group is removed entirely. A multiplePublished
+    // row whose Current pointer resolves to "valid" is auto-actionable -
+    // Update Assignment targets the server-resolved Current directly, no
+    // client-side selection of which historical assignment to update.
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-2",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(
+      document.querySelector("[data-testid=assign-row-disambig-c1]"),
+    ).toBeNull();
+    expect(row?.querySelector('input[type="radio"]')).toBeNull();
+    const checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c1]",
+    );
+    expect(checkbox?.disabled).toBe(false);
+  });
+
+  test("multiplePublished row with unresolved Current shows needs-resolution badge and is disabled", async () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
@@ -362,30 +436,71 @@ describe("Curriculum lifecycle UI", () => {
     clickAssign(mount, LESSON_SLUG);
     await flush();
     await flush();
-    const disambig = document.querySelector(
-      "[data-testid=assign-row-disambig-c1]",
+    expect(
+      document.querySelector("[data-testid=assign-row-disambig-c1]"),
+    ).toBeNull();
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
     );
-    expect(disambig).not.toBeNull();
-    expect(disambig?.getAttribute("role")).toBe("radiogroup");
-    const radios = disambig?.querySelectorAll<HTMLInputElement>(
-      'input[type="radio"]',
+    expect(badge?.textContent).toBe("Needs resolution before updating");
+    const checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c1]",
     );
-    expect(radios?.length).toBe(2);
+    expect(checkbox?.disabled).toBe(true);
+    expect(checkbox?.checked).toBe(false);
+  });
+
+  test("multiplePublished row with invalid Current fails safe and is disabled", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "invalid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-disambig-c1]"),
+    ).toBeNull();
+    const checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c1]",
+    );
+    expect(checkbox?.disabled).toBe(true);
+    expect(checkbox?.checked).toBe(false);
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
+    );
+    expect(badge?.textContent).toBe("Current assignment could not be verified");
+    // Never exposes internal resolver reasons to the teacher.
+    expect(document.body.textContent).not.toMatch(
+      /pointerMissing|pointerMalformed|assignmentMissing|CurrentAssignment/,
+    );
   });
 
   // ---- 3. Update path calls recipientsReconcile only ----
 
-  test("update row calls recipientsReconcile, not createDraft or publish", async () => {
+  test("update row calls currentRecipientsReconcile, not createDraft, publish, or the old recipientsReconcile", async () => {
     const asn = makeAssignments(
       {
         c1: {
           state: "onePublishedMissingRecipients",
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
+          currentAssignmentId: "a-1",
+          currentAssignmentResolution: "valid" as const,
           candidates: [publishedCandidate()],
         },
       },
-      { reconcileAdded: 2 },
+      { currentReconcileAdded: 2 },
     );
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, {
@@ -399,8 +514,43 @@ describe("Curriculum lifecycle UI", () => {
     await flush();
     await flush();
     await flush();
-    expect(asn.reconcileCalls).toContain("a-1");
+    expect(asn.currentReconcileCalls).toEqual([
+      { classId: "c1", lessonSlug: LESSON_SLUG },
+    ]);
+    expect(asn.reconcileCalls).toHaveLength(0);
     expect(asn.draftCalls).toHaveLength(0);
+  });
+
+  test("update row's currentRecipientsReconcile request contains only classId and lessonSlug (stale-client guarantee)", async () => {
+    // Historical Assignment Resolution, Implementation Slice 10: the client
+    // never sends an assignmentId/currentAssignmentId/expectedCurrentAssignmentId
+    // for the normal Update Assignment path. The server independently
+    // resolves live Current; a stale client can never point it at a
+    // different assignment.
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [publishedCandidate()],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    clickConfirm();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.currentReconcileCalls).toHaveLength(1);
+    expect(Object.keys(asn.currentReconcileCalls[0]).sort()).toEqual(
+      ["classId", "lessonSlug"].sort(),
+    );
   });
 
   test("creation row calls createDraft, not recipientsReconcile", async () => {
@@ -425,19 +575,19 @@ describe("Curriculum lifecycle UI", () => {
 
   // ---- 4. Mixed classes: creation + update in same dialog ----
 
-  test("mixed dialog: creation class runs lifecycle, update class runs reconcile", async () => {
+  test("mixed dialog: creation class runs lifecycle, update class runs currentRecipientsReconcile", async () => {
     const asn = makeAssignments(
       {
         c2: {
           state: "onePublishedMissingRecipients",
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
+          currentAssignmentId: "a-c2",
+          currentAssignmentResolution: "valid" as const,
           candidates: [
             publishedCandidate({ assignmentId: "a-c2" }),
           ],
         },
       },
-      { reconcileAdded: 1 },
+      { currentReconcileAdded: 1 },
     );
     const detail = makeDetailSeam();
     const mount = mkMount();
@@ -454,7 +604,58 @@ describe("Curriculum lifecycle UI", () => {
     await flush();
     await flush();
     expect(asn.draftCalls.length).toBeGreaterThan(0);
-    expect(asn.reconcileCalls).toContain("a-c2");
+    expect(asn.currentReconcileCalls).toEqual([
+      { classId: "c2", lessonSlug: LESSON_SLUG },
+    ]);
+    expect(asn.reconcileCalls).toHaveLength(0);
+  });
+
+  test("multi-class dialog: one Assign, one valid Update, one unresolved blocked - each row independent", async () => {
+    // Historical Assignment Resolution, Implementation Slice 10: Current
+    // resolution is per-row/per-class. A dialog spanning three classes in
+    // three different states must handle each independently: c1 is a
+    // brand-new Assign, c2 has a valid Current and updates it, c3 has an
+    // unresolved Current and must be blocked with no mutation.
+    const asn = makeAssignments(
+      {
+        c2: {
+          state: "onePublishedMissingRecipients",
+          currentAssignmentId: "a-c2",
+          currentAssignmentResolution: "valid" as const,
+          candidates: [publishedCandidate({ assignmentId: "a-c2" })],
+        },
+        c3: {
+          state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
+          candidates: [publishedCandidate({ assignmentId: "a-c3" })],
+        },
+      },
+      { currentReconcileAdded: 1 },
+    );
+    const detail = makeDetailSeam();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listThree,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const c3Checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c3]",
+    );
+    expect(c3Checkbox?.disabled).toBe(true);
+    clickConfirm();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.draftCalls).toContain("c1");
+    expect(asn.currentReconcileCalls).toEqual([
+      { classId: "c2", lessonSlug: LESSON_SLUG },
+    ]);
+    expect(asn.reconcileCalls).toHaveLength(0);
   });
 
   // ---- 5. Up-to-date class not included in confirm ----
@@ -492,12 +693,12 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "onePublishedMissingRecipients",
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
+          currentAssignmentId: "a-1",
+          currentAssignmentResolution: "valid" as const,
           candidates: [publishedCandidate()],
         },
       },
-      { failReconcile: true },
+      { failCurrentReconcile: true },
     );
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, {
@@ -553,6 +754,13 @@ describe("Curriculum lifecycle UI", () => {
         calls.push(input.classId);
         return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
       },
+      currentRecipientsReconcile: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: "",
+        added: 0,
+        alreadyCurrent: 0,
+      }),
       recipientsReconcile: async (input) => ({
         assignmentId: input.assignmentId,
         added: 0,
@@ -588,20 +796,20 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "onePublishedMissingRecipients",
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
+          currentAssignmentId: "a-1",
+          currentAssignmentResolution: "valid" as const,
           candidates: [publishedCandidate()],
         },
         c2: {
           state: "onePublishedMissingRecipients",
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
+          currentAssignmentId: "a-2",
+          currentAssignmentResolution: "valid" as const,
           candidates: [
             publishedCandidate({ assignmentId: "a-2" }),
           ],
         },
       },
-      { reconcileAdded: 1 },
+      { currentReconcileAdded: 1 },
     );
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, {
@@ -616,7 +824,8 @@ describe("Curriculum lifecycle UI", () => {
     await flush();
     await flush();
     expect(asn.draftCalls).toHaveLength(0);
-    expect(asn.reconcileCalls.length).toBe(2);
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.currentReconcileCalls.length).toBe(2);
   });
 
   // ---- 10. Creation row still renders date/time controls ----
@@ -666,12 +875,12 @@ describe("Curriculum lifecycle UI", () => {
 
   // ---- 11. Accessibility ----
 
-  test("disambiguation radio group has aria-label", async () => {
+  test("multiplePublished row with valid Current has descriptive checkbox aria-label", async () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentId: "a-2",
+        currentAssignmentResolution: "valid" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -686,10 +895,12 @@ describe("Curriculum lifecycle UI", () => {
     clickAssign(mount, LESSON_SLUG);
     await flush();
     await flush();
-    const group = document.querySelector(
-      "[data-testid=assign-row-disambig-c1]",
+    const checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c1]",
     );
-    expect(group?.getAttribute("aria-label")).toContain("6A");
+    expect(checkbox?.getAttribute("aria-label")).toBe(
+      "Update assignment for 6A",
+    );
   });
 
   test("up-to-date checkbox has descriptive aria-label", async () => {
@@ -723,8 +934,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedMissingRecipients",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
         candidates: [publishedCandidate({ missingRecipientCount: 1 })],
       },
     });
@@ -822,7 +1033,7 @@ describe("Curriculum lifecycle UI", () => {
 
   // ---- 15. Multi-published without selection does not reconcile ----
 
-  test("multiplePublished row without selection does not trigger reconcile", async () => {
+  test("multiplePublished row with unresolved Current triggers no mutation on confirm", async () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
@@ -846,6 +1057,7 @@ describe("Curriculum lifecycle UI", () => {
     await flush();
     await flush();
     expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.currentReconcileCalls).toHaveLength(0);
     expect(asn.draftCalls).toHaveLength(0);
   });
 
@@ -924,6 +1136,13 @@ describe("Curriculum lifecycle UI", () => {
           holder.resolve = () =>
             resolve({ state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] });
         }),
+      currentRecipientsReconcile: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: "",
+        added: 0,
+        alreadyCurrent: 0,
+      }),
       recipientsReconcile: async (input) => ({
         assignmentId: input.assignmentId,
         added: 0,
@@ -955,12 +1174,12 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "onePublishedMissingRecipients",
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
+          currentAssignmentId: "a-1",
+          currentAssignmentResolution: "valid" as const,
           candidates: [publishedCandidate()],
         },
       },
-      { reconcileAdded: 3 },
+      { currentReconcileAdded: 3 },
     );
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, {
@@ -1212,8 +1431,8 @@ describe("Curriculum lifecycle UI", () => {
         if (callCount <= 1) throw new Error("network error");
         return {
           state: "onePublishedMissingRecipients" as const,
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
+          currentAssignmentId: "a-1",
+          currentAssignmentResolution: "valid" as const,
           candidates: [publishedCandidate({ missingRecipientCount: 2 })],
         };
       },
@@ -1295,33 +1514,12 @@ describe("Curriculum lifecycle UI", () => {
   });
 
   // WS-13: multiplePublished + no selection -> validation feedback
-  test("WS-13: multiplePublished without selection shows validation message on confirm", async () => {
-    const asn = makeAssignments({
-      c1: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-1" }),
-          publishedCandidate({ assignmentId: "a-2" }),
-        ],
-      },
-    });
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    clickConfirm();
-    await flush();
-    const validation = document.querySelector("[data-testid=assign-validation]");
-    expect(validation).not.toBeNull();
-    expect(validation?.textContent).toBe("Choose the assignment you want to update.");
-    expect(validation?.getAttribute("role")).toBe("alert");
-  });
+  // WS-13 (removed, Slice 10): the old "Choose the assignment you want to
+  // update." validation message was tied to the removed radio-selection
+  // mechanism. multiplePublished+unresolved no longer surfaces a selection
+  // prompt at all - it renders a non-actionable "Needs resolution before
+  // updating" badge and a disabled checkbox instead (see the
+  // needs-resolution test above and DL-14).
 
   // WS-14: multiplePublished + no selection -> ZERO reconcile calls
   test("WS-14: multiplePublished without selection - ZERO recipientsReconcile", async () => {
@@ -1377,142 +1575,21 @@ describe("Curriculum lifecycle UI", () => {
     expect(asn.draftCalls).toHaveLength(0);
   });
 
-  // WS-16: after candidate selection, validation clears and correct ID reconciled
-  test("WS-16: after candidate selection, validation clears and exact ID reconciled", async () => {
-    const asn = makeAssignments(
-      {
-        c1: {
-          state: "multiplePublished",
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
-          candidates: [
-            publishedCandidate({ assignmentId: "a-1" }),
-            publishedCandidate({ assignmentId: "a-2" }),
-          ],
-        },
-      },
-      { reconcileAdded: 1 },
-    );
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    clickConfirm();
-    await flush();
-    const validation = document.querySelector("[data-testid=assign-validation]");
-    expect(validation?.textContent).toBe("Choose the assignment you want to update.");
-    const radio = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-disambig-c1-a-2]",
-    );
-    if (radio) {
-      radio.checked = true;
-      radio.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-    await flush();
-    clickConfirm();
-    await flush();
-    await flush();
-    await flush();
-    expect(asn.reconcileCalls).toContain("a-2");
-    expect(asn.reconcileCalls).not.toContain("a-1");
-  });
+  // WS-16 (removed, Slice 10): candidate selection via radio no longer
+  // exists. Its replacement is "multiplePublished row with valid Current is
+  // actionable with no radio group" above, which proves the exact
+  // server-resolved Current is reconciled with no client-side selection
+  // step at all.
 
   // ---- Dialog UI layout tests (production multiplePublished repair) ----
 
   // DL-1: multiplePublished renders a contained candidate-selection section
-  test("DL-1: multiplePublished renders disambig section as a contained block", async () => {
-    const asn = makeAssignments({
-      c1: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-1" }),
-          publishedCandidate({ assignmentId: "a-2" }),
-        ],
-      },
-    });
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    const disambig = document.querySelector(
-      "[data-testid=assign-row-disambig-c1]",
-    );
-    expect(disambig).not.toBeNull();
-    expect(disambig?.classList.contains("shell-assign-row-disambig")).toBe(true);
-    const heading = disambig?.querySelector(".shell-assign-row-disambig-heading");
-    expect(heading?.textContent).toBe("Choose assignment to update");
-  });
-
-  // DL-2: each candidate has one radio + associated label
-  test("DL-2: each candidate is a label wrapping a radio input and text", async () => {
-    const asn = makeAssignments({
-      c1: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-1", title: "Earth's Layers" }),
-          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
-        ],
-      },
-    });
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    const labels = document.querySelectorAll(
-      "[data-testid=assign-row-disambig-c1] .shell-assign-disambig-option",
-    );
-    expect(labels.length).toBe(2);
-    for (let i = 0; i < labels.length; i++) {
-      const label = labels[i];
-      expect(label.tagName).toBe("LABEL");
-      expect(label.querySelector('input[type="radio"]')).not.toBeNull();
-      expect(label.querySelector("span")).not.toBeNull();
-    }
-  });
-
-  // DL-3: disambig section is scoped inside the correct class row
-  test("DL-3: disambig section is a child of the correct class row", async () => {
-    const asn = makeAssignments({
-      c1: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-1" }),
-          publishedCandidate({ assignmentId: "a-2" }),
-        ],
-      },
-    });
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    const disambig = document.querySelector(
-      "[data-testid=assign-row-disambig-c1]",
-    );
-    const row = disambig?.closest("[data-class-id='c1']");
-    expect(row).not.toBeNull();
-  });
+  // DL-1, DL-2, DL-3 (removed, Slice 10): these pinned the shape of the
+  // removed radio-disambiguation block (`.shell-assign-row-disambig`,
+  // `.shell-assign-disambig-option`). No client-side candidate-selection UI
+  // exists any longer - see "old radio-disambiguation authority removed"
+  // below, which proves the entire mechanism (markup, radios, and the
+  // `data-selected-assignment` attribute) is gone.
 
   // DL-4: candidate content is NOT rendered as Topic/Date/Time controls
   test("DL-4: multiplePublished row does not contain date or time inputs", async () => {
@@ -1541,160 +1618,21 @@ describe("Curriculum lifecycle UI", () => {
     expect(row?.querySelector(".shell-assign-row-topic")).toBeNull();
   });
 
-  // DL-5: two multiplePublished classes render independent candidate groups
-  test("DL-5: two multiplePublished classes have independent disambig groups", async () => {
-    const asn = makeAssignments({
-      c1: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-1" }),
-          publishedCandidate({ assignmentId: "a-2" }),
-        ],
-      },
-      c2: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-3" }),
-          publishedCandidate({ assignmentId: "a-4" }),
-        ],
-      },
-    });
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    const d1 = document.querySelector("[data-testid=assign-row-disambig-c1]");
-    const d2 = document.querySelector("[data-testid=assign-row-disambig-c2]");
-    expect(d1).not.toBeNull();
-    expect(d2).not.toBeNull();
-    const r1 = d1?.querySelectorAll('input[type="radio"]');
-    const r2 = d2?.querySelectorAll('input[type="radio"]');
-    expect(r1?.length).toBe(2);
-    expect(r2?.length).toBe(2);
-    const names1 = new Set(Array.from(r1!).map((r) => (r as HTMLInputElement).name));
-    const names2 = new Set(Array.from(r2!).map((r) => (r as HTMLInputElement).name));
-    expect(names1.size).toBe(1);
-    expect(names2.size).toBe(1);
-    expect([...names1][0]).not.toBe([...names2][0]);
-  });
-
-  // DL-6: selecting candidate in Class A does not alter Class B
-  test("DL-6: selecting in class A does not change class B", async () => {
-    const asn = makeAssignments({
-      c1: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-1" }),
-          publishedCandidate({ assignmentId: "a-2" }),
-        ],
-      },
-      c2: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-3" }),
-          publishedCandidate({ assignmentId: "a-4" }),
-        ],
-      },
-    });
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listTwo,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    const radioA = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-disambig-c1-a-1]",
-    );
-    if (radioA) {
-      radioA.checked = true;
-      radioA.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-    await flush();
-    const row1 = document.querySelector("[data-class-id='c1']");
-    const row2 = document.querySelector("[data-class-id='c2']");
-    expect(row1?.getAttribute("data-selected-assignment")).toBe("a-1");
-    expect(row2?.hasAttribute("data-selected-assignment")).toBe(false);
-  });
-
-  // DL-7: exact selected assignmentId reaches recipientsReconcile (covered by WS-16 but confirmed here)
-  test("DL-7: exact selected ID reconciled after selection", async () => {
-    const asn = makeAssignments(
-      {
-        c1: {
-          state: "multiplePublished",
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
-          candidates: [
-            publishedCandidate({ assignmentId: "a-1" }),
-            publishedCandidate({ assignmentId: "a-2" }),
-          ],
-        },
-      },
-      { reconcileAdded: 1 },
-    );
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    const radio = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-disambig-c1-a-2]",
-    );
-    if (radio) {
-      radio.checked = true;
-      radio.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-    await flush();
-    clickConfirm();
-    await flush();
-    await flush();
-    await flush();
-    expect(asn.reconcileCalls).toEqual(["a-2"]);
-  });
-
-  // DL-8: no selection still produces validation (same as WS-13 but under layout suite)
-  test("DL-8: no selection shows validation on confirm", async () => {
-    const asn = makeAssignments({
-      c1: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-1" }),
-          publishedCandidate({ assignmentId: "a-2" }),
-        ],
-      },
-    });
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    clickConfirm();
-    await flush();
-    const validation = document.querySelector("[data-testid=assign-validation]");
-    expect(validation?.textContent).toBe("Choose the assignment you want to update.");
-  });
+  // DL-5, DL-6, DL-7, DL-8 (removed, Slice 10): these pinned independent
+  // per-class radio groups, cross-class selection isolation, the exact
+  // selected ID reaching recipientsReconcile, and the no-selection
+  // validation message - all part of the removed client-side selection
+  // mechanism. The replacement behaviors:
+  //   - independent per-class Current resolution: "multi-class dialog: one
+  //     Assign, one valid Update, one unresolved blocked - each row
+  //     independent" above.
+  //   - the exact server-resolved Current (never a client selection)
+  //     reaching currentRecipientsReconcile: "multiplePublished row with
+  //     valid Current is actionable with no radio group" and "update row's
+  //     currentRecipientsReconcile request contains only classId and
+  //     lessonSlug" above.
+  //   - no validation message for an unresolved/no-mutation row: "old
+  //     radio-disambiguation authority removed" below.
 
   // DL-9: no selection produces zero reconcile/create/publish
   test("DL-9: no selection produces zero server calls", async () => {
@@ -1746,8 +1684,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedMissingRecipients",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
         candidates: [publishedCandidate({ missingRecipientCount: 3 })],
       },
     });
@@ -1837,41 +1775,17 @@ describe("Curriculum lifecycle UI", () => {
     expect(row?.querySelector(".shell-assign-row-disambig")).toBeNull();
   });
 
-  // DL-15: accessible group/label semantics on disambig
-  test("DL-15: disambig has radiogroup role and aria-label for class", async () => {
-    const asn = makeAssignments({
-      c1: {
-        state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
-        candidates: [
-          publishedCandidate({ assignmentId: "a-1" }),
-          publishedCandidate({ assignmentId: "a-2" }),
-        ],
-      },
-    });
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignments: asn.seam,
-    });
-    clickAssign(mount, LESSON_SLUG);
-    await flush();
-    await flush();
-    const disambig = document.querySelector(
-      "[data-testid=assign-row-disambig-c1]",
-    );
-    expect(disambig?.getAttribute("role")).toBe("radiogroup");
-    expect(disambig?.getAttribute("aria-label")).toContain("6A");
-  });
+  // DL-15, DL-16 (removed, Slice 10): accessible radiogroup semantics and
+  // multi-class independent radio groups no longer apply - there is no
+  // radiogroup. Replaced by the proof below that the entire mechanism is
+  // gone, across several multiplePublished classes at once.
 
-  // DL-16: dialog structurally valid with several multiplePublished classes
-  test("DL-16: three multiplePublished classes each have independent disambig", async () => {
+  test("old radio-disambiguation authority removed: no radiogroup, no radio inputs, no selection attribute anywhere in the dialog", async () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentId: "a-2",
+        currentAssignmentResolution: "valid" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1890,7 +1804,7 @@ describe("Curriculum lifecycle UI", () => {
       c3: {
         state: "multiplePublished",
         currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentResolution: "invalid" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-6" }),
           publishedCandidate({ assignmentId: "a-7" }),
@@ -1905,22 +1819,23 @@ describe("Curriculum lifecycle UI", () => {
     clickAssign(mount, LESSON_SLUG);
     await flush();
     await flush();
-    const d1 = document.querySelector("[data-testid=assign-row-disambig-c1]");
-    const d2 = document.querySelector("[data-testid=assign-row-disambig-c2]");
-    const d3 = document.querySelector("[data-testid=assign-row-disambig-c3]");
-    expect(d1).not.toBeNull();
-    expect(d2).not.toBeNull();
-    expect(d3).not.toBeNull();
-    expect(d1?.querySelectorAll('input[type="radio"]').length).toBe(2);
-    expect(d2?.querySelectorAll('input[type="radio"]').length).toBe(3);
-    expect(d3?.querySelectorAll('input[type="radio"]').length).toBe(2);
-    const allNames = new Set<string>();
-    for (const d of [d1, d2, d3]) {
-      const radios = d!.querySelectorAll('input[type="radio"]');
-      const name = (radios[0] as HTMLInputElement)?.name;
-      expect(allNames.has(name)).toBe(false);
-      allNames.add(name);
+    // Scoped to the class rows themselves - the dialog's unrelated shared
+    // grading control (Ungraded/Graded) is its own, pre-existing radiogroup
+    // and is not part of the removed per-row disambiguation mechanism.
+    for (const classId of ["c1", "c2", "c3"]) {
+      const row = document.querySelector(`[data-class-id='${classId}']`);
+      expect(row?.querySelectorAll('[role="radiogroup"]')).toHaveLength(0);
+      expect(row?.querySelectorAll('input[type="radio"]')).toHaveLength(0);
+      expect(row?.hasAttribute("data-selected-assignment")).toBe(false);
     }
-    expect(allNames.size).toBe(3);
+    expect(
+      document.querySelectorAll(".shell-assign-row-disambig"),
+    ).toHaveLength(0);
+    expect(
+      document.querySelectorAll("[data-selected-assignment]"),
+    ).toHaveLength(0);
+    expect(
+      document.querySelector("[data-testid=assign-validation]"),
+    ).toBeNull();
   });
 });

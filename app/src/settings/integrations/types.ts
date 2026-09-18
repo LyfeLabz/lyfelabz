@@ -303,6 +303,29 @@ export type AssignmentsRecipientsReconcileOutput = {
   readonly alreadyCurrent: number;
 };
 
+// Historical Assignment Resolution, Implementation Slice 10. The
+// Current-aware sibling of `assignmentsRecipientsReconcile` (Slice 7 server
+// callable). The request is deliberately narrower: it carries no
+// `assignmentId` field at all, by design - the mutation target is resolved
+// entirely server-side, from live authoritative Current, during the call
+// itself. This is what closes the stale-client hole a client-chosen
+// `assignmentId` would otherwise leave open. `assignmentsRecipientsReconcile`
+// above is unmodified and remains available as the explicit,
+// assignment-targeted server API for any future historical action; the two
+// exist side by side for different product intents.
+export type AssignmentsCurrentRecipientsReconcileInput = {
+  readonly classId: string;
+  readonly lessonSlug: string;
+};
+
+export type AssignmentsCurrentRecipientsReconcileOutput = {
+  readonly classId: string;
+  readonly lessonSlug: string;
+  readonly assignmentId: string;
+  readonly added: number;
+  readonly alreadyCurrent: number;
+};
+
 export type AssignmentsCallables = {
   readonly createDraft: (
     input: AssignmentsCreateDraftInput,
@@ -313,6 +336,9 @@ export type AssignmentsCallables = {
   readonly lifecycleState: (
     input: AssignmentsLifecycleStateInput,
   ) => Promise<AssignmentsLifecycleStateOutput>;
+  readonly currentRecipientsReconcile: (
+    input: AssignmentsCurrentRecipientsReconcileInput,
+  ) => Promise<AssignmentsCurrentRecipientsReconcileOutput>;
   readonly recipientsReconcile: (
     input: AssignmentsRecipientsReconcileInput,
   ) => Promise<AssignmentsRecipientsReconcileOutput>;

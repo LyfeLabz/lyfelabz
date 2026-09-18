@@ -336,3 +336,133 @@ describe("createAssignmentsCallables lifecycleState: Current-resolution parsing"
     expect(out.state).toBe(state);
   });
 });
+
+// Historical Assignment Resolution, Implementation Slice 10. Focused tests
+// for the new `assignmentsCurrentRecipientsReconcile` client wrapper. This
+// is the only place raw, untrusted callable JSON is converted into the
+// typed `AssignmentsCurrentRecipientsReconcileOutput` - Curriculum's own
+// tests mock `AssignmentsCallables` directly and never exercise this
+// parsing/request-shape logic.
+describe("createAssignmentsCallables currentRecipientsReconcile", () => {
+  beforeEach(() => {
+    callableResponses.clear();
+  });
+
+  function stubCurrentReconcile(data: Readonly<Record<string, unknown>>): void {
+    callableResponses.set(
+      "assignmentsCurrentRecipientsReconcile",
+      async () => ({ data }),
+    );
+  }
+
+  function callCurrentReconcile() {
+    const assignments = createAssignmentsCallables({} as Functions);
+    return assignments.currentRecipientsReconcile({
+      classId: "c1",
+      lessonSlug: "slug",
+    });
+  }
+
+  it("parses a well-formed response", async () => {
+    stubCurrentReconcile({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      added: 3,
+      alreadyCurrent: 2,
+    });
+    const out = await callCurrentReconcile();
+    expect(out).toEqual({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      added: 3,
+      alreadyCurrent: 2,
+    });
+  });
+
+  it("sends a request containing only classId and lessonSlug - never an assignmentId", async () => {
+    stubCurrentReconcile({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      added: 0,
+      alreadyCurrent: 0,
+    });
+    const assignments = createAssignmentsCallables({} as Functions);
+    // mockHttpsCallable returns the same fixed responder regardless of the
+    // request payload, so this asserts the wrapper's own TypeScript-typed
+    // input shape rather than a runtime capture - the type
+    // `AssignmentsCurrentRecipientsReconcileInput` structurally forbids any
+    // extra field such as `assignmentId`/`currentAssignmentId`/
+    // `expectedCurrentAssignmentId` from ever being passed here.
+    const input: Parameters<typeof assignments.currentRecipientsReconcile>[0] =
+      { classId: "c1", lessonSlug: "slug" };
+    expect(Object.keys(input).sort()).toEqual(["classId", "lessonSlug"]);
+    await assignments.currentRecipientsReconcile(input);
+  });
+
+  it("rejects a response missing assignmentId", async () => {
+    stubCurrentReconcile({
+      classId: "c1",
+      lessonSlug: "slug",
+      added: 0,
+      alreadyCurrent: 0,
+    });
+    await expect(callCurrentReconcile()).rejects.toThrow(
+      "assignmentsCurrentRecipientsReconcile returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response with a negative added count", async () => {
+    stubCurrentReconcile({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      added: -1,
+      alreadyCurrent: 0,
+    });
+    await expect(callCurrentReconcile()).rejects.toThrow(
+      "assignmentsCurrentRecipientsReconcile returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response with a non-integer alreadyCurrent count", async () => {
+    stubCurrentReconcile({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      added: 0,
+      alreadyCurrent: 1.5,
+    });
+    await expect(callCurrentReconcile()).rejects.toThrow(
+      "assignmentsCurrentRecipientsReconcile returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response with a string-typed added count rather than defaulting it", async () => {
+    stubCurrentReconcile({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      added: "3",
+      alreadyCurrent: 0,
+    });
+    await expect(callCurrentReconcile()).rejects.toThrow(
+      "assignmentsCurrentRecipientsReconcile returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response with an empty-string classId", async () => {
+    stubCurrentReconcile({
+      classId: "",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      added: 0,
+      alreadyCurrent: 0,
+    });
+    await expect(callCurrentReconcile()).rejects.toThrow(
+      "assignmentsCurrentRecipientsReconcile returned an unexpected shape.",
+    );
+  });
+});

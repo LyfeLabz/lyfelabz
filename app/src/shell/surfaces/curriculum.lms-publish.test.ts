@@ -83,6 +83,13 @@ const okAssignments = (): {
         currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
+      currentRecipientsReconcile: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: "",
+        added: 0,
+        alreadyCurrent: 0,
+      }),
       recipientsReconcile: async (input) => ({
         assignmentId: input.assignmentId,
         added: 0,
@@ -552,6 +559,13 @@ describe("Assign dialog - LMS publication wiring (Sprint 25 Phase 3)", () => {
         currentAssignmentId: null,
         currentAssignmentResolution: "unresolved" as const,
         candidates: [],
+      }),
+      currentRecipientsReconcile: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: "",
+        added: 0,
+        alreadyCurrent: 0,
       }),
       recipientsReconcile: async (input) => ({
         assignmentId: input.assignmentId,

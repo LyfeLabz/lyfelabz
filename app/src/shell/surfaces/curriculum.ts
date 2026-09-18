@@ -1914,7 +1914,15 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     };
     const creationRows: EnabledRowWithLifecycle[] = [];
     const updateRows: EnabledRowWithLifecycle[] = [];
-    const unselectedMultipleRows: string[] = [];
+    // Historical Assignment Resolution, Implementation Slice 10. A row can
+    // reach this loop as `enabled` only if `renderRow` left its checkbox
+    // enabled - and `renderRow` now force-disables the checkbox for every
+    // `onePublishedMissingRecipients`/`multiplePublished` row whose Current
+    // is not `valid`, and for any row (other than `neverAssigned`) whose
+    // Current is `invalid`. There is therefore no longer a
+    // "multiplePublished enabled but nothing selected" state to validate
+    // against here - the old radio-selection requirement and its
+    // validation-message branch are removed entirely, not merely bypassed.
     for (const r of enabledRows) {
       const lc = rowLifecycleState.get(r.classId);
       if (lc?.error) continue;
@@ -1925,56 +1933,21 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         candidates: lc?.candidates ?? [],
       };
       if (
-        state === "onePublishedMissingRecipients" ||
-        state === "onePublishedFullyCurrent"
+        state === "onePublishedFullyCurrent" ||
+        ((state === "onePublishedMissingRecipients" ||
+          state === "multiplePublished") &&
+          lc?.currentAssignmentResolution === "valid")
       ) {
         updateRows.push(enriched);
-      } else if (state === "multiplePublished") {
-        const rowEl = rowsHost.querySelector<HTMLElement>(
-          `[data-class-id="${r.classId}"]`,
-        );
-        const selectedId =
-          rowEl?.getAttribute("data-selected-assignment") ?? null;
-        if (selectedId) {
-          updateRows.push({
-            ...enriched,
-            candidates: enriched.candidates.filter(
-              (c) => c.assignmentId === selectedId,
-            ),
-          });
-        } else {
-          unselectedMultipleRows.push(r.className);
-        }
-      } else {
+      } else if (state === "neverAssigned" || state === "historicalOnly") {
         creationRows.push(enriched);
       }
-    }
-
-    if (unselectedMultipleRows.length > 0) {
-      submissionInFlight = false;
-      confirm.disabled = false;
-      confirm.removeAttribute("aria-busy");
-      let validationMsg = rowsHost.querySelector<HTMLElement>(
-        "[data-testid=assign-validation]",
-      );
-      if (!validationMsg) {
-        validationMsg = doc.createElement("p");
-        validationMsg.className = "shell-assign-validation";
-        validationMsg.setAttribute("data-testid", "assign-validation");
-        validationMsg.setAttribute("role", "alert");
-        rowsHost.parentElement?.insertBefore(validationMsg, rowsHost.nextSibling);
-      }
-      validationMsg.textContent =
-        "Choose the assignment you want to update.";
-      const firstUnselected = rowsHost.querySelector<HTMLElement>(
-        `[data-lifecycle-state="multiplePublished"] [role="radiogroup"] input[type="radio"]`,
-      );
-      try {
-        firstUnselected?.focus({ preventScroll: false });
-      } catch {
-        // ignored
-      }
-      return;
+      // Any other combination reaching this point (e.g. a stale `enabled`
+      // flag surviving from a prior dialog session for a row that is now
+      // locked) is defensively excluded from both buckets rather than
+      // guessed into either one - it cannot legitimately occur given the
+      // render-time gating above, but silently doing nothing is the safe
+      // failure mode if it ever did.
     }
 
     close();
@@ -2038,6 +2011,69 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   }
 }
 
+type RowRetryContext = {
+  assignments: AssignmentsCallables;
+  lessonSlug: string;
+  rowLifecycleState: Map<string, LifecycleStateEntry>;
+  rowsHost: HTMLElement;
+};
+
+// Historical Assignment Resolution, Implementation Slice 10. Shared by both
+// the pre-existing lifecycle-fetch-failure row state and the new
+// Current-invalid row state below: re-fetches lifecycle state for exactly
+// this one class and re-renders the row in place. Extracted here because
+// Slice 10 adds a second row state that needs the identical retry
+// mechanism; before this slice there was only one caller.
+function attachRetryButton(
+  doc: Document,
+  row: HTMLElement,
+  cls: Extract<ClassSummary, { status: "active" }>,
+  rowState: Map<string, RowConfig>,
+  onChange: () => void,
+  link: IntegrationsClassLink | null,
+  integrations: IntegrationsDeps | null,
+  retryContext: RowRetryContext,
+): void {
+  const retryBtn = doc.createElement("button");
+  retryBtn.type = "button";
+  retryBtn.className = "shell-assign-row-retry";
+  retryBtn.setAttribute("data-testid", `assign-row-retry-${cls.id}`);
+  retryBtn.textContent = "Retry";
+  retryBtn.setAttribute(
+    "aria-label",
+    `Retry loading assignment status for ${cls.title}`,
+  );
+  retryBtn.addEventListener("click", () => {
+    retryBtn.disabled = true;
+    retryBtn.textContent = "Retrying…";
+    void retryContext.assignments
+      .lifecycleState({ classId: cls.id, lessonSlug: retryContext.lessonSlug })
+      .then((resp) => {
+        const entry: LifecycleStateEntry = {
+          state: resp.state,
+          candidates: resp.candidates,
+          currentAssignmentId: resp.currentAssignmentId,
+          currentAssignmentResolution: resp.currentAssignmentResolution,
+        };
+        cachedLifecycleState.set(
+          lifecycleCacheKey(cls.id, retryContext.lessonSlug),
+          entry,
+        );
+        retryContext.rowLifecycleState.set(cls.id, entry);
+        const newRow = renderRow(
+          doc, cls, rowState, onChange, link, integrations, entry, retryContext,
+        );
+        row.replaceWith(newRow);
+        onChange();
+      })
+      .catch(() => {
+        retryBtn.disabled = false;
+        retryBtn.textContent = "Retry";
+      });
+  });
+  row.appendChild(retryBtn);
+}
+
 function renderRow(
   doc: Document,
   cls: Extract<ClassSummary, { status: "active" }>,
@@ -2046,12 +2082,7 @@ function renderRow(
   link: IntegrationsClassLink | null,
   integrations: IntegrationsDeps | null,
   lifecycle?: LifecycleStateEntry,
-  retryContext?: {
-    assignments: AssignmentsCallables;
-    lessonSlug: string;
-    rowLifecycleState: Map<string, LifecycleStateEntry>;
-    rowsHost: HTMLElement;
-  },
+  retryContext?: RowRetryContext,
 ): HTMLElement {
   const cfg = rowState.get(cls.id);
   if (!cfg) throw new Error(`missing row state for class ${cls.id}`);
@@ -2127,42 +2158,51 @@ function renderRow(
     errorBadge.textContent = "Unable to check status";
     row.appendChild(errorBadge);
     if (retryContext) {
-      const retryBtn = doc.createElement("button");
-      retryBtn.type = "button";
-      retryBtn.className = "shell-assign-row-retry";
-      retryBtn.setAttribute("data-testid", `assign-row-retry-${cls.id}`);
-      retryBtn.textContent = "Retry";
-      retryBtn.setAttribute("aria-label", `Retry loading assignment status for ${cls.title}`);
-      retryBtn.addEventListener("click", () => {
-        retryBtn.disabled = true;
-        retryBtn.textContent = "Retrying…";
-        const ctx = retryContext;
-        void ctx.assignments
-          .lifecycleState({ classId: cls.id, lessonSlug: ctx.lessonSlug })
-          .then((resp) => {
-            const entry: LifecycleStateEntry = {
-              state: resp.state,
-              candidates: resp.candidates,
-              currentAssignmentId: resp.currentAssignmentId,
-              currentAssignmentResolution: resp.currentAssignmentResolution,
-            };
-            cachedLifecycleState.set(
-              lifecycleCacheKey(cls.id, ctx.lessonSlug),
-              entry,
-            );
-            ctx.rowLifecycleState.set(cls.id, entry);
-            const newRow = renderRow(
-              doc, cls, rowState, onChange, link, integrations, entry, ctx,
-            );
-            row.replaceWith(newRow);
-            onChange();
-          })
-          .catch(() => {
-            retryBtn.disabled = false;
-            retryBtn.textContent = "Retry";
-          });
-      });
-      row.appendChild(retryBtn);
+      attachRetryButton(doc, row, cls, rowState, onChange, link, integrations, retryContext);
+    }
+    return row;
+  }
+
+  // Historical Assignment Resolution, Implementation Slice 10. Current is
+  // an independent resolution dimension alongside the five lifecycle
+  // states above (Slice 8/9). `data-current-resolution` is a plain
+  // testability hook, exactly like the pre-existing `data-lifecycle-state`
+  // and `data-selected-assignment` attributes - it carries no styling and
+  // is not itself user-facing text.
+  const currentResolution: CurrentAssignmentResolution =
+    lifecycle?.currentAssignmentResolution ?? "unresolved";
+  row.setAttribute("data-current-resolution", currentResolution);
+
+  // A pointer that exists but fails validation is a contradictory,
+  // fail-closed state (Slice 8's `invalid`, never collapsed into
+  // `unresolved`) for every lifecycle state except `neverAssigned`: a
+  // brand-new first assignment does not depend on Current being valid
+  // beforehand (Slice 5 atomically establishes Current when it publishes),
+  // so a stray or corrupted pointer elsewhere must never block the
+  // teacher's ability to create a genuine first occurrence. Every other
+  // state (including `historicalOnly`, whose "Assign as new" action is
+  // otherwise unaffected by Current) fails safe here rather than silently
+  // proceeding on contradictory server state - this is a strictly stronger
+  // failure than "unresolved," so it is checked first and short-circuits
+  // before any lifecycle-state-specific rendering below. No mutation
+  // control is ever exposed on this branch; the only available action is
+  // the same re-fetch-and-retry the lifecycle-fetch-failure branch above
+  // already offers.
+  if (currentResolution === "invalid" && lcState !== "neverAssigned") {
+    cfg.enabled = false;
+    checkbox.checked = false;
+    checkbox.disabled = true;
+    checkbox.setAttribute(
+      "aria-label",
+      `${cls.title} - current assignment could not be verified`,
+    );
+    const errorBadge = doc.createElement("span");
+    errorBadge.className = "shell-assign-row-lifecycle shell-assign-lifecycle-error";
+    errorBadge.setAttribute("data-testid", `assign-row-lifecycle-${cls.id}`);
+    errorBadge.textContent = "Current assignment could not be verified";
+    row.appendChild(errorBadge);
+    if (retryContext) {
+      attachRetryButton(doc, row, cls, rowState, onChange, link, integrations, retryContext);
     }
     return row;
   }
@@ -2173,6 +2213,18 @@ function renderRow(
     "data-testid",
     `assign-row-lifecycle-${cls.id}`,
   );
+  // Historical Assignment Resolution, Implementation Slice 10. Normal
+  // Update Assignment (the badge/checkbox pair below that leads to a
+  // mutation) is offered ONLY when Current is resolved and valid - never
+  // inferred from a lone published candidate, never left to a teacher's
+  // historical radio selection. `onePublishedFullyCurrent` is unaffected
+  // either way: it was already a non-mutating, disabled "nothing to do"
+  // row before this slice, regardless of Current, so it is not gated here.
+  const needsCurrentResolution =
+    (lcState === "onePublishedMissingRecipients" ||
+      lcState === "multiplePublished") &&
+    currentResolution !== "valid";
+
   if (lcState === "onePublishedFullyCurrent") {
     lifecycleBadge.textContent = "Up to date";
     lifecycleBadge.classList.add("shell-assign-lifecycle-current");
@@ -2184,21 +2236,49 @@ function renderRow(
       `${cls.title} assignment is up to date`,
     );
   } else if (lcState === "onePublishedMissingRecipients") {
-    const missing =
-      lifecycle?.candidates.find((c) => c.status === "published")
-        ?.missingRecipientCount ?? 0;
-    lifecycleBadge.textContent =
-      missing === 1
-        ? "1 student to add"
-        : `${missing} students to add`;
-    lifecycleBadge.classList.add("shell-assign-lifecycle-update");
-    checkbox.setAttribute(
-      "aria-label",
-      `Update assignment for ${cls.title}`,
-    );
+    if (needsCurrentResolution) {
+      lifecycleBadge.textContent = "Needs resolution before updating";
+      lifecycleBadge.classList.add("shell-assign-lifecycle-needs-resolution");
+      cfg.enabled = false;
+      checkbox.checked = false;
+      checkbox.disabled = true;
+      checkbox.setAttribute(
+        "aria-label",
+        `${cls.title} - current assignment needs resolution before it can be updated`,
+      );
+    } else {
+      const missing =
+        lifecycle?.candidates.find((c) => c.status === "published")
+          ?.missingRecipientCount ?? 0;
+      lifecycleBadge.textContent =
+        missing === 1
+          ? "1 student to add"
+          : `${missing} students to add`;
+      lifecycleBadge.classList.add("shell-assign-lifecycle-update");
+      checkbox.setAttribute(
+        "aria-label",
+        `Update assignment for ${cls.title}`,
+      );
+    }
   } else if (lcState === "multiplePublished") {
-    lifecycleBadge.textContent = "Multiple assignments";
-    lifecycleBadge.classList.add("shell-assign-lifecycle-multiple");
+    if (needsCurrentResolution) {
+      lifecycleBadge.textContent = "Needs resolution before updating";
+      lifecycleBadge.classList.add("shell-assign-lifecycle-needs-resolution");
+      cfg.enabled = false;
+      checkbox.checked = false;
+      checkbox.disabled = true;
+      checkbox.setAttribute(
+        "aria-label",
+        `${cls.title} - current assignment needs resolution before it can be updated`,
+      );
+    } else {
+      lifecycleBadge.textContent = "Multiple assignments";
+      lifecycleBadge.classList.add("shell-assign-lifecycle-multiple");
+      checkbox.setAttribute(
+        "aria-label",
+        `Update assignment for ${cls.title}`,
+      );
+    }
   } else if (lcState === "historicalOnly") {
     lifecycleBadge.textContent = "Assign as new";
     lifecycleBadge.classList.add("shell-assign-lifecycle-historical");
@@ -2209,8 +2289,14 @@ function renderRow(
 
   const isCreationRow =
     lcState === "neverAssigned" || lcState === "historicalOnly";
-  const isCurrentRow = lcState === "onePublishedFullyCurrent";
-  const isMultipleRow = lcState === "multiplePublished";
+  // Historical Assignment Resolution, Implementation Slice 10. Broadened
+  // from the pre-Slice-10 `lcState === "onePublishedFullyCurrent"` check:
+  // any row this slice force-disables (see `needsCurrentResolution` above)
+  // must skip the checkbox change-listener wiring below exactly as
+  // `onePublishedFullyCurrent` already did, for the identical reason -
+  // there is nothing this row can currently do.
+  const isLockedRow =
+    lcState === "onePublishedFullyCurrent" || needsCurrentResolution;
 
   let lmsTopicSelect: HTMLSelectElement | null = null;
   let dateInput: HTMLInputElement | null = null;
@@ -2295,58 +2381,18 @@ function renderRow(
     row.appendChild(timeInput);
   }
 
-  if (isMultipleRow && lifecycle) {
-    const published = lifecycle.candidates.filter(
-      (c) => c.status === "published",
-    );
-    const disambig = doc.createElement("div");
-    disambig.className = "shell-assign-row-disambig";
-    disambig.setAttribute("data-testid", `assign-row-disambig-${cls.id}`);
-    disambig.setAttribute("role", "radiogroup");
-    disambig.setAttribute(
-      "aria-label",
-      `Select which assignment to update for ${cls.title}`,
-    );
-    const heading = doc.createElement("div");
-    heading.className = "shell-assign-row-disambig-heading";
-    heading.textContent = "Choose assignment to update";
-    disambig.appendChild(heading);
-    const radioName = `assign-disambig-${cls.id}`;
-    for (const candidate of published) {
-      const label = doc.createElement("label");
-      label.className = "shell-assign-disambig-option";
-      const radio = doc.createElement("input");
-      radio.type = "radio";
-      radio.name = radioName;
-      radio.value = candidate.assignmentId;
-      radio.setAttribute(
-        "data-testid",
-        `assign-disambig-${cls.id}-${candidate.assignmentId}`,
-      );
-      label.appendChild(radio);
-      const text = doc.createElement("span");
-      const dateStr = candidate.publishedAt
-        ? new Date(candidate.publishedAt).toLocaleDateString()
-        : "";
-      text.textContent = dateStr
-        ? `${candidate.title} · ${dateStr}`
-        : candidate.title;
-      label.appendChild(text);
-      const meta = doc.createElement("span");
-      meta.className = "shell-assign-disambig-meta";
-      const rc = candidate.recipientCount;
-      meta.textContent = rc === 1 ? "1 recipient" : `${rc} recipients`;
-      label.appendChild(meta);
-      disambig.appendChild(label);
-      radio.addEventListener("change", () => {
-        if (radio.checked) {
-          row.setAttribute("data-selected-assignment", candidate.assignmentId);
-        }
-        onChange();
-      });
-    }
-    row.appendChild(disambig);
-  }
+  // Historical Assignment Resolution, Implementation Slice 10. The
+  // historical candidate disambiguation radio group (formerly rendered
+  // here for every `multiplePublished` row) is removed entirely: it is no
+  // longer needed when Current is valid (Update Assignment now targets
+  // Current automatically, server-side, via
+  // `assignmentsCurrentRecipientsReconcile`), and it must not be offered
+  // as a workaround when Current is unresolved or invalid either, since a
+  // radio selection can no longer determine the mutation target under any
+  // circumstance. Explicit historical resolution (choosing which
+  // historical assignment becomes Current) is Slice 11's
+  // "Set as current assignment" / "Change current assignment" work, not
+  // this slice's.
 
   const setRowEnabled = (enabled: boolean): void => {
     cfg.enabled = enabled;
@@ -2361,7 +2407,7 @@ function renderRow(
     }
     onChange();
   };
-  if (!isCurrentRow) {
+  if (!isLockedRow) {
     setRowEnabled(cfg.enabled);
     checkbox.addEventListener("change", () => {
       setRowEnabled(checkbox.checked);
@@ -2410,14 +2456,26 @@ function fieldInput(
 // Recipient reconciliation (Update Assignment path)
 // -----------------------------------------------------------------------------
 
+// Historical Assignment Resolution, Implementation Slice 10. Every row
+// reaching this function has already been determined, at render time, to
+// have a `valid` Current resolution (or to be the non-mutating
+// `onePublishedFullyCurrent` case, which never appears here in practice
+// since it is never enabled). The mutation target is never chosen by this
+// function, or by anything upstream of it in the client: `classId` and
+// `lessonSlug` are the only identifiers sent, and the server independently
+// resolves live Current, again, during this exact call
+// (`assignmentsCurrentRecipientsReconcile`) - this is what makes the
+// action safe even if the browser's own belief about Current (from an
+// earlier lifecycle read) has since gone stale. `lcState`/`candidates` are
+// no longer needed here at all; the old heuristic "find the published
+// candidate" selection this function used to perform is removed, not
+// merely bypassed.
 async function runReconcileUpdates(input: {
   readonly lesson: SurfaceableLesson;
   readonly teacherUid: string;
   readonly updateRows: readonly {
     readonly classId: string;
     readonly className: string;
-    readonly lcState: AssignmentsLifecycleState;
-    readonly candidates: ReadonlyArray<AssignmentCandidate>;
   }[];
   readonly assignments: AssignmentsCallables;
   readonly onConfirm: (summary: string) => void;
@@ -2430,13 +2488,10 @@ async function runReconcileUpdates(input: {
 
   const results = await Promise.allSettled(
     updateRows.map(async (row) => {
-      const published = row.candidates.find((c) => c.status === "published");
-      if (!published) {
-        return { classId: row.classId, assignmentId: "", added: 0, failed: true };
-      }
       try {
-        const resp = await assignments.recipientsReconcile({
-          assignmentId: published.assignmentId,
+        const resp = await assignments.currentRecipientsReconcile({
+          classId: row.classId,
+          lessonSlug: lesson.slug,
         });
         return {
           classId: row.classId,
@@ -2447,7 +2502,7 @@ async function runReconcileUpdates(input: {
       } catch {
         return {
           classId: row.classId,
-          assignmentId: published.assignmentId,
+          assignmentId: "",
           added: 0,
           failed: true,
         };
