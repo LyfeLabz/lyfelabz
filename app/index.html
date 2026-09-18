@@ -1672,6 +1672,28 @@
   .shell-assign-row-disabled .shell-assign-row-identity {
     color: #777;
   }
+  /* Historical Assignment Resolution, post-release UX patch. Production
+     finding: deselecting a class's checkbox (e.g. because the teacher does
+     not intend to run this dialog's Assign/Update action for that class in
+     this session) left its checkbox inert as intended, but the blanket
+     opacity-0.5 rule above also caught the Set/Change Current panel and
+     the Assignment History disclosure, since both are DOM children of the
+     same row. Those two controls are genuinely independent of whether the
+     class is checked for this dialog's batch action - Set/Change Current
+     mutates the server-authoritative Current pointer directly, and History
+     is a read-only inspection - so an unchecked class must not make their
+     candidate text, timestamps, or instructional heading read as
+     unavailable. This narrow override restores full opacity for exactly
+     those two controls; every other still-inert child (Topic/Date/Time
+     inputs) keeps the original dimming untouched. Equal-specificity,
+     later-source-order override - no change to the rule above. */
+  .shell-assign-row-disabled > .shell-assign-row-set-current,
+  .shell-assign-row-disabled > .shell-assign-row-change-current,
+  .shell-assign-row-disabled > .shell-assign-row-current-panel,
+  .shell-assign-row-disabled > .shell-assign-row-history-toggle,
+  .shell-assign-row-disabled > .shell-assign-row-history-panel {
+    opacity: 1;
+  }
   .shell-assign-row-select {
     display: flex;
     align-items: center;
