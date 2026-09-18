@@ -48,9 +48,23 @@ const threeClasses: ReadonlyArray<ClassSummary> = freeze([
   freeze({ id: "c3", title: "7A", grade: "7", status: "active" }),
 ] as ClassSummary[]);
 
+// Historical Assignment Resolution, Implementation Slice 13 (final
+// certification, Phase 3 Case G): a single dialog spanning five classes,
+// one per distinct lifecycle-state/Current-resolution combination that
+// Slices 8-12 collectively define, proving cross-class independence in one
+// place rather than only pairwise across the narrower Slice 10-12 tests.
+const fiveClasses: ReadonlyArray<ClassSummary> = freeze([
+  freeze({ id: "c1", title: "Never", grade: "6", status: "active" }),
+  freeze({ id: "c2", title: "OnePublished", grade: "6", status: "active" }),
+  freeze({ id: "c3", title: "MultiValid", grade: "7", status: "active" }),
+  freeze({ id: "c4", title: "Historical", grade: "7", status: "active" }),
+  freeze({ id: "c5", title: "Invalid", grade: "8", status: "active" }),
+] as ClassSummary[]);
+
 const listOne: ListClasses = () => Promise.resolve(oneClass);
 const listTwo: ListClasses = () => Promise.resolve(twoClasses);
 const listThree: ListClasses = () => Promise.resolve(threeClasses);
+const listFive: ListClasses = () => Promise.resolve(fiveClasses);
 
 const mkMount = (): HTMLElement => {
   const div = document.createElement("div");
@@ -111,6 +125,12 @@ const makeAssignments = (
     // Historical Assignment Resolution, Implementation Slice 11.
     failCurrentSet?: boolean;
     currentSetChanged?: boolean;
+    // Historical Assignment Resolution, Implementation Slice 13 (final
+    // certification, Phase 10 failure-mode #9): makes `lifecycleState`
+    // throw starting from its Nth call for one class, so a test can model
+    // "the initial dialog load succeeds, but the refresh lifecycle read
+    // triggered by a failed Set/Change also fails."
+    failLifecycleFromCall?: { readonly classId: string; readonly callNumber: number };
   } = {},
 ): {
   seam: AssignmentsCallables;
@@ -159,10 +179,16 @@ const makeAssignments = (
         alreadyPublished: false,
       }),
       lifecycleState: async (input) => {
-        lifecycleCallCounts.set(
-          input.classId,
-          (lifecycleCallCounts.get(input.classId) ?? 0) + 1,
-        );
+        const callNumber =
+          (lifecycleCallCounts.get(input.classId) ?? 0) + 1;
+        lifecycleCallCounts.set(input.classId, callNumber);
+        if (
+          opts.failLifecycleFromCall &&
+          opts.failLifecycleFromCall.classId === input.classId &&
+          callNumber >= opts.failLifecycleFromCall.callNumber
+        ) {
+          throw new Error("lifecycle refresh failed");
+        }
         const override = liveLifecycle.get(input.classId);
         if (override) return override;
         return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
@@ -2267,6 +2293,79 @@ describe("Curriculum lifecycle UI", () => {
     ).not.toBeNull();
   });
 
+  test("Set Current failure whose own recovery lifecycle refresh ALSO fails: falls back to the fetch-failure error row with Retry, still no fallback mutation", async () => {
+    // Historical Assignment Resolution, Implementation Slice 13 (final
+    // certification, Phase 10 failure-mode #9). The initial dialog load
+    // succeeds (call #1 for c1), but the SECOND lifecycleState call - the
+    // recovery refresh `renderSetOrChangeCurrentControl` performs after a
+    // failed currentSet - also fails. This exercises the nested try/catch's
+    // outer fallback branch, which is otherwise unreachable from any other
+    // test in this file.
+    const asn = makeAssignments(
+      {
+        c1: {
+          state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
+          candidates: [publishedCandidate({ assignmentId: "a-1" })],
+        },
+      },
+      {
+        failCurrentSet: true,
+        failLifecycleFromCall: { classId: "c1", callNumber: 2 },
+      },
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-1]",
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change", { bubbles: true }));
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-set-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    // Still exactly one currentSet attempt - no retry loop, no fallback
+    // mutation of any kind.
+    expect(asn.currentSetCalls).toHaveLength(1);
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.currentReconcileCalls).toHaveLength(0);
+    expect(asn.draftCalls).toHaveLength(0);
+    // The row falls back to the SAME fetch-failure error presentation the
+    // initial-load-failure path uses: disabled checkbox, error badge,
+    // Retry - never a silently stuck or misleading state.
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.getAttribute("data-lifecycle-state")).toBe("unresolved");
+    expect(
+      document.querySelector<HTMLInputElement>(
+        "[data-testid=assign-row-enabled-c1]",
+      )?.disabled,
+    ).toBe(true);
+    expect(
+      document.querySelector("[data-testid=assign-row-retry-c1]"),
+    ).not.toBeNull();
+    const banner = mount.querySelector<HTMLElement>(
+      "[data-testid=assign-success]",
+    );
+    expect(banner?.textContent).toContain("could not be set");
+  });
+
   test("Change Current: identifies the current candidate, disables it as a target, and confirming without a different selection makes no call", async () => {
     const asn = makeAssignments({
       c1: {
@@ -3578,5 +3677,175 @@ describe("Curriculum lifecycle UI", () => {
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(panel.hidden).toBe(false);
     expect(panel.querySelector('[role="list"]')).not.toBeNull();
+  });
+
+  // ---- Slice 13: final certification, Phase 3 Case G ----
+
+  test("Case G: five classes, five distinct lifecycle/Current combinations, fully independent in one dialog", async () => {
+    const asn = makeAssignments({
+      // c1: neverAssigned + unresolved (default - no override).
+      c2: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate({ assignmentId: "c2-a1" })],
+      },
+      c3: {
+        state: "multiplePublished",
+        currentAssignmentId: "c3-a1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "c3-a1" }),
+          publishedCandidate({ assignmentId: "c3-a2", title: "Second" }),
+        ],
+      },
+      c4: {
+        state: "historicalOnly",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          historicalCandidate({ assignmentId: "c4-old1", status: "closed" }),
+          historicalCandidate({ assignmentId: "c4-old2", status: "draft" }),
+        ],
+      },
+      c5: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "invalid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "c5-a1" }),
+          publishedCandidate({ assignmentId: "c5-a2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFive,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+
+    // c1: neverAssigned - ordinary Assign creation row, no Set Current, no
+    // History, checkbox enabled and date/time controls present.
+    expect(
+      document.querySelector("[data-testid=assign-row-lifecycle-c1]")
+        ?.textContent,
+    ).toBeFalsy();
+    expect(
+      document.querySelector<HTMLInputElement>(
+        "[data-testid=assign-row-enabled-c1]",
+      )?.disabled,
+    ).toBe(false);
+    expect(
+      document.querySelector("[data-testid=assign-row-date-c1]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).toBeNull();
+
+    // c2: onePublishedMissingRecipients + unresolved - Set Current required,
+    // Update blocked, no History (single candidate).
+    expect(
+      document.querySelector("[data-testid=assign-row-lifecycle-c2]")
+        ?.textContent,
+    ).toBe("Needs resolution before updating");
+    expect(
+      document.querySelector<HTMLInputElement>(
+        "[data-testid=assign-row-enabled-c2]",
+      )?.disabled,
+    ).toBe(true);
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c2]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c2]"),
+    ).toBeNull();
+
+    // c3: multiplePublished + valid - Update available, Change Current
+    // available, History available.
+    expect(
+      document.querySelector<HTMLInputElement>(
+        "[data-testid=assign-row-enabled-c3]",
+      )?.disabled,
+    ).toBe(false);
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c3]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c3]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c3]"),
+    ).not.toBeNull();
+
+    // c4: historicalOnly + unresolved - Assign as new available, History
+    // available (2 closed/draft candidates), no Set Current (no eligible
+    // published target exists).
+    expect(
+      document.querySelector("[data-testid=assign-row-lifecycle-c4]")
+        ?.textContent,
+    ).toBe("Assign as new");
+    expect(
+      document.querySelector<HTMLInputElement>(
+        "[data-testid=assign-row-enabled-c4]",
+      )?.disabled,
+    ).toBe(false);
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c4]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c4]"),
+    ).not.toBeNull();
+
+    // c5: invalid Current - fail-safe Retry only, no Set/Change/Update/
+    // History, regardless of having 2 published candidates.
+    expect(
+      document.querySelector("[data-testid=assign-row-lifecycle-c5]")
+        ?.textContent,
+    ).toBe("Current assignment could not be verified");
+    expect(
+      document.querySelector<HTMLInputElement>(
+        "[data-testid=assign-row-enabled-c5]",
+      )?.disabled,
+    ).toBe(true);
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c5]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c5]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c5]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-retry-c5]"),
+    ).not.toBeNull();
+
+    // Confirming runs exactly the expected mixed lifecycle. Every row's
+    // checkbox starts enabled by default UNLESS render-time gating force-
+    // disabled it (c2 and c5 above). c1 (neverAssigned) and c4
+    // (historicalOnly) are both legitimate creation rows and both remain
+    // enabled, so both create; c3 (multiplePublished+valid) is the only
+    // enabled update row and reconciles via Current-aware reconcile only.
+    // c2 and c5 are disabled and contribute to neither bucket - no
+    // createDraft, no currentSet, no reconcile of any kind for either.
+    clickConfirm();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.draftCalls).toContain("c1");
+    expect(asn.draftCalls).toContain("c4");
+    expect(asn.draftCalls).not.toContain("c2");
+    expect(asn.draftCalls).not.toContain("c5");
+    expect(asn.currentReconcileCalls).toEqual([
+      { classId: "c3", lessonSlug: LESSON_SLUG },
+    ]);
+    expect(asn.currentSetCalls).toHaveLength(0);
+    expect(asn.reconcileCalls).toHaveLength(0);
   });
 });
