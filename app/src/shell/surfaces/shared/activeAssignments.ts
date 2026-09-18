@@ -714,3 +714,18 @@ export function formatLocalDate(d: Date): string {
   const month = SHORT_MONTHS[d.getMonth()] ?? "";
   return `${month} ${d.getDate()}, ${d.getFullYear()}`;
 }
+
+// Historical Assignment Resolution, post-release UX patch: teacher-facing
+// local clock time, 12-hour with AM/PM, e.g. "2:16 PM". Mirrors
+// `formatLocalDate` immediately above - a fixed manual conversion (not
+// `toLocaleTimeString`) so the output is deterministic across environments
+// and locales. Minutes are always two digits; hours are never zero-padded
+// and never "0" (midnight/noon render as "12", matching ordinary clock
+// reading, not 24-hour "0"/"12").
+export function formatLocalTime(d: Date): string {
+  const hours24 = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const period = hours24 < 12 ? "AM" : "PM";
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  return `${hours12}:${minutes} ${period}`;
+}

@@ -2183,6 +2183,239 @@ describe("Curriculum lifecycle UI", () => {
     }
   });
 
+  // ---- Post-release UX patch: same-day historical candidates ----
+  //
+  // Production verification found classes with several historical
+  // candidates sharing the same publication DATE and the same recipient
+  // count (e.g. a morning batch and an afternoon batch published the same
+  // day) - date-only labeling made them visually identical, so a teacher
+  // could not make an informed explicit Set/Change Current selection.
+  // `publishedAt` already carries full time-of-day precision; these tests
+  // pin the fix (adding local clock time to the existing label) without
+  // touching selection/mutation/ordering/eligibility behavior at all.
+
+  test("Set Current candidate label shows publication date AND local time", async () => {
+    const publishedAt = new Date(2026, 8, 16, 14, 16).getTime(); // Sep 16, 2026, 2:16 PM local
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate({ assignmentId: "a-1", publishedAt })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-1]",
+    )!;
+    const label = radio.closest("label");
+    expect(label?.textContent).toContain("Sep 16, 2026 · 2:16 PM");
+  });
+
+  test("two same-day, same-recipient-count candidates render distinguishably by publication time (core production regression)", async () => {
+    const morning = new Date(2026, 8, 16, 9, 4).getTime();
+    const afternoon = new Date(2026, 8, 16, 14, 16).getTime();
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({
+            assignmentId: "a-morning",
+            publishedAt: morning,
+            recipientCount: 20,
+          }),
+          publishedCandidate({
+            assignmentId: "a-afternoon",
+            publishedAt: afternoon,
+            recipientCount: 20,
+          }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const morningLabel = document
+      .querySelector<HTMLInputElement>(
+        "[data-testid=assign-current-option-c1-a-morning]",
+      )!
+      .closest("label");
+    const afternoonLabel = document
+      .querySelector<HTMLInputElement>(
+        "[data-testid=assign-current-option-c1-a-afternoon]",
+      )!
+      .closest("label");
+    expect(morningLabel?.textContent).toContain("9:04 AM");
+    expect(afternoonLabel?.textContent).toContain("2:16 PM");
+    // Same date and same recipient count on both - the ONLY distinguishing
+    // text is the time, which is exactly the production defect this patch
+    // corrects.
+    expect(morningLabel?.textContent).not.toBe(afternoonLabel?.textContent);
+  });
+
+  test("Change Current candidate rows use the same date+time identification convention", async () => {
+    const publishedAt = new Date(2026, 8, 15, 13, 9).getTime(); // Sep 15, 2026, 1:09 PM local
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({
+            assignmentId: "a-2",
+            title: "Second",
+            publishedAt,
+          }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-c1]",
+      )
+      ?.click();
+    await flush();
+    const label = document
+      .querySelector<HTMLInputElement>(
+        "[data-testid=assign-current-option-c1-a-2]",
+      )!
+      .closest("label");
+    expect(label?.textContent).toContain("Sep 15, 2026 · 1:09 PM");
+  });
+
+  test("Assignment history entries use the same date+time identification convention", async () => {
+    const publishedAt = new Date(2026, 8, 16, 14, 16).getTime();
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1", publishedAt }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    const dateText = document.querySelector(
+      "[data-testid=assign-row-history-item-c1-a-1] .shell-assign-row-history-date",
+    );
+    expect(dateText?.textContent).toBe("Sep 16, 2026 · 2:16 PM");
+  });
+
+  test("Set Current: a null publishedAt renders no fabricated time and falls back to the candidate title only", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1", publishedAt: null }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const label = document
+      .querySelector<HTMLInputElement>(
+        "[data-testid=assign-current-option-c1-a-1]",
+      )!
+      .closest("label");
+    // No fabricated date/time text - the title-only fallback (no " · "
+    // separator, since there is no publication timestamp to append).
+    expect(label?.textContent).not.toContain(" · ");
+    expect(label?.textContent).not.toMatch(/AM|PM|1970|NaN|Invalid Date/);
+  });
+
+  test("Assignment history: a null publishedAt keeps the existing safe status-label fallback, no fabricated time", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          historicalCandidate({
+            assignmentId: "a-draft",
+            status: "draft",
+            publishedAt: null,
+          }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    const dateText = document.querySelector(
+      "[data-testid=assign-row-history-item-c1-a-draft] .shell-assign-row-history-date",
+    );
+    expect(dateText?.textContent).toBe("Draft");
+    expect(dateText?.textContent).not.toMatch(/AM|PM|1970|NaN|Invalid Date/);
+  });
+
   test("Set Current success: sends expectedCurrentAssignmentId exactly null, reloads lifecycle, shows success feedback, and never runs an automatic reconcile/create/publish", async () => {
     const asn = makeAssignments({
       c1: {

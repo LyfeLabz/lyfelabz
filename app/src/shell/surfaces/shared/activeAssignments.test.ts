@@ -5,6 +5,7 @@ import {
   _resetActiveAssignmentsSessionStateForTest,
   compareCards,
   formatLocalDate,
+  formatLocalTime,
   isRenderableCard,
   renderActiveAssignmentsSection,
 } from "./activeAssignments";
@@ -58,6 +59,28 @@ describe("formatLocalDate (Sprint 28.5D D4 humanized short date)", () => {
     expect(formatLocalDate(new Date(2026, 7, 20, 9, 0, 0))).not.toMatch(
       /^\d{4}-\d{2}-\d{2}$/,
     );
+  });
+});
+
+// Historical Assignment Resolution, post-release UX patch. Distinguishes
+// same-day historical candidates by local clock time.
+describe("formatLocalTime (post-release timestamp UX patch)", () => {
+  test("renders a 12-hour clock with AM/PM", () => {
+    expect(formatLocalTime(new Date(2026, 8, 16, 14, 16))).toBe("2:16 PM");
+    expect(formatLocalTime(new Date(2026, 8, 16, 9, 4))).toBe("9:04 AM");
+  });
+  test("midnight and noon render as 12, not 0", () => {
+    expect(formatLocalTime(new Date(2026, 8, 16, 0, 0))).toBe("12:00 AM");
+    expect(formatLocalTime(new Date(2026, 8, 16, 12, 0))).toBe("12:00 PM");
+  });
+  test("minutes are always two digits", () => {
+    expect(formatLocalTime(new Date(2026, 8, 16, 14, 5))).toBe("2:05 PM");
+  });
+  test("never emits 24-hour, seconds, or a timezone offset", () => {
+    const t = formatLocalTime(new Date(2026, 8, 16, 14, 16));
+    expect(t).not.toMatch(/^\d{2}:\d{2}$/);
+    expect(t).not.toMatch(/:\d{2}:\d{2}/);
+    expect(t).not.toMatch(/[+-]\d{2}:?\d{2}$/);
   });
 });
 

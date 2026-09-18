@@ -39,7 +39,7 @@ import type {
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { buildLessonBasePath } from "../../assignments/studentList/launch";
 import { mintAssignmentId } from "./shared/assignmentId";
-import { formatLocalDate } from "./shared/activeAssignments";
+import { formatLocalDate, formatLocalTime } from "./shared/activeAssignments";
 import {
   clearConnectionReconnectNeeded,
   createConsentCoordinator,
@@ -2110,6 +2110,24 @@ function attachRetryButton(
   row.appendChild(retryBtn);
 }
 
+// Historical Assignment Resolution, post-release UX patch. Production
+// verification surfaced classes with several historical candidates sharing
+// the same publication DATE and the same recipient count (a morning batch
+// and an afternoon batch on the same day, for example) - date alone did
+// not give the teacher enough factual information to distinguish them for
+// an explicit Set/Change Current selection. `publishedAt` already carries
+// full time-of-day precision (epoch milliseconds from the server's
+// Firestore timestamp; see `assignments-lifecycle-state.ts`), so this adds
+// local clock time to the existing date presentation - no new data, no new
+// server field, no change to which candidates are eligible or how they are
+// ordered. Shared by both the Set/Change Current panel and the Assignment
+// History panel so the same historical occurrence reads identically
+// wherever a teacher encounters it.
+function formatCandidatePublishedAt(publishedAt: number): string {
+  const d = new Date(publishedAt);
+  return `${formatLocalDate(d)} · ${formatLocalTime(d)}`;
+}
+
 // Historical Assignment Resolution, Implementation Slice 11. Only a
 // published candidate may ever become Current - a draft or closed
 // assignment is never presented as selectable in the Set/Change Current
@@ -2230,11 +2248,12 @@ function renderSetOrChangeCurrentControl(input: {
     }
     label.appendChild(radio);
     const text = doc.createElement("span");
-    const dateStr = candidate.publishedAt
-      ? new Date(candidate.publishedAt).toLocaleDateString()
-      : "";
-    text.textContent = dateStr
-      ? `${candidate.title} · ${dateStr}`
+    const publishedAtStr =
+      candidate.publishedAt !== null
+        ? formatCandidatePublishedAt(candidate.publishedAt)
+        : "";
+    text.textContent = publishedAtStr
+      ? `${candidate.title} · ${publishedAtStr}`
       : candidate.title;
     label.appendChild(text);
     if (isCurrent) {
@@ -2478,7 +2497,7 @@ function renderAssignmentHistoryControl(input: {
     dateText.className = "shell-assign-row-history-date";
     dateText.textContent =
       candidate.publishedAt !== null
-        ? formatLocalDate(new Date(candidate.publishedAt))
+        ? formatCandidatePublishedAt(candidate.publishedAt)
         : historyStatusLabel(candidate.status);
     item.appendChild(dateText);
 
