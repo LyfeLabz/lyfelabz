@@ -466,3 +466,175 @@ describe("createAssignmentsCallables currentRecipientsReconcile", () => {
     );
   });
 });
+
+// Historical Assignment Resolution, Implementation Slice 11. Focused tests
+// for the new `assignmentsCurrentSet` client wrapper - the narrow mirror of
+// the committed Slice 4 server callable. This is the only place raw,
+// untrusted callable JSON is converted into the typed
+// `AssignmentsCurrentSetOutput`, and the only place that proves the request
+// this wrapper sends preserves all four fields (including a `null`
+// `expectedCurrentAssignmentId`) exactly as supplied.
+describe("createAssignmentsCallables currentSet", () => {
+  beforeEach(() => {
+    callableResponses.clear();
+  });
+
+  function stubCurrentSet(data: Readonly<Record<string, unknown>>): void {
+    callableResponses.set("assignmentsCurrentSet", async () => ({ data }));
+  }
+
+  function callCurrentSet(
+    expectedCurrentAssignmentId: string | null = null,
+  ) {
+    const assignments = createAssignmentsCallables({} as Functions);
+    return assignments.currentSet({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      expectedCurrentAssignmentId,
+    });
+  }
+
+  it("parses a well-formed response for a genuine change", async () => {
+    stubCurrentSet({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      changed: true,
+    });
+    const out = await callCurrentSet();
+    expect(out).toEqual({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      changed: true,
+    });
+  });
+
+  it("parses a well-formed response for an idempotent same-value retry (changed: false)", async () => {
+    stubCurrentSet({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      changed: false,
+    });
+    const out = await callCurrentSet("a-1");
+    expect(out.changed).toBe(false);
+  });
+
+  it("sends expectedCurrentAssignmentId exactly null for an initial Set - never omitted, never substituted", async () => {
+    stubCurrentSet({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      changed: true,
+    });
+    const assignments = createAssignmentsCallables({} as Functions);
+    const input: Parameters<typeof assignments.currentSet>[0] = {
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      expectedCurrentAssignmentId: null,
+    };
+    expect(input.expectedCurrentAssignmentId).toBeNull();
+    expect("expectedCurrentAssignmentId" in input).toBe(true);
+    await assignments.currentSet(input);
+  });
+
+  it("sends the exact observed Current as expectedCurrentAssignmentId for a Change", async () => {
+    stubCurrentSet({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-2",
+      changed: true,
+    });
+    const assignments = createAssignmentsCallables({} as Functions);
+    const input: Parameters<typeof assignments.currentSet>[0] = {
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-2",
+      expectedCurrentAssignmentId: "a-1",
+    };
+    expect(input.expectedCurrentAssignmentId).toBe("a-1");
+    expect(Object.keys(input).sort()).toEqual(
+      [
+        "classId",
+        "lessonSlug",
+        "assignmentId",
+        "expectedCurrentAssignmentId",
+      ].sort(),
+    );
+    await assignments.currentSet(input);
+  });
+
+  it("rejects a non-object response", async () => {
+    callableResponses.set("assignmentsCurrentSet", async () => ({
+      data: "not an object",
+    }));
+    await expect(callCurrentSet()).rejects.toThrow(
+      "assignmentsCurrentSet returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response missing assignmentId", async () => {
+    stubCurrentSet({ classId: "c1", lessonSlug: "slug", changed: true });
+    await expect(callCurrentSet()).rejects.toThrow(
+      "assignmentsCurrentSet returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response with an empty-string assignmentId", async () => {
+    stubCurrentSet({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "",
+      changed: true,
+    });
+    await expect(callCurrentSet()).rejects.toThrow(
+      "assignmentsCurrentSet returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response with a wrong-typed classId", async () => {
+    stubCurrentSet({
+      classId: 42,
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      changed: true,
+    });
+    await expect(callCurrentSet()).rejects.toThrow(
+      "assignmentsCurrentSet returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response with a wrong-typed lessonSlug", async () => {
+    stubCurrentSet({
+      classId: "c1",
+      lessonSlug: 42,
+      assignmentId: "a-1",
+      changed: true,
+    });
+    await expect(callCurrentSet()).rejects.toThrow(
+      "assignmentsCurrentSet returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response with a non-boolean changed field, rather than coercing it", async () => {
+    stubCurrentSet({
+      classId: "c1",
+      lessonSlug: "slug",
+      assignmentId: "a-1",
+      changed: "true",
+    });
+    await expect(callCurrentSet()).rejects.toThrow(
+      "assignmentsCurrentSet returned an unexpected shape.",
+    );
+  });
+
+  it("rejects a response missing the changed field entirely", async () => {
+    stubCurrentSet({ classId: "c1", lessonSlug: "slug", assignmentId: "a-1" });
+    await expect(callCurrentSet()).rejects.toThrow(
+      "assignmentsCurrentSet returned an unexpected shape.",
+    );
+  });
+});

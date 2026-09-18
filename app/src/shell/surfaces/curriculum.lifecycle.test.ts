@@ -78,6 +78,13 @@ type LifecycleOverrides = Partial<{
   [classId: string]: AssignmentsLifecycleStateOutput;
 }>;
 
+type CurrentSetCall = {
+  readonly classId: string;
+  readonly lessonSlug: string;
+  readonly assignmentId: string;
+  readonly expectedCurrentAssignmentId: string | null;
+};
+
 const makeAssignments = (
   lcOverrides: LifecycleOverrides = {},
   opts: {
@@ -86,20 +93,42 @@ const makeAssignments = (
     // Historical Assignment Resolution, Implementation Slice 10.
     currentReconcileAdded?: number;
     failCurrentReconcile?: boolean;
+    // Historical Assignment Resolution, Implementation Slice 11.
+    failCurrentSet?: boolean;
+    currentSetChanged?: boolean;
   } = {},
 ): {
   seam: AssignmentsCallables;
   reconcileCalls: string[];
   currentReconcileCalls: Array<{ readonly classId: string; readonly lessonSlug: string }>;
+  currentSetCalls: CurrentSetCall[];
   draftCalls: string[];
+  lifecycleCallCount: (classId: string) => number;
 } => {
   const reconcileCalls: string[] = [];
   const currentReconcileCalls: Array<{ readonly classId: string; readonly lessonSlug: string }> = [];
+  const currentSetCalls: CurrentSetCall[] = [];
   const draftCalls: string[] = [];
+  const lifecycleCallCounts = new Map<string, number>();
+  // Historical Assignment Resolution, Implementation Slice 11. A mutable
+  // live-state map seeded from the fixture's `lcOverrides`, so a
+  // successful `currentSet` in one of these tests can be observed by a
+  // SUBSEQUENT `lifecycleState` call - exactly like the real server, where
+  // Set/Change Current genuinely changes what the next lifecycle read
+  // reports. Tests that never call `currentSet` see no difference from the
+  // prior, immutable `lcOverrides`-only behavior.
+  const liveLifecycle = new Map<string, AssignmentsLifecycleStateOutput>(
+    Object.entries(lcOverrides).filter(
+      (entry): entry is [string, AssignmentsLifecycleStateOutput] =>
+        entry[1] !== undefined,
+    ),
+  );
   return {
     reconcileCalls,
     currentReconcileCalls,
+    currentSetCalls,
     draftCalls,
+    lifecycleCallCount: (classId: string) => lifecycleCallCounts.get(classId) ?? 0,
     seam: {
       createDraft: async (input) => {
         draftCalls.push(input.classId ?? input.assignmentId);
@@ -115,9 +144,44 @@ const makeAssignments = (
         alreadyPublished: false,
       }),
       lifecycleState: async (input) => {
-        const override = lcOverrides[input.classId];
+        lifecycleCallCounts.set(
+          input.classId,
+          (lifecycleCallCounts.get(input.classId) ?? 0) + 1,
+        );
+        const override = liveLifecycle.get(input.classId);
         if (override) return override;
         return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
+      },
+      // Historical Assignment Resolution, Implementation Slice 11. Models
+      // the real server's own behavior: a genuine change (`changed: true`)
+      // updates what live Current is, so the row's own post-mutation
+      // lifecycle reload (via `lifecycleState` above) observes it.
+      currentSet: async (input) => {
+        currentSetCalls.push({
+          classId: input.classId,
+          lessonSlug: input.lessonSlug,
+          assignmentId: input.assignmentId,
+          expectedCurrentAssignmentId: input.expectedCurrentAssignmentId,
+        });
+        if (opts.failCurrentSet) {
+          throw new Error("current set failed");
+        }
+        const changed = opts.currentSetChanged ?? true;
+        if (changed) {
+          const existing = liveLifecycle.get(input.classId);
+          liveLifecycle.set(input.classId, {
+            state: existing?.state ?? "onePublishedFullyCurrent",
+            candidates: existing?.candidates ?? [],
+            currentAssignmentId: input.assignmentId,
+            currentAssignmentResolution: "valid",
+          });
+        }
+        return {
+          classId: input.classId,
+          lessonSlug: input.lessonSlug,
+          assignmentId: input.assignmentId,
+          changed,
+        };
       },
       // Historical Assignment Resolution, Implementation Slice 10. Models
       // the real server's own behavior: the request never carries an
@@ -135,7 +199,7 @@ const makeAssignments = (
           throw new Error("current reconcile failed");
         }
         const resolvedAssignmentId =
-          lcOverrides[input.classId]?.currentAssignmentId ?? "a-resolved";
+          liveLifecycle.get(input.classId)?.currentAssignmentId ?? "a-resolved";
         return {
           classId: input.classId,
           lessonSlug: input.lessonSlug,
@@ -187,6 +251,12 @@ const makeFailingLifecycleSeam = (): AssignmentsCallables => ({
   lifecycleState: async () => {
     throw new Error("network error");
   },
+  currentSet: async (input) => ({
+    classId: input.classId,
+    lessonSlug: input.lessonSlug,
+    assignmentId: input.assignmentId,
+    changed: true,
+  }),
   currentRecipientsReconcile: async (input) => ({
     classId: input.classId,
     lessonSlug: input.lessonSlug,
@@ -321,8 +391,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedFullyCurrent",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
         candidates: [
           publishedCandidate({ missingRecipientCount: 0 }),
         ],
@@ -345,6 +415,46 @@ describe("Curriculum lifecycle UI", () => {
     );
     expect(checkbox?.disabled).toBe(true);
     expect(checkbox?.checked).toBe(false);
+  });
+
+  test("onePublishedFullyCurrent row with unresolved Current shows needs-resolution and offers Set as current assignment", async () => {
+    // Historical Assignment Resolution, Implementation Slice 11. A class
+    // can have exactly one published, fully-staffed assignment and STILL
+    // have no Current pointer at all (legacy history predating this
+    // feature) - recipient completeness and Current resolution are
+    // independent dimensions, so this state is NOT "Up to date" the way
+    // Slice 10 treated it unconditionally. The teacher must explicitly
+    // resolve Current before Update becomes available.
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedFullyCurrent",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate({ missingRecipientCount: 0 })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
+    );
+    expect(badge?.textContent).toBe("Needs resolution before updating");
+    const checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c1]",
+    );
+    expect(checkbox?.disabled).toBe(true);
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c1]"),
+    ).toBeNull();
   });
 
   test("historicalOnly row shows 'Assign as new' badge", async () => {
@@ -380,12 +490,20 @@ describe("Curriculum lifecycle UI", () => {
     expect(badge?.textContent).toBe("Assign as new");
   });
 
-  test("multiplePublished row with valid Current is actionable with no radio group", async () => {
+  test("multiplePublished row with valid Current is actionable with no old-mechanism radio group", async () => {
     // Historical Assignment Resolution, Implementation Slice 10: the old
-    // disambiguation radio group is removed entirely. A multiplePublished
-    // row whose Current pointer resolves to "valid" is auto-actionable -
-    // Update Assignment targets the server-resolved Current directly, no
-    // client-side selection of which historical assignment to update.
+    // disambiguation radio group (used to pick an UPDATE target) is
+    // removed entirely. A multiplePublished row whose Current pointer
+    // resolves to "valid" is auto-actionable - Update Assignment targets
+    // the server-resolved Current directly, no client-side selection of
+    // which historical assignment to update.
+    //
+    // Slice 11 adds a DIFFERENT, deliberate radio group here: the
+    // secondary "Change current assignment" disclosure, which starts
+    // closed and is never read by Update Assignment. This test proves the
+    // old mechanism specifically (its testid and its "update target"
+    // reading) is gone, and separately proves the new control starts
+    // closed with no candidate preselected.
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
@@ -405,15 +523,33 @@ describe("Curriculum lifecycle UI", () => {
     clickAssign(mount, LESSON_SLUG);
     await flush();
     await flush();
-    const row = document.querySelector("[data-class-id='c1']");
     expect(
       document.querySelector("[data-testid=assign-row-disambig-c1]"),
     ).toBeNull();
-    expect(row?.querySelector('input[type="radio"]')).toBeNull();
     const checkbox = document.querySelector<HTMLInputElement>(
       "[data-testid=assign-row-enabled-c1]",
     );
     expect(checkbox?.disabled).toBe(false);
+    // The new Change Current control exists but starts closed (its panel
+    // is hidden until the teacher explicitly opens it) and nothing is
+    // preselected.
+    const changeBtn = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-row-change-current-c1]",
+    );
+    expect(changeBtn).not.toBeNull();
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-change-current-panel-c1]",
+    );
+    expect(panel?.hidden).toBe(true);
+    for (const radio of Array.from(
+      panel?.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? [],
+    )) {
+      expect(radio.checked).toBe(false);
+    }
+    // No Set Current control - Current is already valid.
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).toBeNull();
   });
 
   test("multiplePublished row with unresolved Current shows needs-resolution badge and is disabled", async () => {
@@ -754,6 +890,12 @@ describe("Curriculum lifecycle UI", () => {
         calls.push(input.classId);
         return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
       },
+      currentSet: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: input.assignmentId,
+        changed: true,
+      }),
       currentRecipientsReconcile: async (input) => ({
         classId: input.classId,
         lessonSlug: input.lessonSlug,
@@ -907,8 +1049,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedFullyCurrent",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
         candidates: [
           publishedCandidate({ missingRecipientCount: 0 }),
         ],
@@ -1136,6 +1278,12 @@ describe("Curriculum lifecycle UI", () => {
           holder.resolve = () =>
             resolve({ state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] });
         }),
+      currentSet: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: input.assignmentId,
+        changed: true,
+      }),
       currentRecipientsReconcile: async (input) => ({
         classId: input.classId,
         lessonSlug: input.lessonSlug,
@@ -1464,8 +1612,8 @@ describe("Curriculum lifecycle UI", () => {
         if (callCount <= 1) throw new Error("network error");
         return {
           state: "onePublishedFullyCurrent" as const,
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved" as const,
+          currentAssignmentId: "a-1",
+          currentAssignmentResolution: "valid" as const,
           candidates: [publishedCandidate({ missingRecipientCount: 0 })],
         };
       },
@@ -1710,8 +1858,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedFullyCurrent",
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved" as const,
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
         candidates: [publishedCandidate({ missingRecipientCount: 0 })],
       },
     });
@@ -1780,7 +1928,16 @@ describe("Curriculum lifecycle UI", () => {
   // radiogroup. Replaced by the proof below that the entire mechanism is
   // gone, across several multiplePublished classes at once.
 
-  test("old radio-disambiguation authority removed: no radiogroup, no radio inputs, no selection attribute anywhere in the dialog", async () => {
+  test("old Update-radio mutation authority removed: no old disambig markup, no selection attribute, anywhere in the dialog", async () => {
+    // Historical Assignment Resolution, Implementation Slice 11. This test
+    // no longer asserts "zero radio inputs anywhere" - Slice 11
+    // legitimately introduces a NEW, different radio-based control (the
+    // explicit Set/Change Current disclosure), which is expected to render
+    // for c1 (valid, offers Change) and c2 (unresolved, offers Set). What
+    // must remain permanently gone is the OLD mechanism specifically: its
+    // container class/testid, its `data-selected-assignment` mutation-
+    // authority attribute, and its role in ordinary Update Assignment. c3
+    // (invalid) proves the fail-safe branch offers neither mechanism.
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
@@ -1819,23 +1976,684 @@ describe("Curriculum lifecycle UI", () => {
     clickAssign(mount, LESSON_SLUG);
     await flush();
     await flush();
-    // Scoped to the class rows themselves - the dialog's unrelated shared
-    // grading control (Ungraded/Graded) is its own, pre-existing radiogroup
-    // and is not part of the removed per-row disambiguation mechanism.
-    for (const classId of ["c1", "c2", "c3"]) {
-      const row = document.querySelector(`[data-class-id='${classId}']`);
-      expect(row?.querySelectorAll('[role="radiogroup"]')).toHaveLength(0);
-      expect(row?.querySelectorAll('input[type="radio"]')).toHaveLength(0);
-      expect(row?.hasAttribute("data-selected-assignment")).toBe(false);
-    }
+    // The old per-row disambig container, its testid naming, and its
+    // mutation-authority attribute never appear for any row, in any state.
     expect(
       document.querySelectorAll(".shell-assign-row-disambig"),
     ).toHaveLength(0);
+    for (const classId of ["c1", "c2", "c3"]) {
+      expect(
+        document.querySelector(`[data-testid=assign-row-disambig-${classId}]`),
+      ).toBeNull();
+    }
     expect(
       document.querySelectorAll("[data-selected-assignment]"),
     ).toHaveLength(0);
     expect(
       document.querySelector("[data-testid=assign-validation]"),
     ).toBeNull();
+
+    // c1 (valid): the new Change Current control exists, closed, and its
+    // own panel/radio testids use the NEW naming, never the old
+    // `assign-disambig-*`/`assign-row-disambig-*` convention.
+    const c1Row = document.querySelector("[data-class-id='c1']");
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c1]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-panel-c1]")
+        ?.hasAttribute("hidden"),
+    ).toBe(true);
+    expect(c1Row?.querySelector('[data-testid^="assign-disambig-"]')).toBeNull();
+
+    // c2 (unresolved): the new Set Current control exists, closed, and no
+    // candidate is preselected.
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c2]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-panel-c2]")
+        ?.hasAttribute("hidden"),
+    ).toBe(true);
+
+    // c3 (invalid): fails safe - neither mechanism is offered at all.
+    const c3Row = document.querySelector("[data-class-id='c3']");
+    expect(c3Row?.querySelectorAll('input[type="radio"]')).toHaveLength(0);
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c3]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c3]"),
+    ).toBeNull();
+  });
+
+  // ---- Slice 11: explicit Set Current / Change Current workflow ----
+
+  test("onePublishedMissingRecipients + unresolved: Set Current available, Update unavailable", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate({ assignmentId: "a-1" })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
+    );
+    expect(badge?.textContent).toBe("Needs resolution before updating");
+    const checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c1]",
+    );
+    expect(checkbox?.disabled).toBe(true);
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).not.toBeNull();
+  });
+
+  test("Set Current: rendering and opening the panel never mutates; confirming without a selection shows validation and makes no call", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate({ assignmentId: "a-1" })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(asn.currentSetCalls).toHaveLength(0);
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    expect(asn.currentSetCalls).toHaveLength(0);
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-set-current-panel-c1]",
+    );
+    expect(panel?.hidden).toBe(false);
+    const radios = panel!.querySelectorAll<HTMLInputElement>(
+      'input[type="radio"]',
+    );
+    expect(radios.length).toBe(1);
+    expect(radios[0]!.checked).toBe(false);
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-set-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    expect(asn.currentSetCalls).toHaveLength(0);
+    const validation = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-set-current-validation-c1]",
+    );
+    expect(validation?.hidden).toBe(false);
+  });
+
+  test("Set Current: multiple eligible candidates are shown with none preselected", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+          publishedCandidate({ assignmentId: "a-3", title: "Third" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-set-current-panel-c1]",
+    );
+    const radios = Array.from(
+      panel!.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
+    );
+    expect(radios.length).toBe(3);
+    for (const radio of radios) {
+      expect(radio.checked).toBe(false);
+      expect(radio.disabled).toBe(false);
+    }
+  });
+
+  test("Set Current success: sends expectedCurrentAssignmentId exactly null, reloads lifecycle, shows success feedback, and never runs an automatic reconcile/create/publish", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate({ assignmentId: "a-1" })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-1]",
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change", { bubbles: true }));
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-set-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.currentSetCalls).toEqual([
+      {
+        classId: "c1",
+        lessonSlug: LESSON_SLUG,
+        assignmentId: "a-1",
+        expectedCurrentAssignmentId: null,
+      },
+    ]);
+    expect(asn.lifecycleCallCount("c1")).toBeGreaterThanOrEqual(2);
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.currentReconcileCalls).toHaveLength(0);
+    expect(asn.draftCalls).toHaveLength(0);
+    const banner = mount.querySelector<HTMLElement>(
+      "[data-testid=assign-success]",
+    );
+    expect(banner?.textContent).toBe("Current assignment set.");
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.getAttribute("data-current-resolution")).toBe("valid");
+  });
+
+  test("Set Current failure: no fallback mutation, no false success, lifecycle refreshed for review", async () => {
+    const asn = makeAssignments(
+      {
+        c1: {
+          state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
+          candidates: [publishedCandidate({ assignmentId: "a-1" })],
+        },
+      },
+      { failCurrentSet: true },
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-1]",
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change", { bubbles: true }));
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-set-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.currentSetCalls).toHaveLength(1);
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.currentReconcileCalls).toHaveLength(0);
+    expect(asn.draftCalls).toHaveLength(0);
+    const banner = mount.querySelector<HTMLElement>(
+      "[data-testid=assign-success]",
+    );
+    expect(banner?.textContent).toContain("could not be set");
+    expect(banner?.textContent).not.toBe("Current assignment set.");
+    expect(asn.lifecycleCallCount("c1")).toBeGreaterThanOrEqual(2);
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.getAttribute("data-current-resolution")).toBe("unresolved");
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).not.toBeNull();
+  });
+
+  test("Change Current: identifies the current candidate, disables it as a target, and confirming without a different selection makes no call", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-c1]",
+      )
+      ?.click();
+    await flush();
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-change-current-panel-c1]",
+    );
+    expect(panel?.hidden).toBe(false);
+    const currentRadio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-1]",
+    )!;
+    expect(currentRadio.disabled).toBe(true);
+    expect(
+      document.querySelector("[data-testid=assign-current-marker-c1-a-1]")
+        ?.textContent,
+    ).toBe("Current");
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    expect(asn.currentSetCalls).toHaveLength(0);
+    const validation = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-change-current-validation-c1]",
+    );
+    expect(validation?.hidden).toBe(false);
+  });
+
+  test("Change Current success: sends the exact observed Current as expectedCurrentAssignmentId, reloads lifecycle, and runs no automatic Update/create/publish", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-c1]",
+      )
+      ?.click();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-2]",
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change", { bubbles: true }));
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.currentSetCalls).toEqual([
+      {
+        classId: "c1",
+        lessonSlug: LESSON_SLUG,
+        assignmentId: "a-2",
+        expectedCurrentAssignmentId: "a-1",
+      },
+    ]);
+    expect(asn.currentReconcileCalls).toHaveLength(0);
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.draftCalls).toHaveLength(0);
+    const banner = mount.querySelector<HTMLElement>(
+      "[data-testid=assign-success]",
+    );
+    expect(banner?.textContent).toBe("Current assignment changed.");
+    const row = document.querySelector("[data-class-id='c1']");
+    expect(row?.getAttribute("data-current-resolution")).toBe("valid");
+  });
+
+  test("Change Current conflict/failure: sends only the originally observed expected value, never retries with a substituted value, and never falls back to another mutation", async () => {
+    const asn = makeAssignments(
+      {
+        c1: {
+          state: "multiplePublished",
+          currentAssignmentId: "a-1",
+          currentAssignmentResolution: "valid" as const,
+          candidates: [
+            publishedCandidate({ assignmentId: "a-1" }),
+            publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+          ],
+        },
+      },
+      { failCurrentSet: true },
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-c1]",
+      )
+      ?.click();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-2]",
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change", { bubbles: true }));
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    // Exactly one call, with the exact originally-observed expected value -
+    // never substituted with null or any other live-looking value, and
+    // never retried.
+    expect(asn.currentSetCalls).toEqual([
+      {
+        classId: "c1",
+        lessonSlug: LESSON_SLUG,
+        assignmentId: "a-2",
+        expectedCurrentAssignmentId: "a-1",
+      },
+    ]);
+    expect(asn.currentReconcileCalls).toHaveLength(0);
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.draftCalls).toHaveLength(0);
+    const banner = mount.querySelector<HTMLElement>(
+      "[data-testid=assign-success]",
+    );
+    expect(banner?.textContent).toContain("could not be changed");
+    expect(asn.lifecycleCallCount("c1")).toBeGreaterThanOrEqual(2);
+    // Fresh row re-rendered: the Change control is available again, closed.
+    expect(
+      document
+        .querySelector("[data-testid=assign-row-change-current-panel-c1]")
+        ?.hasAttribute("hidden"),
+    ).toBe(true);
+  });
+
+  test("multi-class isolation: a Set Current selection and mutation in one row does not affect another row", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate({ assignmentId: "a-1" })],
+      },
+      c2: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate({ assignmentId: "b-1" })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const radioC1 = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-1]",
+    )!;
+    radioC1.checked = true;
+    radioC1.dispatchEvent(new Event("change", { bubbles: true }));
+    await flush();
+    // c2's control is untouched - closed, no selection.
+    const c2Panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-set-current-panel-c2]",
+    );
+    expect(c2Panel?.hidden).toBe(true);
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-set-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.currentSetCalls).toEqual([
+      {
+        classId: "c1",
+        lessonSlug: LESSON_SLUG,
+        assignmentId: "a-1",
+        expectedCurrentAssignmentId: null,
+      },
+    ]);
+    const c2Row = document.querySelector("[data-class-id='c2']");
+    expect(c2Row?.getAttribute("data-current-resolution")).toBe("unresolved");
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c2]"),
+    ).not.toBeNull();
+  });
+
+  test("Set Current eligibility: only published candidates appear as selectable options", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+          freeze({
+            assignmentId: "a-closed",
+            title: "Old closed one",
+            status: "closed",
+            publishedAt: null,
+            recipientCount: 0,
+            activeEnrollmentCount: 0,
+            missingRecipientCount: 0,
+          }) as AssignmentCandidate,
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-set-current-panel-c1]",
+    );
+    const radios = panel!.querySelectorAll<HTMLInputElement>(
+      'input[type="radio"]',
+    );
+    expect(radios.length).toBe(2);
+    expect(
+      document.querySelector("[data-testid=assign-current-option-c1-a-closed]"),
+    ).toBeNull();
+  });
+
+  test("no Clear Current control exists anywhere in the dialog", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-c1]",
+      )
+      ?.click();
+    await flush();
+    expect(document.body.textContent).not.toMatch(/clear current/i);
+    expect(document.querySelector('[data-testid*="clear-current"]')).toBeNull();
+  });
+
+  test("neverAssigned + unresolved never offers Set Current", async () => {
+    const asn = makeAssignments();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c1]"),
+    ).toBeNull();
+  });
+
+  test("historicalOnly + unresolved never offers Set Current (no eligible published candidate)", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "historicalOnly",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          freeze({
+            assignmentId: "a-old",
+            title: "Old",
+            status: "closed",
+            publishedAt: null,
+            recipientCount: 0,
+            activeEnrollmentCount: 0,
+            missingRecipientCount: 0,
+          }) as AssignmentCandidate,
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
+    );
+    expect(badge?.textContent).toBe("Assign as new");
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).toBeNull();
+  });
+
+  test("invalid Current: no Set, no Change, no Update - only Retry", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "invalid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c1]"),
+    ).toBeNull();
+    const checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c1]",
+    );
+    expect(checkbox?.disabled).toBe(true);
+    expect(
+      document.querySelector("[data-testid=assign-row-retry-c1]"),
+    ).not.toBeNull();
   });
 });

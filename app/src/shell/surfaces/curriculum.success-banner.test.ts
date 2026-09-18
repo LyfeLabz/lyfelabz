@@ -78,6 +78,12 @@ const okAssignments = (): {
         currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
+      currentSet: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: input.assignmentId,
+        changed: true,
+      }),
       currentRecipientsReconcile: async (input) => ({
         classId: input.classId,
         lessonSlug: input.lessonSlug,

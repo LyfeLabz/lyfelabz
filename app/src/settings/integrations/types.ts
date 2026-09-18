@@ -326,6 +326,31 @@ export type AssignmentsCurrentRecipientsReconcileOutput = {
   readonly alreadyCurrent: number;
 };
 
+// Historical Assignment Resolution, Implementation Slice 11. The explicit,
+// teacher-driven mutation for selecting or changing which assignment is
+// Current for one (classId, lessonSlug) pair - the client mirror of the
+// committed Slice 4 server callable `assignmentsCurrentSet`. Every field
+// mirrors the server request exactly, including the CAS field: an initial
+// "Set as current assignment" (no prior pointer) sends
+// `expectedCurrentAssignmentId: null`, and a deliberate "Change current
+// assignment" sends the exact Current observed in the most recent
+// `assignmentsLifecycleState` response. Neither is ever inferred or
+// defaulted by this client type - the caller must supply both fields on
+// every call, exactly as the server requires.
+export type AssignmentsCurrentSetInput = {
+  readonly classId: string;
+  readonly lessonSlug: string;
+  readonly assignmentId: string;
+  readonly expectedCurrentAssignmentId: string | null;
+};
+
+export type AssignmentsCurrentSetOutput = {
+  readonly classId: string;
+  readonly lessonSlug: string;
+  readonly assignmentId: string;
+  readonly changed: boolean;
+};
+
 export type AssignmentsCallables = {
   readonly createDraft: (
     input: AssignmentsCreateDraftInput,
@@ -336,6 +361,9 @@ export type AssignmentsCallables = {
   readonly lifecycleState: (
     input: AssignmentsLifecycleStateInput,
   ) => Promise<AssignmentsLifecycleStateOutput>;
+  readonly currentSet: (
+    input: AssignmentsCurrentSetInput,
+  ) => Promise<AssignmentsCurrentSetOutput>;
   readonly currentRecipientsReconcile: (
     input: AssignmentsCurrentRecipientsReconcileInput,
   ) => Promise<AssignmentsCurrentRecipientsReconcileOutput>;

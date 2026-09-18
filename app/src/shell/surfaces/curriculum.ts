@@ -1802,7 +1802,14 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     };
     rowLifecycleState.set(c.id, lc);
     const retryCtx = assignments
-      ? { assignments, lessonSlug: lesson.slug, rowLifecycleState, rowsHost }
+      ? {
+          assignments,
+          lessonSlug: lesson.slug,
+          lessonTitle: lesson.title,
+          rowLifecycleState,
+          rowsHost,
+          onConfirm,
+        }
       : undefined;
     const row = renderRow(
       doc,
@@ -2014,9 +2021,49 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
 type RowRetryContext = {
   assignments: AssignmentsCallables;
   lessonSlug: string;
+  // Historical Assignment Resolution, Implementation Slice 11. Used only
+  // for teacher-facing Set/Change Current feedback messages
+  // (`"${lessonTitle}: ..."`), mirroring the existing summary wording
+  // convention `runReconcileUpdates`/`runAssignmentLifecycle` already use.
+  lessonTitle: string;
   rowLifecycleState: Map<string, LifecycleStateEntry>;
   rowsHost: HTMLElement;
+  // Historical Assignment Resolution, Implementation Slice 11. The same
+  // dialog-level success/failure banner callback `openDialog` already
+  // receives, reused here so Set/Change Current feedback appears through
+  // the existing toast convention instead of a new one. Calling it does
+  // NOT close the Assign dialog - the banner lives in the surface behind
+  // it, exactly as it does for every other confirmation this surface
+  // shows.
+  onConfirm: (summary: string) => void;
 };
+
+// Historical Assignment Resolution, Implementation Slice 10 (extracted),
+// Slice 11 (reused by Set/Change Current). Re-fetches lifecycle state for
+// exactly this one class, updates both the shared cache and this dialog's
+// own per-class map, and returns the fresh entry. Never writes anything;
+// purely a re-read of server-authoritative state.
+async function refreshRowLifecycle(
+  cls: Extract<ClassSummary, { status: "active" }>,
+  retryContext: RowRetryContext,
+): Promise<LifecycleStateEntry> {
+  const resp = await retryContext.assignments.lifecycleState({
+    classId: cls.id,
+    lessonSlug: retryContext.lessonSlug,
+  });
+  const entry: LifecycleStateEntry = {
+    state: resp.state,
+    candidates: resp.candidates,
+    currentAssignmentId: resp.currentAssignmentId,
+    currentAssignmentResolution: resp.currentAssignmentResolution,
+  };
+  cachedLifecycleState.set(
+    lifecycleCacheKey(cls.id, retryContext.lessonSlug),
+    entry,
+  );
+  retryContext.rowLifecycleState.set(cls.id, entry);
+  return entry;
+}
 
 // Historical Assignment Resolution, Implementation Slice 10. Shared by both
 // the pre-existing lifecycle-fetch-failure row state and the new
@@ -2046,20 +2093,8 @@ function attachRetryButton(
   retryBtn.addEventListener("click", () => {
     retryBtn.disabled = true;
     retryBtn.textContent = "Retrying…";
-    void retryContext.assignments
-      .lifecycleState({ classId: cls.id, lessonSlug: retryContext.lessonSlug })
-      .then((resp) => {
-        const entry: LifecycleStateEntry = {
-          state: resp.state,
-          candidates: resp.candidates,
-          currentAssignmentId: resp.currentAssignmentId,
-          currentAssignmentResolution: resp.currentAssignmentResolution,
-        };
-        cachedLifecycleState.set(
-          lifecycleCacheKey(cls.id, retryContext.lessonSlug),
-          entry,
-        );
-        retryContext.rowLifecycleState.set(cls.id, entry);
+    void refreshRowLifecycle(cls, retryContext)
+      .then((entry) => {
         const newRow = renderRow(
           doc, cls, rowState, onChange, link, integrations, entry, retryContext,
         );
@@ -2072,6 +2107,282 @@ function attachRetryButton(
       });
   });
   row.appendChild(retryBtn);
+}
+
+// Historical Assignment Resolution, Implementation Slice 11. Only a
+// published candidate may ever become Current - a draft or closed
+// assignment is never presented as selectable in the Set/Change Current
+// control, even though the server independently re-validates eligibility
+// on its own. Eligibility is derived solely from the candidate's own
+// `status`; attempts, recipients, grading mode, and Classroom state never
+// factor in, per the locked no-heuristic product principle.
+function eligiblePublishedCandidates(
+  candidates: ReadonlyArray<AssignmentCandidate>,
+): ReadonlyArray<AssignmentCandidate> {
+  return candidates.filter((c) => c.status === "published");
+}
+
+// Historical Assignment Resolution, Implementation Slice 11. Renders the
+// explicit "Set as current assignment" / "Change current assignment"
+// disclosure and its candidate-selection panel for one row. Both are the
+// same UI shape and the same underlying mutation
+// (`assignmentsCurrentSet`) - they differ only in whether a prior Current
+// exists to mark and exclude, and in the CAS value the confirm handler
+// sends. Selection state (`selected`) is a plain local variable scoped to
+// this one call: nothing here is stored in a dialog-level map, so a fresh
+// `renderRow` call (triggered by a successful mutation, a failed mutation,
+// or simply reopening the dialog) always starts with the panel closed and
+// nothing selected - there is no stale selection to carry across a
+// lifecycle refresh, and one row's selection can never be observed by, or
+// affect, another row's.
+//
+// Confirming NEVER runs Update Assignment, recipient reconciliation,
+// creation, or publication - it calls `assignmentsCurrentSet` and nothing
+// else, then reloads lifecycle state so the rest of the row (badge,
+// checkbox, ordinary Update path) reflects whatever the server now
+// reports as Current.
+function renderSetOrChangeCurrentControl(input: {
+  readonly doc: Document;
+  readonly cls: Extract<ClassSummary, { status: "active" }>;
+  readonly row: HTMLElement;
+  readonly rowState: Map<string, RowConfig>;
+  readonly onChange: () => void;
+  readonly link: IntegrationsClassLink | null;
+  readonly integrations: IntegrationsDeps | null;
+  readonly retryContext: RowRetryContext;
+  readonly mode: "set" | "change";
+  readonly eligible: ReadonlyArray<AssignmentCandidate>;
+  readonly currentAssignmentId: string | null;
+}): void {
+  const {
+    doc,
+    cls,
+    row,
+    rowState,
+    onChange,
+    link,
+    integrations,
+    retryContext,
+    mode,
+    eligible,
+    currentAssignmentId,
+  } = input;
+
+  const actionLabel =
+    mode === "set" ? "Set as current assignment" : "Change current assignment";
+
+  const toggleBtn = doc.createElement("button");
+  toggleBtn.type = "button";
+  toggleBtn.className =
+    mode === "set"
+      ? "shell-assign-row-set-current"
+      : "shell-assign-row-change-current";
+  toggleBtn.setAttribute("data-testid", `assign-row-${mode}-current-${cls.id}`);
+  toggleBtn.textContent = actionLabel;
+  row.appendChild(toggleBtn);
+
+  // Deliberately NOT `.shell-assign-row-disambig` (the removed Slice 10
+  // mutation-authority radio group's class) - this is a genuinely
+  // different mechanism (explicit Current selection, never read by
+  // ordinary Update Assignment), and several regression tests assert that
+  // class's absence as proof the old mechanism stays gone. Reusing its
+  // visual language for the option rows only (`.shell-assign-disambig-
+  // option`/`.shell-assign-disambig-meta`, both still styled and no
+  // longer otherwise used) keeps this control visually consistent with
+  // the rest of the dialog without resurrecting the retired container
+  // class or its old meaning.
+  const panel = doc.createElement("div");
+  panel.className = "shell-assign-row-current-panel";
+  panel.setAttribute(
+    "data-testid",
+    `assign-row-${mode}-current-panel-${cls.id}`,
+  );
+  panel.hidden = true;
+
+  const heading = doc.createElement("div");
+  heading.className = "shell-assign-row-disambig-heading";
+  heading.textContent =
+    mode === "set"
+      ? "Select the current assignment"
+      : "Select a different current assignment";
+  panel.appendChild(heading);
+
+  let selected: string | null = null;
+  const radioName = `assign-${mode}-current-${cls.id}`;
+  for (const candidate of eligible) {
+    const isCurrent = candidate.assignmentId === currentAssignmentId;
+    const label = doc.createElement("label");
+    label.className = "shell-assign-disambig-option";
+    const radio = doc.createElement("input");
+    radio.type = "radio";
+    radio.name = radioName;
+    radio.value = candidate.assignmentId;
+    radio.setAttribute(
+      "data-testid",
+      `assign-current-option-${cls.id}-${candidate.assignmentId}`,
+    );
+    // "SAME CURRENT" - the already-Current candidate is identified but
+    // cannot itself be selected as the new target, so a teacher can never
+    // manufacture a same-value Change Current mutation from this control.
+    if (isCurrent) {
+      radio.disabled = true;
+    }
+    label.appendChild(radio);
+    const text = doc.createElement("span");
+    const dateStr = candidate.publishedAt
+      ? new Date(candidate.publishedAt).toLocaleDateString()
+      : "";
+    text.textContent = dateStr
+      ? `${candidate.title} · ${dateStr}`
+      : candidate.title;
+    label.appendChild(text);
+    if (isCurrent) {
+      const marker = doc.createElement("span");
+      marker.className = "shell-assign-disambig-current-marker";
+      marker.setAttribute(
+        "data-testid",
+        `assign-current-marker-${cls.id}-${candidate.assignmentId}`,
+      );
+      marker.textContent = "Current";
+      label.appendChild(marker);
+    }
+    const meta = doc.createElement("span");
+    meta.className = "shell-assign-disambig-meta";
+    const rc = candidate.recipientCount;
+    meta.textContent = rc === 1 ? "1 recipient" : `${rc} recipients`;
+    label.appendChild(meta);
+    panel.appendChild(label);
+    radio.addEventListener("change", () => {
+      if (radio.checked) {
+        selected = candidate.assignmentId;
+        validation.hidden = true;
+      }
+    });
+  }
+
+  const validation = doc.createElement("p");
+  validation.className = "shell-assign-validation";
+  validation.setAttribute(
+    "data-testid",
+    `assign-row-${mode}-current-validation-${cls.id}`,
+  );
+  validation.setAttribute("role", "alert");
+  validation.hidden = true;
+  validation.textContent = "Choose an assignment first.";
+  panel.appendChild(validation);
+
+  const actions = doc.createElement("div");
+  actions.className = "shell-assign-row-current-actions";
+
+  const confirmBtn = doc.createElement("button");
+  confirmBtn.type = "button";
+  confirmBtn.className = "shell-assign-row-current-confirm";
+  confirmBtn.setAttribute(
+    "data-testid",
+    `assign-row-${mode}-current-confirm-${cls.id}`,
+  );
+  confirmBtn.textContent = actionLabel;
+  actions.appendChild(confirmBtn);
+
+  const cancelBtn = doc.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "shell-assign-row-current-cancel";
+  cancelBtn.setAttribute(
+    "data-testid",
+    `assign-row-${mode}-current-cancel-${cls.id}`,
+  );
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.addEventListener("click", () => {
+    selected = null;
+    for (const radio of Array.from(
+      panel.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
+    )) {
+      radio.checked = false;
+    }
+    validation.hidden = true;
+    panel.hidden = true;
+    toggleBtn.hidden = false;
+  });
+  actions.appendChild(cancelBtn);
+  panel.appendChild(actions);
+
+  toggleBtn.addEventListener("click", () => {
+    toggleBtn.hidden = true;
+    panel.hidden = false;
+  });
+
+  confirmBtn.addEventListener("click", () => {
+    // Confirming without an explicit selection never mutates - this is the
+    // only validation this control performs, and it never substitutes a
+    // default target of any kind.
+    if (!selected) {
+      validation.hidden = false;
+      try {
+        panel
+          .querySelector<HTMLInputElement>('input[type="radio"]:not(:disabled)')
+          ?.focus({ preventScroll: false });
+      } catch {
+        // ignored
+      }
+      return;
+    }
+    const assignmentId = selected;
+    confirmBtn.disabled = true;
+    cancelBtn.disabled = true;
+    confirmBtn.textContent = mode === "set" ? "Setting…" : "Changing…";
+
+    void (async () => {
+      let mutationSucceeded = false;
+      try {
+        await retryContext.assignments.currentSet({
+          classId: cls.id,
+          lessonSlug: retryContext.lessonSlug,
+          assignmentId,
+          expectedCurrentAssignmentId:
+            mode === "set" ? null : currentAssignmentId,
+        });
+        mutationSucceeded = true;
+      } catch {
+        // Handled uniformly below: whether this was a stale-CAS conflict or
+        // any other failure, the client never retries with a substituted
+        // expected value, never falls back to recipient reconciliation or
+        // creation, and never claims success. It refreshes live lifecycle
+        // state and requires the teacher to review and reselect.
+        mutationSucceeded = false;
+      }
+
+      let entry: LifecycleStateEntry;
+      try {
+        entry = await refreshRowLifecycle(cls, retryContext);
+      } catch {
+        entry = {
+          state: "neverAssigned",
+          candidates: [],
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved",
+          error: true,
+        };
+        retryContext.rowLifecycleState.set(cls.id, entry);
+      }
+      const newRow = renderRow(
+        doc, cls, rowState, onChange, link, integrations, entry, retryContext,
+      );
+      row.replaceWith(newRow);
+      onChange();
+
+      retryContext.onConfirm(
+        mutationSucceeded
+          ? mode === "set"
+            ? "Current assignment set."
+            : "Current assignment changed."
+          : `${retryContext.lessonTitle}: current assignment could not be ${
+              mode === "set" ? "set" : "changed"
+            }. Please review and try again.`,
+      );
+    })();
+  });
+
+  row.appendChild(panel);
 }
 
 function renderRow(
@@ -2213,28 +2524,53 @@ function renderRow(
     "data-testid",
     `assign-row-lifecycle-${cls.id}`,
   );
-  // Historical Assignment Resolution, Implementation Slice 10. Normal
-  // Update Assignment (the badge/checkbox pair below that leads to a
-  // mutation) is offered ONLY when Current is resolved and valid - never
-  // inferred from a lone published candidate, never left to a teacher's
-  // historical radio selection. `onePublishedFullyCurrent` is unaffected
-  // either way: it was already a non-mutating, disabled "nothing to do"
-  // row before this slice, regardless of Current, so it is not gated here.
+  // Historical Assignment Resolution, Implementation Slice 10 (Slice 11
+  // broadens the state set covered). Normal Update Assignment (the
+  // badge/checkbox pair below that leads to a mutation) is offered ONLY
+  // when Current is resolved and valid - never inferred from a lone
+  // published candidate, never left to a teacher's historical radio
+  // selection. Slice 11 correction: `onePublishedFullyCurrent` is NOT
+  // exempt from this gating the way it was in Slice 10. A class can have
+  // exactly one published, fully-staffed assignment and STILL have no
+  // Current pointer at all (legacy history predating this feature) -
+  // recipient completeness and Current resolution are independent
+  // dimensions, so "Up to date" is only true once Current is also
+  // resolved. All three states that guarantee at least one published
+  // candidate (`onePublishedFullyCurrent`, `onePublishedMissingRecipients`,
+  // `multiplePublished`) therefore share the identical needs-resolution
+  // gate below.
   const needsCurrentResolution =
-    (lcState === "onePublishedMissingRecipients" ||
+    (lcState === "onePublishedFullyCurrent" ||
+      lcState === "onePublishedMissingRecipients" ||
       lcState === "multiplePublished") &&
     currentResolution !== "valid";
+  const currentAssignmentId = lifecycle?.currentAssignmentId ?? null;
+  const eligibleCandidates = eligiblePublishedCandidates(
+    lifecycle?.candidates ?? [],
+  );
 
   if (lcState === "onePublishedFullyCurrent") {
-    lifecycleBadge.textContent = "Up to date";
-    lifecycleBadge.classList.add("shell-assign-lifecycle-current");
-    cfg.enabled = false;
-    checkbox.checked = false;
-    checkbox.disabled = true;
-    checkbox.setAttribute(
-      "aria-label",
-      `${cls.title} assignment is up to date`,
-    );
+    if (needsCurrentResolution) {
+      lifecycleBadge.textContent = "Needs resolution before updating";
+      lifecycleBadge.classList.add("shell-assign-lifecycle-needs-resolution");
+      cfg.enabled = false;
+      checkbox.checked = false;
+      checkbox.disabled = true;
+      checkbox.setAttribute(
+        "aria-label",
+        `${cls.title} - current assignment needs resolution before it can be updated`,
+      );
+    } else {
+      lifecycleBadge.textContent = "Up to date";
+      lifecycleBadge.classList.add("shell-assign-lifecycle-current");
+      cfg.enabled = false;
+      checkbox.checked = false;
+      checkbox.disabled = true;
+      checkbox.setAttribute(
+        "aria-label",
+        `${cls.title} assignment is up to date`,
+      );
+    }
   } else if (lcState === "onePublishedMissingRecipients") {
     if (needsCurrentResolution) {
       lifecycleBadge.textContent = "Needs resolution before updating";
@@ -2285,6 +2621,66 @@ function renderRow(
   }
   if (lifecycleBadge.textContent) {
     row.appendChild(lifecycleBadge);
+  }
+
+  // Historical Assignment Resolution, Implementation Slice 11. The
+  // explicit Set/Change Current workflow. Gated on `retryContext` being
+  // present, exactly like the retry button above - both require a real
+  // `assignments` seam, since both perform a genuine server mutation or
+  // re-fetch; the UI-only local-assign path (`assignments === null`) never
+  // reaches `onePublishedFullyCurrent`/`onePublishedMissingRecipients`/
+  // `multiplePublished` at all (lifecycle is never fetched there), but the
+  // guard is kept explicit rather than relying on that indirectly.
+  //
+  // Set: offered whenever Current is unresolved and at least one eligible
+  // published candidate exists - true for all three states reaching this
+  // point when `needsCurrentResolution` is set, since each of those states
+  // is defined by having >=1 published candidate. No candidate is ever
+  // preselected, and opening the control never mutates anything.
+  //
+  // Change: offered only once Current is valid AND there exists at least
+  // one OTHER eligible published candidate besides the current one. Given
+  // the state invariants above, this is only ever true for
+  // `multiplePublished` + valid (the other two states have exactly one
+  // published candidate, which IS Current, leaving no other target) - the
+  // check is written generically here rather than special-cased to that
+  // one state, since the state invariant is what the server enforces, not
+  // something this client should hard-code an assumption about.
+  if (retryContext) {
+    if (needsCurrentResolution && eligibleCandidates.length > 0) {
+      renderSetOrChangeCurrentControl({
+        doc,
+        cls,
+        row,
+        rowState,
+        onChange,
+        link,
+        integrations,
+        retryContext,
+        mode: "set",
+        eligible: eligibleCandidates,
+        currentAssignmentId: null,
+      });
+    } else if (currentResolution === "valid") {
+      const otherEligible = eligibleCandidates.filter(
+        (c) => c.assignmentId !== currentAssignmentId,
+      );
+      if (otherEligible.length > 0) {
+        renderSetOrChangeCurrentControl({
+          doc,
+          cls,
+          row,
+          rowState,
+          onChange,
+          link,
+          integrations,
+          retryContext,
+          mode: "change",
+          eligible: eligibleCandidates,
+          currentAssignmentId,
+        });
+      }
+    }
   }
 
   const isCreationRow =

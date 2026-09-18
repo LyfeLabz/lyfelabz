@@ -109,6 +109,12 @@ const makeAssignments = (
         currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
+      currentSet: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: input.assignmentId,
+        changed: true,
+      }),
       currentRecipientsReconcile: async (input) => ({
         classId: input.classId,
         lessonSlug: input.lessonSlug,
@@ -352,6 +358,12 @@ describe("Assign false-success guard", () => {
         currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
+      currentSet: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: input.assignmentId,
+        changed: true,
+      }),
       currentRecipientsReconcile: async (input) => ({
         classId: input.classId,
         lessonSlug: input.lessonSlug,
@@ -447,6 +459,12 @@ describe("Assign false-success guard", () => {
         currentAssignmentId: null,
         currentAssignmentResolution: "unresolved" as const,
         candidates: [],
+      }),
+      currentSet: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: input.assignmentId,
+        changed: true,
       }),
       currentRecipientsReconcile: async (input) => ({
         classId: input.classId,
@@ -603,6 +621,12 @@ describe("Assign outcome model - three-way multi-class mix", () => {
         currentAssignmentId: null,
         currentAssignmentResolution: "unresolved" as const,
         candidates: [],
+      }),
+      currentSet: async (input) => ({
+        classId: input.classId,
+        lessonSlug: input.lessonSlug,
+        assignmentId: input.assignmentId,
+        changed: true,
       }),
       currentRecipientsReconcile: async (input) => ({
         classId: input.classId,

@@ -9,6 +9,7 @@ import type {
   AssignmentsCallables,
   AssignmentsCreateDraftOutput,
   AssignmentsCurrentRecipientsReconcileOutput,
+  AssignmentsCurrentSetOutput,
   AssignmentsLifecycleStateOutput,
   AssignmentsPublishOutput,
   AssignmentsRecipientsReconcileOutput,
@@ -423,6 +424,42 @@ export function createAssignmentsCallables(
             }),
           ),
         ),
+      };
+      return Object.freeze(out);
+    },
+    // Historical Assignment Resolution, Implementation Slice 11. The narrow
+    // client mirror of the committed Slice 4 server callable
+    // `assignmentsCurrentSet`. All four request fields
+    // (`classId`/`lessonSlug`/`assignmentId`/`expectedCurrentAssignmentId`)
+    // pass through exactly as supplied - this wrapper never infers,
+    // defaults, or omits `expectedCurrentAssignmentId` (including the
+    // `null` case for an initial Set), since the CAS contract requires the
+    // caller to state its belief about the live pointer on every call.
+    // Response validation is strict: every field, including the boolean
+    // `changed`, is rejected rather than coerced if malformed.
+    currentSet: async (input) => {
+      const currentSet = httpsCallable(functions, "assignmentsCurrentSet");
+      const res = await currentSet(input);
+      const data = (res.data ?? {}) as CallableRecord;
+      const classId = readString(data.classId);
+      const lessonSlug = readString(data.lessonSlug);
+      const assignmentId = readString(data.assignmentId);
+      const changed = data.changed;
+      if (
+        !classId ||
+        !lessonSlug ||
+        !assignmentId ||
+        typeof changed !== "boolean"
+      ) {
+        throw new Error(
+          "assignmentsCurrentSet returned an unexpected shape.",
+        );
+      }
+      const out: AssignmentsCurrentSetOutput = {
+        classId,
+        lessonSlug,
+        assignmentId,
+        changed,
       };
       return Object.freeze(out);
     },

@@ -1735,6 +1735,72 @@
     font-size: 0.78rem;
     color: #777;
   }
+  /* Historical Assignment Resolution, Implementation Slice 11. Explicit
+     Set/Change Current controls. `.shell-assign-row-current-panel` reuses
+     the `.shell-assign-row-disambig` layout shape (same grid-column span,
+     background, spacing) without reusing its class name, since several
+     regression tests assert that retired class's absence as proof the old
+     Update-radio mechanism stays gone; the panel here is a genuinely
+     different, still-supported mechanism. */
+  .shell-assign-row-current-panel {
+    grid-column: 1 / -1;
+    background: #f7f7f7;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin: 0.1rem 0 0.35rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .shell-assign-row-set-current,
+  .shell-assign-row-change-current,
+  .shell-assign-row-current-confirm,
+  .shell-assign-row-current-cancel {
+    font: inherit;
+    font-size: 0.82rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 30px;
+  }
+  .shell-assign-row-set-current,
+  .shell-assign-row-current-confirm {
+    background: #fff;
+    color: #1f6b3d;
+    border: 1px solid #1f6b3d;
+  }
+  /* Change Current is deliberately the visually secondary control - a
+     plain-text-style button, never styled to compete with the primary
+     instructional action (Update Assignment / the checkbox row itself). */
+  .shell-assign-row-change-current {
+    background: transparent;
+    color: #555;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+  }
+  .shell-assign-row-current-cancel {
+    background: transparent;
+    color: #666;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+  }
+  .shell-assign-row-current-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.2rem;
+  }
+  .shell-assign-disambig-current-marker {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #1f6b3d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .shell-assign-validation {
+    grid-column: 1 / -1;
+    font-size: 0.82rem;
+    color: #a13a3a;
+    margin: 0.1rem 0 0.2rem 1.6rem;
+  }
   .shell-assign-footer {
     display: flex;
     align-items: center;
@@ -1805,6 +1871,10 @@
     .shell-lesson-resource-open,
     .shell-assign-cancel,
     .shell-assign-confirm,
+    .shell-assign-row-set-current,
+    .shell-assign-row-change-current,
+    .shell-assign-row-current-confirm,
+    .shell-assign-row-current-cancel,
     .shell-summary-select-choice { min-height: 44px; }
     .shell-assign-field input,
     .shell-assign-field select,
@@ -1841,7 +1911,9 @@
       min-width: 0;
       width: auto;
     }
-    .shell-assign-row-disambig {
+    .shell-assign-row-disambig,
+    .shell-assign-row-current-panel,
+    .shell-assign-validation {
       flex-basis: 100%;
       margin-left: 0;
     }
