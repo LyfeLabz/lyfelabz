@@ -1757,6 +1757,12 @@
        Current - every row reserves the same 1px, avoiding a layout shift
        between Current and non-Current rows in the same list. */
     border: 1px solid transparent;
+    /* Defense in depth alongside the panel's `align-items: flex-start`
+       above: even if a future edit reintroduces stretching (or content
+       genuinely exceeds the panel's width on a narrow viewport), the row
+       itself can never render wider than its container. */
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .shell-assign-disambig-option:hover {
     background: rgba(0, 0, 0, 0.04);
@@ -1804,6 +1810,20 @@
     margin: 0.1rem 0 0.35rem 1.6rem;
     display: flex;
     flex-direction: column;
+    /* Human UX review: this column flex container's children (each
+       candidate row, plus the heading/validation/actions rows) defaulted
+       to `align-items: stretch`, so every candidate row's own box - and
+       therefore its green Current-state outline - stretched to the full
+       panel width even though its actual content (radio, title/date/time,
+       recipient count, CURRENT) was far narrower, leaving a large empty
+       bordered area to the right. `flex-start` makes every child size to
+       its own content (shrink-to-fit) instead, capped at the panel's
+       available width - so a row can never overflow the panel even when
+       its content is wide, and normal text wrapping still applies on
+       narrow viewports exactly as before. Heading/validation/actions have
+       no width-dependent styling of their own, so this is safe for all of
+       this panel's children, not only the candidate rows. */
+    align-items: flex-start;
     gap: 0.15rem;
   }
   .shell-assign-row-set-current,

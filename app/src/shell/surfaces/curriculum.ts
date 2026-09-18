@@ -2187,18 +2187,30 @@ function renderSetOrChangeCurrentControl(input: {
     currentAssignmentId,
   } = input;
 
-  const actionLabel =
-    mode === "set" ? "Set as current assignment" : "Change current assignment";
-
-  const toggleBtn = doc.createElement("button");
-  toggleBtn.type = "button";
-  toggleBtn.className =
-    mode === "set"
-      ? "shell-assign-row-set-current"
-      : "shell-assign-row-change-current";
-  toggleBtn.setAttribute("data-testid", `assign-row-${mode}-current-${cls.id}`);
-  toggleBtn.textContent = actionLabel;
-  row.appendChild(toggleBtn);
+  // Human UX review (post-release). "Change current assignment" as a
+  // separate disclosure step was found redundant when Current is already
+  // valid: the button itself mutates nothing, it only reveals the
+  // candidate chooser, and the chooser's own explicit "Set as current"
+  // confirmation is already the sole point where anything can change.
+  // Removing the disclosure removes nothing about the CAS-guarded mutation
+  // path below - it only changes when the SAME chooser becomes visible.
+  //
+  // Set mode (unresolved legacy history, no valid Current pointer) keeps
+  // its disclosure exactly as before: an explicit "Set as current
+  // assignment" open/close toggle, deliberately preserved per the locked
+  // "no candidate list visible until asked for" pattern for that state.
+  let toggleBtn: HTMLButtonElement | null = null;
+  if (mode === "set") {
+    toggleBtn = doc.createElement("button");
+    toggleBtn.type = "button";
+    toggleBtn.className = "shell-assign-row-set-current";
+    toggleBtn.setAttribute(
+      "data-testid",
+      `assign-row-${mode}-current-${cls.id}`,
+    );
+    toggleBtn.textContent = "Set as current assignment";
+    row.appendChild(toggleBtn);
+  }
 
   // Deliberately NOT `.shell-assign-row-disambig` (the removed Slice 10
   // mutation-authority radio group's class) - this is a genuinely
@@ -2216,7 +2228,10 @@ function renderSetOrChangeCurrentControl(input: {
     "data-testid",
     `assign-row-${mode}-current-panel-${cls.id}`,
   );
-  panel.hidden = true;
+  // Set mode: starts collapsed, behind its toggle. Change mode: the
+  // candidate chooser is always visible directly - there is no disclosure
+  // state left to be behind.
+  panel.hidden = mode === "set";
 
   const heading = doc.createElement("div");
   heading.className = "shell-assign-row-disambig-heading";
@@ -2225,6 +2240,29 @@ function renderSetOrChangeCurrentControl(input: {
       ? "Select the current assignment"
       : "Select a different current assignment";
   panel.appendChild(heading);
+
+  // Declared before the candidate loop (and constructed, though not yet
+  // appended to the DOM) so each radio's own `change` listener below can
+  // enable it directly - one shared enablement path for both modes rather
+  // than a second, parallel "is anything selected" tracking mechanism.
+  const confirmBtn = doc.createElement("button");
+  confirmBtn.type = "button";
+  confirmBtn.className = "shell-assign-row-current-confirm";
+  confirmBtn.setAttribute(
+    "data-testid",
+    `assign-row-${mode}-current-confirm-${cls.id}`,
+  );
+  confirmBtn.textContent = "Set as current";
+  // Change mode: nothing is selected yet (the Current candidate's radio is
+  // independently disabled and can never be "selected" as a new target),
+  // so there is nothing yet to confirm - disabled until a genuine
+  // different-candidate selection enables it below. Set mode is
+  // unaffected: it keeps its existing click-then-validate behavior exactly
+  // as before, since that state was explicitly out of scope for this
+  // change.
+  if (mode === "change") {
+    confirmBtn.disabled = true;
+  }
 
   let selected: string | null = null;
   const radioName = `assign-${mode}-current-${cls.id}`;
@@ -2292,6 +2330,13 @@ function renderSetOrChangeCurrentControl(input: {
       if (radio.checked) {
         selected = candidate.assignmentId;
         validation.hidden = true;
+        // Only a genuinely different, non-Current, non-disabled radio can
+        // ever fire this listener (the Current candidate's own radio is
+        // disabled above and never dispatches `change`), so any firing
+        // here is exactly "the teacher selected a different eligible
+        // assignment" - safe to enable unconditionally. A no-op for Set
+        // mode, where the button was never disabled to begin with.
+        confirmBtn.disabled = false;
       }
     });
   }
@@ -2309,51 +2354,43 @@ function renderSetOrChangeCurrentControl(input: {
 
   const actions = doc.createElement("div");
   actions.className = "shell-assign-row-current-actions";
-
-  const confirmBtn = doc.createElement("button");
-  confirmBtn.type = "button";
-  confirmBtn.className = "shell-assign-row-current-confirm";
-  confirmBtn.setAttribute(
-    "data-testid",
-    `assign-row-${mode}-current-confirm-${cls.id}`,
-  );
-  // Human UX review: the opening control already reads "Set as current
-  // assignment" / "Change current assignment" (`actionLabel`, used for
-  // `toggleBtn` above); once the chooser is open, reusing that exact same
-  // label on the confirmation button read as redundant, particularly for
-  // Change Current ("Change current assignment" appearing twice). The
-  // confirmation action itself is always the same concrete act regardless
-  // of which control opened the chooser - copy-only distinction from the
-  // opening control's label, no behavior/mutation change.
-  confirmBtn.textContent = "Set as current";
   actions.appendChild(confirmBtn);
 
-  const cancelBtn = doc.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.className = "shell-assign-row-current-cancel";
-  cancelBtn.setAttribute(
-    "data-testid",
-    `assign-row-${mode}-current-cancel-${cls.id}`,
-  );
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.addEventListener("click", () => {
-    selected = null;
-    for (const radio of Array.from(
-      panel.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
-    )) {
-      radio.checked = false;
-    }
-    validation.hidden = true;
-    panel.hidden = true;
-    toggleBtn.hidden = false;
-  });
-  actions.appendChild(cancelBtn);
-  panel.appendChild(actions);
+  // Cancel exists only for Set mode's collapse/expand disclosure, where it
+  // is meaningful (it undoes "opening" the chooser and returns to the
+  // collapsed toggle). Change mode's chooser has no open/closed state left
+  // to cancel out of, and selecting a radio never mutates anything on its
+  // own, so there is nothing for a Cancel action to meaningfully undo.
+  let cancelBtn: HTMLButtonElement | null = null;
+  if (mode === "set" && toggleBtn) {
+    const setToggleBtn = toggleBtn;
+    cancelBtn = doc.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "shell-assign-row-current-cancel";
+    cancelBtn.setAttribute(
+      "data-testid",
+      `assign-row-${mode}-current-cancel-${cls.id}`,
+    );
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", () => {
+      selected = null;
+      for (const radio of Array.from(
+        panel.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
+      )) {
+        radio.checked = false;
+      }
+      validation.hidden = true;
+      panel.hidden = true;
+      setToggleBtn.hidden = false;
+    });
+    actions.appendChild(cancelBtn);
 
-  toggleBtn.addEventListener("click", () => {
-    toggleBtn.hidden = true;
-    panel.hidden = false;
-  });
+    setToggleBtn.addEventListener("click", () => {
+      setToggleBtn.hidden = true;
+      panel.hidden = false;
+    });
+  }
+  panel.appendChild(actions);
 
   confirmBtn.addEventListener("click", () => {
     // Confirming without an explicit selection never mutates - this is the
@@ -2372,7 +2409,7 @@ function renderSetOrChangeCurrentControl(input: {
     }
     const assignmentId = selected;
     confirmBtn.disabled = true;
-    cancelBtn.disabled = true;
+    if (cancelBtn) cancelBtn.disabled = true;
     confirmBtn.textContent = mode === "set" ? "Setting…" : "Changing…";
 
     void (async () => {

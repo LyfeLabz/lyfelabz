@@ -539,12 +539,14 @@ describe("Curriculum lifecycle UI", () => {
     // the server-resolved Current directly, no client-side selection of
     // which historical assignment to update.
     //
-    // Slice 11 adds a DIFFERENT, deliberate radio group here: the
-    // secondary "Change current assignment" disclosure, which starts
-    // closed and is never read by Update Assignment. This test proves the
-    // old mechanism specifically (its testid and its "update target"
-    // reading) is gone, and separately proves the new control starts
-    // closed with no candidate preselected.
+    // Post-release UX patch: the Change Current chooser is shown directly
+    // (no separate "Change current assignment" disclosure button and no
+    // Cancel button - a teacher only needed to reveal it, never to revert
+    // anything, and revealing it is not itself a mutation). This test
+    // proves the old Update-target mechanism specifically (its testid and
+    // its "update target" reading) is gone, and separately proves the
+    // always-visible chooser starts with no candidate preselected and its
+    // confirm button disabled.
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
@@ -571,22 +573,30 @@ describe("Curriculum lifecycle UI", () => {
       "[data-testid=assign-row-enabled-c1]",
     );
     expect(checkbox?.disabled).toBe(false);
-    // The new Change Current control exists but starts closed (its panel
-    // is hidden until the teacher explicitly opens it) and nothing is
-    // preselected.
-    const changeBtn = document.querySelector<HTMLButtonElement>(
-      "[data-testid=assign-row-change-current-c1]",
-    );
-    expect(changeBtn).not.toBeNull();
+    // No separate disclosure button - the chooser is shown directly.
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c1]"),
+    ).toBeNull();
     const panel = document.querySelector<HTMLElement>(
       "[data-testid=assign-row-change-current-panel-c1]",
     );
-    expect(panel?.hidden).toBe(true);
+    expect(panel).not.toBeNull();
+    expect(panel?.hidden).toBe(false);
     for (const radio of Array.from(
       panel?.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? [],
     )) {
       expect(radio.checked).toBe(false);
     }
+    // Confirm starts disabled - nothing is selected yet.
+    expect(
+      document.querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-confirm-c1]",
+      )?.disabled,
+    ).toBe(true);
+    // No Cancel button in this simplified chooser.
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-cancel-c1]"),
+    ).toBeNull();
     // No Set Current control - Current is already valid.
     expect(
       document.querySelector("[data-testid=assign-row-set-current-c1]"),
@@ -2034,17 +2044,18 @@ describe("Curriculum lifecycle UI", () => {
       document.querySelector("[data-testid=assign-validation]"),
     ).toBeNull();
 
-    // c1 (valid): the new Change Current control exists, closed, and its
-    // own panel/radio testids use the NEW naming, never the old
-    // `assign-disambig-*`/`assign-row-disambig-*` convention.
+    // c1 (valid): the Change Current chooser is shown directly (no
+    // disclosure button), and its own panel/radio testids use the NEW
+    // naming, never the old `assign-disambig-*`/`assign-row-disambig-*`
+    // convention.
     const c1Row = document.querySelector("[data-class-id='c1']");
     expect(
       document.querySelector("[data-testid=assign-row-change-current-c1]"),
-    ).not.toBeNull();
+    ).toBeNull();
     expect(
       document.querySelector("[data-testid=assign-row-change-current-panel-c1]")
         ?.hasAttribute("hidden"),
-    ).toBe(true);
+    ).toBe(false);
     expect(c1Row?.querySelector('[data-testid^="assign-disambig-"]')).toBeNull();
 
     // c2 (unresolved): the new Set Current control exists, closed, and no
@@ -2608,7 +2619,11 @@ describe("Curriculum lifecycle UI", () => {
     expect(banner?.textContent).toContain("could not be set");
   });
 
-  test("Change Current: identifies the current candidate, disables it as a target, and confirming without a different selection makes no call", async () => {
+  test("Change Current: chooser is visible directly (no disclosure click needed), identifies the Current candidate, and starts with Set as current disabled", async () => {
+    // Post-release UX patch: "Change current assignment" as a separate
+    // disclosure step was removed as redundant - it mutated nothing and
+    // only revealed this exact chooser. The chooser is now always visible
+    // whenever Current is valid and another eligible candidate exists.
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
@@ -2628,12 +2643,10 @@ describe("Curriculum lifecycle UI", () => {
     clickAssign(mount, LESSON_SLUG);
     await flush();
     await flush();
-    document
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assign-row-change-current-c1]",
-      )
-      ?.click();
-    await flush();
+    // No disclosure button to click - the panel is already visible.
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c1]"),
+    ).toBeNull();
     const panel = document.querySelector<HTMLElement>(
       "[data-testid=assign-row-change-current-panel-c1]",
     );
@@ -2662,24 +2675,76 @@ describe("Curriculum lifecycle UI", () => {
         .closest("label")
         ?.classList.contains("shell-assign-disambig-option-current"),
     ).toBe(false);
-    // The confirmation button reads "Set as current" (not a repeat of the
-    // opening "Change current assignment" control's own label).
+    expect(alternateRadio.disabled).toBe(false);
+    expect(alternateRadio.checked).toBe(false);
+    // Confirm reads "Set as current" and starts disabled - nothing is
+    // selected yet, and the Current candidate's own radio can never be
+    // selected as a new target.
     const confirmBtn = document.querySelector<HTMLButtonElement>(
       "[data-testid=assign-row-change-current-confirm-c1]",
     )!;
     expect(confirmBtn.textContent).toBe("Set as current");
-    // The opening control above the chooser is untouched.
+    expect(confirmBtn.disabled).toBe(true);
+    // No Cancel button in this simplified chooser - there is nothing
+    // meaningful to cancel (selecting a radio does not mutate anything).
     expect(
-      document.querySelector("[data-testid=assign-row-change-current-c1]")
-        ?.textContent,
-    ).toBe("Change current assignment");
+      document.querySelector(
+        "[data-testid=assign-row-change-current-cancel-c1]",
+      ),
+    ).toBeNull();
+    // A disabled button cannot be clicked - no mutation results, and no
+    // validation message is needed since the button is unclickable.
     confirmBtn.click();
     await flush();
     expect(asn.currentSetCalls).toHaveLength(0);
-    const validation = document.querySelector<HTMLElement>(
-      "[data-testid=assign-row-change-current-validation-c1]",
-    );
-    expect(validation?.hidden).toBe(false);
+  });
+
+  test("Change Current: selecting a different eligible candidate enables Set as current without mutating; clicking it then invokes the same existing mutation path", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const confirmBtn = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-row-change-current-confirm-c1]",
+    )!;
+    expect(confirmBtn.disabled).toBe(true);
+    const alternateRadio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-2]",
+    )!;
+    alternateRadio.checked = true;
+    alternateRadio.dispatchEvent(new Event("change", { bubbles: true }));
+    await flush();
+    // Selecting alone never mutates.
+    expect(asn.currentSetCalls).toHaveLength(0);
+    expect(confirmBtn.disabled).toBe(false);
+    confirmBtn.click();
+    await flush();
+    await flush();
+    await flush();
+    // The same existing mutation path fires, unchanged.
+    expect(asn.currentSetCalls).toEqual([
+      {
+        classId: "c1",
+        lessonSlug: LESSON_SLUG,
+        assignmentId: "a-2",
+        expectedCurrentAssignmentId: "a-1",
+      },
+    ]);
   });
 
   // ---- Post-release UX patch: CURRENT marker proximity + Current-row
@@ -2911,12 +2976,6 @@ describe("Curriculum lifecycle UI", () => {
     clickAssign(mount, LESSON_SLUG);
     await flush();
     await flush();
-    document
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assign-row-change-current-c1]",
-      )
-      ?.click();
-    await flush();
     const radio = document.querySelector<HTMLInputElement>(
       "[data-testid=assign-current-option-c1-a-2]",
     )!;
@@ -2950,11 +3009,19 @@ describe("Curriculum lifecycle UI", () => {
     );
     expect(banner?.textContent).toContain("could not be changed");
     expect(asn.lifecycleCallCount("c1")).toBeGreaterThanOrEqual(2);
-    // Fresh row re-rendered: the Change control is available again, closed.
+    // Fresh row re-rendered: the chooser is visible again (there is no
+    // disclosure to be closed behind), with a fresh, disabled confirm
+    // button - the stale selection is discarded, requiring the teacher to
+    // review and reselect.
     expect(
       document
         .querySelector("[data-testid=assign-row-change-current-panel-c1]")
         ?.hasAttribute("hidden"),
+    ).toBe(false);
+    expect(
+      document.querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-confirm-c1]",
+      )?.disabled,
     ).toBe(true);
   });
 
@@ -4007,9 +4074,12 @@ describe("Curriculum lifecycle UI", () => {
       "[data-testid=assign-row-enabled-c1]",
     );
     expect(checkbox?.disabled).toBe(false);
+    // Change Current's chooser is shown directly (no disclosure button).
     expect(
-      document.querySelector("[data-testid=assign-row-change-current-c1]"),
-    ).not.toBeNull();
+      document
+        .querySelector("[data-testid=assign-row-change-current-panel-c1]")
+        ?.hasAttribute("hidden"),
+    ).toBe(false);
     expect(
       document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
     ).not.toBeNull();
@@ -4186,8 +4256,10 @@ describe("Curriculum lifecycle UI", () => {
       )?.disabled,
     ).toBe(false);
     expect(
-      document.querySelector("[data-testid=assign-row-change-current-c3]"),
-    ).not.toBeNull();
+      document
+        .querySelector("[data-testid=assign-row-change-current-panel-c3]")
+        ?.hasAttribute("hidden"),
+    ).toBe(false);
     expect(
       document.querySelector("[data-testid=assign-row-set-current-c3]"),
     ).toBeNull();

@@ -290,3 +290,38 @@ describe("Current-row outline identifies the Current candidate without implying 
     expect(body).toMatch(/padding:\s*0\.3rem 0\.35rem\b/);
   });
 });
+
+// Historical Assignment Resolution, post-release UX patch (Current-row
+// content-width sizing). Human review found the green outline stretching
+// across nearly the full panel width instead of hugging its content. Root
+// cause: `.shell-assign-row-current-panel` is a column-direction flex
+// container with no explicit `align-items`, defaulting to `stretch` -
+// every child (each candidate `<label>`) therefore filled the panel's
+// full cross-axis width even though its own content was much narrower.
+describe("Current-row outline hugs its content instead of stretching across the panel", () => {
+  test("the panel uses align-items: flex-start so children shrink-to-fit instead of stretching to full width", () => {
+    const body = ruleBody(html, ".shell-assign-row-current-panel") as string;
+    expect(body).toMatch(/align-items:\s*flex-start\b/);
+    // Still a flex column - not a structural rewrite of the panel.
+    expect(body).toMatch(/display:\s*flex\b/);
+    expect(body).toMatch(/flex-direction:\s*column\b/);
+  });
+
+  test("no fixed/arbitrary width value was introduced - sizing stays intrinsic/content-based", () => {
+    const body = ruleBody(html, ".shell-assign-row-current-panel") as string;
+    expect(body).not.toMatch(/\bwidth:\s*\d/);
+  });
+
+  test("candidate rows are defensively bounded to their container (max-width: 100%, border-box) for responsive safety", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-option") as string;
+    expect(body).toMatch(/max-width:\s*100%/);
+    expect(body).toMatch(/box-sizing:\s*border-box\b/);
+  });
+
+  test("no absolute or fixed positioning was introduced anywhere in this fix", () => {
+    const panelBody = ruleBody(html, ".shell-assign-row-current-panel") as string;
+    const rowBody = ruleBody(html, ".shell-assign-disambig-option") as string;
+    expect(panelBody).not.toMatch(/position:\s*(absolute|fixed)/);
+    expect(rowBody).not.toMatch(/position:\s*(absolute|fixed)/);
+  });
+});
