@@ -74,6 +74,21 @@ const publishedCandidate = (
     ...overrides,
   });
 
+// Historical Assignment Resolution, Implementation Slice 12.
+const historicalCandidate = (
+  overrides?: Partial<AssignmentCandidate>,
+): AssignmentCandidate =>
+  freeze({
+    assignmentId: "a-old",
+    title: "Earth's Layers",
+    status: "closed",
+    publishedAt: 1690000000000,
+    recipientCount: 0,
+    activeEnrollmentCount: 0,
+    missingRecipientCount: 0,
+    ...overrides,
+  });
+
 type LifecycleOverrides = Partial<{
   [classId: string]: AssignmentsLifecycleStateOutput;
 }>;
@@ -2655,5 +2670,913 @@ describe("Curriculum lifecycle UI", () => {
     expect(
       document.querySelector("[data-testid=assign-row-retry-c1]"),
     ).not.toBeNull();
+  });
+
+  // ---- Slice 12: Assignment history (read-only disclosure) ----
+
+  test("2+ candidates: Assignment history control is available", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).not.toBeNull();
+  });
+
+  test("neverAssigned (0 candidates): no Assignment history control", async () => {
+    const asn = makeAssignments();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).toBeNull();
+  });
+
+  test("1 candidate (onePublishedFullyCurrent, valid): no separate Assignment history disclosure by default", async () => {
+    // Historical Assignment Resolution, Implementation Slice 12. Fresh
+    // reconnaissance found no existing per-assignment Assignment Detail
+    // link from Curriculum (Sprint 28.6D deliberately retired the one that
+    // existed, replacing it with a lesson-LEVEL View Summary), so there is
+    // no compelling reason to override the preferred default here: a
+    // single historical occurrence adds nothing a disclosure would clarify
+    // beyond the badge already shown.
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedFullyCurrent",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [publishedCandidate({ missingRecipientCount: 0 })],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).toBeNull();
+  });
+
+  test("1 candidate (historicalOnly, unresolved): no separate Assignment history disclosure by default", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "historicalOnly",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [historicalCandidate()],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).toBeNull();
+  });
+
+  test("valid Current marks exactly the matching candidate, no others", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-y",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-x", title: "X" }),
+          publishedCandidate({ assignmentId: "a-y", title: "Y" }),
+          publishedCandidate({ assignmentId: "a-z", title: "Z" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-history-c1]",
+    )!;
+    expect(
+      panel.querySelectorAll("[data-testid=assign-row-history-current-c1]"),
+    ).toHaveLength(1);
+    const markedItem = panel.querySelector(
+      "[data-testid=assign-row-history-item-c1-a-y]",
+    );
+    expect(
+      markedItem?.querySelector("[data-testid=assign-row-history-current-c1]"),
+    ).not.toBeNull();
+    for (const id of ["a-x", "a-z"]) {
+      const item = panel.querySelector(
+        `[data-testid=assign-row-history-item-c1-${id}]`,
+      );
+      expect(
+        item?.querySelector("[data-testid=assign-row-history-current-c1]"),
+      ).toBeNull();
+    }
+  });
+
+  test("unresolved Current: no candidate marked Current in history", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-x", title: "X" }),
+          publishedCandidate({ assignmentId: "a-y", title: "Y" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-current-c1]"),
+    ).toBeNull();
+  });
+
+  test("invalid Current: History does not bypass the fail-safe - no history control at all", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "invalid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-x" }),
+          publishedCandidate({ assignmentId: "a-y" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-c1]"),
+    ).toBeNull();
+    // The Slice 10/11 fail-safe remains: Retry only.
+    expect(
+      document.querySelector("[data-testid=assign-row-retry-c1]"),
+    ).not.toBeNull();
+  });
+
+  test("no-heuristic guarantee: a valid Current ID absent from candidates marks nothing", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-ghost",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-x" }),
+          publishedCandidate({ assignmentId: "a-y" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-current-c1]"),
+    ).toBeNull();
+  });
+
+  test("candidates render in exactly the server-provided order", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-third", title: "Third" }),
+          publishedCandidate({ assignmentId: "a-first", title: "First" }),
+          publishedCandidate({ assignmentId: "a-second", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    const items = Array.from(
+      document.querySelectorAll("[data-testid^=assign-row-history-item-c1-]"),
+    );
+    expect(items.map((el) => el.getAttribute("data-testid"))).toEqual([
+      "assign-row-history-item-c1-a-third",
+      "assign-row-history-item-c1-a-first",
+      "assign-row-history-item-c1-a-second",
+    ]);
+  });
+
+  test("status is rendered as Published, Closed, and Draft", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-pub" }),
+          publishedCandidate({
+            assignmentId: "a-second-pub",
+            title: "Second",
+          }),
+          historicalCandidate({ assignmentId: "a-closed", status: "closed" }),
+          historicalCandidate({ assignmentId: "a-draft", status: "draft" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    const published = document.querySelector(
+      "[data-testid=assign-row-history-item-c1-a-pub] .shell-assign-row-history-status",
+    );
+    const closed = document.querySelector(
+      "[data-testid=assign-row-history-item-c1-a-closed] .shell-assign-row-history-status",
+    );
+    const draft = document.querySelector(
+      "[data-testid=assign-row-history-item-c1-a-draft] .shell-assign-row-history-status",
+    );
+    expect(published?.textContent).toBe("Published");
+    expect(closed?.textContent).toBe("Closed");
+    expect(draft?.textContent).toBe("Draft");
+  });
+
+  test("recipient count uses singular and plural forms correctly", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-one", recipientCount: 1 }),
+          publishedCandidate({ assignmentId: "a-many", recipientCount: 9 }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    expect(
+      document.querySelector(
+        "[data-testid=assign-row-history-item-c1-a-one] .shell-assign-row-history-recipients",
+      )?.textContent,
+    ).toBe("1 recipient");
+    expect(
+      document.querySelector(
+        "[data-testid=assign-row-history-item-c1-a-many] .shell-assign-row-history-recipients",
+      )?.textContent,
+    ).toBe("9 recipients");
+  });
+
+  test("a null publishedAt renders a safe neutral fallback, never an epoch or Invalid Date", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-pub" }),
+          historicalCandidate({
+            assignmentId: "a-draft",
+            status: "draft",
+            publishedAt: null,
+          }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    const dateText = document.querySelector(
+      "[data-testid=assign-row-history-item-c1-a-draft] .shell-assign-row-history-date",
+    )?.textContent;
+    expect(dateText).toBe("Draft");
+    expect(dateText).not.toMatch(/^\d/);
+    expect(dateText).not.toMatch(/1970|NaN|Invalid Date/);
+  });
+
+  test("history never displays a raw assignmentId", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "assignment-secret-id-111" }),
+          publishedCandidate({
+            assignmentId: "assignment-secret-id-222",
+            title: "Second",
+          }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-history-c1]",
+    )!;
+    expect(panel.textContent).not.toContain("assignment-secret-id-111");
+    expect(panel.textContent).not.toContain("assignment-secret-id-222");
+  });
+
+  test("opening Assignment history performs zero mutations", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    await flush();
+    expect(asn.currentSetCalls).toHaveLength(0);
+    expect(asn.currentReconcileCalls).toHaveLength(0);
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.draftCalls).toHaveLength(0);
+  });
+
+  test("closing Assignment history performs zero mutations", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const toggle = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-row-history-toggle-c1]",
+    )!;
+    toggle.click();
+    await flush();
+    toggle.click();
+    await flush();
+    expect(
+      document
+        .querySelector("[data-testid=assign-row-history-c1]")
+        ?.hasAttribute("hidden"),
+    ).toBe(true);
+    expect(asn.currentSetCalls).toHaveLength(0);
+    expect(asn.currentReconcileCalls).toHaveLength(0);
+    expect(asn.reconcileCalls).toHaveLength(0);
+    expect(asn.draftCalls).toHaveLength(0);
+  });
+
+  test("opening/selecting Assignment history does not alter a pending Set Current selection", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-1]",
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change", { bubbles: true }));
+    // Now open and close History.
+    const historyToggle = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-row-history-toggle-c1]",
+    )!;
+    historyToggle.click();
+    await flush();
+    historyToggle.click();
+    await flush();
+    // The Set Current selection survives untouched.
+    expect(radio.checked).toBe(true);
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-set-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.currentSetCalls).toEqual([
+      {
+        classId: "c1",
+        lessonSlug: LESSON_SLUG,
+        assignmentId: "a-1",
+        expectedCurrentAssignmentId: null,
+      },
+    ]);
+  });
+
+  test("opening Assignment history does not alter a pending Change Current selection", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-c1]",
+      )
+      ?.click();
+    await flush();
+    const radio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-2]",
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change", { bubbles: true }));
+    const historyToggle = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-row-history-toggle-c1]",
+    )!;
+    historyToggle.click();
+    await flush();
+    expect(radio.checked).toBe(true);
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-confirm-c1]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.currentSetCalls).toEqual([
+      {
+        classId: "c1",
+        lessonSlug: LESSON_SLUG,
+        assignmentId: "a-2",
+        expectedCurrentAssignmentId: "a-1",
+      },
+    ]);
+  });
+
+  test("Assignment history presence does not alter the ordinary Update Assignment request", async () => {
+    const asn = makeAssignments(
+      {
+        c1: {
+          state: "onePublishedMissingRecipients",
+          currentAssignmentId: "a-1",
+          currentAssignmentResolution: "valid" as const,
+          candidates: [
+            publishedCandidate(),
+            historicalCandidate({ assignmentId: "a-old" }),
+          ],
+        },
+      },
+      { currentReconcileAdded: 2 },
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    await flush();
+    clickConfirm();
+    await flush();
+    await flush();
+    await flush();
+    expect(asn.currentReconcileCalls).toEqual([
+      { classId: "c1", lessonSlug: LESSON_SLUG },
+    ]);
+    expect(asn.reconcileCalls).toHaveLength(0);
+  });
+
+  test("multi-class isolation: opening Class A's history does not open Class B's", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+      c2: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "b-1" }),
+          publishedCandidate({ assignmentId: "b-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    await flush();
+    expect(
+      document
+        .querySelector("[data-testid=assign-row-history-c1]")
+        ?.hasAttribute("hidden"),
+    ).toBe(false);
+    expect(
+      document
+        .querySelector("[data-testid=assign-row-history-c2]")
+        ?.hasAttribute("hidden"),
+    ).toBe(true);
+  });
+
+  test("historicalOnly with 2+ candidates and unresolved Current: Assign as new preserved, history available, no Set Current", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "historicalOnly",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          historicalCandidate({ assignmentId: "a-old-1", status: "closed" }),
+          historicalCandidate({ assignmentId: "a-old-2", status: "draft" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const badge = document.querySelector(
+      "[data-testid=assign-row-lifecycle-c1]",
+    );
+    expect(badge?.textContent).toBe("Assign as new");
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).not.toBeNull();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-current-c1]"),
+    ).toBeNull();
+  });
+
+  test("onePublishedMissingRecipients + unresolved (1 candidate): Set Current preserved, no unnecessary history disclosure", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [publishedCandidate()],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).toBeNull();
+  });
+
+  test("multiplePublished + unresolved: Set Current and Assignment history coexist with no shared selection authority", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).not.toBeNull();
+    // Opening history selects nothing in Set Current.
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const radios = document.querySelectorAll<HTMLInputElement>(
+      '[data-testid=assign-row-set-current-panel-c1] input[type="radio"]',
+    );
+    for (const radio of Array.from(radios)) {
+      expect(radio.checked).toBe(false);
+    }
+  });
+
+  test("multiplePublished + valid: Update, Change Current, and Assignment history coexist", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const checkbox = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c1]",
+    );
+    expect(checkbox?.disabled).toBe(false);
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c1]"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector("[data-testid=assign-row-history-toggle-c1]"),
+    ).not.toBeNull();
+  });
+
+  test("Assignment history panel contains no mutation-control labels", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-history-toggle-c1]",
+      )
+      ?.click();
+    // Scoped strictly to the History panel itself - the same row legitimately
+    // contains "Change current assignment" and "Update Assignment" elsewhere.
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-history-c1]",
+    )!;
+    const panelText = panel.textContent ?? "";
+    expect(panelText).not.toContain("Set as current assignment");
+    expect(panelText).not.toContain("Change current assignment");
+    expect(panelText).not.toContain("Update Assignment");
+    expect(panelText).not.toContain("Assign as new");
+    expect(panelText).not.toContain("Clear Current");
+    expect(panel.querySelectorAll("button")).toHaveLength(0);
+    expect(panel.querySelectorAll('input[type="radio"]')).toHaveLength(0);
+  });
+
+  test("Assignment history control has accessible disclosure semantics", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    const toggle = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-row-history-toggle-c1]",
+    )!;
+    const panel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-history-c1]",
+    )!;
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-controls")).toBe(panel.id);
+    expect(panel.hidden).toBe(true);
+    expect(toggle.getAttribute("aria-label")?.length ?? 0).toBeGreaterThan(0);
+    toggle.click();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(panel.hidden).toBe(false);
+    expect(panel.querySelector('[role="list"]')).not.toBeNull();
   });
 });

@@ -39,6 +39,7 @@ import type {
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { buildLessonBasePath } from "../../assignments/studentList/launch";
 import { mintAssignmentId } from "./shared/assignmentId";
+import { formatLocalDate } from "./shared/activeAssignments";
 import {
   clearConnectionReconnectNeeded,
   createConsentCoordinator,
@@ -2385,6 +2386,139 @@ function renderSetOrChangeCurrentControl(input: {
   row.appendChild(panel);
 }
 
+// Historical Assignment Resolution, Implementation Slice 12. Teacher-facing
+// capitalization for the candidate status vocabulary. Every value the
+// server can send (`draft`/`published`/`closed`, per
+// `AssignmentCandidate["status"]`) is covered explicitly - no default
+// fallback is provided, so a genuinely unrecognized status would be a
+// compile-time error here rather than a silently invented label.
+function historyStatusLabel(status: AssignmentCandidate["status"]): string {
+  switch (status) {
+    case "published":
+      return "Published";
+    case "closed":
+      return "Closed";
+    case "draft":
+      return "Draft";
+  }
+}
+
+// Historical Assignment Resolution, Implementation Slice 12. Read-only
+// "Assignment history" disclosure for one row. Mirrors the established
+// accessible disclosure pattern already used for the lesson-card Resources
+// control (`renderLessonResources`): a native `<button>` with
+// `aria-expanded`/`aria-controls` toggling a `hidden` panel containing a
+// `<ul role="list">`. Deliberately does NOT reuse the Set/Change Current
+// panel markup or class names - History is presentation-only and must
+// never be mistaken for, or share DOM/selection state with, that mutation
+// workflow.
+//
+// This function performs no server call and calls no `AssignmentsCallables`
+// member. It only reads the `candidates`/`currentAssignmentId`/
+// `currentResolution` already present in the row's own `LifecycleStateEntry`
+// (fetched once for the dialog, or refreshed by Retry/Set/Change - never by
+// History itself). Opening, closing, or reading it can never write
+// anything: no `assignmentsCurrentSet`, no `assignmentsCurrentRecipientsReconcile`,
+// no `assignmentsRecipientsReconcile`, no `assignmentsCreateDraft`, no
+// `assignmentsPublish`.
+function renderAssignmentHistoryControl(input: {
+  readonly doc: Document;
+  readonly cls: Extract<ClassSummary, { status: "active" }>;
+  readonly row: HTMLElement;
+  readonly candidates: ReadonlyArray<AssignmentCandidate>;
+  readonly currentAssignmentId: string | null;
+  readonly currentResolution: CurrentAssignmentResolution;
+}): void {
+  const { doc, cls, row, candidates, currentAssignmentId, currentResolution } =
+    input;
+
+  const panelId = `assign-row-history-panel-${cls.id}`;
+
+  const toggle = doc.createElement("button");
+  toggle.type = "button";
+  toggle.className = "shell-assign-row-history-toggle";
+  toggle.setAttribute("data-testid", `assign-row-history-toggle-${cls.id}`);
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", panelId);
+  toggle.setAttribute(
+    "aria-label",
+    `Assignment history for ${cls.title}, ${candidates.length} entries`,
+  );
+  toggle.textContent = "Assignment history";
+  row.appendChild(toggle);
+
+  const panel = doc.createElement("div");
+  panel.className = "shell-assign-row-history-panel";
+  panel.id = panelId;
+  panel.setAttribute("data-testid", `assign-row-history-${cls.id}`);
+  panel.hidden = true;
+
+  const list = doc.createElement("ul");
+  list.className = "shell-assign-row-history-list";
+  list.setAttribute("role", "list");
+  panel.appendChild(list);
+
+  // Current is marked ONLY when the server reports a valid resolution AND
+  // the exact ID it names appears among these candidates - never inferred
+  // from ordering, status, or recipient count. Slice 9's client parser
+  // validates the Current contract shape but does not require the ID to
+  // appear in `candidates`; if a `valid` resolution's ID somehow matches no
+  // candidate here, this loop simply marks nothing, which is the correct
+  // fail-safe presentation behavior (never guess, never mutate).
+  for (const candidate of candidates) {
+    const item = doc.createElement("li");
+    item.className = "shell-assign-row-history-item";
+    item.setAttribute("role", "listitem");
+    item.setAttribute(
+      "data-testid",
+      `assign-row-history-item-${cls.id}-${candidate.assignmentId}`,
+    );
+
+    const dateText = doc.createElement("span");
+    dateText.className = "shell-assign-row-history-date";
+    dateText.textContent =
+      candidate.publishedAt !== null
+        ? formatLocalDate(new Date(candidate.publishedAt))
+        : historyStatusLabel(candidate.status);
+    item.appendChild(dateText);
+
+    const recipientsText = doc.createElement("span");
+    recipientsText.className = "shell-assign-row-history-recipients";
+    const rc = candidate.recipientCount;
+    recipientsText.textContent = rc === 1 ? "1 recipient" : `${rc} recipients`;
+    item.appendChild(recipientsText);
+
+    const statusText = doc.createElement("span");
+    statusText.className = "shell-assign-row-history-status";
+    statusText.textContent = historyStatusLabel(candidate.status);
+    item.appendChild(statusText);
+
+    if (
+      currentResolution === "valid" &&
+      candidate.assignmentId === currentAssignmentId
+    ) {
+      const marker = doc.createElement("span");
+      marker.className = "shell-assign-row-history-current";
+      marker.setAttribute(
+        "data-testid",
+        `assign-row-history-current-${cls.id}`,
+      );
+      marker.textContent = "Current";
+      item.appendChild(marker);
+    }
+
+    list.appendChild(item);
+  }
+
+  toggle.addEventListener("click", () => {
+    const isOpen = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", isOpen ? "false" : "true");
+    panel.hidden = isOpen;
+  });
+
+  row.appendChild(panel);
+}
+
 function renderRow(
   doc: Document,
   cls: Extract<ClassSummary, { status: "active" }>,
@@ -2681,6 +2815,35 @@ function renderRow(
         });
       }
     }
+  }
+
+  // Historical Assignment Resolution, Implementation Slice 12. Read-only
+  // "Assignment history" disclosure - a genuinely separate concern from
+  // Set/Change Current above, gated independently: it is available
+  // whenever there are 2+ total historical occurrences (published, closed,
+  // OR draft - not just eligible-for-Current ones), regardless of which
+  // lifecycle state or Current resolution produced them. A single
+  // occurrence adds nothing a disclosure would clarify beyond what the
+  // badge above already says, so the default (and, per fresh reconnaissance
+  // of this codebase, the correct choice - Curriculum intentionally has no
+  // per-assignment Assignment Detail link; see the Slice 12 report) is to
+  // omit the control entirely below that threshold rather than render an
+  // empty-feeling disclosure.
+  //
+  // This never reaches the invalid-Current fail-safe row above (that
+  // branch returns `row` before this point in the function), so an
+  // unverifiable Current can never expose History as a workaround - this
+  // is enforced by control flow, not a separate check here.
+  const allCandidates = lifecycle?.candidates ?? [];
+  if (retryContext && allCandidates.length >= 2) {
+    renderAssignmentHistoryControl({
+      doc,
+      cls,
+      row,
+      candidates: allCandidates,
+      currentAssignmentId,
+      currentResolution,
+    });
   }
 
   const isCreationRow =

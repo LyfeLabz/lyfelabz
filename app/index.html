@@ -1801,6 +1801,80 @@
     color: #a13a3a;
     margin: 0.1rem 0 0.2rem 1.6rem;
   }
+  /* Historical Assignment Resolution, Implementation Slice 12. Read-only
+     "Assignment history" disclosure. Mirrors the lesson-card Resources
+     disclosure's quiet toggle-plus-chevron shape
+     (`.shell-lesson-resources-toggle`), but keeps the Assign-row section's
+     own plain-hex palette (matching `.shell-assign-row-*` above) rather
+     than that card's CSS-custom-property theme, and its own class
+     namespace so it never overlaps the Set/Change Current panel visually
+     or structurally. */
+  .shell-assign-row-history-toggle {
+    grid-column: 1 / -1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    justify-self: start;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: transparent;
+    color: #555;
+    border: none;
+    padding: 0.15rem 0;
+    margin: 0.1rem 0 0 1.6rem;
+    cursor: pointer;
+    min-height: 28px;
+  }
+  .shell-assign-row-history-toggle::after {
+    content: "\203A";
+    font-size: 1rem;
+    line-height: 1;
+    color: #777;
+    transition: transform 0.15s ease;
+  }
+  .shell-assign-row-history-toggle[aria-expanded="true"]::after {
+    transform: rotate(90deg);
+  }
+  .shell-assign-row-history-toggle:hover {
+    color: #222;
+  }
+  .shell-assign-row-history-panel {
+    grid-column: 1 / -1;
+    margin: 0.1rem 0 0.35rem 1.6rem;
+  }
+  .shell-assign-row-history-panel[hidden] {
+    display: none;
+  }
+  .shell-assign-row-history-list {
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .shell-assign-row-history-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: #333;
+    padding: 0.25rem 0.4rem;
+    border-radius: 4px;
+    background: #f7f7f7;
+  }
+  .shell-assign-row-history-status {
+    font-weight: 600;
+  }
+  .shell-assign-row-history-current {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #1f6b3d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
   .shell-assign-footer {
     display: flex;
     align-items: center;
@@ -1875,6 +1949,7 @@
     .shell-assign-row-change-current,
     .shell-assign-row-current-confirm,
     .shell-assign-row-current-cancel,
+    .shell-assign-row-history-toggle,
     .shell-summary-select-choice { min-height: 44px; }
     .shell-assign-field input,
     .shell-assign-field select,
@@ -1913,7 +1988,9 @@
     }
     .shell-assign-row-disambig,
     .shell-assign-row-current-panel,
-    .shell-assign-validation {
+    .shell-assign-validation,
+    .shell-assign-row-history-toggle,
+    .shell-assign-row-history-panel {
       flex-basis: 100%;
       margin-left: 0;
     }
