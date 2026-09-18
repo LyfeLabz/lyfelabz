@@ -2443,14 +2443,23 @@ describe("Curriculum lifecycle UI", () => {
     radio.checked = true;
     radio.dispatchEvent(new Event("change", { bubbles: true }));
     await flush();
-    document
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assign-row-set-current-confirm-c1]",
-      )
-      ?.click();
+    const confirmBtn = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-row-set-current-confirm-c1]",
+    )!;
+    // Confirmation button reads "Set as current" in Set mode too (not a
+    // repeat of the opening "Set as current assignment" control's own
+    // label); the opening control itself is untouched.
+    expect(confirmBtn.textContent).toBe("Set as current");
+    expect(
+      document.querySelector("[data-testid=assign-row-set-current-c1]")
+        ?.textContent,
+    ).toBe("Set as current assignment");
+    confirmBtn.click();
     await flush();
     await flush();
     await flush();
+    // The same existing mutation handler is still attached to the
+    // confirmation action - the label change is copy-only.
     expect(asn.currentSetCalls).toEqual([
       {
         classId: "c1",
@@ -2637,11 +2646,34 @@ describe("Curriculum lifecycle UI", () => {
       document.querySelector("[data-testid=assign-current-marker-c1-a-1]")
         ?.textContent,
     ).toBe("Current");
-    document
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assign-row-change-current-confirm-c1]",
-      )
-      ?.click();
+    // Current-state styling hook: present on the Current row, absent from
+    // the alternate row - a deterministic, JS-verifiable class derived
+    // from the same `isCurrent` check that renders the marker.
+    expect(
+      currentRadio
+        .closest("label")
+        ?.classList.contains("shell-assign-disambig-option-current"),
+    ).toBe(true);
+    const alternateRadio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-2]",
+    )!;
+    expect(
+      alternateRadio
+        .closest("label")
+        ?.classList.contains("shell-assign-disambig-option-current"),
+    ).toBe(false);
+    // The confirmation button reads "Set as current" (not a repeat of the
+    // opening "Change current assignment" control's own label).
+    const confirmBtn = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-row-change-current-confirm-c1]",
+    )!;
+    expect(confirmBtn.textContent).toBe("Set as current");
+    // The opening control above the chooser is untouched.
+    expect(
+      document.querySelector("[data-testid=assign-row-change-current-c1]")
+        ?.textContent,
+    ).toBe("Change current assignment");
+    confirmBtn.click();
     await flush();
     expect(asn.currentSetCalls).toHaveLength(0);
     const validation = document.querySelector<HTMLElement>(
@@ -2650,17 +2682,24 @@ describe("Curriculum lifecycle UI", () => {
     expect(validation?.hidden).toBe(false);
   });
 
-  // ---- Post-release UX patch: CURRENT marker far-right alignment ----
+  // ---- Post-release UX patch: CURRENT marker proximity + Current-row
+  // outline (corrective revision) ----
   //
-  // Human verification found CURRENT rendering immediately after the
-  // title/date/time, before the recipient count, reading as
-  // "Title · date · time  CURRENT  N recipients" instead of the intended
-  // "Title · date · time  N recipients  ...  CURRENT" with CURRENT pinned
-  // to the row's far right. The fix is a DOM-order change (marker now
-  // appended after recipient metadata, not before) plus a CSS
-  // `margin-left: auto` on the marker so it is pushed to the end of the
-  // flex row - no absolute positioning, no candidate-selection or
-  // Current-authority change of any kind.
+  // Human verification first found CURRENT rendering immediately after the
+  // title/date/time, before recipient count. A first fix reordered the
+  // DOM (marker after recipient metadata) and used `margin-left: auto` to
+  // push the marker to the row's far right - but that landed CURRENT too
+  // far from the metadata it labels, and separately the follow-up
+  // `:has()`-based green outline never rendered because the fix
+  // containing it had not actually been deployed when it was checked.
+  // This revision: DOM order stays radio -> title/date/time -> recipient
+  // count -> CURRENT (unchanged, still the last child), `margin-left:
+  // auto` is removed so ordinary flex `gap` alone provides natural
+  // proximity, and the Current row now gets an explicit semantic class
+  // (`shell-assign-disambig-option-current`, added from the same
+  // `isCurrent` check that already renders the marker) carrying a green
+  // outline. No candidate-selection or Current-authority change of any
+  // kind.
 
   test("CURRENT marker is the LAST child of the Current candidate row, structurally after recipient metadata", async () => {
     const asn = makeAssignments({
@@ -2781,6 +2820,9 @@ describe("Curriculum lifecycle UI", () => {
     )!;
     expect(
       setPanel.querySelector(".shell-assign-disambig-current-marker"),
+    ).toBeNull();
+    expect(
+      setPanel.querySelector(".shell-assign-disambig-option-current"),
     ).toBeNull();
     expect(
       setPanel.querySelectorAll('input[type="radio"]:not(:disabled)').length,

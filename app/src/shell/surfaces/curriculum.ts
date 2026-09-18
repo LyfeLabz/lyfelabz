@@ -2264,12 +2264,20 @@ function renderSetOrChangeCurrentControl(input: {
     if (isCurrent) {
       // Historical Assignment Resolution, post-release UX patch. DOM order
       // is radio, title/date/time, recipient count, THEN the marker - the
-      // marker is the last child so the CSS `margin-left: auto` on
-      // `.shell-assign-disambig-current-marker` (a flex-row technique, not
-      // absolute positioning or a hard-coded offset) can consume the row's
-      // remaining flexible space and push exactly this one element to the
-      // far right, regardless of viewport width or how long the title/
-      // date/time/recipient text is.
+      // marker is the last child, so it naturally sits close to the
+      // recipient metadata via the row's ordinary flex `gap` alone (an
+      // earlier revision additionally pushed it to the row's far right
+      // with `margin-left: auto`; that read as stranded and was removed).
+      //
+      // `shell-assign-disambig-option-current` is a small semantic styling
+      // hook derived from the SAME `isCurrent` check that already governs
+      // the marker and the disabled radio above - no new state, no second
+      // Current determination. It exists because the equivalent CSS-only
+      // `:has(.shell-assign-disambig-current-marker)` selector, while
+      // correct in principle, proved less reliable to verify/maintain in
+      // practice than a plain class applied at the exact point the render
+      // already knows this row is Current.
+      label.classList.add("shell-assign-disambig-option-current");
       const marker = doc.createElement("span");
       marker.className = "shell-assign-disambig-current-marker";
       marker.setAttribute(
@@ -2309,7 +2317,15 @@ function renderSetOrChangeCurrentControl(input: {
     "data-testid",
     `assign-row-${mode}-current-confirm-${cls.id}`,
   );
-  confirmBtn.textContent = actionLabel;
+  // Human UX review: the opening control already reads "Set as current
+  // assignment" / "Change current assignment" (`actionLabel`, used for
+  // `toggleBtn` above); once the chooser is open, reusing that exact same
+  // label on the confirmation button read as redundant, particularly for
+  // Change Current ("Change current assignment" appearing twice). The
+  // confirmation action itself is always the same concrete act regardless
+  // of which control opened the chooser - copy-only distinction from the
+  // opening control's label, no behavior/mutation change.
+  confirmBtn.textContent = "Set as current";
   actions.appendChild(confirmBtn);
 
   const cancelBtn = doc.createElement("button");

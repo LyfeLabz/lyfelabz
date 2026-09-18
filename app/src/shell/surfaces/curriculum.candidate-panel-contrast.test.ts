@@ -235,21 +235,33 @@ describe("CURRENT marker sits at natural proximity to recipient metadata (no far
 });
 
 // Historical Assignment Resolution, post-release UX patch (Current-row
-// outline). A subtle rectangular green outline identifies which candidate
-// row is the valid Current occurrence, in addition to the textual CURRENT
-// marker - a state indicator, not a button or a claim that the row (or its
-// independently-disabled radio) is selectable. Keyed off the marker's own
-// existing DOM presence via `:has()` (already an established pattern in
-// this document), so it never duplicates the server-authoritative Current
-// determination in a second place.
+// outline, corrective revision). Human browser verification found the
+// prior `:has(.shell-assign-disambig-current-marker)` selector-based
+// outline was not visibly rendering (root cause traced to the containing
+// fix never having been deployed - see the commit message for this
+// revision), and separately preferred a more directly verifiable hook. The
+// outline now keys off an explicit semantic class,
+// `.shell-assign-disambig-option-current`, added in curriculum.ts at the
+// exact point the existing `isCurrent` check already governs the marker
+// and the disabled radio - not a second Current determination, and not
+// new application state, just a styling hook derived from state that
+// already exists at render time.
 describe("Current-row outline identifies the Current candidate without implying interactivity", () => {
-  test("the outline rule targets rows containing the CURRENT marker via :has(), not a new JS-only class", () => {
-    const body = ruleBody(
-      html,
-      ".shell-assign-disambig-option:has(.shell-assign-disambig-current-marker)",
+  test("JS applies the semantic class only when isCurrent - the same check that also renders the marker and disables the radio", () => {
+    expect(jsSource).toContain(
+      'label.classList.add("shell-assign-disambig-option-current")',
     );
+  });
+
+  test("the outline rule targets the semantic class and carries the green border", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-option-current");
     expect(body).not.toBeNull();
-    expect(body).toMatch(/border:\s*1px solid #1f6b3d\b/);
+    expect(body).toMatch(/border-color:\s*#1f6b3d\b/);
+  });
+
+  test("every candidate row reserves the same 1px transparent border by default - the Current row's border only changes color, not box size", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-option") as string;
+    expect(body).toMatch(/border:\s*1px solid transparent\b/);
   });
 
   test("the outline reuses the existing green border token already used by this component family, not a new color", () => {
@@ -260,19 +272,16 @@ describe("Current-row outline identifies the Current candidate without implying 
     expect(
       matches.some((m) => /border:\s*1px solid #1f6b3d\b/.test(m.body)),
     ).toBe(true);
-    const outlineBody = ruleBody(
-      html,
-      ".shell-assign-disambig-option:has(.shell-assign-disambig-current-marker)",
-    ) as string;
-    expect(outlineBody).toMatch(/#1f6b3d\b/);
   });
 
   test("no background fill was added - the row keeps its base (transparent/hover-only) background", () => {
-    const body = ruleBody(
-      html,
-      ".shell-assign-disambig-option:has(.shell-assign-disambig-current-marker)",
-    ) as string;
+    const body = ruleBody(html, ".shell-assign-disambig-option-current") as string;
     expect(body).not.toMatch(/background/);
+  });
+
+  test("row justify-content is explicit flex-start, so no future edit can silently reintroduce a far-edge push", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-option") as string;
+    expect(body).toMatch(/justify-content:\s*flex-start\b/);
   });
 
   test("the base row rule (shared by every candidate, Current or not) keeps its existing border-radius and padding untouched", () => {

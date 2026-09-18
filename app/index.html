@@ -1739,32 +1739,46 @@
   .shell-assign-disambig-option {
     display: flex;
     align-items: baseline;
+    /* Explicit, not just relying on the flex default - this row previously
+       shipped with an accidental `margin-left: auto` on its last child
+       (the CURRENT marker) that stranded it at the row's far right; making
+       `flex-start` explicit here documents the intended packed-together
+       layout so a future edit is less likely to silently reintroduce that
+       kind of far-edge push. */
+    justify-content: flex-start;
     gap: 0.4rem;
     padding: 0.3rem 0.35rem;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.88rem;
     color: #333;
+    /* Transparent by default (not "no border") so the Current row below
+       does not change box size by adding a border only when it is
+       Current - every row reserves the same 1px, avoiding a layout shift
+       between Current and non-Current rows in the same list. */
+    border: 1px solid transparent;
   }
   .shell-assign-disambig-option:hover {
     background: rgba(0, 0, 0, 0.04);
   }
   /* Historical Assignment Resolution, post-release UX patch. A subtle
-     rectangular outline on the row that IS the valid Current occurrence -
-     a state indicator, not a button/selectable affordance (the row's
-     radio for this exact candidate is independently disabled; the border
-     never implies otherwise). Reuses the same green already established as
-     a border color in this component family
+     rectangular outline identifies the row that IS the valid Current
+     occurrence - a state indicator, not a button/selectable affordance
+     (the row's radio for this exact candidate is independently disabled;
+     the border never implies otherwise). Reuses the same green already
+     established as a border color in this component family
      (`.shell-assign-row-set-current`/`.shell-assign-row-current-confirm`
-     below), rather than a new value. Keyed off the marker's own existing
-     presence via `:has()` (already used elsewhere in this document, e.g.
-     `body:not(:has(#app-root > .shell-header))`) - the marker is only ever
-     rendered for the server-resolved Current candidate, so this never
-     duplicates that determination in a second place; it reads the DOM
-     state the render already produced. Background and row radius are left
-     exactly as the base rule above - only the border is added. */
-  .shell-assign-disambig-option:has(.shell-assign-disambig-current-marker) {
-    border: 1px solid #1f6b3d;
+     below), rather than a new value.
+     `.shell-assign-disambig-option-current` is a small semantic class
+     added in curriculum.ts from the same `isCurrent` check that already
+     governs the marker and the disabled radio - not a second Current
+     determination. A prior revision used
+     `:has(.shell-assign-disambig-current-marker)` instead; that selector
+     is correct in principle but proved less reliable to verify in
+     practice than this explicit class, so the render now sets it
+     directly. */
+  .shell-assign-disambig-option-current {
+    border-color: #1f6b3d;
   }
   .shell-assign-disambig-option input[type="radio"] {
     margin: 0;
