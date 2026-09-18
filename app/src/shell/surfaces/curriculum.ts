@@ -11,6 +11,7 @@ import type {
   AssignmentsLifecycleState,
   AssignmentCandidate,
   ClassroomGradingInput,
+  CurrentAssignmentResolution,
   IntegrationsClassLink,
   IntegrationsDeps,
   IntegrationsLmsTopic,
@@ -315,6 +316,14 @@ const topicsInFlightByLinkId: Map<string, Promise<void>> = new Map();
 type LifecycleStateEntry = {
   readonly state: AssignmentsLifecycleState;
   readonly candidates: ReadonlyArray<AssignmentCandidate>;
+  // Historical Assignment Resolution, Implementation Slice 9. Carried
+  // through so a later slice can consume it; nothing in this slice reads
+  // either field to affect rendering or mutation selection. On the error
+  // fallback path (network/parse failure, or no cached entry yet), both
+  // default to the conservative "no Current" values, mirroring how `state`
+  // already defaults to the conservative `neverAssigned` in that case.
+  readonly currentAssignmentId: string | null;
+  readonly currentAssignmentResolution: CurrentAssignmentResolution;
   readonly error?: true;
 };
 
@@ -347,6 +356,8 @@ async function loadLifecycleStateForDialog(
       const entry: LifecycleStateEntry = {
         state: resp.state,
         candidates: resp.candidates,
+        currentAssignmentId: resp.currentAssignmentId,
+        currentAssignmentResolution: resp.currentAssignmentResolution,
       };
       cachedLifecycleState.set(lifecycleCacheKey(classId, lessonSlug), entry);
       result.set(classId, entry);
@@ -357,6 +368,8 @@ async function loadLifecycleStateForDialog(
       result.set(toFetch[i], {
         state: "neverAssigned",
         candidates: [],
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved",
         error: true,
       });
     }
@@ -1784,6 +1797,8 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     const lc: LifecycleStateEntry = lifecycleByClass.get(c.id) ?? {
       state: "neverAssigned" as const,
       candidates: [],
+      currentAssignmentId: null,
+      currentAssignmentResolution: "unresolved" as const,
     };
     rowLifecycleState.set(c.id, lc);
     const retryCtx = assignments
@@ -2128,6 +2143,8 @@ function renderRow(
             const entry: LifecycleStateEntry = {
               state: resp.state,
               candidates: resp.candidates,
+              currentAssignmentId: resp.currentAssignmentId,
+              currentAssignmentResolution: resp.currentAssignmentResolution,
             };
             cachedLifecycleState.set(
               lifecycleCacheKey(cls.id, ctx.lessonSlug),

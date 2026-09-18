@@ -105,6 +105,8 @@ const makeAssignments = (
       },
       lifecycleState: async () => ({
         state: "neverAssigned" as const,
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
       recipientsReconcile: async (input) => ({
@@ -339,6 +341,8 @@ describe("Assign false-success guard", () => {
       },
       lifecycleState: async () => ({
         state: "neverAssigned" as const,
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
       recipientsReconcile: async (input) => ({
@@ -426,6 +430,8 @@ describe("Assign false-success guard", () => {
       },
       lifecycleState: async () => ({
         state: "neverAssigned" as const,
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
       recipientsReconcile: async (input) => ({
@@ -573,6 +579,8 @@ describe("Assign outcome model - three-way multi-class mix", () => {
       },
       lifecycleState: async () => ({
         state: "neverAssigned" as const,
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
       recipientsReconcile: async (input) => ({

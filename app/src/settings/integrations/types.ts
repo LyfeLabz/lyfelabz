@@ -264,9 +264,33 @@ export type AssignmentsLifecycleState =
   | "multiplePublished"
   | "historicalOnly";
 
+// Historical Assignment Resolution, Implementation Slice 9. The canonical
+// public Current-resolution vocabulary, mirroring the server's Slice 8
+// `CurrentAssignmentResolutionPublic` exactly - one type alias reused
+// everywhere on the client rather than a string union repeated at each
+// call site. Current is an independent resolution dimension alongside the
+// five `AssignmentsLifecycleState` values above (see
+// `AssignmentsLifecycleStateOutput`); it is never derived from `state` or
+// `candidates`, and this slice does not yet act on it anywhere in the UI.
+//
+//   "valid"      - a Current pointer exists, is well-formed, and its
+//                   referenced assignment is published and correctly
+//                   scoped. `currentAssignmentId` names that assignment.
+//   "unresolved" - no Current pointer exists at all for this class/lesson
+//                   (expected for legacy history predating this feature).
+//                   `currentAssignmentId` is `null`.
+//   "invalid"    - a Current pointer exists but fails validation for any
+//                   reason (malformed, cross-scope, references a missing
+//                   or non-published assignment). A materially different,
+//                   contradictory state from `unresolved` - never
+//                   collapsed into it. `currentAssignmentId` is `null`.
+export type CurrentAssignmentResolution = "valid" | "unresolved" | "invalid";
+
 export type AssignmentsLifecycleStateOutput = {
   readonly state: AssignmentsLifecycleState;
   readonly candidates: ReadonlyArray<AssignmentCandidate>;
+  readonly currentAssignmentId: string | null;
+  readonly currentAssignmentResolution: CurrentAssignmentResolution;
 };
 
 export type AssignmentsRecipientsReconcileInput = {

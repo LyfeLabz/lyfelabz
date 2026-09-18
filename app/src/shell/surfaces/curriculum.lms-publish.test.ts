@@ -79,6 +79,8 @@ const okAssignments = (): {
       },
       lifecycleState: async () => ({
         state: "neverAssigned" as const,
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
       recipientsReconcile: async (input) => ({
@@ -547,6 +549,8 @@ describe("Assign dialog - LMS publication wiring (Sprint 25 Phase 3)", () => {
       },
       lifecycleState: async () => ({
         state: "neverAssigned" as const,
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [],
       }),
       recipientsReconcile: async (input) => ({

@@ -67,6 +67,8 @@ const makeAssignments = (): AssignmentsCallables => ({
   }),
   lifecycleState: async () => ({
     state: "neverAssigned" as const,
+    currentAssignmentId: null,
+    currentAssignmentResolution: "unresolved" as const,
     candidates: [],
   }),
   recipientsReconcile: async (input) => ({

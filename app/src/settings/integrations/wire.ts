@@ -329,11 +329,64 @@ export function createAssignmentsCallables(
           "assignmentsLifecycleState returned an unexpected shape.",
         );
       }
+      // Historical Assignment Resolution, Implementation Slice 9. The two
+      // additive Current-resolution fields are validated strictly against
+      // the exact three server-defined combinations - a missing field, an
+      // unrecognized resolution string, or a contradictory
+      // resolution/assignmentId pairing (e.g. "valid" with a null id, or
+      // "unresolved"/"invalid" with a non-null id) is malformed response
+      // data and fails the same way any other unexpected shape from this
+      // callable already does: throwing here, which the existing
+      // Curriculum caller already treats as a callable failure (see
+      // `loadLifecycleStateForDialog`'s `Promise.allSettled` handling).
+      // There is no legacy-server fallback: per the locked
+      // backward-compatibility decision, a response lacking these fields
+      // is malformed, not "an older server."
+      const currentAssignmentResolution = data.currentAssignmentResolution;
+      if (
+        currentAssignmentResolution !== "valid" &&
+        currentAssignmentResolution !== "unresolved" &&
+        currentAssignmentResolution !== "invalid"
+      ) {
+        throw new Error(
+          "assignmentsLifecycleState returned an unexpected shape.",
+        );
+      }
+      const rawCurrentAssignmentId = data.currentAssignmentId;
+      let currentAssignmentId: string | null;
+      if (currentAssignmentResolution === "valid") {
+        // "valid" requires a usable non-empty assignment identifier -
+        // `readString` already treats an empty string as invalid, matching
+        // the client's existing opaque-non-empty-string convention for
+        // assignment IDs (no server-identifier-grammar regex is applied
+        // client-side; see AssignmentsPublishOutput/AssignmentsCreateDraftOutput
+        // for the same convention).
+        const validId = readString(rawCurrentAssignmentId);
+        if (!validId) {
+          throw new Error(
+            "assignmentsLifecycleState returned an unexpected shape.",
+          );
+        }
+        currentAssignmentId = validId;
+      } else {
+        // "unresolved" and "invalid" both REQUIRE currentAssignmentId to be
+        // exactly `null` - not merely falsy, not a missing field, and not
+        // any non-empty string. `undefined` (a genuinely missing field) is
+        // deliberately NOT accepted as equivalent to `null` here.
+        if (rawCurrentAssignmentId !== null) {
+          throw new Error(
+            "assignmentsLifecycleState returned an unexpected shape.",
+          );
+        }
+        currentAssignmentId = null;
+      }
       const candidates = Array.isArray(data.candidates)
         ? data.candidates
         : [];
       const out: AssignmentsLifecycleStateOutput = {
         state: state as AssignmentsLifecycleStateOutput["state"],
+        currentAssignmentId,
+        currentAssignmentResolution,
         candidates: Object.freeze(
           candidates.map((c: CallableRecord) =>
             Object.freeze({

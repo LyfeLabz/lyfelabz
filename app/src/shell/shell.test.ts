@@ -1896,6 +1896,8 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
         },
         lifecycleState: async () => ({
           state: "neverAssigned" as const,
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [],
         }),
         recipientsReconcile: async (input: { assignmentId: string }) => ({

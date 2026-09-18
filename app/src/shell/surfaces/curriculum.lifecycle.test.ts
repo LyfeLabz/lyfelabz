@@ -111,7 +111,7 @@ const makeAssignments = (
       lifecycleState: async (input) => {
         const override = lcOverrides[input.classId];
         if (override) return override;
-        return { state: "neverAssigned" as const, candidates: [] };
+        return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
       },
       recipientsReconcile: async (input) => {
         reconcileCalls.push(input.assignmentId);
@@ -256,6 +256,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [publishedCandidate({ missingRecipientCount: 3 })],
       },
     });
@@ -281,6 +283,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedFullyCurrent",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ missingRecipientCount: 0 }),
         ],
@@ -309,6 +313,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "historicalOnly",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           freeze({
             assignmentId: "a-old",
@@ -340,6 +346,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2", title: "Second" }),
@@ -372,6 +380,8 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [publishedCandidate()],
         },
       },
@@ -420,6 +430,8 @@ describe("Curriculum lifecycle UI", () => {
       {
         c2: {
           state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [
             publishedCandidate({ assignmentId: "a-c2" }),
           ],
@@ -451,6 +463,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedFullyCurrent",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ missingRecipientCount: 0 }),
         ],
@@ -478,6 +492,8 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [publishedCandidate()],
         },
       },
@@ -535,7 +551,7 @@ describe("Curriculum lifecycle UI", () => {
       }),
       lifecycleState: async (input) => {
         calls.push(input.classId);
-        return { state: "neverAssigned" as const, candidates: [] };
+        return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
       },
       recipientsReconcile: async (input) => ({
         assignmentId: input.assignmentId,
@@ -572,10 +588,14 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [publishedCandidate()],
         },
         c2: {
           state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [
             publishedCandidate({ assignmentId: "a-2" }),
           ],
@@ -623,6 +643,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [publishedCandidate()],
       },
     });
@@ -648,6 +670,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -672,6 +696,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedFullyCurrent",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ missingRecipientCount: 0 }),
         ],
@@ -697,6 +723,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [publishedCandidate({ missingRecipientCount: 1 })],
       },
     });
@@ -720,10 +748,14 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [publishedCandidate()],
       },
       c2: {
         state: "onePublishedFullyCurrent",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ missingRecipientCount: 0 }),
         ],
@@ -755,6 +787,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "historicalOnly",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           freeze({
             assignmentId: "a-old",
@@ -792,6 +826,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -886,7 +922,7 @@ describe("Curriculum lifecycle UI", () => {
       lifecycleState: () =>
         new Promise((resolve) => {
           holder.resolve = () =>
-            resolve({ state: "neverAssigned" as const, candidates: [] });
+            resolve({ state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] });
         }),
       recipientsReconcile: async (input) => ({
         assignmentId: input.assignmentId,
@@ -919,6 +955,8 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "onePublishedMissingRecipients",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [publishedCandidate()],
         },
       },
@@ -1108,7 +1146,7 @@ describe("Curriculum lifecycle UI", () => {
         lcCalls.push({ classId: input.classId, lessonSlug: input.lessonSlug });
         callCount += 1;
         if (callCount <= 1) throw new Error("network error");
-        return { state: "neverAssigned" as const, candidates: [] };
+        return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
       },
     };
     const mount = mkMount();
@@ -1140,7 +1178,7 @@ describe("Curriculum lifecycle UI", () => {
       lifecycleState: async () => {
         callCount += 1;
         if (callCount <= 1) throw new Error("network error");
-        return { state: "neverAssigned" as const, candidates: [] };
+        return { state: "neverAssigned" as const, currentAssignmentId: null, currentAssignmentResolution: "unresolved" as const, candidates: [] };
       },
     };
     const mount = mkMount();
@@ -1174,6 +1212,8 @@ describe("Curriculum lifecycle UI", () => {
         if (callCount <= 1) throw new Error("network error");
         return {
           state: "onePublishedMissingRecipients" as const,
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [publishedCandidate({ missingRecipientCount: 2 })],
         };
       },
@@ -1205,6 +1245,8 @@ describe("Curriculum lifecycle UI", () => {
         if (callCount <= 1) throw new Error("network error");
         return {
           state: "onePublishedFullyCurrent" as const,
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [publishedCandidate({ missingRecipientCount: 0 })],
         };
       },
@@ -1257,6 +1299,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1284,6 +1328,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1309,6 +1355,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1335,6 +1383,8 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "multiplePublished",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [
             publishedCandidate({ assignmentId: "a-1" }),
             publishedCandidate({ assignmentId: "a-2" }),
@@ -1378,6 +1428,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1406,6 +1458,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1", title: "Earth's Layers" }),
           publishedCandidate({ assignmentId: "a-2", title: "Second" }),
@@ -1437,6 +1491,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1463,6 +1519,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1488,6 +1546,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1495,6 +1555,8 @@ describe("Curriculum lifecycle UI", () => {
       },
       c2: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-3" }),
           publishedCandidate({ assignmentId: "a-4" }),
@@ -1529,6 +1591,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1536,6 +1600,8 @@ describe("Curriculum lifecycle UI", () => {
       },
       c2: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-3" }),
           publishedCandidate({ assignmentId: "a-4" }),
@@ -1570,6 +1636,8 @@ describe("Curriculum lifecycle UI", () => {
       {
         c1: {
           state: "multiplePublished",
+          currentAssignmentId: null,
+          currentAssignmentResolution: "unresolved" as const,
           candidates: [
             publishedCandidate({ assignmentId: "a-1" }),
             publishedCandidate({ assignmentId: "a-2" }),
@@ -1606,6 +1674,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1631,6 +1701,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1674,6 +1746,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedMissingRecipients",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [publishedCandidate({ missingRecipientCount: 3 })],
       },
     });
@@ -1698,6 +1772,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "onePublishedFullyCurrent",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [publishedCandidate({ missingRecipientCount: 0 })],
       },
     });
@@ -1723,6 +1799,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "historicalOnly",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [publishedCandidate({ status: "closed" })],
       },
     });
@@ -1764,6 +1842,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1790,6 +1870,8 @@ describe("Curriculum lifecycle UI", () => {
     const asn = makeAssignments({
       c1: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-1" }),
           publishedCandidate({ assignmentId: "a-2" }),
@@ -1797,6 +1879,8 @@ describe("Curriculum lifecycle UI", () => {
       },
       c2: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-3" }),
           publishedCandidate({ assignmentId: "a-4" }),
@@ -1805,6 +1889,8 @@ describe("Curriculum lifecycle UI", () => {
       },
       c3: {
         state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
         candidates: [
           publishedCandidate({ assignmentId: "a-6" }),
           publishedCandidate({ assignmentId: "a-7" }),
