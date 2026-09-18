@@ -76,13 +76,16 @@ describe("dispatch — renders the correct surface into the mount", () => {
   };
 
   const fakeHistory = () => {
-    const calls: Array<{ url: string }> = [];
-    return {
-      replaceState: ((_state: unknown, _title: string, url?: string | null) => {
-        calls.push({ url: String(url) });
+    const calls: Array<{ url: string; state: unknown }> = [];
+    const obj = {
+      state: null as unknown,
+      replaceState: ((state: unknown, _title: string, url?: string | null) => {
+        obj.state = state;
+        calls.push({ url: String(url), state });
       }) as History["replaceState"],
       calls,
     };
+    return obj;
   };
 
   test("renders the signed-out surface for unauthenticated (no sign-out control)", () => {
@@ -293,5 +296,58 @@ describe("dispatch — renders the correct surface into the mount", () => {
     expect(mount.querySelectorAll("h1")).toHaveLength(1);
     expect(mount.querySelector("h1")?.textContent).toBe("LYFELABZ");
     expect(mount.querySelector("h2")?.textContent).toBe("Classes");
+  });
+
+  // Browser Back/Forward regression: `dispatch` used to call
+  // `history.replaceState(null, "", path)` unconditionally, discarding
+  // whatever richer navigation state a surface (e.g. the teacher shell)
+  // had just written for its own in-session Back/Forward support. That
+  // state loss was invisible to every prior test here because none of
+  // them asserted on the `state` argument at all - only on `url`. This
+  // pins the fix: dispatch must preserve whatever `history.state` already
+  // is, never force it back to null.
+  test("preserves an existing history.state instead of forcing it to null", () => {
+    const mount = mkMount();
+    const hist = fakeHistory();
+    // Simulate a surface having already written richer state via
+    // `history.replaceState` before `dispatch`'s own trailing call runs -
+    // exactly what shell.ts's teacher shell does on every mount.
+    hist.replaceState(
+      { kind: "shell-surface", surface: "classes" },
+      "",
+      "/app/teacher#classes",
+    );
+    hist.calls.length = 0; // isolate dispatch's own call below
+
+    dispatch(
+      freeze<Session>({
+        kind: "activeTeacher",
+        uid: "u1",
+        schoolId: "s1",
+        displayName: "Ada",
+      }),
+      createSignOutOnlyRouteTable(noop),
+      mount,
+      hist,
+    );
+
+    expect(hist.calls).toHaveLength(1);
+    expect(hist.calls[0].url).toBe("/app/teacher");
+    expect(hist.calls[0].state).toEqual({
+      kind: "shell-surface",
+      surface: "classes",
+    });
+  });
+
+  test("still writes null when there was no prior history.state", () => {
+    const mount = mkMount();
+    const hist = fakeHistory();
+    dispatch(
+      freeze<Session>({ kind: "unauthenticated" }),
+      createSignOutOnlyRouteTable(noop),
+      mount,
+      hist,
+    );
+    expect(hist.calls[0].state).toBeNull();
   });
 });
