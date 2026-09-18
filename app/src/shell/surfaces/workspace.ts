@@ -32,6 +32,7 @@ import {
   renderClassesSurface,
   type ClassManagementIntent,
   type ClassWorkspaceReturn,
+  type StudentDetailHistorySeam,
 } from "./classes";
 import { renderSettingsSurface } from "./settings";
 import type { SnapshotPreview } from "./snapshot";
@@ -164,6 +165,10 @@ export type WorkspaceDeps = {
   // just before opening Detail. Absent in harnesses that do not exercise it.
   readonly getClassesReturn?: (() => ClassWorkspaceReturn | null) | null;
   readonly setClassesReturn?: ((loc: ClassWorkspaceReturn | null) => void) | null;
+  // Browser Back/Forward support: shell-owned seam (see
+  // StudentDetailHistorySeam in classes.ts and shell.ts). Absent in
+  // harnesses that do not exercise browser-history behavior.
+  readonly studentDetailHistory?: StudentDetailHistorySeam | null;
   // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned
   // student-selection intent seam (see shell.ts `classesStudentIntent`).
   // The Classes surface reads it once on mount to open Student Detail
@@ -249,6 +254,7 @@ export const WORKSPACE_SURFACES: Readonly<
         assignmentDetail: deps.assignmentDetail ?? null,
         assignmentSummary: deps.assignmentSummary ?? null,
         navigateToSurface: deps.navigateToSurface ?? null,
+        studentDetailHistory: deps.studentDetailHistory ?? null,
         getClassesReturn: deps.getClassesReturn ?? null,
         setClassesReturn: deps.setClassesReturn ?? null,
         getClassesStudentIntent: deps.getClassesStudentIntent ?? null,

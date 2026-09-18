@@ -127,6 +127,32 @@ export type ClassWorkspaceReturn = {
 // stays inside a user gesture). Consumed exactly once per navigation.
 export type ClassManagementIntent = "create" | "import";
 
+// Browser Back/Forward support: bundles the notify/registerController
+// pair the shell needs to keep browser history in sync with Student
+// Detail open/closed, without this surface importing `window`,
+// `history`, or any browser-navigation API directly (this module stays
+// a pure DOM builder; only shell.ts touches browser history).
+// `notify` reports a roster-origin enter/exit transition so the shell
+// can push/replace the matching history entry. `registerController` is
+// called once, synchronously, during this surface's mount, and hands the
+// shell a restore capability keyed by stable ids only (classId,
+// studentId) - never a display name - for popstate to call back into.
+export type StudentDetailHistorySeam = {
+  readonly notify: (
+    input:
+      | {
+          readonly kind: "enter";
+          readonly classId: string;
+          readonly studentId: string;
+        }
+      | { readonly kind: "exit" },
+  ) => void;
+  readonly registerController: (controller: {
+    readonly restoreDetail: (classId: string, studentId: string) => boolean;
+    readonly restoreList: () => void;
+  }) => void;
+};
+
 // Sprint 28.6C: class-assignment wiring shared by the class card (count) and
 // the class workspace Assignments section. `enabled` is false in harnesses
 // with no assignment seam, in which case counts read 0 and the Assignments
@@ -285,6 +311,11 @@ export type ClassesSurfaceDeps = {
   readonly updateClassMetadata?: UpdateClassMetadata | null;
   readonly updateClassColor?: UpdateClassColor | null;
   readonly readClassColors?: ReadTeacherClassColors | null;
+  // Browser Back/Forward support: shell-owned seam (see
+  // StudentDetailHistorySeam above and shell.ts). Absent in harnesses
+  // that do not exercise browser-history behavior, in which case Student
+  // Detail open/close behaves exactly as before this feature.
+  readonly studentDetailHistory?: StudentDetailHistorySeam | null;
 };
 
 // Sprint 28.6H (Finding 2): the class-card status label map was removed with
@@ -394,6 +425,7 @@ export function renderClassesSurface(
   const assignmentDetail = deps.assignmentDetail ?? null;
   const assignmentSummary = deps.assignmentSummary ?? null;
   const navigateToSurface = deps.navigateToSurface ?? null;
+  const studentDetailHistory = deps.studentDetailHistory ?? null;
   const getClassesReturn = deps.getClassesReturn ?? null;
   const setClassesReturn = deps.setClassesReturn ?? null;
   const getClassesStudentIntent = deps.getClassesStudentIntent ?? null;
@@ -1157,6 +1189,7 @@ export function renderClassesSurface(
 
   const onSelectStudent = (studentId: string, displayName: string): void => {
     if (state.kind !== "workspace") return;
+    const classId = state.selectedId;
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -1169,6 +1202,14 @@ export function renderClassesSurface(
       studentDetailOrigin: "roster",
     };
     rerender();
+    // Browser Back/Forward support: only the plain Students-list entry
+    // point (this function) is tracked in history. The assignment-origin
+    // pre-selection consumed from `classesStudentIntent` on mount is
+    // deliberately excluded (see StudentDetailHistorySeam) - reconstructing
+    // that cross-surface Assignment Detail context from a URL is out of
+    // scope for this patch, so it keeps its pre-existing, non-history
+    // behavior unchanged.
+    studentDetailHistory?.notify({ kind: "enter", classId, studentId });
   };
 
   // Student Progress & Assignment Membership Phase A, Slice 2: Previous /
@@ -1224,8 +1265,22 @@ export function renderClassesSurface(
       setupForm: state.setupForm,
       selectedStudentId: null,
       selectedStudentDisplayName: null,
+      // Browser Back/Forward support: previously omitted (both fields
+      // reverted to undefined on every Back-to-Students). Preserving the
+      // already-fetched roster snapshot here is required for `restoreDetail`
+      // (below) to resolve a display name after a Forward navigation
+      // without a second fetch; it was never observably wrong before since
+      // nothing read `rosterSnapshot` while Detail was closed.
+      rosterSnapshot: state.rosterSnapshot,
     };
     rerender();
+    // Browser Back/Forward support: keeps the URL/history entry in sync
+    // with what is now on screen whether this ran from the in-app "Back to
+    // Students" click or from the shell's popstate restore path (see
+    // shell.ts `restoreList`). Uses replace, never `history.back()` - see
+    // StudentDetailHistorySeam and shell.ts for why a blind `back()` here
+    // would be unsafe for the excluded assignment-origin case.
+    studentDetailHistory?.notify({ kind: "exit" });
   };
 
   const onBackToList = (): void => {
@@ -1241,6 +1296,44 @@ export function renderClassesSurface(
     };
     rerender();
   };
+
+  // Browser Back/Forward support: registered once, synchronously, for the
+  // lifetime of this mount. `restoreDetail` re-derives the display name
+  // from the already-fetched roster snapshot rather than trusting any
+  // value carried in history state (only stable ids ever leave this
+  // module - see StudentDetailHistorySeam) and fails closed (returns
+  // false, changes nothing) if the requested class is not the one
+  // currently open or the student cannot be found in the last-loaded
+  // roster. `restoreList` is a safe no-op unless Detail is actually open.
+  studentDetailHistory?.registerController({
+    restoreDetail: (classId, studentId) => {
+      if (state.kind !== "workspace") return false;
+      if (state.selectedId !== classId) return false;
+      const match = (state.rosterSnapshot ?? []).find(
+        (s) => s.studentId === studentId,
+      );
+      if (!match) return false;
+      state = {
+        kind: "workspace",
+        classes: state.classes,
+        selectedId: state.selectedId,
+        tab: state.tab,
+        setupForm: state.setupForm,
+        selectedStudentId: match.studentId,
+        selectedStudentDisplayName: match.studentDisplayName,
+        rosterSnapshot: state.rosterSnapshot,
+        studentDetailOrigin: "roster",
+      };
+      rerender();
+      return true;
+    },
+    restoreList: () => {
+      if (state.kind !== "workspace" || state.selectedStudentId === null) {
+        return;
+      }
+      onBackFromStudent();
+    },
+  });
 
   const onSetupFormChange = (patch: Partial<SetupFormState>): void => {
     if (state.kind !== "workspace" || state.setupForm === null) return;

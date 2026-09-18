@@ -20,6 +20,13 @@ import type {
 import { renderHeader } from "./header";
 import { renderNavigation, type WorkspaceSurfaceKey } from "./navigation";
 import { renderFooter } from "./footer";
+import {
+  type ShellHistoryState,
+  parseShellHistoryState,
+  hashForSurface,
+  hashForStudentDetail,
+  urlWithHash,
+} from "./navigationHistory";
 import { mountWorkspaceOutlet } from "./surfaces/workspace";
 import type { SnapshotPreview } from "./surfaces/snapshot";
 import type {
@@ -126,12 +133,31 @@ export type ShellDeps = {
   readonly setAccommodation?: AccommodationsSetCallable | null;
 };
 
+// Browser Back/Forward support: at most one popstate listener may be
+// active at a time. `mountTeacherShell` can run again later in the same
+// page life (a session `rerun`, e.g. sign-out/sign-in), which rebuilds
+// the whole shell from scratch; without this module-scope guard, each
+// remount would stack another `window` listener closing over a
+// torn-down shell instance (a leak, and a source of stale restores).
+let activeShellPopstateCleanup: (() => void) | null = null;
+
+type ClassesDetailHistoryController = {
+  readonly restoreDetail: (classId: string, studentId: string) => boolean;
+  readonly restoreList: () => void;
+};
+
 export function mountTeacherShell(
   session: ActiveTeacher,
   mount: HTMLElement,
   deps: ShellDeps,
 ): void {
   const doc = mount.ownerDocument;
+  // Browser Back/Forward support: derived from the connected document
+  // rather than injected, so the shell needs no new dependency and tests
+  // get real, controllable `pushState`/`replaceState`/`popstate` behavior
+  // from jsdom for free. Absent (no `defaultView`) disables all history
+  // integration; every other behavior in this function is unaffected.
+  const win = doc.defaultView;
 
   renderHeader(mount, session, { onSignOut: deps.onSignOut });
 
@@ -139,6 +165,18 @@ export function mountTeacherShell(
   body.className = "shell-body";
   body.setAttribute("data-testid", "shell-body");
 
+  // Browser Back/Forward support: the default landing surface is
+  // deliberately never read from `window.location` on mount. `dispatch`
+  // (router.ts) issues its own `replaceState(null, "", path)` immediately
+  // after this function returns, using a bare session-kind pathname with
+  // no hash - it would silently discard any hash-derived initial surface
+  // choice made here on every session `rerun`, and reading ambient
+  // `window.location` state as a mount-time input is also observably
+  // unsafe in a single-page-app test harness, where one jsdom `window` is
+  // reused across sequential shell mounts. Cold refresh/direct-URL
+  // restoration of a specific top-level surface is therefore explicitly
+  // out of scope for this patch; only in-session Back/Forward is
+  // supported. See navigationHistory.ts.
   let activeKey: WorkspaceSurfaceKey = "classes";
   // Sprint 28.5D (D2A): true while an overlay surface (Assignment Detail)
   // occupies the outlet in place of the active workspace surface. The active
@@ -187,6 +225,14 @@ export function mountTeacherShell(
   // the shell instance means it cannot leak across sessions or tests.
   let classesStudentIntent: AssignmentDetailStudentSelection | null = null;
 
+  // Browser Back/Forward support: the Classes surface's restore
+  // capability for its own nested Student Detail state (see
+  // StudentDetailHistorySeam in classes.ts), re-registered synchronously
+  // every time Classes mounts and explicitly cleared whenever the shell
+  // navigates away from Classes so a stale reference into a torn-down
+  // render tree is never invoked.
+  let classesDetailController: ClassesDetailHistoryController | null = null;
+
   const workspaceDeps = {
     listClasses: deps.listClasses,
     onLaunchPresentMode: deps.onLaunchPresentMode,
@@ -219,6 +265,57 @@ export function mountTeacherShell(
     navigateToSurface: (next: WorkspaceSurfaceKey): void => {
       navigateTo(next);
     },
+    // Browser Back/Forward support: bundles the notify/registerController
+    // pair Classes uses to keep browser history in sync with its own
+    // Student Detail open/closed transitions (see StudentDetailHistorySeam
+    // in classes.ts). `null` when there is no connected window (disables
+    // history integration entirely; Student Detail behaves exactly as
+    // before this feature).
+    studentDetailHistory: win
+      ? {
+          notify: (
+            input:
+              | {
+                  readonly kind: "enter";
+                  readonly classId: string;
+                  readonly studentId: string;
+                }
+              | { readonly kind: "exit" },
+          ): void => {
+            if (input.kind === "enter") {
+              const state: ShellHistoryState = {
+                kind: "shell-student-detail",
+                surface: "classes",
+                classId: input.classId,
+                studentId: input.studentId,
+              };
+              win.history.pushState(
+                state,
+                "",
+                urlWithHash(
+                  win.location.pathname,
+                  hashForStudentDetail(input.classId, input.studentId),
+                ),
+              );
+            } else {
+              const state: ShellHistoryState = {
+                kind: "shell-surface",
+                surface: "classes",
+              };
+              win.history.replaceState(
+                state,
+                "",
+                urlWithHash(win.location.pathname, hashForSurface("classes")),
+              );
+            }
+          },
+          registerController: (
+            controller: ClassesDetailHistoryController,
+          ): void => {
+            classesDetailController = controller;
+          },
+        }
+      : null,
     // Sprint 28.6C: class-workspace return-location seam (see `classesReturn`).
     getClassesReturn: (): ClassWorkspaceReturn | null => classesReturn,
     setClassesReturn: (loc: ClassWorkspaceReturn | null): void => {
@@ -258,13 +355,36 @@ export function mountTeacherShell(
   // so the same-key early-return only applies when a surface (not Detail) is
   // showing. Selecting any item leaves Detail cleanly: the outlet is cleared
   // and the chosen surface mounts fresh.
-  const navigateTo = (next: WorkspaceSurfaceKey): void => {
+  const navigateTo = (
+    next: WorkspaceSurfaceKey,
+    options?: { readonly fromPopstate?: boolean },
+  ): void => {
     if (next === activeKey && !showingDetail) return;
     showingDetail = false;
+    // Browser Back/Forward support: leaving Classes (for any reason -
+    // top nav, `navigateToSurface`, popstate) invalidates any registered
+    // Student Detail restore controller. The next Classes mount registers
+    // its own fresh one synchronously below if `next === "classes"`; for
+    // every other target there must be no stale reference into the
+    // torn-down render tree this `outletHost.textContent = ""` is about to
+    // discard.
+    classesDetailController = null;
     activeKey = next;
     outletHost.textContent = "";
     mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
     renderNav();
+    // Browser Back/Forward support: a popstate-driven call is restoring an
+    // existing entry, never creating a new one. Real user-initiated
+    // navigation pushes exactly one entry; the early return above already
+    // prevents a duplicate push when the surface does not actually change.
+    if (win && !options?.fromPopstate) {
+      const state: ShellHistoryState = { kind: "shell-surface", surface: next };
+      win.history.pushState(
+        state,
+        "",
+        urlWithHash(win.location.pathname, hashForSurface(next)),
+      );
+    }
   };
 
   const renderNav = (): void => {
@@ -288,6 +408,24 @@ export function mountTeacherShell(
 
   renderNav();
   mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
+
+  // Browser Back/Forward support: canonicalize the URL/history-state for
+  // the surface actually chosen above (whether that came from a restored
+  // hash or the default). This is state restoration, not a user-initiated
+  // navigation, so it replaces the current entry rather than pushing one -
+  // otherwise every shell mount (including a session `rerun`) would grow
+  // the history stack with a redundant entry.
+  if (win) {
+    const initialState: ShellHistoryState = {
+      kind: "shell-surface",
+      surface: activeKey,
+    };
+    win.history.replaceState(
+      initialState,
+      "",
+      urlWithHash(win.location.pathname, hashForSurface(activeKey)),
+    );
+  }
 
   renderFooter(mount);
 
@@ -320,4 +458,41 @@ export function mountTeacherShell(
       navigateTo("classes");
     },
   });
+
+  // Browser Back/Forward support: the single popstate restoration path.
+  // `event.state` is untrusted input (see parseShellHistoryState) - a
+  // malformed, foreign, or pre-feature entry is ignored outright rather
+  // than guessed at, leaving the current UI exactly as it was.
+  //
+  // Never calls pushState/replaceState-as-navigation here: `navigateTo`'s
+  // `fromPopstate: true` suppresses its own push, and a "shell-surface"
+  // restore additionally asks the (possibly still-live) Classes controller
+  // to close Student Detail if it happens to be open - a safe no-op
+  // otherwise. A "shell-student-detail" restore always routes to the
+  // Classes surface first; if the class currently open does not match, or
+  // the student is not in the last-loaded roster (including the case
+  // where Classes was remounted since the entry was pushed and a stale
+  // controller reference was already cleared by `navigateTo`), restoration
+  // fails closed onto the Classes surface rather than attempting a partial
+  // or incorrect nested restore.
+  if (win) {
+    const handlePopstate = (event: PopStateEvent): void => {
+      const parsed = parseShellHistoryState(event.state);
+      if (parsed === null) return;
+      if (parsed.kind === "shell-surface") {
+        navigateTo(parsed.surface, { fromPopstate: true });
+        if (parsed.surface === "classes") {
+          classesDetailController?.restoreList();
+        }
+        return;
+      }
+      navigateTo("classes", { fromPopstate: true });
+      classesDetailController?.restoreDetail(parsed.classId, parsed.studentId);
+    };
+    activeShellPopstateCleanup?.();
+    win.addEventListener("popstate", handlePopstate);
+    activeShellPopstateCleanup = () => {
+      win.removeEventListener("popstate", handlePopstate);
+    };
+  }
 }
