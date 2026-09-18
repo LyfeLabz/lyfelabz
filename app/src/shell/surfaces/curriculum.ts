@@ -2256,7 +2256,20 @@ function renderSetOrChangeCurrentControl(input: {
       ? `${candidate.title} · ${publishedAtStr}`
       : candidate.title;
     label.appendChild(text);
+    const meta = doc.createElement("span");
+    meta.className = "shell-assign-disambig-meta";
+    const rc = candidate.recipientCount;
+    meta.textContent = rc === 1 ? "1 recipient" : `${rc} recipients`;
+    label.appendChild(meta);
     if (isCurrent) {
+      // Historical Assignment Resolution, post-release UX patch. DOM order
+      // is radio, title/date/time, recipient count, THEN the marker - the
+      // marker is the last child so the CSS `margin-left: auto` on
+      // `.shell-assign-disambig-current-marker` (a flex-row technique, not
+      // absolute positioning or a hard-coded offset) can consume the row's
+      // remaining flexible space and push exactly this one element to the
+      // far right, regardless of viewport width or how long the title/
+      // date/time/recipient text is.
       const marker = doc.createElement("span");
       marker.className = "shell-assign-disambig-current-marker";
       marker.setAttribute(
@@ -2266,11 +2279,6 @@ function renderSetOrChangeCurrentControl(input: {
       marker.textContent = "Current";
       label.appendChild(marker);
     }
-    const meta = doc.createElement("span");
-    meta.className = "shell-assign-disambig-meta";
-    const rc = candidate.recipientCount;
-    meta.textContent = rc === 1 ? "1 recipient" : `${rc} recipients`;
-    label.appendChild(meta);
     panel.appendChild(label);
     radio.addEventListener("change", () => {
       if (radio.checked) {

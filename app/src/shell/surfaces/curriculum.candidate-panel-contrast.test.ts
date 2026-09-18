@@ -200,3 +200,35 @@ describe("candidate and history text colors were not touched by this patch (not 
     ).toBe(true);
   });
 });
+
+// Historical Assignment Resolution, post-release UX patch (CURRENT marker
+// far-right alignment). Human verification found CURRENT rendering
+// immediately after the title/date/time, before recipient count. The fix
+// is CSS-driven, not a hard-coded offset: the marker is the LAST child of
+// the flex-row `.shell-assign-disambig-option` (verified structurally in
+// curriculum.lifecycle.test.ts), and `margin-left: auto` on the marker
+// consumes the row's remaining flexible space to push it to the far right
+// - responsive to any viewport width or candidate text length.
+describe("CURRENT marker far-right alignment is CSS-driven, not a hard-coded offset", () => {
+  test("the marker rule uses margin-left: auto, not absolute positioning or a fixed offset", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-current-marker");
+    expect(body).not.toBeNull();
+    expect(body).toMatch(/margin-left:\s*auto\b/);
+    expect(body).not.toMatch(/position:\s*absolute/);
+    expect(body).not.toMatch(/left:\s*\d/);
+    expect(body).not.toMatch(/margin-left:\s*\d/);
+  });
+
+  test("the row remains a flex container, so margin-left: auto has an axis to push along", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-option");
+    expect(body).not.toBeNull();
+    expect(body).toMatch(/display:\s*flex\b/);
+  });
+
+  test("the marker's own color/size/casing treatment is otherwise unchanged", () => {
+    const body = ruleBody(html, ".shell-assign-disambig-current-marker") as string;
+    expect(body).toMatch(/color:\s*#1f6b3d\b/);
+    expect(body).toMatch(/text-transform:\s*uppercase\b/);
+    expect(body).toMatch(/font-weight:\s*600\b/);
+  });
+});

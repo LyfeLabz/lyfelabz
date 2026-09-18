@@ -2650,6 +2650,143 @@ describe("Curriculum lifecycle UI", () => {
     expect(validation?.hidden).toBe(false);
   });
 
+  // ---- Post-release UX patch: CURRENT marker far-right alignment ----
+  //
+  // Human verification found CURRENT rendering immediately after the
+  // title/date/time, before the recipient count, reading as
+  // "Title · date · time  CURRENT  N recipients" instead of the intended
+  // "Title · date · time  N recipients  ...  CURRENT" with CURRENT pinned
+  // to the row's far right. The fix is a DOM-order change (marker now
+  // appended after recipient metadata, not before) plus a CSS
+  // `margin-left: auto` on the marker so it is pushed to the end of the
+  // flex row - no absolute positioning, no candidate-selection or
+  // Current-authority change of any kind.
+
+  test("CURRENT marker is the LAST child of the Current candidate row, structurally after recipient metadata", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1", recipientCount: 20 }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-c1]",
+      )
+      ?.click();
+    await flush();
+    const currentRadio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-1]",
+    )!;
+    const currentLabel = currentRadio.closest("label")!;
+    const children = Array.from(currentLabel.children);
+    const meta = currentLabel.querySelector(".shell-assign-disambig-meta");
+    const marker = currentLabel.querySelector(
+      "[data-testid=assign-current-marker-c1-a-1]",
+    );
+    expect(meta).not.toBeNull();
+    expect(marker).not.toBeNull();
+    expect(meta?.textContent).toBe("20 recipients");
+    expect(marker?.textContent).toBe("Current");
+    // Structural far-right guarantee: the marker is the LAST element in
+    // the row, after recipient metadata - combined with its CSS
+    // `margin-left: auto` (pinned in the contrast/layout CSS test below),
+    // this is what places it at the row's far right regardless of
+    // viewport width or candidate text length.
+    expect(children[children.length - 1]).toBe(marker);
+    expect(children.indexOf(meta as Element)).toBeLessThan(
+      children.indexOf(marker as Element),
+    );
+  });
+
+  test("Change Current: the alternate (non-Current) candidate carries no CURRENT marker and remains enabled", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assign-row-change-current-c1]",
+      )
+      ?.click();
+    await flush();
+    expect(
+      document.querySelector("[data-testid=assign-current-marker-c1-a-2]"),
+    ).toBeNull();
+    const alternateRadio = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-current-option-c1-a-2]",
+    )!;
+    expect(alternateRadio.disabled).toBe(false);
+    expect(
+      alternateRadio
+        .closest("label")
+        ?.querySelector(".shell-assign-disambig-meta"),
+    ).not.toBeNull();
+  });
+
+  test("Set Current: no candidate carries a CURRENT marker before any Current is resolved", async () => {
+    const asn = makeAssignments({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "unresolved" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "b-1" }),
+          publishedCandidate({ assignmentId: "b-2", title: "Second" }),
+        ],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+    });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-row-set-current-c1]")
+      ?.click();
+    await flush();
+    const setPanel = document.querySelector<HTMLElement>(
+      "[data-testid=assign-row-set-current-panel-c1]",
+    )!;
+    expect(
+      setPanel.querySelector(".shell-assign-disambig-current-marker"),
+    ).toBeNull();
+    expect(
+      setPanel.querySelectorAll('input[type="radio"]:not(:disabled)').length,
+    ).toBe(2);
+  });
+
   test("Change Current success: sends the exact observed Current as expectedCurrentAssignmentId, reloads lifecycle, and runs no automatic Update/create/publish", async () => {
     const asn = makeAssignments({
       c1: {

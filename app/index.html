@@ -1811,6 +1811,13 @@
     margin-top: 0.2rem;
   }
   .shell-assign-disambig-current-marker {
+    /* Historical Assignment Resolution, post-release UX patch. The marker
+       is the last child of the flex-row `.shell-assign-disambig-option`
+       (see curriculum.ts); `margin-left: auto` consumes the row's
+       remaining flexible space so it lands at the far right - responsive
+       to any viewport width or candidate text length, no absolute
+       positioning, no hard-coded offset. */
+    margin-left: auto;
     font-size: 0.72rem;
     font-weight: 600;
     color: #1f6b3d;
