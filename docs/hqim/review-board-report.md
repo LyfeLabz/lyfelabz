@@ -4,13 +4,15 @@ LyfeLabz Grade 6-7 Science. Original self-evaluation prepared 2026-09-17;
 repository factual correction dated 2026-09-19 against commit
 `4f6f02b01eb988696592265223d2ddff28832eb4` and the Phase 1 audit.
 
-The original report organized its judgments under claimed EQuIP gateways and
-CURATE STE dimensions. The rubric identities, numbering, gateway structure,
-eligibility consequences, and submission process have not been independently
-verified against current official sources. The fourteen topics below retain
-that review coverage as internal questions, not official rubric ratings.
-EdReports, DESE, CURATE, EQuIP, and HQIM procedural claims are deferred to a
-separate official-source phase. No web research was performed here.
+The original report used an incorrect EQuIP gateway interpretation and claimed
+CURATE dimensions. Phase 2A retained fourteen topics as internal questions,
+withdrew official status from that structure, and deferred external research.
+Any earlier self-scores are historical internal judgments, not external ratings.
+
+**Phase 2C integration (2026-09-19):** The section below incorporates Phase 2B's
+official-source findings. It does not re-audit curriculum, change coverage
+classifications, assign external scores, or create the final readiness framework.
+The historical Phase 1/2A findings remain identified as such.
 
 ## Executive Summary
 
@@ -34,6 +36,75 @@ Existing writing, teacher guidance, and some explicit SEP labels were
 underreported in the original review. Important performance and response-capture
 limitations remain. Adding labels cannot substitute for student performance.
 
+## Official-Source Findings Integrated in Phase 2C
+
+These findings were verified in Phase 2B on 2026-09-19 and integrated here in
+Phase 2C. There is no established mandatory EQuIP-to-EdReports-to-CURATE
+approval sequence. Program review and lesson/unit review are separate targets.
+
+**EdReports comprehensive-program review.** This is independent external review.
+The current framework is
+[EdReports Science 6-8 Review Criteria and Evidence Guide v2.0 (July 2025)](https://edreports.org/process/review-tools/science).
+Its gateways are 1: Designed for NGSS; 2: Coherence and Scope; and 3: Teacher
+and Student Supports. Gateway 1 Meets or Partial permits Gateway 2; Gateway 3
+requires Meets in both Gateways 1 and 2, including Gateway 2's non-negotiable
+indicators. The current criteria PDF and evidence guide conflict on Criterion
+1.2 and 3.2 scoring ranges. No range is silently adopted here; clarification
+is needed before future scoring work. [Review selection is discretionary](https://edreports.org/about/faqs);
+a request does not guarantee acceptance. This report assigns no EdReports score.
+
+**CURATE Massachusetts program review.** DESE's
+[CURATE process](https://www.doe.mass.edu/instruction/curate/process.html) is active
+for science/STE and accepts publisher submissions at no review fee. A qualifying
+prior independent alignment review is required. EdReports is an accepted route;
+DESE may approve another independent review under the
+[COMMBUYS solicitation, Amendment 6](https://www.commbuys.com/bso/external/bidDetail.sda?docId=BD-23-1026-DOE02-DOE01-77790&external=true&parentUrl=close).
+CURATE is not an automatic next stage after EdReports, and an EQuIP unit report
+is not established as a qualifying whole-program review.
+
+The [current STE rubric](https://www.doe.mass.edu/instruction/curate/ste-rubric.docx)
+has two domains. Standards Alignment includes Scope and Progression and Approach
+to Instruction. Classroom Application includes Accessibility for Students,
+Usability for Teachers, and Impact on Learning. Impact on Learning receives
+narrative treatment without a rating. These criteria are separate from
+EdReports gateways and from this report's fourteen internal topics.
+
+**EQuIP lesson/unit review.** The [science rubric v3.1](https://www.nextgenscience.org/resources/equip-rubric-science)
+has three categories: NGSS 3D Design; NGSS Instructional Supports; Monitoring
+NGSS Student Progress. It supports internal development and external
+lesson/unit evaluation, not comprehensive-program gateway scoring. It is not
+established as a mandatory EdReports or CURATE prerequisite.
+[NextGenScience's external service](https://ngs.wested.org/reviews-of-science-and-engineering-instructional-materials-and-assessment/)
+offers paid reviews; top-rated full unit reviews may qualify for an NGSS Design
+Badge. The [free Peer Review Panel intake is paused](https://www.nextgenscience.org/peer-review-panel/nextgenscience-peer-review-panel).
+A successful unit review establishes neither whole-program quality nor automatic
+entry to EdReports/CURATE. No review acceptance or outreach has occurred here.
+
+**Massachusetts high-quality terminology and procurement.** DESE
+[operationally identifies qualifying materials as high quality](https://www.doe.mass.edu/instruction/curate/default.html)
+using specified external-review outcomes. This is not a universal certification
+or a mandatory science adoption decision. Qualifying CURATE ratings can establish
+[Departmental Master Agreement eligibility](https://www.doe.mass.edu/instruction/curate/master-agreement.html);
+contracting and local district purchasing remain separate. Ratings do not
+guarantee purchases, reimbursement, state purchasing, or grant funding. Grant
+conditions are program-specific; Phase 2B did not establish an automatic science
+funding route.
+
+**Unresolved admission scope.** Grade-span eligibility for LyfeLabz's Grade
+6-only and Grades 6-7 configurations remains to be confirmed directly with
+EdReports and DESE CURATE. Neither narrower-span admission nor complete 6-8
+coverage as a universal admission requirement was established. Grade-band
+scoring scope is not an admission rule. Do not decide to build Grade 8 solely
+on that assumption. A lesson/unit review is a separate possibility without a
+complete Grade 8 program.
+
+Other Phase 2B questions remain unresolved: the two EdReports scoring conflicts,
+its inconsistent purchase/temporary-access wording, CURATE's descriptions of
+review depth, DESE dashboard wording versus the newer high-quality definition,
+and current queue/access arrangements. This document does not settle them or
+promise a submission date. Direct clarification and a dedicated pathway-specific
+readiness analysis belong to later work.
+
 ## Evidence Base and Reproducibility
 
 Sources include the two coverage maps, the HQIM narrative and proposed sequence,
@@ -51,6 +122,15 @@ Phase 1 read-only verification passed for the 50-unit curriculum manifest and
 all 49 configured lesson builds. Those checks establish source/output
 consistency, not pedagogical validity or live production behavior. Historical
 platform test totals are not fresh certification results from this review.
+
+Official standards references were verified separately in Phase 2B:
+[Massachusetts 2016 STE Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf),
+Grade 6 printed pages 54-59/PDF 57-62 and Grade 7 printed pages 60-65/PDF 63-68.
+MA standards integrate DCIs and SEPs. CCC assignments in the repository are
+instructional analyses, not official third components assigned to every MA PE.
+[DESE instructional guidance](https://www.doe.mass.edu/stem/ste/g6-g8.pdf) permits
+practices to be combined with content beyond a single PE's stated practice.
+State assessment boundaries are not blanket prohibitions on instruction.
 
 ## 1. Three-Dimensional Learning
 
@@ -79,10 +159,14 @@ counts of instructional interactions.
 **Internal assessment: broad instruction, incomplete performance verification.**
 
 The Grade 6 map separates instructional coverage from student performance and
-assessment evidence. ESS1-5(MA), LS4-1, LS4-2, ETS1-6(MA), and ETS2-3(MA)
-require qualification. PS1-6 requires an implemented investigation, not just a
-badge correction. The map contains eight `(MA)` codes, five in engineering.
-Exact official requirements and boundaries await separate verification.
+assessment evidence. Phase 1 flagged ESS1-5(MA), LS4-1, LS4-2, ETS1-6(MA), and
+ETS2-3(MA). Phase 2B confirmed that ESS1-5(MA) requires use of graphical displays,
+not independent construction; that historical qualification must be interpreted
+accordingly. PS1-6 requires an implemented investigation, not just a badge
+correction. PS1-8(MA) also explicitly requires a conducted experiment; existing
+classification/method-selection evidence does not establish that performance.
+The map contains eight `(MA)` codes, five in engineering. Historical audit totals
+and all coverage classifications remain unchanged pending curriculum review.
 
 Biological Evolution includes anatomical CER but also substantial
 natural-selection mechanism content and quiz emphasis. Grade-boundary
@@ -224,6 +308,13 @@ claiming attainment percentages. PS3-2 has background in Forms of Energy while
 its full modeling performance is absent. The five ETS3 standards have dedicated
 instruction; publisher comparisons are not established by repository evidence.
 
+Phase 2B corrected ESS3-2's demand to obtaining and communicating information
+about how past-event data support forecasts. Review the retained Partial label
+against that wording, rather than requiring an independent forecast. ETS1-2
+includes a decision matrix and models of competing solutions; ETS3-3(MA)
+includes research and communication. These corrections do not assign new
+coverage or external ratings.
+
 ## 12. Instructional Design Quality
 
 **Internal assessment: promising evidence, not an independently validated rating.**
@@ -231,7 +322,8 @@ instruction; publisher comparisons are not established by repository evidence.
 Source tasks demonstrate meaningful models, explanations, investigations, and
 design work. Consistency of architecture is not equivalent to consistent PE
 performance, and a planned specification is not classroom evidence. External
-review expectations and claims of superiority require separate verification.
+review readiness and claims of superiority require separate evidence; verified
+framework identities above do not establish either.
 
 ## 13. Assessment Integrity
 
@@ -261,13 +353,13 @@ require the owning workstream and targeted verification.
 
 ## Internal Evidence Readiness Matrix
 
-This is a fourteen-topic internal work matrix, not verified EQuIP/CURATE rubric
+This is a fourteen-topic internal work matrix, not EQuIP/CURATE rubric
 numbering, official ratings, or external blocking/eligibility determinations.
 
 | Topic | Repository finding | Remaining action |
 |---|---|---|
 | 1. Three dimensions | Substantial evidence; some interpretations overstated | Refine action-level citations; distinguish use, selection, authorship, and feedback. |
-| 2. PE alignment | Broad instruction; performance qualifications remain | Review five Grade 6 qualifications and implement missing PS1-6 investigation. |
+| 2. PE alignment | Broad instruction; performance qualifications remain | Interpret historical qualifications using corrected PE wording; review PS1-8(MA) experimental evidence and the missing PS1-6 investigation. |
 | 3. Phenomena | Strong examples, uneven depth | Cite implemented tasks; do not count planned examples. |
 | 4. Sense-making | Predictions and writing exist | Identify actual student reasoning instead of lexical dosage. |
 | 5. Evidence-based explanations | LS1-3 and LS4-2 writing already exists | Strengthen evaluation/retention; no duplicate tasks. |
@@ -276,15 +368,20 @@ numbering, official ratings, or external blocking/eligibility determinations.
 | 8. Teacher support | 50 educator-note lessons; Floatia playbook | Derive consolidated guidance without duplicating sources. |
 | 9. Differentiation guidance | Partial guidance; active workstream | Wait for completed capability evidence. |
 | 10. Sequence | Proposed teaching arrangement | Reconcile prerequisites and related excluded specifications. |
-| 11. Standards mapping | 22 Grade 6 / 28 Grade 7 mapped standards | Review verb/boundary evidence and official framework sources. |
+| 11. Standards mapping | 22 Grade 6 / 28 Grade 7 mapped standards | Use Phase 2B wording/page corrections; review enacted performance without changing counts here. |
 | 12. Design quality | Meaningful implemented examples | Avoid universal or comparative ratings without evidence. |
 | 13. Integrity | Server finalization/client restrictions | State scope accurately; coordinate response-retention architecture. |
 | 14. Equity/access | Public surface and baseline supports | Verify outcomes and final delivery claims, not just source markers. |
 
 ## Preparation Order and Deferred Decisions
 
-Correct repository evidence first, then verify current official framework and
-external review requirements before deciding submission scope or sequence.
+Phase 2A corrected repository evidence; Phase 2B verified official sources;
+Phase 2C integrates those findings. Future curriculum strengthening remains
+separate from pathway-specific readiness analysis and grade-span eligibility
+clarification. Confirm admission scope before committing to program-level review
+preparation or an additional-grade build. External preparation must name the
+organization, edition, and program or lesson/unit being reviewed. This is not a
+new detailed roadmap or evidence of contact, acceptance, or a scheduled review.
 Existing LS writing should be evaluated and retained rather than duplicated.
 PS1-6 investigation, Grade 7 performance weaknesses, and tool/boundary questions
 need curriculum decisions. Teacher-guide extraction should preserve canonical

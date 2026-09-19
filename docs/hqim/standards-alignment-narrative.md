@@ -4,9 +4,14 @@ LyfeLabz Grade 6-7 Science - repository-evidence draft. Factually corrected
 2026-09-19 against commit `4f6f02b01eb988696592265223d2ddff28832eb4` and the
 Phase 1 audit. Sources are the current canonical lessons, activity files,
 assessment implementation, and the two coverage maps. This is not an official
-HQIM determination. EdReports, EQuIP, DESE, and CURATE eligibility, rubric
-structure, and submission procedures require later official-source verification.
-No external research was performed in this correction pass.
+HQIM determination. Phase 2A performed no external research.
+
+**Phase 2C integration (2026-09-19):** Phase 2B verified the official standards
+and distinct external-review mechanisms; see the [verified external-review distinctions](review-board-report.md#official-source-findings-integrated-in-phase-2c).
+EdReports/CURATE concern comprehensive programs; EQuIP v3.1 concerns lessons
+and units. Grade-span eligibility for Grade 6-only and Grades 6-7 configurations
+remains to be confirmed directly with EdReports and DESE CURATE. A successful
+unit review would not establish whole-program quality or admission.
 
 ## Instructional Coverage: Grade 6
 
@@ -20,16 +25,19 @@ Phase 1 found 16 strongly supported instructional classifications and five
 requiring review or qualification: ESS1-5(MA), LS4-1, LS4-2, ETS1-6(MA), and
 ETS2-3(MA). PS1-6 has substantial reaction/thermal-energy instruction but lacks
 the required student-planned and conducted investigation. These are internal
-repository judgments, not an official rating system. The coverage map records
-the standard-specific qualifications.
+repository judgments, not an official rating system. Phase 2B subsequently
+confirmed that ESS1-5(MA) requires use of graphical displays, not independent
+construction. The historical count remains unchanged; the coverage map records
+that clarification and the separate PS1-8(MA) experimental-performance question.
 
 Physical Science has seven mapped standards. Nature of Waves, Wave Behavior,
 and Digital Signals support PS4-1/2/3 through wave models, energy accounting,
 encoding/decoding, and written explanations; Amplitude Challenge adds student
 trial data and analysis. Measuring Matter, Physical Properties, and Pure
 Substances and Mixtures support the particulate/density/separation standards.
-Chemical Reactions supports PS1-6 concepts, while Gravity supplies attraction
-and mass-dependent-force evidence. Instructional breadth does not close the
+PS1-8(MA) requires a conducted experiment; conceptual separation work alone
+does not establish it. Chemical Reactions supports PS1-6 concepts, while Gravity
+supplies attraction and mass-dependent-force evidence. Instructional breadth does not close the
 missing PS1-6 investigation performance.
 
 Life Science has five mapped standards. What Is Life?, Cell Types, and
@@ -46,15 +54,19 @@ simulation. Layers of Time addresses relative dating and cross-cutting evidence;
 Continental Drift combines geographic and fossil evidence. Earth's Place in the
 Universe supplies nested graphical displays and a written explanation. Students
 navigate that supplied model; independent visual-model construction is not
-established by the navigation interaction.
+established by the navigation interaction and is not an explicit ESS1-5(MA)
+requirement.
 
 Technology/Engineering has six mapped standards. Engineering Design, Designing
 to Scale, and Choosing Materials prepare students for Floatia's physical
 prototype, scaled drawing, tests, revision, and decision defense. Intended-user
 communication and full tool-performance evaluation need clearer evidence.
 Across all Grade 6 strands, the map contains eight codes with the `(MA)` suffix,
-five of them in engineering; exact official wording and boundaries remain for
-the later framework verification pass.
+five of them in engineering. Phase 2B verified the [Massachusetts 2016 STE Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf)
+(Grade 6 printed pages 54-59/PDF 57-62; Grade 7 printed pages 60-65/PDF 63-68).
+MA standards integrate DCIs and SEPs. CCC analysis describes instructional
+reasoning, not a fixed official third component of every MA PE. State assessment
+boundaries are not blanket limits on instruction.
 
 ## Instructional Depth and Coherence
 
@@ -96,6 +108,13 @@ ball-run already contains physical prototypes, trial tables, controlled
 revisions, before/after comparisons, and reflections. ETS1-4 and ETS1-7(MA)
 may be stronger than their Partial labels suggest. Curriculum review should
 precede reclassification or commissioning new work.
+
+Phase 2B also corrected ESS3-2: students obtain and communicate information
+about how past-event data inform forecasts, rather than necessarily producing
+independent forecasts. Retain its Partial label pending evidence review.
+ETS1-2 requires a decision matrix and models of competing solutions;
+ETS3-3(MA) includes researching and communicating transportation-system
+information. These wording checks do not reclassify curriculum evidence.
 
 The four Gap labels concern missing full performance tasks: PS3-1 graphing,
 PS3-2 relative-position modeling, PS3-3 thermal-device design/build/test, and

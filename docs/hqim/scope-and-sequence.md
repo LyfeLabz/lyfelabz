@@ -3,8 +3,17 @@
 LyfeLabz Grade 6-7 proposed instructional sequence. Repository factual
 correction: 2026-09-19, baseline `4f6f02b01eb988696592265223d2ddff28832eb4`.
 Source evidence is the two coverage maps and current instructional files.
-External review eligibility, rubric structure, and submission procedures require
-later official-source verification. This is not an eligibility determination.
+Phase 2A deferred external-source questions. Phase 2C (2026-09-19) integrates
+Phase 2B findings; see the [verified external-review distinctions](review-board-report.md#official-source-findings-integrated-in-phase-2c).
+Grade-span eligibility for Grade 6-only and Grades 6-7 configurations remains
+to be confirmed with EdReports and DESE CURATE. This proposed sequence does
+not establish program-review admission. EQuIP lesson/unit review is separate;
+Grade 8 development is not recommended to satisfy an unverified admission rule.
+
+Standards references use the [Massachusetts 2016 STE Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf):
+Grade 6 printed pages 54-59/PDF 57-62; Grade 7 printed pages 60-65/PDF 63-68.
+MA standards integrate DCIs and SEPs; CCCs here are instructional reasoning,
+not official per-PE assignments.
 
 The nine-unit sequences below are a recommended teaching arrangement over an
 existing catalog, not the live catalog's display order. `index.html` and its
@@ -138,7 +147,8 @@ is available from the start of the year.
 - **Rationale:** The Earth-Sun-Moon system is the program's largest-scale
   modeling exercise, and weaving the gravity claim-and-evidence standard into
   the same unit gives the orbital models their causal engine while planting the
-  field intuition Grade 7 will formalize.
+  field intuition Grade 7 will formalize. ESS1-5(MA) requires using graphical
+  displays; independent construction is not an additional explicit PE demand.
 
 ### Unit 6: Matter and Its Particles
 
@@ -151,13 +161,17 @@ is available from the start of the year.
   [lesson_chemical-reactions.html](../../lesson_chemical-reactions.html)
 - **Supporting files:** none (the four lessons are mutually reinforcing;
   [lesson_conducting-experiments.html](../../lesson_conducting-experiments.html)
-  supports the PS1-6 experimental verb)
+  supports experimental practices; it does not itself establish performance
+  of the PS1-6 or PS1-8(MA) experiments)
 - **Prerequisites:** none
 - **Rationale:** Three lessons develop one particulate model from three
   directions (density as packing, properties as particle behavior, mixtures as
   separable pure substances) before Chemical Reactions puts the model to work
   on energy in and energy out, giving students the particle picture that Grade
-  7 thermal energy is built on.
+  7 thermal energy is built on. PS1-8(MA) requires students to conduct an
+  experiment showing physical separation, not just select a method. That
+  evidence needs review; the missing PS1-6 investigation remains a separate
+  performance concern. No experiment is implemented by this sequence document.
 
 ### Unit 7: Waves and Signals
 
@@ -225,7 +239,7 @@ designed around where those units will sit, not around their absence.
 ### Unit 1: Earth's Dynamic Surface
 
 - **Family:** Dynamic Earth
-- **Standards:** 7.MS-ESS2-2; 7.MS-ESS3-2 (Partial, formalization planned)
+- **Standards:** 7.MS-ESS2-2; 7.MS-ESS3-2 (Partial, evidence review against corrected MA wording pending)
 - **Anchor lesson:** [lesson_earths-layers.html](../../lesson_earths-layers.html)
   (Grade 7 gold standard)
 - **Supporting files:** [lesson_plate-tectonics.html](../../lesson_plate-tectonics.html),
@@ -239,9 +253,11 @@ designed around where those units will sit, not around their absence.
   global to local scales of surface change, because resolving the mechanism
   behind the Grade 6 continental-drift evidence is the most motivating payoff
   available for returning students. The three hazard lessons already carry
-  substantial forecasting content; a badge-plus-assessment pass on the
-  earthquake lesson is the planned route to addressing ESS3-2 within this
-  unit; a badge alone would not establish the missing data-based forecast.
+  forecasting-related content. Phase 2B corrected the earlier requirement for
+  an independently produced data-based forecast: ESS3-2 asks students to obtain
+  and communicate information about how past-event data support forecasts.
+  Review that performance before changing Partial or selecting new work. The
+  earlier badge-plus-assessment proposal is not a settled correction.
 
 ### Unit 2: Water Systems
 
@@ -384,7 +400,10 @@ designed around where those units will sit, not around their absence.
   five-standard ETS3 instructional suite, where students who began with wave pulses in
   Grade 6 now model the inputs, processes, outputs, and feedback of the
   communication, transportation, and structural systems society builds on that
-  physics.
+  physics. ETS3-3(MA) includes research and communication, and ETS1-2 requires
+  both a decision matrix and a model of each competing solution. Review those
+  performance demands without treating the existing descriptions as proof of
+  full attainment.
 
 ## Vertical Articulation
 
@@ -395,13 +414,13 @@ map, with the anchor file on each side. Planned Grade 7 assets are marked.
 |---|---|---|---|---|
 | 6.MS-ESS2-3 | lesson_continental-drift.html | 7.MS-ESS2-2 | lesson_plate-tectonics.html | Drift introduces Wegener's evidence; tectonics explains the mechanism. The plate-tectonics lesson badges both codes by design, making the articulation inspectable in one file. |
 | 6.MS-PS2-4 | lesson_gravity.html | 7.MS-ESS2-4 | lesson_water-cycle.html | The Grade 6 gravity claim is a named driver in the Grade 7 PE itself: gravity pulls water along its downhill paths through the hydrosphere. |
-| 6.MS-ESS1-4 | lesson_layers-of-time.html | 7.MS-ESS3-2 | lesson_earthquakes.html (badge and assessed task planned) | Reading geologic evidence for patterns at Grade 6 scales up to forecasting future catastrophic events from those patterns. |
+| 6.MS-ESS1-4 | lesson_layers-of-time.html | 7.MS-ESS3-2 | lesson_earthquakes.html (corrected-demand evidence review pending) | Reading geologic evidence supports obtaining and communicating information about how patterns inform hazard forecasts; independent forecasting is not the MA PE requirement. |
 | 6.MS-LS1-2 | lesson_organelles.html | 7.MS-LS2-3 | lesson_photosynthesis.html | Chloroplasts and mitochondria at cell scale become producers and consumers at ecosystem scale; investigation_cell-energy.html teaches the cell-scale half of the bridge. |
 | 6.MS-LS4-1 / 6.MS-LS4-2 | lesson_biological-evolution.html | 7.MS-LS1-4 | lesson_reproductive-success.html | Anatomical-evidence reasoning about relationships extends to the behaviors and specialized structures that increase reproductive success. |
 | 6.MS-PS2-4 | simulation_gravity-wells.html | 7.MS-PS2-5 | lesson_introduction-to-electricity.html | The PE explicitly includes fields between masses; the Grade 6 gravity cluster is the first field case students argue from. |
 | 6.MS-PS2-4 | simulation_gravity-wells.html | 7.MS-PS3-2 | planned Energy of Motion unit | The gravity-well simulation gives students the position-and-potential-energy intuition the planned Grade 7 lesson will formalize; it is a bridge, not the lesson. |
 | 6.MS-PS1-7(MA) | lesson_measuring-matter.html | 7.MS-PS3-4 / 7.MS-PS3-6(MA) | lesson_heat-transfer.html | Temperature as average particle kinetic energy builds directly on the Grade 6 particulate model of matter. |
-| 6.MS-ETS1-1 / 6.MS-ETS2-1/2-2/2-3(MA) | challenge_welcome-to-floatia.html | 7.MS-ETS1-2 / 7.MS-ETS1-4 / 7.MS-ETS1-7(MA) | lesson_design-tradeoffs.html | Grade 6 defines problems and builds a first prototype; Grade 7 adds systematic evaluation with a decision matrix and iterative optimization. |
+| 6.MS-ETS1-1 / 6.MS-ETS2-1/2-2/2-3(MA) | challenge_welcome-to-floatia.html | 7.MS-ETS1-2 / 7.MS-ETS1-4 / 7.MS-ETS1-7(MA) | lesson_design-tradeoffs.html | Grade 6 defines problems and builds a first prototype; Grade 7 adds systematic evaluation with a decision matrix and models of competing solutions, plus iterative optimization. |
 | 6.MS-PS4-3 | lesson_digital-signals.html | 7.MS-ETS3-1(MA) | lesson_communication-systems.html | Encoder, transmitter, and decoder vocabulary begins in the Grade 6 digitized-signals lesson - the cleanest cross-grade narrative in the catalog. |
 
 ## Assessment Architecture Note

@@ -11,8 +11,15 @@ that all of them are demonstrated.
 instruction. Phase 1 judged 16 instructional classifications strongly supported,
 five requiring qualification, and PS1-6 instructionally supported but missing
 investigation performance. These are internal judgments, not official ratings.
-External framework associations, procedures, and eligibility require later
-source verification. No external research was performed here.
+Phase 2A deferred external-source questions and performed no external research.
+
+**Phase 2C integration (2026-09-19):** Phase 2B verified the
+[Massachusetts 2016 STE Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf) (Grade 6 printed pages 54-59; PDF pages 57-62).
+MA standards integrate DCIs and SEPs. The CCC relationships below are useful
+instructional analysis, not official third-component assignments to each MA PE.
+NGSS-oriented three-dimensional review is distinct; see the
+[verified external-review distinctions](review-board-report.md#official-source-findings-integrated-in-phase-2c). Program-review eligibility for Grade 6-only
+and Grades 6-7 remains to be confirmed with EdReports and DESE CURATE.
 
 - **Generated:** 2026-09-17. Documentation pass only; no lesson files were
   modified.
@@ -67,7 +74,9 @@ galaxies. Students use and interpret a supplied nested
 model in the Zoom Out interactive of lesson_earths-place-in-the-universe.html:
 each predefined scene keeps a "you are here" marker inside the next. The
 closing written task explains the nesting from Earth to the universe. This is
-model use and explanation, not independent visual-model construction. The
+model use and explanation, not independent visual-model construction. Phase 2B
+confirmed that use of graphical displays is the MA PE demand; independent
+construction could enrich instruction but is not an explicit requirement. The
 deep-field reveal supplies evidence, but a goal or received explanation alone
 does not establish a student-constructed argument. Scale, Proportion, and
 Quantity and Systems and System Models are defensible through nested-scale
@@ -241,8 +250,10 @@ real objects.
 
 ### 6.MS-PS1-8(MA)
 
-The instructional focus is that many materials are mixtures of pure substances that can
-be separated by physical means. Students enact Constructing Explanations in
+The official PS1-8(MA) performance requires conducting an experiment showing
+that mixtures can be physically separated into their component pure substances.
+The mapped instruction supports the concepts; that is distinct from enacting
+the required experiment. Students enact Constructing Explanations in
 lesson_pure-substances-and-mixtures.html, classifying kitchen samples as pure
 substances, homogeneous mixtures, or heterogeneous mixtures with a learning
 goal to "explain your reasoning using particles," and then choosing the

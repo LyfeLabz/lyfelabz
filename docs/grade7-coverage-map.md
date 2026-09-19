@@ -6,15 +6,17 @@ The current map retains **21 Primary / 3 Partial / 4 Gap** across 28 standards.
 These are instructional mapping classifications, not independently established
 full-performance attainment. Grade 6 has meaningful instruction mapped to all
 22 standards, with performance qualifications in its coverage map. External
-review eligibility, framework details, and procedures await official-source
-verification; no external research was performed for this correction.
+review requirements were deferred in Phase 2A, which performed no external research.
+Phase 2C (2026-09-19) integrates Phase 2B findings; it does not reclassify coverage.
+See the [verified external-review distinctions](hqim/review-board-report.md#official-source-findings-integrated-in-phase-2c). Grade-span eligibility for
+Grade 6-only and Grades 6-7 configurations remains to be confirmed directly
+with EdReports and DESE CURATE.
 
 - **Source of standards:** Massachusetts 2016 Science and Technology/Engineering
-  Curriculum Framework, Grade 7 section (printed pages 54-60 of the framework;
-  the Grade 6 map's "pages 54-59" citation used PDF pagination - the printed
-  Grade 6 section is pages 47-53). The original 2026-09-14 map reported direct extraction and cross-checking
-  against the framework. Those external details are historical attribution,
-  not newly verified official-source findings.
+  Curriculum Framework, Grade 7 section (printed pages 60-65; PDF pages 63-68).
+  The original 2026-09-14 map reported extraction and cross-checking. Phase 2B
+  independently verified the [Massachusetts 2016 STE Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf) and all 28 Grade 7 codes;
+  Phase 2C corrects the source references without rewriting that audit history.
 - **Grade 7 standard count:** 28, across four disciplines: Earth and Space
   Science (4), Life Science (7), Physical Science (9), Technology/Engineering (8).
 - **Generated:** 2026-09-14. Documentation/audit pass only; no lesson or page
@@ -53,7 +55,7 @@ Lessons in the build pipeline also exist in `lesson-sources/` and `app/lessons/`
 |---|---|---|---|---|
 | 7.MS-ESS2-2 | Construct an explanation for how Earth's surface has changed over scales from local to global | Primary | lesson_earths-layers.html, lesson_plate-tectonics.html, lesson_earthquakes.html, lesson_types-of-volcanoes.html, lesson_hotspot-volcanoes.html, lesson_weathering-and-erosion.html; Partial: simulation_floatlandia-fracture.html | The deepest Grade 7 cluster: six badged lessons spanning global (plates, volcanoes, quakes) to local (weathering/erosion) scales. Earth's Layers is the Grade 7 gold-standard lesson. Floatlandia Fracture has legacy `ESS1-4` and `ESS2-2` badges/tooltips requiring curriculum review. |
 | 7.MS-ESS2-4 | Model how the Sun's energy and Earth's gravity drive the water cycle through the hydrosphere | Primary | lesson_water-cycle.html | Single badged lesson; state changes and multiple pathways addressed. |
-| 7.MS-ESS3-2 | Analyze data from past geologic events to forecast location and likelihood of future catastrophic events | Partial | lesson_earthquakes.html, lesson_types-of-volcanoes.html, lesson_hotspot-volcanoes.html | The hazard lessons contain prediction and location-pattern content, but that does not establish analysis of historical-event data to forecast likelihood. Review the actual historical-data and likelihood task before changing the classification. |
+| 7.MS-ESS3-2 | Obtain and communicate information about how past geologic-event data are analyzed for patterns and used to forecast future catastrophic-event locations and likelihood | Partial | lesson_earthquakes.html, lesson_types-of-volcanoes.html, lesson_hotspot-volcanoes.html | Phase 1/2A questioned independent analysis and forecasting. Phase 2B corrected that interpretation: the MA PE asks students to obtain and communicate information about how data support forecasts; active analysis/forecasting is outside its state assessment expectation. Retain Partial pending evidence review against the corrected demand. |
 | 7.MS-ESS3-4 | Argue that human activities and technologies can mitigate impacts of population and consumption on the environment | Primary | lesson_renewable-and-nonrenewable-resources.html; Partial: lesson_human-impacts.html, lesson_innovation-and-sustainability.html | Renewable/nonrenewable lesson carries the badge; Human Impacts and the unbadged Innovation and Sustainability lesson reinforce the mitigation argument. |
 
 ### Life Science (7.MS-LS)
@@ -86,12 +88,12 @@ Lessons in the build pipeline also exist in `lesson-sources/` and `app/lessons/`
 
 | Standard Code | Standard Description | Coverage | File(s) | Notes |
 |---|---|---|---|---|
-| 7.MS-ETS1-2 | Evaluate competing solutions with a decision matrix against criteria and constraints; use models to evaluate design variations | Primary | lesson_design-tradeoffs.html | Badged decision-matrix lesson. |
+| 7.MS-ETS1-2 | Evaluate competing solutions with a decision matrix against criteria and constraints; use a model of each competing solution to evaluate design variations | Primary | lesson_design-tradeoffs.html | Badged decision-matrix lesson. The PE also requires models of competing solutions; review that evidence rather than equating a completed matrix with the full performance. |
 | 7.MS-ETS1-4 | Generate and analyze data from iterative testing and modification to optimize an object, tool, or process | Partial | challenge_ball-run_day1.html through day5.html, challenge_slow-motion-ball-run.html | Ball-run already requires trial tables, controlled revisions, before/after comparisons, and conclusions. Partial may understate this evidence; review grade ownership and evaluation criteria. A badge is not the missing performance. |
 | 7.MS-ETS1-7(MA) | Construct a prototype of a solution to a given design problem | Partial | challenge_ball-run_day1.html through day5.html | Physical prototype construction already occurs in ball-run. Partial may be conservative; review grade ownership and assessment criteria before commissioning another task. Grade 6 Floatia is supporting context, not automatically Grade 7 assessed evidence. |
 | 7.MS-ETS3-1(MA) | Explain the function of a communication system and its components (source, encoder, transmitter, receiver, decoder, storage) | Primary | lesson_communication-systems.html | Badged. |
 | 7.MS-ETS3-2(MA) | Compare benefits and drawbacks of different communication systems | Primary | lesson_communication-systems.html; Partial: lesson_ragebaiting.html | Badged. The media-literacy lesson is Grade 6 in the current catalog, usable as cross-grade adjacent content rather than a Grade 7-owned lesson. |
-| 7.MS-ETS3-3(MA) | Describe how transportation systems move people and goods; identify vehicle subsystems | Primary | lesson_transportation-systems.html | Badged; subsystems (structural, propulsion, guidance, suspension, control) addressed. |
+| 7.MS-ETS3-3(MA) | Research and communicate information about transportation-system design for moving people and goods; identify and describe vehicle subsystems | Primary | lesson_transportation-systems.html | Badged; subsystems (structural, propulsion, guidance, suspension, control) addressed. Research-and-communication performance requires evidence review; the Primary classification remains instructional. |
 | 7.MS-ETS3-4(MA) | Show how components of a structural system work together; relate structure design to intended use | Primary | lesson_structural-systems.html | Badged. |
 | 7.MS-ETS3-5(MA) | Use systems engineering to model inputs, processes, outputs, and feedback in a transportation, structural, or communication system | Primary | lesson_engineering-systems.html | Badged; the capstone of the ETS3 systems suite. |
 
@@ -139,9 +141,12 @@ ball-run work. Those decisions are deferred to curriculum review.
 
 ### Near-gaps (Partial - formalize rather than build)
 
-- **7.MS-ESS3-2 - forecasting geologic hazards.** Content exists across the
-  earthquake and volcano lessons; needs a badge and an assessed
-  patterns-to-forecast task, or a small dedicated lesson.
+- **7.MS-ESS3-2 - communicating how hazard forecasts use data.** Content exists
+  across the earthquake and volcano lessons. The earlier independent-forecast
+  deficiency used an overstated performance demand. Review how students obtain
+  and communicate information about data, patterns, locations, and likelihood
+  before changing Partial or commissioning another task. A badge is not evidence
+  of performance.
 - **7.MS-ETS1-4 and 7.MS-ETS1-7(MA) - iterative testing and prototype
   construction.** Ball-run already does both and captures trial data and
   reflection. Review the current Partial classifications, grade attribution,
@@ -159,20 +164,21 @@ on-ramp - expansion points, not cold starts:
 |---|---|---|
 | 7.MS-ESS2-2 (surface change, plate processes) | 6.MS-ESS2-3 (lesson_continental-drift.html) | Already realized: lesson_plate-tectonics.html badges both codes - drift introduces the evidence, tectonics explains the mechanism. The model bridge for all others. |
 | 7.MS-ESS2-4 (Sun + gravity drive water cycle) | 6.MS-PS2-4 (lesson_gravity.html) | Gravity as the driver of water's downhill paths; the Grade 6 gravity claim is a named prerequisite in the PE itself. |
-| 7.MS-ESS3-2 (forecast from geologic patterns) | 6.MS-ESS1-4 (lesson_layers-of-time.html) | Reading geologic evidence for patterns is the Grade 6 skill this PE scales up to prediction. |
+| 7.MS-ESS3-2 (communicate how geologic data support forecasts) | 6.MS-ESS1-4 (lesson_layers-of-time.html) | Reading geologic evidence supports understanding and communicating how patterns inform hazard forecasts; an independently produced forecast is not the MA PE requirement. |
 | 7.MS-LS2-3 (ecosystem matter/energy transfer) | 6.MS-LS1-2 (lesson_organelles.html, investigation_cell-energy.html) | Chloroplasts/mitochondria at cell scale become producers/consumers at ecosystem scale. investigation_cell-energy (confirmed Grade 6) teaches the cell-scale half of this bridge. |
 | 7.MS-LS1-4 (reproductive success) | 6.MS-LS4-1/4-2 (lesson_biological-evolution.html) | Anatomical-evidence reasoning extends to behaviors/structures that boost reproduction. |
 | 7.MS-PS2-5 (fields without contact) | 6.MS-PS2-4 (lesson_gravity.html, simulation_gravity-wells.html) | The PE explicitly includes fields between masses; the Grade 6 gravity cluster is its first case. |
 | 7.MS-PS3-2 (position and potential energy) | 6.MS-PS2-4 (simulation_gravity-wells.html) | The Grade 6 simulation gives students the gravity-well intuition the new Grade 7 lesson will formalize; it is a bridge, not the lesson. |
 | 7.MS-PS3-4/3-6(MA) (thermal energy) | 6.MS-PS1-7(MA) particulate model (lesson_measuring-matter.html) | Temperature as average particle kinetic energy builds directly on the Grade 6 particle model. |
-| 7.MS-ETS1-2/1-4/1-7(MA) (evaluate, iterate, prototype) | 6.MS-ETS1-1, 6.MS-ETS2-1/2-2/2-3(MA) (engineering arc + Floatia capstone) | Grade 6 defines problems and builds a first prototype; Grade 7 adds systematic evaluation and iterative optimization. |
+| 7.MS-ETS1-2/1-4/1-7(MA) (evaluate, iterate, prototype) | 6.MS-ETS1-1, 6.MS-ETS2-1/2-2/2-3(MA) (engineering arc + Floatia capstone) | Grade 6 defines problems and builds a first prototype; Grade 7 adds a decision matrix, models of competing solutions, and iterative optimization. |
 | 7.MS-ETS3-1(MA) (communication system components) | 6.MS-PS4-3 (lesson_digital-signals.html) | Encoder/transmitter/decoder vocabulary begins in the Grade 6 digitized-signals lesson - the cleanest cross-grade narrative in the catalog. |
 
 ---
 
 ## Anchor Candidates
 
-Strongest existing Grade 7 content for the eventual submission narrative:
+Existing Grade 7 anchors for pathway-specific evidence preparation. Unit-level
+review does not establish whole-program quality or entry into EdReports/CURATE:
 
 - **Earth-surface cluster (7.MS-ESS2-2)** - six badged lessons anchored by
   lesson_earths-layers.html, the Grade 7 gold-standard lesson, plus the
@@ -196,8 +202,9 @@ Strongest existing Grade 7 content for the eventual submission narrative:
 ## Notes & Caveats
 
 1. **Historical framework attribution.** The original map cites the Massachusetts
-   2016 STE Framework, Grade 7 (printed pages 54-60), extracted from the
-   framework's middle school section. It reports bracketed notes confirming
+   2016 STE Framework, Grade 7, and reported extraction from its middle school
+   section. Phase 2B verified the correct location: printed pages 60-65, PDF
+   pages 63-68. The original attribution reports bracketed notes confirming
    grade assignments (e.g., "MS-ETS1-2, MS-ETS1-4, and MS-ETS1-7(MA) are found
    in grade 7") and exclusions: **MS-LS1-6, MS-LS1-8, and MS-ETS1-3 from NGSS
    are not included in the MA framework at any grade.**
@@ -236,4 +243,6 @@ Strongest existing Grade 7 content for the eventual submission narrative:
    standards, not lessons. Off-grade codes on Grade 7 pages
    (7.MS-ESS2-2 pages carry no Grade 6 codes except lesson_plate-tectonics's
    deliberate 6.MS-ESS2-3 bridge badge) were verified against the framework's
-   grade assignments in the historical correction work; not reverified here.
+   grade assignments in the historical correction work. Phase 2B separately
+   verified the official grade assignments; Phase 2C does not re-audit lesson
+   performance or select replacement badges.

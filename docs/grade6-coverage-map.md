@@ -1,19 +1,24 @@
 # Grade 6 STE Standards Coverage Map
 
 Repository evidence map for LyfeLabz Grade 6. External review eligibility,
-rubric requirements, and submission procedures require later official-source
-verification; this document does not establish them.
+rubric requirements, and submission procedures are distinct from instructional
+coverage; this document does not establish external readiness.
 
 **Repository factual correction: 2026-09-19**, checked against commit
 `4f6f02b01eb988696592265223d2ddff28832eb4`. The original map classifications
 are retained; the performance qualifications below govern their interpretation.
 
 - **Source of standards:** Massachusetts 2016 Science and Technology/Engineering
-  Curriculum Framework, Grade 6 section (pages 54-59 of the framework PDF).
+  Curriculum Framework, Grade 6 section (printed pages 54-59; PDF pages 57-62).
   Historically cross-checked in the repository's correction pass
   (`docs/standards-code-cleanup-report.md`, June 2026), which validated every
   Grade 6 code against the official framework. Exact wording, boundaries, and
-  external review requirements were not independently reverified in this pass.
+  external review requirements were not independently reverified in Phase 2A.
+- **Phase 2C integration (2026-09-19):** Phase 2B verified the official
+  [Massachusetts 2016 STE Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf) and the 22-code Grade 6 set.
+  Standards corrections below do not change Primary classifications. See the
+  [verified external-review distinctions](hqim/review-board-report.md#official-source-findings-integrated-in-phase-2c). Grade-span eligibility for Grade 6-only
+  and Grades 6-7 configurations remains to be confirmed with EdReports and DESE CURATE.
 - **Grade 6 standard count:** 22, across four disciplines: Earth and Space
   Science (4), Life Science (5), Physical Science (7), Technology/Engineering (6).
 - **Generated:** 2026-09-14 (regenerated from a full repository badge scan;
@@ -70,7 +75,7 @@ the lesson-build pipeline also exist as `lesson-sources/` canonical sources and
 |---|---|---|---|---|
 | 6.MS-PS1-6 | Plan and conduct an experiment on exothermic and endothermic reactions and thermal energy transfer | Primary | lesson_chemical-reactions.html | Substantial instruction, but the PE's plan-and-conduct investigation performance is missing. The lesson also carries a clearly labeled 8.MS-PS1-5 enrichment strand (atoms rearranged); Grade 6 assessed content is reactants/products and energy in/out. A student-planned and conducted exo/endo investigation is needed to address that missing performance. |
 | 6.MS-PS1-7(MA) | Particulate model of density; proportional reasoning to compare relative densities | Primary | lesson_measuring-matter.html, lesson_physical-properties.html | On-grade particulate ("particles") framing. |
-| 6.MS-PS1-8(MA) | Show many materials are mixtures of pure substances separable by physical means | Primary | lesson_pure-substances-and-mixtures.html, lesson_physical-properties.html | Keep "pure substance" at the particle level in assessed content (see Notes & Caveats). |
+| 6.MS-PS1-8(MA) | Conduct an experiment showing that mixtures of pure substances can be physically separated into their component pure substances | Primary | lesson_pure-substances-and-mixtures.html, lesson_physical-properties.html | Conceptual classification and separation-method selection do not establish the required conducted experiment. Retain Primary as an instructional mapping label; review experimental evidence later (see Gap List). |
 | 6.MS-PS2-4 | Evidence that gravitational forces are attractive and noticeable only with very large mass | Primary | lesson_gravity.html, lesson_sun-earth-moon.html, simulation_gravity-wells.html | Gravity lesson carries the claim-and-evidence core; Sun-Earth-Moon reinforces; gravity-wells simulation extends (its un-prefixed MS-ESS1-2 tag remains an unresolved curriculum-review item - see Notes & Caveats). |
 | 6.MS-PS4-1 | Diagram a simple wave: amplitude, frequency, wavelength; amplitude relates to energy | Primary | lesson_nature-of-waves.html, lesson_wave-behavior.html, lesson_digital-signals.html, investigation_amplitude-challenge.html | Gold-standard cluster (Nature of Waves is a Grade 6 gold-standard lesson). |
 | 6.MS-PS4-2 | Show light rays and mechanical waves are reflected, absorbed, or transmitted | Primary | lesson_wave-behavior.html, investigation_amplitude-challenge.html; Tangential: game_photon-runner.html | Qualitative, on grade. Photon Runner reinforces light behavior but carries no badge. |
@@ -114,7 +119,7 @@ These are internal audit judgments, not a new official classification system.
 
 | Standards requiring qualification | Repository evidence and remaining question |
 |---|---|
-| 6.MS-ESS1-5(MA) | Students use supplied nested graphical displays and explain the nesting; independent graphical representation is less evident. |
+| 6.MS-ESS1-5(MA) | Phase 1 questioned independent graphical representation. Phase 2B confirmed that the PE requires use of graphical displays, not independent construction. Review use/illustration evidence without imposing that extra requirement. |
 | 6.MS-LS4-1 | Transitional-fossil interpretation exists; systematic fossil-record analysis and grade-boundary balance need review. |
 | 6.MS-LS4-2 | Written anatomical-evidence CER exists; surrounding mechanism content and assessment emphasis require grade-boundary review. |
 | 6.MS-ETS1-6(MA) | Floatia requires design defense; intended-user communication, limitations, and evaluation criteria need clearer tracing. |
@@ -146,6 +151,12 @@ includes performance and assessment gaps, not merely documentation polish:
    assessment, but no student-planned and conducted reaction investigation.
    This is a substantive missing performance, not absence of instruction.
 
+The Phase 2B wording check also confirms that **PS1-8(MA) requires a conducted
+separation experiment**. The existing SEP/CCC analysis establishes classification
+and method selection, not that experimental performance. Review the evidence
+before deciding curriculum changes; the historical audit counts above and the
+22 Primary classifications are unchanged.
+
 ### Cross-strand
 
 3. **Strengthen existing writing and its evaluation, do not duplicate it.**
@@ -165,8 +176,9 @@ includes performance and assessment gaps, not merely documentation polish:
 ## Anchor Lesson Candidates
 
 Standards with multiple Primary/supporting files, or lessons that are the clear
-flagship of their strand - strongest candidates for the HQIM submission
-narrative:
+flagship of their strand - candidates for pathway-specific evidence preparation.
+A lesson/unit review and a comprehensive-program review have different scopes;
+these anchors do not establish eligibility or whole-program quality:
 
 - **Cells cluster (6.MS-LS1-1, LS1-2)** - lesson_what-is-life.html (gold
   standard), lesson_cell-types.html, lesson_organelles.html, plus 3
@@ -195,12 +207,14 @@ narrative:
 ## Notes & Caveats
 
 1. **Framework version.** Standards list, wording, clarifications, and
-   assessment boundaries are the Massachusetts 2016 STE Framework (Grade 6,
-   pp. 54-59), as validated by the repo's June 2026 standards-code cleanup.
-   Standards NGSS places in middle school but Massachusetts assigns to Grade 7
-   or 8 (ESS2-1/2/4/5/6, ESS3-*, LS1-4/5/6/7, LS2-*, PS1-1/2/4/5, PS2-3/5,
-   PS3-*, ETS1-2, ETS3-*) are intentionally excluded; repo pages carrying those
-   codes are Grade 7/8 lessons, not Grade 6 gaps.
+   assessment boundaries are in the Massachusetts 2016 STE Framework (Grade 6,
+   printed pages 54-59; PDF pages 57-62). The June 2026 cleanup is historical
+   repository work; Phase 2B separately verified the official source. Standards
+   assigned to Grades 7/8 are not Grade 6 gaps. NGSS MS-LS1-6 and MS-LS1-8 are
+   not included in the MA framework, rather than being assigned to another grade.
+   State assessment boundaries limit state assessment, not all instruction.
+   Enrichment, assessed grade ownership, and external NGSS review expectations
+   remain distinct curriculum-review questions.
 2. **Original mapping method.** The earlier map used explicit
    `6.MS-*` badge/goal-card codes in each page (machine-scanned across all root
    HTML). Depth (Primary vs Partial) was judged from each page's learning-goal
