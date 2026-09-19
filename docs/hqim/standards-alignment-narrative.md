@@ -1,190 +1,170 @@
 # Standards Alignment Narrative
 
-LyfeLabz Grade 6-7 Science - HQIM submission draft (EdReports gateway / MA DESE
-CURATE). Source evidence: `docs/grade6-coverage-map.md` and
-`docs/grade7-coverage-map.md`, both generated 2026-09-14 from a full repository
-badge scan. Grade 6 is the primary submission unit; Grade 7 is presented as an
-extension.
+LyfeLabz Grade 6-7 Science - repository-evidence draft. Factually corrected
+2026-09-19 against commit `4f6f02b01eb988696592265223d2ddff28832eb4` and the
+Phase 1 audit. Sources are the current canonical lessons, activity files,
+assessment implementation, and the two coverage maps. This is not an official
+HQIM determination. EdReports, EQuIP, DESE, and CURATE eligibility, rubric
+structure, and submission procedures require later official-source verification.
+No external research was performed in this correction pass.
 
-## Completeness: Grade 6
+## Instructional Coverage: Grade 6
 
-All 22 Grade 6 performance expectations in the Massachusetts 2016 Science and
-Technology/Engineering Framework have Primary coverage, meaning a lesson or
-assessed experience is built around each standard rather than merely touching
-it. Coverage was determined by a machine scan of the explicit standards badges
-on every published page, with depth judged against each page's learning-goal
-cards and educator notes, and every code was validated against the official
-framework during a June 2026 standards-code correction pass.
+All 22 Grade 6 standards in the repository's Massachusetts 2016 STE map have
+meaningful mapped instruction. The map retains its 22 Primary classifications:
+a lesson or assessed experience is built around each standard. Primary does not
+mean complete performance-expectation attainment, and badges or learning goals
+alone do not establish student performance or mastery.
 
-In Physical Science, all seven standards are at Primary depth. The strand is
-anchored by the waves cluster: lesson_nature-of-waves.html,
-lesson_wave-behavior.html, and lesson_digital-signals.html, three of the four
-Grade 6 gold-standard lessons, carry 6.MS-PS4-1 through PS4-3, supported by
-investigation_amplitude-challenge.html. The particulate-model standards
-(PS1-7(MA), PS1-8(MA)) are carried by a mutually reinforcing matter cluster of
-lesson_measuring-matter.html, lesson_physical-properties.html, and
-lesson_pure-substances-and-mixtures.html, with lesson_chemical-reactions.html
-covering PS1-6 and lesson_gravity.html carrying the PS2-4 claim-and-evidence
-core.
+Phase 1 found 16 strongly supported instructional classifications and five
+requiring review or qualification: ESS1-5(MA), LS4-1, LS4-2, ETS1-6(MA), and
+ETS2-3(MA). PS1-6 has substantial reaction/thermal-energy instruction but lacks
+the required student-planned and conducted investigation. These are internal
+repository judgments, not an official rating system. The coverage map records
+the standard-specific qualifications.
 
-In Life Science, all five standards are at Primary depth, with the deepest
-multi-modal coverage in the catalog. The cells cluster serving LS1-1 and LS1-2
-comprises lesson_what-is-life.html (a gold-standard lesson),
-lesson_cell-types.html, and lesson_organelles.html, plus three investigations,
-two extensions, and three games. LS1-3, an argumentation standard about
-interacting body systems, is served by lesson_body-systems.html together with
-eight body-system pages and eight disease pages that keep the emphasis on
-interaction rather than isolated anatomy. lesson_biological-evolution.html
-anchors LS4-1 and LS4-2.
+Physical Science has seven mapped standards. Nature of Waves, Wave Behavior,
+and Digital Signals support PS4-1/2/3 through wave models, energy accounting,
+encoding/decoding, and written explanations; Amplitude Challenge adds student
+trial data and analysis. Measuring Matter, Physical Properties, and Pure
+Substances and Mixtures support the particulate/density/separation standards.
+Chemical Reactions supports PS1-6 concepts, while Gravity supplies attraction
+and mass-dependent-force evidence. Instructional breadth does not close the
+missing PS1-6 investigation performance.
 
-In Earth and Space Science, all four standards are at Primary depth. The
-Earth-Sun-Moon cluster serving ESS1-1a spans three lessons
-(lesson_sun-earth-moon.html, lesson_phases-of-the-moon.html,
-lesson_eclipses.html), an alignment simulation, and an observation extension.
-lesson_layers-of-time.html carries ESS1-4,
-lesson_earths-place-in-the-universe.html carries the MA-specific ESS1-5(MA),
-and lesson_continental-drift.html carries ESS2-3 within its assessment boundary
-of evidence rather than mechanism.
+Life Science has five mapped standards. What Is Life?, Cell Types, and
+Organelles are reinforced by investigations, extensions, and games. Body
+Systems has interaction scenarios and a required written explanation tracing
+at least three systems. Biological Evolution has fossil/anatomical comparisons
+and an explicit whale-origin claim-evidence-reasoning task. Its substantial
+natural-selection mechanism content and quiz emphasis still need grade-boundary
+review; a corrected badge does not establish that above-grade content is absent.
 
-In Technology/Engineering, all six standards, including the four MA-specific
-codes, are at Primary depth. Three instructional lessons
-(lesson_engineering-design.html, lesson_designing-to-scale.html,
-lesson_choosing-materials.html) carry ETS1-1, ETS1-5(MA), ETS1-6(MA),
-ETS2-1(MA), and ETS2-2(MA), and the challenge_welcome-to-floatia.html capstone
-assesses ETS2-3(MA).
+Earth and Space Science has four mapped standards. The Sun-Earth-Moon cluster
+includes phase/alignment model use, with written explanations and an eclipse
+simulation. Layers of Time addresses relative dating and cross-cutting evidence;
+Continental Drift combines geographic and fossil evidence. Earth's Place in the
+Universe supplies nested graphical displays and a written explanation. Students
+navigate that supplied model; independent visual-model construction is not
+established by the navigation interaction.
 
-## Depth and Coherence
+Technology/Engineering has six mapped standards. Engineering Design, Designing
+to Scale, and Choosing Materials prepare students for Floatia's physical
+prototype, scaled drawing, tests, revision, and decision defense. Intended-user
+communication and full tool-performance evaluation need clearer evidence.
+Across all Grade 6 strands, the map contains eight codes with the `(MA)` suffix,
+five of them in engineering; exact official wording and boundaries remain for
+the later framework verification pass.
 
-Coverage in LyfeLabz is not incidental badge placement. Every anchor lesson
-implements a shared instructional architecture in which the standard's
-performance expectation shapes the sequence of the lesson itself: a
-mystery-driven entry phenomenon, prediction before revelation, and vocabulary
-that emerges after observation rather than preceding it. Four examples show how
-that architecture serves the specific standard each lesson targets.
+## Instructional Depth and Coherence
 
-The waves gold-standard trio is the clearest case. 6.MS-PS4-1 asks students to
-use models to describe amplitude, frequency, and wavelength and to relate
-amplitude to energy. lesson_nature-of-waves.html is built almost entirely from
-predict-then-reveal interactions (the page contains over seventy prediction
-prompts and reveal moments): students manipulate wave models, commit to a
-prediction about what changing amplitude or frequency will do, and then observe
-the result before the term is named. The wave vocabulary the standard requires
-is therefore earned through the modeling practice the standard names, not
-front-loaded as definitions.
+The strongest examples involve observable student actions, not counts of words
+such as "predict" or "reveal" in HTML. Nature of Waves lets students manipulate
+wave representations; Amplitude Challenge requires trials across distinct
+amplitudes and interpretation of the resulting data. These substantiate model
+use, investigation, and quantitative reasoning. No numerical claim about
+prediction/reveal dosage is made without an enumerated interaction inventory.
 
-The engineering strand is a deliberate learn-then-apply arc. Students first
-learn to define criteria and constraints (lesson_engineering-design.html), work
-with scale and visual representation (lesson_designing-to-scale.html), and
-select materials by property (lesson_choosing-materials.html, whose signature
-interactive assesses property-first material selection for ETS2-2(MA)). The
-Welcome to Floatia capstone then applies all of these without re-teaching them,
-while it assesses ETS2-3(MA) directly: students build, test, and refine a
-physical prototype and defend their decisions. The distinction between where a
-standard is taught and where it is applied is documented in the capstone's own
-educator notes, which is precisely the taught-versus-assessed clarity HQIM
-review looks for.
+The engineering sequence has an explicit learn-then-apply structure. Floatia's
+Teacher Playbook names prerequisite lessons, materials, five-period pacing,
+safety, checkpoints, and an extension for early-finishing teams. Its students
+produce criteria notes, a materials table, a scaled drawing, test observations,
+and a defense. A successful build does not by itself establish every tool-use
+component or the quality of an individual's explanation.
 
-The matter cluster shows coherence across lessons rather than within one.
-PS1-7(MA) and PS1-8(MA) both depend on the particulate model of matter, and
-lesson_measuring-matter.html, lesson_physical-properties.html, and
-lesson_pure-substances-and-mixtures.html develop that single model from three
-directions: density as particle packing, observable properties as particle-level
-behavior, and mixtures as physically separable combinations of pure substances.
-A student meets the same model three times with increasing demand, which is the
-framework's Structure and Function integration theme enacted rather than cited.
+The matter cluster connects particle representations, density ratios, physical
+properties, and separation decisions. The signal cluster connects qualitative
+noise resistance to encoding and decoding. These are defensible program-level
+connections. They do not establish uniform depth in every lesson or independently
+verified classroom outcomes.
 
-Finally, lesson_digital-signals.html serves 6.MS-PS4-3, a claim-support
-standard, by structuring the lesson as an argument: students encounter the
-phenomenon of a degraded analog signal, predict what a pulse-based encoding
-would do differently, and assemble the evidence for the claim that digitized
-signals reliably encode and transmit information, staying qualitative per the
-assessment boundary.
+Many lessons use phenomenon entries, prediction with feedback, contextual
+vocabulary, and written synthesis. Vocabulary sections are accessible before
+Engage, and density of interaction varies. Selecting an explanation, reading
+feedback, using a supplied model, and independently constructing an explanation
+or model must be described as different forms of evidence.
 
-## Vertical Articulation
+## Grade 7 and Vertical Articulation
 
-Grade 6 and Grade 7 are designed as one progression under the framework's own
-arc from Structure and Function to Systems and Cycles, and the Grade 7 coverage
-map documents ten explicit bridge points where Grade 6 content in this program
-is the on-ramp to a Grade 7 performance expectation.
+The current Grade 7 map classifies 28 standards as 21 Primary, three Partial,
+and four Gap. The 75% Primary figure is classification arithmetic, not a measure
+of curriculum completion or demonstrated full-performance attainment.
 
-The cleanest cross-grade narrative runs from lesson_digital-signals.html
-(6.MS-PS4-3) into lesson_communication-systems.html (7.MS-ETS3-1(MA)). The
-encoder, transmitter, and decoder vocabulary that Grade 7's communication-system
-standard requires begins in the Grade 6 digitized-signals lesson, so a student
-arriving at the Grade 7 systems suite has already reasoned about the physical
-layer those systems are built on. Equally concrete is the plate tectonics
-bridge: lesson_plate-tectonics.html badges both 6.MS-ESS2-3 and 7.MS-ESS2-2 by
-design. Continental Drift introduces Wegener's evidence at Grade 6; Plate
-Tectonics explains the mechanism at Grade 7, and the shared file makes the
-articulation inspectable rather than asserted.
+PS2-3 has a substantive data-analysis weakness in Introduction to Electricity;
+PS3-4 has a substantive investigation weakness in Heat Transfer. Conversely,
+ball-run already contains physical prototypes, trial tables, controlled
+revisions, before/after comparisons, and reflections. ETS1-4 and ETS1-7(MA)
+may be stronger than their Partial labels suggest. Curriculum review should
+precede reclassification or commissioning new work.
 
-The remaining eight bridges follow the same pattern. Grade 6 gravity (PS2-4)
-feeds both the water-cycle standard (7.MS-ESS2-4, where gravity is named in the
-PE itself) and the fields-without-contact standard (7.MS-PS2-5, for which the
-Grade 6 gravity cluster is the first case). Reading geologic evidence in
-lesson_layers-of-time.html (6.MS-ESS1-4) scales up to hazard forecasting
-(7.MS-ESS3-2). Chloroplasts and mitochondria at cell scale (6.MS-LS1-2) become
-producers and consumers at ecosystem scale (7.MS-LS2-3). Anatomical-evidence
-reasoning (6.MS-LS4-1/4-2) extends to reproductive success (7.MS-LS1-4). The
-gravity-wells simulation gives students the potential-energy intuition the
-planned 7.MS-PS3-2 lesson will formalize. The Grade 6 particulate model
-underlies Grade 7 thermal energy (7.MS-PS3-4/3-6(MA)). And the Grade 6
-engineering arc into Floatia sets up Grade 7's evaluate-iterate-prototype
-standards (7.MS-ETS1-2/1-4/1-7(MA)).
+The four Gap labels concern missing full performance tasks: PS3-1 graphing,
+PS3-2 relative-position modeling, PS3-3 thermal-device design/build/test, and
+LS2-5 ecosystem-protection design evaluation. Forms of Energy already supplies
+potential-energy background; "no related instruction" would be inaccurate.
+The three planned units and their nine proposed files are specifications, not
+implemented curriculum, and contribute no implemented coverage to these counts.
 
-Grade 7 currently stands at 21 of 28 standards at Primary depth, with three
-Partial and four Gaps. The gaps are not scattered omissions; three of the four
-(PS3-1, PS3-2, PS3-3) form a single energy-of-motion cluster, and the fourth
-(LS2-5) is an engineering-practice PE whose method already exists in the Grade
-7 decision-matrix lesson. They are the defined next build sprint, with raw
-material (the ball-run challenge sequence, the heat-transfer lesson, the
-design-tradeoffs method) already in the repository.
+The ten documented bridge points are plausible teaching connections. Digital
+Signals to Communication Systems and Continental Drift to Plate Tectonics are
+particularly concrete. Other bridges require prerequisite planning and boundary
+review. Catalog ownership differs from cross-grade supporting evidence: Plate
+Tectonics and ball-run support connections without automatically proving
+attainment in both grades. The nine-unit HQIM teaching sequences are proposals
+over the subject-grouped live catalog, not its display order.
 
-## Differentiators
+Five Grade 7 ETS3(MA) standards have dedicated lesson instruction. This is a
+repository-verifiable feature; claims that competing publishers omit them, or
+that this guarantees a favorable external review, require separate evidence.
 
-Two features of this program should be weighed explicitly because they are
-uncommon in HQIM submissions.
+## Assessment Evidence and Its Limits
 
-First, LyfeLabz provides complete Primary coverage of the MA-specific ETS3(MA)
-technology-systems strand at Grade 7: five badged lessons spanning
-communication systems, their benefits and drawbacks, transportation systems,
-structural systems, and a systems-engineering capstone
-(lesson_engineering-systems.html) that models inputs, processes, outputs, and
-feedback. Because ETS3(MA) exists only in the Massachusetts framework,
-nationally developed programs routinely omit it; for a CURATE review conducted
-against the 2016 STE Framework specifically, a fully built ETS3 suite is direct
-evidence that this program was authored to the Massachusetts standards rather
-than adapted to them.
+All 50 root lessons contain a textarea. The 49 configured authenticated
+assessment payloads contain 495 `singleChoice` items: 15 for Body Systems and
+ten for each of the other 48. A writing prompt is evidence of an instructional
+task; its existence does not establish automatic scoring, storage, or mastery.
 
-Second, the platform's assessment architecture is built for evidence integrity.
-Student attempts are finalized server-side by a dedicated Cloud Function,
-stored as immutable, ownership-stamped attempt records, and governed by an
-immutability guarantee. Once a student submits, the record of what they
-submitted cannot be modified after the fact, by the student, the teacher, any
-administrative action, or any client operation. For an
-assessment-bearing curriculum, this means the student work a reviewer or
-district examines is exactly the work as it was submitted, which is an
-integrity guarantee that most static or LMS-embedded curricula cannot make.
+For LS1-3, `lesson-sources/lesson_body-systems.html` requires a written
+three-system explanation (`bs-thinking`). For LS4-2,
+`lesson-sources/lesson_biological-evolution.html` requires a whale-origin CER
+(`be-thinking`). Both have model responses, are required by the inspected
+lesson submit flow, and are not automatically scored. Strengthen evaluation
+and retention rather than create duplicate tasks.
 
-## Honest Disclosures
+The inspected authenticated `lessonQuiz.finalize` calls send selected answers
+without those written responses. The legacy public submission branches include
+a `thinking` field. Production receipt was not tested, so neither branch's
+source proves a broader production-retention claim.
 
-Four Grade 7 standards currently have no coverage: 7.MS-PS3-1, PS3-2, and PS3-3
-(the energy-of-motion cluster) and 7.MS-LS2-5 (evaluating ecosystem-protection
-design solutions). The build roadmap is specified in the Grade 7 coverage map:
-a data-and-graphs lesson using the existing ball-run phenomenon for PS3-1, a
-dedicated potential-energy lesson formalizing the gravity-wells intuition for
-PS3-2, a thermal-device design task attached to the heat-transfer lesson for
-PS3-3, and an ecosystem-protection scenario reusing the decision-matrix method
-for LS2-5. Three further standards are Partial, and two of those (ETS1-4 and
-ETS1-7(MA)) require badging and formalized data capture on the existing
-five-day ball-run challenge rather than new construction.
+Authenticated selected-response attempts are finalized server-side, with client
+create/update/delete denied by `platform/firebase/firestore.rules`. This
+supports a narrow application-integrity claim, not an absolute assertion about
+all privileged infrastructure or every student artifact. No comparative
+superiority over other curricula is established here.
 
-At Grade 6, one quality concern deserves naming even though no standard is
-uncovered: 6.MS-ETS2-3(MA) is assessed only in the Floatia capstone, with no
-standalone lesson where tool use and safe fabrication are taught before being
-assessed. The mitigation is the ball-run challenge sequence, five days of
-hands-on prototyping that currently carries no standards badges; it functions
-as unbadged prototyping evidence today and is the designated vehicle for
-thickening ETS2-3 coverage. We state these limitations because the coverage
-maps that generated this narrative are audit documents first, and the program's
-claim to reviewers is only as strong as the evidence trail behind it.
+## Teacher Support, Access, and Deferred Claims
+
+Educator Mode/educator-note markup exists in all 50 root lessons. Forty-nine
+lessons use canonical `lesson-sources/` files with generated public and
+authenticated outputs; Ragebaiting remains root-only. Existing teacher support
+is distributed and uneven. Floatia's playbook is a useful concrete example,
+but no consolidated curriculum teacher guide was located. The root
+`EDUCATOR_MODE_GUIDE.md` is implementation guidance, not that consolidated guide.
+A future guide should be derived from canonical content to avoid a second
+editable source of truth.
+
+Baseline accessibility/scaffolding features are present, including canonical
+styles, skip links, reduced-motion handling, and vocabulary ARIA state. These
+source markers are not accessibility certification. Some extension guidance
+exists; consistent multilingual and differentiated instructional guidance is
+not established across the program.
+
+Differentiation remains active development. The checked-out application has
+`G19_GATE_OPEN = false`, and the checked-in variant manifest is empty. These
+facts do not establish live production configuration. Final capability and
+accessibility conclusions await the owning workstream and separate verification.
+
+Known badge corrections are partly complete: Layer Detective, Amplitude
+Challenge, and Cell Energy's original unprefixed defects are resolved. Gravity
+Wells (`MS-ESS1-2`) and Floatlandia Fracture (`ESS1-4`, `ESS2-2`) remain
+curriculum-review items, including their tooltip descriptions. No replacement
+codes or submission eligibility are decided by this narrative.
