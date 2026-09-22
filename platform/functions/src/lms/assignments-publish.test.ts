@@ -403,116 +403,274 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
     });
   });
 
-  describe("Sprint 30A.3: due date", () => {
-    it("passes dueDate to the adapter when the request supplies one", async () => {
-      setupHappyPath();
+  // The Classroom due date is durable assignment configuration: derived
+  // ONLY from the assignment's stored `dueDate` ("YYYY-MM-DD"), for the
+  // initial publication and every retry. A request value is ignored.
+  describe("Sprint 30A.3: due date from the durable assignment record", () => {
+    function okAdapter(): jest.Mock {
       const publishAssignment = jest.fn().mockResolvedValue({
         lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
         lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
       });
       mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+      return publishAssignment;
+    }
 
-      await __lmsAssignmentsPublishHandler(
-        makeRequest({ dueDate: "2026-09-23" }),
+    it("initial publication sends the assignment's stored due date", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ dueDate: "2026-09-23" }));
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({ dueDate: "2026-09-23" });
+    });
+
+    it("a failed publication followed by a retry (no due date on the request, as after a reload) keeps the same due date", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ dueDate: "2026-09-23" }));
+      const publishAssignment = jest
+        .fn()
+        .mockRejectedValueOnce(new PlatformError("lms.providerUnavailable", "down"))
+        .mockResolvedValueOnce({
+          lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+          lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+        });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      const first = await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n-initial" }));
+      expect(first.status).toBe("failed");
+      // The retry carries only the identifiers the detail-view retry sends;
+      // no browser/session state contributes the due date.
+      const retry = await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n-retry" }));
+
+      expect(retry.status).toBe("succeeded");
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({ dueDate: "2026-09-23" });
+      expect(publishAssignment.mock.calls[1][0]).toMatchObject({ dueDate: "2026-09-23" });
+    });
+
+    it("an assignment without a due date publishes (and retries) without inventing one", async () => {
+      setupHappyPath();
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n1" }));
+      await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n2" }));
+
+      for (const call of publishAssignment.mock.calls) {
+        expect(call[0]).not.toHaveProperty("dueDate");
+      }
+    });
+
+    it("ignores a request dueDate: it can neither add a due date nor override the stored one", async () => {
+      setupHappyPath();
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(makeRequest({ dueDate: "2030-01-01", attemptNonce: "n1" }));
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty("dueDate");
+
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ dueDate: "2026-09-23" }));
+      await __lmsAssignmentsPublishHandler(makeRequest({ dueDate: "2030-01-01", attemptNonce: "n2" }));
+      expect(publishAssignment.mock.calls[1][0]).toMatchObject({ dueDate: "2026-09-23" });
+    });
+
+    it("a malformed stored due date is refused before any upstream call (never forwarded or guessed)", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ dueDate: "Sept 23" }));
+      const publishAssignment = jest.fn();
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await expect(__lmsAssignmentsPublishHandler(makeRequest())).rejects.toMatchObject({
+        code: "lms.assignmentNotPublishable",
+      });
+      expect(publishAssignment).not.toHaveBeenCalled();
+    });
+
+    it("grading/points and topic still flow with a stored due date", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({
+          dueDate: "2026-09-23",
+          classroomGrading: { mode: "graded", maxPoints: 20 },
+        }),
       );
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(makeRequest({ lmsTopicId: "topic-1" }));
 
       expect(publishAssignment.mock.calls[0][0]).toMatchObject({
         dueDate: "2026-09-23",
+        maxPoints: 20,
+        lmsTopicId: "topic-1",
       });
-    });
-
-    it("never sends a dueDate field to the adapter when the request omits one", async () => {
-      setupHappyPath();
-      const publishAssignment = jest.fn().mockResolvedValue({
-        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
-        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
-      });
-      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
-
-      await __lmsAssignmentsPublishHandler(makeRequest());
-
-      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty(
-        "dueDate",
-      );
-    });
-
-    it("rejects a malformed dueDate before any upstream call", async () => {
-      setupHappyPath();
-      const publishAssignment = jest.fn();
-      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
-
-      await expect(
-        __lmsAssignmentsPublishHandler(
-          makeRequest({ dueDate: "not-a-date" }),
-        ),
-      ).rejects.toBeInstanceOf(PlatformError);
-      expect(publishAssignment).not.toHaveBeenCalled();
     });
   });
 
-  describe("Sprint 30A.3: scheduled Classroom publication", () => {
-    const FUTURE_ISO = "2099-01-01T00:00:00.000Z";
+  // Scheduled Classroom publication is derived ONLY from the assignment's
+  // durable `availableAt` (the one teacher-selected instant that also
+  // governs LyfeLabz availability). A publication retry therefore keeps the
+  // schedule with no client-side state, and a request can never make the
+  // two diverge.
+  describe("Scheduled Classroom publication from durable availableAt", () => {
+    const HOUR = 60 * 60 * 1000;
+    const at = (ms: number) => ({ toMillis: () => ms });
+    let nowSpy: jest.SpyInstance<number, []>;
+    const NOW = Date.UTC(2026, 8, 22, 12, 0, 0);
 
-    it("passes scheduledTime to the adapter when the request supplies a genuinely future instant", async () => {
-      setupHappyPath();
-      const publishAssignment = jest.fn().mockResolvedValue({
-        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
-        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
-      });
-      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
-
-      await __lmsAssignmentsPublishHandler(
-        makeRequest({ scheduledTime: FUTURE_ISO }),
-      );
-
-      expect(publishAssignment.mock.calls[0][0]).toMatchObject({
-        scheduledTime: FUTURE_ISO,
-      });
+    beforeEach(() => {
+      nowSpy = jest.spyOn(Date, "now").mockReturnValue(NOW);
+    });
+    afterEach(() => {
+      nowSpy.mockRestore();
     });
 
-    it("never sends a scheduledTime field to the adapter when the request omits one", async () => {
-      setupHappyPath();
+    function okAdapter(): jest.Mock {
       const publishAssignment = jest.fn().mockResolvedValue({
         lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
         lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
       });
       mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+      return publishAssignment;
+    }
+
+    it("a deliberately scheduled assignment publishes as scheduled at exactly its availableAt instant", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({ availableAt: at(NOW + 20 * HOUR) }),
+      );
+      const publishAssignment = okAdapter();
 
       await __lmsAssignmentsPublishHandler(makeRequest());
 
-      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty(
-        "scheduledTime",
-      );
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({
+        scheduledTime: new Date(NOW + 20 * HOUR).toISOString(),
+      });
     });
 
-    it("treats an already-past scheduledTime as immediate publication (no scheduledTime forwarded, no rejection)", async () => {
+    it("retry BEFORE the instant preserves the original schedule (the retry request carries no schedule)", async () => {
       setupHappyPath();
-      const publishAssignment = jest.fn().mockResolvedValue({
-        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
-        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
-      });
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({ availableAt: at(NOW + 20 * HOUR) }),
+      );
+      const publishAssignment = jest
+        .fn()
+        .mockRejectedValueOnce(new PlatformError("lms.providerUnavailable", "down"))
+        .mockResolvedValueOnce({
+          lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+          lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+        });
       mockGetProviderAdapter.mockReturnValue({ publishAssignment });
 
-      await __lmsAssignmentsPublishHandler(
-        makeRequest({ scheduledTime: "2020-01-01T00:00:00.000Z" }),
+      const first = await __lmsAssignmentsPublishHandler(
+        makeRequest({ attemptNonce: "nonce-initial" }),
+      );
+      expect(first.status).toBe("failed");
+      // Teacher retries later (still before the instant), exactly as the
+      // assignment-detail retry does: no schedule on the request.
+      nowSpy.mockReturnValue(NOW + 2 * HOUR);
+      const retry = await __lmsAssignmentsPublishHandler(
+        makeRequest({ attemptNonce: "nonce-retry" }),
       );
 
-      expect(publishAssignment).toHaveBeenCalledTimes(1);
-      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty(
-        "scheduledTime",
-      );
+      expect(retry.status).toBe("succeeded");
+      expect(publishAssignment).toHaveBeenCalledTimes(2);
+      const expected = new Date(NOW + 20 * HOUR).toISOString();
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({ scheduledTime: expected });
+      expect(publishAssignment.mock.calls[1][0]).toMatchObject({ scheduledTime: expected });
     });
 
-    it("rejects a malformed scheduledTime before any upstream call", async () => {
+    it("retry AFTER the instant publishes immediately rather than sending a past scheduledTime", async () => {
       setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({ availableAt: at(NOW - 5 * 60 * 1000) }),
+      );
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(publishAssignment).toHaveBeenCalledTimes(1);
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty("scheduledTime");
+    });
+
+    it("an instant inside the latency buffer is treated as already arrived (immediate)", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({ availableAt: at(NOW + 30 * 1000) }),
+      );
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty("scheduledTime");
+    });
+
+    it("a never-scheduled assignment (no availableAt) publishes immediately, on first publish and on retry", async () => {
+      setupHappyPath();
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n1" }));
+      await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n2" }));
+
+      for (const call of publishAssignment.mock.calls) {
+        expect(call[0]).not.toHaveProperty("scheduledTime");
+      }
+    });
+
+    it("ignores a client-supplied scheduledTime: it can neither schedule an unscheduled assignment nor move a schedule", async () => {
+      setupHappyPath();
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(
+        makeRequest({ scheduledTime: "2099-01-01T00:00:00.000Z" }),
+      );
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty("scheduledTime");
+
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({ availableAt: at(NOW + 20 * HOUR) }),
+      );
+      await __lmsAssignmentsPublishHandler(
+        makeRequest({ scheduledTime: "2099-01-01T00:00:00.000Z", attemptNonce: "n3" }),
+      );
+      expect(publishAssignment.mock.calls[1][0]).toMatchObject({
+        scheduledTime: new Date(NOW + 20 * HOUR).toISOString(),
+      });
+    });
+
+    it("a scheduled assignment keeps BOTH its stored due date and its scheduled instant, on publish and on retry", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({ availableAt: at(NOW + 20 * HOUR), dueDate: "2026-09-25" }),
+      );
+      const publishAssignment = jest
+        .fn()
+        .mockRejectedValueOnce(new PlatformError("lms.providerUnavailable", "down"))
+        .mockResolvedValueOnce({
+          lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+          lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+        });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n-initial" }));
+      await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n-retry" }));
+
+      const expected = {
+        scheduledTime: new Date(NOW + 20 * HOUR).toISOString(),
+        dueDate: "2026-09-25",
+      };
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject(expected);
+      expect(publishAssignment.mock.calls[1][0]).toMatchObject(expected);
+    });
+
+    it("a malformed stored availableAt is refused before any upstream call (never guessed)", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(
+        makeAssignmentDoc({ availableAt: "2026-09-23" }),
+      );
       const publishAssignment = jest.fn();
       mockGetProviderAdapter.mockReturnValue({ publishAssignment });
 
       await expect(
-        __lmsAssignmentsPublishHandler(
-          makeRequest({ scheduledTime: "not-a-timestamp" }),
-        ),
-      ).rejects.toBeInstanceOf(PlatformError);
+        __lmsAssignmentsPublishHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "lms.assignmentNotPublishable" });
       expect(publishAssignment).not.toHaveBeenCalled();
     });
   });

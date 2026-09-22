@@ -51,7 +51,7 @@ const isFiniteNumber = (v: unknown): v is number =>
 // fields are finite (PDR-029a). The caller-scoped callable already fixes
 // `status: "completed"`, so completeness is guaranteed; this guard defends
 // against a malformed record that slipped a numeric field.
-function isValidAttempt(attempt: StudentAttemptSummary): boolean {
+export function isValidAttempt(attempt: StudentAttemptSummary): boolean {
   return (
     isFiniteNumber(attempt.percentage) &&
     isFiniteNumber(attempt.score) &&
@@ -137,29 +137,44 @@ export function aggregateByAssignment(
 
   const result = new Map<string, StudentResultAggregate>();
   for (const [assignmentId, group] of byAssignment) {
-    const best = selectBestAttempt(group);
-    if (best === null) continue;
-    // Count only valid completed attempts. The callable returns completed
-    // attempts exclusively, so this counts the caller's completed attempts
-    // for the assignment (never an in-progress or non-finalized session,
-    // which the backend contract does not return).
-    let attemptCount = 0;
-    for (const attempt of group) {
-      if (isValidAttempt(attempt)) attemptCount += 1;
-    }
-    const perfect = isPerfectAttempt(best);
-    result.set(
-      assignmentId,
-      Object.freeze({
-        assignmentId,
-        bestScore: best.score,
-        bestMaxScore: best.maxScore,
-        bestPercentage: best.percentage,
-        attemptCount,
-        status: deriveStatus(best),
-        canImprove: !perfect,
-      }),
-    );
+    const aggregate = aggregateAttemptSet(assignmentId, group);
+    if (aggregate !== null) result.set(assignmentId, aggregate);
   }
   return result;
+}
+
+// Aggregate an arbitrary set of the caller's own attempts under one
+// representative `assignmentId` (the card it is shown on). Used per
+// assignment by `aggregateByAssignment` above, and by My Science for a
+// Current lesson tile whose cumulative history spans several reassigned
+// occurrences of the same class + lesson (the server supplies which
+// occurrences belong together; the client never infers it). The attempt
+// records themselves are untouched: this only derives the best attempt
+// (PDR-029a/b rules above, which compare `percentage`, so occurrences with
+// different `maxScore` compare correctly) and the count of valid completed
+// attempts. Returns null when the set holds no valid completed attempt.
+export function aggregateAttemptSet(
+  assignmentId: string,
+  attempts: ReadonlyArray<StudentAttemptSummary>,
+): StudentResultAggregate | null {
+  const best = selectBestAttempt(attempts);
+  if (best === null) return null;
+  // Count only valid completed attempts. The callable returns completed
+  // attempts exclusively, so this counts the caller's completed attempts
+  // (never an in-progress or non-finalized session, which the backend
+  // contract does not return).
+  let attemptCount = 0;
+  for (const attempt of attempts) {
+    if (isValidAttempt(attempt)) attemptCount += 1;
+  }
+  const perfect = isPerfectAttempt(best);
+  return Object.freeze({
+    assignmentId,
+    bestScore: best.score,
+    bestMaxScore: best.maxScore,
+    bestPercentage: best.percentage,
+    attemptCount,
+    status: deriveStatus(best),
+    canImprove: !perfect,
+  });
 }

@@ -176,11 +176,24 @@ async function assignmentsTeacherListHandler(
   const returnedStatuses = includeDrafts
     ? PUBLISHED_CLOSED_DRAFT_STATUSES
     : PUBLISHED_CLOSED_STATUSES;
+  //
+  // Reassignment model: `archived` is ALSO read (never returned) solely so
+  // the Current-aware collapse below can see every occurrence of a class +
+  // lesson. An archived Current must not let a lone older published
+  // occurrence look operational again. This widens only the `in` value list
+  // of the same (teacherId ==, schoolId ==, status in) query shape; no new
+  // index.
   const snapshot = await assignmentsCollectionRef()
     .where("teacherId", "==", actor.uid)
     .where("schoolId", "==", actor.schoolId)
-    .where("status", "in", returnedStatuses as string[])
+    .where("status", "in", [...returnedStatuses, "archived"] as string[])
     .get();
+
+  // Every occurrence of each class + lesson this teacher owns, in any
+  // lifecycle status, counted before response filtering.
+  const occurrenceCounts = new Map<string, number>();
+  const occurrenceKey = (classId: string, lessonSlug: string): string =>
+    `${classId}\u0000${lessonSlug}`;
 
   const raw: {
     readonly assignmentId: string;
@@ -195,6 +208,13 @@ async function assignmentsTeacherListHandler(
       // filtering prevents a stale index from silently returning cross-owner
       // records.
       continue;
+    }
+    if (
+      typeof data.classId === "string" &&
+      typeof data.lessonSlug === "string"
+    ) {
+      const key = occurrenceKey(data.classId, data.lessonSlug);
+      occurrenceCounts.set(key, (occurrenceCounts.get(key) ?? 0) + 1);
     }
     if (!isReturnedStatus(data.status, includeDrafts)) continue;
     if (typeof data.classId !== "string" || data.classId.length === 0) continue;
@@ -262,9 +282,14 @@ async function assignmentsTeacherListHandler(
   // untouched: they are the historical/evidence view (gated by the
   // client's own "Show closed" toggle), not the operational one, and
   // Assignment History semantics are out of scope for this collapse.
-  // Reuses the ONE canonical Current-pointer resolver
-  // (`resolveValidCurrentAssignmentId`) - see collapse-published-to-current.ts
-  // for the exact, no-heuristic-fallback contract.
+  // Reuses the ONE canonical three-state Current resolution
+  // (`resolveCurrentScopeState`) - see collapse-published-to-current.ts for
+  // the exact, no-heuristic-fallback contract. A managed class + lesson
+  // whose Current was closed/archived has NO operational published
+  // occurrence here (older ones are never resurrected); the closed Current
+  // stays visible as a closed item, and every historical occurrence stays
+  // available in Curriculum -> Update Assignment (assignmentsLifecycleState,
+  // unchanged).
   const published = items.filter((item) => item.status === "published");
   const nonPublished = items.filter((item) => item.status !== "published");
   const collapsedPublished = await collapsePublishedToCurrent(
@@ -274,6 +299,7 @@ async function assignmentsTeacherListHandler(
       schoolId: actor.schoolId,
       districtId: actor.districtId,
     }),
+    (item) => (occurrenceCounts.get(occurrenceKey(item.classId, item.lessonSlug)) ?? 0) > 1,
   );
   const finalItems = [...collapsedPublished, ...nonPublished];
 

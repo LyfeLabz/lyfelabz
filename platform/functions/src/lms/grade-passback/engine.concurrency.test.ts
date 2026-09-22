@@ -331,6 +331,13 @@ jest.mock("../../shared", () => {
     lmsAssignmentPublicationDocRef: (id: string) => makeDocRef("lmsAssignmentPublications", id),
     lmsConnectionDocRef: (id: string) => makeDocRef("lmsConnections", id),
     lmsGradePassbackDocRef: (id: string) => makeDocRef("lmsGradePassbacks", id),
+    // Reassignment model: canonical Current-pointer and class-enumeration
+    // seams used by the shared occurrence grouping. With no pointer seeded
+    // (every pre-existing test), the scope is unresolved and the engine
+    // keeps its exact per-assignment behavior.
+    assignmentsCurrentDocRef: (classId: string, lessonSlug: string) =>
+      makeDocRef("assignmentsCurrent", `${classId}__${lessonSlug}`),
+    assignmentsCollectionRef: () => makeQueryRef("assignments"),
   };
 });
 
@@ -488,7 +495,7 @@ function seedAttempt(percentage: number): string {
 }
 
 function sync(): ReturnType<typeof synchronizeGradePassback> {
-  return synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+  return synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
 }
 
 function expectNonDecreasing(values: readonly number[]): void {

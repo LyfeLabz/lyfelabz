@@ -23,6 +23,7 @@ import {
   ensureAssignmentRecipient,
   type RecipientOwnershipContext,
 } from "../assignments/assignment-recipients";
+import { isSupersededOccurrence } from "../assignments/current-occurrence-group";
 import { resolveBeginDelivery } from "./resolve-begin-delivery";
 import { buildBeginDeliveryPorts } from "./begin-delivery-deps";
 
@@ -406,6 +407,28 @@ async function assessmentSessionsBeginHandler(
   }
 
   assertAssignmentBeginWindow(assignment);
+
+  // Reassignment model: once a VALID Current exists for this assignment's
+  // class + lesson (the canonical occurrence grouping in
+  // `current-occurrence-group.ts`), every other occurrence is historical
+  // and can no longer begin a session - regardless of launch path (My
+  // Science, an old Google Classroom link, a direct `/app/a/{id}` URL, or a
+  // direct lesson URL), because this callable is the sole session creator.
+  // This is the load-bearing gate that keeps an older occurrence from
+  // bypassing a future-scheduled Current. The refusal reuses the certified
+  // `assignment-window-closed` identifier (ASSESSMENT_IMPLEMENTATION_CONTRACT
+  // §25): the superseded occurrence is closed to new sessions, exactly like
+  // a closed assignment. An unresolved scope (no valid Current) is never
+  // superseded, so legacy behavior is unchanged. Historical records are
+  // only read, never modified.
+  if (
+    await isSupersededOccurrence(input.assignmentId, assignment, actor.districtId)
+  ) {
+    throw new PlatformError(
+      "assignment-window-closed",
+      "Assignment has been superseded by the current assignment for this lesson.",
+    );
+  }
 
   await loadActiveEnrollment(assignment.classId, actor.uid);
 

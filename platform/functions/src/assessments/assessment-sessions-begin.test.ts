@@ -13,7 +13,14 @@ const mockGrantGet = jest.fn();
 const mockIndexGet = jest.fn();
 const mockIsDeliveryEnabled = jest.fn();
 
-const mockAssignmentDocRef = jest.fn(() => ({ get: mockAssignmentGet }));
+const mockAssignmentDocRef: jest.Mock = jest.fn(() => ({ get: mockAssignmentGet }));
+// Reassignment model: the canonical Current pointer read by the shared
+// occurrence grouping. Default "no pointer" keeps every pre-existing test on
+// the legacy (unresolved) path with no extra assignment read.
+const mockCurrentPointerGet: jest.Mock = jest.fn(() =>
+  Promise.resolve({ exists: false, data: () => undefined }),
+);
+const mockAssignmentsCurrentDocRef = jest.fn(() => ({ get: mockCurrentPointerGet }));
 const mockEnrollmentDocRef = jest.fn(() => ({ get: mockEnrollmentGet }));
 const mockSessionDocRef = jest.fn(() => ({ get: mockSessionGet }));
 const mockSessionCreationDocRef = jest.fn(() => ({
@@ -65,6 +72,7 @@ jest.mock("../shared", () => {
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assignmentDocRef: mockAssignmentDocRef,
+    assignmentsCurrentDocRef: mockAssignmentsCurrentDocRef,
     enrollmentDocRef: mockEnrollmentDocRef,
     assessmentSessionDocRef: mockSessionDocRef,
     assessmentSessionCreationDocRef: mockSessionCreationDocRef,
@@ -646,6 +654,18 @@ describe("assessmentSessionsBegin", () => {
     ).rejects.toMatchObject({ code: "assignment-window-closed" });
     expect(mockEnrollmentGet).not.toHaveBeenCalled();
     expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  it("admits the begin once a scheduled availableAt has been reached", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(
+      assignmentSnapshot({
+        availableAt: { toMillis: () => FIXED_NOW_MS },
+      }),
+    );
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    await __assessmentSessionsBeginHandler(makeRequest());
+    expect(mockSessionCreate).toHaveBeenCalledTimes(1);
   });
 
   it("C-2: refuses when the assignment window has already closed", async () => {
@@ -1297,5 +1317,98 @@ describe("assessmentSessionsBegin", () => {
     expect(mockRecipientCreationSet).not.toHaveBeenCalled();
     expect(mockGrantGet).not.toHaveBeenCalled();
     expect(mockSessionCreate).not.toHaveBeenCalled();
+  });
+
+  // Reassignment model (Sprint 30): once a VALID Current exists for the
+  // class + lesson, any other occurrence can no longer begin a NEW session,
+  // whatever the launch path (old Classroom link, direct URL, direct lesson
+  // URL all converge on this sole session creator).
+  describe("assessmentSessionsBegin - superseded occurrence (reassignment model)", () => {
+    const CURRENT_ID = "assign-current";
+
+    function pointerTo(assignmentId: string) {
+      return {
+        exists: true,
+        data: () => ({
+          classId: CLASS_ID,
+          lessonSlug: LESSON_SLUG,
+          assignmentId,
+          teacherId: TEACHER_UID,
+          schoolId: SCHOOL_ID,
+          setAt: { __sentinel: "timestamp" },
+          setBy: TEACHER_UID,
+          source: "teacherResolution",
+        }),
+      };
+    }
+
+    function routeAssignments(byId: Record<string, ReturnType<typeof assignmentSnapshot>>) {
+      mockAssignmentDocRef.mockImplementation((id: string) => ({
+        get: () => Promise.resolve(byId[id] ?? { exists: false, data: () => undefined }),
+      }));
+    }
+
+    afterEach(() => {
+      mockAssignmentDocRef.mockImplementation(() => ({ get: mockAssignmentGet }));
+      mockCurrentPointerGet.mockImplementation(() =>
+        Promise.resolve({ exists: false, data: () => undefined }),
+      );
+    });
+
+    it("refuses a new session on an occurrence superseded by a valid Current (old Classroom / direct link)", async () => {
+      routeAssignments({
+        [ASSIGNMENT_ID]: assignmentSnapshot(),
+        [CURRENT_ID]: assignmentSnapshot(),
+      });
+      mockCurrentPointerGet.mockResolvedValue(pointerTo(CURRENT_ID));
+      await expect(
+        __assessmentSessionsBeginHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "assignment-window-closed" });
+      expect(mockEnrollmentGet).not.toHaveBeenCalled();
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+    });
+
+    it("a future-scheduled Current cannot be bypassed through an older occurrence", async () => {
+      routeAssignments({
+        [ASSIGNMENT_ID]: assignmentSnapshot(),
+        [CURRENT_ID]: assignmentSnapshot({
+          availableAt: { toMillis: () => FIXED_NOW_MS + 24 * 60 * 60 * 1000 },
+        }),
+      });
+      mockCurrentPointerGet.mockResolvedValue(pointerTo(CURRENT_ID));
+      await expect(
+        __assessmentSessionsBeginHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "assignment-window-closed" });
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+    });
+
+    it("the Current occurrence itself begins normally", async () => {
+      routeAssignments({ [ASSIGNMENT_ID]: assignmentSnapshot() });
+      mockCurrentPointerGet.mockResolvedValue(pointerTo(ASSIGNMENT_ID));
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+      await __assessmentSessionsBeginHandler(makeRequest());
+      expect(mockSessionCreate).toHaveBeenCalledTimes(1);
+    });
+
+    it("closing the managed Current does NOT make an older occurrence launchable again", async () => {
+      routeAssignments({
+        [ASSIGNMENT_ID]: assignmentSnapshot(),
+        [CURRENT_ID]: assignmentSnapshot({ status: "closed" }),
+      });
+      mockCurrentPointerGet.mockResolvedValue(pointerTo(CURRENT_ID));
+      await expect(
+        __assessmentSessionsBeginHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "assignment-window-closed" });
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+    });
+
+    it("never-managed legacy scope (no pointer): an occurrence still begins exactly as before", async () => {
+      routeAssignments({ [ASSIGNMENT_ID]: assignmentSnapshot() });
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+      await __assessmentSessionsBeginHandler(makeRequest());
+      expect(mockSessionCreate).toHaveBeenCalledTimes(1);
+    });
   });
 });

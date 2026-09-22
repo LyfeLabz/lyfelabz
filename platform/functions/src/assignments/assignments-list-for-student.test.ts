@@ -26,6 +26,20 @@ const mockAssignmentsCurrentDocRef: jest.Mock = jest.fn(() => ({
   get: mockCurrentDocGet,
 }));
 
+// Reassignment model: the canonical occurrence grouping enumerates a class's
+// assignments with one single-field `classId` equality query. Served from
+// the same in-memory registry `assignmentDocRef` reads (declared below).
+const mockAssignmentsCollectionRef = jest.fn(() => ({
+  where: (_field: string, _op: string, classId: string) => ({
+    get: () =>
+      Promise.resolve({
+        docs: Array.from(assignmentRegistry.entries())
+          .filter(([, snap]) => snap.exists && (snap.data() as { classId?: string }).classId === classId)
+          .map(([id, snap]) => ({ id, data: () => snap.data() })),
+      }),
+  }),
+}));
+
 const mockRequireDistrictContext = jest.fn();
 
 const mockLogInfo = jest.fn();
@@ -52,6 +66,7 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: jest.fn(), error: jest.fn() },
     assignmentDocRef: mockAssignmentDocRef,
     assignmentsCurrentDocRef: mockAssignmentsCurrentDocRef,
+    assignmentsCollectionRef: mockAssignmentsCollectionRef,
     assignmentRecipientsCollectionGroupRef: mockRecipientsCollectionGroupRef,
     requireDistrictContext: mockRequireDistrictContext,
     createRequestLaunchPresentationResolver: mockCreateLaunchResolver,
@@ -127,6 +142,7 @@ type AssignmentOverrides = Partial<{
   status: string;
   title: string;
   publishedAt: unknown;
+  availableAt: unknown;
 }>;
 
 function assignmentSnap(
@@ -644,12 +660,15 @@ describe("assignmentsListForStudent - Current-aware dashboard dedup (Sprint 30 c
     });
   }
 
-  test("one published assignment -> one operational item (no resolver call)", async () => {
+  test("one published assignment with no Current pointer -> one operational item (resolved, legacy state kept)", async () => {
     mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1")] });
     seedAssignment("a1");
     const res = await __assignmentsListForStudentHandler(makeRequest());
     expect(res.items).toHaveLength(1);
-    expect(mockAssignmentsCurrentDocRef).not.toHaveBeenCalled();
+    expect(res.supersededAssignmentIds).toEqual([]);
+    // A student's item set is recipient-scoped, so even a single visible
+    // occurrence is resolved against the canonical pointer.
+    expect(mockAssignmentsCurrentDocRef).toHaveBeenCalledTimes(1);
   });
 
   test("four historical published occurrences + valid Current (not the newest) -> exactly one item representing Current", async () => {
@@ -725,7 +744,7 @@ describe("assignmentsListForStudent - Current-aware dashboard dedup (Sprint 30 c
     expect(ids).toEqual(["a-lesson1", "a-lesson2"]);
   });
 
-  test("the collapsed item's response shape is unchanged - no classId or other new field leaks to the client", async () => {
+  test("the collapsed item carries no classId/teacherId/schoolId - only the additive related-occurrence ids", async () => {
     mockRecipientsGet.mockResolvedValue({
       docs: [recipientDoc("a-0909"), recipientDoc("a-0910")],
     });
@@ -740,7 +759,307 @@ describe("assignmentsListForStudent - Current-aware dashboard dedup (Sprint 30 c
         title: "Earth's Layers",
         status: "published",
         publishedAt: 1_700_000_000_000,
+        // Reassignment model: the superseded occurrence whose attempts
+        // belong to this tile's cumulative history.
+        relatedAssignmentIds: ["a-0909"],
       },
+    ]);
+  });
+});
+
+// Production defect regression (Sprint 30): the (A) Science Engineering
+// Design fixture. Four published occurrences share one class+lesson; the
+// teacher-selected Current is the SECOND (Sep 15 9:10 AM), not the newest.
+// The student holds recipient membership on all four and (as in production)
+// completed attempts on all four, so the surface depends on BOTH the
+// operational items and `supersededAssignmentIds` (see the My Science
+// surface test that consumes this exact response).
+describe("assignmentsListForStudent - strict Current + scheduled availability", () => {
+  const LESSON = "engineering-design";
+  const NOW = Date.UTC(2026, 8, 22, 12, 0, 0);
+  const HOUR = 60 * 60 * 1000;
+  const at = (ms: number) => ({ toMillis: () => ms });
+
+  // Per-(class, lesson) pointer registry so several classes can carry
+  // independent Current pointers in one call.
+  const pointers = new Map<string, string>();
+  function seedPointer(classId: string, lessonSlug: string, assignmentId: string) {
+    pointers.set(`${classId}/${lessonSlug}`, assignmentId);
+  }
+
+  let nowSpy: jest.SpyInstance<number, []>;
+  beforeEach(() => {
+    pointers.clear();
+    nowSpy = jest.spyOn(Date, "now").mockReturnValue(NOW);
+    mockAssignmentsCurrentDocRef.mockImplementation(
+      (classId: string, lessonSlug: string) => ({
+        get: () => {
+          const assignmentId = pointers.get(`${classId}/${lessonSlug}`);
+          if (assignmentId === undefined) {
+            return Promise.resolve({ exists: false, data: () => undefined });
+          }
+          return Promise.resolve({
+            exists: true,
+            data: () => ({
+              classId,
+              lessonSlug,
+              assignmentId,
+              teacherId: TEACHER_UID,
+              schoolId: SCHOOL_ID,
+              setAt: { __sentinel: "timestamp" },
+              setBy: TEACHER_UID,
+              source: "teacherResolution",
+            }),
+          });
+        },
+      }),
+    );
+  });
+  afterEach(() => {
+    nowSpy.mockRestore();
+    mockAssignmentsCurrentDocRef.mockImplementation(() => ({
+      get: mockCurrentDocGet,
+    }));
+  });
+
+  function seedFixture(overrides: Partial<Record<string, AssignmentOverrides>> = {}) {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [
+        recipientDoc("a-0909"),
+        recipientDoc("a-0910"),
+        recipientDoc("a-0956"),
+        recipientDoc("a-1016"),
+      ],
+    });
+    seedAssignment("a-0909", { lessonSlug: LESSON, publishedAt: at(1), ...overrides["a-0909"] });
+    seedAssignment("a-0910", { lessonSlug: LESSON, publishedAt: at(2), ...overrides["a-0910"] });
+    seedAssignment("a-0956", { lessonSlug: LESSON, publishedAt: at(3), ...overrides["a-0956"] });
+    seedAssignment("a-1016", { lessonSlug: LESSON, publishedAt: at(4), ...overrides["a-1016"] });
+  }
+
+  test("production fixture: valid Current -> exactly one operational item carrying the three superseded occurrences as its history", async () => {
+    seedFixture();
+    seedPointer(CLASS_ID, LESSON, "a-0910");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId)).toEqual(["a-0910"]);
+    expect(res.items[0]?.relatedAssignmentIds).toEqual(["a-0909", "a-0956", "a-1016"]);
+    expect(res.supersededAssignmentIds).toEqual(["a-0909", "a-0956", "a-1016"]);
+  });
+
+  test("three reassignments incl. a CLOSED older occurrence: one tile; the closed occurrence's history still belongs to it", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a-A"), recipientDoc("a-B"), recipientDoc("a-C")],
+    });
+    seedAssignment("a-A", { lessonSlug: LESSON, status: "closed" });
+    seedAssignment("a-B", { lessonSlug: LESSON });
+    seedAssignment("a-C", { lessonSlug: LESSON });
+    seedPointer(CLASS_ID, LESSON, "a-C");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId)).toEqual(["a-C"]);
+    expect(res.items[0]?.relatedAssignmentIds).toEqual(["a-A", "a-B"]);
+    expect(res.supersededAssignmentIds).toEqual(["a-A", "a-B"]);
+  });
+
+  test("an occurrence in another class sharing the lesson is never pulled into this group", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [
+        recipientDoc("a-old"),
+        recipientDoc("a-cur"),
+        recipientDoc("b-1", { classId: "class-b" }),
+      ],
+    });
+    seedAssignment("a-old", { lessonSlug: LESSON });
+    seedAssignment("a-cur", { lessonSlug: LESSON });
+    seedAssignment("b-1", { lessonSlug: LESSON, classId: "class-b" });
+    seedPointer(CLASS_ID, LESSON, "a-cur");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    const byId = new Map(res.items.map((i) => [i.assignmentId, i]));
+    expect(Array.from(byId.keys()).sort()).toEqual(["a-cur", "b-1"]);
+    expect(byId.get("a-cur")?.relatedAssignmentIds).toEqual(["a-old"]);
+    expect(byId.get("b-1")?.relatedAssignmentIds).toBeUndefined();
+  });
+
+  test("missing Current pointer -> every occurrence stays operational and nothing is superseded (no heuristic)", async () => {
+    seedFixture();
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId).sort()).toEqual([
+      "a-0909",
+      "a-0910",
+      "a-0956",
+      "a-1016",
+    ]);
+    expect(res.supersededAssignmentIds).toEqual([]);
+  });
+
+  test("pointer naming a MISSING assignment is not authoritative -> legacy: every published occurrence stays listed", async () => {
+    seedFixture();
+    seedPointer(CLASS_ID, LESSON, "a-gone");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toHaveLength(4);
+    expect(res.supersededAssignmentIds).toEqual([]);
+    expect(res.historyOnlyGroups).toEqual([]);
+  });
+
+  test("closing a managed Current: NO operational item, no older occurrence resurrected, history kept as ONE group", async () => {
+    // Four older published occurrences plus the Current, which the teacher
+    // has since closed. The pointer still names it (authoritative).
+    seedFixture();
+    mockRecipientsGet.mockResolvedValue({
+      docs: ["a-0909", "a-0910", "a-0956", "a-1016", "a-cur"].map((id) => recipientDoc(id)),
+    });
+    seedAssignment("a-cur", { lessonSlug: LESSON, status: "closed" });
+    seedPointer(CLASS_ID, LESSON, "a-cur");
+    const before = JSON.stringify(
+      Array.from(assignmentRegistry.entries()).map(([id, snap]) => [id, snap.data()]),
+    );
+
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+
+    expect(res.items).toEqual([]);
+    expect(res.supersededAssignmentIds).toEqual([]);
+    expect(res.historyOnlyGroups).toEqual([
+      { assignmentIds: ["a-0909", "a-0910", "a-0956", "a-1016", "a-cur"] },
+    ]);
+    // Read-only: no historical record was rewritten.
+    expect(
+      JSON.stringify(
+        Array.from(assignmentRegistry.entries()).map(([id, snap]) => [id, snap.data()]),
+      ),
+    ).toBe(before);
+  });
+
+  test("closing Current in one class never affects a legacy (never-managed) class with the same lesson", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [
+        recipientDoc("a-cur"),
+        recipientDoc("a-old"),
+        recipientDoc("b-1", { classId: "class-b" }),
+        recipientDoc("b-2", { classId: "class-b" }),
+      ],
+    });
+    seedAssignment("a-cur", { lessonSlug: LESSON, status: "closed" });
+    seedAssignment("a-old", { lessonSlug: LESSON });
+    seedAssignment("b-1", { lessonSlug: LESSON, classId: "class-b" });
+    seedAssignment("b-2", { lessonSlug: LESSON, classId: "class-b" });
+    seedPointer(CLASS_ID, LESSON, "a-cur");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId).sort()).toEqual(["b-1", "b-2"]);
+    expect(res.historyOnlyGroups).toEqual([{ assignmentIds: ["a-cur", "a-old"] }]);
+  });
+
+  test("valid Current the student is not a recipient of -> no older occurrence is offered as a substitute", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a-0909")] });
+    seedAssignment("a-0909", { lessonSlug: LESSON });
+    // Current exists and is valid, but the student holds no recipient row.
+    seedAssignment("a-0910", { lessonSlug: LESSON });
+    seedPointer(CLASS_ID, LESSON, "a-0910");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toEqual([]);
+    expect(res.supersededAssignmentIds).toEqual(["a-0909"]);
+  });
+
+  test("future availableAt -> hidden from the list before the instant", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a-sched")] });
+    seedAssignment("a-sched", { lessonSlug: LESSON, availableAt: at(NOW + HOUR) });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toEqual([]);
+    expect(res.supersededAssignmentIds).toEqual([]);
+  });
+
+  test("availableAt reached exactly, or already passed -> listed normally", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a-exact"), recipientDoc("a-past")],
+    });
+    seedAssignment("a-exact", { lessonSlug: "lesson-one", availableAt: at(NOW) });
+    seedAssignment("a-past", { lessonSlug: "lesson-two", availableAt: at(NOW - HOUR) });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId).sort()).toEqual(["a-exact", "a-past"]);
+  });
+
+  test("the same assignment becomes available once the clock passes availableAt", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a-sched")] });
+    seedAssignment("a-sched", { lessonSlug: LESSON, availableAt: at(NOW + HOUR) });
+    expect((await __assignmentsListForStudentHandler(makeRequest())).items).toEqual([]);
+    nowSpy.mockReturnValue(NOW + HOUR);
+    const later = await __assignmentsListForStudentHandler(makeRequest());
+    expect(later.items.map((i) => i.assignmentId)).toEqual(["a-sched"]);
+  });
+
+  test("absent availableAt (untouched default Date/Time) -> immediately available", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a-now")] });
+    seedAssignment("a-now", { lessonSlug: LESSON });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId)).toEqual(["a-now"]);
+  });
+
+  test("malformed availableAt fails closed (hidden), never treated as available", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a-bad")] });
+    seedAssignment("a-bad", { lessonSlug: LESSON, availableAt: "2026-09-23" });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toEqual([]);
+  });
+
+  test("future-scheduled Current stays Current: hidden, and no older occurrence is exposed in its place", async () => {
+    seedFixture({ "a-1016": { availableAt: at(NOW + HOUR) } });
+    seedPointer(CLASS_ID, LESSON, "a-1016");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toEqual([]);
+    expect(res.supersededAssignmentIds).toEqual(["a-0909", "a-0910", "a-0956"]);
+
+    nowSpy.mockReturnValue(NOW + HOUR);
+    const later = await __assignmentsListForStudentHandler(makeRequest());
+    expect(later.items.map((i) => i.assignmentId)).toEqual(["a-1016"]);
+    // At/after availability the one Current tile carries the full history.
+    expect(later.items[0]?.relatedAssignmentIds).toEqual(["a-0909", "a-0910", "a-0956"]);
+  });
+
+  test("a not-yet-available superseded occurrence is never disclosed in supersededAssignmentIds", async () => {
+    seedFixture({ "a-1016": { availableAt: at(NOW + HOUR) } });
+    seedPointer(CLASS_ID, LESSON, "a-0910");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId)).toEqual(["a-0910"]);
+    expect(res.items[0]?.relatedAssignmentIds).toEqual(["a-0909", "a-0956"]);
+    expect(res.supersededAssignmentIds).toEqual(["a-0909", "a-0956"]);
+  });
+
+  test("per-class schedules are independent: same lesson, one class future, one class available", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [
+        recipientDoc("a-classA", { classId: "class-a" }),
+        recipientDoc("a-classB", { classId: "class-b" }),
+      ],
+    });
+    seedAssignment("a-classA", {
+      classId: "class-a",
+      lessonSlug: LESSON,
+      availableAt: at(NOW + HOUR),
+    });
+    seedAssignment("a-classB", {
+      classId: "class-b",
+      lessonSlug: LESSON,
+      availableAt: at(NOW - HOUR),
+    });
+    seedPointer("class-a", LESSON, "a-classA");
+    seedPointer("class-b", LESSON, "a-classB");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items.map((i) => i.assignmentId)).toEqual(["a-classB"]);
+  });
+
+  test("response carries no availableAt or scheduling field on items", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a-past")] });
+    seedAssignment("a-past", { lessonSlug: LESSON, availableAt: at(NOW - HOUR) });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(Object.keys(res.items[0] as object).sort()).toEqual([
+      "assignmentId",
+      "lessonSlug",
+      "publishedAt",
+      "status",
+      "title",
+    ]);
+    expect(Object.keys(res).sort()).toEqual([
+      "historyOnlyGroups",
+      "items",
+      "supersededAssignmentIds",
     ]);
   });
 });

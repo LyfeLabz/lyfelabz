@@ -20,6 +20,10 @@ import {
   selectHighestCompletedAttempt,
   type SelectedCompletedAttempt,
 } from "../../assessments/best-attempt";
+import {
+  occurrenceScopeOf,
+  resolveCurrentOccurrenceGroup,
+} from "../../assignments/current-occurrence-group";
 import { resolveLiveCredential } from "../tokens/credential-resolver";
 import { getProviderAdapter } from "../providers/registry";
 import { ensureGoogleClassroomProductionBindings } from "../providers/google-classroom/config-firebase";
@@ -36,6 +40,37 @@ import { computeGradePassbackEarnedPoints } from "./grade-calculation";
 // scaled to the teacher-selected Classroom max points:
 //
 //   earnedPoints = halfEvenRound(bestPercentage / 100 * maxPoints, 2 dp)
+//
+// -------------------- Reassignment model (Sprint 30) --------------------
+//
+// When a class + lesson has a VALID Current (canonical occurrence grouping,
+// `assignments/current-occurrence-group.ts`), the passback TARGET is
+// Current - whichever occurrence the triggering attempt belongs to - and
+// the attempt set is the student's attempts on EVERY occurrence in that
+// group (published, closed, archived; graded or ungraded). "Ungraded"
+// only controls whether an occurrence itself is a grade destination; it
+// never erases demonstrated performance. Current's own grading snapshot and
+// maxPoints govern the conversion; an ungraded Current, or one with no
+// succeeded Classroom publication, sends no grade anywhere (never falling
+// back to older coursework). Historical coursework therefore never
+// receives a grade because of a newer Current. The per-(target, student)
+// passback document, lease, and monotonic generation machinery below are
+// unchanged; they are simply keyed by Current.
+//
+// A MANAGED scope whose Current is no longer operational (the authoritative
+// pointer names a closed/archived in-scope assignment) keeps that pointed
+// assignment as the only destination, with the same cumulative attempt set:
+// no older occurrence is ever resurrected as a destination and no
+// replacement is chosen. This keeps a teacher retry of a failed sync
+// possible after the Current assignment is closed (as it was before the
+// reassignment model); there is no new grace-period rule. If the pointed
+// assignment cannot be confirmed (a concurrent pointer change), no grade is
+// sent.
+//
+// With NO authoritative pointer (unresolved legacy scope), behavior is
+// exactly the pre-existing per-assignment contract: target = the triggering
+// assignment, attempt set = that assignment's attempts. No Current is
+// ever guessed.
 //
 // `bestPercentage` is recomputed in FULL from the canonical current
 // attempt set on every evaluation (never incrementally from one new
@@ -167,6 +202,7 @@ function isPositiveFiniteInteger(value: unknown): value is number {
 // network call."
 async function advanceDesiredStateAndAcquireLease(
   assignmentId: string,
+  occurrenceAssignmentIds: ReadonlyArray<string>,
   studentId: string,
 ): Promise<Phase1Result> {
   return runFirestoreTransaction<Phase1Result>(async (tx) => {
@@ -204,18 +240,24 @@ async function advanceDesiredStateAndAcquireLease(
     }
     const maxPoints = publication.classroomGrading.maxPoints;
 
-    const attemptsSnap = await tx.get(
-      attemptsCollectionRef()
-        .where("studentId", "==", studentId)
-        .where("assignmentId", "==", assignmentId),
-    );
+    // One (studentId, assignmentId) equality query per occurrence - the
+    // exact query shape this engine has always issued, so no new index is
+    // needed. A legacy/unresolved scope has exactly one occurrence (the
+    // target itself), reproducing the pre-existing single query.
     const attempts: {
       readonly id: string;
       readonly data: AssessmentAttemptRecord;
     }[] = [];
-    for (const doc of attemptsSnap.docs) {
-      const data = doc.data();
-      if (data) attempts.push({ id: doc.id, data });
+    for (const occurrenceAssignmentId of occurrenceAssignmentIds) {
+      const attemptsSnap = await tx.get(
+        attemptsCollectionRef()
+          .where("studentId", "==", studentId)
+          .where("assignmentId", "==", occurrenceAssignmentId),
+      );
+      for (const doc of attemptsSnap.docs) {
+        const data = doc.data();
+        if (data) attempts.push({ id: doc.id, data });
+      }
     }
     const best: SelectedCompletedAttempt | null =
       selectHighestCompletedAttempt(attempts);
@@ -649,14 +691,53 @@ async function performUpstreamSyncLoop(
 // Never throws: every failure is reported as a bounded outcome so a caller
 // can never accidentally propagate a Classroom-side failure through an
 // already-committed LyfeLabz operation.
+// Map the triggering assignment to its passback target and attempt scope
+// through the canonical occurrence grouping. Read-only.
+async function resolvePassbackScope(
+  assignmentId: string,
+  districtId: string,
+): Promise<{
+  readonly targetAssignmentId: string;
+  readonly occurrenceAssignmentIds: ReadonlyArray<string>;
+} | null> {
+  const legacy = {
+    targetAssignmentId: assignmentId,
+    occurrenceAssignmentIds: [assignmentId],
+  };
+  const snapshot = await assignmentDocRef(assignmentId).get();
+  const record = snapshot.exists ? snapshot.data() : undefined;
+  if (!record) return legacy;
+  const group = await resolveCurrentOccurrenceGroup(
+    occurrenceScopeOf(record),
+    districtId,
+  );
+  if (group.resolution === "unresolved") return legacy;
+  if (group.currentAssignmentId === null) return null;
+  return {
+    targetAssignmentId: group.currentAssignmentId,
+    occurrenceAssignmentIds: group.occurrences.map((o) => o.assignmentId),
+  };
+}
+
 export async function synchronizeGradePassback(input: {
+  // The assignment the triggering attempt belongs to (finalize) or the
+  // assignment a teacher asked to retry. Under a valid Current the grade
+  // destination is Current, not necessarily this assignment.
   readonly assignmentId: string;
   readonly studentId: string;
+  // The caller's verified district context (finalize: the student actor;
+  // retry: the teacher actor), passed to canonical Current resolution.
+  readonly districtId: string;
 }): Promise<GradePassbackSyncOutcome> {
   let phase1: Phase1Result;
+  let targetAssignmentId = input.assignmentId;
   try {
+    const scope = await resolvePassbackScope(input.assignmentId, input.districtId);
+    if (scope === null) return { outcome: "notApplicable" };
+    targetAssignmentId = scope.targetAssignmentId;
     phase1 = await advanceDesiredStateAndAcquireLease(
-      input.assignmentId,
+      scope.targetAssignmentId,
+      scope.occurrenceAssignmentIds,
       input.studentId,
     );
   } catch (err) {
@@ -681,7 +762,7 @@ export async function synchronizeGradePassback(input: {
   const result = await performUpstreamSyncLoop(phase1);
 
   const auditPayload = {
-    assignmentId: input.assignmentId,
+    assignmentId: targetAssignmentId,
     providerId: phase1.providerId,
   };
   try {
@@ -691,7 +772,7 @@ export async function synchronizeGradePassback(input: {
         actorRole: "system",
         action: "lms.gradePassbackSucceeded",
         targetType: "assignment",
-        targetId: input.assignmentId,
+        targetId: targetAssignmentId,
         payload: { ...auditPayload, earnedPoints: result.earnedPoints },
       });
     } else if (result.outcome === "failed") {
@@ -700,7 +781,7 @@ export async function synchronizeGradePassback(input: {
         actorRole: "system",
         action: "lms.gradePassbackFailed",
         targetType: "assignment",
-        targetId: input.assignmentId,
+        targetId: targetAssignmentId,
         payload: { ...auditPayload, errorCode: result.errorCode },
       });
     }

@@ -153,6 +153,9 @@ describe("lmsGradePassbacksRetry", () => {
     expect(mockSynchronizeGradePassback).toHaveBeenCalledWith({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      // The teacher's verified district context is passed through to
+      // canonical Current resolution (reassignment model).
+      districtId: "district-1",
     });
   });
 

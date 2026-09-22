@@ -696,7 +696,7 @@ describe("Assign dialog - scheduled Classroom publication (Sprint 30A.3)", () =>
     }
   });
 
-  test("deliberately setting a class's Date/Time sends a scheduledTime for that class's publish call", async () => {
+  test("deliberately setting a class's Date/Time records that class's instant durably as availableAt (the server's sole schedule source)", async () => {
     const asn = okAssignments();
     const it = makeIntegrations();
     const mount = mkMount();
@@ -722,14 +722,19 @@ describe("Assign dialog - scheduled Classroom publication (Sprint 30A.3)", () =>
     confirm();
     await settle();
 
-    const c1Publish = it.publishCalls.find((p) => p.linkId === "link-c1");
-    expect(c1Publish?.scheduledTime).toBeDefined();
-    expect(new Date(c1Publish!.scheduledTime!).toISOString()).toBe(
-      c1Publish!.scheduledTime,
+    const c1Draft = asn.draftInputs.find((d) => d.classId === "c1");
+    expect(c1Draft?.availableAt).toBe(
+      new Date(`${futureYear}-09-23T07:45`).toISOString(),
     );
+    // The publish request itself carries no schedule: lmsAssignmentsPublish
+    // derives Classroom scheduledTime from the stored availableAt, so an
+    // initial publish and a later retry cannot disagree.
+    const c1Publish = it.publishCalls.find((p) => p.linkId === "link-c1");
+    expect(c1Publish).toBeDefined();
+    expect(c1Publish).not.toHaveProperty("scheduledTime");
   });
 
-  test("two classes with different deliberately-set schedules produce different scheduledTime values, not a shared one", async () => {
+  test("two classes with different deliberately-set schedules record different availableAt instants, not a shared one", async () => {
     const asn = okAssignments();
     const it = makeIntegrations();
     const mount = mkMount();
@@ -765,11 +770,10 @@ describe("Assign dialog - scheduled Classroom publication (Sprint 30A.3)", () =>
     confirm();
     await settle();
 
-    const c1Publish = it.publishCalls.find((p) => p.linkId === "link-c1");
-    const c3Publish = it.publishCalls.find((p) => p.linkId === "link-c3");
-    expect(c1Publish?.scheduledTime).toBeDefined();
-    expect(c3Publish?.scheduledTime).toBeDefined();
-    expect(c1Publish!.scheduledTime).not.toBe(c3Publish!.scheduledTime);
+    const c1Draft = asn.draftInputs.find((d) => d.classId === "c1");
+    const c3Draft = asn.draftInputs.find((d) => d.classId === "c3");
+    expect(c1Draft?.availableAt).toBe(new Date(`${futureYear}-09-23T07:45`).toISOString());
+    expect(c3Draft?.availableAt).toBe(new Date(`${futureYear}-09-24T11:30`).toISOString());
   });
 
   test("touching only one of two selected classes leaves the untouched class with no scheduledTime", async () => {
@@ -795,6 +799,101 @@ describe("Assign dialog - scheduled Classroom publication (Sprint 30A.3)", () =>
 
     const c3Publish = it.publishCalls.find((p) => p.linkId === "link-c3");
     expect(c3Publish).not.toHaveProperty("scheduledTime");
+  });});
+
+// Scheduled LyfeLabz student availability: the same deliberately chosen
+// instant that becomes Classroom's `scheduledTime` is written, verbatim, as
+// the LyfeLabz draft's `availableAt` (Data Model §3.6: hidden from students
+// until this time). The untouched pre-filled default is never a schedule.
+describe("Assign dialog - scheduled LyfeLabz availability", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+  });
+
+  const setRow = (classId: string, date: string | null, time: string | null) => {
+    if (date !== null) {
+      const d = document.querySelector<HTMLInputElement>(
+        `[data-testid=assign-row-date-${classId}]`,
+      )!;
+      d.value = date;
+      d.dispatchEvent(new Event("input"));
+    }
+    if (time !== null) {
+      const t = document.querySelector<HTMLInputElement>(
+        `[data-testid=assign-row-time-${classId}]`,
+      )!;
+      t.value = time;
+      t.dispatchEvent(new Event("input"));
+    }
+  };
+
+  const openFor = async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFour,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+    return { asn, it };
+  };
+
+  test("untouched Date/Time: no draft carries availableAt (immediate availability preserved)", async () => {
+    const { asn } = await openFor();
+    confirm();
+    await settle();
+    expect(asn.draftInputs.length).toBeGreaterThan(0);
+    for (const input of asn.draftInputs) {
+      expect(input).not.toHaveProperty("availableAt");
+    }
+  });
+
+  test("a deliberate schedule writes availableAt as the ONE instant; the publish request carries no competing schedule", async () => {
+    const { asn, it } = await openFor();
+    const futureYear = new Date().getFullYear() + 1;
+    setRow("c1", `${futureYear}-09-23`, "07:45");
+    confirm();
+    await settle();
+    const c1Draft = asn.draftInputs.find((d) => d.classId === "c1");
+    const c1Publish = it.publishCalls.find((p) => p.linkId === "link-c1");
+    expect(c1Draft?.availableAt).toBe(
+      new Date(`${futureYear}-09-23T07:45`).toISOString(),
+    );
+    expect(c1Publish).toBeDefined();
+    expect(c1Publish).not.toHaveProperty("scheduledTime");
+  });
+
+  test("per-class schedules stay independent; an untouched class keeps immediate availability", async () => {
+    const { asn, it } = await openFor();
+    const futureYear = new Date().getFullYear() + 1;
+    setRow("c1", `${futureYear}-09-23`, "07:45");
+    setRow("c3", `${futureYear}-09-24`, "11:30");
+    confirm();
+    await settle();
+    const draftFor = (id: string) => asn.draftInputs.find((d) => d.classId === id);
+    expect(draftFor("c1")?.availableAt).toBe(new Date(`${futureYear}-09-23T07:45`).toISOString());
+    expect(draftFor("c3")?.availableAt).toBe(new Date(`${futureYear}-09-24T11:30`).toISOString());
+    expect(it.publishCalls.every((p) => !("scheduledTime" in p))).toBe(true);
+    expect(draftFor("c2")).not.toHaveProperty("availableAt");
+    expect(draftFor("c4")).not.toHaveProperty("availableAt");
+  });
+
+  test("a deliberate schedule on a class with no Classroom link still delays LyfeLabz availability", async () => {
+    const { asn, it } = await openFor();
+    const futureYear = new Date().getFullYear() + 1;
+    setRow("c2", `${futureYear}-09-23`, "07:45");
+    confirm();
+    await settle();
+    expect(asn.draftInputs.find((d) => d.classId === "c2")?.availableAt).toBe(
+      new Date(`${futureYear}-09-23T07:45`).toISOString(),
+    );
+    // No Classroom publication exists for an unlinked class.
+    expect(it.publishCalls.find((p) => p.linkId === "link-c2")).toBeUndefined();
   });
 });
 
@@ -827,7 +926,7 @@ describe("Assign dialog - shared Due Date (Sprint 30A.3)", () => {
     ).toHaveLength(1);
   });
 
-  test("setting a Due Date sends it identically for every selected LMS-linked class", async () => {
+  test("setting a Due Date stores it identically on every selected class's draft; publish requests carry none (server derives it)", async () => {
     const asn = okAssignments();
     const it = makeIntegrations();
     const mount = mkMount();
@@ -844,13 +943,21 @@ describe("Assign dialog - shared Due Date (Sprint 30A.3)", () => {
     confirm();
     await settle();
 
+    // Durable assignment configuration: every selected class's draft
+    // (LMS-linked or not) carries the same canonical "YYYY-MM-DD" value.
+    expect(asn.draftInputs.length).toBe(4);
+    for (const input of asn.draftInputs) {
+      expect(input.dueDate).toBe("2026-09-23");
+    }
+    // lmsAssignmentsPublish reads it from the stored assignment, so the
+    // client is not authoritative for it at publication time.
     expect(it.publishCalls.length).toBeGreaterThan(0);
     for (const call of it.publishCalls) {
-      expect(call.dueDate).toBe("2026-09-23");
+      expect(call).not.toHaveProperty("dueDate");
     }
   });
 
-  test("leaving Due Date empty omits dueDate from the publish request", async () => {
+  test("leaving Due Date empty stores no dueDate on any draft and sends none", async () => {
     const asn = okAssignments();
     const it = makeIntegrations();
     const mount = mkMount();
@@ -864,6 +971,10 @@ describe("Assign dialog - shared Due Date (Sprint 30A.3)", () => {
     confirm();
     await settle();
 
+    expect(asn.draftInputs.length).toBeGreaterThan(0);
+    for (const input of asn.draftInputs) {
+      expect(input).not.toHaveProperty("dueDate");
+    }
     expect(it.publishCalls.length).toBeGreaterThan(0);
     for (const call of it.publishCalls) {
       expect(call).not.toHaveProperty("dueDate");

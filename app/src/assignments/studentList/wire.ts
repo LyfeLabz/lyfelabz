@@ -2,6 +2,7 @@ import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 
 import type {
+  HistoryOnlyGroup,
   AssignmentsListForStudentCallable,
   AssignmentsListForStudentItem,
   AssignmentsListForStudentResponse,
@@ -78,6 +79,12 @@ export function parseAssignmentsListForStudentItem(
   const launchRef = isNonEmptyString(record.launchRef)
     ? record.launchRef
     : undefined;
+  // Reassignment model: server-listed related occurrences. Parsed
+  // defensively like the superseded list below; a malformed value only ever
+  // narrows the tile's history, never changes which item is operational.
+  const relatedAssignmentIds = Array.isArray(record.relatedAssignmentIds)
+    ? Object.freeze(record.relatedAssignmentIds.filter(isNonEmptyString))
+    : undefined;
   return Object.freeze({
     assignmentId,
     lessonSlug,
@@ -86,21 +93,63 @@ export function parseAssignmentsListForStudentItem(
     publishedAt,
     ...(presentation !== undefined ? { presentation } : {}),
     ...(launchRef !== undefined ? { launchRef } : {}),
+    ...(relatedAssignmentIds !== undefined && relatedAssignmentIds.length > 0
+      ? { relatedAssignmentIds }
+      : {}),
   });
+}
+
+// Superseded ids are parsed defensively: a non-array is treated as none and
+// any non-string entry is dropped, so a malformed value can only ever make
+// the surface show MORE of the student's own completed work, never hide an
+// operational item (operational items come solely from `items`).
+function parseSupersededAssignmentIds(raw: unknown): ReadonlyArray<string> {
+  if (!Array.isArray(raw)) return Object.freeze([]);
+  return Object.freeze(raw.filter(isNonEmptyString));
+}
+
+// History-only groups are parsed defensively: a non-array is none, and a
+// malformed group (non-object, non-array ids, or no valid id) is dropped.
+// Dropping a group only falls back to the legacy per-assignment history
+// cards; it can never make an occurrence operational.
+function parseHistoryOnlyGroups(raw: unknown): ReadonlyArray<HistoryOnlyGroup> {
+  if (!Array.isArray(raw)) return Object.freeze([]);
+  const out: HistoryOnlyGroup[] = [];
+  for (const entry of raw) {
+    if (entry === null || typeof entry !== "object") continue;
+    const ids = (entry as CallableRecord).assignmentIds;
+    if (!Array.isArray(ids)) continue;
+    const assignmentIds = ids.filter(isNonEmptyString);
+    if (assignmentIds.length === 0) continue;
+    out.push(Object.freeze({ assignmentIds: Object.freeze(assignmentIds) }));
+  }
+  return Object.freeze(out);
 }
 
 function parseResponse(raw: unknown): AssignmentsListForStudentResponse {
   const record = (raw ?? {}) as CallableRecord;
   const items = record.items;
+  const supersededAssignmentIds = parseSupersededAssignmentIds(
+    record.supersededAssignmentIds,
+  );
+  const historyOnlyGroups = parseHistoryOnlyGroups(record.historyOnlyGroups);
   if (!Array.isArray(items)) {
-    return Object.freeze({ items: Object.freeze([]) });
+    return Object.freeze({
+      items: Object.freeze([]),
+      supersededAssignmentIds,
+      historyOnlyGroups,
+    });
   }
   const parsed: AssignmentsListForStudentItem[] = [];
   for (const entry of items) {
     const item = parseAssignmentsListForStudentItem(entry);
     if (item !== null) parsed.push(item);
   }
-  return Object.freeze({ items: Object.freeze(parsed) });
+  return Object.freeze({
+    items: Object.freeze(parsed),
+    supersededAssignmentIds,
+    historyOnlyGroups,
+  });
 }
 
 export function createAssignmentsListForStudentCallable(

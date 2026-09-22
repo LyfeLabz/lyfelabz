@@ -148,3 +148,29 @@ describe("28.6H - student cards are compact (Finding 16)", () => {
     expect(body as string).toMatch(/gap:\s*0\.35rem/);
   });
 });
+
+describe("Reassignment model - the tile's attempt-history disclosure is styled", () => {
+  test("the attempt-count toggle is a quiet, borderless button with a usable tap target", () => {
+    const body = ruleBody(html, `${SCOPE} .my-science-attempts-toggle`);
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/background:\s*transparent/);
+    expect(body as string).toMatch(/border:\s*none/);
+    expect(body as string).toMatch(/cursor:\s*pointer/);
+    expect(body as string).toMatch(/min-height:\s*28px/);
+  });
+
+  test("expanded state is carried by the rotating caret (shape + aria-expanded, not color)", () => {
+    const body = ruleBody(
+      html,
+      `${SCOPE} .my-science-attempts-toggle[aria-expanded="true"]::after`,
+    );
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/transform:\s*rotate\(90deg\)/);
+  });
+
+  test("the collapsed history panel is not displayed", () => {
+    const body = ruleBody(html, `${SCOPE} .my-science-attempt-history[hidden]`);
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/display:\s*none/);
+  });
+});

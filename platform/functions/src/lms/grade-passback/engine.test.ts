@@ -279,6 +279,13 @@ jest.mock("../../shared", () => {
     lmsAssignmentPublicationDocRef: (id: string) => makeDocRef("lmsAssignmentPublications", id),
     lmsConnectionDocRef: (id: string) => makeDocRef("lmsConnections", id),
     lmsGradePassbackDocRef: (id: string) => makeDocRef("lmsGradePassbacks", id),
+    // Reassignment model: canonical Current-pointer and class-enumeration
+    // seams used by the shared occurrence grouping. With no pointer seeded
+    // (every pre-existing test), the scope is unresolved and the engine
+    // keeps its exact per-assignment behavior.
+    assignmentsCurrentDocRef: (classId: string, lessonSlug: string) =>
+      makeDocRef("assignmentsCurrent", `${classId}__${lessonSlug}`),
+    assignmentsCollectionRef: () => makeQueryRef("assignments"),
   };
 });
 
@@ -427,6 +434,7 @@ describe("synchronizeGradePassback - eligibility", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "notApplicable" });
@@ -444,6 +452,7 @@ describe("synchronizeGradePassback - eligibility", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "notApplicable" });
@@ -457,6 +466,7 @@ describe("synchronizeGradePassback - eligibility", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "noPublication" });
@@ -471,6 +481,7 @@ describe("synchronizeGradePassback - eligibility", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "noPublication" });
@@ -484,6 +495,7 @@ describe("synchronizeGradePassback - eligibility", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "noPublication" });
@@ -493,6 +505,7 @@ describe("synchronizeGradePassback - eligibility", () => {
     const result = await synchronizeGradePassback({
       assignmentId: "does-not-exist",
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
     expect(result).toEqual({ outcome: "notApplicable" });
   });
@@ -502,6 +515,7 @@ describe("synchronizeGradePassback - eligibility", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
     expect(result).toEqual({ outcome: "noAttempts" });
     expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
@@ -516,6 +530,7 @@ describe("synchronizeGradePassback - basic progression and the required exemplar
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "synced", earnedPoints: 14 });
@@ -528,12 +543,13 @@ describe("synchronizeGradePassback - basic progression and the required exemplar
   it("a higher later attempt updates upward", async () => {
     seedFullHappyPath();
     seedAttempt({ percentage: 70 });
-    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
 
     seedAttempt({ percentage: 90 });
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "synced", earnedPoints: 18 });
@@ -544,15 +560,15 @@ describe("synchronizeGradePassback - basic progression and the required exemplar
     seedFullHappyPath();
 
     seedAttempt({ percentage: 70, score: 7, maxScore: 10 });
-    const r1 = await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+    const r1 = await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
     expect(r1).toEqual({ outcome: "synced", earnedPoints: 14 });
 
     seedAttempt({ percentage: 90, score: 9, maxScore: 10 });
-    const r2 = await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+    const r2 = await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
     expect(r2).toEqual({ outcome: "synced", earnedPoints: 18 });
 
     seedAttempt({ percentage: 80, score: 8, maxScore: 10 });
-    const r3 = await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+    const r3 = await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
     // A lower later attempt must never lower the Classroom grade, and must
     // not even cause a redundant PATCH call since the desired value did not
     // advance.
@@ -575,11 +591,12 @@ describe("synchronizeGradePassback - basic progression and the required exemplar
   it("equal later performance causes no additional PATCH call", async () => {
     seedFullHappyPath();
     seedAttempt({ percentage: 80 });
-    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
     seedAttempt({ percentage: 80 });
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
     expect(result).toEqual({ outcome: "alreadySynced" });
     expect(mockPatchStudentSubmissionGrade).toHaveBeenCalledTimes(1);
@@ -588,10 +605,11 @@ describe("synchronizeGradePassback - basic progression and the required exemplar
   it("re-invoking after a synced state with no new attempt is a safe no-op", async () => {
     seedFullHappyPath();
     seedAttempt({ percentage: 80 });
-    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
     expect(result).toEqual({ outcome: "alreadySynced" });
     expect(mockPatchStudentSubmissionGrade).toHaveBeenCalledTimes(1);
@@ -609,6 +627,7 @@ describe("synchronizeGradePassback - failure handling", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({
@@ -631,6 +650,7 @@ describe("synchronizeGradePassback - failure handling", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "failed", errorCode: "lms.upstreamCallFailed" });
@@ -646,6 +666,7 @@ describe("synchronizeGradePassback - failure handling", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "failed", errorCode: "lms.reconnectRequired" });
@@ -659,6 +680,7 @@ describe("synchronizeGradePassback - failure handling", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({
@@ -677,6 +699,7 @@ describe("synchronizeGradePassback - failure handling", () => {
     const first = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
     expect(first).toEqual({ outcome: "failed", errorCode: "lms.upstreamTemporarilyUnavailable" });
 
@@ -685,6 +708,7 @@ describe("synchronizeGradePassback - failure handling", () => {
     const retry = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
     expect(retry).toEqual({ outcome: "synced", earnedPoints: 18 });
     expect(mockPatchStudentSubmissionGrade).toHaveBeenLastCalledWith(
@@ -725,6 +749,7 @@ describe("synchronizeGradePassback - failure handling", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({ outcome: "synced", earnedPoints: 16 });
@@ -742,7 +767,7 @@ describe("synchronizeGradePassback - identity and privacy", () => {
       "raw-google-sub-should-never-be-stored-000111222",
     );
 
-    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
 
     const state = readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID);
     const serialized = JSON.stringify(state);
@@ -757,6 +782,7 @@ describe("synchronizeGradePassback - identity and privacy", () => {
     const result = await synchronizeGradePassback({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
     });
 
     expect(result).toEqual({
@@ -769,10 +795,216 @@ describe("synchronizeGradePassback - identity and privacy", () => {
   it("audit events never carry a raw provider account id or answer-key content", async () => {
     seedFullHappyPath();
     seedAttempt({ percentage: 80 });
-    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID });
+    await synchronizeGradePassback({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID, districtId: DISTRICT_ID });
 
     expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
     const payload = mockWriteAuditEvent.mock.calls[0][0].payload;
     expect(JSON.stringify(payload)).not.toMatch(/google-acct|submission-1/);
+  });
+});
+
+// Reassignment model (Sprint 30): cumulative best across the canonical
+// class + lesson occurrence group, destination = Current only.
+//
+// Fixture (the locked product example):
+//   Historical A /10 (graded, own coursework):  70%, 90%
+//   Historical B ungraded (own coursework):      95%
+//   Current    C /20 (graded, own coursework):   80%, 85%
+// Expected: Current coursework receives 95% of 20 = 19; A's and B's
+// coursework never receive a grade.
+describe("synchronizeGradePassback - reassignment (Current destination, cumulative best)", () => {
+  const LESSON = "engineering-design";
+  const A = "a-ed-A";
+  const B = "a-ed-B";
+  const C = "a-ed-C";
+  const COURSEWORK = { [A]: "coursework-A", [B]: "coursework-B", [C]: "coursework-C" } as const;
+
+  function seedOccurrence(
+    id: string,
+    grading: { mode: "graded"; maxPoints: number } | { mode: "ungraded" },
+    overrides: Record<string, unknown> = {},
+  ): void {
+    const pubId = `pub-${id}`;
+    seedDoc("assignments", id, {
+      classId: CLASS_ID,
+      teacherId: TEACHER_ID,
+      schoolId: SCHOOL_ID,
+      lessonSlug: LESSON,
+      mode: "classroom",
+      status: "published",
+      classroomGrading: grading,
+      lmsPublicationRef: pubId,
+      ...overrides,
+    });
+    seedDoc("lmsAssignmentPublications", pubId, {
+      assignmentId: id,
+      classId: CLASS_ID,
+      ownerUid: TEACHER_ID,
+      schoolId: SCHOOL_ID,
+      providerId: "googleClassroom",
+      connectionId: CONNECTION_ID,
+      lmsClassId: LMS_CLASS_ID,
+      status: "succeeded",
+      lmsAssignmentId: COURSEWORK[id as keyof typeof COURSEWORK],
+      classroomGrading: grading,
+    });
+  }
+
+  let n = 0;
+  function seedOccurrenceAttempt(assignmentId: string, percentage: number, maxScore = 10): void {
+    n += 1;
+    seedDoc("attempts", `${assignmentId}__${STUDENT_ID}__${n}`, {
+      studentId: STUDENT_ID,
+      assignmentId,
+      classId: CLASS_ID,
+      teacherId: TEACHER_ID,
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+      activityId: LESSON,
+      assessmentId: "assessment-ed",
+      assessmentRevisionId: "revision-ed",
+      attemptNumber: n,
+      score: (percentage / 100) * maxScore,
+      maxScore,
+      percentage,
+      responses: [],
+      itemResults: [],
+      idempotencyKey: `idem-ed-${n}`,
+      submittedAt: { toMillis: () => 5_000 + n },
+    });
+  }
+
+  function seedPointer(assignmentId: string): void {
+    seedDoc("assignmentsCurrent", `${CLASS_ID}__${LESSON}`, {
+      classId: CLASS_ID,
+      lessonSlug: LESSON,
+      assignmentId,
+      teacherId: TEACHER_ID,
+      schoolId: SCHOOL_ID,
+      setAt: { toMillis: () => 1 },
+      setBy: TEACHER_ID,
+      source: "teacherResolution",
+    });
+  }
+
+  function seedLockedExample(): void {
+    seedActiveConnection();
+    seedOccurrence(A, { mode: "graded", maxPoints: 10 });
+    seedOccurrence(B, { mode: "ungraded" });
+    seedOccurrence(C, { mode: "graded", maxPoints: 20 });
+    seedOccurrenceAttempt(A, 70);
+    seedOccurrenceAttempt(A, 90);
+    seedOccurrenceAttempt(B, 95);
+    seedOccurrenceAttempt(C, 80, 20);
+    seedOccurrenceAttempt(C, 85, 20);
+  }
+
+  const sync = (assignmentId: string) =>
+    synchronizeGradePassback({ assignmentId, studentId: STUDENT_ID, districtId: DISTRICT_ID });
+
+  const patchedCoursework = () =>
+    mockPatchStudentSubmissionGrade.mock.calls.map((c) => (c[0] as { lmsAssignmentId: string }).lmsAssignmentId);
+
+  beforeEach(() => {
+    n = 0;
+  });
+
+  it("sends the cumulative best (incl. an older UNGRADED occurrence) to Current, scaled by Current's maxPoints: 95% of 20 = 19", async () => {
+    seedLockedExample();
+    seedPointer(C);
+
+    const result = await sync(C);
+
+    expect(result).toEqual({ outcome: "synced", earnedPoints: 19 });
+    expect(patchedCoursework()).toEqual(["coursework-C"]);
+    const doc = readDoc("lmsGradePassbacks", lmsGradePassbackIdFor(C, STUDENT_ID));
+    expect(doc?.desiredBestPercentage).toBe(95);
+    expect(doc?.maxPoints).toBe(20);
+    expect(doc?.lmsAssignmentId).toBe("coursework-C");
+    // Attempt records are untouched (each keeps its own assignment id).
+    expect(allDocs("attempts").map((r) => r.data.assignmentId).sort()).toEqual(
+      [A, A, B, C, C].sort(),
+    );
+  });
+
+  it("an attempt finalized on a HISTORICAL occurrence still targets Current; historical coursework is never patched", async () => {
+    seedLockedExample();
+    seedPointer(C);
+
+    const result = await sync(A);
+
+    expect(result).toEqual({ outcome: "synced", earnedPoints: 19 });
+    expect(patchedCoursework()).toEqual(["coursework-C"]);
+    expect(readDoc("lmsGradePassbacks", lmsGradePassbackIdFor(A, STUDENT_ID))).toBeUndefined();
+    expect(readDoc("lmsGradePassbacks", lmsGradePassbackIdFor(B, STUDENT_ID))).toBeUndefined();
+  });
+
+  it("a lower later attempt on Current never lowers the Current Classroom grade", async () => {
+    seedLockedExample();
+    seedPointer(C);
+    await sync(C);
+    mockPatchStudentSubmissionGrade.mockClear();
+
+    seedOccurrenceAttempt(C, 40, 20);
+    const result = await sync(C);
+
+    expect(result).toEqual({ outcome: "alreadySynced" });
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+    const doc = readDoc("lmsGradePassbacks", lmsGradePassbackIdFor(C, STUDENT_ID));
+    expect(doc?.lastSyncedEarnedPoints).toBe(19);
+  });
+
+  it("an ungraded Current sends no grade anywhere, even though an older occurrence is graded", async () => {
+    seedLockedExample();
+    seedPointer(B);
+
+    expect(await sync(B)).toEqual({ outcome: "notApplicable" });
+    expect(await sync(A)).toEqual({ outcome: "notApplicable" });
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+  });
+
+  it("a graded Current with no succeeded Classroom publication never falls back to older coursework", async () => {
+    seedLockedExample();
+    seedOccurrence(C, { mode: "graded", maxPoints: 20 }, { lmsPublicationRef: undefined });
+    seedPointer(C);
+
+    expect(await sync(A)).toEqual({ outcome: "noPublication" });
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+  });
+
+  it("no Current pointer: legacy per-assignment passback, no heuristic Current (A's own 90% of 10 to A's coursework)", async () => {
+    seedLockedExample();
+
+    const result = await sync(A);
+
+    expect(result).toEqual({ outcome: "synced", earnedPoints: 9 });
+    expect(patchedCoursework()).toEqual(["coursework-A"]);
+  });
+
+  it("closed managed Current: the pointed Current stays the ONLY destination (cumulative 19/20); an older occurrence is never resurrected as one", async () => {
+    seedLockedExample();
+    seedOccurrence(C, { mode: "graded", maxPoints: 20 }, { status: "closed" });
+    seedPointer(C);
+    const assignmentsBefore = JSON.stringify(allDocs("assignments").map((r) => [r.id, r.data]));
+    const attemptsBefore = JSON.stringify(allDocs("attempts").map((r) => [r.id, r.data]));
+
+    // e.g. a session on older graded A that was already live finalizes, or
+    // a teacher retries after closing C.
+    const fromOld = await sync(A);
+
+    expect(fromOld).toEqual({ outcome: "synced", earnedPoints: 19 });
+    expect(patchedCoursework()).toEqual(["coursework-C"]);
+    expect(readDoc("lmsGradePassbacks", lmsGradePassbackIdFor(A, STUDENT_ID))).toBeUndefined();
+    // Nothing historical was deleted or rewritten.
+    expect(JSON.stringify(allDocs("assignments").map((r) => [r.id, r.data]))).toBe(assignmentsBefore);
+    expect(JSON.stringify(allDocs("attempts").map((r) => [r.id, r.data]))).toBe(attemptsBefore);
+  });
+
+  it("closed managed Current that is ungraded: no grade anywhere (older graded coursework untouched)", async () => {
+    seedLockedExample();
+    seedOccurrence(B, { mode: "ungraded" }, { status: "closed" });
+    seedPointer(B);
+    expect(await sync(A)).toEqual({ outcome: "notApplicable" });
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
   });
 });

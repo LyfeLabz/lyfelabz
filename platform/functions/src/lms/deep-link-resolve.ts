@@ -16,6 +16,7 @@ import {
 } from "../shared";
 
 import { isCanonicalRecipient } from "../assignments/assignment-recipients";
+import { isSupersededOccurrence } from "../assignments/current-occurrence-group";
 import { enrollmentIdFor } from "../enrollments/enrollments-join-by-code";
 
 // lmsDeepLinkResolve
@@ -285,7 +286,8 @@ function safeLog(fn: () => void): void {
 //      archived -> `assignment-archived`)
 //   8. caller holds an active enrollment in the assignment's class
 //   9. recipient-aware attemptContext (published + classroom + open window +
-//      canonical recipient -> `authorized`; otherwise `informational`)
+//      not superseded by a valid Current + canonical recipient ->
+//      `authorized`; otherwise `informational`)
 async function lmsDeepLinkResolveHandler(
   request: CallableRequest<unknown>,
 ): Promise<LmsDeepLinkResolveResponse> {
@@ -341,6 +343,16 @@ async function lmsDeepLinkResolveHandler(
     internalTarget = "lessonPractice";
     attemptContext = "informational";
   } else if (!isBeginWindowOpen(assignment)) {
+    internalTarget = "informational";
+    attemptContext = "informational";
+  } else if (
+    await isSupersededOccurrence(assignmentId, assignment, actor.districtId)
+  ) {
+    // Reassignment model: a valid Current exists for this class + lesson
+    // and it is a different occurrence (e.g. an old Google Classroom link).
+    // Session begin would refuse it, so the arrival is informational and
+    // never a launch. Mirrors `assessmentSessionsBegin` exactly via the
+    // shared canonical grouping primitive.
     internalTarget = "informational";
     attemptContext = "informational";
   } else {

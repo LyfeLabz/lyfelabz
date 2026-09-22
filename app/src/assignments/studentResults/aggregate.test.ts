@@ -10,6 +10,7 @@ import {
   deriveStatus,
   isPerfectAttempt,
   aggregateByAssignment,
+  aggregateAttemptSet,
 } from "./aggregate";
 import type { StudentAttemptSummary } from "./types";
 
@@ -174,5 +175,31 @@ describe("aggregateByAssignment", () => {
     ]);
     expect(map.get("x")?.status).toBe("wellDone");
     expect(map.get("x")?.canImprove).toBe(true);
+  });
+});
+
+describe("aggregateAttemptSet (cumulative tile across reassigned occurrences)", () => {
+  test("best is chosen by percentage across occurrences with different maxScore; count is the total", () => {
+    const agg = aggregateAttemptSet("current", [
+      attempt({ attemptId: "a1", assignmentId: "old-a", score: 9, maxScore: 10, percentage: 90 }),
+      attempt({ attemptId: "b1", assignmentId: "old-b", score: 19, maxScore: 20, percentage: 95 }),
+      attempt({ attemptId: "c1", assignmentId: "current", score: 17, maxScore: 20, percentage: 85 }),
+    ]);
+    expect(agg).toEqual({
+      assignmentId: "current",
+      bestScore: 19,
+      bestMaxScore: 20,
+      bestPercentage: 95,
+      attemptCount: 3,
+      status: "wellDone",
+      canImprove: true,
+    });
+  });
+
+  test("an empty or all-invalid set has no aggregate", () => {
+    expect(aggregateAttemptSet("current", [])).toBeNull();
+    expect(
+      aggregateAttemptSet("current", [attempt({ percentage: Number.NaN })]),
+    ).toBeNull();
   });
 });

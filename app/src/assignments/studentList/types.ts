@@ -45,10 +45,32 @@ export type AssignmentsListForStudentItem = {
   // asserts either field; server responses are authoritative.
   readonly presentation?: LaunchPresentation;
   readonly launchRef?: string;
+  // Reassignment model (server-authoritative): present only on the Current
+  // item of a class + lesson with a valid Current. Other occurrences of that
+  // class + lesson whose attempts belong to this tile's cumulative best,
+  // attempt count, and attempt history. The client never derives it.
+  readonly relatedAssignmentIds?: ReadonlyArray<string>;
 };
 
 export type AssignmentsListForStudentResponse = {
   readonly items: ReadonlyArray<AssignmentsListForStudentItem>;
+  // Server-authoritative ids of occurrences the student holds that are
+  // superseded by a valid Current for the same class and lesson (including
+  // while that Current is not yet available). They are never operational
+  // items, and My Science never renders a separate card for their attempts;
+  // those attempts belong to the Current tile. The client never derives
+  // this set itself. Absent (older server) means none.
+  readonly supersededAssignmentIds?: ReadonlyArray<string>;
+  // Server-authoritative groups for a managed class + lesson whose Current
+  // was closed (no operational assignment). Each lists the student's
+  // occurrences in that group; My Science shows the student's completed
+  // work for the group as ONE non-launchable history card and never
+  // resurrects an older occurrence. Absent (older server) means none.
+  readonly historyOnlyGroups?: ReadonlyArray<HistoryOnlyGroup>;
+};
+
+export type HistoryOnlyGroup = {
+  readonly assignmentIds: ReadonlyArray<string>;
 };
 
 // Injected callable seam. The reusable active-student surface never

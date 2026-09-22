@@ -1476,6 +1476,288 @@ describe("My Science (28.6G) - status, results & ordering", () => {
     expect(mount.textContent).not.toContain("assign-ghost");
   });
 
+  // Production defect regression (Sprint 30): (A) Science, Engineering
+  // Design. Four published occurrences; the teacher-selected Current is the
+  // Sep 15 9:10 AM one. The student completed attempts on all four. The
+  // server already returns only the Current item, but the attempts join
+  // re-surfaced every other occurrence as its own card, so the student still
+  // saw all four. The server-authoritative superseded ids close that path.
+  const ENGINEERING_FIXTURE_ATTEMPTS = [
+    okAttempt({ attemptId: "t-0909", assignmentId: "a-ed-0909", score: 7, maxScore: 10, percentage: 70 }),
+    okAttempt({ attemptId: "t-0910", assignmentId: "a-ed-0910", score: 9, maxScore: 10, percentage: 90 }),
+    okAttempt({ attemptId: "t-0956", assignmentId: "a-ed-0956", score: 8, maxScore: 10, percentage: 80 }),
+    okAttempt({ attemptId: "t-1016", assignmentId: "a-ed-1016", score: 18, maxScore: 20, percentage: 90 }),
+  ];
+  const ENGINEERING_SUPERSEDED = ["a-ed-0909", "a-ed-0956", "a-ed-1016"];
+  const engineeringSeam =
+    (
+      items: ReadonlyArray<ReturnType<typeof okItem>>,
+      supersededAssignmentIds?: ReadonlyArray<string>,
+    ) =>
+    () =>
+    () =>
+      Promise.resolve({
+        items: Object.freeze(items) as ReadonlyArray<ReturnType<typeof okItem>>,
+        ...(supersededAssignmentIds !== undefined
+          ? { supersededAssignmentIds }
+          : {}),
+      });
+
+  // Locked reassignment example: Historical A /10 (70%, 90%), Historical B
+  // ungraded (95%), Current C /20 (80%, 85%). The server lists A and B as
+  // C's related occurrences. Expected: ONE tile, best 95%, 5 attempts, all
+  // five individually inspectable.
+  const LOCKED_ATTEMPTS = [
+    okAttempt({ attemptId: "t-A1", assignmentId: "a-ed-A", attemptNumber: 1, score: 7, maxScore: 10, percentage: 70, submittedAt: Date.UTC(2026, 8, 14, 13, 5) }),
+    okAttempt({ attemptId: "t-A2", assignmentId: "a-ed-A", attemptNumber: 2, score: 9, maxScore: 10, percentage: 90, submittedAt: Date.UTC(2026, 8, 14, 13, 20) }),
+    okAttempt({ attemptId: "t-B1", assignmentId: "a-ed-B", attemptNumber: 1, score: 19, maxScore: 20, percentage: 95, submittedAt: Date.UTC(2026, 8, 15, 14, 0) }),
+    okAttempt({ attemptId: "t-C1", assignmentId: "a-ed-C", attemptNumber: 1, score: 16, maxScore: 20, percentage: 80, submittedAt: Date.UTC(2026, 8, 16, 13, 0) }),
+    okAttempt({ attemptId: "t-C2", assignmentId: "a-ed-C", attemptNumber: 2, score: 17, maxScore: 20, percentage: 85, submittedAt: Date.UTC(2026, 8, 16, 13, 30) }),
+  ];
+  const lockedCurrentItem = () =>
+    okItem({
+      assignmentId: "a-ed-C",
+      lessonSlug: "engineering-design",
+      title: "Engineering Design",
+      relatedAssignmentIds: ["a-ed-A", "a-ed-B"],
+    }) as unknown as ReturnType<typeof okItem>;
+
+  async function renderLocked(): Promise<HTMLElement> {
+    const { deps } = makeDeps({
+      studentAssignmentsList: engineeringSeam([lockedCurrentItem()], ["a-ed-A", "a-ed-B"]),
+      studentResultsList: resultsSeam(LOCKED_ATTEMPTS),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    return mount;
+  }
+
+  test("three reassignments -> ONE Engineering Design tile with cumulative best (95%, from an older ungraded occurrence) and total attempts (5)", async () => {
+    const mount = await renderLocked();
+    const cards = mount.querySelectorAll("[data-testid=my-science-card]");
+    expect(cards).toHaveLength(1);
+    const card = cards[0] as HTMLElement;
+    expect(card.querySelector("[data-testid=my-science-card-title]")?.textContent).toBe(
+      "Engineering Design",
+    );
+    const score = card.querySelector("[data-testid=my-science-card-score]")?.textContent;
+    expect(score).toContain("95%");
+    expect(score).toContain("19/20");
+    expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe(
+      "5 attempts",
+    );
+    expect(mount.querySelector("[data-domain=other]")).toBeNull();
+    expect(mount.textContent).not.toContain("Assignment no longer listed");
+    // Still one launch control, for Current.
+    expect(card.querySelectorAll("[data-testid=assignments-launch]")).toHaveLength(1);
+  });
+
+  test("every attempt behind the tile is inspectable: the count is a disclosure listing all five with score and date/time, newest first", async () => {
+    const mount = await renderLocked();
+    const toggle = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=my-science-card-attempts]",
+    )!;
+    const panel = mount.querySelector<HTMLElement>(
+      "[data-testid=my-science-attempt-history]",
+    )!;
+    expect(toggle.tagName).toBe("BUTTON");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-controls")).toBe(panel.id);
+    expect(toggle.getAttribute("aria-label")).toBe("5 attempts for Engineering Design");
+    expect(panel.hidden).toBe(true);
+
+    toggle.click();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(panel.hidden).toBe(false);
+
+    const rows = Array.from(panel.querySelectorAll("[data-testid=my-science-attempt]")).map(
+      (r) => r.textContent ?? "",
+    );
+    expect(rows).toHaveLength(5);
+    // Newest first; each row is the attempt's own score + its own date/time.
+    expect(rows.map((r) => r.split(" · ")[0])).toEqual(["85%", "80%", "95%", "90%", "70%"]);
+    expect(rows[2]).toContain("19/20");
+    expect(rows[4]).toContain("7/10");
+    const b1 = new Date(Date.UTC(2026, 8, 15, 14, 0));
+    expect(rows[2]).toContain(`${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][b1.getMonth()]} ${b1.getDate()}, ${b1.getFullYear()}`);
+    // No internal id ever becomes visible text.
+    expect(panel.textContent).not.toContain("a-ed-");
+
+    toggle.click();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(panel.hidden).toBe(true);
+  });
+
+  // Reassignment: historical A completed at 95%, teacher intentionally
+  // reassigns as Current B, and the student has NOT attempted B yet.
+  // Cumulative performance/history stays visible; operational completion is
+  // Current-only, so B must still read "Ready to Begin".
+  const REASSIGN_HISTORY = [
+    okAttempt({ attemptId: "h-A1", assignmentId: "a-ed-A", attemptNumber: 1, score: 19, maxScore: 20, percentage: 95, submittedAt: Date.UTC(2026, 8, 14, 13, 0) }),
+  ];
+  const reassignedCurrentB = () =>
+    okItem({
+      assignmentId: "a-ed-B",
+      lessonSlug: "engineering-design",
+      title: "Engineering Design",
+      relatedAssignmentIds: ["a-ed-A"],
+    }) as unknown as ReturnType<typeof okItem>;
+
+  async function renderReassigned(
+    attempts: ReadonlyArray<ReturnType<typeof okAttempt>>,
+  ): Promise<HTMLElement> {
+    const { deps } = makeDeps({
+      studentAssignmentsList: engineeringSeam([reassignedCurrentB()], ["a-ed-A"]),
+      studentResultsList: resultsSeam(attempts),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    return mount;
+  }
+
+  test("reassigned Current with ZERO attempts: cumulative best + history shown, but status is Ready to Begin (not Completed)", async () => {
+    const mount = await renderReassigned(REASSIGN_HISTORY);
+    const cards = mount.querySelectorAll<HTMLElement>("[data-testid=my-science-card]");
+    expect(cards).toHaveLength(1);
+    const card = cards[0] as HTMLElement;
+    // Operational state is Current-only.
+    expect(card.getAttribute("data-status")).toBe("ready");
+    expect(card.getAttribute("data-complete")).toBeNull();
+    expect(card.querySelector("[data-testid=my-science-card-status]")?.textContent).toContain(
+      "Ready to Begin",
+    );
+    // Cumulative performance and history remain visible and accessible.
+    expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("95%");
+    expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe("1 attempt");
+    expect(card.querySelectorAll("[data-testid=my-science-attempt]")).toHaveLength(1);
+    // The Current is still the one launchable, unfinished assignment.
+    expect(card.querySelectorAll("[data-testid=assignments-launch]")).toHaveLength(1);
+  });
+
+  test("after the student completes the reassigned Current, it reads Completed; best stays cumulative", async () => {
+    const mount = await renderReassigned([
+      ...REASSIGN_HISTORY,
+      okAttempt({ attemptId: "h-B1", assignmentId: "a-ed-B", attemptNumber: 1, score: 16, maxScore: 20, percentage: 80, submittedAt: Date.UTC(2026, 8, 20, 13, 0) }),
+    ]);
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]")!;
+    expect(card.getAttribute("data-status")).toBe("completed");
+    expect(card.getAttribute("data-complete")).toBe("true");
+    expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("95%");
+    expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe("2 attempts");
+  });
+
+  test("closed managed Current: no operational tile, no resurrected older copy; the group's completed work is ONE non-launchable history card", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => () =>
+        Promise.resolve({
+          items: [],
+          supersededAssignmentIds: [],
+          historyOnlyGroups: [{ assignmentIds: ["a-ed-A", "a-ed-B", "a-ed-C"] }],
+        }),
+      studentResultsList: resultsSeam(LOCKED_ATTEMPTS),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const cards = mount.querySelectorAll<HTMLElement>("[data-testid=my-science-card]");
+    expect(cards).toHaveLength(1);
+    const card = cards[0] as HTMLElement;
+    expect(card.querySelector("[data-testid=my-science-card-title]")?.textContent).toBe(
+      "Assignment no longer listed",
+    );
+    expect(card.querySelector("[data-testid=assignments-launch]")).toBeNull();
+    expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("95%");
+    expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe("5 attempts");
+    expect(card.querySelectorAll("[data-testid=my-science-attempt]")).toHaveLength(5);
+    expect(mount.textContent).not.toContain("a-ed-");
+  });
+
+  test("a legacy tile (no related occurrences) aggregates only its own attempts", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: engineeringSeam([
+        okItem({ assignmentId: "a-ed-C", lessonSlug: "engineering-design", title: "Engineering Design" }),
+      ]),
+      studentResultsList: resultsSeam(LOCKED_ATTEMPTS.filter((a) => a.assignmentId === "a-ed-C")),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe(
+      "2 attempts",
+    );
+    expect(mount.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("85%");
+  });
+
+  test("degraded results: the tile shows no count, score, or history (nothing mislabeled)", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: engineeringSeam([lockedCurrentItem()], ["a-ed-A", "a-ed-B"]),
+      studentResultsList: () => () => Promise.reject(new Error("down")),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelectorAll("[data-testid=my-science-card]")).toHaveLength(1);
+    expect(mount.querySelector("[data-testid=my-science-card-attempts]")).toBeNull();
+    expect(mount.querySelector("[data-testid=my-science-attempt-history]")).toBeNull();
+  });
+
+  test("documents the production mechanism: without server superseded ids the attempts join re-surfaced every historical occurrence", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: engineeringSeam([
+        okItem({ assignmentId: "a-ed-0910", lessonSlug: "engineering-design", title: "Engineering Design" }),
+      ]),
+      studentResultsList: resultsSeam(ENGINEERING_FIXTURE_ATTEMPTS),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    // Older server response shape: one Current item + three historical
+    // "no longer listed" cards = four cards for one class+lesson.
+    expect(mount.querySelectorAll("[data-testid=my-science-card]")).toHaveLength(4);
+  });
+
+  test("future-scheduled Current: no Engineering Design card at all, and no older occurrence as a substitute", async () => {
+    const { deps } = makeDeps({
+      // Server hides the not-yet-available Current and reports the older
+      // occurrences as superseded.
+      studentAssignmentsList: engineeringSeam([], ENGINEERING_SUPERSEDED.concat("a-ed-0910")),
+      studentResultsList: resultsSeam(ENGINEERING_FIXTURE_ATTEMPTS),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelectorAll("[data-testid=my-science-card]")).toHaveLength(0);
+    expect(mount.querySelector("[data-testid=my-science-empty]")).not.toBeNull();
+  });
+
+  test("closed-assignment history is unaffected: a non-superseded completed attempt still shows in Other", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: engineeringSeam([], ["a-ed-0909"]),
+      studentResultsList: resultsSeam([
+        okAttempt({ attemptId: "g-1", assignmentId: "assign-ghost", score: 8, maxScore: 10, percentage: 80 }),
+      ]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const card = mount.querySelector<HTMLElement>(
+      "[data-domain=other] [data-testid=my-science-card]",
+    );
+    expect(
+      card?.querySelector("[data-testid=my-science-card-title]")?.textContent,
+    ).toBe("Assignment no longer listed");
+  });
+
   test("an assignment appears in exactly one domain (no duplication)", async () => {
     const { deps } = makeDeps({
       studentAssignmentsList: assignmentsSeam([okItem({ lessonSlug: "layers-of-time" })]),

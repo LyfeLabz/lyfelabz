@@ -285,10 +285,9 @@ type RowConfig = {
 // Assign action ("this assignment is due on X"), not a per-class
 // schedule. Empty string means no due date (optional, per Classroom's
 // own contract: a coursework item with no dueDate is valid and common).
-// Unlike `date`/`time` on `RowConfig` (which govern each class's own
-// LyfeLabz release scheduling and do not yet reach Classroom - see
-// Sprint 30A.3 reconnaissance), `dueDate` here maps directly to Google
-// Classroom's CourseWork.dueDate field at publish time.
+// It is stored on each selected class's draft as the assignment's durable
+// `dueDate` ("YYYY-MM-DD"), from which lmsAssignmentsPublish derives Google
+// Classroom's CourseWork.dueDate for the initial publish and every retry.
 type SharedAssignConfig = {
   graded: boolean;
   points: number;
@@ -439,7 +438,8 @@ function todayIsoDate(doc: Document): string {
 }
 
 // Sprint 30A.3: converts a row's Date+Time ("YYYY-MM-DD" + "HH:MM") into
-// an RFC3339 UTC instant for Google Classroom's `scheduledTime`. `Date`
+// the RFC3339 UTC instant stored as the draft's `availableAt`, from which
+// the server also derives Google Classroom's `scheduledTime`. `Date`
 // parses "YYYY-MM-DDTHH:MM" as the BROWSER'S OWN local timezone (standard
 // JS behavior for this exact form) - the same timezone the `<input
 // type="date">`/`<input type="time">` controls already display in, so no
@@ -447,8 +447,8 @@ function todayIsoDate(doc: Document): string {
 // user timezone wired anywhere near this code today; browser-local is the
 // smallest correct choice given that, and matches what the teacher sees
 // on screen. Returns null for an unparseable/empty value rather than
-// guessing, so the caller can safely omit `scheduledTime` and fall back
-// to immediate publication.
+// guessing, so the caller can safely omit `availableAt` and fall back to
+// immediate availability and publication.
 function rowScheduledTimeIso(cfg: RowConfig): string | null {
   if (!cfg.scheduleTouched || cfg.date === "" || cfg.time === "") return null;
   const parsed = new Date(`${cfg.date}T${cfg.time}`);
@@ -3322,8 +3322,8 @@ async function runAssignmentLifecycle(input: {
   // selected class below.
   readonly classroomGrading: ClassroomGradingInput;
   // Sprint 30A.3: the shared, dialog-level Due Date (see SharedAssignConfig).
-  // Empty string means no due date; applied identically to every row's
-  // Classroom publish call below, exactly like `classroomGrading`.
+  // Empty string means no due date; written identically onto every
+  // selected class's draft below, exactly like `classroomGrading`.
   readonly dueDate?: string;
   readonly assignments: AssignmentsCallables;
   readonly integrations: IntegrationsDeps | null;
@@ -3376,6 +3376,19 @@ async function runAssignmentLifecycle(input: {
       // invented client-side).
       const wantsLms = row.link !== null && integrations !== null;
 
+      // The ONE teacher-selected instant for this class, written durably as
+      // the draft's `availableAt`. It governs LyfeLabz student availability
+      // (Data Model §3.6: hidden from students until that time; the student
+      // list, deep-link resolve, and session begin all honor it) AND is the
+      // server's sole source for Google Classroom's `scheduledTime`
+      // (`lmsAssignmentsPublish` reads it from the assignment), so the two
+      // can never drift and a later publication retry keeps the schedule.
+      // Null unless the teacher deliberately edited this row's Date/Time
+      // (the pre-filled default is never a schedule), in which case the
+      // draft carries no `availableAt` and publication is immediate, exactly
+      // as before.
+      const scheduledTime = rowScheduledTimeIso(row.cfg);
+
       // Step 1: authoritative draft. If this fails, no publish and no
       // LMS side effect.
       //
@@ -3392,6 +3405,13 @@ async function runAssignmentLifecycle(input: {
           mode: "classroom",
           title: lesson.title,
           classroomGrading,
+          ...(scheduledTime !== null ? { availableAt: scheduledTime } : {}),
+          // The shared, dialog-level Classroom due date is durable
+          // assignment configuration: stored on each selected class's draft
+          // (like `classroomGrading`), and read server-side by
+          // lmsAssignmentsPublish for the initial publish and every retry.
+          // Empty means no due date; one is never invented.
+          ...(dueDate !== undefined && dueDate !== "" ? { dueDate } : {}),
         });
       } catch {
         // Draft creation failed: nothing durable was saved for this class.
@@ -3457,7 +3477,6 @@ async function runAssignmentLifecycle(input: {
         };
       }
       const lmsTopicId = row.cfg.lmsTopicId;
-      const scheduledTime = rowScheduledTimeIso(row.cfg);
       // One attempt nonce per logical publication action for this row
       // (implementation plan §2.1). It is passed on the initial call and
       // reused on the single automatic re-issue after incremental consent;
@@ -3472,8 +3491,6 @@ async function runAssignmentLifecycle(input: {
             linkId: link.linkId,
             title: lesson.title,
             ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
-            ...(dueDate !== undefined && dueDate !== "" ? { dueDate } : {}),
-            ...(scheduledTime !== null ? { scheduledTime } : {}),
             attemptNonce,
           }),
         consent: {

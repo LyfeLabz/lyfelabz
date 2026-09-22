@@ -157,7 +157,11 @@ async function lmsGradePassbacksRetryHandler(
     // Audit failure is non-blocking, matching the existing lms.* convention.
   }
 
-  const result = await synchronizeGradePassback({ assignmentId, studentId });
+  const result = await synchronizeGradePassback({
+    assignmentId,
+    studentId,
+    districtId: context.districtId,
+  });
 
   return { ok: true, status: mapOutcomeToStatus(result.outcome) };
 }

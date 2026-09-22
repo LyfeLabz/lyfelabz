@@ -41,6 +41,9 @@ export type AssignmentsCreateDraftRequest = {
   // ungraded (no inference, no default object manufactured). See the field
   // comment on `AssignmentRecord.classroomGrading` for the full contract.
   readonly classroomGrading?: ClassroomGradingConfig;
+  // Optional teacher-selected Classroom due date, ISO calendar date
+  // "YYYY-MM-DD" (see `AssignmentRecord.dueDate`). Absent means none.
+  readonly dueDate?: string;
 };
 
 // Return payload of a successful draft-creation call. `alreadyCreated` is
@@ -58,6 +61,9 @@ const CLASS_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
 const LESSON_SLUG_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,126}[A-Za-z0-9])?$/;
 const VALID_MODES: readonly AssignmentMode[] = ["practice", "classroom"];
 const MAX_TITLE = 200;
+// Same strict "YYYY-MM-DD" form the Classroom publication path and the
+// Google Classroom adapter already accept for a due date.
+const DUE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_INSTRUCTIONS = 4000;
 
 function isNonEmptyString(value: unknown): value is string {
@@ -158,6 +164,7 @@ type ValidatedRequest = {
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
   readonly classroomGrading?: ClassroomGradingConfig;
+  readonly dueDate?: string;
 };
 
 function validateRequest(data: unknown): ValidatedRequest {
@@ -232,6 +239,7 @@ function validateRequest(data: unknown): ValidatedRequest {
     windowClosesAt?: Timestamp;
     availableAt?: Timestamp;
     classroomGrading?: ClassroomGradingConfig;
+    dueDate?: string;
   } = { assignmentId, classId, lessonSlug, mode };
 
   if (payload.title !== undefined) {
@@ -277,6 +285,16 @@ function validateRequest(data: unknown): ValidatedRequest {
 
   if (payload.classroomGrading !== undefined) {
     out.classroomGrading = validateClassroomGradingConfig(payload.classroomGrading);
+  }
+
+  if (payload.dueDate !== undefined) {
+    if (typeof payload.dueDate !== "string" || !DUE_DATE_PATTERN.test(payload.dueDate)) {
+      throw new PlatformError(
+        "assignments.invalidDueDate",
+        'dueDate, when supplied, must be a "YYYY-MM-DD" string.',
+      );
+    }
+    out.dueDate = payload.dueDate;
   }
 
   return out;
@@ -342,6 +360,7 @@ function existingMatchesRequest(
   if (!classroomGradingEqual(existing.classroomGrading, input.classroomGrading)) {
     return false;
   }
+  if ((existing.dueDate ?? undefined) !== (input.dueDate ?? undefined)) return false;
   return true;
 }
 
@@ -437,6 +456,7 @@ async function assignmentsCreateDraftHandler(
     ...(input.classroomGrading !== undefined
       ? { classroomGrading: input.classroomGrading }
       : {}),
+    ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
   };
 
   await assignmentCreationDocRef(input.assignmentId).set(creation);

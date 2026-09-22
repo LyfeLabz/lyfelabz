@@ -199,6 +199,67 @@ describe("createAssignmentsListForStudentCallable", () => {
     }
   });
 
+  test("carries server-supplied supersededAssignmentIds, dropping malformed entries", async () => {
+    callableResponse = {
+      items: [okItem()],
+      supersededAssignmentIds: ["assign-old-1", "", 7, null, "assign-old-2"],
+    };
+    const callable = createAssignmentsListForStudentCallable(fakeFunctions);
+    const res = await callable();
+    expect(res.supersededAssignmentIds).toEqual(["assign-old-1", "assign-old-2"]);
+    expect(Object.isFrozen(res.supersededAssignmentIds)).toBe(true);
+  });
+
+  test("carries an item's server-supplied relatedAssignmentIds, dropping malformed entries; absent/empty stays absent", async () => {
+    callableResponse = {
+      items: [
+        okItem({ assignmentId: "cur", relatedAssignmentIds: ["old-1", "", 3, "old-2"] }),
+        okItem({ assignmentId: "legacy" }),
+        okItem({ assignmentId: "empty", relatedAssignmentIds: [] }),
+        okItem({ assignmentId: "junk", relatedAssignmentIds: "old-1" }),
+      ],
+    };
+    const callable = createAssignmentsListForStudentCallable(fakeFunctions);
+    const res = await callable();
+    const byId = new Map(res.items.map((i) => [i.assignmentId, i]));
+    expect(byId.get("cur")?.relatedAssignmentIds).toEqual(["old-1", "old-2"]);
+    for (const id of ["legacy", "empty", "junk"]) {
+      expect(byId.get(id)).not.toHaveProperty("relatedAssignmentIds");
+    }
+  });
+
+  test("carries server historyOnlyGroups, dropping malformed groups and ids; absent parses as none", async () => {
+    callableResponse = {
+      items: [],
+      historyOnlyGroups: [
+        { assignmentIds: ["old-1", "", 4, "cur"] },
+        { assignmentIds: [] },
+        { assignmentIds: "old-1" },
+        null,
+        "junk",
+      ],
+    };
+    const callable = createAssignmentsListForStudentCallable(fakeFunctions);
+    const res = await callable();
+    expect(res.historyOnlyGroups).toEqual([{ assignmentIds: ["old-1", "cur"] }]);
+
+    resetInvocations();
+    callableResponse = { items: [] };
+    const none = await createAssignmentsListForStudentCallable(fakeFunctions)();
+    expect(none.historyOnlyGroups).toEqual([]);
+  });
+
+  test("an older server without supersededAssignmentIds (or a non-array) parses as none", async () => {
+    for (const superseded of [undefined, null, "assign-old", { a: 1 }]) {
+      resetInvocations();
+      callableResponse = { items: [okItem()], supersededAssignmentIds: superseded };
+      const callable = createAssignmentsListForStudentCallable(fakeFunctions);
+      const res = await callable();
+      expect(res.items).toHaveLength(1);
+      expect(res.supersededAssignmentIds).toEqual([]);
+    }
+  });
+
   test("propagates callable failures so the surface can render a recoverable error", async () => {
     callableRejection = new Error("network");
     const callable = createAssignmentsListForStudentCallable(fakeFunctions);

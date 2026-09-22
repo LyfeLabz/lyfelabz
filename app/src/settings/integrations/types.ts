@@ -192,14 +192,10 @@ export type IntegrationsCallables = {
     readonly title?: string;
     readonly instructions?: string;
     readonly lmsTopicId?: string;
-    // Sprint 30A.3: shared, dialog-level Classroom due date (ISO
-    // "YYYY-MM-DD"). Omitted or empty means no due date is sent.
-    readonly dueDate?: string;
-    // Sprint 30A.3: per-class scheduled Classroom publication instant, RFC3339
-    // UTC (e.g. "2026-09-23T11:45:00.000Z"). Present only when the teacher
-    // deliberately edited this class's Date/Time; absent means publish
-    // immediately, exactly as before this feature.
-    readonly scheduledTime?: string;
+    // No scheduling or due-date field: the server derives Classroom
+    // `scheduledTime` and `dueDate` from the assignment's durable
+    // `availableAt` and `dueDate` (both written on the draft), so the
+    // initial publish and any later retry use the same values.
     readonly attemptNonce?: string;
   }) => Promise<IntegrationsPublicationOutcome>;
 };
@@ -232,6 +228,9 @@ export type AssignmentsCreateDraftInput = {
   // ungraded (server-side default for compatibility); the Assign dialog
   // always sends an explicit value going forward (see curriculum.ts).
   readonly classroomGrading?: ClassroomGradingInput;
+  // Sprint 30A.3 - optional Classroom due date, ISO "YYYY-MM-DD" (the date
+  // input's value). Stored on the assignment; omitted means no due date.
+  readonly dueDate?: string;
 };
 
 export type AssignmentsCreateDraftOutput = {

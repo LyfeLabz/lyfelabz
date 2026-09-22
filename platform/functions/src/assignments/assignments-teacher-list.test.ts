@@ -159,7 +159,9 @@ describe("assignmentsTeacherList - query shape", () => {
     expect(mockWhere3).toHaveBeenCalledWith(
       "status",
       "in",
-      ["published", "closed"],
+      // `archived` is read (never returned) so the Current-aware collapse
+      // sees every occurrence of a class + lesson.
+      ["published", "closed", "archived"],
     );
     expect(res.items).toEqual([]);
   });
@@ -502,7 +504,9 @@ describe("assignmentsTeacherList - Sprint 13F draft enumeration", () => {
     expect(mockWhere3).toHaveBeenCalledWith(
       "status",
       "in",
-      ["published", "closed"],
+      // `archived` is read (never returned) so the Current-aware collapse
+      // sees every occurrence of a class + lesson.
+      ["published", "closed", "archived"],
     );
   });
 
@@ -514,7 +518,7 @@ describe("assignmentsTeacherList - Sprint 13F draft enumeration", () => {
     expect(mockWhere3).toHaveBeenCalledWith(
       "status",
       "in",
-      ["published", "closed", "draft"],
+      ["published", "closed", "draft", "archived"],
     );
   });
 
@@ -598,5 +602,163 @@ describe("assignmentsTeacherList - Sprint 13F draft enumeration", () => {
       makeRequest({ includeDrafts: false }),
     );
     expect(res.items).toEqual([]);
+  });
+});
+
+// Reassignment model: the teacher operational view uses the same canonical
+// three-state Current resolution as students. Managed-inactive (the
+// authoritative pointer names a closed/archived Current) must never make an
+// older published occurrence operational again.
+describe("assignmentsTeacherList - managed-inactive Current (reassignment model)", () => {
+  const LESSON = "lesson_g7_earths-layers";
+
+  function routeAssignments(byId: Record<string, Record<string, unknown>>): void {
+    mockAssignmentDocRef.mockImplementation((id: string) => ({
+      get: () =>
+        Promise.resolve(
+          byId[id]
+            ? {
+                exists: true,
+                data: () => ({
+                  classId: "class-a",
+                  teacherId: TEACHER_UID,
+                  schoolId: SCHOOL_ID,
+                  lessonSlug: LESSON,
+                  mode: "classroom",
+                  status: "published",
+                  createdAt: {},
+                  ...byId[id],
+                }),
+              }
+            : { exists: false, data: () => undefined },
+        ),
+    }));
+  }
+
+  function pointTo(assignmentId: string): void {
+    mockCurrentDocGet.mockResolvedValue({
+      exists: true,
+      data: () => ({
+        classId: "class-a",
+        lessonSlug: LESSON,
+        assignmentId,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        setAt: { __sentinel: "timestamp" },
+        setBy: TEACHER_UID,
+        source: "teacherResolution",
+      }),
+    });
+  }
+
+  beforeEach(() => {
+    mockCurrentDocGet.mockResolvedValue({ exists: false, data: () => undefined });
+    mockAssignmentDocRef.mockImplementation(() => ({
+      get: () => Promise.resolve({ exists: false, data: () => undefined }),
+    }));
+    mockClassGet.mockResolvedValue(classDoc("class-a"));
+  });
+
+  const ids = (items: ReadonlyArray<{ assignmentId: string }>) =>
+    items.map((i) => i.assignmentId).sort();
+
+  test("unresolved legacy (never had a Current): every published occurrence stays, no Current guessed", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a-old1"), assignmentDoc("a-old2")],
+    });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(ids(res.items)).toEqual(["a-old1", "a-old2"]);
+  });
+
+  test("valid Current: only the Current occurrence is operational", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a-old"), assignmentDoc("a-cur")],
+    });
+    pointTo("a-cur");
+    routeAssignments({ "a-cur": {} });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(ids(res.items)).toEqual(["a-cur"]);
+  });
+
+  test("CLOSED Current: no older published occurrence becomes operational; the closed Current stays as a closed item", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [
+        assignmentDoc("a-old1"),
+        assignmentDoc("a-old2"),
+        assignmentDoc("a-cur", { status: "closed" }),
+      ],
+    });
+    pointTo("a-cur");
+    routeAssignments({ "a-cur": { status: "closed" } });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items.map((i) => [i.assignmentId, i.status])).toEqual([["a-cur", "closed"]]);
+  });
+
+  test("ARCHIVED Current with a lone older published occurrence: the older one is not resurrected (archived is never returned)", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a-old"), assignmentDoc("a-cur", { status: "archived" })],
+    });
+    pointTo("a-cur");
+    routeAssignments({ "a-cur": { status: "archived" } });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items).toEqual([]);
+  });
+
+  test("a lone published occurrence that IS the valid Current stays operational even with closed history", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [assignmentDoc("a-cur"), assignmentDoc("a-older", { status: "closed" })],
+    });
+    pointTo("a-cur");
+    routeAssignments({ "a-cur": {} });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items.map((i) => [i.assignmentId, i.status]).sort()).toEqual([
+      ["a-cur", "published"],
+      ["a-older", "closed"],
+    ]);
+  });
+
+  test("a lone published occurrence with NO other occurrence keeps the cheap path (no Current read)", async () => {
+    mockAssignmentsGet.mockResolvedValue({ docs: [assignmentDoc("a-only")] });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(ids(res.items)).toEqual(["a-only"]);
+    expect(mockAssignmentsCurrentDocRef).not.toHaveBeenCalled();
+  });
+
+  test("closing Current in one class never affects another class's legacy occurrences", async () => {
+    mockAssignmentsGet.mockResolvedValue({
+      docs: [
+        assignmentDoc("a-old"),
+        assignmentDoc("a-cur", { status: "closed" }),
+        assignmentDoc("b-1", { classId: "class-b" }),
+        assignmentDoc("b-2", { classId: "class-b" }),
+      ],
+    });
+    mockClassGet.mockImplementation(() => Promise.resolve(classDoc("x")));
+    mockAssignmentsCurrentDocRef.mockImplementation((classId: string) => ({
+      get: () =>
+        classId === "class-a"
+          ? Promise.resolve({
+              exists: true,
+              data: () => ({
+                classId: "class-a",
+                lessonSlug: LESSON,
+                assignmentId: "a-cur",
+                teacherId: TEACHER_UID,
+                schoolId: SCHOOL_ID,
+                setAt: { __sentinel: "timestamp" },
+                setBy: TEACHER_UID,
+                source: "teacherResolution",
+              }),
+            })
+          : Promise.resolve({ exists: false, data: () => undefined }),
+    }));
+    routeAssignments({ "a-cur": { status: "closed" } });
+    const res = await __assignmentsTeacherListHandler(makeRequest());
+    expect(res.items.map((i) => [i.assignmentId, i.status]).sort()).toEqual([
+      ["a-cur", "closed"],
+      ["b-1", "published"],
+      ["b-2", "published"],
+    ]);
+    mockAssignmentsCurrentDocRef.mockImplementation(() => ({ get: mockCurrentDocGet }));
   });
 });

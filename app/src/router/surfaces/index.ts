@@ -30,16 +30,25 @@ import type {
 import type {
   AssignmentsListForStudentCallable,
   AssignmentsListForStudentItem,
+  HistoryOnlyGroup,
 } from "../../assignments/studentList/types";
 import {
   planAssignmentLaunch,
   type LaunchPlan,
 } from "../../assignments/studentList/launchRouting";
 import type {
+  StudentAttemptSummary,
   StudentResultsListCallable,
   StudentResultAggregate,
 } from "../../assignments/studentResults/types";
-import { aggregateByAssignment } from "../../assignments/studentResults/aggregate";
+import {
+  aggregateAttemptSet,
+  isValidAttempt,
+} from "../../assignments/studentResults/aggregate";
+import {
+  formatLocalDate,
+  formatLocalTime,
+} from "../../shell/surfaces/shared/activeAssignments";
 // Sprint 28.6G: the canonical curriculum manifest is the single source of
 // truth for a student card's science domain and its displayed lesson title.
 // No second student-side domain/title registry is introduced.
@@ -1146,10 +1155,16 @@ const OTHER_DOMAIN_HEADING = "Other";
 
 // One unified work item for My Science, derived by joining a caller-scoped
 // published assignment (assignmentsListForStudent) with the student's own
-// completed-attempt aggregate (aggregateByAssignment). A "historical" item
+// completed attempts (assessmentAttemptsList). A "historical" item
 // (launchUrl null, no live assignment record) is completed work whose
 // assignment is no longer listed; it still shows the student's result so
 // completed work is never hidden, but it is not re-launchable.
+//
+// Reassignment model: a Current lesson tile's `aggregate` and `history`
+// span the student's attempts on the Current occurrence AND on every
+// related occurrence the server lists in `relatedAssignmentIds` (the
+// canonical class + lesson occurrence group). Attempt records keep their
+// own assignment ids; the tile only presents them together.
 type MyScienceItem = {
   readonly assignmentId: string;
   readonly title: string;
@@ -1159,6 +1174,14 @@ type MyScienceItem = {
   // that is no longer launchable.
   readonly launchPlan: LaunchPlan | null;
   readonly aggregate: StudentResultAggregate | null;
+  // Every valid completed attempt the card represents, newest first. Empty
+  // when the student has none (or results are degraded).
+  readonly history: ReadonlyArray<StudentAttemptSummary>;
+  // OPERATIONAL completion, deliberately separate from the cumulative
+  // `aggregate`/`history`: true only when the occurrence this card launches
+  // (the Current assignment) has its own completed attempt. A reassigned
+  // Current is "Ready to Begin" until the student completes IT, even when an
+  // older occurrence was completed and its best score is shown.
   readonly completed: boolean;
   readonly publishedAt: number | null;
   readonly lessonSlug: string | null;
@@ -1247,24 +1270,28 @@ export const makeActiveStudentSurface =
         return;
       }
       renderLoadingIndicator(panel, "Loading your science");
-      const assignmentsRead = assignmentsCallable().then((r) => r.items);
+      const assignmentsRead = assignmentsCallable();
       // Results are auxiliary: a results failure degrades the surface (no
       // scores / tiers) rather than failing the whole page, so a student can
       // always still open their work. A missing seam is treated the same as
       // a failed read: null => degraded (Task 16).
-      const resultsRead: Promise<ReadonlyMap<
-        string,
-        StudentResultAggregate
-      > | null> =
+      const resultsRead: Promise<ReadonlyArray<StudentAttemptSummary> | null> =
         resultsCallable === null
           ? Promise.resolve(null)
           : resultsCallable()
-              .then((r) => aggregateByAssignment(r.attempts))
+              .then((r) => r.attempts)
               .catch(() => null);
       Promise.all([assignmentsRead, resultsRead]).then(
-        ([items, resultsMap]) => {
+        ([response, attempts]) => {
           clear(panel);
-          renderMyScience(panel, items ?? [], resultsMap, launch);
+          renderMyScience(
+            panel,
+            response.items ?? [],
+            new Set(response.supersededAssignmentIds ?? []),
+            response.historyOnlyGroups ?? [],
+            attempts,
+            launch,
+          );
         },
         () => {
           // The primary (assignments) read failed. Show a calm, recoverable
@@ -1331,14 +1358,42 @@ function renderMyScienceError(mount: HTMLElement, onRetry: () => void): void {
 }
 
 // Pure join of the caller-scoped published assignments with the student's
-// own completed-attempt aggregate. Deterministic; no I/O. When resultsMap is
-// null (results unavailable / degraded), every listed item is treated as
+// own completed attempts. Deterministic; no I/O. When `attempts` is null
+// (results unavailable / degraded), every listed item is treated as
 // not-yet-completed with no status, and no historical items are synthesized,
 // so nothing is mislabeled as done (or not-done) on incomplete data.
+//
+// Reassignment model (server-authoritative; the client never infers which
+// occurrences belong together):
+//   - an item's `relatedAssignmentIds` are other occurrences of the same
+//     class + lesson whose attempts belong to this Current tile's
+//     cumulative best, count, and history;
+//   - `superseded` lists every such non-Current occurrence, including ones
+//     whose Current tile is not shown yet (future-scheduled Current). Their
+//     attempts never become separate cards; while Current is hidden there
+//     is deliberately no substitute tile.
 function buildMyScienceItems(
   items: ReadonlyArray<AssignmentsListForStudentItem>,
-  resultsMap: ReadonlyMap<string, StudentResultAggregate> | null,
+  superseded: ReadonlySet<string>,
+  historyOnlyGroups: ReadonlyArray<HistoryOnlyGroup>,
+  attempts: ReadonlyArray<StudentAttemptSummary> | null,
 ): ReadonlyArray<MyScienceItem> {
+  const byAssignment = new Map<string, StudentAttemptSummary[]>();
+  if (attempts !== null) {
+    for (const attempt of attempts) {
+      if (!isValidAttempt(attempt)) continue;
+      const group = byAssignment.get(attempt.assignmentId);
+      if (group) group.push(attempt);
+      else byAssignment.set(attempt.assignmentId, [attempt]);
+    }
+  }
+  const attemptsFor = (
+    assignmentIds: ReadonlyArray<string>,
+  ): ReadonlyArray<StudentAttemptSummary> =>
+    assignmentIds
+      .flatMap((id) => byAssignment.get(id) ?? [])
+      .sort(compareAttemptsNewestFirst);
+
   const out: MyScienceItem[] = [];
   const seen = new Set<string>();
   for (const item of items) {
@@ -1350,7 +1405,8 @@ function buildMyScienceItems(
     // control (fail closed).
     const launchPlan = planAssignmentLaunch(item);
     if (launchPlan === null) continue;
-    seen.add(item.assignmentId);
+    const represented = [item.assignmentId, ...(item.relatedAssignmentIds ?? [])];
+    for (const id of represented) seen.add(id);
     const unit = getUnitBySlug(item.lessonSlug);
     // The canonical curriculum title is the source of truth for the card
     // label; the stored teacher-authored assignment title is the fallback
@@ -1358,16 +1414,21 @@ function buildMyScienceItems(
     // fall back to the stored title and to the trailing "Other" group.
     const title = unit ? unit.title : item.title;
     const topic = unit && STUDENT_DOMAINS.has(unit.topic) ? unit.topic : null;
-    const aggregate = resultsMap
-      ? resultsMap.get(item.assignmentId) ?? null
-      : null;
+    const history = attempts !== null ? attemptsFor(represented) : [];
+    const aggregate =
+      attempts !== null ? aggregateAttemptSet(item.assignmentId, history) : null;
+    const currentCompleted =
+      attempts !== null &&
+      aggregateAttemptSet(item.assignmentId, byAssignment.get(item.assignmentId) ?? []) !==
+        null;
     out.push({
       assignmentId: item.assignmentId,
       title,
       topic,
       launchPlan,
       aggregate,
-      completed: aggregate !== null,
+      history,
+      completed: currentCompleted,
       publishedAt:
         typeof item.publishedAt === "number" ? item.publishedAt : null,
       lessonSlug: item.lessonSlug,
@@ -1377,16 +1438,48 @@ function buildMyScienceItems(
   // longer in the published list (typically closed after the student
   // finished). Kept so completed work is never hidden, but not re-launchable
   // and with no lessonSlug, so it lands in the trailing "Other" group under a
-  // safe, non-leaking label.
-  if (resultsMap !== null) {
-    for (const aggregate of resultsMap.values()) {
-      if (seen.has(aggregate.assignmentId)) continue;
+  // safe, non-leaking label. A superseded occurrence is NOT "no longer
+  // listed": its attempts belong to its Current tile (or are deliberately
+  // held back while that Current is not yet available), so it is never
+  // synthesized as an extra card.
+  // A managed class + lesson whose Current was closed has no operational
+  // card, and its older occurrences are never resurrected. The student's
+  // completed work across that group stays visible as ONE non-launchable
+  // history card (server-listed `historyOnlyGroups`), the same treatment a
+  // closed assignment's results already receive.
+  if (attempts !== null) {
+    for (const group of historyOnlyGroups) {
+      const ids = group.assignmentIds.filter((id) => !seen.has(id));
+      for (const id of ids) seen.add(id);
+      const history = attemptsFor(ids);
+      const first = ids[0];
+      const aggregate =
+        first !== undefined ? aggregateAttemptSet(first, history) : null;
+      if (first === undefined || aggregate === null) continue;
       out.push({
-        assignmentId: aggregate.assignmentId,
+        assignmentId: first,
         title: "Assignment no longer listed",
         topic: null,
         launchPlan: null,
         aggregate,
+        history,
+        completed: true,
+        publishedAt: null,
+        lessonSlug: null,
+      });
+    }
+    for (const [assignmentId, group] of byAssignment) {
+      if (seen.has(assignmentId)) continue;
+      if (superseded.has(assignmentId)) continue;
+      const aggregate = aggregateAttemptSet(assignmentId, group);
+      if (aggregate === null) continue;
+      out.push({
+        assignmentId,
+        title: "Assignment no longer listed",
+        topic: null,
+        launchPlan: null,
+        aggregate,
+        history: [...group].sort(compareAttemptsNewestFirst),
         completed: true,
         publishedAt: null,
         lessonSlug: null,
@@ -1394,6 +1487,17 @@ function buildMyScienceItems(
     }
   }
   return out;
+}
+
+// Attempt history order: most recent first, attemptId as a stable fallback.
+function compareAttemptsNewestFirst(
+  a: StudentAttemptSummary,
+  b: StudentAttemptSummary,
+): number {
+  if (a.submittedAt !== b.submittedAt) return b.submittedAt - a.submittedAt;
+  if (a.attemptId < b.attemptId) return -1;
+  if (a.attemptId > b.attemptId) return 1;
+  return 0;
 }
 
 // Deterministic within-domain ordering (Blueprint section 15): unfinished
@@ -1416,11 +1520,13 @@ function compareMyScienceItems(a: MyScienceItem, b: MyScienceItem): number {
 function renderMyScience(
   mount: HTMLElement,
   items: ReadonlyArray<AssignmentsListForStudentItem>,
-  resultsMap: ReadonlyMap<string, StudentResultAggregate> | null,
+  superseded: ReadonlySet<string>,
+  historyOnlyGroups: ReadonlyArray<HistoryOnlyGroup>,
+  attempts: ReadonlyArray<StudentAttemptSummary> | null,
   launch: ((plan: LaunchPlan) => void) | undefined,
 ): void {
   const doc = mount.ownerDocument;
-  const work = buildMyScienceItems(items, resultsMap);
+  const work = buildMyScienceItems(items, superseded, historyOnlyGroups, attempts);
   if (work.length === 0) {
     renderMyScienceEmpty(mount);
     return;
@@ -1428,7 +1534,7 @@ function renderMyScience(
   // When results are unavailable the surface degrades: cards render without a
   // status chip, score, or completed-tier treatment so nothing is mislabeled.
   // Domain grouping needs only the manifest, so it is preserved.
-  const degraded = resultsMap === null;
+  const degraded = attempts === null;
 
   // Bucket by domain. Render a section only when it holds at least one item
   // (empty domains are omitted, Blueprint section 15).
@@ -1471,6 +1577,31 @@ function renderMyScience(
   }
 }
 
+// One attempt in a tile's history: the attempt's own score and its own
+// completion date/time, read verbatim from the caller's attempt summary.
+// Reuses the canonical score-line grammar ("95% · 19/20") and the shared
+// deterministic local date/time formatters.
+function renderAttemptHistoryRow(
+  doc: Document,
+  attempt: StudentAttemptSummary,
+): HTMLElement {
+  const row = doc.createElement("li");
+  row.setAttribute("data-testid", "my-science-attempt");
+  const strong = doc.createElement("strong");
+  strong.textContent = `${attempt.percentage}%`;
+  row.appendChild(strong);
+  const raw = doc.createElement("span");
+  raw.className = "my-science-card-score-raw";
+  raw.textContent = ` · ${attempt.score}/${attempt.maxScore}`;
+  row.appendChild(raw);
+  const when = new Date(attempt.submittedAt);
+  const time = doc.createElement("span");
+  time.className = "my-science-attempt-when";
+  time.textContent = ` · ${formatLocalDate(when)}, ${formatLocalTime(when)}`;
+  row.appendChild(time);
+  return row;
+}
+
 function renderMyScienceCard(
   doc: Document,
   item: MyScienceItem,
@@ -1487,7 +1618,13 @@ function renderMyScienceCard(
   heading.textContent = item.title;
   li.appendChild(heading);
 
-  const showResult = !degraded && item.completed && item.aggregate !== null;
+  // Reassignment model: the score line, attempt count, and history are
+  // CUMULATIVE (shown whenever any attempt exists across the related
+  // occurrences), while the status chip and the quiet completed treatment
+  // are OPERATIONAL (the Current occurrence itself). A reassigned Current
+  // therefore shows the student's cumulative best yet still reads "Ready to
+  // Begin" until the student completes the Current assignment.
+  const showResult = !degraded && item.aggregate !== null;
   // Sprint 28.6H (Finding 17): OBJECTIVE status only - "Completed" for finished
   // work, "Ready to Begin" for unfinished. The score below carries the actual
   // performance; no subjective judgment is shown.
@@ -1500,7 +1637,7 @@ function renderMyScienceCard(
     li.setAttribute("data-status", status);
     // All completed work is visually quieter than unfinished work (Task 7);
     // it stays visible and interactive (completed is not unavailable).
-    if (showResult) li.setAttribute("data-complete", "true");
+    if (item.completed) li.setAttribute("data-complete", "true");
     li.appendChild(renderStatusChip(doc, status, "my-science-card-status"));
   }
 
@@ -1520,11 +1657,40 @@ function renderMyScienceCard(
     score.appendChild(raw);
     li.appendChild(score);
 
-    const attempts = doc.createElement("p");
-    attempts.setAttribute("data-testid", "my-science-card-attempts");
-    attempts.textContent =
+    // The attempt count doubles as the disclosure for the individual
+    // attempts it summarizes (reassignment model: a Current tile's count and
+    // best span every related occurrence, so the student can always inspect
+    // each attempt behind the aggregate). Same disclosure grammar as the
+    // Resources control: a native button with aria-expanded/aria-controls
+    // toggling an inline panel; the caret is decorative CSS.
+    const countLabel =
       agg.attemptCount === 1 ? "1 attempt" : `${agg.attemptCount} attempts`;
-    li.appendChild(attempts);
+    const panelId = `my-science-history-${item.assignmentId}`;
+    const toggle = doc.createElement("button");
+    toggle.type = "button";
+    toggle.className = "my-science-attempts-toggle";
+    toggle.setAttribute("data-testid", "my-science-card-attempts");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", panelId);
+    toggle.setAttribute("aria-label", `${countLabel} for ${item.title}`);
+    toggle.textContent = countLabel;
+    li.appendChild(toggle);
+
+    const history = doc.createElement("ol");
+    history.className = "my-science-attempt-history";
+    history.id = panelId;
+    history.setAttribute("data-testid", "my-science-attempt-history");
+    history.hidden = true;
+    for (const attempt of item.history) {
+      history.appendChild(renderAttemptHistoryRow(doc, attempt));
+    }
+    li.appendChild(history);
+
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", open ? "false" : "true");
+      history.hidden = open;
+    });
   }
 
   // Launch action. Reuses the certified assignment launcher URL and the

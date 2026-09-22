@@ -967,6 +967,7 @@ async function assessmentAttemptsFinalizeHandler(
       await synchronizeGradePassback({
         assignmentId: outcome.sessionContext.assignmentId,
         studentId: actor.uid,
+        districtId: actor.districtId,
       });
     } catch (err) {
       safeLog(() =>

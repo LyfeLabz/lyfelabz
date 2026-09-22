@@ -629,4 +629,65 @@ describe("assignmentsCreateDraft", () => {
     ).rejects.toBe(err);
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
+
+  // Sprint 30A.3: the teacher-selected Classroom due date is durable
+  // assignment configuration, stored in its canonical "YYYY-MM-DD" form.
+  describe("dueDate (durable assignment configuration)", () => {
+    it("persists a supplied due date verbatim as the canonical ISO calendar date", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(absentAssignmentSnapshot());
+      mockAssignmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+      await __assignmentsCreateDraftHandler(
+        makeRequest({ data: { ...VALID_DATA, dueDate: "2026-09-23" } }),
+      );
+
+      const written = mockAssignmentSet.mock.calls[0][0];
+      expect(written.dueDate).toBe("2026-09-23");
+    });
+
+    it("leaves dueDate absent when none is supplied (never invented)", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(absentAssignmentSnapshot());
+      mockAssignmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+      await __assignmentsCreateDraftHandler(makeRequest());
+
+      const written = mockAssignmentSet.mock.calls[0][0];
+      expect(written).not.toHaveProperty("dueDate");
+    });
+
+    it.each<string | number>(["", "2026-9-23", "2026-09-23T00:00:00Z", 20260923])(
+      "rejects a malformed dueDate (%p) before any write",
+      async (dueDate) => {
+        await expect(
+          __assignmentsCreateDraftHandler(makeRequest({ data: { ...VALID_DATA, dueDate } })),
+        ).rejects.toMatchObject({ code: "assignments.invalidDueDate" });
+        expect(mockAssignmentSet).not.toHaveBeenCalled();
+      },
+    );
+
+    it("idempotent replay requires the same dueDate; a different one is a conflict", async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingAssignmentSnapshot({ dueDate: "2026-09-23" }),
+      );
+      const same = await __assignmentsCreateDraftHandler(
+        makeRequest({ data: { ...VALID_DATA, dueDate: "2026-09-23" } }),
+      );
+      expect(same.alreadyCreated).toBe(true);
+
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingAssignmentSnapshot({ dueDate: "2026-09-23" }),
+      );
+      await expect(
+        __assignmentsCreateDraftHandler(
+          makeRequest({ data: { ...VALID_DATA, dueDate: "2026-09-30" } }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.conflict" });
+    });
+  });
 });

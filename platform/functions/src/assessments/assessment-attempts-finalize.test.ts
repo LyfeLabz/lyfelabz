@@ -617,6 +617,9 @@ describe("assessmentAttemptsFinalize", () => {
     expect(mockSynchronizeGradePassback).toHaveBeenCalledWith({
       assignmentId: ASSIGNMENT_ID,
       studentId: STUDENT_UID,
+      // The student actor's verified district context is passed through to
+      // canonical Current resolution (reassignment model).
+      districtId: DISTRICT_ID,
     });
   });
 

@@ -91,17 +91,15 @@ export type LmsAssignmentsPublishRequest = {
   readonly title?: string;
   readonly instructions?: string;
   readonly lmsTopicId?: string;
-  // Sprint 30A.3: shared, dialog-level Classroom due date, ISO
-  // "YYYY-MM-DD". Optional - absent means no due date is sent to
-  // Classroom, matching Classroom's own contract that a coursework item
-  // without a dueDate is valid.
-  readonly dueDate?: string;
-  // Sprint 30A.3: per-class scheduled Classroom publication instant,
-  // RFC3339 UTC. Optional - absent, malformed-into-past, or already
-  // elapsed means publish immediately (today's exact behavior). Present
-  // only when the teacher deliberately edited this class's Date/Time in
-  // the Assign dialog (never the decorative pre-filled default).
-  readonly scheduledTime?: string;
+  // There is deliberately NO scheduling or due-date field on this request.
+  // The scheduled Classroom publication instant and the Classroom due date
+  // are derived server-side from the assignment's own durable `availableAt`
+  // and `dueDate` (see `scheduledTimeFromAvailableAt` and
+  // `dueDateFromAssignment` below), exactly as the grading configuration is
+  // read from the assignment rather than the request. A `scheduledTime` or
+  // `dueDate` a client still sends is ignored (not read), like
+  // `lyfelabzAssignmentUrl` above, so an initial publish and a later retry
+  // can never disagree about either value.
   readonly attemptNonce?: string;
 };
 
@@ -128,47 +126,55 @@ function optionalNonEmptyString(value: unknown): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
-// Sprint 30A.3: strict "YYYY-MM-DD" validation for the optional due date.
-// Rejects a malformed value outright (a native `<input type="date">`
-// always emits this exact format) rather than forwarding an unparseable
-// string to the Classroom adapter.
+// Classroom due date, derived from the assignment's durable `dueDate` (an
+// ISO calendar date "YYYY-MM-DD", written at draft creation). Absent means
+// no due date - one is never invented. Because it is read from the record on
+// every call, a publication retry keeps the teacher's due date with no
+// client-side state. A malformed stored value fails closed (refused, never
+// forwarded or guessed); the Google Classroom adapter converts a valid value
+// directly into Classroom's {year, month, day} with no timezone step.
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-function optionalIsoDate(value: unknown): string | undefined {
-  const trimmed = optionalNonEmptyString(value);
-  if (trimmed === undefined) return undefined;
-  if (!ISO_DATE_PATTERN.test(trimmed)) {
+function dueDateFromAssignment(dueDate: unknown): string | undefined {
+  if (dueDate === undefined || dueDate === null) return undefined;
+  if (typeof dueDate !== "string" || !ISO_DATE_PATTERN.test(dueDate)) {
     throw new PlatformError(
-      "lms.invalidRequest",
-      'dueDate must be a "YYYY-MM-DD" string.',
+      "lms.assignmentNotPublishable",
+      "Assignment due date is malformed; publication is not available.",
     );
   }
-  return trimmed;
+  return dueDate;
 }
 
-// Sprint 30A.3: validates the optional Classroom scheduled-publication
-// instant. Rejects an unparseable value outright (fail closed - never
-// forward a malformed timestamp upstream). A value that parses but is
-// already at-or-before "now" (a small buffer absorbs normal request
-// latency) is treated identically to "not scheduled" - the teacher's
-// intent for a past/imminent time is "assign now," not a rejected
-// request, matching pre-feature behavior for exactly that case.
+// Scheduled Classroom publication, derived from the assignment's durable
+// `availableAt` - the ONE teacher-selected instant that also governs
+// LyfeLabz student availability (Data Model §3.6). The Assign dialog writes
+// `availableAt` only when the teacher deliberately edited that class's
+// Date/Time; absent means "never scheduled" and publication is immediate,
+// exactly as before scheduling existed. Because the value is read from the
+// assignment record on every call, a retry of a failed publication
+// preserves the original schedule without any client-side state:
+//   - before the instant: coursework is created as a Classroom DRAFT with
+//     `scheduledTime` = that same instant;
+//   - at/after the instant (or within a small buffer that absorbs request
+//     latency): the schedule has already arrived, so the coursework is
+//     published immediately rather than sending Classroom a past
+//     `scheduledTime`; LyfeLabz availability has arrived too.
+// A malformed stored value fails closed (refused, never guessed).
 const SCHEDULED_TIME_PAST_BUFFER_MS = 60_000;
 
-function resolveScheduledTime(value: unknown): string | undefined {
-  const trimmed = optionalNonEmptyString(value);
-  if (trimmed === undefined) return undefined;
-  const parsedMs = Date.parse(trimmed);
-  if (Number.isNaN(parsedMs)) {
+function scheduledTimeFromAvailableAt(availableAt: unknown): string | undefined {
+  if (availableAt === undefined || availableAt === null) return undefined;
+  const toMillis = (availableAt as { toMillis?: () => unknown }).toMillis;
+  const ms = typeof toMillis === "function" ? toMillis.call(availableAt) : undefined;
+  if (typeof ms !== "number" || !Number.isFinite(ms)) {
     throw new PlatformError(
-      "lms.invalidRequest",
-      "scheduledTime must be a valid RFC3339 timestamp.",
+      "lms.assignmentNotPublishable",
+      "Assignment availability time is malformed; publication is not available.",
     );
   }
-  if (parsedMs <= Date.now() + SCHEDULED_TIME_PAST_BUFFER_MS) {
-    return undefined;
-  }
-  return new Date(parsedMs).toISOString();
+  if (ms <= Date.now() + SCHEDULED_TIME_PAST_BUFFER_MS) return undefined;
+  return new Date(ms).toISOString();
 }
 
 async function handler(
@@ -210,8 +216,6 @@ async function handler(
   const titleOverride = optionalNonEmptyString(payload.title);
   const instructions = optionalNonEmptyString(payload.instructions);
   const lmsTopicId = optionalNonEmptyString(payload.lmsTopicId);
-  const dueDate = optionalIsoDate(payload.dueDate);
-  const scheduledTime = resolveScheduledTime(payload.scheduledTime);
   const attemptNonce =
     optionalNonEmptyString(payload.attemptNonce) ??
     randomBytes(8).toString("hex");
@@ -359,6 +363,8 @@ async function handler(
   }
 
   const title = titleOverride ?? assignment.title ?? assignment.lessonSlug;
+  const scheduledTime = scheduledTimeFromAvailableAt(assignment.availableAt);
+  const dueDate = dueDateFromAssignment(assignment.dueDate);
   // Sprint 30A.1 - Classroom grading configuration is read from the
   // canonical assignment record, never from a second client-supplied
   // value at publication time (the request contract above carries no

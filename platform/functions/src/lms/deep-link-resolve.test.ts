@@ -8,7 +8,14 @@ import type { CallableRequest } from "firebase-functions/v2/https";
 const mockAssignmentGet = jest.fn();
 const mockEnrollmentGet = jest.fn();
 
-const mockAssignmentDocRef = jest.fn(() => ({ get: mockAssignmentGet }));
+const mockAssignmentDocRef: jest.Mock = jest.fn(() => ({ get: mockAssignmentGet }));
+// Reassignment model: canonical Current pointer seam (shared occurrence
+// grouping). Default "no pointer" keeps every pre-existing test on the
+// legacy (unresolved) path.
+const mockCurrentPointerGet: jest.Mock = jest.fn(() =>
+  Promise.resolve({ exists: false, data: () => undefined }),
+);
+const mockAssignmentsCurrentDocRef = jest.fn(() => ({ get: mockCurrentPointerGet }));
 const mockEnrollmentDocRef = jest.fn(() => ({ get: mockEnrollmentGet }));
 
 const mockRequireDistrictContext = jest.fn();
@@ -46,6 +53,7 @@ jest.mock("../shared", () => {
     PlatformError,
     log: { info: mockLogInfo, warn: jest.fn(), error: mockLogError },
     assignmentDocRef: mockAssignmentDocRef,
+    assignmentsCurrentDocRef: mockAssignmentsCurrentDocRef,
     enrollmentDocRef: mockEnrollmentDocRef,
     requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
@@ -187,6 +195,18 @@ describe("lmsDeepLinkResolve - success", () => {
     const res = await __lmsDeepLinkResolveHandler(makeRequest());
     expect(res.attemptContext).toBe("informational");
     expect(mockIsCanonicalRecipient).not.toHaveBeenCalled();
+  });
+
+  it("authorizes once a scheduled availableAt has been reached", async () => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(
+      assignmentSnapshot({
+        availableAt: { toMillis: () => FIXED_NOW_MS },
+      }),
+    );
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("assignmentLaunch");
+    expect(res.attemptContext).toBe("authorized");
   });
 
   it("returns informational when the window has already closed", async () => {
@@ -490,5 +510,96 @@ describe("lmsDeepLinkResolve - Slice 4 differentiation (Op C)", () => {
         makeRequest({ assignmentId: ASSIGNMENT_ID, launchRef: "x".repeat(32) }),
       ),
     ).rejects.toBeInstanceOf(PlatformError);
+  });
+});
+
+// Reassignment model (Sprint 30): an old Google Classroom link (or direct
+// `/app/a/{id}` URL) to an occurrence superseded by a valid Current resolves
+// to the calm informational arrival, never a launch. Session begin refuses
+// independently (assessment-sessions-begin.test.ts).
+describe("lmsDeepLinkResolve - superseded occurrence (reassignment model)", () => {
+  const CURRENT_ID = "assign-current";
+
+  function pointerTo(assignmentId: string) {
+    return {
+      exists: true,
+      data: () => ({
+        classId: CLASS_ID,
+        lessonSlug: LESSON_SLUG,
+        assignmentId,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        setAt: { __sentinel: "timestamp" },
+        setBy: TEACHER_UID,
+        source: "teacherResolution",
+      }),
+    };
+  }
+
+  function routeAssignments(byId: Record<string, ReturnType<typeof assignmentSnapshot>>) {
+    mockAssignmentDocRef.mockImplementation((id: string) => ({
+      get: () => Promise.resolve(byId[id] ?? { exists: false, data: () => undefined }),
+    }));
+  }
+
+  afterEach(() => {
+    mockAssignmentDocRef.mockImplementation(() => ({ get: mockAssignmentGet }));
+    mockCurrentPointerGet.mockImplementation(() =>
+      Promise.resolve({ exists: false, data: () => undefined }),
+    );
+  });
+
+  it("an old link to a superseded occurrence is informational, never a launch", async () => {
+    setupHappyPath();
+    routeAssignments({
+      [ASSIGNMENT_ID]: assignmentSnapshot(),
+      [CURRENT_ID]: assignmentSnapshot(),
+    });
+    mockCurrentPointerGet.mockResolvedValue(pointerTo(CURRENT_ID));
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("informational");
+    expect(res.attemptContext).toBe("informational");
+    expect(mockLaunchResolve).not.toHaveBeenCalled();
+  });
+
+  it("an old link cannot bypass a future-scheduled Current", async () => {
+    setupHappyPath();
+    routeAssignments({
+      [ASSIGNMENT_ID]: assignmentSnapshot(),
+      [CURRENT_ID]: assignmentSnapshot({
+        availableAt: { toMillis: () => FIXED_NOW_MS + 24 * 60 * 60 * 1000 },
+      }),
+    });
+    mockCurrentPointerGet.mockResolvedValue(pointerTo(CURRENT_ID));
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.attemptContext).toBe("informational");
+  });
+
+  it("after the managed Current is closed, an old link to an older occurrence stays non-launchable", async () => {
+    setupHappyPath();
+    routeAssignments({
+      [ASSIGNMENT_ID]: assignmentSnapshot(),
+      [CURRENT_ID]: assignmentSnapshot({ status: "closed" }),
+    });
+    mockCurrentPointerGet.mockResolvedValue(pointerTo(CURRENT_ID));
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("informational");
+    expect(res.attemptContext).toBe("informational");
+  });
+
+  it("never-managed legacy scope (no pointer): the link authorizes exactly as before", async () => {
+    setupHappyPath();
+    routeAssignments({ [ASSIGNMENT_ID]: assignmentSnapshot() });
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.attemptContext).toBe("authorized");
+  });
+
+  it("the Current occurrence's own link still authorizes a launch", async () => {
+    setupHappyPath();
+    routeAssignments({ [ASSIGNMENT_ID]: assignmentSnapshot() });
+    mockCurrentPointerGet.mockResolvedValue(pointerTo(ASSIGNMENT_ID));
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("assignmentLaunch");
+    expect(res.attemptContext).toBe("authorized");
   });
 });

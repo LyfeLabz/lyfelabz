@@ -112,6 +112,17 @@ export type AssignmentRecord = {
   // exist for it (LMS publication is a later, separate step). No new
   // freeze mechanism is required beyond that existing status gate.
   readonly classroomGrading?: ClassroomGradingConfig;
+  // Sprint 30A.3 - additive optional teacher-selected Classroom due date,
+  // stored in the SAME canonical form the Classroom path has always used:
+  // an ISO calendar date "YYYY-MM-DD" (the value of the Assign dialog's
+  // date input), never a Timestamp, so no timezone interpretation is added
+  // (the Google Classroom adapter converts it directly to Classroom's
+  // {year, month, day}). Absent means no due date: legacy assignments need
+  // no migration or backfill, and none is ever inferred. Written only by
+  // `assignmentsCreateDraft`; `lmsAssignmentsPublish` reads it from this
+  // record for every publication attempt (initial and retry), so it is
+  // durable assignment configuration rather than request state.
+  readonly dueDate?: string;
 };
 
 // Write shape for the draft-creation callable (assignmentsCreateDraft).
@@ -139,6 +150,8 @@ export type AssignmentCreationWrite = {
   readonly availableAt?: Timestamp;
   // Sprint 30A.1 - see the field comment on `AssignmentRecord.classroomGrading`.
   readonly classroomGrading?: ClassroomGradingConfig;
+  // See the field comment on `AssignmentRecord.dueDate`.
+  readonly dueDate?: string;
 };
 
 // Write shape for the draft-update callable (assignmentsUpdateDraft).
