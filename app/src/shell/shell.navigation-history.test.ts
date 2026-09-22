@@ -146,6 +146,24 @@ describe("Browser Back/Forward: top-level surface navigation", () => {
   });
 });
 
+// jsdom's `history.back()`/`forward()` resolve asynchronously; a bare
+// `setTimeout(0)` is not reliably long enough for the resulting
+// `popstate` to have fired by the time assertions run (this exact gap
+// masked a real production bug in an earlier iteration of this suite -
+// see the dispatch-integration regression test). Every test in the
+// blocks below uses real `history.back()`/`forward()` with this longer
+// wait, never a hand-constructed synthetic `popstate` event, so the full
+// push/pop round trip - not just the handler's reaction to an assumed
+// state shape - is what's actually exercised.
+const realBack = async (): Promise<void> => {
+  window.history.back();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+};
+const realForward = async (): Promise<void> => {
+  window.history.forward();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+};
+
 describe("Browser Back/Forward: Students -> Student Detail", () => {
   const CLASS_ID = "history-class-1";
   const summary: ClassSummary = Object.freeze({
@@ -156,33 +174,56 @@ describe("Browser Back/Forward: Students -> Student Detail", () => {
     block: "E",
     isLmsLinked: true,
   });
+  const OTHER_CLASS_ID = "history-class-2";
+  const otherSummary: ClassSummary = Object.freeze({
+    id: OTHER_CLASS_ID,
+    title: "Other Science",
+    status: "active" as const,
+    grade: "6",
+    block: "F",
+    isLmsLinked: true,
+  });
 
-  const openStudentDetail = async (
+  const roster = [
+    { studentId: "s-alpha", studentDisplayName: "Alpha Student" },
+    { studentId: "s-bravo", studentDisplayName: "Bravo Student" },
+    { studentId: "s-charlie", studentDisplayName: "Charlie Student" },
+  ];
+
+  const mountWithRoster = async (
     mount: HTMLElement,
     extra: Partial<ShellDeps> = {},
   ): Promise<void> => {
     const loadRoster = async (input: { readonly classId: string }) => ({
       classId: input.classId,
-      students: [
-        { studentId: "s-alpha", studentDisplayName: "Alpha Student" },
-        { studentId: "s-bravo", studentDisplayName: "Bravo Student" },
-      ],
+      students: roster,
     });
     mountTeacherShell(
       teacherSession(),
       mount,
       makeShellDeps({
-        listClasses: async () => [summary],
+        listClasses: async () => [summary, otherSummary],
         loadRoster: () => loadRoster,
         ...extra,
       }),
     );
     await flush();
     await flush();
+  };
+
+  const openClassRoster = async (mount: HTMLElement): Promise<void> => {
     mount.querySelector<HTMLButtonElement>(`[data-testid=class-card-${CLASS_ID}]`)!.click();
     await flush();
     mount.querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")!.click();
     await flush();
+  };
+
+  const openStudentDetail = async (
+    mount: HTMLElement,
+    extra: Partial<ShellDeps> = {},
+  ): Promise<void> => {
+    await mountWithRoster(mount, extra);
+    await openClassRoster(mount);
     mount
       .querySelector<HTMLButtonElement>('[data-testid=roster-student][data-student-id="s-alpha"]')!
       .click();
@@ -201,6 +242,18 @@ describe("Browser Back/Forward: Students -> Student Detail", () => {
     });
   });
 
+  test("opening the Students tab pushed its own shell-classes-workspace entry beneath Detail", async () => {
+    const mount = mkMount();
+    await mountWithRoster(mount);
+    await openClassRoster(mount);
+
+    expect(window.history.state).toEqual({
+      kind: "shell-classes-workspace",
+      surface: "classes",
+      classId: CLASS_ID,
+    });
+  });
+
   test("Back to Students button replaces (not pushes) and closes Detail", async () => {
     const mount = mkMount();
     await openStudentDetail(mount);
@@ -211,60 +264,257 @@ describe("Browser Back/Forward: Students -> Student Detail", () => {
 
     expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
     expect(mount.querySelector("[data-testid=roster-list]")).not.toBeNull();
-    expect(window.history.state).toEqual({ kind: "shell-surface", surface: "classes" });
+    expect(window.history.state).toEqual({
+      kind: "shell-classes-workspace",
+      surface: "classes",
+      classId: CLASS_ID,
+    });
     expect(pushSpy).not.toHaveBeenCalled();
     pushSpy.mockRestore();
   });
 
-  test("simulated Back (popstate) restores the Students list", async () => {
+  test("real Back restores the Students list, real Forward reopens the same student", async () => {
     const mount = mkMount();
     await openStudentDetail(mount);
 
-    popstate({ kind: "shell-surface", surface: "classes" });
-    await flush();
-
+    await realBack();
     expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
     expect(mount.querySelector("[data-testid=roster-list]")).not.toBeNull();
-  });
 
-  test("simulated Forward (popstate) restores Student Detail through the existing rendering path", async () => {
-    const mount = mkMount();
-    await openStudentDetail(mount);
-    popstate({ kind: "shell-surface", surface: "classes" });
-    expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
-
-    popstate({
-      kind: "shell-student-detail",
-      surface: "classes",
-      classId: CLASS_ID,
-      studentId: "s-alpha",
-    });
-
+    await realForward();
     const heading = mount.querySelector("[data-testid=student-detail-name]");
     expect(heading?.textContent).toBe("Alpha Student");
   });
 
-  test("Forward for an unresolvable student (wrong class) fails closed onto the Classes surface", async () => {
+  test("popstate restoration never pushes another entry (no loops)", async () => {
     const mount = mkMount();
     await openStudentDetail(mount);
-    popstate({ kind: "shell-surface", surface: "classes" });
-    await flush();
+    const pushSpy = jest.spyOn(window.history, "pushState");
 
-    popstate({
-      kind: "shell-student-detail",
-      surface: "classes",
-      classId: "some-other-class",
-      studentId: "s-alpha",
+    await realBack();
+    await realForward();
+
+    expect(pushSpy).not.toHaveBeenCalled();
+    pushSpy.mockRestore();
+  });
+});
+
+describe("Browser Back/Forward: cross-surface chain (Classes -> Students -> Student A)", () => {
+  const CLASS_ID = "chain-class-1";
+  const summary: ClassSummary = Object.freeze({
+    id: CLASS_ID,
+    title: "Chain Science",
+    status: "active" as const,
+    grade: "7",
+    block: "A",
+    isLmsLinked: true,
+  });
+  const roster = [{ studentId: "s-a", studentDisplayName: "Student A" }];
+
+  const buildChain = async (mount: HTMLElement): Promise<void> => {
+    const loadRoster = async (input: { readonly classId: string }) => ({
+      classId: input.classId,
+      students: roster,
     });
+    mountTeacherShell(
+      teacherSession(),
+      mount,
+      makeShellDeps({ listClasses: async () => [summary], loadRoster: () => loadRoster }),
+    );
     await flush();
+    await flush();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=class-card-${CLASS_ID}]`)!.click();
+    await flush();
+    mount.querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")!.click();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>('[data-testid=roster-student][data-student-id="s-a"]')!
+      .click();
+  };
 
+  test("Back twice reaches the flat Classes list; Forward twice reconstructs the full chain", async () => {
+    const mount = mkMount();
+    await buildChain(mount);
+    expect(mount.querySelector("[data-testid=student-detail]")).not.toBeNull();
+
+    await realBack(); // -> Students
     expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
     expect(mount.querySelector("[data-testid=roster-list]")).not.toBeNull();
+    expect(window.history.state).toEqual({
+      kind: "shell-classes-workspace",
+      surface: "classes",
+      classId: CLASS_ID,
+    });
+
+    await realBack(); // -> Classes (flat list)
+    expect(mount.querySelector("[data-testid=roster-list]")).toBeNull();
+    expect(mount.querySelector(`[data-testid=class-card-${CLASS_ID}]`)).not.toBeNull();
+    expect(window.history.state).toEqual({ kind: "shell-surface", surface: "classes" });
+
+    await realForward(); // -> Students
+    expect(mount.querySelector("[data-testid=roster-list]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
+
+    await realForward(); // -> Student A
+    const heading = mount.querySelector("[data-testid=student-detail-name]");
+    expect(heading?.textContent).toBe("Student A");
+  });
+});
+
+describe("Browser Back/Forward: Previous/Next Student traversal", () => {
+  const CLASS_ID = "traverse-class-1";
+  const summary: ClassSummary = Object.freeze({
+    id: CLASS_ID,
+    title: "Traverse Science",
+    status: "active" as const,
+    grade: "8",
+    block: "B",
+    isLmsLinked: true,
+  });
+  const roster = [
+    { studentId: "s-a", studentDisplayName: "Student A" },
+    { studentId: "s-b", studentDisplayName: "Student B" },
+    { studentId: "s-c", studentDisplayName: "Student C" },
+  ];
+
+  const openStudentA = async (mount: HTMLElement): Promise<void> => {
+    const loadRoster = async (input: { readonly classId: string }) => ({
+      classId: input.classId,
+      students: roster,
+    });
+    mountTeacherShell(
+      teacherSession(),
+      mount,
+      makeShellDeps({ listClasses: async () => [summary], loadRoster: () => loadRoster }),
+    );
+    await flush();
+    await flush();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=class-card-${CLASS_ID}]`)!.click();
+    await flush();
+    mount.querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")!.click();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>('[data-testid=roster-student][data-student-id="s-a"]')!
+      .click();
+  };
+
+  const detailName = (mount: HTMLElement): string | null | undefined =>
+    mount.querySelector("[data-testid=student-detail-name]")?.textContent;
+
+  test("Next creates a new history entry per student; Next/Next then Back/Back/Forward/Forward walks A -> B -> C -> B -> A -> B -> C", async () => {
+    const mount = mkMount();
+    await openStudentA(mount);
+    expect(detailName(mount)).toBe("Student A");
+
+    mount.querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!.click();
+    expect(detailName(mount)).toBe("Student B");
+    expect(window.history.state).toEqual({
+      kind: "shell-student-detail",
+      surface: "classes",
+      classId: CLASS_ID,
+      studentId: "s-b",
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!.click();
+    expect(detailName(mount)).toBe("Student C");
+
+    await realBack();
+    expect(detailName(mount)).toBe("Student B");
+
+    await realBack();
+    expect(detailName(mount)).toBe("Student A");
+
+    await realForward();
+    expect(detailName(mount)).toBe("Student B");
+
+    await realForward();
+    expect(detailName(mount)).toBe("Student C");
+  });
+
+  test("Previous also creates a new history entry", async () => {
+    const mount = mkMount();
+    await openStudentA(mount);
+    mount.querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!.click();
+    expect(detailName(mount)).toBe("Student B");
+
+    mount.querySelector<HTMLButtonElement>("[data-testid=student-detail-prev]")!.click();
+    expect(detailName(mount)).toBe("Student A");
+    expect(window.history.state).toEqual({
+      kind: "shell-student-detail",
+      surface: "classes",
+      classId: CLASS_ID,
+      studentId: "s-a",
+    });
+
+    await realBack();
+    expect(detailName(mount)).toBe("Student B");
+  });
+
+  test("Previous/Next controls themselves still work with no history interaction (no pushState per click beyond the one expected entry)", async () => {
+    const mount = mkMount();
+    await openStudentA(mount);
+    const pushSpy = jest.spyOn(window.history, "pushState");
+
+    mount.querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!.click();
+
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+    pushSpy.mockRestore();
+  });
+});
+
+describe("Browser Back/Forward: fail-closed and safety", () => {
+  const CLASS_ID = "history-class-1";
+  const summary: ClassSummary = Object.freeze({
+    id: CLASS_ID,
+    title: "History Science",
+    status: "active" as const,
+    grade: "6",
+    block: "E",
+    isLmsLinked: true,
+  });
+
+  test("popstate to an unresolvable student (wrong class) fails closed onto the Classes list", async () => {
+    const mount = mkMount();
+    mountTeacherShell(
+      teacherSession(),
+      mount,
+      makeShellDeps({ listClasses: async () => [summary] }),
+    );
+    await flush();
+    await flush();
+
+    expect(() => {
+      popstate({
+        kind: "shell-student-detail",
+        surface: "classes",
+        classId: "some-other-class",
+        studentId: "s-alpha",
+      });
+    }).not.toThrow();
+
+    expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
   });
 
   test("navigating away to another top-level surface while Detail is open does not throw on a later stale popstate", async () => {
     const mount = mkMount();
-    await openStudentDetail(mount);
+    const loadRoster = async (input: { readonly classId: string }) => ({
+      classId: input.classId,
+      students: [{ studentId: "s-alpha", studentDisplayName: "Alpha Student" }],
+    });
+    mountTeacherShell(
+      teacherSession(),
+      mount,
+      makeShellDeps({ listClasses: async () => [summary], loadRoster: () => loadRoster }),
+    );
+    await flush();
+    await flush();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=class-card-${CLASS_ID}]`)!.click();
+    await flush();
+    mount.querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")!.click();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>('[data-testid=roster-student][data-student-id="s-alpha"]')!
+      .click();
 
     mount.querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")!.click();
     expect(activeSurface(mount)).toBe("curriculum");
@@ -282,5 +532,49 @@ describe("Browser Back/Forward: Students -> Student Detail", () => {
     // nested student cannot be (and is not) restored.
     expect(activeSurface(mount)).toBe("classes");
     expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
+  });
+});
+
+describe("Browser Back/Forward: no student PII in URL or history state", () => {
+  const CLASS_ID = "pii-class-1";
+  const summary: ClassSummary = Object.freeze({
+    id: CLASS_ID,
+    title: "PII Science",
+    status: "active" as const,
+    grade: "6",
+    block: "E",
+    isLmsLinked: true,
+  });
+
+  test("history.state and the URL carry only opaque ids, never the student's display name", async () => {
+    const mount = mkMount();
+    const loadRoster = async (input: { readonly classId: string }) => ({
+      classId: input.classId,
+      students: [
+        { studentId: "s-opaque-id-1", studentDisplayName: "Very Identifiable Real Name" },
+      ],
+    });
+    mountTeacherShell(
+      teacherSession(),
+      mount,
+      makeShellDeps({ listClasses: async () => [summary], loadRoster: () => loadRoster }),
+    );
+    await flush();
+    await flush();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=class-card-${CLASS_ID}]`)!.click();
+    await flush();
+    mount.querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")!.click();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        '[data-testid=roster-student][data-student-id="s-opaque-id-1"]',
+      )!
+      .click();
+
+    const serialized = JSON.stringify(window.history.state);
+    expect(serialized).not.toContain("Very Identifiable");
+    expect(serialized).not.toContain("Real Name");
+    expect(window.location.href).not.toContain("Very");
+    expect(window.location.href).not.toContain("Identifiable");
   });
 });

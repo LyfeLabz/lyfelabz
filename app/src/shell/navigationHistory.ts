@@ -14,6 +14,11 @@ import type { WorkspaceSurfaceKey } from "./navigation";
 export type ShellHistoryState =
   | { readonly kind: "shell-surface"; readonly surface: WorkspaceSurfaceKey }
   | {
+      readonly kind: "shell-classes-workspace";
+      readonly surface: "classes";
+      readonly classId: string;
+    }
+  | {
       readonly kind: "shell-student-detail";
       readonly surface: "classes";
       readonly classId: string;
@@ -45,6 +50,14 @@ export function parseShellHistoryState(
     return { kind: "shell-surface", surface: v.surface };
   }
   if (
+    v.kind === "shell-classes-workspace" &&
+    v.surface === "classes" &&
+    typeof v.classId === "string" &&
+    v.classId.length > 0
+  ) {
+    return { kind: "shell-classes-workspace", surface: "classes", classId: v.classId };
+  }
+  if (
     v.kind === "shell-student-detail" &&
     v.surface === "classes" &&
     typeof v.classId === "string" &&
@@ -70,6 +83,10 @@ export function parseShellHistoryState(
 // never a student's name or other display text.
 export function hashForSurface(surface: WorkspaceSurfaceKey): string {
   return `#${surface}`;
+}
+
+export function hashForClassesWorkspace(classId: string): string {
+  return `#classes/roster/${encodeURIComponent(classId)}`;
 }
 
 export function hashForStudentDetail(

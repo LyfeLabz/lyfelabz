@@ -24,6 +24,7 @@ import {
   type ShellHistoryState,
   parseShellHistoryState,
   hashForSurface,
+  hashForClassesWorkspace,
   hashForStudentDetail,
   urlWithHash,
 } from "./navigationHistory";
@@ -142,6 +143,8 @@ export type ShellDeps = {
 let activeShellPopstateCleanup: (() => void) | null = null;
 
 type ClassesDetailHistoryController = {
+  readonly restoreWorkspace: (classId: string) => boolean;
+  readonly restoreToTopList: () => void;
   readonly restoreDetail: (classId: string, studentId: string) => boolean;
   readonly restoreList: () => void;
 };
@@ -232,6 +235,14 @@ export function mountTeacherShell(
   // navigates away from Classes so a stale reference into a torn-down
   // render tree is never invoked.
   let classesDetailController: ClassesDetailHistoryController | null = null;
+  // Browser Back/Forward support: which class's Students (roster) tab is
+  // currently the open history checkpoint, if any - set on
+  // "enter-workspace", cleared on "exit-workspace" and whenever the shell
+  // navigates away from Classes. Lets an "exit-detail" notify (Back to
+  // Students / Detail closing) replace the CURRENT entry with the correct
+  // one-level-up `shell-classes-workspace` state without classes.ts having
+  // to hand its internal state shape across the seam.
+  let currentWorkspaceClassId: string | null = null;
 
   const workspaceDeps = {
     listClasses: deps.listClasses,
@@ -275,14 +286,42 @@ export function mountTeacherShell(
       ? {
           notify: (
             input:
+              | { readonly kind: "enter-workspace"; readonly classId: string }
+              | { readonly kind: "exit-workspace" }
               | {
-                  readonly kind: "enter";
+                  readonly kind: "enter-detail";
                   readonly classId: string;
                   readonly studentId: string;
                 }
-              | { readonly kind: "exit" },
+              | { readonly kind: "exit-detail" },
           ): void => {
-            if (input.kind === "enter") {
+            if (input.kind === "enter-workspace") {
+              currentWorkspaceClassId = input.classId;
+              const state: ShellHistoryState = {
+                kind: "shell-classes-workspace",
+                surface: "classes",
+                classId: input.classId,
+              };
+              win.history.pushState(
+                state,
+                "",
+                urlWithHash(
+                  win.location.pathname,
+                  hashForClassesWorkspace(input.classId),
+                ),
+              );
+            } else if (input.kind === "exit-workspace") {
+              currentWorkspaceClassId = null;
+              const state: ShellHistoryState = {
+                kind: "shell-surface",
+                surface: "classes",
+              };
+              win.history.replaceState(
+                state,
+                "",
+                urlWithHash(win.location.pathname, hashForSurface("classes")),
+              );
+            } else if (input.kind === "enter-detail") {
               const state: ShellHistoryState = {
                 kind: "shell-student-detail",
                 surface: "classes",
@@ -298,14 +337,25 @@ export function mountTeacherShell(
                 ),
               );
             } else {
+              // exit-detail: one level up from Student Detail is the
+              // Students (roster) tab of the same class, never the flat
+              // Classes list - see StudentDetailHistorySeam.
+              // `currentWorkspaceClassId` reflects whichever class is
+              // actually open (set by the matching "enter-workspace").
+              const classId = currentWorkspaceClassId;
+              if (classId === null) return;
               const state: ShellHistoryState = {
-                kind: "shell-surface",
+                kind: "shell-classes-workspace",
                 surface: "classes",
+                classId,
               };
               win.history.replaceState(
                 state,
                 "",
-                urlWithHash(win.location.pathname, hashForSurface("classes")),
+                urlWithHash(
+                  win.location.pathname,
+                  hashForClassesWorkspace(classId),
+                ),
               );
             }
           },
@@ -369,6 +419,7 @@ export function mountTeacherShell(
     // torn-down render tree this `outletHost.textContent = ""` is about to
     // discard.
     classesDetailController = null;
+    currentWorkspaceClassId = null;
     activeKey = next;
     outletHost.textContent = "";
     mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
@@ -465,16 +516,21 @@ export function mountTeacherShell(
   // than guessed at, leaving the current UI exactly as it was.
   //
   // Never calls pushState/replaceState-as-navigation here: `navigateTo`'s
-  // `fromPopstate: true` suppresses its own push, and a "shell-surface"
-  // restore additionally asks the (possibly still-live) Classes controller
-  // to close Student Detail if it happens to be open - a safe no-op
-  // otherwise. A "shell-student-detail" restore always routes to the
-  // Classes surface first; if the class currently open does not match, or
-  // the student is not in the last-loaded roster (including the case
-  // where Classes was remounted since the entry was pushed and a stale
-  // controller reference was already cleared by `navigateTo`), restoration
-  // fails closed onto the Classes surface rather than attempting a partial
-  // or incorrect nested restore.
+  // `fromPopstate: true` suppresses its own push. Three cases, one per
+  // ShellHistoryState kind, each routing to the Classes surface first
+  // (a no-op if already there) then asking the (possibly still-live)
+  // controller to restore the corresponding depth:
+  //   - "shell-surface": the flat Classes list (or another top-level
+  //     surface) - `restoreToTopList` closes any open class workspace.
+  //   - "shell-classes-workspace": a specific class's Students tab -
+  //     `restoreWorkspace` opens/re-targets it and closes Detail if open.
+  //   - "shell-student-detail": a specific student's Detail within the
+  //     already-open workspace.
+  // If the class/student named no longer resolves (roster not loaded,
+  // wrong class open, or Classes was remounted since the entry was
+  // pushed and a stale controller reference was already cleared by
+  // `navigateTo`), restoration fails closed at whatever depth it could
+  // reach rather than attempting a partial or incorrect nested restore.
   if (win) {
     const handlePopstate = (event: PopStateEvent): void => {
       const parsed = parseShellHistoryState(event.state);
@@ -482,11 +538,23 @@ export function mountTeacherShell(
       if (parsed.kind === "shell-surface") {
         navigateTo(parsed.surface, { fromPopstate: true });
         if (parsed.surface === "classes") {
-          classesDetailController?.restoreList();
+          currentWorkspaceClassId = null;
+          classesDetailController?.restoreToTopList();
         }
         return;
       }
       navigateTo("classes", { fromPopstate: true });
+      if (parsed.kind === "shell-classes-workspace") {
+        const restored =
+          classesDetailController?.restoreWorkspace(parsed.classId) ?? false;
+        currentWorkspaceClassId = restored ? parsed.classId : null;
+        return;
+      }
+      // shell-student-detail: the Students tab of `parsed.classId` is the
+      // entry directly beneath this one in every path that pushed it, so
+      // it is already the open workspace by the time this fires via
+      // ordinary sequential Back/Forward.
+      currentWorkspaceClassId = parsed.classId;
       classesDetailController?.restoreDetail(parsed.classId, parsed.studentId);
     };
     activeShellPopstateCleanup?.();

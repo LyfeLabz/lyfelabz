@@ -128,26 +128,44 @@ export type ClassWorkspaceReturn = {
 export type ClassManagementIntent = "create" | "import";
 
 // Browser Back/Forward support: bundles the notify/registerController
-// pair the shell needs to keep browser history in sync with Student
-// Detail open/closed, without this surface importing `window`,
-// `history`, or any browser-navigation API directly (this module stays
-// a pure DOM builder; only shell.ts touches browser history).
-// `notify` reports a roster-origin enter/exit transition so the shell
-// can push/replace the matching history entry. `registerController` is
-// called once, synchronously, during this surface's mount, and hands the
-// shell a restore capability keyed by stable ids only (classId,
-// studentId) - never a display name - for popstate to call back into.
+// pair the shell needs to keep browser history in sync with this
+// surface's own nested navigation (opening a class into its Students
+// roster, and opening/traversing Student Detail from there), without
+// this surface importing `window`, `history`, or any browser-navigation
+// API directly (this module stays a pure DOM builder; only shell.ts
+// touches browser history). `notify` reports a meaningful enter/exit
+// transition so the shell can push/replace the matching history entry:
+// - "enter-workspace" / "exit-workspace": the Students (roster) tab of a
+//   class becoming active / being left for the flat Classes list. Other
+//   tabs (Assignments, Setup) are deliberately NOT tracked - only the
+//   Students tab is a meaningful cross-surface chain link for this
+//   feature, per the drill-down Classes -> Students -> Student pattern.
+// - "enter-detail" / "exit-detail": Student Detail opening (from the
+//   roster OR via Previous/Next, which is real navigation to a different
+//   student and therefore its own history entry) / closing back to the
+//   Students tab.
+// `registerController` is called once, synchronously, during this
+// surface's mount, and hands the shell a restore capability keyed by
+// stable ids only (classId, studentId) - never a display name - for
+// popstate to call back into.
 export type StudentDetailHistorySeam = {
   readonly notify: (
     input:
       | {
-          readonly kind: "enter";
+          readonly kind: "enter-workspace";
+          readonly classId: string;
+        }
+      | { readonly kind: "exit-workspace" }
+      | {
+          readonly kind: "enter-detail";
           readonly classId: string;
           readonly studentId: string;
         }
-      | { readonly kind: "exit" },
+      | { readonly kind: "exit-detail" },
   ) => void;
   readonly registerController: (controller: {
+    readonly restoreWorkspace: (classId: string) => boolean;
+    readonly restoreToTopList: () => void;
     readonly restoreDetail: (classId: string, studentId: string) => boolean;
     readonly restoreList: () => void;
   }) => void;
@@ -1175,6 +1193,8 @@ export function renderClassesSurface(
   const onSelectTab = (tab: ClassWorkspaceTab): void => {
     if (state.kind !== "workspace") return;
     if (state.tab === tab) return;
+    const classId = state.selectedId;
+    const wasRoster = state.tab === "roster";
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -1185,6 +1205,15 @@ export function renderClassesSurface(
       selectedStudentDisplayName: null,
     };
     rerender();
+    // Browser Back/Forward support: only entering the Students (roster)
+    // tab is a meaningful cross-surface chain link (see
+    // StudentDetailHistorySeam). Leaving it for another tab is left
+    // out-of-sync with history on purpose (same accepted tradeoff as the
+    // existing Student Detail exit path) rather than tracking every tab
+    // switch as a history entry.
+    if (tab === "roster" && !wasRoster) {
+      studentDetailHistory?.notify({ kind: "enter-workspace", classId });
+    }
   };
 
   const onSelectStudent = (studentId: string, displayName: string): void => {
@@ -1209,7 +1238,7 @@ export function renderClassesSurface(
     // that cross-surface Assignment Detail context from a URL is out of
     // scope for this patch, so it keeps its pre-existing, non-history
     // behavior unchanged.
-    studentDetailHistory?.notify({ kind: "enter", classId, studentId });
+    studentDetailHistory?.notify({ kind: "enter-detail", classId, studentId });
   };
 
   // Student Progress & Assignment Membership Phase A, Slice 2: Previous /
@@ -1225,6 +1254,7 @@ export function renderClassesSurface(
     displayName: string,
   ): void => {
     if (state.kind !== "workspace") return;
+    const classId = state.selectedId;
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -1237,6 +1267,12 @@ export function renderClassesSurface(
       studentDetailOrigin: state.studentDetailOrigin,
     };
     rerender();
+    // Browser Back/Forward support: Previous/Next is real navigation to a
+    // different student, not a mere re-render of the same view, so it
+    // earns its own history entry exactly like the initial roster-click
+    // selection - the teacher can Back/Forward through A -> B -> C the
+    // same way they would through any other meaningful navigation.
+    studentDetailHistory?.notify({ kind: "enter-detail", classId, studentId });
   };
 
   // Student Progress & Assignment Membership Phase A, Slice 2: captures the
@@ -1280,7 +1316,7 @@ export function renderClassesSurface(
     // shell.ts `restoreList`). Uses replace, never `history.back()` - see
     // StudentDetailHistorySeam and shell.ts for why a blind `back()` here
     // would be unsafe for the excluded assignment-origin case.
-    studentDetailHistory?.notify({ kind: "exit" });
+    studentDetailHistory?.notify({ kind: "exit-detail" });
   };
 
   const onBackToList = (): void => {
@@ -1295,6 +1331,10 @@ export function renderClassesSurface(
       importState: idleImportState(),
     };
     rerender();
+    // Browser Back/Forward support: mirrors `onBackFromStudent`'s exit
+    // notify one level up - keeps history in sync with the flat Classes
+    // list whether this ran from the in-app control or a popstate restore.
+    studentDetailHistory?.notify({ kind: "exit-workspace" });
   };
 
   // Browser Back/Forward support: registered once, synchronously, for the
@@ -1306,6 +1346,52 @@ export function renderClassesSurface(
   // currently open or the student cannot be found in the last-loaded
   // roster. `restoreList` is a safe no-op unless Detail is actually open.
   studentDetailHistory?.registerController({
+    // Fails closed (returns false, changes nothing) if the requested
+    // class is not one the roster list knows about - the same
+    // stale/unauthorized-safe posture as `restoreDetail` below, extended
+    // one level up the chain.
+    restoreWorkspace: (classId) => {
+      if (state.kind !== "list" && state.kind !== "workspace") return false;
+      const classes = state.classes;
+      const summary = classes.find((c) => c.id === classId);
+      if (!summary) return false;
+      if (
+        state.kind === "workspace" &&
+        state.selectedId === classId &&
+        state.tab === "roster" &&
+        state.selectedStudentId === null
+      ) {
+        return true; // Already exactly here; avoid a redundant re-render/refetch.
+      }
+      listAddMode = null;
+      state = {
+        kind: "workspace",
+        classes,
+        selectedId: classId,
+        tab: "roster",
+        setupForm: null,
+        selectedStudentId: null,
+        selectedStudentDisplayName: null,
+        rosterSnapshot:
+          state.kind === "workspace" && state.selectedId === classId
+            ? state.rosterSnapshot
+            : undefined,
+      };
+      rerender();
+      return true;
+    },
+    restoreToTopList: () => {
+      if (state.kind !== "workspace") return;
+      listAddMode = null;
+      state = {
+        kind: "list",
+        classes: state.classes,
+        form: null,
+        lastCreated: null,
+        importState: idleImportState(),
+      };
+      rerender();
+    },
     restoreDetail: (classId, studentId) => {
       if (state.kind !== "workspace") return false;
       if (state.selectedId !== classId) return false;

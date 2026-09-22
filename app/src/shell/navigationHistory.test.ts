@@ -2,6 +2,7 @@ import {
   parseShellHistoryState,
   isWorkspaceSurfaceKey,
   hashForSurface,
+  hashForClassesWorkspace,
   hashForStudentDetail,
   parseSurfaceFromHash,
   urlWithHash,
@@ -13,6 +14,16 @@ describe("navigationHistory: parseShellHistoryState", () => {
       kind: "shell-surface",
       surface: "curriculum",
     });
+  });
+
+  test("accepts a valid shell-classes-workspace state", () => {
+    expect(
+      parseShellHistoryState({
+        kind: "shell-classes-workspace",
+        surface: "classes",
+        classId: "c1",
+      }),
+    ).toEqual({ kind: "shell-classes-workspace", surface: "classes", classId: "c1" });
   });
 
   test("accepts a valid shell-student-detail state", () => {
@@ -39,6 +50,9 @@ describe("navigationHistory: parseShellHistoryState", () => {
     {},
     { kind: "shell-surface", surface: "not-a-surface" },
     { kind: "shell-surface" },
+    { kind: "shell-classes-workspace", surface: "curriculum", classId: "c1" },
+    { kind: "shell-classes-workspace", surface: "classes", classId: "" },
+    { kind: "shell-classes-workspace", surface: "classes" },
     { kind: "shell-student-detail", surface: "curriculum", classId: "c1", studentId: "s1" },
     { kind: "shell-student-detail", surface: "classes", classId: "", studentId: "s1" },
     { kind: "shell-student-detail", surface: "classes", classId: "c1", studentId: "" },
@@ -62,6 +76,10 @@ describe("navigationHistory: surface key validation", () => {
 describe("navigationHistory: hash/URL helpers", () => {
   test("hashForSurface produces a bare, deterministic fragment", () => {
     expect(hashForSurface("curriculum")).toBe("#curriculum");
+  });
+
+  test("hashForClassesWorkspace carries only the opaque classId, URI-encoded", () => {
+    expect(hashForClassesWorkspace("c 1")).toBe("#classes/roster/c%201");
   });
 
   test("hashForStudentDetail carries only opaque ids, URI-encoded", () => {
