@@ -12,6 +12,7 @@ import {
   type AssignmentRecipientRecord,
   type LaunchPresentation,
 } from "../shared";
+import { collapsePublishedToCurrent } from "./collapse-published-to-current";
 
 // Sprint 17 Slice 2: certified student assignment-discovery callable.
 //
@@ -272,6 +273,29 @@ async function assignmentsListForStudentHandler(
     frozen.map((recipient) => loadAssignmentIfVisible(recipient, actor)),
   );
 
+  // Current-aware dashboard dedup (Sprint 30 cleanup): every item here is
+  // already `status === "published"` (loadAssignmentIfVisible's own gate),
+  // so the whole discovery list is the operational surface - when the SAME
+  // class+lesson has more than one, the student sees only the one resolved
+  // Current occurrence, never a duplicate historical-publish entry. Reuses
+  // the ONE canonical Current-pointer resolver
+  // (`resolveValidCurrentAssignmentId`) via the same shared helper
+  // `assignments-teacher-list` uses, so "what counts as Current" is never
+  // redefined independently per surface. `classId`/`teacherId`/`schoolId`
+  // are already present on each loaded record (denormalized on
+  // `AssignmentRecord`) and are used only for this server-side grouping -
+  // they are never added to the client-visible response shape below.
+  // Legacy unresolved Current (no pointer, stale pointer) is left exactly
+  // as visible as it already was: no heuristic ever picks one.
+  const visible = loaded.filter(
+    (record): record is NonNullable<typeof record> => record !== null,
+  );
+  const collapsed = await collapsePublishedToCurrent(visible, (record) => ({
+    teacherId: record.teacherId,
+    schoolId: record.schoolId,
+    districtId: actor.districtId,
+  }));
+
   // F5.2 §4 Op C / §7.3 (Slice 4): server-authoritative presentation
   // resolution per visible item, strictly AFTER the authorization/visibility
   // gates above. One resolver per call memoizes the single accommodation read
@@ -284,8 +308,7 @@ async function assignmentsListForStudentHandler(
   const launchResolver = createRequestLaunchPresentationResolver();
 
   const items: AssignmentsListForStudentItem[] = [];
-  for (const record of loaded) {
-    if (!record) continue;
+  for (const record of collapsed) {
     const rawTitle = record.title;
     const title =
       typeof rawTitle === "string" && rawTitle.length > 0

@@ -11,6 +11,7 @@ import {
   type AssignmentStatus,
   type ClassRecord,
 } from "../shared";
+import { collapsePublishedToCurrent } from "./collapse-published-to-current";
 
 // Sprint 13C: certified teacher assignment enumeration callable.
 //
@@ -253,9 +254,32 @@ async function assignmentsTeacherListHandler(
     items.push(item);
   }
 
+  // Current-aware dashboard dedup (Sprint 30 cleanup): when the SAME
+  // class+lesson has more than one PUBLISHED occurrence (the
+  // Historical Assignment Resolution scenario), the normal operational
+  // dashboard shows only the one resolved Current occurrence - never a
+  // duplicate card per historical publish. `closed`/`draft` items are
+  // untouched: they are the historical/evidence view (gated by the
+  // client's own "Show closed" toggle), not the operational one, and
+  // Assignment History semantics are out of scope for this collapse.
+  // Reuses the ONE canonical Current-pointer resolver
+  // (`resolveValidCurrentAssignmentId`) - see collapse-published-to-current.ts
+  // for the exact, no-heuristic-fallback contract.
+  const published = items.filter((item) => item.status === "published");
+  const nonPublished = items.filter((item) => item.status !== "published");
+  const collapsedPublished = await collapsePublishedToCurrent(
+    published,
+    () => ({
+      teacherId: actor.uid,
+      schoolId: actor.schoolId,
+      districtId: actor.districtId,
+    }),
+  );
+  const finalItems = [...collapsedPublished, ...nonPublished];
+
   // Deterministic ordering: by (classId, assignmentId) so identical results
   // are returned on repeated calls without a Firestore composite index.
-  items.sort((a, b) => {
+  finalItems.sort((a, b) => {
     if (a.classId !== b.classId) return a.classId < b.classId ? -1 : 1;
     if (a.assignmentId !== b.assignmentId) {
       return a.assignmentId < b.assignmentId ? -1 : 1;
@@ -266,12 +290,12 @@ async function assignmentsTeacherListHandler(
   safeLog(() =>
     log.info("assignments.teacherList", {
       actorUserId: actor.uid,
-      returned: items.length,
+      returned: finalItems.length,
       includeDrafts,
     }),
   );
 
-  return { items };
+  return { items: finalItems };
 }
 
 export const assignmentsTeacherList = platformCallable(

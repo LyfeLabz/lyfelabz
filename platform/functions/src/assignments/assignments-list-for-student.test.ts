@@ -11,6 +11,21 @@ const mockAssignmentDocRef: jest.Mock = jest.fn(() => ({
   get: mockAssignmentGet,
 }));
 
+// Current-aware dashboard dedup: `collapsePublishedToCurrent` calls the
+// real (unmocked) `resolveValidCurrentAssignmentId`, which reads the
+// pointer through this seam. Defaulting to "no pointer document" means
+// every pre-existing test in this file - none of which set up a Current
+// pointer - keeps its exact prior behavior: any class+lesson group with
+// more than one item resolves "unresolved" and is returned in full,
+// unchanged. Tests that specifically exercise collapsing configure this
+// per-call.
+const mockCurrentDocGet: jest.Mock = jest.fn(() =>
+  Promise.resolve({ exists: false, data: () => undefined }),
+);
+const mockAssignmentsCurrentDocRef: jest.Mock = jest.fn(() => ({
+  get: mockCurrentDocGet,
+}));
+
 const mockRequireDistrictContext = jest.fn();
 
 const mockLogInfo = jest.fn();
@@ -36,6 +51,7 @@ jest.mock("../shared", () => {
     PlatformError,
     log: { info: mockLogInfo, warn: jest.fn(), error: jest.fn() },
     assignmentDocRef: mockAssignmentDocRef,
+    assignmentsCurrentDocRef: mockAssignmentsCurrentDocRef,
     assignmentRecipientsCollectionGroupRef: mockRecipientsCollectionGroupRef,
     requireDistrictContext: mockRequireDistrictContext,
     createRequestLaunchPresentationResolver: mockCreateLaunchResolver,
@@ -596,5 +612,135 @@ describe("assignmentsListForStudent - Slice 4 differentiation (Op C)", () => {
       ),
     ).rejects.toBeInstanceOf(PlatformError);
     expect(mockLaunchResolve).not.toHaveBeenCalled();
+  });
+});
+
+describe("assignmentsListForStudent - Current-aware dashboard dedup (Sprint 30 cleanup)", () => {
+  beforeEach(() => {
+    // Reset the Current-pointer seam explicitly: `jest.clearAllMocks()` in
+    // the outer beforeEach clears call history only, not a prior test's
+    // `.mockResolvedValue` override, so a leaked pointer fixture could
+    // otherwise bleed into the next test.
+    mockCurrentDocGet.mockResolvedValue({ exists: false, data: () => undefined });
+  });
+
+  function seedCurrentPointer(
+    classId: string,
+    lessonSlug: string,
+    assignmentId: string,
+  ): void {
+    mockCurrentDocGet.mockResolvedValue({
+      exists: true,
+      data: () => ({
+        classId,
+        lessonSlug,
+        assignmentId,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        setAt: { __sentinel: "timestamp" },
+        setBy: TEACHER_UID,
+        source: "teacherResolution",
+      }),
+    });
+  }
+
+  test("one published assignment -> one operational item (no resolver call)", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1")] });
+    seedAssignment("a1");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toHaveLength(1);
+    expect(mockAssignmentsCurrentDocRef).not.toHaveBeenCalled();
+  });
+
+  test("four historical published occurrences + valid Current (not the newest) -> exactly one item representing Current", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [
+        recipientDoc("a-0909"),
+        recipientDoc("a-0910"),
+        recipientDoc("a-0956"),
+        recipientDoc("a-1016"),
+      ],
+    });
+    seedAssignment("a-0909", { publishedAt: { toMillis: () => 1 } });
+    seedAssignment("a-0910", { publishedAt: { toMillis: () => 2 } });
+    seedAssignment("a-0956", { publishedAt: { toMillis: () => 3 } });
+    seedAssignment("a-1016", { publishedAt: { toMillis: () => 4 } });
+    // Known production example: Current is the SECOND occurrence, not the
+    // newest - proves resolution is by the canonical pointer, never recency.
+    seedCurrentPointer(CLASS_ID, "lesson_g7_earths-layers", "a-0910");
+
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toHaveLength(1);
+    expect(res.items[0]?.assignmentId).toBe("a-0910");
+  });
+
+  test("multiple published + NO valid Current -> every occurrence stays visible (no heuristic ever chosen)", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a-0909"), recipientDoc("a-0910")],
+    });
+    seedAssignment("a-0909");
+    seedAssignment("a-0910");
+    // mockCurrentDocGet default (reset above): pointer missing.
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    const ids = res.items.map((i) => i.assignmentId).sort();
+    expect(ids).toEqual(["a-0909", "a-0910"]);
+  });
+
+  test("multiple published + a stale/invalid Current pointer -> every occurrence stays visible", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a-0909"), recipientDoc("a-0910")],
+    });
+    seedAssignment("a-0909");
+    seedAssignment("a-0910");
+    // Pointer names an assignment id not present in the registry at all
+    // (e.g. a closed/deleted/cross-scope record) - assignmentMissing.
+    seedCurrentPointer(CLASS_ID, "lesson_g7_earths-layers", "a-gone");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    const ids = res.items.map((i) => i.assignmentId).sort();
+    expect(ids).toEqual(["a-0909", "a-0910"]);
+  });
+
+  test("same lesson in two different classes does NOT collapse", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [
+        recipientDoc("a-classA", { classId: "class-a" }),
+        recipientDoc("a-classB", { classId: "class-b" }),
+      ],
+    });
+    seedAssignment("a-classA", { classId: "class-a" });
+    seedAssignment("a-classB", { classId: "class-b" });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    const ids = res.items.map((i) => i.assignmentId).sort();
+    expect(ids).toEqual(["a-classA", "a-classB"]);
+  });
+
+  test("two different lessons in one class do NOT collapse", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a-lesson1"), recipientDoc("a-lesson2")],
+    });
+    seedAssignment("a-lesson1", { lessonSlug: "lesson_g7_earths-layers" });
+    seedAssignment("a-lesson2", { lessonSlug: "lesson_g7_water-cycle" });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    const ids = res.items.map((i) => i.assignmentId).sort();
+    expect(ids).toEqual(["a-lesson1", "a-lesson2"]);
+  });
+
+  test("the collapsed item's response shape is unchanged - no classId or other new field leaks to the client", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a-0909"), recipientDoc("a-0910")],
+    });
+    seedAssignment("a-0909");
+    seedAssignment("a-0910");
+    seedCurrentPointer(CLASS_ID, "lesson_g7_earths-layers", "a-0910");
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items).toEqual([
+      {
+        assignmentId: "a-0910",
+        lessonSlug: "lesson_g7_earths-layers",
+        title: "Earth's Layers",
+        status: "published",
+        publishedAt: 1_700_000_000_000,
+      },
+    ]);
   });
 });
