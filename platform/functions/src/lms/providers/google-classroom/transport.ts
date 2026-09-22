@@ -146,6 +146,11 @@ export type GoogleClassroomCourseWorkCreateRequest = {
   // for ungraded coursework, so this field is included in the request body
   // only when present here.
   readonly maxPoints?: number;
+  // Sprint 30A.3 - Classroom's own due-date representation: a calendar
+  // date with no time component. Additive optional field; absent means
+  // no due date is sent, matching Classroom's contract that a coursework
+  // item without a dueDate is valid.
+  readonly dueDate?: { readonly year: number; readonly month: number; readonly day: number };
   // Optional abort signal (Sprint 25 Phase 1, §2.3 Correction 3). The
   // adapter supplies an AbortController-backed signal so the coursework
   // POST is genuinely cancelled when the adapter-level timeout fires,
@@ -900,7 +905,12 @@ export function createHttpsGoogleClassroomTransport(
         title: input.title,
         state: "PUBLISHED",
         workType: "ASSIGNMENT",
-        materials: [{ link: { url: input.link } }],
+        // Sprint 30A.3: the link `title` is the same clean, lesson-centered
+        // string as the coursework's own `title` - previously omitted,
+        // which left Classroom to render an auto-derived generic card
+        // title/favicon for the attachment instead of a LyfeLabz-chosen
+        // one.
+        materials: [{ link: { url: input.link, title: input.title } }],
       };
       if (input.description !== undefined) bodyObj.description = input.description;
       if (input.topicId !== undefined) bodyObj.topicId = input.topicId;
@@ -909,6 +919,8 @@ export function createHttpsGoogleClassroomTransport(
       // ungraded coursework (Google treats zero-or-unspecified the same,
       // but LyfeLabz's own contract is omission, never a synthetic zero).
       if (input.maxPoints !== undefined) bodyObj.maxPoints = input.maxPoints;
+      // Sprint 30A.3: send `dueDate` only when the teacher chose one.
+      if (input.dueDate !== undefined) bodyObj.dueDate = input.dueDate;
       const parsed = (await callUpstream(
         fetchImpl,
         classroomUrl(

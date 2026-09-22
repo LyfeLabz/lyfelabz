@@ -396,6 +396,91 @@ describe("createHttpsGoogleClassroomTransport", () => {
         expect(body.maxPoints).not.toBe(0);
         expect(body).not.toHaveProperty("maxPoints");
       });
+
+      it("includes dueDate in the request body when supplied", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({
+            id: "fixture-coursework-1",
+            alternateLink: "https://classroom.google.com/c/fake",
+          }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment Title",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+          dueDate: { year: 2026, month: 9, day: 23 },
+        });
+        const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
+        expect(body.dueDate).toEqual({ year: 2026, month: 9, day: 23 });
+      });
+
+      it("omits dueDate entirely from the request body when not supplied", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({
+            id: "fixture-coursework-1",
+            alternateLink: "https://classroom.google.com/c/fake",
+          }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment Title",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        });
+        const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
+        expect(body).not.toHaveProperty("dueDate");
+      });
+
+      it("sets the materials link title to the same clean, lesson-centered coursework title (Sprint 30A.3 presentation fix)", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({
+            id: "fixture-coursework-1",
+            alternateLink: "https://classroom.google.com/c/fake",
+          }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Plate Tectonics",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        });
+        const body = JSON.parse(recorded[0].body!) as {
+          materials: ReadonlyArray<{ link: { url: string; title?: string } }>;
+        };
+        expect(body.materials).toEqual([
+          {
+            link: {
+              url: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+              title: "Plate Tectonics",
+            },
+          },
+        ]);
+      });
     });
   });
 

@@ -403,6 +403,53 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
     });
   });
 
+  describe("Sprint 30A.3: due date", () => {
+    it("passes dueDate to the adapter when the request supplies one", async () => {
+      setupHappyPath();
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(
+        makeRequest({ dueDate: "2026-09-23" }),
+      );
+
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({
+        dueDate: "2026-09-23",
+      });
+    });
+
+    it("never sends a dueDate field to the adapter when the request omits one", async () => {
+      setupHappyPath();
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty(
+        "dueDate",
+      );
+    });
+
+    it("rejects a malformed dueDate before any upstream call", async () => {
+      setupHappyPath();
+      const publishAssignment = jest.fn();
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await expect(
+        __lmsAssignmentsPublishHandler(
+          makeRequest({ dueDate: "not-a-date" }),
+        ),
+      ).rejects.toBeInstanceOf(PlatformError);
+      expect(publishAssignment).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Sprint 27 Phase 4: server-authoritative deep-link URL", () => {
     function adapterInput() {
       const adapter = mockGetProviderAdapter.mock.results[0].value as {

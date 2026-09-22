@@ -278,6 +278,75 @@ describe("googleClassroomAdapter.publishAssignment (Sprint 25 Phase 1)", () => {
     });
   });
 
+  // Sprint 30A.3.
+  describe("due date (Sprint 30A.3)", () => {
+    it("converts an ISO 'YYYY-MM-DD' dueDate into Classroom's {year,month,day} shape for the transport call", async () => {
+      const capturing = createFixtureGoogleClassroomTransport();
+      let capturedDueDate:
+        | { year: number; month: number; day: number }
+        | undefined;
+      (capturing as unknown as Record<string, unknown>).createCourseWork = (
+        req: { dueDate?: { year: number; month: number; day: number } },
+      ) => {
+        capturedDueDate = req.dueDate;
+        return Promise.resolve({
+          id: "fixture-coursework-due-date",
+          alternateLink: "https://classroom.google.com/c/fixture/a/due/details",
+        });
+      };
+      setGoogleClassroomTransport(capturing);
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+
+      await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+        dueDate: "2026-09-23",
+      });
+
+      expect(capturedDueDate).toEqual({ year: 2026, month: 9, day: 23 });
+    });
+
+    it("does not forward a dueDate field to the transport when not supplied", async () => {
+      const capturing = createFixtureGoogleClassroomTransport();
+      let capturedRequest: Record<string, unknown> = {};
+      (capturing as unknown as Record<string, unknown>).createCourseWork = (
+        req: Record<string, unknown>,
+      ) => {
+        capturedRequest = req;
+        return Promise.resolve({
+          id: "fixture-coursework-no-due-date",
+          alternateLink: "https://classroom.google.com/c/fixture/a/no-due/details",
+        });
+      };
+      setGoogleClassroomTransport(capturing);
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+
+      await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+      });
+
+      expect(capturedRequest).not.toHaveProperty("dueDate");
+    });
+
+    it("rejects a malformed dueDate rather than forwarding it upstream", async () => {
+      setupFixture();
+      await expect(
+        googleClassroomAdapter.publishAssignment({
+          accessToken: FIXTURE_ACCESS_TOKEN,
+          lmsClassId: PLANET_FORGE_COURSE_ID,
+          title: FIXTURE_ASSIGNMENT_TITLE,
+          lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+          dueDate: "09/23/2026",
+        }),
+      ).rejects.toBeInstanceOf(PlatformError);
+    });
+  });
+
   it("includes lmsAssignmentUrl in the result when the upstream resource returns alternateLink", async () => {
     setupFixture();
     const result = await googleClassroomAdapter.publishAssignment({

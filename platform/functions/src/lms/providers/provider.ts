@@ -139,6 +139,13 @@ export type LmsPublishAssignmentInput = {
   // preserving LyfeLabz's own convention of never sending a synthetic
   // zero for "ungraded".
   readonly maxPoints?: number;
+  // Sprint 30A.3 - the Classroom-facing due date, ISO "YYYY-MM-DD".
+  // Absent means no due date; the adapter must not fabricate one. This is
+  // a purely presentational/informational date on the LMS coursework
+  // item - distinct from LyfeLabz's own `windowClosesAt`/`availableAt`
+  // assessment-access-window fields, which this input never carries and
+  // which are unaffected by it.
+  readonly dueDate?: string;
 };
 
 // The outcome of a successful publication. The upstream assignment

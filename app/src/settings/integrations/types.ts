@@ -192,6 +192,9 @@ export type IntegrationsCallables = {
     readonly title?: string;
     readonly instructions?: string;
     readonly lmsTopicId?: string;
+    // Sprint 30A.3: shared, dialog-level Classroom due date (ISO
+    // "YYYY-MM-DD"). Omitted or empty means no due date is sent.
+    readonly dueDate?: string;
     readonly attemptNonce?: string;
   }) => Promise<IntegrationsPublicationOutcome>;
 };

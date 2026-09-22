@@ -194,6 +194,29 @@ function isCourseActive(course: GoogleClassroomCourseResource): boolean {
   return course.courseState === "ACTIVE" || course.courseState === undefined;
 }
 
+// Sprint 30A.3 - converts the vendor-neutral "YYYY-MM-DD" due date into
+// Classroom's own `Date` shape (year/month/day, no time component). The
+// callable layer (`assignments-publish.ts`) already validates the input
+// string's format before this ever runs; this parse still fails closed
+// (throws) rather than send a malformed date upstream if that contract is
+// ever violated by a future caller.
+function parseIsoDateToClassroomDate(
+  isoDate: string,
+): { readonly year: number; readonly month: number; readonly day: number } {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!match) {
+    throw new PlatformError(
+      "lms.invalidRequest",
+      'dueDate must be a "YYYY-MM-DD" string.',
+    );
+  }
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+  };
+}
+
 export const googleClassroomAdapter: LmsProviderAdapter = {
   providerId: GOOGLE_CLASSROOM_PROVIDER_ID,
   displayName: GOOGLE_CLASSROOM_DISPLAY_NAME,
@@ -671,6 +694,9 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
         link: input.lyfelabzAssignmentUrl,
         ...(input.lmsTopicId !== undefined ? { topicId: input.lmsTopicId } : {}),
         ...(input.maxPoints !== undefined ? { maxPoints: input.maxPoints } : {}),
+        ...(input.dueDate !== undefined
+          ? { dueDate: parseIsoDateToClassroomDate(input.dueDate) }
+          : {}),
         signal: controller.signal,
       });
       workPromise.catch(() => undefined);

@@ -106,7 +106,12 @@ const okAssignments = (): {
 
 const makeIntegrations = (): {
   deps: IntegrationsDeps;
-  publishCalls: { assignmentId: string; linkId: string; lmsTopicId?: string }[];
+  publishCalls: {
+    assignmentId: string;
+    linkId: string;
+    lmsTopicId?: string;
+    dueDate?: string;
+  }[];
 } => {
   // Two LMS-linked classes on two distinct upstream courses/links, so a
   // topic-ID mixup between them is structurally detectable.
@@ -124,7 +129,12 @@ const makeIntegrations = (): {
       lmsClassId: "gc-c3",
     }),
   ]);
-  const publishCalls: { assignmentId: string; linkId: string; lmsTopicId?: string }[] = [];
+  const publishCalls: {
+    assignmentId: string;
+    linkId: string;
+    lmsTopicId?: string;
+    dueDate?: string;
+  }[] = [];
   const callables = {
     listProviders: async () => [],
     describeConnections: async () => [],
@@ -160,11 +170,13 @@ const makeIntegrations = (): {
       assignmentId: string;
       linkId: string;
       lmsTopicId?: string;
+      dueDate?: string;
     }): Promise<IntegrationsPublicationOutcome> => {
       publishCalls.push({
         assignmentId: input.assignmentId,
         linkId: input.linkId,
         ...(input.lmsTopicId !== undefined ? { lmsTopicId: input.lmsTopicId } : {}),
+        ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
       });
       return { publicationId: "pub", status: "succeeded" as const, lmsAssignmentId: "gc-1" };
     },
@@ -648,6 +660,79 @@ describe("Assign dialog - per-class schedule isolation (Sprint 30A.1 UX correcti
     await settle();
 
     expect(asn.draftInputs.some((d) => d.classId === "c2")).toBe(false);
+  });
+});
+
+describe("Assign dialog - shared Due Date (Sprint 30A.3)", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+  });
+
+  const dueDateInput = (): HTMLInputElement =>
+    document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-shared-due-date]",
+    )!;
+
+  test("Due Date is a single shared field, not one per class row", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFour,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+
+    expect(
+      document.querySelectorAll("[data-testid=assign-shared-due-date]"),
+    ).toHaveLength(1);
+  });
+
+  test("setting a Due Date sends it identically for every selected LMS-linked class", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFour,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+
+    dueDateInput().value = "2026-09-23";
+    dueDateInput().dispatchEvent(new Event("input"));
+
+    confirm();
+    await settle();
+
+    expect(it.publishCalls.length).toBeGreaterThan(0);
+    for (const call of it.publishCalls) {
+      expect(call.dueDate).toBe("2026-09-23");
+    }
+  });
+
+  test("leaving Due Date empty omits dueDate from the publish request", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFour,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+
+    confirm();
+    await settle();
+
+    expect(it.publishCalls.length).toBeGreaterThan(0);
+    for (const call of it.publishCalls) {
+      expect(call).not.toHaveProperty("dueDate");
+    }
   });
 });
 

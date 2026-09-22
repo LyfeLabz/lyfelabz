@@ -91,6 +91,11 @@ export type LmsAssignmentsPublishRequest = {
   readonly title?: string;
   readonly instructions?: string;
   readonly lmsTopicId?: string;
+  // Sprint 30A.3: shared, dialog-level Classroom due date, ISO
+  // "YYYY-MM-DD". Optional - absent means no due date is sent to
+  // Classroom, matching Classroom's own contract that a coursework item
+  // without a dueDate is valid.
+  readonly dueDate?: string;
   readonly attemptNonce?: string;
 };
 
@@ -115,6 +120,24 @@ function optionalNonEmptyString(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+}
+
+// Sprint 30A.3: strict "YYYY-MM-DD" validation for the optional due date.
+// Rejects a malformed value outright (a native `<input type="date">`
+// always emits this exact format) rather than forwarding an unparseable
+// string to the Classroom adapter.
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+function optionalIsoDate(value: unknown): string | undefined {
+  const trimmed = optionalNonEmptyString(value);
+  if (trimmed === undefined) return undefined;
+  if (!ISO_DATE_PATTERN.test(trimmed)) {
+    throw new PlatformError(
+      "lms.invalidRequest",
+      'dueDate must be a "YYYY-MM-DD" string.',
+    );
+  }
+  return trimmed;
 }
 
 async function handler(
@@ -156,6 +179,7 @@ async function handler(
   const titleOverride = optionalNonEmptyString(payload.title);
   const instructions = optionalNonEmptyString(payload.instructions);
   const lmsTopicId = optionalNonEmptyString(payload.lmsTopicId);
+  const dueDate = optionalIsoDate(payload.dueDate);
   const attemptNonce =
     optionalNonEmptyString(payload.attemptNonce) ??
     randomBytes(8).toString("hex");
@@ -340,6 +364,7 @@ async function handler(
       lyfelabzAssignmentUrl,
       ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
       ...(maxPoints !== undefined ? { maxPoints } : {}),
+      ...(dueDate !== undefined ? { dueDate } : {}),
     });
   } catch (upstreamErr) {
     // Insufficient scope is non-terminal. No record is written and no

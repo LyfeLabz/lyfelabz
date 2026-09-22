@@ -271,9 +271,20 @@ type RowConfig = {
 // `graded` is false so a teacher who briefly switches to Ungraded and
 // back does not lose a previously-entered value - but it is read only
 // when `graded` is true; an Ungraded action never reads it.
+//
+// Sprint 30A.3: `dueDate` joins this shared config for the same reason
+// Graded/Points does - it is a single policy decision for the whole
+// Assign action ("this assignment is due on X"), not a per-class
+// schedule. Empty string means no due date (optional, per Classroom's
+// own contract: a coursework item with no dueDate is valid and common).
+// Unlike `date`/`time` on `RowConfig` (which govern each class's own
+// LyfeLabz release scheduling and do not yet reach Classroom - see
+// Sprint 30A.3 reconnaissance), `dueDate` here maps directly to Google
+// Classroom's CourseWork.dueDate field at publish time.
 type SharedAssignConfig = {
   graded: boolean;
   points: number;
+  dueDate: string;
 };
 
 type Assignment = {
@@ -1579,7 +1590,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   // selected class.
   const shared: SharedAssignConfig = existing
     ? { ...existing.shared }
-    : { graded: false, points: DEFAULT_POINTS };
+    : { graded: false, points: DEFAULT_POINTS, dueDate: "" };
 
   const linksByClassId =
     cachedClassLinks && cachedClassLinks.uid === session.uid
@@ -1671,6 +1682,23 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   });
   pointsInput.input.setAttribute("data-testid", "assign-shared-points");
   sharedSettings.appendChild(pointsInput.wrapper);
+
+  // Sprint 30A.3: shared, dialog-level Due Date. Optional - an empty value
+  // means no due date is sent to Classroom, matching Classroom's own
+  // contract that a coursework item without a dueDate is valid. Applies
+  // identically to every selected class's Classroom coursework, mirroring
+  // Graded/Points' existing shared-not-per-class placement above.
+  const dueDateInput = fieldInput(doc, {
+    id: "assign-shared-due-date",
+    label: "Due date",
+    type: "date",
+    value: shared.dueDate,
+    onInput: (v) => {
+      shared.dueDate = v;
+    },
+  });
+  dueDateInput.input.setAttribute("data-testid", "assign-shared-due-date");
+  sharedSettings.appendChild(dueDateInput.wrapper);
 
   // Sprint 30A.1: an unobtrusive inline validation message, shown only
   // when Graded is checked and Points does not hold a valid Classroom
@@ -1988,6 +2016,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         teacherUid: session.uid,
         enabledRows: creationRows,
         classroomGrading,
+        dueDate: shared.dueDate,
         assignments,
         integrations,
         assignmentDetail,
@@ -3261,6 +3290,10 @@ async function runAssignmentLifecycle(input: {
   // shared settings - never per class. Applied identically to every
   // selected class below.
   readonly classroomGrading: ClassroomGradingInput;
+  // Sprint 30A.3: the shared, dialog-level Due Date (see SharedAssignConfig).
+  // Empty string means no due date; applied identically to every row's
+  // Classroom publish call below, exactly like `classroomGrading`.
+  readonly dueDate?: string;
   readonly assignments: AssignmentsCallables;
   readonly integrations: IntegrationsDeps | null;
   readonly assignmentDetail: CurriculumAssignmentDetailSeam | null;
@@ -3274,6 +3307,7 @@ async function runAssignmentLifecycle(input: {
     teacherUid,
     enabledRows,
     classroomGrading,
+    dueDate,
     assignments,
     integrations,
     assignmentDetail,
@@ -3406,6 +3440,7 @@ async function runAssignmentLifecycle(input: {
             linkId: link.linkId,
             title: lesson.title,
             ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
+            ...(dueDate !== undefined && dueDate !== "" ? { dueDate } : {}),
             attemptNonce,
           }),
         consent: {
