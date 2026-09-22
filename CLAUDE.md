@@ -1,8 +1,14 @@
 # LYFELABZ CLAUDE.md
 
 Governing rules for LyfeLabz development. These instructions override default
-behavior. Content standards live here; current platform architecture is routed
-(see START HERE).
+behavior. Durable engineering workflow and content standards live here; current
+platform architecture is routed (see START HERE).
+
+Task prompts supply the current problem, evidence, product requirements,
+task-specific constraints, and finish line. They do not need to repeat these
+durable rules. When a task prompt explicitly and intentionally overrides a
+default workflow rule here, follow the task prompt. Words like "finish", "fix",
+or "implement" never by themselves authorize destructive or external actions.
 
 ---
 
@@ -35,10 +41,120 @@ Working policy (efficiency never overrides correctness):
 
 ---
 
-# REPOSITORY GOVERNANCE
+# HUMAN CONTROL GATES
 
-**Commits.** Do not auto-commit. The user performs all Git commits. Do not push
-or deploy unless explicitly asked.
+Unless Chris explicitly overrides these for a specific task:
+
+**DO NOT COMMIT. DO NOT PUSH. DO NOT DEPLOY.**
+
+Claude's workflow: investigate - implement - test - verify - review the final
+diff - STOP with intended changes uncommitted. Chris then reviews individual
+files in GitHub Desktop (Changes), commits, and pushes. Production deployment is
+authorized separately afterward.
+
+Permission to edit or test is not permission to commit, push, or deploy. Never
+deploy merely because implementation is complete. Leave intended changes
+visible individually in GitHub Desktop.
+
+---
+
+# AUTONOMOUS ENGINEERING
+
+When a task has a clear finish line, keep working until it is reached. Ordinary
+investigation, non-destructive source edits, and testing need no permission.
+Do not stop merely to announce progress, describe the next ordinary step,
+report that reconnaissance finished, or say the likely root cause was found.
+A failing test is something to investigate, not a reason to stop.
+
+**Investigate, do not assume.** Treat the technical hypothesis in a task prompt
+as a lead, not a conclusion; determine the correct implementation from the
+repository. For bugs, establish the actual runtime/data path and root cause
+before fixing. Prefer evidence from real code paths and data contracts over
+filenames, naming assumptions, or previous tests.
+
+**Real-world evidence counts.** Human production observations are evidence. If
+production behavior contradicts automated tests, explain the discrepancy; a
+green suite is not proof the reported behavior cannot exist.
+
+**Subagents.** Use parallel/subagent investigation when it materially helps a
+large or complex task. The primary agent remains responsible for validating
+their evidence and conclusions.
+
+**Unconfirmed facts.** If something cannot be confirmed, say so explicitly and
+state where you looked.
+
+**Engineering principles.**
+
+- Prefer the narrowest coherent fix that addresses the demonstrated root cause.
+- Reuse canonical/shared architecture; do not create parallel implementations.
+- Preserve established security boundaries and server-side authorization.
+- Where the product has an authoritative source of truth, do not invent
+  heuristic fallbacks.
+- Do not rewrite historical data to make a projection/read problem easier
+  unless a migration is explicitly required.
+- Avoid unnecessary infrastructure.
+- Maintain backward compatibility unless the task explicitly changes product
+  semantics.
+- Do not broaden tasks into unrelated cleanup. Do not modify lesson content
+  while working on platform infrastructure.
+
+**Stop conditions.** STOP and report/ask when:
+
+- genuine product intent is ambiguous and materially changes implementation;
+- required access or credentials block further useful work;
+- continuing requires an unexpected destructive operation;
+- a migration or production-data mutation is required;
+- an OAuth scope expansion is required;
+- Firebase Rules/index changes or new infrastructure are unexpectedly required
+  (or any materially broader security, data, or infrastructure change);
+- repository state is unsafe or inconsistent, or continuing would overwrite
+  unrelated work;
+- you reach a human control gate (commit, push, deploy).
+
+At a stop, report the evidence rather than silently expanding scope.
+
+---
+
+# REPOSITORY SAFETY
+
+- Before editing, verify the intended branch and inspect `git status --short`.
+- Preserve unrelated dirty files. `docs/.DS_Store` is a known unrelated local
+  dirty file; leave it completely untouched unless Chris says otherwise.
+- Never discard, reset, stash, clean, overwrite, or otherwise alter unrelated
+  work to obtain a clean tree.
+- Do not mutate production data to diagnose a bug unless explicitly
+  authorized.
+- Do not perform migrations, bulk rewrites, destructive operations, or
+  infrastructure changes merely because they make a task easier.
+
+---
+
+# FIREBASE AND PRODUCTION
+
+Production Firebase project: **`lyfelabz-prod`**. Staging: `lyfelabz-staging`.
+The `.firebaserc` `default` alias points at `lyfelabz-prod`, so never rely on
+the ambient alias: every production operation (including any explicitly
+authorized deploy) passes `--project lyfelabz-prod`, and every deploy is scoped
+with `--only`.
+
+Separate deployment surfaces (authorization for one never authorizes another):
+
+- Hosting (`firebase.json` app hosting from `dist/app-hosting`; marketing site
+  via `firebase.marketing.json`, target `marketing`)
+- Functions (`platform/functions`)
+- Firestore Rules (`platform/firebase/firestore.rules`)
+- Firestore indexes (`platform/firebase/firestore.indexes.json`)
+- Storage (`platform/firebase/storage.rules`)
+- Auth / configuration (OAuth scopes, Firebase and GCP console settings)
+
+Firestore Rules/index changes, OAuth scope changes, Firebase configuration
+changes, new GCP infrastructure, migrations, and production-data mutations
+require explicit attention. Call them out; never hide them inside an ordinary
+feature fix.
+
+---
+
+# REPOSITORY GOVERNANCE
 
 **Preservation mode.** The instructional architecture is considered complete.
 Allowed changes: bug fixes, scientific-accuracy fixes, broken links, engagement
@@ -47,8 +163,9 @@ existing lessons unless explicitly requested. No opportunistic or unrelated
 cleanup.
 
 **Consistency over novelty.** Prefer repository-wide patterns over one-off
-fixes. During hardening, consistency takes priority over new features; defer
-feature development until hardening is complete. Individual lessons do not
+fixes. Platform feature development may proceed, but new work must not weaken
+the security, authorization, data-integrity, testing, or deployment safeguards
+established during hardening. Individual lessons do not
 introduce new instructional components, visual patterns, or architectural
 variations without a documented repository-level reason. Preserve existing
 canonical implementations; do not introduce new design systems.
@@ -345,16 +462,27 @@ If a true cross-grade collision occurs, use `{type}_g{grade}_{topic}.html` (for
 example `lesson_g7_earths-layers.html`). Use `g{grade}` (e.g. `g7`), never a
 bare number, so it is not read as a lesson number.
 
-**Safe-rename checklist.** This is a flat static site on GitHub Pages / Firebase
-Hosting (custom domain via CNAME) with no server-side redirects, so a renamed
-file 404s its old URL unless a stub is left behind. A rename is a deliberate,
-redirect-backed change that updates all of:
+**Safe-rename checklist.** Never assume a rename is automatically protected.
+Pages are flat static files published from explicit manifests
+(`scripts/marketing-hosting/public-files.json`,
+`scripts/app-hosting/public-files.json`). The Hosting configs
+(`firebase.json`, `firebase.marketing.json`) contain only a few specific
+redirects (`/app`, `/privacy`, `/terms`), not a general rename mechanism, so a
+renamed file 404s its old URL unless compatibility is preserved. Before
+renaming, check the relevant Hosting config, publish manifest, and inbound
+references. A rename is a deliberate, compatibility-preserving change that
+updates all of:
 
 1. The file's own `<link rel="canonical">`.
 2. Its entry in `sitemap.xml`.
 3. Every inbound link (index.html catalog, sibling Go Further / continue cards,
    nav).
-4. A meta-refresh stub left at the old filename to redirect the old URL.
+4. The relevant publish manifest (new filename added; old filename kept if it
+   stays as a stub).
+5. Compatibility for the old URL through the existing mechanism: a
+   meta-refresh stub at the old filename (see `about_privacy.html`). A new
+   Hosting redirect is a Hosting configuration change and needs explicit
+   authorization.
 
 Lesson identifiers derived from filenames are referenced by assignments and
 submissions; treat the safe-rename checklist as authoritative.
@@ -395,11 +523,36 @@ any special distinction.
 
 ---
 
-# QUALITY CONTROL
+# VERIFICATION AND HANDOFF
 
-After every change:
+Before declaring an implementation complete:
 
-- Verify in the browser; check console errors; test interactions; confirm
-  responsive behavior.
-- Sweep for em dashes (see STYLE) and replace any with a spaced hyphen.
-- Report exactly what changed. Do not claim verification that was not performed.
+- Run focused tests for the changed behavior. Add regression coverage that
+  would have caught the actual defect when appropriate.
+- Run the full checks for affected packages:
+  - `app/`: `npm --prefix app run verify` (curriculum, lessons, variants,
+    typecheck, lint, jest) plus `npm --prefix app run build` when the bundle
+    changes.
+  - `platform/functions/`: `test`, `typecheck`, `lint`, `build` (CI runs lint,
+    typecheck, build).
+  - `platform/firebase/`: `npm run test:rules` when Rules or data access
+    change (CI runs it).
+- For browser-visible changes (lessons, pages, app UI): verify in the browser,
+  check console errors, test interactions, confirm responsive behavior.
+- Sweep changed files for em dashes (see STYLE).
+- Review the complete final diff and confirm only intended files changed.
+- Distinguish verified facts from assumptions; report anything unverified. Do
+  not claim verification that was not performed, and never call something
+  production-verified unless it was verified in production.
+
+**Final handoff** (unless the task specifies another format), concisely:
+
+1. Root cause / what was found.
+2. What changed.
+3. Important architectural or product behavior.
+4. Tests and verification performed.
+5. Anything not verified, and remaining risks.
+6. Production surfaces that would eventually need deployment.
+7. Exact intended files left modified/untracked (what Chris should see under
+   Changes in GitHub Desktop).
+8. Confirmation that no commit, push, or deploy was performed.
