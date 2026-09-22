@@ -697,6 +697,9 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
         ...(input.dueDate !== undefined
           ? { dueDate: parseIsoDateToClassroomDate(input.dueDate) }
           : {}),
+        ...(input.scheduledTime !== undefined
+          ? { scheduledTime: input.scheduledTime }
+          : {}),
         signal: controller.signal,
       });
       workPromise.catch(() => undefined);

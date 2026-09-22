@@ -195,6 +195,11 @@ export type IntegrationsCallables = {
     // Sprint 30A.3: shared, dialog-level Classroom due date (ISO
     // "YYYY-MM-DD"). Omitted or empty means no due date is sent.
     readonly dueDate?: string;
+    // Sprint 30A.3: per-class scheduled Classroom publication instant, RFC3339
+    // UTC (e.g. "2026-09-23T11:45:00.000Z"). Present only when the teacher
+    // deliberately edited this class's Date/Time; absent means publish
+    // immediately, exactly as before this feature.
+    readonly scheduledTime?: string;
     readonly attemptNonce?: string;
   }) => Promise<IntegrationsPublicationOutcome>;
 };

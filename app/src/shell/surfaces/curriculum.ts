@@ -263,6 +263,14 @@ type RowConfig = {
   time: string;
   topic: string;
   lmsTopicId: string;
+  // Sprint 30A.3: true only once the teacher has deliberately edited this
+  // row's Date or Time input. `date`/`time` are PRE-FILLED with a decorative
+  // default (today + DEFAULT_RELEASE_TIME) purely for UI presentation, and
+  // that default must never be treated as a genuine scheduling instruction -
+  // only an explicit edit means "actually delay this class's Classroom
+  // publication." Never reset once true for this row's lifetime in the
+  // dialog session.
+  scheduleTouched: boolean;
 };
 
 // Sprint 30A.1 UX correction: the shared, dialog-level Classroom grading
@@ -428,6 +436,24 @@ function todayIsoDate(doc: Document): string {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
+}
+
+// Sprint 30A.3: converts a row's Date+Time ("YYYY-MM-DD" + "HH:MM") into
+// an RFC3339 UTC instant for Google Classroom's `scheduledTime`. `Date`
+// parses "YYYY-MM-DDTHH:MM" as the BROWSER'S OWN local timezone (standard
+// JS behavior for this exact form) - the same timezone the `<input
+// type="date">`/`<input type="time">` controls already display in, so no
+// separate timezone source is introduced. There is no canonical school/
+// user timezone wired anywhere near this code today; browser-local is the
+// smallest correct choice given that, and matches what the teacher sees
+// on screen. Returns null for an unparseable/empty value rather than
+// guessing, so the caller can safely omit `scheduledTime` and fall back
+// to immediate publication.
+function rowScheduledTimeIso(cfg: RowConfig): string | null {
+  if (!cfg.scheduleTouched || cfg.date === "" || cfg.time === "") return null;
+  const parsed = new Date(`${cfg.date}T${cfg.time}`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toISOString();
 }
 
 // The visible "✓ Assigned" badge must reflect an authoritative signal
@@ -1577,6 +1603,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
           time: sessionPreferences.releaseTime,
           topic: sessionPreferences.topic,
           lmsTopicId: sessionPreferences.lmsTopicId,
+          scheduleTouched: false,
         },
     );
   }
@@ -3033,6 +3060,9 @@ function renderRow(
     dateInput.value = cfg.date;
     dateInput.addEventListener("input", () => {
       cfg.date = dateInput!.value;
+      // Sprint 30A.3: a deliberate edit, not the decorative pre-filled
+      // default - see RowConfig.scheduleTouched.
+      cfg.scheduleTouched = true;
     });
     row.appendChild(dateInput);
 
@@ -3045,6 +3075,7 @@ function renderRow(
     timeInput.value = cfg.time;
     timeInput.addEventListener("input", () => {
       cfg.time = timeInput!.value;
+      cfg.scheduleTouched = true;
     });
     row.appendChild(timeInput);
   }
@@ -3426,6 +3457,7 @@ async function runAssignmentLifecycle(input: {
         };
       }
       const lmsTopicId = row.cfg.lmsTopicId;
+      const scheduledTime = rowScheduledTimeIso(row.cfg);
       // One attempt nonce per logical publication action for this row
       // (implementation plan §2.1). It is passed on the initial call and
       // reused on the single automatic re-issue after incremental consent;
@@ -3441,6 +3473,7 @@ async function runAssignmentLifecycle(input: {
             title: lesson.title,
             ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
             ...(dueDate !== undefined && dueDate !== "" ? { dueDate } : {}),
+            ...(scheduledTime !== null ? { scheduledTime } : {}),
             attemptNonce,
           }),
         consent: {

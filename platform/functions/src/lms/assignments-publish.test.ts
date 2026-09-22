@@ -450,6 +450,73 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
     });
   });
 
+  describe("Sprint 30A.3: scheduled Classroom publication", () => {
+    const FUTURE_ISO = "2099-01-01T00:00:00.000Z";
+
+    it("passes scheduledTime to the adapter when the request supplies a genuinely future instant", async () => {
+      setupHappyPath();
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(
+        makeRequest({ scheduledTime: FUTURE_ISO }),
+      );
+
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({
+        scheduledTime: FUTURE_ISO,
+      });
+    });
+
+    it("never sends a scheduledTime field to the adapter when the request omits one", async () => {
+      setupHappyPath();
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty(
+        "scheduledTime",
+      );
+    });
+
+    it("treats an already-past scheduledTime as immediate publication (no scheduledTime forwarded, no rejection)", async () => {
+      setupHappyPath();
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        lmsAssignmentUrl: FIXTURE_LMS_ASSIGNMENT_URL,
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await __lmsAssignmentsPublishHandler(
+        makeRequest({ scheduledTime: "2020-01-01T00:00:00.000Z" }),
+      );
+
+      expect(publishAssignment).toHaveBeenCalledTimes(1);
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty(
+        "scheduledTime",
+      );
+    });
+
+    it("rejects a malformed scheduledTime before any upstream call", async () => {
+      setupHappyPath();
+      const publishAssignment = jest.fn();
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await expect(
+        __lmsAssignmentsPublishHandler(
+          makeRequest({ scheduledTime: "not-a-timestamp" }),
+        ),
+      ).rejects.toBeInstanceOf(PlatformError);
+      expect(publishAssignment).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Sprint 27 Phase 4: server-authoritative deep-link URL", () => {
     function adapterInput() {
       const adapter = mockGetProviderAdapter.mock.results[0].value as {

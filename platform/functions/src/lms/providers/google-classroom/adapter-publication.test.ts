@@ -347,6 +347,80 @@ describe("googleClassroomAdapter.publishAssignment (Sprint 25 Phase 1)", () => {
     });
   });
 
+  // Sprint 30A.3: native Classroom scheduled publication.
+  describe("scheduled publication (Sprint 30A.3)", () => {
+    it("forwards scheduledTime to the transport createCourseWork call when supplied", async () => {
+      const capturing = createFixtureGoogleClassroomTransport();
+      let capturedScheduledTime: string | undefined;
+      (capturing as unknown as Record<string, unknown>).createCourseWork = (
+        req: { scheduledTime?: string },
+      ) => {
+        capturedScheduledTime = req.scheduledTime;
+        return Promise.resolve({
+          id: "fixture-coursework-scheduled",
+        });
+      };
+      setGoogleClassroomTransport(capturing);
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+
+      await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+        scheduledTime: "2026-09-23T11:45:00.000Z",
+      });
+
+      expect(capturedScheduledTime).toBe("2026-09-23T11:45:00.000Z");
+    });
+
+    it("does not forward a scheduledTime field to the transport when not supplied", async () => {
+      const capturing = createFixtureGoogleClassroomTransport();
+      let capturedRequest: Record<string, unknown> = {};
+      (capturing as unknown as Record<string, unknown>).createCourseWork = (
+        req: Record<string, unknown>,
+      ) => {
+        capturedRequest = req;
+        return Promise.resolve({
+          id: "fixture-coursework-immediate",
+          alternateLink: "https://classroom.google.com/c/fixture/a/immediate/details",
+        });
+      };
+      setGoogleClassroomTransport(capturing);
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+
+      await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+      });
+
+      expect(capturedRequest).not.toHaveProperty("scheduledTime");
+    });
+
+    it("succeeds without alternateLink for a scheduled (DRAFT) coursework item, matching Classroom's own contract", async () => {
+      // Classroom's alternateLink is only populated once state is
+      // PUBLISHED; a DRAFT+scheduledTime creation legitimately omits it.
+      const capturing = createFixtureGoogleClassroomTransport();
+      (capturing as unknown as Record<string, unknown>).createCourseWork = () =>
+        Promise.resolve({ id: "fixture-coursework-scheduled-2" });
+      setGoogleClassroomTransport(capturing);
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+
+      const result = await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+        scheduledTime: "2026-09-23T11:45:00.000Z",
+      });
+
+      expect(result.lmsAssignmentId).toBe("fixture-coursework-scheduled-2");
+      expect(result).not.toHaveProperty("lmsAssignmentUrl");
+    });
+  });
+
   it("includes lmsAssignmentUrl in the result when the upstream resource returns alternateLink", async () => {
     setupFixture();
     const result = await googleClassroomAdapter.publishAssignment({

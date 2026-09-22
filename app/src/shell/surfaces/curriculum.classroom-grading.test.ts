@@ -111,6 +111,7 @@ const makeIntegrations = (): {
     linkId: string;
     lmsTopicId?: string;
     dueDate?: string;
+    scheduledTime?: string;
   }[];
 } => {
   // Two LMS-linked classes on two distinct upstream courses/links, so a
@@ -134,6 +135,7 @@ const makeIntegrations = (): {
     linkId: string;
     lmsTopicId?: string;
     dueDate?: string;
+    scheduledTime?: string;
   }[] = [];
   const callables = {
     listProviders: async () => [],
@@ -171,12 +173,14 @@ const makeIntegrations = (): {
       linkId: string;
       lmsTopicId?: string;
       dueDate?: string;
+      scheduledTime?: string;
     }): Promise<IntegrationsPublicationOutcome> => {
       publishCalls.push({
         assignmentId: input.assignmentId,
         linkId: input.linkId,
         ...(input.lmsTopicId !== undefined ? { lmsTopicId: input.lmsTopicId } : {}),
         ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
+        ...(input.scheduledTime !== undefined ? { scheduledTime: input.scheduledTime } : {}),
       });
       return { publicationId: "pub", status: "succeeded" as const, lmsAssignmentId: "gc-1" };
     },
@@ -660,6 +664,137 @@ describe("Assign dialog - per-class schedule isolation (Sprint 30A.1 UX correcti
     await settle();
 
     expect(asn.draftInputs.some((d) => d.classId === "c2")).toBe(false);
+  });
+});
+
+describe("Assign dialog - scheduled Classroom publication (Sprint 30A.3)", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+  });
+
+  test("leaving Date/Time untouched (the decorative pre-filled default) sends NO scheduledTime, exactly like today", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFour,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+
+    // No interaction with the Date/Time inputs at all.
+    confirm();
+    await settle();
+
+    expect(it.publishCalls.length).toBeGreaterThan(0);
+    for (const call of it.publishCalls) {
+      expect(call).not.toHaveProperty("scheduledTime");
+    }
+  });
+
+  test("deliberately setting a class's Date/Time sends a scheduledTime for that class's publish call", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFour,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+
+    const futureYear = new Date().getFullYear() + 1;
+    const c1Date = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-date-c1]",
+    )!;
+    const c1Time = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-time-c1]",
+    )!;
+    c1Date.value = `${futureYear}-09-23`;
+    c1Date.dispatchEvent(new Event("input"));
+    c1Time.value = "07:45";
+    c1Time.dispatchEvent(new Event("input"));
+
+    confirm();
+    await settle();
+
+    const c1Publish = it.publishCalls.find((p) => p.linkId === "link-c1");
+    expect(c1Publish?.scheduledTime).toBeDefined();
+    expect(new Date(c1Publish!.scheduledTime!).toISOString()).toBe(
+      c1Publish!.scheduledTime,
+    );
+  });
+
+  test("two classes with different deliberately-set schedules produce different scheduledTime values, not a shared one", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFour,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+
+    const futureYear = new Date().getFullYear() + 1;
+    const c1Date = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-date-c1]",
+    )!;
+    const c1Time = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-time-c1]",
+    )!;
+    const c3Date = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-date-c3]",
+    )!;
+    const c3Time = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-time-c3]",
+    )!;
+    c1Date.value = `${futureYear}-09-23`;
+    c1Date.dispatchEvent(new Event("input"));
+    c1Time.value = "07:45";
+    c1Time.dispatchEvent(new Event("input"));
+    c3Date.value = `${futureYear}-09-24`;
+    c3Date.dispatchEvent(new Event("input"));
+    c3Time.value = "11:30";
+    c3Time.dispatchEvent(new Event("input"));
+
+    confirm();
+    await settle();
+
+    const c1Publish = it.publishCalls.find((p) => p.linkId === "link-c1");
+    const c3Publish = it.publishCalls.find((p) => p.linkId === "link-c3");
+    expect(c1Publish?.scheduledTime).toBeDefined();
+    expect(c3Publish?.scheduledTime).toBeDefined();
+    expect(c1Publish!.scheduledTime).not.toBe(c3Publish!.scheduledTime);
+  });
+
+  test("touching only one of two selected classes leaves the untouched class with no scheduledTime", async () => {
+    const asn = okAssignments();
+    const it = makeIntegrations();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listFour,
+      assignments: asn.seam,
+      integrations: it.deps,
+    });
+    await openDialogFor(mount, "earths-layers");
+
+    const futureYear = new Date().getFullYear() + 1;
+    const c1Date = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-date-c1]",
+    )!;
+    c1Date.value = `${futureYear}-09-23`;
+    c1Date.dispatchEvent(new Event("input"));
+
+    confirm();
+    await settle();
+
+    const c3Publish = it.publishCalls.find((p) => p.linkId === "link-c3");
+    expect(c3Publish).not.toHaveProperty("scheduledTime");
   });
 });
 

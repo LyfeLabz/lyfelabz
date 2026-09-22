@@ -481,6 +481,56 @@ describe("createHttpsGoogleClassroomTransport", () => {
           },
         ]);
       });
+
+      it("creates as DRAFT with scheduledTime when a schedule is supplied", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({ id: "fixture-coursework-scheduled" }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment Title",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+          scheduledTime: "2026-09-23T11:45:00.000Z",
+        });
+        const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
+        expect(body.state).toBe("DRAFT");
+        expect(body.scheduledTime).toBe("2026-09-23T11:45:00.000Z");
+      });
+
+      it("creates as PUBLISHED with no scheduledTime when no schedule is supplied", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({
+            id: "fixture-coursework-immediate",
+            alternateLink: "https://classroom.google.com/c/fake",
+          }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment Title",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+        });
+        const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
+        expect(body.state).toBe("PUBLISHED");
+        expect(body).not.toHaveProperty("scheduledTime");
+      });
     });
   });
 

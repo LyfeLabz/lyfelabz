@@ -151,6 +151,14 @@ export type GoogleClassroomCourseWorkCreateRequest = {
   // no due date is sent, matching Classroom's contract that a coursework
   // item without a dueDate is valid.
   readonly dueDate?: { readonly year: number; readonly month: number; readonly day: number };
+  // Sprint 30A.3 - native Google Classroom scheduled publication. When
+  // present (an RFC3339 UTC timestamp), the coursework is created with
+  // `state: "DRAFT"` plus this `scheduledTime`; Classroom's own servers
+  // transition it to `PUBLISHED` at that instant with no further API call
+  // from LyfeLabz - the delay is entirely Google's durability guarantee,
+  // not a LyfeLabz-side job. Absent means immediate `state: "PUBLISHED"`,
+  // exactly as before this field existed.
+  readonly scheduledTime?: string;
   // Optional abort signal (Sprint 25 Phase 1, §2.3 Correction 3). The
   // adapter supplies an AbortController-backed signal so the coursework
   // POST is genuinely cancelled when the adapter-level timeout fires,
@@ -903,7 +911,13 @@ export function createHttpsGoogleClassroomTransport(
     async createCourseWork(input) {
       const bodyObj: Record<string, unknown> = {
         title: input.title,
-        state: "PUBLISHED",
+        // Sprint 30A.3: native Classroom scheduled publication. Creating
+        // with `state: "DRAFT"` plus `scheduledTime` causes Classroom's
+        // own servers to auto-transition this item to `PUBLISHED` at that
+        // instant, with no second API call from LyfeLabz - see the
+        // `scheduledTime` field comment on the request type. Absent means
+        // the exact pre-existing immediate-publish behavior.
+        state: input.scheduledTime !== undefined ? "DRAFT" : "PUBLISHED",
         workType: "ASSIGNMENT",
         // Sprint 30A.3: the link `title` is the same clean, lesson-centered
         // string as the coursework's own `title` - previously omitted,
@@ -921,6 +935,9 @@ export function createHttpsGoogleClassroomTransport(
       if (input.maxPoints !== undefined) bodyObj.maxPoints = input.maxPoints;
       // Sprint 30A.3: send `dueDate` only when the teacher chose one.
       if (input.dueDate !== undefined) bodyObj.dueDate = input.dueDate;
+      if (input.scheduledTime !== undefined) {
+        bodyObj.scheduledTime = input.scheduledTime;
+      }
       const parsed = (await callUpstream(
         fetchImpl,
         classroomUrl(

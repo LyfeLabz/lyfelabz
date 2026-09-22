@@ -146,6 +146,14 @@ export type LmsPublishAssignmentInput = {
   // assessment-access-window fields, which this input never carries and
   // which are unaffected by it.
   readonly dueDate?: string;
+  // Sprint 30A.3 - per-class scheduled publication instant, RFC3339 UTC.
+  // Absent means publish immediately (today's behavior, unchanged). LMS
+  // student visibility is delayed until this instant; LyfeLabz's own
+  // assignment status/visibility is NOT gated by this field - it is
+  // unaffected and becomes "published" immediately, exactly as before
+  // this feature. See assignments-publish.ts for the deliberate scope
+  // boundary this draws.
+  readonly scheduledTime?: string;
 };
 
 // The outcome of a successful publication. The upstream assignment

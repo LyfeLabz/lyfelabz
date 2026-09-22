@@ -96,6 +96,12 @@ export type LmsAssignmentsPublishRequest = {
   // Classroom, matching Classroom's own contract that a coursework item
   // without a dueDate is valid.
   readonly dueDate?: string;
+  // Sprint 30A.3: per-class scheduled Classroom publication instant,
+  // RFC3339 UTC. Optional - absent, malformed-into-past, or already
+  // elapsed means publish immediately (today's exact behavior). Present
+  // only when the teacher deliberately edited this class's Date/Time in
+  // the Assign dialog (never the decorative pre-filled default).
+  readonly scheduledTime?: string;
   readonly attemptNonce?: string;
 };
 
@@ -140,6 +146,31 @@ function optionalIsoDate(value: unknown): string | undefined {
   return trimmed;
 }
 
+// Sprint 30A.3: validates the optional Classroom scheduled-publication
+// instant. Rejects an unparseable value outright (fail closed - never
+// forward a malformed timestamp upstream). A value that parses but is
+// already at-or-before "now" (a small buffer absorbs normal request
+// latency) is treated identically to "not scheduled" - the teacher's
+// intent for a past/imminent time is "assign now," not a rejected
+// request, matching pre-feature behavior for exactly that case.
+const SCHEDULED_TIME_PAST_BUFFER_MS = 60_000;
+
+function resolveScheduledTime(value: unknown): string | undefined {
+  const trimmed = optionalNonEmptyString(value);
+  if (trimmed === undefined) return undefined;
+  const parsedMs = Date.parse(trimmed);
+  if (Number.isNaN(parsedMs)) {
+    throw new PlatformError(
+      "lms.invalidRequest",
+      "scheduledTime must be a valid RFC3339 timestamp.",
+    );
+  }
+  if (parsedMs <= Date.now() + SCHEDULED_TIME_PAST_BUFFER_MS) {
+    return undefined;
+  }
+  return new Date(parsedMs).toISOString();
+}
+
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsAssignmentsPublishResponse> {
@@ -180,6 +211,7 @@ async function handler(
   const instructions = optionalNonEmptyString(payload.instructions);
   const lmsTopicId = optionalNonEmptyString(payload.lmsTopicId);
   const dueDate = optionalIsoDate(payload.dueDate);
+  const scheduledTime = resolveScheduledTime(payload.scheduledTime);
   const attemptNonce =
     optionalNonEmptyString(payload.attemptNonce) ??
     randomBytes(8).toString("hex");
@@ -365,6 +397,7 @@ async function handler(
       ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
       ...(maxPoints !== undefined ? { maxPoints } : {}),
       ...(dueDate !== undefined ? { dueDate } : {}),
+      ...(scheduledTime !== undefined ? { scheduledTime } : {}),
     });
   } catch (upstreamErr) {
     // Insufficient scope is non-terminal. No record is written and no
