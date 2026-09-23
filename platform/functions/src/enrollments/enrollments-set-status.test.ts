@@ -18,10 +18,12 @@ const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
 
 const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
+const DELETE_SENTINEL = Symbol("delete");
 
 jest.mock("firebase-admin/firestore", () => ({
   FieldValue: {
     serverTimestamp: () => SERVER_TIMESTAMP_SENTINEL,
+    delete: () => DELETE_SENTINEL,
   },
 }));
 
@@ -145,7 +147,7 @@ describe("enrollmentsSetStatus", () => {
     mockLogError.mockReset();
   });
 
-  it("advances active -> withdrawn and stamps exitedAt", async () => {
+  it("advances active -> withdrawn, stamps exitedAt, and records TEACHER provenance (never a Classroom link)", async () => {
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
     mockClassGet.mockResolvedValueOnce(classSnapshot());
     mockEnrollmentUpdate.mockResolvedValueOnce(undefined);
@@ -158,6 +160,8 @@ describe("enrollmentsSetStatus", () => {
     expect(mockEnrollmentUpdate).toHaveBeenCalledWith({
       status: "withdrawn",
       exitedAt: SERVER_TIMESTAMP_SENTINEL,
+      exitSource: "teacher",
+      exitLinkId: DELETE_SENTINEL,
     });
     expect(result).toEqual({
       enrollmentId: ENROLLMENT_ID,
@@ -424,6 +428,7 @@ describe("enrollmentsSetStatus", () => {
         studentId: STUDENT_UID,
         previousStatus: "active",
         status: "withdrawn",
+        exitSource: "teacher",
       },
     });
   });

@@ -21,6 +21,7 @@ import type {
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
+  RefreshRoster,
 } from "../../settings/integrations/types";
 import type { CurriculumAssignmentDetailSeam } from "../../shell/surfaces/curriculum";
 import type {
@@ -223,11 +224,10 @@ export type SurfaceDeps = {
   // `lmsClassesSyncRoster` seam. Same rebind semantics as the other
   // per-active-teacher dependencies.
   readonly syncRoster?: () => SyncRoster | null;
-  // Sprint 29G.5K-3: best-effort class-open membership freshness callable
-  // getter. Same rebind semantics as syncRoster.
-  readonly refreshRoster?: () =>
-    | ((input: { readonly classId: string }) => Promise<unknown>)
-    | null;
+  // Getter for the teacher-controlled Google Classroom roster refresh
+  // (Class settings; never called on class open). Same rebind semantics as
+  // syncRoster.
+  readonly refreshRoster?: () => RefreshRoster | null;
   // Sprint 29G.5P: getter for the teacher Students-tab roster reader
   // (`enrollmentsListForClass`). Same rebind semantics as refreshRoster.
   readonly loadRoster?: LoadClassRosterAccessor;

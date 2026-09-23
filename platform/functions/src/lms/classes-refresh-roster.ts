@@ -37,12 +37,36 @@ import {
 //   UID, an email, a display name, or a token.
 // - Emits exactly one `lms.rosterMembershipsCaptured` audit event.
 // - Creates NO user, NO Auth claim, and NO enrollment for a
-//   not-yet-authenticated member. The only enrollment side effect is the
-//   safe withdrawal of an active enrollment whose member was removed from a
-//   fresh, non-empty upstream roster.
+//   not-yet-authenticated member. By default the only enrollment side
+//   effect is the safe withdrawal of an active enrollment whose member was
+//   removed from a fresh, non-empty upstream roster.
+//
+// Teacher-controlled manual refresh (Class settings > "Refresh roster from
+// Google Classroom") additionally passes `reconcileEnrollments: true`: the
+// class must be active, and after membership capture the class's
+// enrollments are reconciled with the fresh roster - existing ACTIVE
+// LyfeLabz students newly in the Classroom class are enrolled through the
+// canonical membership-enrollment step, an enrollment that Classroom
+// synchronization itself withdrew (durable provenance, current link) is
+// restored when the student is back in the Classroom class, and any
+// interrupted withdrawal is completed. See
+// `roster/enrollment-reconcile.ts`. Import never sends the flag, so its
+// behavior is unchanged. The response then also carries
+// `enrollmentReconciliation` (counts only).
 
 export type LmsClassesRefreshRosterRequest = {
   readonly classId: string;
+  readonly reconcileEnrollments?: boolean;
+};
+
+export type LmsClassesRefreshRosterEnrollmentReconciliation = {
+  readonly added: number;
+  readonly alreadyEnrolled: number;
+  readonly reactivated: number;
+  readonly awaitingFirstSignIn: number;
+  readonly notReactivated: number;
+  readonly notMatched: number;
+  readonly withdrawn: number;
 };
 
 export type LmsClassesRefreshRosterResponse = {
@@ -53,6 +77,7 @@ export type LmsClassesRefreshRosterResponse = {
   readonly removed: number;
   readonly withdrawnEnrollments: number;
   readonly upstreamRosterEmpty: boolean;
+  readonly enrollmentReconciliation?: LmsClassesRefreshRosterEnrollmentReconciliation;
 };
 
 function safeLog(fn: () => void): void {
@@ -74,6 +99,23 @@ function projectResponse(
     removed: result.removed,
     withdrawnEnrollments: result.withdrawnEnrollments,
     upstreamRosterEmpty: result.upstreamRosterEmpty,
+    ...(result.enrollmentReconciliation !== undefined
+      ? { enrollmentReconciliation: projectReconciliation(result.enrollmentReconciliation) }
+      : {}),
+  };
+}
+
+function projectReconciliation(
+  r: LmsClassesRefreshRosterEnrollmentReconciliation,
+): LmsClassesRefreshRosterEnrollmentReconciliation {
+  return {
+    added: r.added,
+    alreadyEnrolled: r.alreadyEnrolled,
+    reactivated: r.reactivated,
+    awaitingFirstSignIn: r.awaitingFirstSignIn,
+    notReactivated: r.notReactivated,
+    notMatched: r.notMatched,
+    withdrawn: r.withdrawn,
   };
 }
 
@@ -94,6 +136,16 @@ async function handler(
     "lms.invalidClassId",
     "classId must be a non-empty string.",
   );
+  if (
+    payload.reconcileEnrollments !== undefined &&
+    typeof payload.reconcileEnrollments !== "boolean"
+  ) {
+    throw new PlatformError(
+      "lms.invalidRequest",
+      "reconcileEnrollments must be a boolean when present.",
+    );
+  }
+  const reconcileEnrollments = payload.reconcileEnrollments === true;
 
   const result = await refreshClassRosterMemberships({
     actor: {
@@ -102,6 +154,7 @@ async function handler(
       ...(actor.districtId !== undefined ? { districtId: actor.districtId } : {}),
     },
     classId,
+    ...(reconcileEnrollments ? { reconcileEnrollments: true } : {}),
   });
 
   await writeAuditEvent({
@@ -120,6 +173,9 @@ async function handler(
       removed: result.removed,
       withdrawnEnrollments: result.withdrawnEnrollments,
       upstreamRosterEmpty: result.upstreamRosterEmpty,
+      ...(result.enrollmentReconciliation !== undefined
+        ? { enrollmentReconciliation: projectReconciliation(result.enrollmentReconciliation) }
+        : {}),
     },
   });
 

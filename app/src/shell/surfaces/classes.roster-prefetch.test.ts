@@ -2,7 +2,8 @@
  * @jest-environment jsdom
  *
  * Students-tab roster lifecycle: opening a class prefetches THAT class's
- * roster in the background (never blocking Assignments); switching to
+ * roster in the background (never blocking Assignments, and never waiting
+ * on a Google Classroom refresh - opening a class makes none); switching to
  * Students renders the already-resolved roster with no loading state and no
  * second request; tab switching never refetches; a different class never
  * shows the previous class's roster; failures are not cached and the next
@@ -219,37 +220,23 @@ describe("Students roster prefetch on class open", () => {
     expect(names(mount)).toHaveLength(2);
   });
 
-  test("the class-open membership refresh completes BEFORE the roster prefetch reads (no staler roster than before)", async () => {
-    const order: string[] = [];
-    let finishRefresh!: () => void;
-    const refreshRoster = jest.fn(
-      () =>
-        new Promise<void>((resolve) => {
-          finishRefresh = () => {
-            order.push("refresh-done");
-            resolve();
-          };
-        }),
-    );
-    const loader = jest.fn(async (input: { readonly classId: string }) => {
-      order.push("roster-read");
-      return rosterFor(input.classId);
-    });
+  test("a Classroom-linked class reads its roster immediately on open, with no Google Classroom refresh first", async () => {
+    const refreshRoster = jest.fn();
+    const { loader } = controllableLoader();
     const lmsClasses = [{ ...classes[0]!, isLmsLinked: true }] as ClassSummary[];
     const mount = mkMount();
     renderClassesSurface(mount, teacher, {
       listClasses: async () => lmsClasses,
       loadRoster: () => loader,
-      refreshRoster: refreshRoster as never,
+      refreshRoster,
     });
     await settle();
     await openClass(mount, CLASS_A);
-    await settle();
-    expect(loader).not.toHaveBeenCalled();
 
-    finishRefresh();
-    await settle();
-    expect(order).toEqual(["refresh-done", "roster-read"]);
+    // Synchronously part of the open: no waiting on any other request.
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(loader).toHaveBeenCalledWith({ classId: CLASS_A });
+    expect(refreshRoster).not.toHaveBeenCalled();
   });
 
   test("a needsSetup class opens on Setup and prefetches no roster", async () => {

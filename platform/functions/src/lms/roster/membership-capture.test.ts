@@ -24,6 +24,7 @@ const mockEnrollmentStatusChangeDocRef = jest.fn(() => ({
 }));
 
 const mockResolveActiveUserIdByDocId = jest.fn();
+const mockWriteAuditEvent = jest.fn();
 const mockLogInfo = jest.fn();
 
 jest.mock("firebase-admin/firestore", () => ({
@@ -46,6 +47,16 @@ jest.mock("../../shared", () => {
     classDocRef: jest.fn(),
     enrollmentDocRef: mockEnrollmentDocRef,
     enrollmentStatusChangeDocRef: mockEnrollmentStatusChangeDocRef,
+    // Classroom withdrawals go through the provenance-stamping primitive's
+    // narrow ref, inside a transaction (a pass-through fake here).
+    enrollmentClassroomWithdrawalDocRef: mockEnrollmentStatusChangeDocRef,
+    runFirestoreTransaction: async (
+      fn: (tx: {
+        get: (ref: { get: () => unknown }) => unknown;
+        update: (ref: { update: (d: unknown) => unknown }, d: unknown) => unknown;
+      }) => unknown,
+    ) => fn({ get: (ref) => ref.get(), update: (ref, d) => ref.update(d) }),
+    writeAuditEvent: mockWriteAuditEvent,
     lmsClassLinksCollectionRef: jest.fn(),
     lmsConnectionDocRef: jest.fn(),
     lmsRosterMembershipCreationDocRef: mockCreationDocRef,
@@ -195,8 +206,20 @@ describe("captureRosterMemberships", () => {
     ]);
     expect(summary.removed).toBe(1);
     expect(summary.withdrawnEnrollments).toBe(1);
-    expect(mockEnrollmentStatusChangeUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "withdrawn" }),
+    // Withdrawal provenance: caused by Classroom sync, for this link.
+    expect(mockEnrollmentStatusChangeUpdate).toHaveBeenCalledWith({
+      status: "withdrawn",
+      exitedAt: "__ts__",
+      exitSource: "lmsRosterSync",
+      exitLinkId: LINK_ID,
+    });
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "lms.classroomEnrollmentWithdrawn",
+        actorUserId: OWNER,
+        targetType: "enrollment",
+        targetId: `${CLASS_ID}__student-uid-9`,
+      }),
     );
   });
 

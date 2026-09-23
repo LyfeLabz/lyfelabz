@@ -16,6 +16,7 @@ import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom"
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
+  RefreshRoster,
 } from "../../settings/integrations/types";
 import type {
   AccommodationsListStudentsCallable,
@@ -134,10 +135,9 @@ export type WorkspaceDeps = {
   // after activation and for the manual "Sync roster" affordance. Null
   // in test harnesses that do not exercise roster sync.
   readonly syncRoster?: SyncRoster | null;
-  // Sprint 29G.5K-3: best-effort class-open membership freshness callable.
-  readonly refreshRoster?:
-    | ((input: { readonly classId: string }) => Promise<unknown>)
-    | null;
+  // Teacher-controlled Google Classroom roster refresh (Class settings);
+  // never called on class open.
+  readonly refreshRoster?: RefreshRoster | null;
   // Sprint 29G.5P: teacher Students-tab roster reader (`enrollmentsListForClass`).
   // Forwarded into the Classes surface so the Students tab lists real active
   // enrollments. Null in harnesses that do not exercise the roster.

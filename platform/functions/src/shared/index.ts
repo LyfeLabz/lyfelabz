@@ -137,6 +137,8 @@ export {
   enrollmentCreationDocRef,
   enrollmentDocRef,
   enrollmentStatusChangeDocRef,
+  enrollmentClassroomWithdrawalDocRef,
+  enrollmentClassroomReactivationDocRef,
   enrollmentsCollectionRef,
   schoolCreationDocRef,
   schoolDocRef,
@@ -306,7 +308,10 @@ export {
 } from "./firestore/typed-ref";
 export {
   ENROLLMENTS_COLLECTION,
+  type ClassroomEnrollmentReactivationWrite,
+  type ClassroomEnrollmentWithdrawalWrite,
   type EnrollmentCreationWrite,
+  type EnrollmentExitSource,
   type EnrollmentRecord,
   type EnrollmentStatus,
   type EnrollmentStatusChangeWrite,

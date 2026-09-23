@@ -401,6 +401,8 @@ Optional fields:
 
 - displayNameOverride: Some students prefer a different name in one class than another (nickname, preferred name). Optional.
 - exitedAt: Timestamp when status became transferred or withdrawn.
+- exitSource: Withdrawal provenance, recorded when status becomes `withdrawn` (forward-only; see "Withdrawal provenance and Classroom-managed reactivation" below). `lmsRosterSync` = Google Classroom roster synchronization withdrew the enrollment because the student left the linked Classroom class; `teacher` = the teacher withdrew it (`enrollmentsSetStatus`).
+- exitLinkId: Present only with `exitSource: "lmsRosterSync"`: the `lmsClassLinks/{linkId}` whose roster caused the withdrawal. Never present on a teacher withdrawal.
 - lmsRosterRef: Optional reference to the `lmsRosterLinks/{rosterLinkId}` mirror document for this enrollment when the enrolling class is LMS-linked. Reserved by the ratified LMS integration architecture. Absent on every pre-existing enrollment. Never renamed. Presence never widens the caller's authorization; it is a mirror pointer, not an ownership field.
 
 Relationships: References one student, one class, and one school.
@@ -408,6 +410,12 @@ Relationships: References one student, one class, and one school.
 Ownership: Created by the student (via join code) or by a teacher (via manual add). Updated by teachers and administrators. Never updated by other students.
 
 Lifecycle: Created at enrollment. Status transitions during the year. Retained after end of year so that grade history remains resolvable.
+
+Withdrawal provenance and Classroom-managed reactivation:
+
+- Provenance is **forward-only** from the release that introduced `exitSource`/`exitLinkId`. Both Google Classroom withdrawal writers (the teacher's manual "Refresh roster from Google Classroom", `lmsClassesRefreshRoster`, and the setup/sync engine, `lmsClassesSyncRoster`) record `exitSource: "lmsRosterSync"` and `exitLinkId` through the single primitive `withdrawEnrollmentForClassroomSync`, audited as `lms.classroomEnrollmentWithdrawn`. `enrollmentsSetStatus` records `exitSource: "teacher"` (audited as `enrollments.statusChanged`).
+- **Absence of `exitSource` means unknown historical provenance.** It is never inferred (not from audit records, not from `lmsRosterMemberships` rows) and never backfilled; no migration exists.
+- The only `withdrawn -> active` transition is `reactivateClassroomWithdrawnEnrollment`, used only by the manual refresh. It reuses the SAME enrollment document (ownership, `enrolledAt`, and all history untouched), deletes `exitedAt`/`exitSource`/`exitLinkId`, audits `lms.classroomEnrollmentReactivated`, and restores published-assignment recipients through the same logic as a new enrollment. It applies only when ALL hold: `status == "withdrawn"`; `exitSource == "lmsRosterSync"`; `exitLinkId` equals the class's current Classroom link; the student is in the fresh Classroom roster; their canonical Google identity mapping is active and agrees with the user record; and that user is active, `role == "student"`, in the class's school. A teacher withdrawal, a withdrawal with unknown provenance, one from another link, and any `transferred`/`archived` enrollment are never reactivated. The generic lifecycle table (`enrollmentsSetStatus`) is unchanged and still has no inactive-to-active transition.
 
 ### 3.5 lessons
 

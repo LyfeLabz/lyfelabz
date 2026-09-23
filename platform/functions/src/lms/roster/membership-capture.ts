@@ -5,8 +5,6 @@ import {
   classDocRef,
   computeExternalIdentityDocId,
   assertValidProviderAccountId,
-  enrollmentDocRef,
-  enrollmentStatusChangeDocRef,
   lmsClassLinksCollectionRef,
   lmsConnectionDocRef,
   lmsRosterMembershipCreationDocRef,
@@ -14,8 +12,6 @@ import {
   lmsRosterMembershipRemovalDocRef,
   lmsRosterMembershipsCollectionRef,
   log,
-  resolveActiveUserIdByExternalIdentityDocId,
-  type EnrollmentStatusChangeWrite,
   type LmsClassLinkRecord,
   type LmsConnectionRecord,
   type LmsProviderId,
@@ -26,7 +22,11 @@ import { getProviderAdapter } from "../providers/registry";
 import type { LmsRosterStudent } from "../providers/provider";
 import { resolveLiveCredential } from "../tokens/credential-resolver";
 import { lmsRosterMembershipIdFor } from "../shared/ids";
-import { enrollmentIdFor } from "../../enrollments/enrollments-join-by-code";
+import {
+  reconcileClassEnrollmentsWithRoster,
+  withdrawActiveEnrollmentForIdentity,
+  type ClassEnrollmentReconciliationSummary,
+} from "./enrollment-reconcile";
 
 // Sprint 29G.5K - trusted Google Classroom roster-membership capture.
 //
@@ -51,6 +51,11 @@ import { enrollmentIdFor } from "../../enrollments/enrollments-join-by-code";
 // enrollment is withdrawn (`active -> withdrawn` only), honoring the
 // certified enrollment lifecycle. An empty or failed upstream roster never
 // removes memberships or withdraws enrollments.
+//
+// A teacher's manual refresh (`reconcileEnrollments`) additionally runs
+// `reconcileClassEnrollmentsWithRoster` after capture, which enrolls
+// already-active LyfeLabz students newly in the Classroom class; Import
+// never requests it.
 
 export type RosterMembershipCaptureContext = {
   readonly classId: string;
@@ -85,12 +90,19 @@ export type RefreshClassRosterMembershipsInput = {
     readonly districtId?: string;
   };
   readonly classId: string;
+  // Teacher-requested manual refresh only (never Import): after capturing
+  // membership, also reconcile this class's ENROLLMENTS with the fresh
+  // roster - see `reconcileClassEnrollmentsWithRoster`. Requires the class
+  // to be `active`.
+  readonly reconcileEnrollments?: boolean;
 };
 
 export type RefreshClassRosterMembershipsResult = RosterMembershipCaptureSummary & {
   readonly classId: string;
   readonly providerId: LmsProviderId;
   readonly linkId: string;
+  // Present only when `reconcileEnrollments` was requested.
+  readonly enrollmentReconciliation?: ClassEnrollmentReconciliationSummary;
 };
 
 function safeLog(fn: () => void): void {
@@ -106,7 +118,7 @@ function safeLog(fn: () => void): void {
 // membership hash equals the doc id of the student's own `google.com`
 // external identity mapping. The raw provider account id is validated and
 // then immediately hashed; it is never persisted.
-function hashUpstreamRoster(
+export function hashUpstreamRoster(
   upstreamRoster: readonly LmsRosterStudent[],
 ): ReadonlySet<string> {
   const hashes = new Set<string>();
@@ -208,26 +220,14 @@ export async function captureRosterMemberships(
       });
       removed += 1;
 
-      // If this removed member has already signed in and been enrolled,
-      // withdraw the active enrollment (active -> withdrawn only). A member
-      // who never signed in has no identity mapping and no enrollment.
-      const studentUserId = await resolveActiveUserIdByExternalIdentityDocId(
-        data.identityHash,
-      );
-      if (studentUserId !== null) {
-        const enrollmentId = enrollmentIdFor(ctx.classId, studentUserId);
-        const enrollmentSnap = await enrollmentDocRef(enrollmentId).get();
-        if (enrollmentSnap.exists) {
-          const enrollment = enrollmentSnap.data();
-          if (enrollment && enrollment.status === "active") {
-            const change: EnrollmentStatusChangeWrite = {
-              status: "withdrawn",
-              exitedAt: FieldValue.serverTimestamp(),
-            };
-            await enrollmentStatusChangeDocRef(enrollmentId).update(change);
-            withdrawnEnrollments += 1;
-          }
-        }
+      const withdrew = await withdrawActiveEnrollmentForIdentity({
+        classId: ctx.classId,
+        linkId: ctx.linkId,
+        identityHash: data.identityHash,
+        actorUid: ctx.ownerUid,
+      });
+      if (withdrew) {
+        withdrawnEnrollments += 1;
       }
     }
   }
@@ -296,6 +296,7 @@ export async function refreshClassRosterMemberships(
   input: RefreshClassRosterMembershipsInput,
 ): Promise<RefreshClassRosterMembershipsResult> {
   const { actor, classId } = input;
+  const reconcileEnrollments = input.reconcileEnrollments === true;
 
   const classSnapshot = await classDocRef(classId).get();
   if (!classSnapshot.exists) {
@@ -321,6 +322,15 @@ export async function refreshClassRosterMemberships(
     throw new PlatformError(
       "lms.classNotLinked",
       "Class is not sourced from an LMS.",
+    );
+  }
+  // Enrollment reconciliation targets an ACTIVE class only (exactly the
+  // classes first-sign-in materialization enrolls into). Refused before any
+  // upstream read or write.
+  if (reconcileEnrollments && classRecord.status !== "active") {
+    throw new PlatformError(
+      "lms.classNotActive",
+      "Class must be active to reconcile its roster.",
     );
   }
 
@@ -373,6 +383,17 @@ export async function refreshClassRosterMemberships(
     upstreamRoster,
   );
 
+  const enrollmentReconciliation = reconcileEnrollments
+    ? await reconcileClassEnrollmentsWithRoster({
+        classId,
+        linkId,
+        schoolId: classRecord.schoolId,
+        actorUid: actor.uid,
+        upstreamHashes: hashUpstreamRoster(upstreamRoster),
+        withdrawnByCapture: summary.withdrawnEnrollments,
+      })
+    : undefined;
+
   safeLog(() =>
     log.info("lms.rosterMembershipsCaptured", {
       actorUserId: actor.uid,
@@ -393,5 +414,6 @@ export async function refreshClassRosterMemberships(
     classId,
     providerId: link.providerId,
     linkId,
+    ...(enrollmentReconciliation !== undefined ? { enrollmentReconciliation } : {}),
   };
 }

@@ -265,6 +265,33 @@ describe("createImportFromClassroom", () => {
     expect(states.some((s) => s.kind === "linked")).toBe(false);
   });
 
+  test("Import's roster capture sends classId only - never the teacher's manual enrollment reconciliation", async () => {
+    const inputs: unknown[] = [];
+    const { deps } = makeDeps({
+      refreshRoster: async (input) => {
+        inputs.push(input);
+        return {
+          classId: input.classId,
+          membersSeen: 1,
+          added: 1,
+          reaffirmed: 0,
+          removed: 0,
+          withdrawnEnrollments: 0,
+          upstreamRosterEmpty: false,
+        };
+      },
+    });
+    const controller = createImportFromClassroom(deps, () => {});
+    await controller.start();
+    await flush();
+    const current = controller.getState();
+    if (current.kind !== "courses") throw new Error("expected courses");
+    await controller.selectCourse(current.courses[0]!);
+    await flush();
+    expect(inputs).toHaveLength(1);
+    expect(Object.keys(inputs[0] as object)).toEqual(["classId"]);
+  });
+
   test("Sprint 29G.5K-2: retry after a capture failure re-runs link + capture and reaches linked", async () => {
     let attempts = 0;
     const { deps, calls } = makeDeps({

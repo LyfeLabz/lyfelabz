@@ -72,6 +72,8 @@ import {
 } from "../types/lms-grade-passback";
 import {
   ENROLLMENTS_COLLECTION,
+  type ClassroomEnrollmentReactivationWrite,
+  type ClassroomEnrollmentWithdrawalWrite,
   type EnrollmentCreationWrite,
   type EnrollmentRecord,
   type EnrollmentStatusChangeWrite,
@@ -426,6 +428,26 @@ export function enrollmentStatusChangeDocRef(
   return getAdminFirestore()
     .collection(ENROLLMENTS_COLLECTION)
     .doc(enrollmentId) as DocumentReference<EnrollmentStatusChangeWrite>;
+}
+
+// Narrow typed references for the two Classroom-reconciliation enrollment
+// transitions (see `enrollments/classroom-enrollment-lifecycle.ts`, their
+// only callers): the provenance-stamped Classroom withdrawal and the
+// Classroom-managed reactivation.
+export function enrollmentClassroomWithdrawalDocRef(
+  enrollmentId: string,
+): DocumentReference<ClassroomEnrollmentWithdrawalWrite> {
+  return getAdminFirestore()
+    .collection(ENROLLMENTS_COLLECTION)
+    .doc(enrollmentId) as DocumentReference<ClassroomEnrollmentWithdrawalWrite>;
+}
+
+export function enrollmentClassroomReactivationDocRef(
+  enrollmentId: string,
+): DocumentReference<ClassroomEnrollmentReactivationWrite> {
+  return getAdminFirestore()
+    .collection(ENROLLMENTS_COLLECTION)
+    .doc(enrollmentId) as DocumentReference<ClassroomEnrollmentReactivationWrite>;
 }
 
 // Collection-level typed reference for enrollments. Used by the

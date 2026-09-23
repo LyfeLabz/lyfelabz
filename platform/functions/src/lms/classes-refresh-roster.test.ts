@@ -166,3 +166,72 @@ describe("lmsClassesRefreshRoster callable (Sprint 29G.5K)", () => {
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 });
+
+describe("lmsClassesRefreshRoster: teacher-controlled enrollment reconciliation", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockWriteAuditEvent.mockResolvedValue({ eventId: "evt-1", record: {} });
+  });
+
+  const reconciliation = {
+    added: 1,
+    alreadyEnrolled: 18,
+    reactivated: 1,
+    awaitingFirstSignIn: 2,
+    notReactivated: 0,
+    notMatched: 0,
+    withdrawn: 1,
+  };
+
+  it("passes reconcileEnrollments through and projects the reconciliation counts into the response and audit", async () => {
+    mockRefresh.mockResolvedValueOnce(baseResult({ enrollmentReconciliation: reconciliation }));
+    const response = await __lmsClassesRefreshRosterHandler(
+      makeRequest({ data: { classId: "class-1", reconcileEnrollments: true } }),
+    );
+    expect(mockRefresh).toHaveBeenCalledWith({
+      actor: { uid: "teacher-1", schoolId: "school-a", districtId: "district-a" },
+      classId: "class-1",
+      reconcileEnrollments: true,
+    });
+    expect(response.enrollmentReconciliation).toEqual(reconciliation);
+    expect(mockWriteAuditEvent.mock.calls[0][0].payload.enrollmentReconciliation).toEqual(
+      reconciliation,
+    );
+  });
+
+  it("Import's request shape (no flag) is unchanged: no flag passed, no reconciliation in the response", async () => {
+    mockRefresh.mockResolvedValueOnce(baseResult());
+    const response = await __lmsClassesRefreshRosterHandler(makeRequest());
+    expect(mockRefresh.mock.calls[0][0]).not.toHaveProperty("reconcileEnrollments");
+    expect(response).not.toHaveProperty("enrollmentReconciliation");
+  });
+
+  it("reconcileEnrollments: false behaves exactly like Import", async () => {
+    mockRefresh.mockResolvedValueOnce(baseResult());
+    await __lmsClassesRefreshRosterHandler(
+      makeRequest({ data: { classId: "class-1", reconcileEnrollments: false } }),
+    );
+    expect(mockRefresh.mock.calls[0][0]).not.toHaveProperty("reconcileEnrollments");
+  });
+
+  it.each(["yes", 1, null, {}])("rejects a non-boolean reconcileEnrollments (%p) before any work", async (value) => {
+    await expect(
+      __lmsClassesRefreshRosterHandler(
+        makeRequest({ data: { classId: "class-1", reconcileEnrollments: value } }),
+      ),
+    ).rejects.toMatchObject({ code: "lms.invalidRequest" });
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it("the reconciliation response carries counts only (no identifiers)", async () => {
+    mockRefresh.mockResolvedValueOnce(
+      baseResult({ enrollmentReconciliation: { ...reconciliation, studentIds: ["uid-x"] } }),
+    );
+    const response = await __lmsClassesRefreshRosterHandler(
+      makeRequest({ data: { classId: "class-1", reconcileEnrollments: true } }),
+    );
+    expect(Object.keys(response.enrollmentReconciliation ?? {}).sort()).toEqual(
+      Object.keys(reconciliation).sort(),
+    );
+  });
+});

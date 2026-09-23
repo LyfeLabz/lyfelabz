@@ -39,6 +39,7 @@ const mockEnrollmentStatusChangeDocRef = jest.fn(() => ({
 }));
 
 const mockResolveActiveExternalIdentity = jest.fn();
+const mockWriteAuditEvent = jest.fn();
 
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
@@ -69,6 +70,16 @@ jest.mock("../../shared", () => {
     enrollmentCreationDocRef: mockEnrollmentCreationDocRef,
     enrollmentDocRef: mockEnrollmentDocRef,
     enrollmentStatusChangeDocRef: mockEnrollmentStatusChangeDocRef,
+    // Classroom withdrawals go through the provenance-stamping primitive's
+    // narrow ref, inside a transaction (a pass-through fake here).
+    enrollmentClassroomWithdrawalDocRef: mockEnrollmentStatusChangeDocRef,
+    runFirestoreTransaction: async (
+      fn: (tx: {
+        get: (ref: { get: () => unknown }) => unknown;
+        update: (ref: { update: (d: unknown) => unknown }, d: unknown) => unknown;
+      }) => unknown,
+    ) => fn({ get: (ref) => ref.get(), update: (ref, d) => ref.update(d) }),
+    writeAuditEvent: mockWriteAuditEvent,
     enrollmentsCollectionRef: mockEnrollmentsCollectionRef,
     lmsClassLinksCollectionRef: mockLmsClassLinksCollectionRef,
     lmsConnectionDocRef: mockLmsConnectionDocRef,
@@ -361,10 +372,21 @@ describe("synchronizeClassRoster (Sprint 23C)", () => {
     expect(summary.added).toBe(0);
     expect(summary.unchanged).toBe(1);
     expect(mockEnrollmentStatusChangeUpdate).toHaveBeenCalledTimes(1);
+    // Withdrawal provenance: caused by Classroom sync, for this link.
     expect(mockEnrollmentStatusChangeUpdate).toHaveBeenCalledWith({
       status: "withdrawn",
       exitedAt: "__ts__",
+      exitSource: "lmsRosterSync",
+      exitLinkId: LINK_ID,
     });
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "lms.classroomEnrollmentWithdrawn",
+        actorUserId: TEACHER_UID,
+        targetType: "enrollment",
+        targetId: eid("student-999"),
+      }),
+    );
   });
 
   it("counts unresolved roster members and continues processing the rest", async () => {

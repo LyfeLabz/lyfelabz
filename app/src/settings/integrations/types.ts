@@ -145,20 +145,11 @@ export type IntegrationsCallables = {
   }>;
   // Sprint 29G.5K-2: capture the imported class's current Google Classroom
   // roster membership into the trusted server-only membership cache. This is
-  // the roster step of the single Import Class workflow (never a separate
-  // teacher action). The response carries only deterministic membership
+  // the roster step of the single Import Class workflow, and (with
+  // `reconcileEnrollments`) the teacher's manual "Refresh roster from Google
+  // Classroom" in Class settings. The response carries only deterministic
   // counts - no student identity, no Google identifier, no token.
-  readonly refreshRoster: (input: {
-    readonly classId: string;
-  }) => Promise<{
-    readonly classId: string;
-    readonly membersSeen: number;
-    readonly added: number;
-    readonly reaffirmed: number;
-    readonly removed: number;
-    readonly withdrawnEnrollments: number;
-    readonly upstreamRosterEmpty: boolean;
-  }>;
+  readonly refreshRoster: RefreshRoster;
   // Sprint 8D authorized scope expansion: topic listing and assignment
   // publication. Every other previously excluded capability remains
   // absent from this interface.
@@ -270,6 +261,46 @@ export type AssignmentsLifecycleState =
   | "onePublishedMissingRecipients"
   | "multiplePublished"
   | "historicalOnly";
+
+// `lmsClassesRefreshRoster` (see `IntegrationsCallables.refreshRoster`).
+// `reconcileEnrollments` is sent only by the teacher's manual refresh in
+// Class settings; Import never sends it.
+export type RefreshRosterInput = {
+  readonly classId: string;
+  readonly reconcileEnrollments?: boolean;
+};
+
+// Present only for a `reconcileEnrollments` refresh. Counts only.
+export type RefreshRosterEnrollmentReconciliation = {
+  // Existing LyfeLabz students newly enrolled in this class.
+  readonly added: number;
+  readonly alreadyEnrolled: number;
+  // Students restored to this class because they returned to the Classroom
+  // class (their Classroom-withdrawn enrollment reactivated; never "new").
+  readonly reactivated: number;
+  // Classroom students who join this class on their first LyfeLabz sign-in.
+  readonly awaitingFirstSignIn: number;
+  // Students whose earlier enrollment in this class ended and is not
+  // eligible for automatic restoration; left as it is.
+  readonly notReactivated: number;
+  // Classroom accounts that could not be safely matched to this class.
+  readonly notMatched: number;
+  // Students no longer in Classroom, withdrawn (their work is kept).
+  readonly withdrawn: number;
+};
+
+export type RefreshRosterResult = {
+  readonly classId: string;
+  readonly membersSeen: number;
+  readonly added: number;
+  readonly reaffirmed: number;
+  readonly removed: number;
+  readonly withdrawnEnrollments: number;
+  readonly upstreamRosterEmpty: boolean;
+  readonly enrollmentReconciliation?: RefreshRosterEnrollmentReconciliation;
+};
+
+export type RefreshRoster = (input: RefreshRosterInput) => Promise<RefreshRosterResult>;
 
 // Historical Assignment Resolution, Implementation Slice 9. The canonical
 // public Current-resolution vocabulary, mirroring the server's Slice 8

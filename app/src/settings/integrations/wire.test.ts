@@ -25,7 +25,7 @@ jest.mock("firebase/firestore", () => ({
 
 import type { Functions } from "firebase/functions";
 import type { ListClasses } from "../../classes/listClasses";
-import { createAssignmentsCallables, createIntegrationsDeps } from "./wire";
+import { createAssignmentsCallables, createIntegrationsDeps, createLmsCallables } from "./wire";
 
 function makeWin(origin: string): Window {
   const win = {
@@ -661,5 +661,62 @@ describe("createAssignmentsCallables currentSet", () => {
     await expect(callCurrentSet()).rejects.toThrow(
       "assignmentsCurrentSet returned an unexpected shape.",
     );
+  });
+});
+
+describe("createLmsCallables refreshRoster: manual reconciliation passthrough and parsing", () => {
+  beforeEach(() => {
+    callableResponses.clear();
+  });
+
+  const base = {
+    classId: "c1",
+    membersSeen: 20,
+    added: 0,
+    reaffirmed: 20,
+    removed: 1,
+    withdrawnEnrollments: 1,
+    upstreamRosterEmpty: false,
+  };
+
+  it("sends the request as given (Import: classId only; manual: reconcileEnrollments) and parses the reconciliation counts", async () => {
+    const sent: unknown[] = [];
+    callableResponses.set("lmsClassesRefreshRoster", ((input: unknown) => {
+      sent.push(input);
+      return Promise.resolve({
+        data: {
+          ...base,
+          enrollmentReconciliation: {
+            added: 2,
+            alreadyEnrolled: 17,
+            reactivated: 1,
+            awaitingFirstSignIn: 1,
+            notReactivated: 0,
+            notMatched: 0,
+            withdrawn: 1,
+          },
+        },
+      });
+    }) as never);
+    const callables = createLmsCallables({} as Functions);
+    const out = await callables.refreshRoster({ classId: "c1", reconcileEnrollments: true });
+    await callables.refreshRoster({ classId: "c1" });
+    expect(sent).toEqual([{ classId: "c1", reconcileEnrollments: true }, { classId: "c1" }]);
+    expect(out.enrollmentReconciliation).toEqual({
+      added: 2,
+      alreadyEnrolled: 17,
+      reactivated: 1,
+      awaitingFirstSignIn: 1,
+      notReactivated: 0,
+      notMatched: 0,
+      withdrawn: 1,
+    });
+  });
+
+  it("omits enrollmentReconciliation when the server sends none (Import response)", async () => {
+    callableResponses.set("lmsClassesRefreshRoster", async () => ({ data: base }));
+    const out = await createLmsCallables({} as Functions).refreshRoster({ classId: "c1" });
+    expect(out).not.toHaveProperty("enrollmentReconciliation");
+    expect(out.withdrawnEnrollments).toBe(1);
   });
 });

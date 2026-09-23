@@ -1785,8 +1785,11 @@ describe("29F - roster sync unresolved teacher guidance", () => {
   });
 });
 
-// Sprint 29G.5K-3 - automatic class-open roster freshness
-describe("29G.5K-3: automatic class-open roster freshness", () => {
+// Google Classroom roster synchronization is teacher-controlled (Class
+// settings > Refresh roster from Google Classroom). Opening a class never
+// calls Google Classroom; see classes.roster-refresh.test.ts for the manual
+// action.
+describe("opening a class never refreshes the Google Classroom roster", () => {
   const ACTIVE_LMS_ID = "cid-lms-active-29k3";
   const MANUAL_ID = "cid-manual-29k3";
   const NEEDS_SETUP_LMS_ID = "cid-lms-setup-29k3";
@@ -1822,181 +1825,49 @@ describe("29G.5K-3: automatic class-open roster freshness", () => {
       .click();
   };
 
-  test("opening an active LMS-backed class triggers one best-effort refreshRoster call", async () => {
+  test.each([
+    ["an active Classroom-linked class", activeLmsSummary],
+    ["a LyfeLabz-native class", manualSummary],
+    ["a Classroom-linked class still in setup", needsSetupLmsSummary],
+  ])("opening %s makes zero refreshRoster calls", async (_label, summary) => {
     const mount = mkMount();
-    const refreshCalls: string[] = [];
-    const refreshRoster = async ({ classId }: { classId: string }): Promise<void> => {
-      refreshCalls.push(classId);
-    };
+    const refreshRoster = jest.fn();
+    renderClassesSurface(mount, teacher, {
+      listClasses: async () => [summary],
+      refreshRoster,
+    });
+    await flush();
+    await flush();
+    clickCard(mount, summary.id);
+    await flush();
+    await flush();
+    expect(refreshRoster).not.toHaveBeenCalled();
+  });
+
+  test("an active Classroom-linked class opens normally and shows no Sync roster button", async () => {
+    const mount = mkMount();
     renderClassesSurface(mount, teacher, {
       listClasses: async () => [activeLmsSummary],
-      refreshRoster,
+      refreshRoster: jest.fn(),
     });
     await flush();
     await flush();
     clickCard(mount, ACTIVE_LMS_ID);
     await flush();
-    expect(refreshCalls).toEqual([ACTIVE_LMS_ID]);
-  });
-
-  test("opening a manual LyfeLabz class does NOT trigger refreshRoster", async () => {
-    const mount = mkMount();
-    const refreshCalls: string[] = [];
-    const refreshRoster = async ({ classId }: { classId: string }): Promise<void> => {
-      refreshCalls.push(classId);
-    };
-    renderClassesSurface(mount, teacher, {
-      listClasses: async () => [manualSummary],
-      refreshRoster,
-    });
-    await flush();
-    await flush();
-    clickCard(mount, MANUAL_ID);
-    await flush();
-    expect(refreshCalls).toEqual([]);
-  });
-
-  test("opening a needsSetup LMS class does NOT trigger refreshRoster (not yet active)", async () => {
-    const mount = mkMount();
-    const refreshCalls: string[] = [];
-    const refreshRoster = async ({ classId }: { classId: string }): Promise<void> => {
-      refreshCalls.push(classId);
-    };
-    renderClassesSurface(mount, teacher, {
-      listClasses: async () => [needsSetupLmsSummary],
-      refreshRoster,
-    });
-    await flush();
-    await flush();
-    clickCard(mount, NEEDS_SETUP_LMS_ID);
-    await flush();
-    expect(refreshCalls).toEqual([]);
-  });
-
-  test("a failing refreshRoster does NOT block or break the class workspace", async () => {
-    const mount = mkMount();
-    let refreshFailed = false;
-    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
-    const refreshRoster = async (): Promise<void> => {
-      refreshFailed = true;
-      throw new Error("Classroom API unavailable");
-    };
-    renderClassesSurface(mount, teacher, {
-      listClasses: async () => [activeLmsSummary],
-      refreshRoster,
-    });
-    await flush();
-    await flush();
-    clickCard(mount, ACTIVE_LMS_ID);
-    await flush();
-    await flush(); // let the rejected promise settle
-
-    // Refresh fired and failed.
-    expect(refreshFailed).toBe(true);
-    // The class workspace is still open - no error state replaced it.
-    const workspace = mount.querySelector("[data-testid=class-workspace]");
-    expect(workspace).not.toBeNull();
-    // No Sync roster button appeared as a result of the failure.
+    expect(mount.querySelector("[data-testid=class-workspace]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=class-rostersync-button]")).toBeNull();
-    warnSpy.mockRestore();
   });
 
-  test("class workspace is immediately available even before refreshRoster resolves", async () => {
+  test("refreshRoster not wired: a Classroom-linked class still opens normally", async () => {
     const mount = mkMount();
-    let resolveRefresh!: () => void;
-    const refreshRoster = (): Promise<void> =>
-      new Promise<void>((res) => {
-        resolveRefresh = res;
-      });
     renderClassesSurface(mount, teacher, {
       listClasses: async () => [activeLmsSummary],
-      refreshRoster,
     });
     await flush();
     await flush();
     clickCard(mount, ACTIVE_LMS_ID);
     await flush();
-
-    // Workspace is open before the refresh resolves.
-    expect(
-      mount.querySelector("[data-testid=class-workspace]"),
-    ).not.toBeNull();
-
-    // Resolve the pending refresh - workspace remains intact.
-    resolveRefresh();
-    await flush();
-    expect(
-      mount.querySelector("[data-testid=class-workspace]"),
-    ).not.toBeNull();
-  });
-
-  test("in-flight guard: a refreshRoster still pending when class opens does not double-call on rerender", async () => {
-    // Verifies the in-flight Set prevents concurrent duplicate calls.
-    // onOpenClass is state-guarded ("kind !== list" blocks re-entry from
-    // workspace state), so the observable contract is: one open → exactly
-    // one call, with the class workspace available immediately before the
-    // refresh resolves.
-    const mount = mkMount();
-    let refreshCallCount = 0;
-    let resolveRefresh!: () => void;
-    const refreshRoster = (): Promise<void> => {
-      refreshCallCount += 1;
-      return new Promise<void>((res) => {
-        resolveRefresh = res;
-      });
-    };
-    renderClassesSurface(mount, teacher, {
-      listClasses: async () => [activeLmsSummary],
-      refreshRoster,
-    });
-    await flush();
-    await flush();
-
-    // Open the class - refresh goes in-flight.
-    clickCard(mount, ACTIVE_LMS_ID);
-    await flush();
-
-    // Exactly one call; workspace is open.
-    expect(refreshCallCount).toBe(1);
     expect(mount.querySelector("[data-testid=class-workspace]")).not.toBeNull();
-
-    // Resolve the refresh - workspace remains intact, no second call.
-    resolveRefresh();
-    await flush();
-    expect(refreshCallCount).toBe(1);
-    expect(mount.querySelector("[data-testid=class-workspace]")).not.toBeNull();
-  });
-
-  test("refreshRoster not wired: LMS class still opens normally", async () => {
-    const mount = mkMount();
-    renderClassesSurface(mount, teacher, {
-      listClasses: async () => [activeLmsSummary],
-      // No refreshRoster dep wired.
-    });
-    await flush();
-    await flush();
-    clickCard(mount, ACTIVE_LMS_ID);
-    await flush();
-    // Class opened normally with no crash.
-    expect(
-      mount.querySelector("[data-testid=class-workspace]"),
-    ).not.toBeNull();
-  });
-
-  test("Sprint 29G.5K-3: NO Sync roster button appears after automatic class-open refresh", async () => {
-    const mount = mkMount();
-    const refreshRoster = async (): Promise<void> => {};
-    renderClassesSurface(mount, teacher, {
-      listClasses: async () => [activeLmsSummary],
-      refreshRoster,
-    });
-    await flush();
-    await flush();
-    clickCard(mount, ACTIVE_LMS_ID);
-    await flush();
-    expect(
-      mount.querySelector("[data-testid=class-rostersync-button]"),
-    ).toBeNull();
   });
 });
 

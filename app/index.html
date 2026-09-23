@@ -4207,11 +4207,19 @@
     overflow-y: auto;
     box-sizing: border-box;
   }
-  .shell-classes-settings-color-label {
+  .shell-classes-settings-color-label,
+  .shell-classes-settings-section-label {
     display: block;
     font-size: 0.9rem;
     color: #333;
     margin: 0.1rem 0 0.2rem 0;
+  }
+  /* Class settings > Google Classroom roster: the teacher-controlled
+     "Refresh roster from Google Classroom" action (reusing the quiet
+     roster-sync button and its aria-live status line) sits between Color
+     and Save/Cancel as its own section; it never submits the form. */
+  .shell-classes-settings-roster {
+    margin: 0.2rem 0 0.4rem 0;
   }
   /* Curated palette swatches, never a free-form picker. Each swatch is
      a small filled circle in its own token color; "None" is an outlined

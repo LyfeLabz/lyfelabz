@@ -31,7 +31,12 @@ import type {
 } from "../../classes/importFromClassroom";
 import { createImportFromClassroom } from "../../classes/importFromClassroom";
 import type { LoadClassRosterAccessor } from "../../classes/classRoster";
-import type { IntegrationsLmsClass } from "../../settings/integrations/types";
+import type {
+  IntegrationsLmsClass,
+  RefreshRoster,
+  RefreshRosterResult,
+} from "../../settings/integrations/types";
+import { classifyRosterSyncError } from "../../classes/rosterSyncError";
 import type { TeacherDefaultGrade } from "../../teacherPreferences/types";
 import {
   isTeacherDefaultGrade,
@@ -248,14 +253,13 @@ export type ClassesSurfaceDeps = {
   // the automatic initial sync is skipped without altering activation
   // behavior.
   readonly syncRoster?: SyncRoster | null;
-  // Sprint 29G.5K-3: best-effort membership freshness callable. When wired,
-  // the surface fires `lmsClassesRefreshRoster` once per class-open event for
-  // LMS-backed classes so newly added Classroom students are captured without
-  // a teacher action. Fire-and-forget: a refresh failure never blocks class
-  // use; the last-known-good membership state remains authoritative.
-  readonly refreshRoster?:
-    | ((input: { readonly classId: string }) => Promise<unknown>)
-    | null;
+  // Teacher-controlled Google Classroom roster refresh
+  // (`lmsClassesRefreshRoster` with enrollment reconciliation), offered as
+  // "Refresh roster from Google Classroom" in Class settings for an active
+  // Classroom-linked class. Opening a class NEVER calls it: the existing
+  // LyfeLabz roster stays authoritative until the teacher asks for a
+  // refresh. Null when not wired (the action is then not offered).
+  readonly refreshRoster?: RefreshRoster | null;
   // Sprint 29G.5P: teacher Students-tab roster reader. When wired, the class
   // workspace's Students tab lists the real active canonical enrollments for
   // the class (via `enrollmentsListForClass`). Null in test harnesses that do
@@ -564,23 +568,16 @@ export function renderClassesSurface(
       };
   const rosterSyncByClass: Map<string, RosterSyncEntry> = new Map();
 
-  // Sprint 29G.5K-3: tracks class-open membership refreshes currently in
-  // flight so a rapid re-open of the same class does not double-call.
-  // Membership is removed on completion (success or failure) so a later
-  // genuine re-open can trigger another refresh.
-  // In-flight class-open membership refreshes, by class, so the roster
-  // prefetch for that class can wait for the refresh it depends on.
-  const rosterRefreshInFlight: Map<string, Promise<void>> = new Map();
-
   // Students-tab roster for the CURRENTLY OPEN class only (at most one entry,
   // in memory, for this mount's lifetime - never persisted, never one per
   // class). Opening a class starts a fresh fetch in the background, without
   // blocking the Assignments view, so switching to Students normally renders
   // the already-resolved roster with no loading state; switching tabs never
-  // refetches. Freshness boundaries: every class open fetches anew (after
-  // that open's membership refresh), leaving for the Classes list drops the
-  // entry, a roster sync invalidates it, and a failed fetch is never kept -
-  // the next Students visit retries. A response for a class that is no longer
+  // refetches. Freshness boundaries: every class open fetches anew (the read
+  // starts immediately and never waits on Google Classroom), leaving for the
+  // Classes list drops the entry, a roster sync or a teacher's manual
+  // Classroom refresh invalidates it, and a failed fetch is never kept - the
+  // next Students visit retries. A response for a class that is no longer
   // the open one is discarded. Authorization is entirely server-side
   // (`enrollmentsListForClass`); this only decides WHEN the read happens.
   type RosterEntry =
@@ -589,15 +586,10 @@ export function renderClassesSurface(
     | { readonly classId: string; readonly status: "error" };
   let currentRoster: RosterEntry | null = null;
 
-  const startClassRosterFetch = (
-    classId: string,
-    after?: Promise<unknown>,
-  ): RosterEntry | null => {
+  const startClassRosterFetch = (classId: string): RosterEntry | null => {
     const loader = loadRoster?.() ?? null;
     if (loader === null) return null;
-    const promise = (after ?? Promise.resolve())
-      .then(() => loader({ classId }))
-      .then((result) => result.students);
+    const promise = loader({ classId }).then((result) => result.students);
     const entry: RosterEntry = { classId, status: "pending", promise };
     currentRoster = entry;
     promise.then(
@@ -930,6 +922,17 @@ export function renderClassesSurface(
     settingsOverlay = renderClassSettingsModal(doc, summary, classColors[classId] ?? null, {
       canEditMetadata: updateClassMetadata !== null,
       canEditColor: updateClassColor !== null,
+      // Teacher-controlled Classroom roster refresh: only for an active
+      // class linked to Google Classroom (never a LyfeLabz-native class).
+      refreshRoster:
+        refreshRoster !== null && summary.isLmsLinked === true
+          ? () => refreshRoster({ classId, reconcileEnrollments: true })
+          : null,
+      // The class's enrollments may have changed: a held roster for it is
+      // stale, so the next Students view reads it again.
+      onRosterRefreshed: () => {
+        if (currentRoster?.classId === classId) currentRoster = null;
+      },
       onCancel: closeClassSettings,
       // Resolving closes the modal (handled here, not by the modal
       // itself, since only this closure can update `state`/`classColors`
@@ -1004,37 +1007,13 @@ export function renderClassesSurface(
     // Sprint 28.6H.3 (Task B2): an active class opens directly on Assignments
     // ("what is happening with my students" is the everyday question), not the
     // removed Overview. Overview/Snapshot is no longer a reachable tab.
-    // Sprint 29G.5K-3: best-effort membership freshness on class open.
-    // Fires only for active LMS-backed classes (needsSetup classes have no
-    // enrolled students yet and do not need a refresh). Never blocks the
-    // class from opening; a failure is logged for engineering diagnosis but
-    // does not surface to the teacher or alter the class workspace.
-    if (
-      refreshRoster !== null &&
-      summary?.isLmsLinked === true &&
-      summary.status === "active" &&
-      !rosterRefreshInFlight.has(classId)
-    ) {
-      const refreshing = refreshRoster({ classId })
-        .then(() => undefined)
-        .catch((err: unknown) => {
-          // Best-effort: class remains open with last-known-good membership.
-          if (typeof console !== "undefined") {
-            console.warn("[LyfeLabz] class-open roster refresh failed:", err);
-          }
-        })
-        .finally(() => {
-          rosterRefreshInFlight.delete(classId);
-        });
-      rosterRefreshInFlight.set(classId, refreshing);
-    }
-    // Students-tab roster prefetch for THIS class only, in the background
-    // (never blocks the Assignments view). Every class open fetches anew,
-    // and it waits for this open's membership refresh (if any) so the
-    // prefetched roster is never older than what a later Students click
-    // would previously have fetched.
+    // Opening a class makes NO Google Classroom call: Classroom roster
+    // synchronization is teacher-controlled (Class settings > Refresh roster
+    // from Google Classroom). The existing LyfeLabz roster for THIS class is
+    // read immediately, in the background (never blocking the Assignments
+    // view), and every class open reads it anew.
     if (summary?.status === "active") {
-      startClassRosterFetch(classId, rosterRefreshInFlight.get(classId));
+      startClassRosterFetch(classId);
     }
     state = {
       kind: "workspace",
@@ -3072,6 +3051,10 @@ export type ClassSettingsPatch = {
 type ClassSettingsModalDeps = {
   readonly canEditMetadata: boolean;
   readonly canEditColor: boolean;
+  // Manual "Refresh roster from Google Classroom". Null hides the section
+  // (not a Classroom-linked class, or not wired).
+  readonly refreshRoster: (() => Promise<RefreshRosterResult>) | null;
+  readonly onRosterRefreshed: () => void;
   readonly onCancel: () => void;
   // Resolving closes the modal (the caller is responsible for actually
   // removing it, since only the caller can update its own state);
@@ -3080,6 +3063,84 @@ type ClassSettingsModalDeps = {
 };
 
 const MAX_CLASS_TITLE_LENGTH = 60;
+
+const countOf = (n: number, one: string, many: string): string =>
+  `${n} ${n === 1 ? one : many}`;
+
+// Teacher-facing summary of a manual Classroom roster refresh, built only
+// from the server's counts. A student is described as "added" only when an
+// enrollment was actually created, and as "restored" (never "new") when a
+// Classroom-withdrawn enrollment was reactivated because they returned; a
+// Classroom student who has not signed in yet is described as joining on
+// first sign-in. Withdrawn students are "removed from this class" with their
+// work kept - never "deleted".
+export function describeRosterRefreshResult(result: RefreshRosterResult): string {
+  const parts = ["Roster refreshed from Google Classroom."];
+  const r = result.enrollmentReconciliation;
+  if (r === undefined) return parts[0];
+  if (r.added > 0) {
+    parts.push(`${countOf(r.added, "student", "students")} added to this class.`);
+  }
+  if (r.reactivated > 0) {
+    parts.push(
+      r.reactivated === 1
+        ? "1 student who returned to Google Classroom was restored to this class."
+        : `${r.reactivated} students who returned to Google Classroom were restored to this class.`,
+    );
+  }
+  if (r.awaitingFirstSignIn > 0) {
+    parts.push(
+      r.awaitingFirstSignIn === 1
+        ? "1 student will join after signing in to LyfeLabz for the first time."
+        : `${r.awaitingFirstSignIn} students will join after signing in to LyfeLabz for the first time.`,
+    );
+  }
+  if (r.withdrawn > 0) {
+    parts.push(
+      r.withdrawn === 1
+        ? "1 student no longer in Google Classroom was removed from this class. Their work is kept."
+        : `${r.withdrawn} students no longer in Google Classroom were removed from this class. Their work is kept.`,
+    );
+  }
+  if (result.upstreamRosterEmpty) {
+    parts.push("Google Classroom returned no students, so no one was removed.");
+  }
+  if (r.notReactivated > 0) {
+    parts.push(
+      r.notReactivated === 1
+        ? "1 student previously removed from this class could not be restored automatically."
+        : `${r.notReactivated} students previously removed from this class could not be restored automatically.`,
+    );
+  }
+  if (r.notMatched > 0) {
+    parts.push(
+      r.notMatched === 1
+        ? "1 Google Classroom account could not be matched to a student in this school."
+        : `${r.notMatched} Google Classroom accounts could not be matched to a student in this school.`,
+    );
+  }
+  if (parts.length === 1) parts.push("No changes were needed.");
+  return parts.join(" ");
+}
+
+// Recovery guidance for a failed manual refresh, reusing the Classroom
+// roster error vocabulary. A failure can follow partial (idempotent) server
+// writes, so no message claims the roster is unchanged.
+export function describeRosterRefreshError(err: unknown): string {
+  switch (classifyRosterSyncError(err).kind) {
+    case "reconnectRequired":
+      return "Google Classroom access needs to be reconnected. Open Settings to reconnect, then try again.";
+    case "linkBroken":
+      return "This class's Google Classroom course could not be reached. Confirm the course is still available and try again.";
+    case "classNotActive":
+      return "This class is no longer active, so its roster cannot be refreshed.";
+    case "transient":
+      return "We could not reach Google Classroom just now. It is safe to try again in a moment.";
+    case "unknown":
+    default:
+      return "The roster refresh did not finish. It is safe to try again.";
+  }
+}
 
 function describeClassSettingsError(err: unknown): string {
   if (err && typeof err === "object" && "code" in err) {
@@ -3253,6 +3314,68 @@ function renderClassSettingsModal(
     makeColorButton(token, CLASS_COLOR_LABELS[token]);
   }
   refreshColorSelection();
+
+  // Google Classroom roster: an independent, teacher-controlled action. It
+  // is a plain (non-submit) button, so it never triggers Save and never
+  // changes any other class setting; Cancel/Escape still close the dialog.
+  const refreshRosterAction = deps.refreshRoster;
+  if (refreshRosterAction !== null) {
+    const section = doc.createElement("div");
+    section.className = "shell-classes-settings-roster";
+    section.setAttribute("data-testid", "classes-settings-roster");
+
+    const sectionLabel = doc.createElement("span");
+    sectionLabel.className = "shell-classes-settings-section-label";
+    sectionLabel.textContent = "Google Classroom roster";
+    section.appendChild(sectionLabel);
+
+    const refreshButton = doc.createElement("button");
+    refreshButton.type = "button";
+    refreshButton.className = "shell-class-rostersync-button";
+    refreshButton.setAttribute("data-testid", "classes-settings-roster-refresh");
+    const idleLabel = "Refresh roster from Google Classroom";
+    refreshButton.textContent = idleLabel;
+    section.appendChild(refreshButton);
+
+    const refreshStatus = doc.createElement("p");
+    refreshStatus.className = "shell-class-rostersync-status";
+    refreshStatus.setAttribute("data-testid", "classes-settings-roster-status");
+    refreshStatus.setAttribute("role", "status");
+    refreshStatus.setAttribute("aria-live", "polite");
+    section.appendChild(refreshStatus);
+
+    let refreshing = false;
+    refreshButton.addEventListener("click", () => {
+      if (refreshing) return;
+      refreshing = true;
+      refreshButton.disabled = true;
+      refreshButton.setAttribute("aria-busy", "true");
+      refreshButton.textContent = "Refreshing roster\u2026";
+      refreshStatus.textContent = "";
+      refreshStatus.removeAttribute("data-roster-refresh-outcome");
+      refreshRosterAction().then(
+        (result) => {
+          deps.onRosterRefreshed();
+          refreshStatus.textContent = describeRosterRefreshResult(result);
+          refreshStatus.setAttribute("data-roster-refresh-outcome", "ok");
+        },
+        (err: unknown) => {
+          // A failure may follow partial (idempotent) server writes, so the
+          // held roster is dropped too; the message never claims "unchanged".
+          deps.onRosterRefreshed();
+          refreshStatus.textContent = describeRosterRefreshError(err);
+          refreshStatus.setAttribute("data-roster-refresh-outcome", "error");
+        },
+      ).finally(() => {
+        refreshing = false;
+        refreshButton.disabled = false;
+        refreshButton.removeAttribute("aria-busy");
+        refreshButton.textContent = idleLabel;
+      });
+    });
+
+    formEl.appendChild(section);
+  }
 
   const errorMessage = doc.createElement("p");
   errorMessage.className = "shell-classes-create-error";

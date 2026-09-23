@@ -16,6 +16,7 @@ import type { ImportFromClassroomDeps } from "../classes/importFromClassroom";
 import type {
   AssignmentsCallables,
   IntegrationsDeps,
+  RefreshRoster,
 } from "../settings/integrations/types";
 import { renderHeader } from "./header";
 import { renderNavigation, type WorkspaceSurfaceKey } from "./navigation";
@@ -121,10 +122,9 @@ export type ShellDeps = {
   // consumed by the LMS class workspace for the automatic initial sync
   // after activation and for the manual "Sync roster" affordance.
   readonly syncRoster?: SyncRoster | null;
-  // Sprint 29G.5K-3: best-effort class-open membership freshness callable.
-  readonly refreshRoster?:
-    | ((input: { readonly classId: string }) => Promise<unknown>)
-    | null;
+  // Teacher-controlled Google Classroom roster refresh (Class settings);
+  // never called on class open.
+  readonly refreshRoster?: RefreshRoster | null;
   // Sprint 29G.5P: teacher Students-tab roster reader seam.
   readonly loadRoster?: LoadClassRosterAccessor | null;
   // Student Detail V1: lazy accessor for assessmentAttemptsListForClass.

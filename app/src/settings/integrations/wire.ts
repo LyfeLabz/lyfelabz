@@ -55,6 +55,10 @@ function readArray<T>(
   return Object.freeze(out);
 }
 
+function isRecord(v: unknown): v is CallableRecord {
+  return v !== null && typeof v === "object" && !Array.isArray(v);
+}
+
 function readString(v: unknown): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
@@ -224,6 +228,19 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
         removed: num(data.removed),
         withdrawnEnrollments: num(data.withdrawnEnrollments),
         upstreamRosterEmpty: data.upstreamRosterEmpty === true,
+        ...(isRecord(data.enrollmentReconciliation)
+          ? {
+              enrollmentReconciliation: Object.freeze({
+                added: num(data.enrollmentReconciliation.added),
+                alreadyEnrolled: num(data.enrollmentReconciliation.alreadyEnrolled),
+                reactivated: num(data.enrollmentReconciliation.reactivated),
+                awaitingFirstSignIn: num(data.enrollmentReconciliation.awaitingFirstSignIn),
+                notReactivated: num(data.enrollmentReconciliation.notReactivated),
+                notMatched: num(data.enrollmentReconciliation.notMatched),
+                withdrawn: num(data.enrollmentReconciliation.withdrawn),
+              }),
+            }
+          : {}),
       });
     },
     refreshClass: async (input) => {

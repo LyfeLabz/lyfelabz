@@ -6,14 +6,12 @@ import {
   classDocRef,
   enrollmentCreationDocRef,
   enrollmentDocRef,
-  enrollmentStatusChangeDocRef,
   enrollmentsCollectionRef,
   lmsClassLinksCollectionRef,
   lmsConnectionDocRef,
   log,
   resolveActiveExternalIdentity,
   type EnrollmentCreationWrite,
-  type EnrollmentStatusChangeWrite,
   type LmsClassLinkRecord,
   type LmsConnectionRecord,
   type LmsProviderId,
@@ -23,6 +21,7 @@ import { getProviderAdapter } from "../providers/registry";
 import type { LmsProviderAdapter, LmsRosterStudent } from "../providers/provider";
 import { resolveLiveCredential } from "../tokens/credential-resolver";
 import { enrollmentIdFor } from "../../enrollments/enrollments-join-by-code";
+import { withdrawEnrollmentForClassroomSync } from "../../enrollments/classroom-enrollment-lifecycle";
 
 // Provider-neutral roster synchronization engine.
 //
@@ -68,7 +67,9 @@ import { enrollmentIdFor } from "../../enrollments/enrollments-join-by-code";
 // path once the lifecycle table admits a reactivation transition.
 //
 // Removals apply the single authorized exit transition for LMS-driven
-// reconciliation: `active -> withdrawn`. `archived` is reserved for
+// reconciliation: `active -> withdrawn`, recorded with Classroom provenance
+// (`exitSource: "lmsRosterSync"`, `exitLinkId`) through the shared
+// `withdrawEnrollmentForClassroomSync` primitive. `archived` is reserved for
 // class-archival driven transitions and is not used by roster
 // synchronization.
 
@@ -313,6 +314,10 @@ async function applyPlan(input: {
   readonly classId: string;
   readonly schoolId: string;
   readonly plan: RosterSyncPlan;
+  // The link whose roster was reconciled and the teacher who ran the sync:
+  // recorded as withdrawal provenance and audit actor.
+  readonly linkId: string;
+  readonly actorUid: string;
 }): Promise<{ readonly added: number; readonly withdrawn: number }> {
   const { classId, schoolId, plan } = input;
   let added = 0;
@@ -352,16 +357,15 @@ async function applyPlan(input: {
         : 0,
   );
   for (const w of orderedWithdraws) {
-    const existing = await enrollmentDocRef(w.enrollmentId).get();
-    if (!existing.exists) continue;
-    const data = existing.data();
-    if (!data || data.status !== "active") continue;
-    const change: EnrollmentStatusChangeWrite = {
-      status: "withdrawn",
-      exitedAt: FieldValue.serverTimestamp(),
-    };
-    await enrollmentStatusChangeDocRef(w.enrollmentId).update(change);
-    withdrawn += 1;
+    // `active -> withdrawn` with Classroom provenance (`exitSource:
+    // "lmsRosterSync"`, `exitLinkId`) through the shared Classroom
+    // withdrawal primitive; a non-active enrollment is left as it is.
+    const didWithdraw = await withdrawEnrollmentForClassroomSync({
+      enrollmentId: w.enrollmentId,
+      linkId: input.linkId,
+      actorUid: input.actorUid,
+    });
+    if (didWithdraw) withdrawn += 1;
   }
 
   return { added, withdrawn };
@@ -473,6 +477,8 @@ export async function synchronizeClassRoster(
     classId,
     schoolId: classRecord.schoolId,
     plan,
+    linkId,
+    actorUid: actor.uid,
   });
 
   const summary: RosterSyncSummary = {

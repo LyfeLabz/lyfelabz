@@ -232,9 +232,15 @@ async function enrollmentsSetStatusHandler(
     input.status === "withdrawn" ||
     (input.status === "archived" && enrollment.status === "active");
 
+  // Withdrawal provenance (forward-only): a withdrawal through this callable
+  // is a TEACHER withdrawal. It is never attributed to a Classroom link, so
+  // it can never be restored by Classroom-managed reactivation.
   const write: EnrollmentStatusChangeWrite = {
     status: input.status,
     ...(stampsExitedAt ? { exitedAt: FieldValue.serverTimestamp() } : {}),
+    ...(input.status === "withdrawn"
+      ? { exitSource: "teacher" as const, exitLinkId: FieldValue.delete() }
+      : {}),
   };
 
   await enrollmentStatusChangeDocRef(input.enrollmentId).update(write);
@@ -252,6 +258,7 @@ async function enrollmentsSetStatusHandler(
       studentId: enrollment.studentId,
       previousStatus: enrollment.status,
       status: input.status,
+      ...(input.status === "withdrawn" ? { exitSource: "teacher" } : {}),
     },
   });
 

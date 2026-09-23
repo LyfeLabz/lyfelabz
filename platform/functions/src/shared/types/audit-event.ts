@@ -124,11 +124,29 @@ export const AUDIT_ACTIONS = [
   // authenticated student was enrolled by matching their own active
   // Google identity mapping against a stored `member` roster membership.
   // The audit target is the LyfeLabz `class`; the actor is the student.
+  // Also emitted (actor: the class's teacher, `source:
+  // "teacherRosterRefresh"`) when a teacher's manual roster refresh enrolls
+  // an ALREADY-active student newly found in the Classroom class, through
+  // the same canonical membership-enrollment step.
   // The payload carries only the provider id and a PII-free `source`
   // marker. It NEVER carries the identity hash, provider account
   // identifier, or any profile data. This distinguishes "enrollment
   // created from trusted membership" from `students.activated`.
   "lms.membershipEnrollmentCreated",
+  // Enrollment withdrawal provenance (forward-only). Emitted once per
+  // enrollment that Google Classroom roster synchronization withdrew
+  // (`active -> withdrawn`, stamped `exitSource: "lmsRosterSync"`) because
+  // the student is no longer in the linked Classroom class. Target: the
+  // `enrollment`; actor: the teacher whose refresh/sync ran. The payload
+  // carries only `classId`, `studentId`, and the provider id.
+  "lms.classroomEnrollmentWithdrawn",
+  // Classroom-managed reactivation (`withdrawn -> active`) of an enrollment
+  // that roster synchronization itself withdrew (`exitSource:
+  // "lmsRosterSync"` for the class's CURRENT link), because the student is
+  // back in that Classroom class. The same enrollment document is reused.
+  // Distinct from `lms.membershipEnrollmentCreated` (a NEW enrollment) and
+  // from `enrollments.statusChanged` (a teacher's manual transition).
+  "lms.classroomEnrollmentReactivated",
   // Sprint 26 Phase 1 - minimal consent-flow observability. Two PII-safe
   // durable outcomes on the incremental scope-widening path
   // (connections-complete.ts), which previously had structured logging
