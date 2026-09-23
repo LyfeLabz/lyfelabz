@@ -30,6 +30,7 @@ import type {
 import type {
   AssignmentsListForStudentCallable,
   AssignmentsListForStudentItem,
+  AssignmentsListForStudentResponse,
   HistoryOnlyGroup,
 } from "../../assignments/studentList/types";
 import {
@@ -1260,8 +1261,21 @@ export const makeActiveStudentSurface =
     // attempt, session, result, recipient, or enrollment. The only writing
     // path is the existing authorized launcher, reached solely by a student
     // clicking Open assignment.
+    // Progressive loading: the authoritative assignment list is the only
+    // read that decides WHICH tiles exist and which are launchable, so tiles
+    // render as soon as it arrives. The student's attempts are auxiliary
+    // (scores, attempt history, Completed status, history-only cards) and
+    // enrich the same tiles when they arrive. Until then the tiles render in
+    // the existing results-unavailable presentation (no status chip, score,
+    // or Completed treatment), so nothing is ever transiently mislabeled.
+    // Launch controls come only from the fresh server list, and every launch
+    // is still authorized server-side (session begin / deep-link resolve).
+    // `generation` discards the responses of a superseded load (Retry).
+    let generation = 0;
     const load = (): void => {
+      const current = ++generation;
       clear(panel);
+      panel.removeAttribute("aria-busy");
       if (assignmentsCallable === null) {
         // The primary seam is unavailable (e.g. a route transition raced the
         // wiring). Fall back to a calm empty state rather than prompting a
@@ -1270,37 +1284,82 @@ export const makeActiveStudentSurface =
         return;
       }
       renderLoadingIndicator(panel, "Loading your science");
-      const assignmentsRead = assignmentsCallable();
+      let listResponse: AssignmentsListForStudentResponse | null = null;
+      let listFailed = false;
+      // "pending" until the attempts read settles; null = unavailable
+      // (failed or no seam), which keeps the existing degraded presentation.
+      let attemptsState: ReadonlyArray<StudentAttemptSummary> | null | "pending" =
+        resultsCallable === null ? null : "pending";
+
+      const draw = (): void => {
+        if (current !== generation || listFailed || listResponse === null) return;
+        const items = listResponse.items ?? [];
+        // With no operational tile yet, a history card may still come from
+        // the attempts read: keep the loading state rather than flashing
+        // the "No science assignments yet" empty state.
+        if (attemptsState === "pending" && items.length === 0) return;
+        // Keep keyboard focus on the same launch control across the
+        // enrichment redraw.
+        const focused = doc.activeElement;
+        const focusedLaunch =
+          focused instanceof HTMLElement && panel.contains(focused)
+            ? focused.getAttribute("data-assignment-launch-url")
+            : null;
+        clear(panel);
+        const attempts = attemptsState === "pending" ? null : attemptsState;
+        if (attemptsState === "pending") panel.setAttribute("aria-busy", "true");
+        else panel.removeAttribute("aria-busy");
+        renderMyScience(
+          panel,
+          items,
+          new Set(listResponse.supersededAssignmentIds ?? []),
+          listResponse.historyOnlyGroups ?? [],
+          attempts,
+          launch,
+        );
+        if (focusedLaunch !== null) {
+          const again = Array.from(
+            panel.querySelectorAll<HTMLElement>("[data-assignment-launch-url]"),
+          ).find((el) => el.getAttribute("data-assignment-launch-url") === focusedLaunch);
+          again?.focus();
+        }
+      };
+
+      assignmentsCallable().then(
+        (response) => {
+          if (current !== generation) return;
+          listResponse = response;
+          draw();
+        },
+        () => {
+          if (current !== generation) return;
+          // The primary (assignments) read failed. Show a calm, recoverable
+          // error with a retry that re-invokes the read. No Firebase code,
+          // callable name, or Firestore path is ever exposed.
+          listFailed = true;
+          clear(panel);
+          panel.removeAttribute("aria-busy");
+          renderMyScienceError(panel, load);
+        },
+      );
       // Results are auxiliary: a results failure degrades the surface (no
       // scores / tiers) rather than failing the whole page, so a student can
       // always still open their work. A missing seam is treated the same as
       // a failed read: null => degraded (Task 16).
-      const resultsRead: Promise<ReadonlyArray<StudentAttemptSummary> | null> =
-        resultsCallable === null
-          ? Promise.resolve(null)
-          : resultsCallable()
-              .then((r) => r.attempts)
-              .catch(() => null);
-      Promise.all([assignmentsRead, resultsRead]).then(
-        ([response, attempts]) => {
-          clear(panel);
-          renderMyScience(
-            panel,
-            response.items ?? [],
-            new Set(response.supersededAssignmentIds ?? []),
-            response.historyOnlyGroups ?? [],
-            attempts,
-            launch,
-          );
-        },
-        () => {
-          // The primary (assignments) read failed. Show a calm, recoverable
-          // error with a retry that re-invokes the read. No Firebase code,
-          // callable name, or Firestore path is ever exposed.
-          clear(panel);
-          renderMyScienceError(panel, load);
-        },
-      );
+      if (resultsCallable !== null) {
+        resultsCallable().then(
+          (r) => {
+            if (current !== generation) return;
+            attemptsState = r.attempts;
+            draw();
+          },
+          () => {
+            if (current !== generation) return;
+            attemptsState = null;
+            draw();
+          },
+        );
+      }
     };
 
     load();

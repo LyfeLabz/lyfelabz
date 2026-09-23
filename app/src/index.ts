@@ -64,6 +64,11 @@ import type {
   AssignmentSummaryCallable,
   LessonSummaryCallable,
 } from "./assignments/summary/types";
+import { subscribeAuthRerun } from "./session/authRerunSubscription";
+import {
+  startStudentPrefetch,
+  withPrefetchedFirstCall,
+} from "./assignments/studentList/prefetch";
 import { createAssignmentsListForStudentCallable } from "./assignments/studentList/wire";
 import type { AssignmentsListForStudentCallable } from "./assignments/studentList/types";
 import {
@@ -628,9 +633,52 @@ async function run(): Promise<void> {
       teacherShellStudentSelectionController = controller;
     },
   });
+  // Firebase Functions instance for this page, with the local-emulator
+  // override applied exactly as each session branch has always done.
+  const loadAppFunctions = async () => {
+    const { getFunctions, connectFunctionsEmulator } = await import(
+      "firebase/functions"
+    );
+    const functions = getFunctions();
+    if (
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1")
+    ) {
+      try {
+        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+      } catch {
+        // already connected
+      }
+    }
+    return functions;
+  };
+
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
     renderLoadingSurface(mount);
+    // Latency optimization (see assignments/studentList/prefetch.ts): when
+    // the locally cached token already says "student", start the two
+    // independent My Science reads NOW, concurrently with the bootstrap's
+    // own Firestore read. Used below only if the canonical bootstrap
+    // resolves an activeStudent session for the same uid; never an
+    // authorization input.
+    const studentPrefetch = startStudentPrefetch({
+      readCachedIdentity: async () => {
+        const user = await createAuthInput(auth).waitForAuthState();
+        if (user === null) return null;
+        const { claims } = await user.getIdTokenResult(false);
+        return { uid: user.uid, claims };
+      },
+      skip: () => pendingDeepLinkAssignmentId !== null,
+      createCallables: async () => {
+        const functions = await loadAppFunctions();
+        return {
+          assignments: createAssignmentsListForStudentCallable(functions),
+          attempts: createAttemptsListForStudentCallable(functions),
+        };
+      },
+    });
     const session = await bootstrapSession(
       createAuthInput(auth),
       createFirestoreInput(db),
@@ -730,24 +778,22 @@ async function run(): Promise<void> {
       // teacher-shell code path. Firebase Functions is initialized here
       // exactly the same way the teacher branch initializes it so the
       // emulator override behaves identically in local development.
-      const { getFunctions, connectFunctionsEmulator } = await import(
-        "firebase/functions"
+      const functions = await loadAppFunctions();
+      if (runToken !== currentRunToken) return;
+      // The early reads are handed over only for the SAME uid the canonical
+      // bootstrap just resolved as an active student; they satisfy the
+      // surface's first read only (Retry and later visits call again).
+      const prefetch = await studentPrefetch;
+      if (runToken !== currentRunToken) return;
+      const usable = prefetch !== null && prefetch.uid === session.uid;
+      studentAssignmentsList = withPrefetchedFirstCall(
+        createAssignmentsListForStudentCallable(functions),
+        usable ? prefetch.assignments : null,
       );
-      const functions = getFunctions();
-      if (
-        typeof window !== "undefined" &&
-        (window.location.hostname === "localhost" ||
-          window.location.hostname === "127.0.0.1")
-      ) {
-        try {
-          connectFunctionsEmulator(functions, "127.0.0.1", 5001);
-        } catch {
-          // already connected
-        }
-      }
-      studentAssignmentsList =
-        createAssignmentsListForStudentCallable(functions);
-      studentResultsList = createAttemptsListForStudentCallable(functions);
+      studentResultsList = withPrefetchedFirstCall(
+        createAttemptsListForStudentCallable(functions),
+        usable ? prefetch.attempts : null,
+      );
       studentDeepLinkResolve = createDeepLinkResolveCallable(functions);
       integrations = null;
       assignments = null;
@@ -1106,9 +1152,17 @@ async function run(): Promise<void> {
 
   await rerun();
 
+  // One logical bootstrap per auth state: Firebase fires this listener
+  // immediately with the user the initial `rerun` above already bootstrapped
+  // for; only a real identity change (sign-in, sign-out, account switch)
+  // reruns. See session/authRerunSubscription.ts.
   const { onAuthStateChanged } = await import("firebase/auth");
-  onAuthStateChanged(auth, () => {
-    void rerun();
+  subscribeAuthRerun({
+    bootstrappedUid: auth.currentUser?.uid ?? null,
+    onAuthStateChanged: (callback) => onAuthStateChanged(auth, callback),
+    rerun: () => {
+      void rerun();
+    },
   });
 }
 

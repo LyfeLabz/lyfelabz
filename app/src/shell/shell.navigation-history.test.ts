@@ -251,6 +251,7 @@ describe("Browser Back/Forward: Students -> Student Detail", () => {
       kind: "shell-classes-workspace",
       surface: "classes",
       classId: CLASS_ID,
+      section: "roster",
     });
   });
 
@@ -268,6 +269,7 @@ describe("Browser Back/Forward: Students -> Student Detail", () => {
       kind: "shell-classes-workspace",
       surface: "classes",
       classId: CLASS_ID,
+      section: "roster",
     });
     expect(pushSpy).not.toHaveBeenCalled();
     pushSpy.mockRestore();
@@ -332,7 +334,11 @@ describe("Browser Back/Forward: cross-surface chain (Classes -> Students -> Stud
       .click();
   };
 
-  test("Back twice reaches the flat Classes list; Forward twice reconstructs the full chain", async () => {
+  // Per-section class history: opening a class now records its landing
+  // Assignments section, so Back from Students returns to the class's
+  // Assignments (not straight to the Classes list) and one more Back reaches
+  // the list. Student Detail semantics are unchanged.
+  test("Back three times walks Student A -> Students -> class Assignments -> Classes; Forward three times rebuilds it", async () => {
     const mount = mkMount();
     await buildChain(mount);
     expect(mount.querySelector("[data-testid=student-detail]")).not.toBeNull();
@@ -344,12 +350,26 @@ describe("Browser Back/Forward: cross-surface chain (Classes -> Students -> Stud
       kind: "shell-classes-workspace",
       surface: "classes",
       classId: CLASS_ID,
+      section: "roster",
+    });
+
+    await realBack(); // -> class Assignments
+    expect(mount.querySelector("[data-testid=roster-list]")).toBeNull();
+    expect(mount.querySelector('[data-testid=class-nav-assignments][aria-current="page"]')).not.toBeNull();
+    expect(window.history.state).toEqual({
+      kind: "shell-classes-workspace",
+      surface: "classes",
+      classId: CLASS_ID,
+      section: "assignments",
     });
 
     await realBack(); // -> Classes (flat list)
-    expect(mount.querySelector("[data-testid=roster-list]")).toBeNull();
+    expect(mount.querySelector('[data-testid=class-nav-assignments][aria-current="page"]')).toBeNull();
     expect(mount.querySelector(`[data-testid=class-card-${CLASS_ID}]`)).not.toBeNull();
     expect(window.history.state).toEqual({ kind: "shell-surface", surface: "classes" });
+
+    await realForward(); // -> class Assignments
+    expect(mount.querySelector('[data-testid=class-nav-assignments][aria-current="page"]')).not.toBeNull();
 
     await realForward(); // -> Students
     expect(mount.querySelector("[data-testid=roster-list]")).not.toBeNull();

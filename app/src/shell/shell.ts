@@ -21,19 +21,25 @@ import { renderHeader } from "./header";
 import { renderNavigation, type WorkspaceSurfaceKey } from "./navigation";
 import { renderFooter } from "./footer";
 import {
+  type ClassWorkspaceSection,
+  type CurriculumHistoryController,
+  type SettingsHistoryController,
   type ShellHistoryState,
   parseShellHistoryState,
+  hashForState,
   hashForSurface,
-  hashForClassesWorkspace,
-  hashForStudentDetail,
   urlWithHash,
 } from "./navigationHistory";
+import { dismissOpenModals } from "./openModals";
 import { mountWorkspaceOutlet } from "./surfaces/workspace";
 import type { SnapshotPreview } from "./surfaces/snapshot";
 import type {
   ClassManagementIntent,
   ClassWorkspaceReturn,
+  StudentDetailHistorySeam,
 } from "./surfaces/classes";
+
+type ClassesHistoryNotify = Parameters<StudentDetailHistorySeam["notify"]>[0];
 import type {
   CurriculumAssignmentDetailSeam,
   AssignmentDetailStudentSelection,
@@ -143,10 +149,17 @@ export type ShellDeps = {
 let activeShellPopstateCleanup: (() => void) | null = null;
 
 type ClassesDetailHistoryController = {
-  readonly restoreWorkspace: (classId: string) => boolean;
+  readonly restoreWorkspace: (
+    classId: string,
+    section?: ClassWorkspaceSection,
+  ) => boolean;
   readonly restoreToTopList: () => void;
   readonly restoreDetail: (classId: string, studentId: string) => boolean;
   readonly restoreList: () => void;
+  readonly restoreAssignmentDetail: (
+    classId: string,
+    assignmentId: string,
+  ) => boolean;
 };
 
 export function mountTeacherShell(
@@ -243,6 +256,22 @@ export function mountTeacherShell(
   // one-level-up `shell-classes-workspace` state without classes.ts having
   // to hand its internal state shape across the seam.
   let currentWorkspaceClassId: string | null = null;
+  // Browser Back/Forward: restore capabilities for Curriculum's and
+  // Settings' own nested pages, registered by each surface on mount and
+  // cleared whenever the shell navigates away from it (same lifetime rule as
+  // `classesDetailController`).
+  let curriculumController: CurriculumHistoryController | null = null;
+  let settingsController: SettingsHistoryController | null = null;
+
+  // Browser Back/Forward: the single push/replace path for every history
+  // state, so each entry's URL is derived by the one mapping in
+  // navigationHistory.ts (`hashForState`). No-ops without a window.
+  const pushShellState = (state: ShellHistoryState): void => {
+    win?.history.pushState(state, "", urlWithHash(win.location.pathname, hashForState(state)));
+  };
+  const replaceShellState = (state: ShellHistoryState): void => {
+    win?.history.replaceState(state, "", urlWithHash(win.location.pathname, hashForState(state)));
+  };
 
   const workspaceDeps = {
     listClasses: deps.listClasses,
@@ -284,85 +313,87 @@ export function mountTeacherShell(
     // before this feature).
     studentDetailHistory: win
       ? {
-          notify: (
-            input:
-              | { readonly kind: "enter-workspace"; readonly classId: string }
-              | { readonly kind: "exit-workspace" }
-              | {
-                  readonly kind: "enter-detail";
-                  readonly classId: string;
-                  readonly studentId: string;
-                }
-              | { readonly kind: "exit-detail" },
-          ): void => {
+          notify: (input: ClassesHistoryNotify): void => {
             if (input.kind === "enter-workspace") {
               currentWorkspaceClassId = input.classId;
-              const state: ShellHistoryState = {
+              pushShellState({
                 kind: "shell-classes-workspace",
                 surface: "classes",
                 classId: input.classId,
-              };
-              win.history.pushState(
-                state,
-                "",
-                urlWithHash(
-                  win.location.pathname,
-                  hashForClassesWorkspace(input.classId),
-                ),
-              );
+                section: input.section,
+              });
             } else if (input.kind === "exit-workspace") {
               currentWorkspaceClassId = null;
-              const state: ShellHistoryState = {
-                kind: "shell-surface",
-                surface: "classes",
-              };
-              win.history.replaceState(
-                state,
-                "",
-                urlWithHash(win.location.pathname, hashForSurface("classes")),
-              );
+              replaceShellState({ kind: "shell-surface", surface: "classes" });
             } else if (input.kind === "enter-detail") {
-              const state: ShellHistoryState = {
+              pushShellState({
                 kind: "shell-student-detail",
                 surface: "classes",
                 classId: input.classId,
                 studentId: input.studentId,
-              };
-              win.history.pushState(
-                state,
-                "",
-                urlWithHash(
-                  win.location.pathname,
-                  hashForStudentDetail(input.classId, input.studentId),
-                ),
-              );
-            } else {
+              });
+            } else if (input.kind === "exit-detail") {
               // exit-detail: one level up from Student Detail is the
-              // Students (roster) tab of the same class, never the flat
+              // Students (roster) section of the same class, never the flat
               // Classes list - see StudentDetailHistorySeam.
               // `currentWorkspaceClassId` reflects whichever class is
               // actually open (set by the matching "enter-workspace").
               const classId = currentWorkspaceClassId;
               if (classId === null) return;
-              const state: ShellHistoryState = {
+              replaceShellState({
                 kind: "shell-classes-workspace",
                 surface: "classes",
                 classId,
-              };
-              win.history.replaceState(
-                state,
-                "",
-                urlWithHash(
-                  win.location.pathname,
-                  hashForClassesWorkspace(classId),
-                ),
-              );
+                section: "roster",
+              });
+            } else if (input.kind === "enter-assignment-detail") {
+              pushShellState({
+                kind: "shell-assignment-detail",
+                surface: "classes",
+                classId: input.classId,
+                assignmentId: input.assignmentId,
+              });
+            } else {
+              // exit-assignment-detail (in-app "Back to class"): leave the
+              // Summary overlay for a fresh Classes mount, which consumes the
+              // `classesReturn` one-shot the opener recorded and re-lands on
+              // that class's Assignments section. The Summary entry is
+              // REPLACED with the class Assignments entry - never a blind
+              // `history.back()`.
+              navigateTo("classes", { fromPopstate: true });
+              currentWorkspaceClassId = input.classId;
+              replaceShellState({
+                kind: "shell-classes-workspace",
+                surface: "classes",
+                classId: input.classId,
+                section: "assignments",
+              });
             }
           },
           registerController: (
             controller: ClassesDetailHistoryController,
           ): void => {
             classesDetailController = controller;
+          },
+        }
+      : null,
+    // Browser Back/Forward: Curriculum's nested Lesson Summary page.
+    curriculumHistory: win
+      ? {
+          push: pushShellState,
+          replace: replaceShellState,
+          registerController: (controller: CurriculumHistoryController): void => {
+            curriculumController = controller;
+          },
+        }
+      : null,
+    // Browser Back/Forward: Settings' nested "Manage connection" page.
+    settingsHistory: win
+      ? {
+          push: pushShellState,
+          replace: replaceShellState,
+          registerController: (controller: SettingsHistoryController): void => {
+            settingsController = controller;
           },
         }
       : null,
@@ -420,6 +451,8 @@ export function mountTeacherShell(
     // discard.
     classesDetailController = null;
     currentWorkspaceClassId = null;
+    curriculumController = null;
+    settingsController = null;
     activeKey = next;
     outletHost.textContent = "";
     mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
@@ -429,12 +462,7 @@ export function mountTeacherShell(
     // navigation pushes exactly one entry; the early return above already
     // prevents a duplicate push when the surface does not actually change.
     if (win && !options?.fromPopstate) {
-      const state: ShellHistoryState = { kind: "shell-surface", surface: next };
-      win.history.pushState(
-        state,
-        "",
-        urlWithHash(win.location.pathname, hashForSurface(next)),
-      );
+      pushShellState({ kind: "shell-surface", surface: next });
     }
   };
 
@@ -532,30 +560,83 @@ export function mountTeacherShell(
   // `navigateTo`), restoration fails closed at whatever depth it could
   // reach rather than attempting a partial or incorrect nested restore.
   if (win) {
+    // True when the Classes surface currently on screen can restore a
+    // nested state in place. When it cannot (another surface, or Assignment
+    // Summary occupies the outlet), a fresh Classes mount is needed; its
+    // class list loads asynchronously, so the target class + section is
+    // handed over through the same `classesReturn` one-shot the in-app
+    // "Back to class" uses, which the mount applies once classes load.
+    const classesLive = (): boolean =>
+      activeKey === "classes" && !showingDetail && classesDetailController !== null;
+
+    const restoreClassWorkspace = (
+      classId: string,
+      section: ClassWorkspaceSection,
+    ): void => {
+      if (classesLive()) {
+        const restored =
+          classesDetailController?.restoreWorkspace(classId, section) ?? false;
+        currentWorkspaceClassId = restored ? classId : null;
+        return;
+      }
+      classesReturn = { classId, tab: section === "setup" ? "assignments" : section };
+      navigateTo("classes", { fromPopstate: true });
+      currentWorkspaceClassId = classId;
+    };
+
     const handlePopstate = (event: PopStateEvent): void => {
       const parsed = parseShellHistoryState(event.state);
       if (parsed === null) return;
-      if (parsed.kind === "shell-surface") {
-        navigateTo(parsed.surface, { fromPopstate: true });
-        if (parsed.surface === "classes") {
-          currentWorkspaceClassId = null;
-          classesDetailController?.restoreToTopList();
+      // A dialog is never left open over the page Back/Forward restores.
+      dismissOpenModals();
+      switch (parsed.kind) {
+        case "shell-surface": {
+          navigateTo(parsed.surface, { fromPopstate: true });
+          if (parsed.surface === "classes") {
+            currentWorkspaceClassId = null;
+            classesDetailController?.restoreToTopList();
+          } else if (parsed.surface === "curriculum") {
+            curriculumController?.restoreTop();
+          } else {
+            settingsController?.restoreRoot();
+          }
+          return;
         }
-        return;
+        case "shell-classes-workspace":
+          restoreClassWorkspace(parsed.classId, parsed.section);
+          return;
+        case "shell-assignment-detail": {
+          if (!classesLive()) {
+            classesReturn = { classId: parsed.classId, tab: "assignments" };
+            navigateTo("classes", { fromPopstate: true });
+          }
+          currentWorkspaceClassId = parsed.classId;
+          // Fails closed (stays on the class's Assignments section) when the
+          // assignment is not one this teacher's class lists.
+          classesDetailController?.restoreAssignmentDetail(
+            parsed.classId,
+            parsed.assignmentId,
+          );
+          return;
+        }
+        case "shell-student-detail":
+          // The Students tab of `parsed.classId` is the entry directly
+          // beneath this one in every path that pushed it, so it is already
+          // the open workspace by the time this fires via ordinary
+          // sequential Back/Forward.
+          navigateTo("classes", { fromPopstate: true });
+          currentWorkspaceClassId = parsed.classId;
+          classesDetailController?.restoreDetail(parsed.classId, parsed.studentId);
+          return;
+        case "shell-lesson-summary":
+          navigateTo("curriculum", { fromPopstate: true });
+          curriculumController?.restoreLessonSummary(parsed.lessonSlug);
+          return;
+        case "shell-settings-integrations":
+          navigateTo("settings", { fromPopstate: true });
+          settingsController?.restoreIntegrations();
+          return;
       }
-      navigateTo("classes", { fromPopstate: true });
-      if (parsed.kind === "shell-classes-workspace") {
-        const restored =
-          classesDetailController?.restoreWorkspace(parsed.classId) ?? false;
-        currentWorkspaceClassId = restored ? parsed.classId : null;
-        return;
-      }
-      // shell-student-detail: the Students tab of `parsed.classId` is the
-      // entry directly beneath this one in every path that pushed it, so
-      // it is already the open workspace by the time this fires via
-      // ordinary sequential Back/Forward.
-      currentWorkspaceClassId = parsed.classId;
-      classesDetailController?.restoreDetail(parsed.classId, parsed.studentId);
     };
     activeShellPopstateCleanup?.();
     win.addEventListener("popstate", handlePopstate);

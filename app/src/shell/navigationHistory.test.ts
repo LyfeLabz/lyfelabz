@@ -16,14 +16,46 @@ describe("navigationHistory: parseShellHistoryState", () => {
     });
   });
 
-  test("accepts a valid shell-classes-workspace state", () => {
+  test("accepts a shell-classes-workspace state recorded before per-section history (it keeps its Students meaning)", () => {
     expect(
       parseShellHistoryState({
         kind: "shell-classes-workspace",
         surface: "classes",
         classId: "c1",
       }),
-    ).toEqual({ kind: "shell-classes-workspace", surface: "classes", classId: "c1" });
+    ).toEqual({ kind: "shell-classes-workspace", surface: "classes", classId: "c1", section: "roster" });
+  });
+
+  test.each(["assignments", "roster", "setup"])(
+    "accepts a shell-classes-workspace state for section %s",
+    (section) => {
+      expect(
+        parseShellHistoryState({ kind: "shell-classes-workspace", surface: "classes", classId: "c1", section }),
+      ).toEqual({ kind: "shell-classes-workspace", surface: "classes", classId: "c1", section });
+    },
+  );
+
+  test("rejects an unknown class workspace section (fails closed)", () => {
+    expect(
+      parseShellHistoryState({ kind: "shell-classes-workspace", surface: "classes", classId: "c1", section: "overview" }),
+    ).toBeNull();
+  });
+
+  test("accepts the new nested-page states and rejects malformed ones", () => {
+    expect(
+      parseShellHistoryState({ kind: "shell-assignment-detail", surface: "classes", classId: "c1", assignmentId: "a1" }),
+    ).toEqual({ kind: "shell-assignment-detail", surface: "classes", classId: "c1", assignmentId: "a1" });
+    expect(
+      parseShellHistoryState({ kind: "shell-lesson-summary", surface: "curriculum", lessonSlug: "engineering-design" }),
+    ).toEqual({ kind: "shell-lesson-summary", surface: "curriculum", lessonSlug: "engineering-design" });
+    expect(parseShellHistoryState({ kind: "shell-settings-integrations", surface: "settings" })).toEqual({
+      kind: "shell-settings-integrations",
+      surface: "settings",
+    });
+    expect(parseShellHistoryState({ kind: "shell-assignment-detail", surface: "classes", classId: "c1" })).toBeNull();
+    expect(parseShellHistoryState({ kind: "shell-assignment-detail", surface: "curriculum", classId: "c1", assignmentId: "a" })).toBeNull();
+    expect(parseShellHistoryState({ kind: "shell-lesson-summary", surface: "curriculum", lessonSlug: "" })).toBeNull();
+    expect(parseShellHistoryState({ kind: "shell-settings-integrations", surface: "classes" })).toBeNull();
   });
 
   test("accepts a valid shell-student-detail state", () => {

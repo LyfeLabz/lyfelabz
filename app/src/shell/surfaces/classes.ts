@@ -74,6 +74,8 @@ import type {
   StudentExpectedAssignment,
 } from "../../assignments/detail/studentAssignments-wire";
 import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
+import { registerOpenModal } from "../openModals";
+import type { ClassWorkspaceSection } from "../navigationHistory";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
 // the authenticated teacher. See SPRINT_6B_SPECIFICATION.md §6.
@@ -135,11 +137,14 @@ export type ClassManagementIntent = "create" | "import";
 // API directly (this module stays a pure DOM builder; only shell.ts
 // touches browser history). `notify` reports a meaningful enter/exit
 // transition so the shell can push/replace the matching history entry:
-// - "enter-workspace" / "exit-workspace": the Students (roster) tab of a
-//   class becoming active / being left for the flat Classes list. Other
-//   tabs (Assignments, Setup) are deliberately NOT tracked - only the
-//   Students tab is a meaningful cross-surface chain link for this
-//   feature, per the drill-down Classes -> Students -> Student pattern.
+// - "enter-workspace" / "exit-workspace": a class workspace SECTION
+//   (Assignments, Students, or Setup) becoming active - opening a class or
+//   switching its section - / being left for the flat Classes list. Every
+//   section is its own history entry so Back walks Student -> Students ->
+//   Assignments -> Classes.
+// - "enter-assignment-detail" / "exit-assignment-detail": Assignment
+//   Summary opening from a class's Assignments section / its in-app "Back
+//   to class" returning there (a replace, never `history.back()`).
 // - "enter-detail" / "exit-detail": Student Detail opening (from the
 //   roster OR via Previous/Next, which is real navigation to a different
 //   student and therefore its own history entry) / closing back to the
@@ -154,6 +159,7 @@ export type StudentDetailHistorySeam = {
       | {
           readonly kind: "enter-workspace";
           readonly classId: string;
+          readonly section: ClassWorkspaceSection;
         }
       | { readonly kind: "exit-workspace" }
       | {
@@ -161,13 +167,26 @@ export type StudentDetailHistorySeam = {
           readonly classId: string;
           readonly studentId: string;
         }
-      | { readonly kind: "exit-detail" },
+      | { readonly kind: "exit-detail" }
+      | {
+          readonly kind: "enter-assignment-detail";
+          readonly classId: string;
+          readonly assignmentId: string;
+        }
+      | { readonly kind: "exit-assignment-detail"; readonly classId: string },
   ) => void;
   readonly registerController: (controller: {
-    readonly restoreWorkspace: (classId: string) => boolean;
+    readonly restoreWorkspace: (
+      classId: string,
+      section?: ClassWorkspaceSection,
+    ) => boolean;
     readonly restoreToTopList: () => void;
     readonly restoreDetail: (classId: string, studentId: string) => boolean;
     readonly restoreList: () => void;
+    readonly restoreAssignmentDetail: (
+      classId: string,
+      assignmentId: string,
+    ) => boolean;
   }) => void;
 };
 
@@ -479,16 +498,37 @@ export function renderClassesSurface(
   // returning nav) re-lands in this class's Assignments section rather than
   // stranding the teacher in Curriculum; supplies a "Back to class" label. When
   // the seam is absent (harness) the row action is simply inert.
-  const openClassAssignment = (classId: string, assignmentId: string): void => {
+  //
+  // Browser Back/Forward: opening Summary pushes its own history entry (above
+  // the class's Assignments entry), unless this call is itself a history
+  // restore. The in-app "Back to class" hands the return to the shell, which
+  // re-lands on the class's Assignments section and REPLACES the Summary
+  // entry (the certified replace-never-back() pattern).
+  const openClassAssignment = (
+    classId: string,
+    assignmentId: string,
+    opts?: { readonly fromHistory?: boolean },
+  ): void => {
     if (assignmentDetail === null) return;
     setClassesReturn?.({ classId, tab: "assignments" });
     const options: AssignmentDetailOpenOptions = {
       backLabel: "Back to class",
       onBack: () => {
+        if (studentDetailHistory !== null) {
+          studentDetailHistory.notify({ kind: "exit-assignment-detail", classId });
+          return;
+        }
         navigateToSurface?.("classes");
       },
     };
     assignmentDetail.open(assignmentId, options);
+    if (opts?.fromHistory !== true) {
+      studentDetailHistory?.notify({
+        kind: "enter-assignment-detail",
+        classId,
+        assignmentId,
+      });
+    }
   };
 
   // Sprint 28.6C: the single bundle of class-assignment wiring threaded to the
@@ -884,6 +924,13 @@ export function renderClassesSurface(
       selectedStudentDisplayName: null,
     };
     rerender();
+    // Browser Back/Forward: opening a class is a real drill-down, so its
+    // landing section gets its own entry (Back returns to the Classes list).
+    studentDetailHistory?.notify({
+      kind: "enter-workspace",
+      classId,
+      section: isNeedsSetup ? "setup" : "assignments",
+    });
     // Sprint 29G.5K-3: best-effort membership freshness on class open.
     // Fires only for active LMS-backed classes (needsSetup classes have no
     // enrolled students yet and do not need a refresh). Never blocks the
@@ -1194,7 +1241,6 @@ export function renderClassesSurface(
     if (state.kind !== "workspace") return;
     if (state.tab === tab) return;
     const classId = state.selectedId;
-    const wasRoster = state.tab === "roster";
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -1205,14 +1251,12 @@ export function renderClassesSurface(
       selectedStudentDisplayName: null,
     };
     rerender();
-    // Browser Back/Forward support: only entering the Students (roster)
-    // tab is a meaningful cross-surface chain link (see
-    // StudentDetailHistorySeam). Leaving it for another tab is left
-    // out-of-sync with history on purpose (same accepted tradeoff as the
-    // existing Student Detail exit path) rather than tracking every tab
-    // switch as a history entry.
-    if (tab === "roster" && !wasRoster) {
-      studentDetailHistory?.notify({ kind: "enter-workspace", classId });
+    // Browser Back/Forward: every class section is its own history entry
+    // (see StudentDetailHistorySeam), so switching Assignments <-> Students
+    // is reversible with Back/Forward. The retired Overview key is not a
+    // section and is never pushed.
+    if (tab === "assignments" || tab === "roster" || tab === "setup") {
+      studentDetailHistory?.notify({ kind: "enter-workspace", classId, section: tab });
     }
   };
 
@@ -1350,15 +1394,24 @@ export function renderClassesSurface(
     // class is not one the roster list knows about - the same
     // stale/unauthorized-safe posture as `restoreDetail` below, extended
     // one level up the chain.
-    restoreWorkspace: (classId) => {
+    // `section` defaults to Students (roster) for entries recorded before
+    // per-section history. A needsSetup class can only show Setup; an
+    // active class never restores into Setup.
+    restoreWorkspace: (classId, section = "roster") => {
       if (state.kind !== "list" && state.kind !== "workspace") return false;
       const classes = state.classes;
       const summary = classes.find((c) => c.id === classId);
       if (!summary) return false;
+      const tab: ClassWorkspaceTab =
+        summary.status === "needsSetup"
+          ? "setup"
+          : section === "setup"
+            ? "assignments"
+            : section;
       if (
         state.kind === "workspace" &&
         state.selectedId === classId &&
-        state.tab === "roster" &&
+        state.tab === tab &&
         state.selectedStudentId === null
       ) {
         return true; // Already exactly here; avoid a redundant re-render/refetch.
@@ -1368,8 +1421,13 @@ export function renderClassesSurface(
         kind: "workspace",
         classes,
         selectedId: classId,
-        tab: "roster",
-        setupForm: null,
+        tab,
+        setupForm:
+          tab === "setup"
+            ? (state.kind === "workspace" && state.selectedId === classId
+                ? state.setupForm
+                : null) ?? emptySetupForm()
+            : null,
         selectedStudentId: null,
         selectedStudentDisplayName: null,
         rosterSnapshot:
@@ -1418,6 +1476,19 @@ export function renderClassesSurface(
         return;
       }
       onBackFromStudent();
+    },
+    // Re-opens Assignment Summary for a history entry. Fails closed (returns
+    // false, changes nothing) unless the assignment is in this teacher's
+    // hydrated registry, belongs to that class, and is one the class
+    // Assignments section itself would list. The Summary surface then loads
+    // its data through its own authorized callables exactly as on a click.
+    restoreAssignmentDetail: (classId, assignmentId) => {
+      const meta = listAllAssignments().find((m) => m.assignmentId === assignmentId);
+      if (meta === undefined || meta.classId !== classId || !isRenderableCard(meta)) {
+        return false;
+      }
+      openClassAssignment(classId, assignmentId, { fromHistory: true });
+      return true;
     },
   });
 
@@ -2951,9 +3022,14 @@ function renderClassSettingsModal(
   dialog.setAttribute("data-testid", "classes-settings-dialog");
   overlay.appendChild(dialog);
 
+  // Browser Back/Forward: registered so a history navigation dismisses this
+  // dialog exactly as Escape does (close + cancel) instead of leaving it
+  // over the page Back restores. See shell/openModals.ts.
+  let unregisterModal: () => void = () => undefined;
   const close = (): void => {
     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     doc.removeEventListener("keydown", onKey);
+    unregisterModal();
   };
   const onKey = (ev: KeyboardEvent): void => {
     if (ev.key === "Escape") {
@@ -2963,6 +3039,10 @@ function renderClassSettingsModal(
     }
   };
   doc.addEventListener("keydown", onKey);
+  unregisterModal = registerOpenModal(() => {
+    close();
+    deps.onCancel();
+  });
   overlay.addEventListener("click", (ev) => {
     if (ev.target === overlay) {
       close();

@@ -151,24 +151,50 @@ async function loadOwnedClassSchoolId(
 // (classId + schoolId match + status active + non-empty studentId) without
 // importing the assignments domain, so a malformed or cross-scope row can
 // never enter the projection.
+//
+// Also returns every enrollment document the query already read, keyed by
+// document id, so display-name resolution can reuse them for the
+// enrollment-override lookup instead of re-reading each one.
 async function loadActiveEnrolledStudentIds(
   classId: string,
   schoolId: string,
-): Promise<readonly string[]> {
+): Promise<{
+  readonly studentIds: readonly string[];
+  readonly enrollmentsById: ReadonlyMap<string, EnrollmentRecord>;
+}> {
   const snapshot = await enrollmentsCollectionRef()
     .where("classId", "==", classId)
     .get();
   const seen = new Set<string>();
+  const enrollmentsById = new Map<string, EnrollmentRecord>();
   for (const doc of snapshot.docs) {
     const data = doc.data() as EnrollmentRecord | undefined;
     if (!data) continue;
+    enrollmentsById.set(doc.id, data);
     if (data.classId !== classId) continue;
     if (data.schoolId !== schoolId) continue;
     if (data.status !== "active") continue;
     if (!isNonEmptyString(data.studentId)) continue;
     seen.add(data.studentId);
   }
-  return Array.from(seen).sort();
+  return { studentIds: Array.from(seen).sort(), enrollmentsById };
+}
+
+// Display names are resolved concurrently rather than one student at a time
+// (each student's own reads were already parallel; the students were not).
+// Bounded in waves so an unusually large roster cannot open an unbounded
+// number of simultaneous reads; a normal class resolves in one wave.
+const DISPLAY_NAME_CONCURRENCY = 25;
+
+async function resolveInWaves<T, R>(
+  items: readonly T[],
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const out: R[] = [];
+  for (let i = 0; i < items.length; i += DISPLAY_NAME_CONCURRENCY) {
+    out.push(...(await Promise.all(items.slice(i, i + DISPLAY_NAME_CONCURRENCY).map(fn))));
+  }
+  return out;
 }
 
 function safeLog(fn: () => void): void {
@@ -187,22 +213,25 @@ async function enrollmentsListForClassHandler(
 
   await loadOwnedClassSchoolId(input.classId, actor);
 
-  const enrolledStudentIds = await loadActiveEnrolledStudentIds(
-    input.classId,
-    actor.schoolId,
+  const { studentIds: enrolledStudentIds, enrollmentsById } =
+    await loadActiveEnrolledStudentIds(input.classId, actor.schoolId);
+
+  const resolveDisplayName = createRosterDisplayNameResolver(
+    {
+      classId: input.classId,
+      schoolId: actor.schoolId,
+      districtId: actor.districtId,
+    },
+    { preloadedEnrollments: enrollmentsById },
   );
 
-  const resolveDisplayName = createRosterDisplayNameResolver({
-    classId: input.classId,
-    schoolId: actor.schoolId,
-    districtId: actor.districtId,
-  });
-
-  const students: EnrollmentsListForClassStudent[] = [];
-  for (const studentId of enrolledStudentIds) {
-    const resolved = await resolveDisplayName(studentId);
-    students.push({ studentId, studentDisplayName: resolved.displayName });
-  }
+  const students: EnrollmentsListForClassStudent[] = await resolveInWaves(
+    enrolledStudentIds,
+    async (studentId) => ({
+      studentId,
+      studentDisplayName: (await resolveDisplayName(studentId)).displayName,
+    }),
+  );
 
   students.sort((a, b) => {
     const byName = a.studentDisplayName.localeCompare(

@@ -385,3 +385,70 @@ describe("createRosterDisplayNameResolver", () => {
     expect(userReadCounts.get(STUDENT_A) ?? 0).toBe(2);
   });
 });
+
+// Students-tab performance: a caller that already queried the class's
+// enrollment documents hands them in (keyed by document id) so the override
+// lookup reuses them instead of re-reading each enrollment. Precedence and
+// every scope check are unchanged.
+describe("createRosterDisplayNameResolver - preloaded enrollments", () => {
+  beforeEach(() => {
+    enrollmentFixtures.clear();
+    userFixtures.clear();
+    enrollmentReadCounts.clear();
+    userReadCounts.clear();
+    mockEnrollmentDocRef.mockClear();
+    mockUserRecordDocRef.mockClear();
+  });
+
+  const enrollmentRecord = (studentId: string, overrides: Record<string, unknown> = {}) =>
+    ({
+      studentId,
+      classId: CLASS_ID,
+      schoolId: SCHOOL_ID,
+      status: "active",
+      enrolledAt: { toMillis: () => 1_600_000_000_000 },
+      ...overrides,
+    }) as never;
+
+  it("uses the preloaded override without re-reading the enrollment document", async () => {
+    seedUser(STUDENT_A, { displayName: "Profile Name" });
+    const preloaded = new Map([
+      [enrollmentIdFor(CLASS_ID, STUDENT_A), enrollmentRecord(STUDENT_A, { displayNameOverride: "  Override   Name " })],
+    ]);
+    const resolve = createRosterDisplayNameResolver(SCOPE, { preloadedEnrollments: preloaded });
+
+    const result = await resolve(STUDENT_A);
+
+    expect(result).toEqual({ studentId: STUDENT_A, displayName: "Override Name", source: "enrollmentOverride" });
+    expect(mockEnrollmentDocRef).not.toHaveBeenCalled();
+  });
+
+  it("a preloaded enrollment without an override falls through to the profile name (one user read, no enrollment read)", async () => {
+    seedUser(STUDENT_A, { displayName: "Profile Name" });
+    const preloaded = new Map([[enrollmentIdFor(CLASS_ID, STUDENT_A), enrollmentRecord(STUDENT_A)]]);
+    const result = await createRosterDisplayNameResolver(SCOPE, { preloadedEnrollments: preloaded })(STUDENT_A);
+    expect(result.displayName).toBe("Profile Name");
+    expect(mockEnrollmentDocRef).not.toHaveBeenCalled();
+    expect(userReadCounts.get(STUDENT_A)).toBe(1);
+  });
+
+  it("scope validation still applies to a preloaded enrollment (cross-school override ignored)", async () => {
+    seedUser(STUDENT_A, { displayName: "Profile Name" });
+    const preloaded = new Map([
+      [
+        enrollmentIdFor(CLASS_ID, STUDENT_A),
+        enrollmentRecord(STUDENT_A, { schoolId: OTHER_SCHOOL_ID, displayNameOverride: "Leaked Name" }),
+      ],
+    ]);
+    const result = await createRosterDisplayNameResolver(SCOPE, { preloadedEnrollments: preloaded })(STUDENT_A);
+    expect(result.displayName).toBe("Profile Name");
+  });
+
+  it("a student whose enrollment id is not preloaded still gets the canonical point read", async () => {
+    seedEnrollment(STUDENT_B, { displayNameOverride: "Read Override" });
+    const resolve = createRosterDisplayNameResolver(SCOPE, { preloadedEnrollments: new Map() });
+    const result = await resolve(STUDENT_B);
+    expect(result.displayName).toBe("Read Override");
+    expect(enrollmentReadCounts.get(enrollmentIdFor(CLASS_ID, STUDENT_B))).toBe(1);
+  });
+});

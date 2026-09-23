@@ -31,8 +31,12 @@ jest.mock("../shared", () => {
   };
 });
 
+const mockCreateResolver = jest.fn();
 jest.mock("./resolve-roster-display-name", () => ({
-  createRosterDisplayNameResolver: () => mockResolveDisplayName,
+  createRosterDisplayNameResolver: (...args: unknown[]) => {
+    mockCreateResolver(...args);
+    return mockResolveDisplayName;
+  },
 }));
 
 import { PlatformError } from "../shared/errors/platform-error";
@@ -219,5 +223,65 @@ describe("enrollmentsListForClass", () => {
     await expect(
       __enrollmentsListForClassHandler(makeRequest()),
     ).rejects.toThrow("firestore unavailable");
+  });
+});
+
+
+// Students-tab performance: display names are resolved concurrently (not one
+// student after another), and the enrollment documents the class query
+// already returned are handed to the resolver so no enrollment is re-read.
+describe("enrollmentsListForClass - roster read/data flow", () => {
+  function docsWithIds(rows: ReadonlyArray<Record<string, unknown>>) {
+    return {
+      docs: rows.map((r) => ({ id: `${CLASS_ID}__${String(r.studentId)}`, data: () => r })),
+    };
+  }
+
+  test("every student's display name is requested before any resolves (no sequential chain)", async () => {
+    const ids = ["s1", "s2", "s3", "s4", "s5"];
+    mockEnrollmentsGet.mockResolvedValue(docsWithIds(ids.map((id) => activeRow(id))));
+    const releases: Array<() => void> = [];
+    mockResolveDisplayName.mockImplementation(
+      (studentId: string) =>
+        new Promise((resolve) => {
+          releases.push(() =>
+            resolve({ studentId, displayName: `Name ${studentId}`, source: "userProfile" }),
+          );
+        }),
+    );
+
+    const pending = __enrollmentsListForClassHandler(makeRequest());
+    for (let i = 0; i < 10 && mockResolveDisplayName.mock.calls.length < ids.length; i++) {
+      await Promise.resolve();
+    }
+    // All five started while none has resolved yet.
+    expect(mockResolveDisplayName).toHaveBeenCalledTimes(ids.length);
+    releases.forEach((release) => release());
+
+    const res = await pending;
+    expect(res.students.map((s) => s.studentId)).toEqual(ids);
+    expect(res.students.map((s) => s.studentDisplayName)).toEqual(ids.map((id) => `Name ${id}`));
+  });
+
+  test("the resolver receives the already-read enrollment documents keyed by document id", async () => {
+    mockEnrollmentsGet.mockResolvedValue(docsWithIds([activeRow("s1"), activeRow("s2")]));
+    await __enrollmentsListForClassHandler(makeRequest());
+    expect(mockCreateResolver).toHaveBeenCalledTimes(1);
+    const options = mockCreateResolver.mock.calls[0][1] as {
+      preloadedEnrollments: ReadonlyMap<string, { studentId: string }>;
+    };
+    expect(Array.from(options.preloadedEnrollments.keys()).sort()).toEqual([
+      `${CLASS_ID}__s1`,
+      `${CLASS_ID}__s2`,
+    ]);
+    expect(options.preloadedEnrollments.get(`${CLASS_ID}__s1`)?.studentId).toBe("s1");
+  });
+
+  test("a roster larger than one wave still resolves every student, in name order", async () => {
+    const ids = Array.from({ length: 30 }, (_, i) => `s${String(i).padStart(2, "0")}`);
+    mockEnrollmentsGet.mockResolvedValue(docsWithIds(ids.map((id) => activeRow(id))));
+    const res = await __enrollmentsListForClassHandler(makeRequest());
+    expect(res.students).toHaveLength(30);
+    expect(res.students.map((s) => s.studentId)).toEqual(ids);
   });
 });

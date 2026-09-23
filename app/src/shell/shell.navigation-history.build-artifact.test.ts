@@ -37,11 +37,14 @@ describe("Browser Back/Forward: the built bundle a real browser loads actually c
     execSync("npm run build", { cwd: APP_ROOT, stdio: "pipe" });
   }, 60000);
 
-  test("the built bundle contains all three history-state kinds", () => {
+  test("the built bundle contains every history-state kind", () => {
     const bundle = fs.readFileSync(BUNDLE_PATH, "utf8");
     expect(bundle).toContain("shell-surface");
     expect(bundle).toContain("shell-classes-workspace");
     expect(bundle).toContain("shell-student-detail");
+    expect(bundle).toContain("shell-assignment-detail");
+    expect(bundle).toContain("shell-lesson-summary");
+    expect(bundle).toContain("shell-settings-integrations");
   });
 
   test("the built bundle registers a popstate listener", () => {

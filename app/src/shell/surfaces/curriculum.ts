@@ -36,6 +36,11 @@ import type {
   AssignmentSummaryCallable,
   LessonSummaryCallable,
 } from "../../assignments/summary/types";
+import { registerOpenModal } from "../openModals";
+import type {
+  CurriculumHistoryController,
+  NestedPageHistorySeam,
+} from "../navigationHistory";
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { buildLessonBasePath } from "../../assignments/studentList/launch";
 import { mintAssignmentId } from "./shared/assignmentId";
@@ -202,6 +207,9 @@ export type CurriculumSurfaceDeps = {
   // boundary is preserved either way - the surface names no student,
   // attempt, class, or recipient identifier.
   readonly lessonSummary?: LessonSummaryCallable | null;
+  // Browser Back/Forward: shell-owned seam for the nested Lesson Summary page
+  // (see navigationHistory.ts). Absent in harnesses without history.
+  readonly curriculumHistory?: NestedPageHistorySeam<CurriculumHistoryController> | null;
 };
 
 const DEFAULT_LIST_CLASSES: ListClasses = () =>
@@ -735,17 +743,38 @@ export function renderCurriculumSurface(
   summaryHost.setAttribute("data-testid", "curriculum-summary-host");
   mount.appendChild(summaryHost);
 
-  const openLessonSummary = (lesson: SurfaceableLesson): void => {
+  // Browser Back/Forward: opening a Lesson Summary is a real drill-down with
+  // its own history entry (unless this call is itself a history restore);
+  // its in-app Back REPLACES that entry with the Curriculum entry (never
+  // `history.back()`), and Back/Forward re-open or close it through the
+  // controller registered below.
+  const curriculumHistory = deps.curriculumHistory ?? null;
+  const closeLessonSummary = (): void => {
+    summaryHost.textContent = "";
+    curriculumView.hidden = false;
+  };
+  const openLessonSummary = (
+    lesson: SurfaceableLesson,
+    opts?: { readonly fromHistory?: boolean },
+  ): void => {
     if (lessonSummary === null) return;
+    summaryHost.textContent = "";
     curriculumView.hidden = true;
+    if (opts?.fromHistory !== true) {
+      curriculumHistory?.push({
+        kind: "shell-lesson-summary",
+        surface: "curriculum",
+        lessonSlug: lesson.slug,
+      });
+    }
     renderLessonSummarySurface(summaryHost, {
       doc,
       lessonTitle: lesson.title,
       lessonSlug: lesson.slug,
       lessonSummary,
       onBack: () => {
-        summaryHost.textContent = "";
-        curriculumView.hidden = false;
+        closeLessonSummary();
+        curriculumHistory?.replace({ kind: "shell-surface", surface: "curriculum" });
         // Return focus to the card's View Summary control so the return
         // trip is keyboard-coherent.
         const trigger = curriculumView.querySelector<HTMLButtonElement>(
@@ -761,6 +790,20 @@ export function renderCurriculumSurface(
       },
     });
   };
+
+  curriculumHistory?.registerController({
+    restoreLessonSummary: (lessonSlug) => {
+      if (lessonSummary === null) return false;
+      const lesson = LESSONS.find((l) => l.slug === lessonSlug);
+      if (lesson === undefined) return false;
+      openLessonSummary(lesson, { fromHistory: true });
+      return true;
+    },
+    restoreTop: () => {
+      if (!curriculumView.hidden) return;
+      closeLessonSummary();
+    },
+  });
 
   // Sprint 13C, retained through Sprint 28.6D: rediscover the quiet
   // "✓ Assigned" assignment-history signal from the certified
@@ -1513,9 +1556,14 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   overlay.appendChild(dialog);
   doc.body.appendChild(overlay);
 
+  // Browser Back/Forward: registered so a history navigation dismisses this
+  // dialog (the same dismissal Escape performs) instead of leaving it over
+  // the page Back restores. See shell/openModals.ts.
+  let unregisterModal: () => void = () => undefined;
   const close = (): void => {
     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     doc.removeEventListener("keydown", onKey);
+    unregisterModal();
   };
   const onKey = (ev: KeyboardEvent): void => {
     if (ev.key === "Escape") {
@@ -1524,6 +1572,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     }
   };
   doc.addEventListener("keydown", onKey);
+  unregisterModal = registerOpenModal(close);
   cancel.addEventListener("click", close);
   overlay.addEventListener("click", (ev) => {
     if (ev.target === overlay) close();

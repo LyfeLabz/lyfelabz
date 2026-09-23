@@ -1,6 +1,10 @@
 import type { Session } from "../../session/types";
 import type { IntegrationsDeps } from "../../settings/integrations/types";
 import { renderIntegrationsSurface } from "../../settings/integrations/integrations";
+import type {
+  NestedPageHistorySeam,
+  SettingsHistoryController,
+} from "../navigationHistory";
 import type { ClassManagementIntent } from "./classes";
 import { compactGradeBlock } from "./classes";
 import type { ListClasses } from "../../classes/listClasses";
@@ -87,6 +91,9 @@ export type SettingsDeps = {
   readonly listStudents?: AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: AccommodationsGetCallable | null;
   readonly setAccommodation?: AccommodationsSetCallable | null;
+  // Browser Back/Forward: shell-owned seam for the nested Manage connection
+  // page (see navigationHistory.ts). Absent in harnesses without history.
+  readonly settingsHistory?: NestedPageHistorySeam<SettingsHistoryController> | null;
 };
 
 export function renderSettingsSurface(
@@ -182,6 +189,9 @@ export function renderSettingsSurface(
         onExit: () => {
           subview = "root";
           draw();
+          // Browser Back/Forward: the in-app exit REPLACES the Manage
+          // connection entry with the Settings entry (never history.back()).
+          deps.settingsHistory?.replace({ kind: "shell-surface", surface: "settings" });
         },
       });
       return;
@@ -242,6 +252,12 @@ export function renderSettingsSurface(
       manageBtn.addEventListener("click", () => {
         subview = "integrations";
         draw();
+        // Browser Back/Forward: Manage connection is a nested page with its
+        // own history entry.
+        deps.settingsHistory?.push({
+          kind: "shell-settings-integrations",
+          surface: "settings",
+        });
       });
       importActions.appendChild(manageBtn);
     }
@@ -1027,6 +1043,22 @@ export function renderSettingsSurface(
       }
     }
   };
+
+  deps.settingsHistory?.registerController({
+    restoreIntegrations: () => {
+      if (deps.integrations === null) return false;
+      if (subview !== "integrations") {
+        subview = "integrations";
+        draw();
+      }
+      return true;
+    },
+    restoreRoot: () => {
+      if (subview === "root") return;
+      subview = "root";
+      draw();
+    },
+  });
 
   draw();
 }

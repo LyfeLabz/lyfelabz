@@ -23,6 +23,11 @@ import type {
   AccommodationsSetCallable,
 } from "../../accommodations/wire";
 import type { WorkspaceSurfaceKey } from "../navigation";
+import type {
+  CurriculumHistoryController,
+  NestedPageHistorySeam,
+  SettingsHistoryController,
+} from "../navigationHistory";
 import {
   renderCurriculumSurface,
   type CurriculumAssignmentDetailSeam,
@@ -169,6 +174,10 @@ export type WorkspaceDeps = {
   // StudentDetailHistorySeam in classes.ts and shell.ts). Absent in
   // harnesses that do not exercise browser-history behavior.
   readonly studentDetailHistory?: StudentDetailHistorySeam | null;
+  // Browser Back/Forward: shell-owned seams for Curriculum's Lesson Summary
+  // and Settings' Manage connection nested pages (see navigationHistory.ts).
+  readonly curriculumHistory?: NestedPageHistorySeam<CurriculumHistoryController> | null;
+  readonly settingsHistory?: NestedPageHistorySeam<SettingsHistoryController> | null;
   // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned
   // student-selection intent seam (see shell.ts `classesStudentIntent`).
   // The Classes surface reads it once on mount to open Student Detail
@@ -230,6 +239,7 @@ export const WORKSPACE_SURFACES: Readonly<
         assignmentDetail: deps.assignmentDetail ?? null,
         assignmentSummary: deps.assignmentSummary ?? null,
         lessonSummary: deps.lessonSummary ?? null,
+        curriculumHistory: deps.curriculumHistory ?? null,
       }),
   }),
   classes: Object.freeze({
@@ -301,6 +311,7 @@ export const WORKSPACE_SURFACES: Readonly<
         listStudents: deps.listStudents ?? null,
         getAccommodation: deps.getAccommodation ?? null,
         setAccommodation: deps.setAccommodation ?? null,
+        settingsHistory: deps.settingsHistory ?? null,
       }),
   }),
 });

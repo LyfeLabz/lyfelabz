@@ -1,4 +1,8 @@
-import { enrollmentDocRef, userRecordDocRef } from "../shared";
+import {
+  enrollmentDocRef,
+  userRecordDocRef,
+  type EnrollmentRecord,
+} from "../shared";
 
 // The canonical enrollment document id is derived from (classId, studentId)
 // per `enrollments-join-by-code.ts`. The pattern is duplicated here as a
@@ -54,14 +58,27 @@ export type ResolvedRosterDisplayName = {
 // disagree with the trusted scope, or whose studentId or classId disagree
 // with the caller-verified pair, is ignored per PDR-028 section 12.6 and
 // the district-boundary contract.
+//
+// `preloaded` (optional) supplies enrollment documents a caller has ALREADY
+// read in this request, keyed by enrollment document id. When the
+// deterministic id is present there, that already-read document is used
+// instead of a second point read of the same document; the identical
+// validation below still applies. When it is absent, the canonical point
+// read runs exactly as before.
 async function loadEnrollmentOverride(
   scope: RosterDisplayNameScope,
   studentId: string,
+  preloaded?: ReadonlyMap<string, EnrollmentRecord>,
 ): Promise<string | null> {
   const id = enrollmentIdFor(scope.classId, studentId);
-  const snap = await enrollmentDocRef(id).get();
-  if (!snap.exists) return null;
-  const data = snap.data();
+  let data: EnrollmentRecord | undefined;
+  if (preloaded !== undefined && preloaded.has(id)) {
+    data = preloaded.get(id);
+  } else {
+    const snap = await enrollmentDocRef(id).get();
+    if (!snap.exists) return null;
+    data = snap.data();
+  }
   if (!data) return null;
   if (data.studentId !== studentId) return null;
   if (data.classId !== scope.classId) return null;
@@ -112,6 +129,7 @@ async function loadUserProfileDisplayName(
 export async function resolveRosterDisplayName(
   scope: RosterDisplayNameScope,
   studentId: string,
+  preloadedEnrollments?: ReadonlyMap<string, EnrollmentRecord>,
 ): Promise<ResolvedRosterDisplayName> {
   if (
     typeof studentId !== "string" ||
@@ -140,7 +158,7 @@ export async function resolveRosterDisplayName(
   }
 
   const [override, profile] = await Promise.all([
-    loadEnrollmentOverride(scope, studentId),
+    loadEnrollmentOverride(scope, studentId, preloadedEnrollments),
     loadUserProfileDisplayName(scope, studentId),
   ]);
 
@@ -164,15 +182,23 @@ export async function resolveRosterDisplayName(
 // cache keyed by studentId. Two concurrent resolutions of the same
 // studentId share the same in-flight promise so no duplicate reads occur
 // even when the caller does not sequence its requests.
+//
+// `options.preloadedEnrollments` lets a caller that already queried the
+// class's enrollment documents (keyed by document id) avoid re-reading each
+// student's enrollment for the override; see `loadEnrollmentOverride`.
 export function createRosterDisplayNameResolver(
   scope: RosterDisplayNameScope,
+  options?: {
+    readonly preloadedEnrollments?: ReadonlyMap<string, EnrollmentRecord>;
+  },
 ): (studentId: string) => Promise<ResolvedRosterDisplayName> {
   const inflight = new Map<string, Promise<ResolvedRosterDisplayName>>();
+  const preloaded = options?.preloadedEnrollments;
   return (studentId: string): Promise<ResolvedRosterDisplayName> => {
     const key = typeof studentId === "string" ? studentId : "";
     const cached = inflight.get(key);
     if (cached) return cached;
-    const pending = resolveRosterDisplayName(scope, studentId);
+    const pending = resolveRosterDisplayName(scope, studentId, preloaded);
     inflight.set(key, pending);
     return pending;
   };

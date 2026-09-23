@@ -2146,3 +2146,122 @@ describe("routing invariants", () => {
     expect(typeof renderLoadingSurface).toBe("function");
   });
 });
+
+// Progressive My Science loading (P1 performance): tiles render as soon as
+// the authoritative assignment list arrives; the auxiliary attempts read
+// enriches them later without ever showing a transient Completed state.
+describe("My Science - progressive loading", () => {
+  const deferred = <T,>() => {
+    let resolve!: (v: T) => void;
+    let reject!: (e: unknown) => void;
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+  };
+
+  const currentWithHistory = () =>
+    okItem({
+      assignmentId: "a-cur",
+      lessonSlug: "engineering-design",
+      title: "Engineering Design",
+      relatedAssignmentIds: ["a-old"],
+    }) as unknown as ReturnType<typeof okItem>;
+
+  function setup() {
+    const list = deferred<{
+      items: ReadonlyArray<ReturnType<typeof okItem>>;
+      supersededAssignmentIds?: ReadonlyArray<string>;
+      historyOnlyGroups?: ReadonlyArray<{ assignmentIds: ReadonlyArray<string> }>;
+    }>();
+    const results = deferred<{ attempts: ReadonlyArray<ReturnType<typeof okAttempt>> }>();
+    const listCalls = jest.fn(() => list.promise);
+    const resultsCalls = jest.fn(() => results.promise);
+    const { deps } = makeDeps({
+      studentAssignmentsList: () => listCalls,
+      studentResultsList: () => resultsCalls,
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    const panel = () => mount.querySelector<HTMLElement>("[data-testid=my-science-panel]")!;
+    return { mount, panel, list, results, listCalls, resultsCalls };
+  }
+
+  test("tiles (with their launch control) render as soon as the list arrives, before attempts", async () => {
+    const t = setup();
+    t.list.resolve({ items: [currentWithHistory()], supersededAssignmentIds: ["a-old"] });
+    await flush();
+
+    const card = t.mount.querySelector<HTMLElement>("[data-testid=my-science-card]");
+    expect(card).not.toBeNull();
+    expect(card!.querySelector("[data-testid=assignments-launch]")).not.toBeNull();
+    // Results not in yet: no status chip, no score, no Completed treatment.
+    expect(card!.getAttribute("data-status")).toBeNull();
+    expect(card!.getAttribute("data-complete")).toBeNull();
+    expect(card!.querySelector("[data-testid=my-science-card-status]")).toBeNull();
+    expect(card!.querySelector("[data-testid=my-science-card-score]")).toBeNull();
+    expect(t.panel().getAttribute("aria-busy")).toBe("true");
+    expect(t.mount.textContent).not.toContain("Completed");
+  });
+
+  test("attempts arriving later enrich the same tile; a historical attempt never marks Current Completed", async () => {
+    const t = setup();
+    t.list.resolve({ items: [currentWithHistory()], supersededAssignmentIds: ["a-old"] });
+    await flush();
+    t.results.resolve({
+      attempts: [okAttempt({ attemptId: "h1", assignmentId: "a-old", score: 19, maxScore: 20, percentage: 95 })],
+    });
+    await flush();
+
+    const card = t.mount.querySelector<HTMLElement>("[data-testid=my-science-card]")!;
+    expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("95%");
+    expect(card.getAttribute("data-status")).toBe("ready");
+    expect(card.getAttribute("data-complete")).toBeNull();
+    expect(t.panel().getAttribute("aria-busy")).toBeNull();
+    expect(t.mount.querySelectorAll("[data-testid=my-science-card]")).toHaveLength(1);
+  });
+
+  test("with no operational tile yet, the loading state holds (no empty-state flash) until attempts settle", async () => {
+    const t = setup();
+    t.list.resolve({ items: [], historyOnlyGroups: [{ assignmentIds: ["a-closed"] }] });
+    await flush();
+    expect(t.mount.querySelector("[data-testid=my-science-empty]")).toBeNull();
+
+    t.results.resolve({ attempts: [okAttempt({ attemptId: "c1", assignmentId: "a-closed" })] });
+    await flush();
+    expect(t.mount.querySelector("[data-testid=my-science-empty]")).toBeNull();
+    expect(
+      t.mount.querySelector("[data-testid=my-science-card-title]")?.textContent,
+    ).toBe("Assignment no longer listed");
+  });
+
+  test("attempts arriving before the list render nothing until the authoritative list arrives", async () => {
+    const t = setup();
+    t.results.resolve({ attempts: [okAttempt({ attemptId: "x", assignmentId: "a-cur" })] });
+    await flush();
+    expect(t.mount.querySelector("[data-testid=my-science-card]")).toBeNull();
+
+    t.list.resolve({ items: [currentWithHistory()] });
+    await flush();
+    expect(
+      t.mount.querySelector<HTMLElement>("[data-testid=my-science-card]")?.getAttribute("data-status"),
+    ).toBe("completed");
+  });
+
+  test("a failed list shows the recoverable error even when attempts succeed", async () => {
+    const t = setup();
+    t.results.resolve({ attempts: [] });
+    t.list.reject(new Error("down"));
+    await flush();
+    expect(t.mount.querySelector("[data-testid=assignments-error]")).not.toBeNull();
+    expect(t.mount.querySelector("[data-testid=my-science-card]")).toBeNull();
+  });
+
+  test("the list and attempts reads are issued together (neither waits for the other)", () => {
+    const t = setup();
+    expect(t.listCalls).toHaveBeenCalledTimes(1);
+    expect(t.resultsCalls).toHaveBeenCalledTimes(1);
+  });
+});
