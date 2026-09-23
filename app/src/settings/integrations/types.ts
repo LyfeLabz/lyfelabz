@@ -291,7 +291,18 @@ export type AssignmentsLifecycleState =
 //                   or non-published assignment). A materially different,
 //                   contradictory state from `unresolved` - never
 //                   collapsed into it. `currentAssignmentId` is `null`.
-export type CurrentAssignmentResolution = "valid" | "unresolved" | "invalid";
+//   "inactive"   - MANAGED BUT NO LONGER OPERATIONAL: an authoritative
+//                   pointer names this class/lesson's Current, which has
+//                   since been closed or archived. Not contradictory (unlike
+//                   "invalid") and not legacy (unlike "unresolved"): the
+//                   Update Assignment dialog offers "Assign as new" only,
+//                   never resurrecting an older assignment or choosing a
+//                   replacement Current. `currentAssignmentId` is `null`.
+export type CurrentAssignmentResolution =
+  | "valid"
+  | "unresolved"
+  | "invalid"
+  | "inactive";
 
 export type AssignmentsLifecycleStateOutput = {
   readonly state: AssignmentsLifecycleState;

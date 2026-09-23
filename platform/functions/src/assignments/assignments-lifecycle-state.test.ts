@@ -802,9 +802,11 @@ describe("assignmentsLifecycleState", () => {
       expect(result.currentAssignmentResolution).toBe("invalid");
     });
 
-    // 9. pointer references a non-published assignment
+    // 9. pointer references a non-published assignment: MANAGED BUT NO
+    // LONGER OPERATIONAL (reassignment model) - reported as `inactive`, never
+    // collapsed into `invalid` (fail-closed) or `unresolved` (legacy).
     it.each(["draft", "closed", "archived"] as const)(
-      "pointer references a non-published (%s) assignment: Current invalid/null",
+      "pointer references a non-published (%s) assignment: Current inactive/null",
       async (status) => {
         seedAssignment("assign-1", { status });
         seedPointer({ assignmentId: "assign-1" });
@@ -812,7 +814,7 @@ describe("assignmentsLifecycleState", () => {
 
         const result = await __assignmentsLifecycleStateHandler(makeRequest());
         expect(result.currentAssignmentId).toBeNull();
-        expect(result.currentAssignmentResolution).toBe("invalid");
+        expect(result.currentAssignmentResolution).toBe("inactive");
       },
     );
 
@@ -826,16 +828,66 @@ describe("assignmentsLifecycleState", () => {
       expect(result.currentAssignmentResolution).toBe("unresolved");
     });
 
-    // 11. historicalOnly + invalid pointer (pointer to a non-published assignment)
-    it("historicalOnly + invalid pointer: state historicalOnly, Current invalid/null", async () => {
+    // 11. historicalOnly + a closed Current (the "teacher closed Current"
+    // lifecycle): managed-inactive, not a contradictory pointer.
+    it("historicalOnly + pointer to the closed Current: state historicalOnly, Current inactive/null", async () => {
       seedAssignment("assign-1", { status: "closed" });
       seedPointer({ assignmentId: "assign-1" });
 
       const result = await __assignmentsLifecycleStateHandler(makeRequest());
       expect(result.state).toBe("historicalOnly");
       expect(result.currentAssignmentId).toBeNull();
-      expect(result.currentAssignmentResolution).toBe("invalid");
+      expect(result.currentAssignmentResolution).toBe("inactive");
     });
+
+    // 11b. Full managed lifecycle as the teacher experiences it: A is
+    // published and Current; the teacher closes (or archives) A; the class
+    // is managed-inactive (never unresolved legacy, never fail-closed, and
+    // an older published occurrence is never resurrected as Current); the
+    // teacher assigns B as new, whose publish advances the pointer to B; B is
+    // Current and A stays historical, untouched.
+    it.each(["closed", "archived"] as const)(
+      "lifecycle: A Current -> A %s -> inactive (no resurrection) -> B assigned as new -> B Current, A historical",
+      async (inactiveStatus) => {
+        // An older published occurrence that must never be resurrected.
+        seedAssignment("assign-older", { publishedAt: { toMillis: () => 1600000000000 } });
+        seedAssignment("assign-A");
+        seedPointer({ assignmentId: "assign-A" });
+        wireEnrollments([]);
+
+        const published = await __assignmentsLifecycleStateHandler(makeRequest());
+        expect(published.currentAssignmentResolution).toBe("valid");
+        expect(published.currentAssignmentId).toBe("assign-A");
+
+        // Teacher closes/archives A: the pointer is preserved as-is.
+        const a = assignmentsFixture.find((d) => d.id === "assign-A")!;
+        a.data = { ...a.data, status: inactiveStatus };
+        const inactive = await __assignmentsLifecycleStateHandler(makeRequest());
+        expect(inactive.currentAssignmentResolution).toBe("inactive");
+        expect(inactive.currentAssignmentId).toBeNull();
+        expect(inactive.currentAssignmentId).not.toBe("assign-older");
+        const pointerData = pointerRegistry.get(pointerKey(CLASS_ID, LESSON_SLUG))!.data() as {
+          assignmentId: string;
+        };
+        expect(pointerData.assignmentId).toBe("assign-A");
+
+        // "Assign as new": B is created and published through the normal
+        // path, whose publish advances the pointer to B.
+        seedAssignment("assign-B");
+        seedPointer({ assignmentId: "assign-B" });
+        const afterB = await __assignmentsLifecycleStateHandler(makeRequest());
+        expect(afterB.currentAssignmentResolution).toBe("valid");
+        expect(afterB.currentAssignmentId).toBe("assign-B");
+        expect(a.data.status).toBe(inactiveStatus);
+        const aCandidate = afterB.candidates.find((c) => c.assignmentId === "assign-A");
+        if (inactiveStatus === "closed") {
+          expect(aCandidate?.status).toBe("closed");
+        } else {
+          // Archived occurrences are excluded from candidates (existing contract).
+          expect(aCandidate).toBeUndefined();
+        }
+      },
+    );
 
     // 12. no heuristic selection, explicit
     it("one published candidate and no pointer never yields a non-null currentAssignmentId", async () => {

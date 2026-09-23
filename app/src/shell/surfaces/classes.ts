@@ -568,7 +568,78 @@ export function renderClassesSurface(
   // flight so a rapid re-open of the same class does not double-call.
   // Membership is removed on completion (success or failure) so a later
   // genuine re-open can trigger another refresh.
-  const rosterRefreshInFlight: Set<string> = new Set();
+  // In-flight class-open membership refreshes, by class, so the roster
+  // prefetch for that class can wait for the refresh it depends on.
+  const rosterRefreshInFlight: Map<string, Promise<void>> = new Map();
+
+  // Students-tab roster for the CURRENTLY OPEN class only (at most one entry,
+  // in memory, for this mount's lifetime - never persisted, never one per
+  // class). Opening a class starts a fresh fetch in the background, without
+  // blocking the Assignments view, so switching to Students normally renders
+  // the already-resolved roster with no loading state; switching tabs never
+  // refetches. Freshness boundaries: every class open fetches anew (after
+  // that open's membership refresh), leaving for the Classes list drops the
+  // entry, a roster sync invalidates it, and a failed fetch is never kept -
+  // the next Students visit retries. A response for a class that is no longer
+  // the open one is discarded. Authorization is entirely server-side
+  // (`enrollmentsListForClass`); this only decides WHEN the read happens.
+  type RosterEntry =
+    | { readonly classId: string; readonly status: "pending"; readonly promise: Promise<RosterStudents> }
+    | { readonly classId: string; readonly status: "ready"; readonly students: RosterStudents }
+    | { readonly classId: string; readonly status: "error" };
+  let currentRoster: RosterEntry | null = null;
+
+  const startClassRosterFetch = (
+    classId: string,
+    after?: Promise<unknown>,
+  ): RosterEntry | null => {
+    const loader = loadRoster?.() ?? null;
+    if (loader === null) return null;
+    const promise = (after ?? Promise.resolve())
+      .then(() => loader({ classId }))
+      .then((result) => result.students);
+    const entry: RosterEntry = { classId, status: "pending", promise };
+    currentRoster = entry;
+    promise.then(
+      (students) => {
+        if (currentRoster !== entry) return; // superseded (class changed/left)
+        currentRoster = { classId, status: "ready", students };
+        const hadSnapshot =
+          state.kind === "workspace" && state.selectedId === classId && state.rosterSnapshot;
+        onRosterLoaded(classId, students);
+        // Student Detail opened before the roster resolved (e.g. from an
+        // Assignment Summary name link) shows Previous/Next once it arrives.
+        if (
+          !hadSnapshot &&
+          state.kind === "workspace" &&
+          state.selectedId === classId &&
+          state.selectedStudentId !== null
+        ) {
+          rerender();
+        }
+      },
+      () => {
+        if (currentRoster === entry) currentRoster = { classId, status: "error" };
+      },
+    );
+    return entry;
+  };
+
+  // Returns the open class's roster entry, starting a fetch when there is
+  // none for this class (or, when `retryError`, when the last fetch failed).
+  const ensureClassRoster = (
+    classId: string,
+    retryError: boolean,
+  ): RosterEntry | null => {
+    if (
+      currentRoster !== null &&
+      currentRoster.classId === classId &&
+      (currentRoster.status !== "error" || !retryError)
+    ) {
+      return currentRoster;
+    }
+    return startClassRosterFetch(classId);
+  };
 
   // Sprint 28.6H (Finding 1): whether the minimized "+ Add class" disclosure is
   // revealed in a populated Classes list. Closure-scoped (not part of the
@@ -615,6 +686,8 @@ export function renderClassesSurface(
           counters,
           at: Date.now(),
         });
+        // The class's membership just changed: a held roster is stale.
+        if (currentRoster?.classId === classId) currentRoster = null;
         rerender();
       })
       .catch((err: unknown) => {
@@ -711,6 +784,24 @@ export function renderClassesSurface(
           rerender();
           return;
         }
+        // Students-tab roster: served from the open class's in-memory entry;
+        // a failed fetch is retried only when Students is actually shown.
+        let rosterView: RosterView = { kind: "unwired" };
+        if (loadRoster !== null) {
+          const entry =
+            summary.status === "active"
+              ? ensureClassRoster(
+                  summary.id,
+                  s.tab === "roster" && s.selectedStudentId === null,
+                )
+              : null;
+          rosterView =
+            entry === null || entry.status === "error"
+              ? { kind: "notReady" }
+              : entry.status === "ready"
+                ? { kind: "ready", students: entry.students }
+                : { kind: "pending", promise: entry.promise };
+        }
         renderClassWorkspaceState(
           doc,
           mount,
@@ -724,7 +815,7 @@ export function renderClassesSurface(
           onCancelSetup,
           activateClass !== null,
           assignmentsView,
-          loadRoster,
+          rosterView,
           s.selectedStudentId,
           s.selectedStudentDisplayName,
           s.rosterSnapshot ?? null,
@@ -732,7 +823,6 @@ export function renderClassesSurface(
           onSelectStudent,
           onBackFromStudent,
           onNavigateToNeighbor,
-          onRosterLoaded,
           loadAttempts,
           loadExpectedAssignments,
           listAllAssignments,
@@ -914,6 +1004,38 @@ export function renderClassesSurface(
     // Sprint 28.6H.3 (Task B2): an active class opens directly on Assignments
     // ("what is happening with my students" is the everyday question), not the
     // removed Overview. Overview/Snapshot is no longer a reachable tab.
+    // Sprint 29G.5K-3: best-effort membership freshness on class open.
+    // Fires only for active LMS-backed classes (needsSetup classes have no
+    // enrolled students yet and do not need a refresh). Never blocks the
+    // class from opening; a failure is logged for engineering diagnosis but
+    // does not surface to the teacher or alter the class workspace.
+    if (
+      refreshRoster !== null &&
+      summary?.isLmsLinked === true &&
+      summary.status === "active" &&
+      !rosterRefreshInFlight.has(classId)
+    ) {
+      const refreshing = refreshRoster({ classId })
+        .then(() => undefined)
+        .catch((err: unknown) => {
+          // Best-effort: class remains open with last-known-good membership.
+          if (typeof console !== "undefined") {
+            console.warn("[LyfeLabz] class-open roster refresh failed:", err);
+          }
+        })
+        .finally(() => {
+          rosterRefreshInFlight.delete(classId);
+        });
+      rosterRefreshInFlight.set(classId, refreshing);
+    }
+    // Students-tab roster prefetch for THIS class only, in the background
+    // (never blocks the Assignments view). Every class open fetches anew,
+    // and it waits for this open's membership refresh (if any) so the
+    // prefetched roster is never older than what a later Students click
+    // would previously have fetched.
+    if (summary?.status === "active") {
+      startClassRosterFetch(classId, rosterRefreshInFlight.get(classId));
+    }
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -931,29 +1053,6 @@ export function renderClassesSurface(
       classId,
       section: isNeedsSetup ? "setup" : "assignments",
     });
-    // Sprint 29G.5K-3: best-effort membership freshness on class open.
-    // Fires only for active LMS-backed classes (needsSetup classes have no
-    // enrolled students yet and do not need a refresh). Never blocks the
-    // class from opening; a failure is logged for engineering diagnosis but
-    // does not surface to the teacher or alter the class workspace.
-    if (
-      refreshRoster !== null &&
-      summary?.isLmsLinked === true &&
-      summary.status === "active" &&
-      !rosterRefreshInFlight.has(classId)
-    ) {
-      rosterRefreshInFlight.add(classId);
-      void refreshRoster({ classId })
-        .catch((err: unknown) => {
-          // Best-effort: class remains open with last-known-good membership.
-          if (typeof console !== "undefined") {
-            console.warn("[LyfeLabz] class-open roster refresh failed:", err);
-          }
-        })
-        .finally(() => {
-          rosterRefreshInFlight.delete(classId);
-        });
-    }
   };
 
   const onStartCreate = (): void => {
@@ -1249,6 +1348,10 @@ export function renderClassesSurface(
       setupForm: tab === "setup" ? (state.setupForm ?? emptySetupForm()) : null,
       selectedStudentId: null,
       selectedStudentDisplayName: null,
+      // Same class: the already-loaded roster stays available for Student
+      // Detail's Previous/Next (the Students view itself reads the roster
+      // entry, so switching tabs never refetches).
+      rosterSnapshot: state.rosterSnapshot,
     };
     rerender();
     // Browser Back/Forward: every class section is its own history entry
@@ -1325,13 +1428,10 @@ export function renderClassesSurface(
   // this fires from inside `renderRosterSurface`'s own async resolution,
   // which has already rendered the list itself; this is a silent
   // background state capture, not a visible transition.
-  const onRosterLoaded = (
-    students: ReadonlyArray<{
-      readonly studentId: string;
-      readonly studentDisplayName: string;
-    }>,
-  ): void => {
-    if (state.kind !== "workspace") return;
+  const onRosterLoaded = (classId: string, students: RosterStudents): void => {
+    // Only the class the roster belongs to may receive it (a late response
+    // for a previously open class must never become this class's roster).
+    if (state.kind !== "workspace" || state.selectedId !== classId) return;
     state = { ...state, rosterSnapshot: students };
   };
 
@@ -1367,6 +1467,7 @@ export function renderClassesSurface(
     if (state.kind !== "workspace") return;
     // Returning to the operational Classes landing leaves any class-source task.
     listAddMode = null;
+    currentRoster = null;
     state = {
       kind: "list",
       classes: state.classes,
@@ -1441,6 +1542,7 @@ export function renderClassesSurface(
     restoreToTopList: () => {
       if (state.kind !== "workspace") return;
       listAddMode = null;
+      currentRoster = null;
       state = {
         kind: "list",
         classes: state.classes,
@@ -1716,27 +1818,16 @@ export function renderClassesSurface(
               assignmentId: studentIntent.returnToAssignmentId,
             },
           };
-          rerender();
           // Student Progress & Assignment Membership Phase A, Slice 3: this
           // mount never visited the Students tab, so no roster has been
           // fetched yet (`rosterSnapshot: null` above means Previous/Next
           // render absent for now, per the Slice 2 "missing snapshot"
-          // safety default). Fetch it now, in the background, so
-          // Previous/Next become available a moment later without a
-          // teacher-visible loading state of their own - Student Detail's
-          // own attempts-driven loading state is unaffected either way.
-          if (loadRoster !== null) {
-            const loader = loadRoster();
-            if (loader !== null) {
-              void loader({ classId: studentIntent.classId })
-                .then((result) => {
-                  if (!mount.isConnected) return;
-                  onRosterLoaded(result.students);
-                  rerender();
-                })
-                .catch(() => undefined);
-            }
-          }
+          // safety default). The render below starts the class's roster
+          // fetch in the background (`ensureClassRoster`), and its
+          // resolution re-renders Student Detail so Previous/Next become
+          // available a moment later without a teacher-visible loading
+          // state of their own.
+          rerender();
           return;
         }
       }
@@ -3280,6 +3371,22 @@ export type RosterSyncView = {
   readonly onSyncClick: () => void;
 };
 
+// Students-tab roster presentation, derived from the Classes surface's single
+// in-memory roster entry for the currently open class (see
+// `ensureClassRoster`). The DOM builder never fetches on its own.
+type RosterStudents = ReadonlyArray<{
+  readonly studentId: string;
+  readonly studentDisplayName: string;
+}>;
+
+type RosterView =
+  // No roster reader wired (test harnesses): the genuine empty state.
+  | { readonly kind: "unwired" }
+  // Reader wired but not initialized yet: loading, never a false empty state.
+  | { readonly kind: "notReady" }
+  | { readonly kind: "ready"; readonly students: RosterStudents }
+  | { readonly kind: "pending"; readonly promise: Promise<RosterStudents> };
+
 function renderClassWorkspaceState(
   doc: Document,
   mount: HTMLElement,
@@ -3293,7 +3400,7 @@ function renderClassWorkspaceState(
   onCancelSetup: () => void,
   canActivate: boolean,
   assignmentsView: ClassAssignmentsView,
-  loadRoster: LoadClassRosterAccessor | null,
+  rosterView: RosterView,
   selectedStudentId: string | null,
   selectedStudentDisplayName: string | null,
   rosterSnapshot: ReadonlyArray<{
@@ -3306,12 +3413,6 @@ function renderClassWorkspaceState(
   onSelectStudent: (studentId: string, displayName: string) => void,
   onBackFromStudent: () => void,
   onNavigateToNeighbor: (studentId: string, displayName: string) => void,
-  onRosterLoaded: (
-    students: ReadonlyArray<{
-      readonly studentId: string;
-      readonly studentDisplayName: string;
-    }>,
-  ) => void,
   loadAttempts: (() => AttemptsListForClassCallable | null) | null,
   loadExpectedAssignments:
     | (() => AssessmentStudentAssignmentsForClassCallable | null)
@@ -3418,14 +3519,7 @@ function renderClassWorkspaceState(
         listAssignments,
       );
     } else {
-      renderRosterSurface(
-        doc,
-        surfaceMount,
-        summary.id,
-        loadRoster,
-        onSelectStudent,
-        onRosterLoaded,
-      );
+      renderRosterSurface(doc, surfaceMount, rosterView, onSelectStudent);
     }
   } else {
     renderClassAssignmentsSurface(doc, surfaceMount, summary, assignmentsView);
@@ -3830,15 +3924,8 @@ function appendRosterEmptyState(doc: Document, container: HTMLElement): void {
 function renderRosterSurface(
   doc: Document,
   mount: HTMLElement,
-  classId: string,
-  loadRoster: LoadClassRosterAccessor | null,
+  view: RosterView,
   onSelectStudent: (studentId: string, displayName: string) => void,
-  onRosterLoaded: (
-    students: ReadonlyArray<{
-      readonly studentId: string;
-      readonly studentDisplayName: string;
-    }>,
-  ) => void,
 ): void {
   // Sprint 28.6H (Finding 3/5): section heading is "Students" (the class
   // identity is the workspace header).
@@ -3864,15 +3951,18 @@ function renderRosterSurface(
   // No roster ACCESSOR wired (test harnesses that do not exercise the roster):
   // fall back to the genuine empty state rather than a spinner that never
   // resolves.
-  if (loadRoster === null) {
+  if (view.kind === "unwired") {
     appendRosterEmptyState(doc, body);
     return;
   }
 
-  // Resolve the loader lazily, now that the Students surface is actually
-  // rendering (after teacher functions-init). Snapshotting during earlier
-  // router assembly captured `null`; resolving here yields the live loader.
-  const loader = loadRoster();
+  // The roster for this class was already resolved (prefetched when the
+  // class opened, or loaded on an earlier Students visit): render it
+  // immediately, with no loading state.
+  if (view.kind === "ready") {
+    appendRosterStudents(doc, body, view.students, onSelectStudent);
+    return;
+  }
 
   const loading = doc.createElement("p");
   loading.className = "shell-roster-loading";
@@ -3881,12 +3971,12 @@ function renderRosterSurface(
   loading.textContent = "Loading students…";
   body.appendChild(loading);
 
-  // A null loader here means initialization is genuinely not ready yet. Keep
+  // A not-ready reader means initialization is genuinely not ready yet. Keep
   // the loading state in place - NEVER fall through to the empty state, so a
   // not-ready loader is never mistaken for a zero-student roster (this state is
   // not expected once the teacher can reach the Students tab, but it must fail
   // toward "loading", not "no students").
-  if (loader === null) {
+  if (view.kind === "notReady") {
     return;
   }
 
@@ -3898,42 +3988,11 @@ function renderRosterSurface(
     render();
   };
 
-  void loader({ classId })
-    .then((result) => {
-      // Student Progress & Assignment Membership Phase A, Slice 2: capture
-      // the roster (server-sorted order, unchanged) for Previous/Next,
-      // regardless of which render branch below fires.
-      onRosterLoaded(result.students);
-      applyIfLive(() => {
-        if (result.students.length === 0) {
-          appendRosterEmptyState(doc, body);
-          return;
-        }
-        const list = doc.createElement("ul");
-        list.className = "shell-roster-list";
-        list.setAttribute("data-testid", "roster-list");
-        for (const student of result.students) {
-          const item = doc.createElement("li");
-          item.className = "shell-roster-item";
-          const btn = doc.createElement("button");
-          btn.type = "button";
-          btn.className = "shell-roster-student";
-          btn.setAttribute("data-testid", "roster-student");
-          btn.setAttribute("data-student-id", student.studentId);
-          const name = doc.createElement("span");
-          name.className = "shell-roster-student-name";
-          name.textContent = student.studentDisplayName;
-          btn.appendChild(name);
-          btn.addEventListener("click", () => {
-            onSelectStudent(student.studentId, student.studentDisplayName);
-          });
-          item.appendChild(btn);
-          list.appendChild(item);
-        }
-        body.appendChild(list);
-      });
-    })
-    .catch(() => {
+  view.promise.then(
+    (students) => {
+      applyIfLive(() => appendRosterStudents(doc, body, students, onSelectStudent));
+    },
+    () => {
       // Failure must NOT render the "No students yet." empty state, which
       // would falsely imply an empty class (Part A requirement 8).
       applyIfLive(() => {
@@ -3948,7 +4007,42 @@ function renderRosterSurface(
         error.appendChild(errorMsg);
         body.appendChild(error);
       });
+    },
+  );
+}
+
+function appendRosterStudents(
+  doc: Document,
+  body: HTMLElement,
+  students: RosterStudents,
+  onSelectStudent: (studentId: string, displayName: string) => void,
+): void {
+  if (students.length === 0) {
+    appendRosterEmptyState(doc, body);
+    return;
+  }
+  const list = doc.createElement("ul");
+  list.className = "shell-roster-list";
+  list.setAttribute("data-testid", "roster-list");
+  for (const student of students) {
+    const item = doc.createElement("li");
+    item.className = "shell-roster-item";
+    const btn = doc.createElement("button");
+    btn.type = "button";
+    btn.className = "shell-roster-student";
+    btn.setAttribute("data-testid", "roster-student");
+    btn.setAttribute("data-student-id", student.studentId);
+    const name = doc.createElement("span");
+    name.className = "shell-roster-student-name";
+    name.textContent = student.studentDisplayName;
+    btn.appendChild(name);
+    btn.addEventListener("click", () => {
+      onSelectStudent(student.studentId, student.studentDisplayName);
     });
+    item.appendChild(btn);
+    list.appendChild(item);
+  }
+  body.appendChild(list);
 }
 
 // PDR-029a/b best-attempt selection for Student Detail V1.

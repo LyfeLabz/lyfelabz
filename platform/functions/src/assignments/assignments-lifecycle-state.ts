@@ -82,7 +82,23 @@ export type AssignmentsLifecycleState =
 // are materially different situations even though both currently yield the
 // identical `currentAssignmentId: null`. See `mapCurrentResolution` below
 // for the exact, single place this collapsing happens.
-export type CurrentAssignmentResolutionPublic = "valid" | "unresolved" | "invalid";
+//
+// `inactive` (reassignment model, additive): MANAGED BUT NO LONGER
+// OPERATIONAL - an authoritative, in-scope pointer names an assignment that
+// is no longer published (closed/archived). Exactly the canonical
+// occurrence grouping's "inactive" scope state
+// (`current-occurrence-group.ts`), i.e. the resolver's
+// `assignmentNotPublished` result. Distinct from `invalid` (a contradictory
+// pointer: malformed, cross-scope, or naming a missing assignment), which
+// stays fail-closed. For `inactive` the Curriculum dialog offers only
+// "Assign as new": no older occurrence is resurrected and no replacement
+// Current is chosen; publishing the new assignment makes it Current
+// through the normal publish path.
+export type CurrentAssignmentResolutionPublic =
+  | "valid"
+  | "unresolved"
+  | "invalid"
+  | "inactive";
 
 export type AssignmentsLifecycleStateResponse = {
   readonly state: AssignmentsLifecycleState;
@@ -226,6 +242,9 @@ function mapCurrentResolution(
   }
   if (result.resolution === "pointerMissing") {
     return { currentAssignmentId: null, currentAssignmentResolution: "unresolved" };
+  }
+  if (result.resolution === "assignmentNotPublished") {
+    return { currentAssignmentId: null, currentAssignmentResolution: "inactive" };
   }
   return { currentAssignmentId: null, currentAssignmentResolution: "invalid" };
 }

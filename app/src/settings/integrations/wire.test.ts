@@ -164,6 +164,31 @@ describe("createAssignmentsCallables lifecycleState: Current-resolution parsing"
     expect(out.currentAssignmentId).toBeNull();
   });
 
+  // 3b. inactive (managed Current closed/archived) parses
+  it("parses an inactive resolution with null id", async () => {
+    stubLifecycleState({
+      state: "historicalOnly",
+      candidates: [],
+      currentAssignmentResolution: "inactive",
+      currentAssignmentId: null,
+    });
+    const out = await callLifecycleState();
+    expect(out.currentAssignmentResolution).toBe("inactive");
+    expect(out.currentAssignmentId).toBeNull();
+  });
+
+  it("rejects inactive resolution paired with a non-null assignmentId", async () => {
+    stubLifecycleState({
+      state: "historicalOnly",
+      candidates: [],
+      currentAssignmentResolution: "inactive",
+      currentAssignmentId: "a-x",
+    });
+    await expect(callLifecycleState()).rejects.toThrow(
+      "assignmentsLifecycleState returned an unexpected shape.",
+    );
+  });
+
   // 4. valid + null rejected
   it("rejects valid resolution paired with a null assignmentId", async () => {
     stubLifecycleState({

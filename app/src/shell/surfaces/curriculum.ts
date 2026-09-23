@@ -279,6 +279,13 @@ type RowConfig = {
   // publication." Never reset once true for this row's lifetime in the
   // dialog session.
   scheduleTouched: boolean;
+  // The row's selection at the moment an unresolved Current first locked
+  // it (a locked row is force-deselected and cannot be toggled). When the
+  // teacher then resolves that row in-dialog with "Set as current", the
+  // selection is restored to exactly this value, so a class that was
+  // selected (by default or by the teacher) before the lock is saved along
+  // with the others instead of silently left out. Undefined while unlocked.
+  selectionBeforeLock?: boolean;
 };
 
 // Sprint 30A.1 UX correction: the shared, dialog-level Classroom grading
@@ -1550,7 +1557,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   confirm.type = "button";
   confirm.className = "shell-assign-confirm";
   confirm.setAttribute("data-testid", "assign-confirm");
-  confirm.textContent = "Assign";
+  // Same source of truth as the lesson card's "Update Assignment" label
+  // (`isAssigned`): an existing assignment flow saves changes; a first-time
+  // flow assigns. Copy only - the submission behavior is identical.
+  confirm.textContent = isAssigned(lesson.slug) ? "Save" : "Assign";
   footer.appendChild(confirm);
 
   overlay.appendChild(dialog);
@@ -2044,7 +2054,11 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         lcState: state,
         candidates: lc?.candidates ?? [],
       };
-      if (
+      if (lc?.currentAssignmentResolution === "inactive") {
+        // Managed Current no longer operational: "Assign as new" creates a
+        // brand-new assignment (never an update of an older occurrence).
+        creationRows.push(enriched);
+      } else if (
         state === "onePublishedFullyCurrent" ||
         ((state === "onePublishedMissingRecipients" ||
           state === "multiplePublished") &&
@@ -2064,22 +2078,26 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
 
     close();
 
+    // Progress feedback describes exactly the operation being dispatched
+    // (the creation and update buckets above), never the raw selection. A
+    // selected row that neither bucket can process (not expected given the
+    // render-time gating) is reported rather than silently dropped.
+    const classCount = (n: number): string => (n === 1 ? "1 class" : `${n} classes`);
     const summaryParts: string[] = [];
     if (creationRows.length > 0) {
-      summaryParts.push(
-        creationRows.length === 1
-          ? `Assigning ${lesson.title} to 1 class`
-          : `Assigning ${lesson.title} to ${creationRows.length} classes`,
-      );
+      summaryParts.push(`Assigning ${lesson.title} to ${classCount(creationRows.length)}`);
     }
     if (updateRows.length > 0) {
-      summaryParts.push(
-        updateRows.length === 1
-          ? `Updating 1 class`
-          : `Updating ${updateRows.length} classes`,
-      );
+      summaryParts.push(`Saving changes to ${classCount(updateRows.length)}`);
     }
-    onConfirm(summaryParts.join(". ") + ".");
+    const notProcessed = enabledRows.length - creationRows.length - updateRows.length;
+    const notProcessedNote =
+      notProcessed > 0 ? `${classCount(notProcessed)} could not be saved yet.` : "";
+    onConfirm(
+      summaryParts.length > 0
+        ? `${summaryParts.join(". ")}\u2026${notProcessedNote ? ` ${notProcessedNote}` : ""}`
+        : notProcessedNote,
+    );
 
     invalidateLifecycleCache(lesson.slug);
 
@@ -2537,6 +2555,17 @@ function renderSetOrChangeCurrentControl(input: {
         mutationSucceeded = false;
       }
 
+      // A row resolved here was locked (force-deselected) only because its
+      // Current was unresolved; restore the selection it had before the
+      // lock so it is included in Save like the rest of the selection.
+      if (mutationSucceeded && mode === "set") {
+        const cfg = rowState.get(cls.id);
+        if (cfg !== undefined && cfg.selectionBeforeLock !== undefined) {
+          cfg.enabled = cfg.selectionBeforeLock;
+          cfg.selectionBeforeLock = undefined;
+        }
+      }
+
       let entry: LifecycleStateEntry;
       try {
         entry = await refreshRowLifecycle(cls, retryContext);
@@ -2858,17 +2887,35 @@ function renderRow(
   // candidate (`onePublishedFullyCurrent`, `onePublishedMissingRecipients`,
   // `multiplePublished`) therefore share the identical needs-resolution
   // gate below.
+  // Reassignment model: a MANAGED Current that is no longer operational
+  // (closed/archived) is neither legacy-unresolved nor contradictory. The
+  // class is not stranded: its only action is "Assign as new" (a normal new
+  // assignment whose publication becomes the new Current). Older
+  // occurrences are never offered as Current or updated, and no Current is
+  // chosen for the teacher.
+  const managedInactive = currentResolution === "inactive";
   const needsCurrentResolution =
+    !managedInactive &&
     (lcState === "onePublishedFullyCurrent" ||
       lcState === "onePublishedMissingRecipients" ||
       lcState === "multiplePublished") &&
     currentResolution !== "valid";
+  if (needsCurrentResolution && cfg.selectionBeforeLock === undefined) {
+    cfg.selectionBeforeLock = cfg.enabled;
+  }
   const currentAssignmentId = lifecycle?.currentAssignmentId ?? null;
   const eligibleCandidates = eligiblePublishedCandidates(
     lifecycle?.candidates ?? [],
   );
 
-  if (lcState === "onePublishedFullyCurrent") {
+  if (managedInactive) {
+    lifecycleBadge.textContent = "Assign as new";
+    lifecycleBadge.classList.add("shell-assign-lifecycle-historical");
+    checkbox.setAttribute(
+      "aria-label",
+      `Assign as new for ${cls.title} - the current assignment is no longer active`,
+    );
+  } else if (lcState === "onePublishedFullyCurrent") {
     if (needsCurrentResolution) {
       lifecycleBadge.textContent = "Needs resolution before updating";
       lifecycleBadge.classList.add("shell-assign-lifecycle-needs-resolution");
@@ -3032,7 +3079,9 @@ function renderRow(
   }
 
   const isCreationRow =
-    lcState === "neverAssigned" || lcState === "historicalOnly";
+    managedInactive ||
+    lcState === "neverAssigned" ||
+    lcState === "historicalOnly";
   // Historical Assignment Resolution, Implementation Slice 10. Broadened
   // from the pre-Slice-10 `lcState === "onePublishedFullyCurrent"` check:
   // any row this slice force-disables (see `needsCurrentResolution` above)
@@ -3040,7 +3089,8 @@ function renderRow(
   // `onePublishedFullyCurrent` already did, for the identical reason -
   // there is nothing this row can currently do.
   const isLockedRow =
-    lcState === "onePublishedFullyCurrent" || needsCurrentResolution;
+    !managedInactive &&
+    (lcState === "onePublishedFullyCurrent" || needsCurrentResolution);
 
   let lmsTopicSelect: HTMLSelectElement | null = null;
   let dateInput: HTMLInputElement | null = null;
@@ -3268,23 +3318,22 @@ async function runReconcileUpdates(input: {
   const failed = outcomes.filter((o) => o.failed);
   const totalAdded = succeeded.reduce((sum, o) => sum + o.added, 0);
 
+  // Save terminology (the Update Assignment dialog's action is "Save"),
+  // counting exactly the classes this operation processed.
+  const classCount = (n: number): string => (n === 1 ? "1 class" : `${n} classes`);
+  const studentsAdded =
+    totalAdded === 0
+      ? ""
+      : totalAdded === 1
+        ? " Added 1 student."
+        : ` Added ${totalAdded} students.`;
   let summary: string;
-  if (failed.length === 0 && succeeded.length === 1) {
-    summary =
-      totalAdded === 0
-        ? `${lesson.title}: assignment is up to date.`
-        : totalAdded === 1
-          ? `${lesson.title}: added 1 student.`
-          : `${lesson.title}: added ${totalAdded} students.`;
-  } else if (failed.length === 0) {
-    summary =
-      totalAdded === 0
-        ? `${lesson.title}: all ${succeeded.length} assignments are up to date.`
-        : `${lesson.title}: updated ${succeeded.length} classes, added ${totalAdded} students.`;
+  if (failed.length === 0) {
+    summary = `${lesson.title}: saved changes to ${classCount(succeeded.length)}.${studentsAdded}`;
   } else if (succeeded.length === 0) {
-    summary = `${lesson.title}: update did not succeed. Please try again.`;
+    summary = `${lesson.title}: changes were not saved. Please try again.`;
   } else {
-    summary = `${lesson.title}: updated ${succeeded.length} of ${outcomes.length} classes. ${failed.length} did not succeed.`;
+    summary = `${lesson.title}: saved changes to ${succeeded.length} of ${outcomes.length} classes. ${failed.length} did not save.${studentsAdded}`;
   }
 
   if (succeeded.length > 0) {

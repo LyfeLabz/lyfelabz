@@ -902,7 +902,7 @@ describe("Curriculum lifecycle UI", () => {
     const banner = mount.querySelector<HTMLElement>(
       "[data-testid=assign-success]",
     );
-    expect(banner?.textContent).toContain("did not succeed");
+    expect(banner?.textContent).toContain("changes were not saved. Please try again.");
   });
 
   // ---- 7. Lifecycle state loading failure - write-safe unresolved state ----
@@ -4331,5 +4331,475 @@ describe("Curriculum lifecycle UI", () => {
     ]);
     expect(asn.currentSetCalls).toHaveLength(0);
     expect(asn.reconcileCalls).toHaveLength(0);
+  });
+});
+
+// Current-selection controls: ONE visible Set-as-Current action at a time,
+// in every Current state. "Visible" means neither the element nor any
+// ancestor is `hidden`; the served CSS pins `[hidden]` to `display: none`
+// for these controls (curriculum.current-controls-css.test.ts), which is
+// what makes these DOM assertions true in a real browser.
+describe("Current controls: one Set-as-Current action at a time", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document.querySelectorAll("[data-testid=assign-overlay]").forEach((el) => el.remove());
+  });
+
+  const isVisible = (el: Element | null): boolean => {
+    for (let node: Element | null = el; node !== null; node = node.parentElement) {
+      if ((node as HTMLElement).hidden) return false;
+    }
+    return el !== null;
+  };
+  const q = (testid: string) => document.querySelector<HTMLElement>(`[data-testid=${testid}]`);
+  // Every control that sets/changes Current for class c1.
+  const visibleCurrentActions = (): string[] =>
+    [
+      "assign-row-set-current-c1",
+      "assign-row-set-current-confirm-c1",
+      "assign-row-change-current-confirm-c1",
+    ].filter((id) => isVisible(q(id)));
+
+  async function openDialog(lifecycle: Parameters<typeof makeAssignments>[0]) {
+    const asn = makeAssignments(lifecycle);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, { listClasses: listOne, assignments: asn.seam });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    return asn;
+  }
+
+  const legacyMultiple = (resolution: "unresolved" | "invalid") => ({
+    c1: {
+      state: "multiplePublished" as const,
+      currentAssignmentId: null,
+      currentAssignmentResolution: resolution,
+      candidates: [
+        publishedCandidate({ assignmentId: "a-1" }),
+        publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+      ],
+    },
+  });
+
+  test("unresolved legacy (never had a Current): only the 'Set as current assignment' opener is visible before opening", async () => {
+    await openDialog(legacyMultiple("unresolved"));
+    expect(visibleCurrentActions()).toEqual(["assign-row-set-current-c1"]);
+    expect(isVisible(q("assign-row-set-current-panel-c1"))).toBe(false);
+  });
+
+  test("invalid (contradictory) Current: fail-closed row, no Current controls, Retry only", async () => {
+    await openDialog(legacyMultiple("invalid"));
+    expect(visibleCurrentActions()).toEqual([]);
+    expect(q("assign-row-set-current-panel-c1")).toBeNull();
+    expect(q("assign-row-lifecycle-c1")?.textContent).toBe("Current assignment could not be verified");
+  });
+
+  test("opening the resolver hides the opener: radios + one confirm + Cancel are the only Current controls; nothing preselected", async () => {
+    const asn = await openDialog(legacyMultiple("unresolved"));
+    q("assign-row-set-current-c1")!.click();
+    await flush();
+
+    expect(visibleCurrentActions()).toEqual(["assign-row-set-current-confirm-c1"]);
+    expect(isVisible(q("assign-row-set-current-cancel-c1"))).toBe(true);
+    const radios = Array.from(
+      q("assign-row-set-current-panel-c1")!.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
+    );
+    expect(radios).toHaveLength(2);
+    expect(radios.every((r) => !r.checked)).toBe(true);
+
+    // Validation until an eligible assignment is chosen; no Current guessed.
+    q("assign-row-set-current-confirm-c1")!.click();
+    await flush();
+    expect(isVisible(q("assign-row-set-current-validation-c1"))).toBe(true);
+    expect(asn.currentSetCalls).toHaveLength(0);
+  });
+
+  test("Cancel closes the resolver and restores the single opener (never both at once)", async () => {
+    await openDialog(legacyMultiple("unresolved"));
+    q("assign-row-set-current-c1")!.click();
+    await flush();
+    q("assign-row-set-current-cancel-c1")!.click();
+    await flush();
+    expect(visibleCurrentActions()).toEqual(["assign-row-set-current-c1"]);
+    expect(isVisible(q("assign-row-set-current-panel-c1"))).toBe(false);
+  });
+
+  test("valid Current with other candidates: no opener; the chooser's single confirm, disabled until a different assignment is chosen", async () => {
+    await openDialog({
+      c1: {
+        state: "multiplePublished",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [
+          publishedCandidate({ assignmentId: "a-1" }),
+          publishedCandidate({ assignmentId: "a-2", title: "Second" }),
+        ],
+      },
+    });
+    expect(q("assign-row-set-current-c1")).toBeNull();
+    expect(visibleCurrentActions()).toEqual(["assign-row-change-current-confirm-c1"]);
+    const confirm = q("assign-row-change-current-confirm-c1") as HTMLButtonElement;
+    expect(confirm.disabled).toBe(true);
+    const current = q("assign-current-option-c1-a-1") as HTMLInputElement;
+    expect(current.disabled).toBe(true);
+    const other = q("assign-current-option-c1-a-2") as HTMLInputElement;
+    other.checked = true;
+    other.dispatchEvent(new Event("change"));
+    expect(confirm.disabled).toBe(false);
+  });
+
+  test("valid Current and no other candidate: no Current controls at all", async () => {
+    await openDialog({
+      c1: {
+        state: "onePublishedFullyCurrent",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid" as const,
+        candidates: [publishedCandidate({ assignmentId: "a-1", missingRecipientCount: 0 })],
+      },
+    });
+    expect(visibleCurrentActions()).toEqual([]);
+  });
+});
+
+// Production reproduction (Sep 23): three classes resolved with "Set as
+// current" inside the dialog, then saved together with a class whose Current
+// was already valid. Only ONE class was reconciled: a row locked by an
+// unresolved Current is force-deselected, and resolving it in the dialog left
+// it deselected, so it silently dropped out of Save. The "Updating 1 class"
+// message was accurate for the operation dispatched; the operation set was
+// too narrow.
+describe("Update Assignment: every selected class is processed", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document.querySelectorAll("[data-testid=assign-overlay]").forEach((el) => el.remove());
+  });
+
+  const settle = async (): Promise<void> => {
+    for (let i = 0; i < 8; i += 1) await flush();
+  };
+  const banner = (mount: HTMLElement): string =>
+    mount.querySelector("[data-testid=assign-success]")?.textContent ?? "";
+  const selectedCount = (): string =>
+    document.querySelector("[data-testid=assign-selected-count]")?.textContent ?? "";
+  const checkbox = (cls: string) =>
+    document.querySelector<HTMLInputElement>(`[data-testid=assign-row-enabled-${cls}]`)!;
+
+  const validCurrent = (id: string): AssignmentsLifecycleStateOutput => ({
+    state: "onePublishedMissingRecipients",
+    currentAssignmentId: id,
+    currentAssignmentResolution: "valid",
+    candidates: [publishedCandidate({ assignmentId: id })],
+  });
+  const unresolvedLegacy = (a: string, b: string): AssignmentsLifecycleStateOutput => ({
+    state: "multiplePublished",
+    currentAssignmentId: null,
+    currentAssignmentResolution: "unresolved",
+    candidates: [publishedCandidate({ assignmentId: a }), publishedCandidate({ assignmentId: b, title: "Second" })],
+  });
+
+  async function open(list: ListClasses, lifecycle: Parameters<typeof makeAssignments>[0]) {
+    const asn = makeAssignments(lifecycle);
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, { listClasses: list, assignments: asn.seam });
+    clickAssign(mount, LESSON_SLUG);
+    await settle();
+    return { asn, mount };
+  }
+
+  async function setCurrent(cls: string, pick: string) {
+    document.querySelector<HTMLButtonElement>(`[data-testid=assign-row-set-current-${cls}]`)!.click();
+    const radio = document.querySelector<HTMLInputElement>(`[data-testid=assign-current-option-${cls}-${pick}]`)!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change"));
+    document.querySelector<HTMLButtonElement>(`[data-testid=assign-row-set-current-confirm-${cls}]`)!.click();
+    await settle();
+  }
+
+  test("REPRO: rows resolved with Set as current rejoin the selection automatically; Save processes all three", async () => {
+    const { asn, mount } = await open(listThree, {
+      c1: validCurrent("c1a"),
+      c2: unresolvedLegacy("c2a", "c2b"),
+      c3: unresolvedLegacy("c3a", "c3b"),
+    });
+    // Locked rows are deselected while their Current is unresolved.
+    expect(checkbox("c2").checked).toBe(false);
+    expect(checkbox("c3").checked).toBe(false);
+    expect(selectedCount()).toBe("1 class selected");
+
+    await setCurrent("c2", "c2b");
+    await setCurrent("c3", "c3b");
+
+    // No manual re-check: resolving restores the pre-lock selection.
+    expect(checkbox("c2").checked).toBe(true);
+    expect(checkbox("c3").checked).toBe(true);
+    expect(selectedCount()).toBe("3 classes selected");
+
+    clickConfirm();
+    expect(banner(mount)).toBe("Saving changes to 3 classes…");
+    await settle();
+    expect(asn.currentReconcileCalls.map((c) => c.classId).sort()).toEqual(["c1", "c2", "c3"]);
+    expect(asn.draftCalls).toEqual([]);
+    expect(banner(mount)).toBe("Earth's Layers: saved changes to 3 classes.");
+  });
+
+  test("a teacher who deselects a class keeps it deselected after resolving its Current elsewhere", async () => {
+    const { asn } = await open(listTwo, {
+      c1: validCurrent("c1a"),
+      c2: unresolvedLegacy("c2a", "c2b"),
+    });
+    await setCurrent("c2", "c2b");
+    expect(checkbox("c2").checked).toBe(true);
+    checkbox("c2").checked = false;
+    checkbox("c2").dispatchEvent(new Event("change"));
+    expect(selectedCount()).toBe("1 class selected");
+    clickConfirm();
+    await settle();
+    expect(asn.currentReconcileCalls.map((c) => c.classId)).toEqual(["c1"]);
+  });
+
+  test("a failed Set as current leaves the row locked and out of Save (no silent inclusion)", async () => {
+    const asn = makeAssignments(
+      { c1: validCurrent("c1a"), c2: unresolvedLegacy("c2a", "c2b") },
+      { failCurrentSet: true },
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, { listClasses: listTwo, assignments: asn.seam });
+    clickAssign(mount, LESSON_SLUG);
+    await settle();
+    await setCurrent("c2", "c2b");
+    expect(checkbox("c2").checked).toBe(false);
+    expect(checkbox("c2").disabled).toBe(true);
+    expect(selectedCount()).toBe("1 class selected");
+    clickConfirm();
+    expect(banner(mount)).toBe("Saving changes to 1 class…");
+    await settle();
+    expect(asn.currentReconcileCalls.map((c) => c.classId)).toEqual(["c1"]);
+  });
+
+  test("1 class: singular progress and completion wording", async () => {
+    const { asn, mount } = await open(listOne, { c1: validCurrent("c1a") });
+    clickConfirm();
+    expect(banner(mount)).toBe("Saving changes to 1 class…");
+    await settle();
+    expect(asn.currentReconcileCalls).toHaveLength(1);
+    expect(banner(mount)).toBe("Earth's Layers: saved changes to 1 class.");
+  });
+
+  test("3 valid classes: plural wording and exactly three reconcile operations", async () => {
+    const { asn, mount } = await open(listThree, {
+      c1: validCurrent("c1a"),
+      c2: validCurrent("c2a"),
+      c3: validCurrent("c3a"),
+    });
+    expect(selectedCount()).toBe("3 classes selected");
+    clickConfirm();
+    expect(banner(mount)).toBe("Saving changes to 3 classes…");
+    await settle();
+    expect(asn.currentReconcileCalls.map((c) => c.classId).sort()).toEqual(["c1", "c2", "c3"]);
+  });
+
+  test("completion reports students added across the saved classes", async () => {
+    const asn = makeAssignments(
+      { c1: validCurrent("c1a"), c2: validCurrent("c2a") },
+      { currentReconcileAdded: 2 },
+    );
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, { listClasses: listTwo, assignments: asn.seam });
+    clickAssign(mount, LESSON_SLUG);
+    await settle();
+    clickConfirm();
+    await settle();
+    expect(banner(mount)).toBe("Earth's Layers: saved changes to 2 classes. Added 4 students.");
+  });
+
+  test("mixed eligibility: counts match the operations actually dispatched, never the raw checkbox set", async () => {
+    // c1 valid (update), c2 never assigned (new assignment), c3 invalid
+    // Current (fail-closed: not selectable, never counted or dispatched).
+    const { asn, mount } = await open(listThree, {
+      c1: validCurrent("c1a"),
+      c3: {
+        state: "multiplePublished",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "invalid",
+        candidates: [publishedCandidate({ assignmentId: "c3a" }), publishedCandidate({ assignmentId: "c3b" })],
+      },
+    });
+    expect(checkbox("c3").checked).toBe(false);
+    expect(selectedCount()).toBe("2 classes selected");
+    clickConfirm();
+    expect(banner(mount)).toBe("Assigning Earth's Layers to 1 class. Saving changes to 1 class…");
+    await settle();
+    expect(asn.currentReconcileCalls.map((c) => c.classId)).toEqual(["c1"]);
+    expect(asn.draftCalls).toEqual(["c2"]);
+    expect(asn.currentSetCalls).toEqual([]);
+  });
+});
+
+describe("Update Assignment: primary action label", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document.querySelectorAll("[data-testid=assign-overlay]").forEach((el) => el.remove());
+  });
+
+  const confirmLabel = () =>
+    document.querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")?.textContent;
+
+  test("first-time assignment flow: the primary action reads 'Assign'", async () => {
+    const asn = makeAssignments();
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, { listClasses: listOne, assignments: asn.seam });
+    expect(
+      mount.querySelector(`[data-testid=lesson-assign-${LESSON_SLUG}]`)?.textContent,
+    ).toBe("Assign");
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(confirmLabel()).toBe("Assign");
+  });
+
+  test("existing Update Assignment flow: the primary action reads 'Save' (same submission behavior)", async () => {
+    const detail = makeDetailSeam([
+      freeze({
+        assignmentId: "a-1",
+        title: "Earth's Layers",
+        status: "published",
+        className: "6A",
+        lessonSlug: LESSON_SLUG,
+        classId: "c1",
+      }) as AssignmentDetailMetadata,
+    ]);
+    const asn = makeAssignments({
+      c1: {
+        state: "onePublishedMissingRecipients",
+        currentAssignmentId: "a-1",
+        currentAssignmentResolution: "valid",
+        candidates: [publishedCandidate()],
+      },
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignments: asn.seam,
+      assignmentDetail: detail.seam,
+    });
+    expect(
+      mount.querySelector(`[data-testid=lesson-assign-${LESSON_SLUG}]`)?.textContent,
+    ).toBe("Update Assignment");
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    expect(confirmLabel()).toBe("Save");
+    clickConfirm();
+    for (let i = 0; i < 8; i += 1) await flush();
+    expect(asn.currentReconcileCalls.map((c) => c.classId)).toEqual(["c1"]);
+  });
+});
+
+// Reassignment model: a MANAGED Current that the teacher closed or archived
+// is "inactive" - distinct from unresolved legacy history and from a
+// contradictory ("invalid") pointer. The class is never stranded: its action
+// is "Assign as new", which creates and publishes a brand-new assignment
+// (whose publish becomes the new Current). No older occurrence is updated or
+// offered as Current.
+describe("Managed-inactive Current: Assign as new", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document.querySelectorAll("[data-testid=assign-overlay]").forEach((el) => el.remove());
+  });
+
+  const q = (testid: string) => document.querySelector<HTMLElement>(`[data-testid=${testid}]`);
+
+  async function openWith(lifecycle: AssignmentsLifecycleStateOutput) {
+    const asn = makeAssignments({ c1: lifecycle });
+    const createdIds: string[] = [];
+    const createDraft = asn.seam.createDraft;
+    const seam: AssignmentsCallables = {
+      ...asn.seam,
+      createDraft: async (input) => {
+        createdIds.push(input.assignmentId);
+        return createDraft(input);
+      },
+    };
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, { listClasses: listOne, assignments: seam });
+    clickAssign(mount, LESSON_SLUG);
+    await flush();
+    await flush();
+    return { asn, mount, createdIds };
+  }
+
+  const cases: ReadonlyArray<[string, AssignmentsLifecycleStateOutput]> = [
+    [
+      "closed Current (historicalOnly)",
+      {
+        state: "historicalOnly",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "inactive",
+        candidates: [historicalCandidate({ assignmentId: "a-closed-current" })],
+      },
+    ],
+    [
+      "closed Current alongside an older published occurrence",
+      {
+        state: "onePublishedFullyCurrent",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "inactive",
+        candidates: [
+          publishedCandidate({ assignmentId: "a-older", missingRecipientCount: 0 }),
+          historicalCandidate({ assignmentId: "a-closed-current" }),
+        ],
+      },
+    ],
+    [
+      "archived Current (archived occurrences are not candidates)",
+      {
+        state: "neverAssigned",
+        currentAssignmentId: null,
+        currentAssignmentResolution: "inactive",
+        candidates: [],
+      },
+    ],
+  ];
+
+  test.each(cases)("%s: row offers Assign as new, selectable, with no Set/Change Current controls", async (_label, lc) => {
+    await openWith(lc);
+    expect(q("assign-row-lifecycle-c1")?.textContent).toBe("Assign as new");
+    const cb = q("assign-row-enabled-c1") as HTMLInputElement;
+    expect(cb.disabled).toBe(false);
+    expect(cb.checked).toBe(true);
+    expect(q("assign-row-set-current-c1")).toBeNull();
+    expect(q("assign-row-set-current-panel-c1")).toBeNull();
+    expect(q("assign-row-change-current-confirm-c1")).toBeNull();
+  });
+
+  test.each(cases)("%s: Assign creates and publishes a NEW assignment; nothing older is updated or made Current", async (_label, lc) => {
+    const { asn, mount, createdIds } = await openWith(lc);
+    clickConfirm();
+    expect(mount.querySelector("[data-testid=assign-success]")?.textContent).toBe(
+      "Assigning Earth's Layers to 1 class…",
+    );
+    for (let i = 0; i < 8; i += 1) await flush();
+    expect(asn.draftCalls).toEqual(["c1"]);
+    expect(createdIds).toHaveLength(1);
+    expect(["a-older", "a-closed-current"]).not.toContain(createdIds[0]);
+    expect(asn.currentSetCalls).toEqual([]);
+    expect(asn.currentReconcileCalls).toEqual([]);
+    expect(asn.reconcileCalls).toEqual([]);
+  });
+
+  test("invalid (contradictory) Current is still fail-closed, unchanged", async () => {
+    const { asn } = await openWith({
+      state: "onePublishedFullyCurrent",
+      currentAssignmentId: null,
+      currentAssignmentResolution: "invalid",
+      candidates: [publishedCandidate({ missingRecipientCount: 0 })],
+    });
+    expect(q("assign-row-lifecycle-c1")?.textContent).toBe("Current assignment could not be verified");
+    expect((q("assign-row-enabled-c1") as HTMLInputElement).disabled).toBe(true);
+    clickConfirm();
+    for (let i = 0; i < 8; i += 1) await flush();
+    expect(asn.draftCalls).toEqual([]);
+    expect(asn.currentReconcileCalls).toEqual([]);
   });
 });

@@ -361,7 +361,8 @@ export function createAssignmentsCallables(
       if (
         currentAssignmentResolution !== "valid" &&
         currentAssignmentResolution !== "unresolved" &&
-        currentAssignmentResolution !== "invalid"
+        currentAssignmentResolution !== "invalid" &&
+        currentAssignmentResolution !== "inactive"
       ) {
         throw new Error(
           "assignmentsLifecycleState returned an unexpected shape.",
@@ -384,7 +385,7 @@ export function createAssignmentsCallables(
         }
         currentAssignmentId = validId;
       } else {
-        // "unresolved" and "invalid" both REQUIRE currentAssignmentId to be
+        // "unresolved", "invalid", and "inactive" all REQUIRE currentAssignmentId to be
         // exactly `null` - not merely falsy, not a missing field, and not
         // any non-empty string. `undefined` (a genuinely missing field) is
         // deliberately NOT accepted as equivalent to `null` here.

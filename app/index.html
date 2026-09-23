@@ -1861,6 +1861,19 @@
     gap: 0.4rem;
     margin-top: 0.2rem;
   }
+  /* The Set Current resolver panel starts collapsed behind its "Set as
+     current assignment" toggle and is re-collapsed by Cancel, both via the
+     `hidden` attribute. `.shell-assign-row-current-panel { display: flex }`
+     above out-ranks the browser's default `[hidden] { display: none }`, so
+     without this rule the "collapsed" panel (radios + its own "Set as
+     current" button) rendered next to the toggle: two competing Set Current
+     actions at once. Same fix the history panel already carries
+     (`.shell-assign-row-history-panel[hidden]`). The toggle is included
+     defensively so a future display rule cannot reintroduce the overlap. */
+  .shell-assign-row-current-panel[hidden],
+  .shell-assign-row-set-current[hidden] {
+    display: none;
+  }
   .shell-assign-disambig-current-marker {
     /* Historical Assignment Resolution, post-release UX patch. The marker
        is the last child of the flex-row `.shell-assign-disambig-option`
