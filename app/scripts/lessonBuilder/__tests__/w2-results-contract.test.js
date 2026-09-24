@@ -63,7 +63,7 @@ const W2_V2_LESSONS = [
   { slug: "nature-of-waves", prefix: "nw" },
   { slug: "wave-behavior", prefix: "wb" },
   { slug: "digital-signals", prefix: "ds" },
-  { slug: "conducting-experiments", prefix: "ce" },
+  { slug: "conducting-experiments", prefix: "ce", offset: "measured" },
   { slug: "engineering-design", prefix: "ed" },
   { slug: "choosing-materials", prefix: "cm" },
   { slug: "designing-to-scale", prefix: "cm" },
@@ -91,6 +91,15 @@ const W2_V2_LESSONS = [
   { slug: "innovation-and-sustainability", prefix: "el" },
 ];
 
+// offset: "measured" marks the post-submit landing pilot (conducting-
+// experiments). Its fixed 120px/104px O2 offset was replaced by a
+// scroll-margin-top computed from the MEASURED sticky nav + progress-tray
+// heights, shared by v1 and v2, because the nav wraps to ~74/113/125px at
+// Chromebook/tablet/phone widths and no single constant clears it. Lessons
+// without the flag keep the original fixed-offset contract below.
+const MEASURED_OFFSET_RULE =
+  "scroll-margin-top: calc(var(--ce-nav-h, 64px) + var(--ce-progress-h, 56px) + 1rem);";
+
 // The standalone (non-assignment) v2 completion copy. Used as an ordering
 // landmark: the O3 reveal must sit in the assignment branch, which precedes
 // this standalone-path message in <prefix>SubmitQuiz.
@@ -100,7 +109,8 @@ function build(slug, target) {
   return builder.buildLesson({ slug, target, write: false }).bytes;
 }
 
-describe.each(W2_V2_LESSONS)("W2 hardened-results contract: $slug", ({ slug, prefix }) => {
+describe.each(W2_V2_LESSONS)("W2 hardened-results contract: $slug", ({ slug, prefix, offset }) => {
+  const measured = offset === "measured";
   let v1;
   let v2;
 
@@ -135,6 +145,14 @@ describe.each(W2_V2_LESSONS)("W2 hardened-results contract: $slug", ({ slug, pre
   });
 
   test("O2: v2 carries a breakpoint-aware scroll offset tied to the sticky chrome", () => {
+    if (measured) {
+      // Pilot: the offset tracks the measured sticky stack at every width,
+      // and the stale fixed values must not linger as competing rules.
+      expect(v2).toContain(MEASURED_OFFSET_RULE);
+      expect(v2).not.toContain(".score-board { scroll-margin-top: 120px; }");
+      expect(v2).not.toContain("scroll-margin-top: 104px");
+      return;
+    }
     expect(v2).toContain(".score-board { scroll-margin-top: 120px; }");
     expect(v2).toContain(
       "@media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }",
@@ -187,6 +205,12 @@ describe.each(W2_V2_LESSONS)("W2 hardened-results contract: $slug", ({ slug, pre
   });
 
   test("v1 never acquires the O2 focus / offset / announcement additions", () => {
+    if (measured) {
+      // Pilot: the measured landing offset is shared lesson CSS (v1 had no
+      // offset at all and landed the score under the sticky chrome). The
+      // v2-only focus and announcement additions stay out of v1.
+      expect(v1).toContain(MEASURED_OFFSET_RULE);
+    }
     expect(v1).not.toContain("scroll-margin-top: 120px");
     expect(v1).not.toContain("sb.focus({ preventScroll: true })");
     expect(v1).not.toContain(`id="${prefix}-score" tabindex="-1"`);

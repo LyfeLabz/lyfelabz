@@ -490,31 +490,76 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   gap: 0.5rem;
   margin-top: 0.9rem;
 }
+.predict-hint {
+  margin: 0.9rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.predict-hint + .predict-buttons { margin-top: 0.5rem; }
+.question-pause.locked .predict-hint { display: none; }
 .predict-btn {
   flex: 1;
   min-width: 140px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.15);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.32);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.3);
   color: var(--text);
   font-family: 'Nunito', sans-serif;
   font-size: 0.84rem;
   font-weight: 800;
-  padding: 0.55rem 0.7rem;
+  padding: 0.55rem 0.9rem;
   border-radius: 99px;
   cursor: pointer;
   transition: all 0.2s;
 }
-.predict-btn:hover:not(.locked) {
-  border-color: rgba(245,200,66,0.5);
-  background: rgba(245,200,66,0.08);
+/* Empty circle = "pick me"; filled check = your pick (not color alone) */
+.predict-btn::before {
+  content: '';
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255,255,255,0.45);
+  border-radius: 50%;
+  box-sizing: border-box;
+  font-size: 0.7rem;
+  line-height: 0.75rem;
+  text-align: center;
+  transition: all 0.2s;
 }
+.question-pause:not(.locked) .predict-btn:hover,
+.question-pause:not(.locked) .predict-btn:focus-visible {
+  border-color: var(--gold);
+  background: rgba(245,200,66,0.1);
+  transform: translateY(-1px);
+}
+.question-pause:not(.locked) .predict-btn:hover::before,
+.question-pause:not(.locked) .predict-btn:focus-visible::before { border-color: var(--gold); }
 .predict-btn.chosen {
   border-color: var(--gold);
   background: rgba(245,200,66,0.16);
   color: var(--gold);
+  box-shadow: none;
 }
-.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; }
+.predict-btn.chosen::before {
+  content: '✓';
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--dark);
+  font-weight: 900;
+}
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; box-shadow: none; }
 .question-pause.locked .predict-btn.chosen { opacity: 1; }
+@media (max-width: 480px) {
+  .predict-btn { flex-basis: 100%; justify-content: flex-start; text-align: left; }
+}
 
 .predict-gated { display: none; }
 .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
@@ -578,19 +623,32 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   color: var(--gold);
   line-height: 1.5;
 }
-.hook-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
+.hook-card:hover:not(.revealed),
+.hook-card:focus-visible:not(.revealed) { border-color: rgba(245,200,66,0.45); }
 .hook-card.revealed { cursor: default; }
+.hook-card.revealed:hover { transform: none; box-shadow: none; }
 .hook-card-prompt {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  font-size: 0.74rem;
+  font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 0.4rem 1rem;
-  border: 1px dashed rgba(245,200,66,0.45);
+  color: var(--gold);
+  background: rgba(245,200,66,0.1);
+  padding: 0.45rem 1.1rem;
+  border: 1.5px solid rgba(245,200,66,0.55);
   border-radius: 99px;
   margin-top: 0.4rem;
+  transition: background 0.2s, border-color 0.2s;
+}
+.hook-card-prompt::after { content: '▾'; font-size: 0.95rem; letter-spacing: 0; }
+.hook-card:hover .hook-card-prompt,
+.hook-card:focus-visible .hook-card-prompt {
+  background: rgba(245,200,66,0.2);
+  border-color: var(--gold);
 }
 .hook-card .hook-card-observation,
 .hook-card .hook-card-question { display: none; }
@@ -850,7 +908,10 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   padding: 0.35rem 0.6rem;
   cursor: pointer;
   margin: 0 0.2rem;
+  min-height: 40px;
+  transition: background 0.2s, border-color 0.2s;
 }
+.hypo-sentence select:hover { border-color: var(--gold); background: rgba(245,200,66,0.14); }
 .hypo-sentence select:focus { outline: 2px solid var(--teal); outline-offset: 2px; }
 .hypo-sentence select option { background: #1e2f42; color: var(--text); }
 .hypo-feedback {
@@ -926,21 +987,30 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .sort-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .sort-btn {
   font-family: 'Nunito', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  padding: 0.45rem 1rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1.15rem;
   border-radius: 99px;
   cursor: pointer;
   transition: all 0.2s;
   border: 1.5px solid;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.3);
 }
 .sort-btn.b-iv { color: var(--iv); background: var(--iv-dim); border-color: var(--iv-border); }
 .sort-btn.b-dv { color: var(--dv); background: var(--dv-dim); border-color: var(--dv-border); }
 .sort-btn.b-cv { color: var(--cv); background: var(--cv-dim); border-color: var(--cv-border); }
-.sort-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.2); }
+.sort-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.2); border-color: currentColor; }
 .sort-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.sort-btn:disabled { cursor: default; box-shadow: none; }
 .sort-btn.right { box-shadow: 0 0 0 2px var(--green); }
-.sort-btn.wrong { box-shadow: 0 0 0 2px var(--red); opacity: 0.7; }
+.sort-btn.wrong { box-shadow: 0 0 0 2px var(--red); opacity: 0.7; text-decoration: line-through; }
+/* Result marks so right/wrong never depends on color alone */
+.sort-btn.right::before { content: '✓'; font-weight: 900; }
+.sort-btn.wrong::before { content: '✗'; font-weight: 900; }
 .sort-fb {
   display: none;
   margin-top: 0.6rem;
@@ -1444,7 +1514,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
         <div class="gc-term">Qualitative Observation</div>
-        <div class="gc-def">An observation made using sensory information to describe something's qualities. Subjective measures: colors, textures, smells, tastes.</div>
+        <div class="gc-def">An observation made using sensory information to describe something's qualities. Descriptions from your senses: colors, textures, smells, tastes.</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Inference</div>
@@ -1506,7 +1576,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div class="hook-grid">
 
-      <div class="hook-card c1" onclick="this.classList.add('revealed')">
+      <div class="hook-card c1" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🥤</span>
         <div class="hook-card-name">The Eruption</div>
         <div class="hook-card-observation">
@@ -1516,7 +1586,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="hook-card-prompt">Click to look closer</div>
       </div>
 
-      <div class="hook-card c2" onclick="this.classList.add('revealed')">
+      <div class="hook-card c2" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🌱</span>
         <div class="hook-card-name">The Thirsty Plant</div>
         <div class="hook-card-observation">
@@ -1526,7 +1596,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="hook-card-prompt">Click to look closer</div>
       </div>
 
-      <div class="hook-card c3" onclick="this.classList.add('revealed')">
+      <div class="hook-card c3" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🌫️</span>
         <div class="hook-card-name">The Wet Grass</div>
         <div class="hook-card-observation">
@@ -1602,7 +1672,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <p class="section-desc">Before scientists test anything, they predict what will happen and <em>why</em>. That prediction has a name.</p>
 
     <div class="name-it teal-it">
-      <div class="name-it-label">The key idea</div>
+      <div class="name-it-label">Key idea: Hypothesis</div>
       <p>A <strong>hypothesis</strong> is an educated guess that explains an observation based on your prior knowledge. A good hypothesis is <strong>testable</strong> and explains the <strong>cause-and-effect relationship</strong> between variables.</p>
     </div>
 
@@ -1623,6 +1693,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <span class="question-pause-icon">🥤</span>
         <div class="question-pause-text"><strong>Back to the eruption:</strong> Mentos dropped into which soda will cause the biggest foaming eruption? Make a prediction to unlock the Hypothesis Builder.</div>
       </div>
+      <p class="predict-hint">Choose one</p>
       <div class="predict-buttons">
         <button class="predict-btn">Diet soda - it has special ingredients</button>
         <button class="predict-btn">Regular soda - sugar makes more foam</button>
@@ -1659,7 +1730,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         , <strong>because</strong>
         <select id="hypo-because" aria-label="Choose your reasoning">
           <option value="">choose a reason...</option>
-          <option value="gas">it holds lots of dissolved gas that escapes quickly on the candy's rough surface</option>
+          <option value="gas">the amount of dissolved gas decides how much foam escapes on the candy's rough surface</option>
           <option value="luck">eruptions are random and based on luck</option>
           <option value="taste">it tastes the sweetest</option>
         </select>
@@ -1741,7 +1812,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="process-step-label">It responds</div>
         <span class="process-icon">📈</span>
         <div class="process-name">Dependent Variable</div>
-        <div class="process-body">The factor in the experiment that <strong>responds to the change</strong>. In the plant experiment: how healthy each plant grows.</div>
+        <div class="process-body">The factor in the experiment that <strong>responds to the change</strong>. In the plant experiment: how tall each plant grows.</div>
         <span class="process-mini">The Effect</span>
       </div>
 
@@ -1763,6 +1834,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <span class="question-pause-icon">🤔</span>
         <div class="question-pause-text"><strong>Think about it:</strong> In the plant experiment, why bother keeping the sunlight the same for all three plants? Make a prediction to unlock the sorting challenge.</div>
       </div>
+      <p class="predict-hint">Choose one</p>
       <div class="predict-buttons">
         <button class="predict-btn">So the plants don't get sunburned</button>
         <button class="predict-btn">So we know water - not sunlight - caused any difference</button>
@@ -1779,7 +1851,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <!-- VARIABLE SORTER -->
       <div class="sorter-card">
         <div class="sorter-title">🌱 Variable Sorter: The Plant Experiment</div>
-        <div class="sorter-sub">A student waters three identical plants with different amounts of water and measures their height after two weeks. Sort each factor into its role.</div>
+        <div class="sorter-sub">A student waters three identical plants with different amounts of water and measures their height after two weeks. Click the role that fits each factor.</div>
 
         <div class="sort-item" data-answer="iv">
           <div class="sort-item-text"><span class="sort-item-icon">💧</span>The amount of water each plant gets</div>
@@ -1886,7 +1958,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
       <div class="observe-card orange-card">
         <span class="observe-icon">👃</span>
-        <span><strong>Qualitative observations</strong> involve using sensory information to describe something's qualities. Subjective measures: colors, textures, smells, tastes. <em>"The foam was white and smelled sweet."</em></span>
+        <span><strong>Qualitative observations</strong> involve using sensory information to describe something's qualities. Descriptions from your senses: colors, textures, smells, tastes. <em>"The foam was white and smelled sweet."</em></span>
       </div>
     </div>
 
@@ -1898,7 +1970,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <!-- OBSERVATION SORTER -->
     <div class="sorter-card">
       <div class="sorter-title">🔬 Observation Sorter</div>
-      <div class="sorter-sub">A scientist recorded these notes during the plant experiment. Sort each one: quantitative (numbers) or qualitative (senses)?</div>
+      <div class="sorter-sub">A scientist recorded these notes during the plant experiment. For each one, click quantitative (numbers) or qualitative (senses).</div>
 
       <div class="sort-item" data-answer="iv">
         <div class="sort-item-text"><span class="sort-item-icon">🌡️</span>"The greenhouse temperature was 24°C."</div>
@@ -1993,7 +2065,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <p class="section-desc">Detectives don't see the crime - they see the clues and work out what happened. Scientists do exactly the same thing with observations.</p>
 
     <div class="name-it" style="border-left-color: #b47fff;">
-      <div class="name-it-label" style="color: #b47fff;">The key idea</div>
+      <div class="name-it-label" style="color: #b47fff;">Key idea: Inference</div>
       <p>An <strong style="color:#b47fff;">inference</strong> is a conclusion that you draw about something <strong style="color:#b47fff;">based on your observations</strong>. You didn't see it happen - your brain filled in the most likely explanation.</p>
     </div>
 
@@ -2003,6 +2075,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <span class="question-pause-icon">🧥</span>
         <div class="question-pause-text"><strong>Try it:</strong> You observe someone wearing a raincoat and carrying an umbrella. What can you infer?</div>
       </div>
+      <p class="predict-hint">Choose one</p>
       <div class="predict-buttons">
         <button class="predict-btn">They expect rain today</button>
         <button class="predict-btn">They love the color yellow</button>
@@ -2019,6 +2092,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <span class="question-pause-icon">🌫️</span>
         <div class="question-pause-text"><strong>One more - remember the mystery from the start?</strong> You step outside in the morning and observe that the grass is wet. What can you infer?</div>
       </div>
+      <p class="predict-hint">Choose one</p>
       <div class="predict-buttons">
         <button class="predict-btn">It rained overnight or dew formed</button>
         <button class="predict-btn">The grass is always wet</button>
@@ -2187,7 +2261,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="wrapup-behavior-chips">
           <span class="wbc wbc-iv">Independent · change it</span>
           <span class="wbc wbc-dv">Dependent · measure it</span>
-          <span class="wbc wbc-cv">Controls · keep them same</span>
+          <span class="wbc wbc-cv">Controls · keep them the same</span>
         </div>
       </div>
 
@@ -2341,13 +2415,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 .mode-hint span.visible { display: inline; }
   /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
   /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
-  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
-     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
-     ~46px = ~110px; 120px lands the score just below it). At the 600px
-     phone breakpoint the stack is ~98px, so 104px is the matching value. */
-  .score-board { scroll-margin-top: 120px; }
+  /* Sprint 28 O2. The results region takes programmatic focus after the
+     post-submit scroll. The scroll offset itself is the measured
+     sticky-stack rule on .score-board, shared by v1 and v2. */
   .score-board:focus { outline: none; }
-  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
   /* LYFELABZ:V2-ONLY:END o2-results-style */
   /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
   /* Sprint 28 O3. Assignment-context return control. Hidden until the
@@ -2418,14 +2489,22 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 .info-error.show { display: block; }
   /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
 
+/* Sticky quiz chrome. The nav wraps to different heights at different widths
+   (about 74px on a Chromebook, 113px on a tablet, 125px on a phone), so the
+   progress tray and the post-submit landing read the MEASURED heights that
+   the sticky-offset script writes to --ce-nav-h and --ce-progress-h. The px
+   values are no-JS fallbacks only. */
 .quiz-progress-sticky {
   position: sticky;
-  top: 64px;
+  top: var(--ce-nav-h, 64px);
   z-index: 100;
   background: var(--dark2);
-  padding: 0.85rem 0 0.75rem;
+  padding: 0.6rem 1.1rem;
   margin-bottom: 2rem;
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
 }
 .quiz-progress { display: flex; align-items: center; gap: 1rem; }
 .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
@@ -2509,8 +2588,15 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   border: 1px solid rgba(46,204,113,0.3);
   border-radius: 20px; padding: 2.5rem;
   text-align: center; margin-top: 2rem;
+  /* Post-submit landing: clear the measured nav + progress tray, plus a
+     little breathing room, so the score is never under the sticky chrome. */
+  scroll-margin-top: calc(var(--ce-nav-h, 64px) + var(--ce-progress-h, 56px) + 1rem);
 }
 .score-board.show { display: block; }
+/* Keyboard focus inside the quiz never lands under the sticky nav + tray. */
+.quiz-option, .ce-think-input, .quiz-submit-btn, .reset-btn {
+  scroll-margin-top: calc(var(--ce-nav-h, 64px) + var(--ce-progress-h, 56px) + 0.75rem);
+}
 .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--green); margin-bottom: 0.5rem; }
 .score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
 
@@ -2707,11 +2793,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <!-- LYFELABZ:V2-ONLY:END o2-results-region-v2 -->
       <div class="big-score" id="ce-score-num"></div>
       <p id="ce-score-msg"></p>
+      <!-- Submission confirmation sits directly under the score so both are
+           in view when the post-submit scroll lands, even on short screens. -->
+      <div id="ce-submit-status"></div>
       <div class="mystery-loop">
         <span class="ml-label">🔍 The Mystery You Came In With</span>
         You started this lesson with one question: <strong>"How do scientists turn a curious question into an answer they can trust?"</strong> If you can name the variables, write a hypothesis, and tell observations from inferences, you've earned the toolkit.
       </div>
-      <div id="ce-submit-status"></div>
       <button class="reset-btn" onclick="ceResetQuiz()">Try Again</button>
       <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
       <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
@@ -2935,15 +3023,43 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 })();
 </script>
 
+<!-- ===== HOOK MYSTERY CARDS (click, Enter, or Space to reveal) ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.hook-card').forEach(function(card){
+    function reveal(){
+      card.classList.add('revealed');
+      card.setAttribute('aria-expanded', 'true');
+    }
+    card.addEventListener('click', reveal);
+    card.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); }
+    });
+  });
+})();
+</script>
+
 <!-- ===== PREDICT BEFORE REVEAL ===== -->
 <script>
 (function(){
   document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
     const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
-    pause.querySelectorAll('.predict-btn').forEach(btn => {
+    const text = pause.querySelector('.question-pause-text');
+    const group = pause.querySelector('.predict-buttons');
+    if (text && group) {
+      text.id = text.id || pause.id + '-q';
+      group.setAttribute('role', 'group');
+      group.setAttribute('aria-labelledby', text.id);
+    }
+    const btns = pause.querySelectorAll('.predict-btn');
+    btns.forEach(btn => {
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', 'false');
       btn.addEventListener('click', () => {
         if (pause.classList.contains('locked')) return;
         btn.classList.add('chosen');
+        btn.setAttribute('aria-pressed', 'true');
+        btns.forEach(b => { if (b !== btn) b.setAttribute('aria-disabled', 'true'); });
         pause.classList.add('locked');
         if (gated) setTimeout(() => gated.classList.add('visible'), 250);
       });
@@ -2977,6 +3093,11 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       fb.innerHTML = '<strong>Check your reasoning.</strong> Sweetness is about taste, not about what makes foam erupt. Pick a reason that connects the cause (the soda) to the effect (the eruption).';
       return;
     }
+    if (soda !== 'flat' && result === 'none') {
+      fb.className = 'hypo-feedback visible partial';
+      fb.innerHTML = '<strong>Testable, but think it through.</strong> This soda is full of dissolved gas - would it really make no eruption at all? Your hypothesis is testable, which is great, but your prior knowledge suggests a different prediction.';
+      return;
+    }
     if (soda === 'flat' && result !== 'none' && result !== 'smallest') {
       fb.className = 'hypo-feedback visible partial';
       fb.innerHTML = '<strong>Testable, but think it through.</strong> Flat soda has already lost its dissolved gas - would it really make the biggest eruption? Your hypothesis is testable, which is great, but your prior knowledge suggests a different prediction.';
@@ -2998,7 +3119,16 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       var answer = item.getAttribute('data-answer');
       var fb = item.querySelector('.sort-fb');
       var done = false;
+      fb.setAttribute('aria-live', 'polite');
+      var label = item.querySelector('.sort-item-text');
+      var group = item.querySelector('.sort-btns');
+      if (label && group) {
+        label.id = label.id || doneId + '-item-' + [].indexOf.call(items, item);
+        group.setAttribute('role', 'group');
+        group.setAttribute('aria-labelledby', label.id);
+      }
       item.querySelectorAll('.sort-btn').forEach(function(btn){
+        btn.type = 'button';
         btn.addEventListener('click', function(){
           if (done) return;
           var pick = btn.classList.contains('b-iv') ? 'iv' : btn.classList.contains('b-dv') ? 'dv' : 'cv';
@@ -3499,6 +3629,33 @@ ceBuildQuiz();
 (function () {
   var ceThinkEl = document.getElementById('ce-thinking');
   if (ceThinkEl) ceThinkEl.addEventListener('input', ceRefreshSubmitState);
+})();
+</script>
+
+<!-- ===== STICKY QUIZ CHROME OFFSETS =====
+     Publishes the real sticky nav and progress-tray heights as CSS variables.
+     The progress tray docks directly under the nav at every width, and the
+     post-submit scrollIntoView (via .score-board scroll-margin-top) lands the
+     results below both. ResizeObserver keeps the values current when the nav
+     wraps, fonts load, the window resizes, or the phone menu opens. -->
+<script>
+(function(){
+  var root = document.documentElement;
+  var nav  = document.querySelector('nav');
+  var tray = document.querySelector('.quiz-progress-sticky');
+  if (!nav || !tray) return;
+  function sync(){
+    root.style.setProperty('--ce-nav-h', nav.offsetHeight + 'px');
+    root.style.setProperty('--ce-progress-h', tray.offsetHeight + 'px');
+  }
+  sync();
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(sync);
+    ro.observe(nav);
+    ro.observe(tray);
+  } else {
+    window.addEventListener('resize', sync);
+  }
 })();
 </script>
 
