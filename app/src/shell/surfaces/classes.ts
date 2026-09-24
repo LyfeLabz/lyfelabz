@@ -76,6 +76,7 @@ import type {
 } from "../../assignments/detail/attempts-wire";
 import type {
   AssessmentStudentAssignmentsForClassCallable,
+  StudentAssignmentGroup,
   StudentExpectedAssignment,
 } from "../../assignments/detail/studentAssignments-wire";
 import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
@@ -633,6 +634,39 @@ export function renderClassesSurface(
     return startClassRosterFetch(classId);
   };
 
+  // Class-wide completed attempts for the CURRENTLY OPEN class only (at most
+  // one entry, in memory, never persisted). `assessmentAttemptsListForClass`
+  // is class-scoped and identical for every student, so Student Detail
+  // reuses one read across Previous/Next instead of re-fetching it per
+  // student. It starts when the Students section is shown (ahead of the first
+  // student click) and is reused until the class session ends: opening a
+  // class or returning to the Classes list drops it, a request for a
+  // different class replaces it, and a failed read is never kept (the next
+  // Student Detail retries). Authorization is entirely server-side; this
+  // only decides WHEN the existing class-scoped read happens.
+  type ClassAttemptsEntry = {
+    readonly classId: string;
+    readonly promise: Promise<ReadonlyArray<CompletedAttemptSummary>>;
+  };
+  let currentClassAttempts: ClassAttemptsEntry | null = null;
+
+  const ensureClassAttempts = (
+    classId: string,
+  ): Promise<ReadonlyArray<CompletedAttemptSummary>> | null => {
+    if (currentClassAttempts !== null && currentClassAttempts.classId === classId) {
+      return currentClassAttempts.promise;
+    }
+    const callable = loadAttempts?.() ?? null;
+    if (callable === null) return null;
+    const promise = callable({ classId }).then((result) => result.attempts);
+    const entry: ClassAttemptsEntry = { classId, promise };
+    currentClassAttempts = entry;
+    promise.catch(() => {
+      if (currentClassAttempts === entry) currentClassAttempts = null;
+    });
+    return promise;
+  };
+
   // Sprint 28.6H (Finding 1): whether the minimized "+ Add class" disclosure is
   // revealed in a populated Classes list. Closure-scoped (not part of the
   // discriminated state) so it survives every list-state reconstruction the
@@ -794,6 +828,14 @@ export function renderClassesSurface(
                 ? { kind: "ready", students: entry.students }
                 : { kind: "pending", promise: entry.promise };
         }
+        // Student Detail's class-wide attempts: start reading them as soon as
+        // the Students section is shown (one read per class session, never
+        // one per student), so the first student click reuses it.
+        if (loadAttempts !== null && s.tab === "roster" && summary.status === "active") {
+          void ensureClassAttempts(summary.id);
+        }
+        const classAttempts =
+          loadAttempts === null ? null : () => ensureClassAttempts(summary.id);
         renderClassWorkspaceState(
           doc,
           mount,
@@ -815,7 +857,7 @@ export function renderClassesSurface(
           onSelectStudent,
           onBackFromStudent,
           onNavigateToNeighbor,
-          loadAttempts,
+          classAttempts,
           loadExpectedAssignments,
           listAllAssignments,
         );
@@ -1012,6 +1054,9 @@ export function renderClassesSurface(
     // from Google Classroom). The existing LyfeLabz roster for THIS class is
     // read immediately, in the background (never blocking the Assignments
     // view), and every class open reads it anew.
+    // Each class open is a fresh class session for Student Detail's
+    // class-wide attempts too (read again when Students is next shown).
+    currentClassAttempts = null;
     if (summary?.status === "active") {
       startClassRosterFetch(classId);
     }
@@ -1447,6 +1492,7 @@ export function renderClassesSurface(
     // Returning to the operational Classes landing leaves any class-source task.
     listAddMode = null;
     currentRoster = null;
+    currentClassAttempts = null;
     state = {
       kind: "list",
       classes: state.classes,
@@ -1522,6 +1568,7 @@ export function renderClassesSurface(
       if (state.kind !== "workspace") return;
       listAddMode = null;
       currentRoster = null;
+      currentClassAttempts = null;
       state = {
         kind: "list",
         classes: state.classes,
@@ -3536,7 +3583,7 @@ function renderClassWorkspaceState(
   onSelectStudent: (studentId: string, displayName: string) => void,
   onBackFromStudent: () => void,
   onNavigateToNeighbor: (studentId: string, displayName: string) => void,
-  loadAttempts: (() => AttemptsListForClassCallable | null) | null,
+  classAttempts: ClassAttemptsAccessor | null,
   loadExpectedAssignments:
     | (() => AssessmentStudentAssignmentsForClassCallable | null)
     | null,
@@ -3637,7 +3684,7 @@ function renderClassWorkspaceState(
         onBackFromStudent,
         onNavigateToNeighbor,
         (assignmentId: string) => assignmentsView.open(summary.id, assignmentId),
-        loadAttempts,
+        classAttempts,
         loadExpectedAssignments,
         listAssignments,
       );
@@ -4200,6 +4247,24 @@ function selectFirstAttempt(
   );
 }
 
+// The earliest attempt ACROSS a Current occurrence group. `attemptNumber`
+// restarts at 1 on every assignment, so across several occurrences "first"
+// is the earliest submission (tie-break attemptNumber, then attemptId).
+// Within one assignment this is the same attempt `selectFirstAttempt`
+// picks, because attemptNumber is assigned in submission order.
+function selectEarliestAttempt(
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+): CompletedAttemptSummary | null {
+  if (attempts.length === 0) return null;
+  return [...attempts].reduce((first, attempt) => {
+    if (attempt.submittedAt < first.submittedAt) return attempt;
+    if (attempt.submittedAt > first.submittedAt) return first;
+    if (attempt.attemptNumber < first.attemptNumber) return attempt;
+    if (attempt.attemptNumber > first.attemptNumber) return first;
+    return attempt.attemptId < first.attemptId ? attempt : first;
+  });
+}
+
 // The canonical most-recent attempt by submittedAt - the same ordering
 // already used for the existing "latest date" field. A deterministic
 // tie-break (attemptNumber, then attemptId) covers the structurally
@@ -4315,7 +4380,7 @@ function renderStudentDetailSurface(
   onBack: () => void,
   onNavigateToNeighbor: (studentId: string, displayName: string) => void,
   onOpenOriginatingAssignment: (assignmentId: string) => void,
-  loadAttempts: (() => AttemptsListForClassCallable | null) | null,
+  classAttempts: ClassAttemptsAccessor | null,
   loadExpectedAssignments:
     | (() => AssessmentStudentAssignmentsForClassCallable | null)
     | null,
@@ -4418,13 +4483,14 @@ function renderStudentDetailSurface(
   detail.appendChild(body);
 
   // No attempts accessor wired (harness path): show the empty state.
-  if (loadAttempts === null) {
+  if (classAttempts === null) {
     appendStudentDetailEmpty(doc, body);
     return;
   }
 
-  // Resolve the accessor lazily to avoid null-snapshot during assembly.
-  const callable = loadAttempts();
+  // The open class's held class-wide attempts (read once per class session
+  // and reused across students; see `ensureClassAttempts`).
+  const attemptsPromise = classAttempts();
 
   const loading = doc.createElement("p");
   loading.className = "shell-student-detail-loading";
@@ -4434,10 +4500,13 @@ function renderStudentDetailSurface(
   body.appendChild(loading);
 
   // Accessor not ready yet (init in progress): keep the loading state.
-  if (callable === null) {
+  if (attemptsPromise === null) {
     return;
   }
 
+  // A later render (another student, another class, or leaving) detaches
+  // this `body`, so a response for a student who is no longer shown can
+  // never overwrite the current one.
   const applyIfLive = (render: () => void): void => {
     if (!body.isConnected) return;
     body.replaceChildren();
@@ -4452,143 +4521,48 @@ function renderStudentDetailSurface(
   // the certified grade-passback status read already uses on Assignment
   // Detail. Only a failure of the attempts fetch (the pre-existing,
   // certified data source) produces the error state.
+  //
+  // Reassignment model: the same response carries the server's canonical
+  // Current occurrence groups (`groups`); when present, cards are one per
+  // group. Absent (older server, or this read failed), the per-assignment
+  // rendering below is used unchanged.
   const expectedCallable =
     loadExpectedAssignments === null ? null : loadExpectedAssignments();
-  const expectedAssignmentsPromise: Promise<
-    ReadonlyArray<StudentExpectedAssignment>
-  > =
+  const expectedPromise: Promise<{
+    readonly assignments: ReadonlyArray<StudentExpectedAssignment>;
+    readonly groups: ReadonlyArray<StudentAssignmentGroup> | undefined;
+  }> =
     expectedCallable === null
-      ? Promise.resolve([])
+      ? Promise.resolve({ assignments: [], groups: undefined })
       : expectedCallable({ classId, studentId })
-          .then((r) => r.assignments)
-          .catch(() => []);
+          .then((r) => ({ assignments: r.assignments, groups: r.groups }))
+          .catch(() => ({ assignments: [], groups: undefined }));
 
-  void Promise.all([callable({ classId }), expectedAssignmentsPromise])
-    .then(([result, expectedAssignments]) => {
+  void Promise.all([attemptsPromise, expectedPromise])
+    .then(([classAttemptsList, expected]) => {
       applyIfLive(() => {
-        const studentAttempts = result.attempts.filter(
+        const studentAttempts = classAttemptsList.filter(
           (a) => a.studentId === studentId,
         );
-
-        // Group completed attempts by assignmentId. Unchanged from the
-        // pre-Slice-4 implementation: this remains the sole source of
-        // "completed" and of Best/First/Latest/Growth/Attempts/Latest Date.
-        const byAssignment = new Map<string, CompletedAttemptSummary[]>();
-        for (const attempt of studentAttempts) {
-          const group = byAssignment.get(attempt.assignmentId);
-          if (group !== undefined) {
-            group.push(attempt);
-          } else {
-            byAssignment.set(attempt.assignmentId, [attempt]);
-          }
-        }
-
-        // Assignments the student is expected to complete but has not
-        // completed: present in the recipient-derived expected set, absent
-        // from `byAssignment`. Preserves every historical completed
-        // attempt even if, for any reason, its assignmentId is absent from
-        // the expected set (attempts survive roster/recipient changes per
-        // `assessmentAttemptsListForClass`'s own documented invariant).
-        const notCompleted = expectedAssignments.filter(
-          (a) => !byAssignment.has(a.assignmentId),
-        );
-
-        if (byAssignment.size === 0 && notCompleted.length === 0) {
+        const registry = listAssignments();
+        const list =
+          expected.groups !== undefined
+            ? buildGroupedStudentDetailList(
+                doc,
+                studentAttempts,
+                expected.groups,
+                registry,
+              )
+            : buildPerAssignmentStudentDetailList(
+                doc,
+                studentAttempts,
+                expected.assignments,
+                registry,
+              );
+        if (list === null) {
           appendStudentDetailEmpty(doc, body);
           return;
         }
-
-        const registry = listAssignments();
-        const resolveTitle = (assignmentId: string): string =>
-          registry.find((a) => a.assignmentId === assignmentId)?.title ??
-          "Assignment";
-
-        const list = doc.createElement("ul");
-        list.className = "shell-student-detail-assignments";
-        list.setAttribute("data-testid", "student-detail-assignments");
-
-        for (const [assignmentId, attempts] of byAssignment) {
-          const title = resolveTitle(assignmentId);
-          const best = selectBestAttempt(attempts);
-          const first = selectFirstAttempt(attempts);
-          const latest = selectLatestAttempt(attempts);
-
-          const li = doc.createElement("li");
-          li.className = "shell-student-detail-assignment";
-          li.setAttribute("data-testid", "student-detail-assignment");
-          li.setAttribute("data-assignment-id", assignmentId);
-          li.setAttribute("data-assignment-status", "completed");
-
-          appendAssignmentCardTitle(doc, li, title, registry, assignmentId);
-
-          // Individual compact metric boxes, mirroring the established
-          // whole-class `renderAssignmentSummaryCard` metric-grid pattern
-          // (app/src/assignments/summary/card.ts: <dl> of label/value
-          // cells) rather than a single inline text row.
-          const metricsGrid = doc.createElement("dl");
-          metricsGrid.className = "shell-student-detail-metric-grid";
-          metricsGrid.setAttribute("data-testid", "student-detail-metrics");
-          li.appendChild(metricsGrid);
-
-          for (const metric of buildStudentDetailMetrics(
-            best,
-            first,
-            latest,
-            attempts.length,
-          )) {
-            const cell = doc.createElement("div");
-            cell.className = "shell-student-detail-metric";
-            cell.setAttribute(
-              "data-testid",
-              `student-detail-metric-${metric.key}`,
-            );
-
-            const term = doc.createElement("dt");
-            term.className = "shell-student-detail-metric-label";
-            term.textContent = metric.label;
-            cell.appendChild(term);
-
-            const value = doc.createElement("dd");
-            value.className = "shell-student-detail-metric-value";
-            value.setAttribute("data-testid", metric.testid);
-            value.textContent = metric.value;
-            cell.appendChild(value);
-
-            metricsGrid.appendChild(cell);
-          }
-
-          list.appendChild(li);
-        }
-
-        // In Progress / Not Started cards: no metrics grid is ever
-        // rendered, so no score can ever be fabricated for either state.
-        for (const { assignmentId, hasLiveSession } of notCompleted) {
-          const title = resolveTitle(assignmentId);
-          const statusKind = hasLiveSession ? "in-progress" : "not-started";
-
-          const li = doc.createElement("li");
-          li.className = `shell-student-detail-assignment shell-student-detail-assignment-${statusKind}`;
-          li.setAttribute(
-            "data-testid",
-            `student-detail-assignment-${statusKind}`,
-          );
-          li.setAttribute("data-assignment-id", assignmentId);
-          li.setAttribute("data-assignment-status", statusKind);
-
-          appendAssignmentCardTitle(doc, li, title, registry, assignmentId);
-
-          const status = doc.createElement("p");
-          status.className = "shell-student-detail-assignment-status";
-          status.setAttribute(
-            "data-testid",
-            `student-detail-assignment-status-${assignmentId}`,
-          );
-          status.textContent = hasLiveSession ? "In progress" : "Not started";
-          li.appendChild(status);
-
-          list.appendChild(li);
-        }
-
         body.appendChild(list);
       });
     })
@@ -4604,6 +4578,337 @@ function renderStudentDetailSurface(
         body.appendChild(error);
       });
     });
+}
+
+// Lazily resolves the open class's held class-wide attempts (null while the
+// attempts callable is not yet initialized).
+type ClassAttemptsAccessor = () => Promise<ReadonlyArray<CompletedAttemptSummary>> | null;
+
+const registryTitle = (
+  registry: ReadonlyArray<AssignmentDetailMetadata>,
+  assignmentId: string,
+): string | null => registry.find((a) => a.assignmentId === assignmentId)?.title ?? null;
+
+// The six metric boxes for one card, computed from exactly the attempts
+// passed in (one assignment, or a whole Current occurrence group).
+function appendStudentDetailMetricsGrid(
+  doc: Document,
+  li: HTMLElement,
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+  // True for a Current occurrence group (attempts span several
+  // assignments): "first" is then the earliest submission.
+  cumulative = false,
+): void {
+  // Individual compact metric boxes, mirroring the established whole-class
+  // `renderAssignmentSummaryCard` metric-grid pattern
+  // (app/src/assignments/summary/card.ts: <dl> of label/value cells) rather
+  // than a single inline text row.
+  const metricsGrid = doc.createElement("dl");
+  metricsGrid.className = "shell-student-detail-metric-grid";
+  metricsGrid.setAttribute("data-testid", "student-detail-metrics");
+  li.appendChild(metricsGrid);
+
+  for (const metric of buildStudentDetailMetrics(
+    selectBestAttempt(attempts),
+    cumulative ? selectEarliestAttempt(attempts) : selectFirstAttempt(attempts),
+    selectLatestAttempt(attempts),
+    attempts.length,
+  )) {
+    const cell = doc.createElement("div");
+    cell.className = "shell-student-detail-metric";
+    cell.setAttribute("data-testid", `student-detail-metric-${metric.key}`);
+
+    const term = doc.createElement("dt");
+    term.className = "shell-student-detail-metric-label";
+    term.textContent = metric.label;
+    cell.appendChild(term);
+
+    const value = doc.createElement("dd");
+    value.className = "shell-student-detail-metric-value";
+    value.setAttribute("data-testid", metric.testid);
+    value.textContent = metric.value;
+    cell.appendChild(value);
+
+    metricsGrid.appendChild(cell);
+  }
+}
+
+function appendStudentDetailStatus(
+  doc: Document,
+  li: HTMLElement,
+  testid: string,
+  text: string,
+): void {
+  const status = doc.createElement("p");
+  status.className = "shell-student-detail-assignment-status";
+  status.setAttribute("data-testid", testid);
+  status.textContent = text;
+  li.appendChild(status);
+}
+
+// Pre-grouping rendering, unchanged: one card per assignment the student
+// completed (metrics), then one per expected-but-uncompleted assignment
+// (In progress / Not started). Used when the server sent no `groups`.
+function buildPerAssignmentStudentDetailList(
+  doc: Document,
+  studentAttempts: ReadonlyArray<CompletedAttemptSummary>,
+  expectedAssignments: ReadonlyArray<StudentExpectedAssignment>,
+  registry: ReadonlyArray<AssignmentDetailMetadata>,
+): HTMLElement | null {
+  // Group completed attempts by assignmentId: the sole source of
+  // "completed" and of Best/First/Latest/Growth/Attempts/Latest Date.
+  const byAssignment = new Map<string, CompletedAttemptSummary[]>();
+  for (const attempt of studentAttempts) {
+    const group = byAssignment.get(attempt.assignmentId);
+    if (group !== undefined) group.push(attempt);
+    else byAssignment.set(attempt.assignmentId, [attempt]);
+  }
+
+  // Assignments the student is expected to complete but has not completed:
+  // present in the recipient-derived expected set, absent from
+  // `byAssignment`. Every historical completed attempt is preserved even if
+  // its assignmentId is absent from the expected set (attempts survive
+  // roster/recipient changes per `assessmentAttemptsListForClass`'s own
+  // documented invariant).
+  const notCompleted = expectedAssignments.filter(
+    (a) => !byAssignment.has(a.assignmentId),
+  );
+
+  if (byAssignment.size === 0 && notCompleted.length === 0) return null;
+
+  const resolveTitle = (assignmentId: string): string =>
+    registryTitle(registry, assignmentId) ?? "Assignment";
+
+  const list = doc.createElement("ul");
+  list.className = "shell-student-detail-assignments";
+  list.setAttribute("data-testid", "student-detail-assignments");
+
+  for (const [assignmentId, attempts] of byAssignment) {
+    list.appendChild(
+      buildCompletedAssignmentCard(doc, assignmentId, attempts, resolveTitle(assignmentId), registry),
+    );
+  }
+
+  // In Progress / Not Started cards: no metrics grid is ever rendered, so no
+  // score can ever be fabricated for either state.
+  for (const { assignmentId, hasLiveSession } of notCompleted) {
+    const statusKind = hasLiveSession ? "in-progress" : "not-started";
+    const li = doc.createElement("li");
+    li.className = `shell-student-detail-assignment shell-student-detail-assignment-${statusKind}`;
+    li.setAttribute("data-testid", `student-detail-assignment-${statusKind}`);
+    li.setAttribute("data-assignment-id", assignmentId);
+    li.setAttribute("data-assignment-status", statusKind);
+    appendAssignmentCardTitle(doc, li, resolveTitle(assignmentId), registry, assignmentId);
+    appendStudentDetailStatus(
+      doc,
+      li,
+      `student-detail-assignment-status-${assignmentId}`,
+      hasLiveSession ? "In progress" : "Not started",
+    );
+    list.appendChild(li);
+  }
+
+  return list;
+}
+
+// One card per assignment from its own attempts (legacy / unresolved /
+// orphan attempts).
+function buildCompletedAssignmentCard(
+  doc: Document,
+  assignmentId: string,
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+  title: string,
+  registry: ReadonlyArray<AssignmentDetailMetadata>,
+  metaOverride?: { readonly status: string | null; readonly publishedAt: number | null },
+  cumulative = false,
+): HTMLElement {
+  const li = doc.createElement("li");
+  li.className = "shell-student-detail-assignment";
+  li.setAttribute("data-testid", "student-detail-assignment");
+  li.setAttribute("data-assignment-id", assignmentId);
+  li.setAttribute("data-assignment-status", "completed");
+  if (metaOverride !== undefined) {
+    appendServerCardTitle(doc, li, title, assignmentId, metaOverride);
+  } else {
+    appendAssignmentCardTitle(doc, li, title, registry, assignmentId);
+  }
+  appendStudentDetailMetricsGrid(doc, li, attempts, cumulative);
+  return li;
+}
+
+// Reassignment model: one card per server-resolved occurrence group.
+//   - valid:      ONE card for the class + lesson. Title / published date /
+//                 operational status come from Current; metrics are
+//                 cumulative over the student's attempts on EVERY occurrence
+//                 in the group. With history but no attempt on Current, the
+//                 Current status is shown separately ("Current: Not
+//                 started" / "Current: In progress") - never as the lesson's
+//                 overall state.
+//   - inactive:   ONE history-only card labeled "Closed" with cumulative
+//                 metrics; never "Not started", never launchable, no older
+//                 occurrence resurrected.
+//   - unresolved: legacy, never grouped: one card per assignment, titled by
+//                 the server.
+// Any attempt outside every group keeps its own card, so no historical work
+// is ever hidden because grouping metadata is incomplete.
+function buildGroupedStudentDetailList(
+  doc: Document,
+  studentAttempts: ReadonlyArray<CompletedAttemptSummary>,
+  groups: ReadonlyArray<StudentAssignmentGroup>,
+  registry: ReadonlyArray<AssignmentDetailMetadata>,
+): HTMLElement | null {
+  const list = doc.createElement("ul");
+  list.className = "shell-student-detail-assignments";
+  list.setAttribute("data-testid", "student-detail-assignments");
+
+  const claimed = new Set<string>();
+  for (const group of groups) {
+    for (const id of group.assignmentIds) claimed.add(id);
+    const ids = new Set(group.assignmentIds);
+    const attempts = studentAttempts.filter((a) => ids.has(a.assignmentId));
+    const card = buildGroupCard(doc, group, attempts, registry);
+    if (card !== null) list.appendChild(card);
+  }
+
+  // Orphan attempts (their assignment is in no group): own card each.
+  const orphans = new Map<string, CompletedAttemptSummary[]>();
+  for (const attempt of studentAttempts) {
+    if (claimed.has(attempt.assignmentId)) continue;
+    const bucket = orphans.get(attempt.assignmentId);
+    if (bucket !== undefined) bucket.push(attempt);
+    else orphans.set(attempt.assignmentId, [attempt]);
+  }
+  for (const [assignmentId, attempts] of orphans) {
+    list.appendChild(
+      buildCompletedAssignmentCard(
+        doc,
+        assignmentId,
+        attempts,
+        registryTitle(registry, assignmentId) ?? "Assignment",
+        registry,
+      ),
+    );
+  }
+
+  return list.childElementCount === 0 ? null : list;
+}
+
+function buildGroupCard(
+  doc: Document,
+  group: StudentAssignmentGroup,
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+  registry: ReadonlyArray<AssignmentDetailMetadata>,
+): HTMLElement | null {
+  const operationalId = group.operationalAssignmentId;
+  const cardId = operationalId ?? group.assignmentIds[0]!;
+  const title =
+    group.title ?? registryTitle(registry, cardId) ?? "Assignment";
+  const meta = { status: group.status, publishedAt: group.publishedAt };
+
+  if (group.resolution === "unresolved") {
+    if (attempts.length > 0) {
+      const li = buildCompletedAssignmentCard(doc, cardId, attempts, title, registry, meta);
+      li.setAttribute("data-group-resolution", "unresolved");
+      return li;
+    }
+    const statusKind = group.hasLiveSession ? "in-progress" : "not-started";
+    const li = doc.createElement("li");
+    li.className = `shell-student-detail-assignment shell-student-detail-assignment-${statusKind}`;
+    li.setAttribute("data-testid", `student-detail-assignment-${statusKind}`);
+    li.setAttribute("data-assignment-id", cardId);
+    li.setAttribute("data-assignment-status", statusKind);
+    li.setAttribute("data-group-resolution", "unresolved");
+    appendServerCardTitle(doc, li, title, cardId, meta);
+    appendStudentDetailStatus(
+      doc,
+      li,
+      `student-detail-assignment-status-${cardId}`,
+      group.hasLiveSession ? "In progress" : "Not started",
+    );
+    return li;
+  }
+
+  if (group.resolution === "inactive") {
+    const li = doc.createElement("li");
+    li.className = "shell-student-detail-assignment shell-student-detail-assignment-closed";
+    li.setAttribute("data-testid", "student-detail-assignment-closed");
+    li.setAttribute("data-assignment-id", cardId);
+    li.setAttribute("data-assignment-status", "closed");
+    li.setAttribute("data-group-resolution", "inactive");
+    appendServerCardTitle(doc, li, title, cardId, meta);
+    appendStudentDetailStatus(doc, li, `student-detail-assignment-status-${cardId}`, "Closed");
+    if (attempts.length > 0) appendStudentDetailMetricsGrid(doc, li, attempts, true);
+    return li;
+  }
+
+  // valid Current.
+  const hasCurrentAttempt = attempts.some((a) => a.assignmentId === operationalId);
+  if (attempts.length === 0) {
+    // No history in this lesson: the card is the Current operational state.
+    if (!group.hasLiveSession && !group.isOperationalRecipient) return null;
+    const statusKind = group.hasLiveSession ? "in-progress" : "not-started";
+    const li = doc.createElement("li");
+    li.className = `shell-student-detail-assignment shell-student-detail-assignment-${statusKind}`;
+    li.setAttribute("data-testid", `student-detail-assignment-${statusKind}`);
+    li.setAttribute("data-assignment-id", cardId);
+    li.setAttribute("data-assignment-status", statusKind);
+    li.setAttribute("data-group-resolution", "valid");
+    appendServerCardTitle(doc, li, title, cardId, meta);
+    appendStudentDetailStatus(
+      doc,
+      li,
+      `student-detail-assignment-status-${cardId}`,
+      group.hasLiveSession ? "In progress" : "Not started",
+    );
+    return li;
+  }
+  const li = buildCompletedAssignmentCard(doc, cardId, attempts, title, registry, meta, true);
+  li.setAttribute("data-group-resolution", "valid");
+  // The Current operational state is separate from the cumulative history
+  // and only shown when it adds information; it sits under the title, above
+  // the metrics, like the Closed label on a history card.
+  const currentStatus = group.hasLiveSession
+    ? "Current: In progress"
+    : !hasCurrentAttempt && group.isOperationalRecipient
+      ? "Current: Not started"
+      : null;
+  if (currentStatus !== null) {
+    appendStudentDetailStatus(doc, li, `student-detail-current-status-${cardId}`, currentStatus);
+    const grid = li.querySelector("[data-testid=student-detail-metrics]");
+    const statusEl = li.lastElementChild;
+    if (grid !== null && statusEl !== null) li.insertBefore(statusEl, grid);
+  }
+  return li;
+}
+
+// Card title + a secondary status/date line from server metadata (the
+// group's Current, or the assignment itself).
+function appendServerCardTitle(
+  doc: Document,
+  li: HTMLElement,
+  title: string,
+  assignmentId: string,
+  meta: { readonly status: string | null; readonly publishedAt: number | null },
+): void {
+  const titleEl = doc.createElement("div");
+  titleEl.className = "shell-student-detail-assignment-title";
+  titleEl.setAttribute("data-testid", "student-detail-assignment-title");
+  titleEl.textContent = title;
+  li.appendChild(titleEl);
+
+  if (meta.publishedAt === null) return;
+  const dateEl = doc.createElement("p");
+  dateEl.className = "shell-student-detail-assignment-meta";
+  dateEl.setAttribute("data-testid", `student-detail-assignment-meta-${assignmentId}`);
+  dateEl.textContent = `${assignmentStatusLabel(meta.status)} ${formatLocalDate(new Date(meta.publishedAt))}`;
+  li.appendChild(dateEl);
+}
+
+function assignmentStatusLabel(status: string | null | undefined): string {
+  if (status === "closed") return "Closed";
+  if (status === "archived") return "Archived";
+  if (status === "draft") return "Draft";
+  return "Published";
 }
 
 // Student Progress & Assignment Membership Phase A, Slice 9: repeated
@@ -4634,9 +4939,7 @@ function appendAssignmentCardTitle(
     "data-testid",
     `student-detail-assignment-meta-${assignmentId}`,
   );
-  const statusLabel =
-    meta.status === "closed" ? "Closed" : meta.status === "draft" ? "Draft" : "Published";
-  dateEl.textContent = `${statusLabel} ${formatLocalDate(new Date(meta.publishedAt))}`;
+  dateEl.textContent = `${assignmentStatusLabel(meta.status)} ${formatLocalDate(new Date(meta.publishedAt))}`;
   li.appendChild(dateEl);
 }
 

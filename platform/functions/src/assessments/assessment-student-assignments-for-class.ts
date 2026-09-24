@@ -11,8 +11,14 @@ import {
   requireDistrictContext,
   type AssessmentSessionRecord,
   type AssignmentRecipientRecord,
+  type AssignmentRecord,
   type ClassRecord,
 } from "../shared";
+import {
+  createClassAssignmentsLoader,
+  occurrenceScopeOf,
+  resolveCurrentOccurrenceGroup,
+} from "../assignments/current-occurrence-group";
 
 // Student Progress & Assignment Membership, Phase A Slice 4: certified
 // enumeration of the assignment instances one specific, teacher-owned
@@ -69,10 +75,54 @@ export type AssessmentStudentExpectedAssignment = {
   readonly hasLiveSession: boolean;
 };
 
+// Reassignment model (additive): the student's work grouped by class +
+// lesson through the ONE canonical occurrence-grouping primitive
+// (`resolveCurrentOccurrenceGroup`, shared with My Science, launch gating,
+// and Classroom passback). Student Detail renders one card per group:
+//   - "valid"      - one card for the class + lesson. The operational
+//                    assignment is Current; `assignmentIds` lists EVERY
+//                    occurrence in the group (Current included), so the
+//                    student's attempts on any of them form the card's
+//                    cumulative history. Title / status / publishedAt /
+//                    hasLiveSession describe Current.
+//   - "inactive"   - managed Current closed/archived: one history-only card,
+//                    `operationalAssignmentId` null, never launchable, and
+//                    no older occurrence is resurrected. Title / status /
+//                    publishedAt describe the closed Current the pointer
+//                    names (null when that cannot be confirmed).
+//   - "unresolved" - legacy (no authoritative pointer, including a
+//                    malformed / cross-scope / missing one): NO grouping. One
+//                    entry per assignment, exactly one id in
+//                    `assignmentIds`.
+// Only ids, the teacher's own assignment title, lifecycle status, and
+// publication time cross this boundary - nothing about any other student.
+export type AssessmentStudentAssignmentGroupResolution =
+  | "valid"
+  | "inactive"
+  | "unresolved";
+
+export type AssessmentStudentAssignmentGroup = {
+  readonly resolution: AssessmentStudentAssignmentGroupResolution;
+  readonly lessonSlug: string;
+  // valid: Current; unresolved: the assignment itself; inactive: null.
+  readonly operationalAssignmentId: string | null;
+  readonly assignmentIds: readonly string[];
+  readonly title: string | null;
+  readonly status: string | null;
+  readonly publishedAt: number | null;
+  // Live session on the operational assignment only (always false when
+  // inactive).
+  readonly hasLiveSession: boolean;
+  // Whether the student is an expected recipient of the operational
+  // assignment (false when inactive).
+  readonly isOperationalRecipient: boolean;
+};
+
 export type AssessmentStudentAssignmentsForClassResponse = {
   readonly classId: string;
   readonly studentId: string;
   readonly assignments: readonly AssessmentStudentExpectedAssignment[];
+  readonly groups: readonly AssessmentStudentAssignmentGroup[];
 };
 
 const TOKEN_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
@@ -216,24 +266,128 @@ function isVisibleRecipient(
 // `assignments-list-for-student.ts`. A divergence between the recipient
 // snapshot and the live assignment record indicates a data-invariant
 // violation the retrieval layer must not amplify, so it is a silent drop.
-async function isAssignmentStillOwned(
+async function loadAssignmentIfStillOwned(
   assignmentId: string,
   input: { readonly classId: string },
   actor: { readonly uid: string; readonly schoolId: string },
-): Promise<boolean> {
+): Promise<AssignmentRecord | null> {
   let snap: Awaited<ReturnType<ReturnType<typeof assignmentDocRef>["get"]>>;
   try {
     snap = await assignmentDocRef(assignmentId).get();
   } catch {
-    return false;
+    return null;
   }
-  if (!snap.exists) return false;
+  if (!snap.exists) return null;
   const data = snap.data();
-  if (!data) return false;
-  if (data.classId !== input.classId) return false;
-  if (data.teacherId !== actor.uid) return false;
-  if (data.schoolId !== actor.schoolId) return false;
-  return true;
+  if (!data) return null;
+  if (data.classId !== input.classId) return null;
+  if (data.teacherId !== actor.uid) return null;
+  if (data.schoolId !== actor.schoolId) return null;
+  return data;
+}
+
+function publishedAtMillis(record: AssignmentRecord | undefined): number | null {
+  const ts = record?.publishedAt as { toMillis?: () => number } | undefined;
+  if (ts === undefined || typeof ts.toMillis !== "function") return null;
+  const ms = ts.toMillis();
+  return typeof ms === "number" && Number.isFinite(ms) ? ms : null;
+}
+
+function describeRecord(record: AssignmentRecord | undefined): {
+  readonly title: string | null;
+  readonly status: string | null;
+  readonly publishedAt: number | null;
+} {
+  return {
+    title: isNonEmptyString(record?.title) ? record.title : null,
+    status: record?.status ?? null,
+    publishedAt: publishedAtMillis(record),
+  };
+}
+
+// Group the student's verified recipient assignments by occurrence scope
+// (class + lesson + owning teacher + school) and resolve each scope through
+// the canonical primitive. Never selects a Current: a scope without an
+// authoritative pointer stays one entry per assignment.
+async function buildGroups(
+  verified: ReadonlyMap<string, AssignmentRecord>,
+  liveSessionAssignmentIds: ReadonlySet<string>,
+  districtId: string,
+): Promise<AssessmentStudentAssignmentGroup[]> {
+  const buckets = new Map<string, Array<{ id: string; record: AssignmentRecord }>>();
+  for (const [id, record] of verified) {
+    const scope = occurrenceScopeOf(record);
+    const key = [scope.classId, scope.lessonSlug, scope.teacherId, scope.schoolId].join("\u0000");
+    const bucket = buckets.get(key);
+    if (bucket) bucket.push({ id, record });
+    else buckets.set(key, [{ id, record }]);
+  }
+
+  const unresolvedEntry = (id: string, record: AssignmentRecord): AssessmentStudentAssignmentGroup => ({
+    resolution: "unresolved",
+    lessonSlug: record.lessonSlug,
+    operationalAssignmentId: id,
+    assignmentIds: [id],
+    ...describeRecord(record),
+    hasLiveSession: liveSessionAssignmentIds.has(id),
+    isOperationalRecipient: true,
+  });
+
+  const loader = createClassAssignmentsLoader();
+  const perBucket = await Promise.all(
+    Array.from(buckets.values()).map(async (bucket) => {
+      const first = bucket[0];
+      if (first === undefined) return [];
+      const group = await resolveCurrentOccurrenceGroup(
+        occurrenceScopeOf(first.record),
+        districtId,
+        loader,
+      );
+      if (group.resolution === "unresolved") {
+        return bucket.map((m) => unresolvedEntry(m.id, m.record));
+      }
+      const groupIds = new Set(group.occurrences.map((o) => o.assignmentId));
+      // Defensive: a verified recipient assignment the group enumeration
+      // did not see is never folded in by guesswork; it keeps its own entry.
+      const strays = bucket
+        .filter((m) => !groupIds.has(m.id))
+        .map((m) => unresolvedEntry(m.id, m.record));
+      const assignmentIds = Array.from(groupIds).sort();
+      if (group.resolution === "inactive") {
+        const named =
+          group.currentAssignmentId === null
+            ? undefined
+            : group.occurrences.find((o) => o.assignmentId === group.currentAssignmentId);
+        const entry: AssessmentStudentAssignmentGroup = {
+          resolution: "inactive",
+          lessonSlug: first.record.lessonSlug,
+          operationalAssignmentId: null,
+          assignmentIds,
+          ...describeRecord(named?.record),
+          hasLiveSession: false,
+          isOperationalRecipient: false,
+        };
+        return [entry, ...strays];
+      }
+      const entry: AssessmentStudentAssignmentGroup = {
+        resolution: "valid",
+        lessonSlug: first.record.lessonSlug,
+        operationalAssignmentId: group.currentAssignmentId,
+        assignmentIds,
+        ...describeRecord(group.current.record),
+        hasLiveSession: liveSessionAssignmentIds.has(group.currentAssignmentId),
+        isOperationalRecipient: verified.has(group.currentAssignmentId),
+      };
+      return [entry, ...strays];
+    }),
+  );
+  return perBucket
+    .flat()
+    .sort((a, b) => {
+      const ka = a.operationalAssignmentId ?? a.assignmentIds[0] ?? "";
+      const kb = b.operationalAssignmentId ?? b.assignmentIds[0] ?? "";
+      return ka < kb ? -1 : ka > kb ? 1 : 0;
+    });
 }
 
 function safeLog(fn: () => void): void {
@@ -257,9 +411,17 @@ async function assessmentStudentAssignmentsForClassHandler(
   // teacher's ownership after the read. Reuses the collection-group index
   // already declared for `assignmentsListForStudent`; no new index is
   // introduced.
-  const recipientSnapshot = await assignmentRecipientsCollectionGroupRef()
-    .where("studentId", "==", input.studentId)
-    .get();
+  // The class-scoped session query is independent of the recipient work,
+  // so the two run concurrently; session results are only ever filtered
+  // against the verified candidate set below.
+  const [recipientSnapshot, sessionsSnapshot] = await Promise.all([
+    assignmentRecipientsCollectionGroupRef()
+      .where("studentId", "==", input.studentId)
+      .get(),
+    assessmentSessionsCollectionRef()
+      .where("classId", "==", input.classId)
+      .get(),
+  ]);
 
   const candidateAssignmentIds = new Set<string>();
   for (const doc of recipientSnapshot.docs) {
@@ -268,22 +430,20 @@ async function assessmentStudentAssignmentsForClassHandler(
     candidateAssignmentIds.add(data.assignmentId);
   }
 
-  const verified: string[] = [];
+  const verifiedRecords = new Map<string, AssignmentRecord>();
   await Promise.all(
     Array.from(candidateAssignmentIds).map(async (assignmentId) => {
-      const ok = await isAssignmentStillOwned(assignmentId, input, actor);
-      if (ok) verified.push(assignmentId);
+      const record = await loadAssignmentIfStillOwned(assignmentId, input, actor);
+      if (record !== null) verifiedRecords.set(assignmentId, record);
     }),
   );
+  const verified = Array.from(verifiedRecords.keys());
 
-  // Single-field equality query on `classId`, the same shape
+  // The session read above is a single-field equality query on `classId`, the same shape
   // `assessmentAttemptsListForClass` already uses against `attempts` - no
   // new composite index required. Session content (responses, timestamps)
   // is never read into the response; only existence of a `live` session for
   // this student, scoped to a verified candidate assignment, is retained.
-  const sessionsSnapshot = await assessmentSessionsCollectionRef()
-    .where("classId", "==", input.classId)
-    .get();
 
   const verifiedSet = new Set(verified);
   const liveSessionAssignmentIds = new Set<string>();
@@ -309,16 +469,23 @@ async function assessmentStudentAssignmentsForClassHandler(
       hasLiveSession: liveSessionAssignmentIds.has(assignmentId),
     }));
 
+  const groups = await buildGroups(
+    verifiedRecords,
+    liveSessionAssignmentIds,
+    actor.districtId,
+  );
+
   safeLog(() =>
     log.info("assessmentStudentAssignments.listedForClass", {
       actorUserId: actor.uid,
       classId: input.classId,
       studentId: input.studentId,
       count: assignments.length,
+      groups: groups.length,
     }),
   );
 
-  return { classId: input.classId, studentId: input.studentId, assignments };
+  return { classId: input.classId, studentId: input.studentId, assignments, groups };
 }
 
 export const assessmentStudentAssignmentsForClass = platformCallable(

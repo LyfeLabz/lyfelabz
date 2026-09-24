@@ -67,6 +67,26 @@ const mockAssignmentDocRef = jest.fn((id: string) => ({
     ),
 }));
 
+// Current pointers keyed `${classId}/${lessonSlug}`, read by the REAL
+// canonical grouping primitive (`resolveCurrentOccurrenceGroup`), which this
+// callable delegates to.
+const pointerRegistry = new Map<string, Record<string, unknown>>();
+const mockAssignmentsCurrentDocRef = jest.fn((classId: string, lessonSlug: string) => ({
+  get: () => {
+    const data = pointerRegistry.get(`${classId}/${lessonSlug}`);
+    return Promise.resolve({ exists: data !== undefined, data: () => data });
+  },
+}));
+// The primitive's single-field `classId` enumeration over the same
+// assignment fixture the per-id reads use.
+const mockAssignmentsCollectionRef = jest.fn(() =>
+  makeQuery(
+    Array.from(assignmentRegistry.entries())
+      .filter(([, v]) => v.exists)
+      .map(([id, v]) => ({ id, data: v.data() as Record<string, unknown> })),
+  ),
+);
+
 jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
@@ -77,6 +97,8 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: jest.fn(), error: jest.fn() },
     requireDistrictContext: mockRequireDistrictContext,
     assignmentDocRef: mockAssignmentDocRef,
+    assignmentsCurrentDocRef: mockAssignmentsCurrentDocRef,
+    assignmentsCollectionRef: mockAssignmentsCollectionRef,
     assignmentRecipientsCollectionGroupRef: mockRecipientsCollectionGroupRef,
     assessmentSessionsCollectionRef: mockAssessmentSessionsCollectionRef,
     classDocRef: mockClassDocRef,
@@ -198,6 +220,7 @@ beforeEach(() => {
   recipientsFixture.length = 0;
   sessionsFixture.length = 0;
   assignmentRegistry.clear();
+  pointerRegistry.clear();
   classFixture.present = false;
   classFixture.data = null;
   mockRequireDistrictContext.mockResolvedValue(VALID_CONTEXT);
@@ -406,5 +429,174 @@ describe("assessmentStudentAssignmentsForClass", () => {
       "a-assignment",
       "z-assignment",
     ]);
+  });
+});
+
+// Reassignment model: additive `groups`, resolved through the REAL canonical
+// occurrence-grouping primitive (pointer + class enumeration fixtures above).
+describe("assessmentStudentAssignmentsForClass groups (Current occurrence grouping)", () => {
+  const LESSON = "lesson_engineering-design";
+  const ts = (ms: number) => ({ toMillis: () => ms });
+  const seedPointer = (assignmentId: string, overrides: Record<string, unknown> = {}) =>
+    pointerRegistry.set(`${CLASS_ID}/${LESSON}`, {
+      classId: CLASS_ID,
+      lessonSlug: LESSON,
+      assignmentId,
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
+      setBy: TEACHER_UID,
+      source: "publish",
+      setAt: {},
+      ...overrides,
+    });
+  // Four occurrences of one lesson (the production shape): a1 closed, a2/a3
+  // older published, a4 the Current.
+  const seedFourOccurrences = () => {
+    seedAssignment("a1", { status: "closed", title: "Engineering Design (1)", publishedAt: ts(1000) });
+    seedAssignment("a2", { title: "Engineering Design (2)", publishedAt: ts(2000) });
+    seedAssignment("a3", { title: "Engineering Design (3)", publishedAt: ts(3000) });
+    seedAssignment("a4", { title: "Engineering Design", publishedAt: ts(4000) });
+    for (const id of ["a1", "a2", "a3", "a4"]) seedRecipient(id);
+  };
+  const run = async () => {
+    mockRequireDistrictContext.mockResolvedValue(VALID_CONTEXT);
+    seedClass();
+    return __assessmentStudentAssignmentsForClassHandler(
+      makeRequest({ classId: CLASS_ID, studentId: STUDENT_ID }),
+    );
+  };
+
+  test("valid Current: four occurrences form ONE group; Current supplies title/metadata; every occurrence id rides along", async () => {
+    seedFourOccurrences();
+    seedPointer("a4");
+    const res = await run();
+    expect(res.groups).toEqual([
+      {
+        resolution: "valid",
+        lessonSlug: LESSON,
+        operationalAssignmentId: "a4",
+        assignmentIds: ["a1", "a2", "a3", "a4"],
+        title: "Engineering Design",
+        status: "published",
+        publishedAt: 4000,
+        hasLiveSession: false,
+        isOperationalRecipient: true,
+      },
+    ]);
+    // Backward compatible: the pre-existing per-assignment list is unchanged.
+    expect(res.assignments.map((a) => a.assignmentId)).toEqual(["a1", "a2", "a3", "a4"]);
+  });
+
+  test("valid Current: hasLiveSession reflects ONLY the Current assignment", async () => {
+    seedFourOccurrences();
+    seedPointer("a4");
+    seedSession("a2"); // live session on a superseded occurrence
+    let res = await run();
+    expect(res.groups[0]).toMatchObject({ resolution: "valid", hasLiveSession: false });
+    seedSession("a4");
+    res = await run();
+    expect(res.groups[0]).toMatchObject({ resolution: "valid", hasLiveSession: true });
+  });
+
+  test("valid Current the student is not a recipient of: still one group, operational recipient false", async () => {
+    seedAssignment("a1", { status: "closed", title: "Old" });
+    seedAssignment("a4", { title: "Engineering Design" });
+    seedRecipient("a1");
+    seedPointer("a4");
+    const res = await run();
+    expect(res.groups).toHaveLength(1);
+    expect(res.groups[0]).toMatchObject({
+      resolution: "valid",
+      operationalAssignmentId: "a4",
+      assignmentIds: ["a1", "a4"],
+      title: "Engineering Design",
+      isOperationalRecipient: false,
+    });
+  });
+
+  test("inactive (managed Current closed): one history group, no operational assignment, never live, no resurrection", async () => {
+    seedAssignment("a1", { title: "Engineering Design (old)", publishedAt: ts(1000) }); // still published
+    seedAssignment("a2", { status: "closed", title: "Engineering Design", publishedAt: ts(2000) });
+    seedRecipient("a1");
+    seedRecipient("a2");
+    seedSession("a1");
+    seedPointer("a2");
+    const res = await run();
+    expect(res.groups).toEqual([
+      {
+        resolution: "inactive",
+        lessonSlug: LESSON,
+        operationalAssignmentId: null,
+        assignmentIds: ["a1", "a2"],
+        title: "Engineering Design",
+        status: "closed",
+        publishedAt: 2000,
+        hasLiveSession: false,
+        isOperationalRecipient: false,
+      },
+    ]);
+  });
+
+  test("unresolved legacy (no pointer): no grouping, one entry per assignment with its own server title", async () => {
+    seedAssignment("a1", { title: "Engineering Design", publishedAt: ts(1000) });
+    seedAssignment("a2", { title: "Engineering Design", publishedAt: ts(2000) });
+    seedRecipient("a1");
+    seedRecipient("a2");
+    seedSession("a2");
+    const res = await run();
+    expect(res.groups).toEqual([
+      expect.objectContaining({ resolution: "unresolved", operationalAssignmentId: "a1", assignmentIds: ["a1"], title: "Engineering Design", publishedAt: 1000, hasLiveSession: false }),
+      expect.objectContaining({ resolution: "unresolved", operationalAssignmentId: "a2", assignmentIds: ["a2"], title: "Engineering Design", publishedAt: 2000, hasLiveSession: true }),
+    ]);
+  });
+
+  test.each([
+    ["malformed pointer", { source: "bogus" }, "a2"],
+    ["cross-school pointer", { schoolId: OTHER_SCHOOL_ID }, "a2"],
+    ["cross-teacher pointer", { teacherId: OTHER_TEACHER_UID }, "a2"],
+    ["pointer to a missing assignment", {}, "a-missing"],
+  ])("invalid Current (%s) fails safe to unresolved per-assignment entries; nothing is chosen", async (_label, overrides, target) => {
+    seedAssignment("a1", { title: "Engineering Design" });
+    seedAssignment("a2", { title: "Engineering Design" });
+    seedRecipient("a1");
+    seedRecipient("a2");
+    seedPointer(target, overrides);
+    const res = await run();
+    expect(res.groups.map((g) => [g.resolution, g.assignmentIds])).toEqual([
+      ["unresolved", ["a1"]],
+      ["unresolved", ["a2"]],
+    ]);
+  });
+
+  test("group membership never includes another class's or another school's assignments of the same lesson", async () => {
+    seedFourOccurrences();
+    seedPointer("a4");
+    seedAssignment("x-class", { classId: "class-other", title: "Engineering Design" });
+    seedAssignment("x-school", { schoolId: OTHER_SCHOOL_ID, title: "Engineering Design" });
+    seedAssignment("x-teacher", { teacherId: OTHER_TEACHER_UID, title: "Engineering Design" });
+    const res = await run();
+    expect(res.groups).toHaveLength(1);
+    expect(res.groups[0]?.assignmentIds).toEqual(["a1", "a2", "a3", "a4"]);
+  });
+
+  test("separate lessons resolve independently (valid + unresolved together)", async () => {
+    seedFourOccurrences();
+    seedPointer("a4");
+    seedAssignment("b1", { lessonSlug: "lesson_water-cycle", title: "Water Cycle" });
+    seedRecipient("b1");
+    const res = await run();
+    expect(res.groups.map((g) => [g.resolution, g.lessonSlug, g.operationalAssignmentId])).toEqual([
+      ["valid", LESSON, "a4"],
+      ["unresolved", "lesson_water-cycle", "b1"],
+    ]);
+  });
+
+  test("a student with no visible recipient rows gets no groups", async () => {
+    seedFourOccurrences();
+    recipientsFixture.length = 0;
+    seedPointer("a4");
+    const res = await run();
+    expect(res.groups).toEqual([]);
+    expect(res.assignments).toEqual([]);
   });
 });
