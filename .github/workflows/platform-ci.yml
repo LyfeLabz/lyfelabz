@@ -20,6 +20,11 @@ jobs:
         working-directory: platform/functions
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: the ASTRA-004 hosting suite verifies against an
+          # approved base commit via `git ls-tree`, which a shallow clone
+          # does not contain.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
