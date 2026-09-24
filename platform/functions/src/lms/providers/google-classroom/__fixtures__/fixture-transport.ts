@@ -36,6 +36,8 @@ import type {
   GoogleClassroomCourseListResponse,
   GoogleClassroomCourseResource,
   GoogleClassroomCourseWorkCreateRequest,
+  GoogleClassroomCourseWorkDetailResource,
+  GoogleClassroomCourseWorkGetRequest,
   GoogleClassroomCourseWorkResource,
   GoogleClassroomStudentListRequest,
   GoogleClassroomStudentListResponse,
@@ -180,6 +182,8 @@ export type FixtureFailureMode =
   | "permission-denied"
   | "rate-limited"
   | "temporary-unavailable"
+  | "failed-precondition"
+  | "internal-error"
   | "malformed";
 
 // Sprint 30A.2 - fixture-seeded StudentSubmission. Tests choose which
@@ -195,8 +199,22 @@ export type FixtureStudentSubmissionSeed = {
   readonly submissionId: string;
 };
 
+// Coursework health read - fixture-seeded coursework. A `getCourseWork`
+// for an unseeded (courseId, courseWorkId) pair yields a 404 NOT_FOUND,
+// matching Google's contract for coursework that does not exist or was
+// deleted.
+export type FixtureCourseWorkSeed = {
+  readonly courseId: string;
+  readonly courseWork: GoogleClassroomCourseWorkDetailResource;
+};
+
 export type GoogleClassroomFixtureOptions = {
   readonly failureMode?: FixtureFailureMode;
+  readonly courseWork?: readonly FixtureCourseWorkSeed[];
+  // Independently-selectable failure mode for `getCourseWork` only, so a
+  // test can fail the coursework read without failing the credential
+  // refresh or any other transport operation.
+  readonly courseWorkReadFailureMode?: FixtureFailureMode;
   readonly refreshTokenFailureMode?: FixtureFailureMode;
   readonly authorizationCode?: string;
   readonly refreshToken?: string;
@@ -224,6 +242,7 @@ export type GoogleClassroomFixtureCallLog = {
   readonly createdCourseWorkByCourse: Readonly<
     Record<string, readonly GoogleClassroomCourseWorkResource[]>
   >;
+  readonly getCourseWorkCalls: number;
   readonly listStudentSubmissionsCalls: number;
   readonly patchStudentSubmissionGradeCalls: number;
   // Every grade-patch call this fixture instance observed, in call order.
@@ -256,6 +275,7 @@ export function createFixtureGoogleClassroomTransport(
   let studentListCalls = 0;
   let topicListCalls = 0;
   let courseWorkCreateCalls = 0;
+  let getCourseWorkCalls = 0;
   let listStudentSubmissionsCalls = 0;
   let patchStudentSubmissionGradeCalls = 0;
   const revokedTokens: string[] = [];
@@ -264,6 +284,8 @@ export function createFixtureGoogleClassroomTransport(
     GoogleClassroomCourseWorkResource[]
   > = {};
   const studentSubmissionSeeds = options.studentSubmissions ?? [];
+  const courseWorkSeeds = options.courseWork ?? [];
+  const courseWorkReadFailureMode = options.courseWorkReadFailureMode ?? "none";
   const gradePassbackFailureMode = options.gradePassbackFailureMode ?? "none";
   const gradePatchCallOrder: { submissionId: string; earnedPoints: number }[] =
     [];
@@ -342,6 +364,20 @@ export function createFixtureGoogleClassroomTransport(
           503,
           "UNAVAILABLE",
           `fixture: upstream temporarily unavailable for ${op}`,
+        );
+      case "failed-precondition":
+        // A 400 that is not an OAuth grant error, e.g. Classroom reporting
+        // that the target is not in a state that allows the operation.
+        throw new GoogleClassroomFixtureUpstreamError(
+          400,
+          "FAILED_PRECONDITION",
+          `fixture: upstream refused ${op} with a failed precondition`,
+        );
+      case "internal-error":
+        throw new GoogleClassroomFixtureUpstreamError(
+          500,
+          "INTERNAL",
+          `fixture: upstream internal error for ${op}`,
         );
       case "malformed":
         throw new GoogleClassroomFixtureUpstreamError(
@@ -499,6 +535,26 @@ export function createFixtureGoogleClassroomTransport(
       return Promise.resolve(created);
     },
 
+    async getCourseWork(
+      input: GoogleClassroomCourseWorkGetRequest,
+    ): Promise<GoogleClassroomCourseWorkDetailResource> {
+      getCourseWorkCalls += 1;
+      applyFailureMode(courseWorkReadFailureMode, "getCourseWork");
+      requireAccessToken(input.accessToken, "getCourseWork");
+      const seed = courseWorkSeeds.find(
+        (s) =>
+          s.courseId === input.courseId && s.courseWork.id === input.courseWorkId,
+      );
+      if (!seed) {
+        throw new GoogleClassroomFixtureUpstreamError(
+          404,
+          "NOT_FOUND",
+          `fixture: coursework ${input.courseWorkId} does not exist`,
+        );
+      }
+      return Promise.resolve(seed.courseWork);
+    },
+
     async listStudentSubmissions(
       input: GoogleClassroomStudentSubmissionListRequest,
     ): Promise<GoogleClassroomStudentSubmissionListResponse> {
@@ -551,6 +607,7 @@ export function createFixtureGoogleClassroomTransport(
         studentListCalls,
         topicListCalls,
         courseWorkCreateCalls,
+        getCourseWorkCalls,
         revokedTokens: [...revokedTokens],
         createdCourseWorkByCourse: frozenCreated,
         listStudentSubmissionsCalls,

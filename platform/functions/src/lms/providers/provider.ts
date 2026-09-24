@@ -166,6 +166,40 @@ export type LmsPublishedAssignment = {
   readonly lmsAssignmentUrl?: string;
 };
 
+// -------------------- Coursework health read --------------------
+//
+// Read-only observation of ONE previously published upstream assignment,
+// identified by the pointer a LyfeLabz publication record already stores.
+// Used to answer "does the coursework LyfeLabz published still exist, and
+// what is its live configuration?" It never mutates the upstream item and
+// its result is never written back over a LyfeLabz record.
+
+export type LmsFetchAssignmentInput = {
+  readonly accessToken: string;
+  readonly lmsClassId: string;
+  readonly lmsAssignmentId: string;
+};
+
+// Vendor-neutral lifecycle state of the upstream item. `other` covers any
+// state the provider reports that has no LyfeLabz meaning yet.
+export type LmsAssignmentLiveState = "published" | "draft" | "deleted" | "other";
+
+// Normalized live configuration. `maxPoints` is present only when the
+// upstream item is graded (a positive point value); an ungraded item omits
+// it. Dates are ISO strings: `dueDate` is a calendar date (YYYY-MM-DD) and
+// `dueTime` a UTC time of day (HH:MM), both only when the provider has one.
+export type LmsAssignmentSnapshot = {
+  readonly lmsAssignmentId: string;
+  readonly title?: string;
+  readonly state: LmsAssignmentLiveState;
+  readonly maxPoints?: number;
+  readonly createdAt?: string;
+  readonly updatedAt?: string;
+  readonly dueDate?: string;
+  readonly dueTime?: string;
+  readonly lmsAssignmentUrl?: string;
+};
+
 // -------------------- Grade passback (Sprint 30A.2) --------------------
 //
 // Minimum vendor-neutral surface required for outbound-only, best-score
@@ -324,6 +358,13 @@ export interface LmsProviderAdapter {
   publishAssignment(
     input: LmsPublishAssignmentInput,
   ): Promise<LmsPublishedAssignment>;
+
+  // Read the live configuration of one previously published upstream
+  // assignment. Read-only. A missing or deleted item rejects with the
+  // vendor-neutral `lms.upstreamResourceNotFound`; every other upstream
+  // failure uses the same `PlatformError` vocabulary as the other
+  // operations.
+  fetchAssignment(input: LmsFetchAssignmentInput): Promise<LmsAssignmentSnapshot>;
 
   // Resolve the student's upstream StudentSubmission for one coursework
   // item, or `null` when none exists yet. Sprint 30A.2 grade-passback

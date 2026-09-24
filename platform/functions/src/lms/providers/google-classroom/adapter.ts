@@ -2,6 +2,8 @@ import { PlatformError, type LmsProviderId } from "../../../shared";
 import { getLmsOAuthStateStore } from "../../oauth-state/state-store";
 import type {
   LmsCredentialRefresh,
+  LmsAssignmentLiveState,
+  LmsAssignmentSnapshot,
   LmsDiscoveredClass,
   LmsOAuthAuthorizationRequest,
   LmsOAuthGrant,
@@ -17,6 +19,9 @@ import {
   GoogleClassroomHttpsError,
   getGoogleClassroomTransport,
   type GoogleClassroomCourseResource,
+  type GoogleClassroomCourseWorkDetailResource,
+  type GoogleClassroomDate,
+  type GoogleClassroomTimeOfDay,
 } from "./transport";
 
 // Google Classroom adapter. Sprint 23A shipped this file as a
@@ -35,6 +40,7 @@ import {
 //   - listClassRoster     (Sprint 23C)
 //   - listClassTopics     (Sprint 25 Phase 1)
 //   - publishAssignment   (Sprint 25 Phase 1)
+//   - fetchAssignment     (coursework health read; read-only)
 //
 // Vendor neutrality (PDR-020f): every Google-specific concept lives
 // inside this file and the `transport.ts` / `config.ts` /
@@ -173,6 +179,82 @@ function translateUpstreamError(err: unknown, op: string): PlatformError {
     "lms.upstreamCallFailed",
     `Google Classroom ${op} failed unexpectedly.`,
   );
+}
+
+function toLiveState(state: unknown): LmsAssignmentLiveState {
+  switch (state) {
+    case "PUBLISHED":
+      return "published";
+    case "DRAFT":
+      return "draft";
+    case "DELETED":
+      return "deleted";
+    default:
+      return "other";
+  }
+}
+
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function isWholeNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value);
+}
+
+// Classroom `Date` -> YYYY-MM-DD, only when all three parts are present.
+function toIsoDate(date: GoogleClassroomDate | undefined): string | undefined {
+  if (!date) return undefined;
+  const { year, month, day } = date;
+  if (!isWholeNumber(year) || !isWholeNumber(month) || !isWholeNumber(day)) {
+    return undefined;
+  }
+  return `${String(year).padStart(4, "0")}-${pad2(month)}-${pad2(day)}`;
+}
+
+// Classroom `TimeOfDay` (UTC) -> HH:MM. Omitted fields are zero per
+// Google's TimeOfDay contract.
+function toIsoTimeOfDay(
+  time: GoogleClassroomTimeOfDay | undefined,
+): string | undefined {
+  if (!time) return undefined;
+  const hours = time.hours ?? 0;
+  const minutes = time.minutes ?? 0;
+  if (!isWholeNumber(hours) || !isWholeNumber(minutes)) return undefined;
+  return `${pad2(hours)}:${pad2(minutes)}`;
+}
+
+function nonEmptyString(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function toAssignmentSnapshot(
+  resource: GoogleClassroomCourseWorkDetailResource,
+): LmsAssignmentSnapshot {
+  const title = nonEmptyString(resource.title);
+  const createdAt = nonEmptyString(resource.creationTime);
+  const updatedAt = nonEmptyString(resource.updateTime);
+  const url = nonEmptyString(resource.alternateLink);
+  const dueDate = toIsoDate(resource.dueDate);
+  const dueTime = dueDate !== undefined ? toIsoTimeOfDay(resource.dueTime) : undefined;
+  // Classroom treats zero or unspecified maxPoints as ungraded.
+  const maxPoints =
+    typeof resource.maxPoints === "number" &&
+    Number.isFinite(resource.maxPoints) &&
+    resource.maxPoints > 0
+      ? resource.maxPoints
+      : undefined;
+  return {
+    lmsAssignmentId: resource.id,
+    state: toLiveState(resource.state),
+    ...(title !== undefined ? { title } : {}),
+    ...(maxPoints !== undefined ? { maxPoints } : {}),
+    ...(createdAt !== undefined ? { createdAt } : {}),
+    ...(updatedAt !== undefined ? { updatedAt } : {}),
+    ...(dueDate !== undefined ? { dueDate } : {}),
+    ...(dueTime !== undefined ? { dueTime } : {}),
+    ...(url !== undefined ? { lmsAssignmentUrl: url } : {}),
+  };
 }
 
 function toDiscoveredClass(
@@ -722,6 +804,63 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
     } finally {
       if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
     }
+  },
+
+  // Coursework health read - `courseWork.get` for one coursework item.
+  // Read-only. Same bounded, AbortController-backed timeout shape as
+  // `resolveStudentSubmission`. A 404 surfaces as
+  // `lms.upstreamResourceNotFound` via `translateUpstreamError`, which is
+  // how a caller learns the coursework no longer exists.
+  async fetchAssignment(input): Promise<LmsAssignmentSnapshot> {
+    let transport;
+    try {
+      transport = getGoogleClassroomTransport();
+    } catch (err) {
+      throw translateUpstreamError(err, "fetchAssignment");
+    }
+    const FETCH_ASSIGNMENT_TIMEOUT_MS = 15_000;
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    let resource: GoogleClassroomCourseWorkDetailResource;
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          controller.abort();
+          reject(
+            new PlatformError(
+              "lms.upstreamCallFailed",
+              "Google Classroom fetchAssignment exceeded the 15s timeout.",
+            ),
+          );
+        }, FETCH_ASSIGNMENT_TIMEOUT_MS);
+      });
+      timeoutPromise.catch(() => undefined);
+
+      const workPromise = transport.getCourseWork({
+        accessToken: input.accessToken,
+        courseId: input.lmsClassId,
+        courseWorkId: input.lmsAssignmentId,
+        signal: controller.signal,
+      });
+      workPromise.catch(() => undefined);
+
+      resource = await Promise.race([workPromise, timeoutPromise]);
+    } catch (err) {
+      throw translateUpstreamError(err, "fetchAssignment");
+    } finally {
+      if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
+    }
+    if (
+      resource === null ||
+      typeof resource !== "object" ||
+      resource.id !== input.lmsAssignmentId
+    ) {
+      throw new PlatformError(
+        "lms.upstreamMalformedResponse",
+        "Google Classroom returned a coursework resource that does not match the requested id.",
+      );
+    }
+    return toAssignmentSnapshot(resource);
   },
 
   // Sprint 30A.2 - resolve the student's upstream StudentSubmission for one

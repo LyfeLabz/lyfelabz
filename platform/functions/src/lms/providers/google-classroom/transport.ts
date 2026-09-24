@@ -173,6 +173,45 @@ export type GoogleClassroomCourseWorkResource = {
   readonly alternateLink?: string;
 };
 
+// Coursework health read. `courseWork.get` for ONE coursework item the
+// caller already knows from an authoritative LyfeLabz publication record.
+// Read-only: a GET with a `fields` partial-response mask, so Classroom
+// returns only the configuration LyfeLabz compares (never description,
+// materials, or assignee lists).
+export type GoogleClassroomCourseWorkGetRequest = {
+  readonly accessToken: string;
+  readonly courseId: string;
+  readonly courseWorkId: string;
+  readonly signal?: AbortSignal;
+};
+
+export type GoogleClassroomDate = {
+  readonly year?: number;
+  readonly month?: number;
+  readonly day?: number;
+};
+
+export type GoogleClassroomTimeOfDay = {
+  readonly hours?: number;
+  readonly minutes?: number;
+  readonly seconds?: number;
+  readonly nanos?: number;
+};
+
+export type GoogleClassroomCourseWorkDetailResource = {
+  readonly id: string;
+  readonly courseId?: string;
+  readonly title?: string;
+  readonly state?: string;
+  readonly workType?: string;
+  readonly maxPoints?: number;
+  readonly creationTime?: string;
+  readonly updateTime?: string;
+  readonly dueDate?: GoogleClassroomDate;
+  readonly dueTime?: GoogleClassroomTimeOfDay;
+  readonly alternateLink?: string;
+};
+
 // Sprint 30A.2 - Google Classroom grade passback. Narrow subset of the
 // `studentSubmissions` REST v1 payloads: only what the adapter actually
 // reads. `userId` on the resource is Classroom's own internal id for the
@@ -272,6 +311,10 @@ export interface GoogleClassroomTransport {
     input: GoogleClassroomCourseWorkCreateRequest,
   ): Promise<GoogleClassroomCourseWorkResource>;
 
+  getCourseWork(
+    input: GoogleClassroomCourseWorkGetRequest,
+  ): Promise<GoogleClassroomCourseWorkDetailResource>;
+
   listStudentSubmissions(
     input: GoogleClassroomStudentSubmissionListRequest,
   ): Promise<GoogleClassroomStudentSubmissionListResponse>;
@@ -317,6 +360,9 @@ class UnboundGoogleClassroomTransport implements GoogleClassroomTransport {
   }
   createCourseWork(): never {
     this.unbound("createCourseWork");
+  }
+  getCourseWork(): never {
+    this.unbound("getCourseWork");
   }
   listStudentSubmissions(): never {
     this.unbound("listStudentSubmissions");
@@ -732,6 +778,11 @@ function urlEncodeFormBody(fields: Record<string, string>): string {
     .join("&");
 }
 
+// Partial-response mask for the coursework health read: exactly the fields
+// `GoogleClassroomCourseWorkDetailResource` declares.
+const COURSE_WORK_HEALTH_FIELDS =
+  "id,courseId,title,state,workType,maxPoints,creationTime,updateTime,dueDate,dueTime,alternateLink";
+
 function classroomUrl(path: string, query?: Record<string, string>): string {
   const base = `${GOOGLE_CLASSROOM_API_ROOT}${path}`;
   if (!query) return base;
@@ -955,6 +1006,22 @@ export function createHttpsGoogleClassroomTransport(
           ...(input.signal !== undefined ? { signal: input.signal } : {}),
         },
       )) as GoogleClassroomCourseWorkResource;
+      return parsed;
+    },
+
+    async getCourseWork(input) {
+      const parsed = (await callUpstream(
+        fetchImpl,
+        classroomUrl(
+          `/courses/${encodeURIComponent(input.courseId)}/courseWork/${encodeURIComponent(input.courseWorkId)}`,
+          { fields: COURSE_WORK_HEALTH_FIELDS },
+        ),
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${input.accessToken}` },
+          ...(input.signal !== undefined ? { signal: input.signal } : {}),
+        },
+      )) as GoogleClassroomCourseWorkDetailResource;
       return parsed;
     },
 

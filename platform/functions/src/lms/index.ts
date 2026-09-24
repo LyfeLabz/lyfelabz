@@ -26,6 +26,11 @@ export { lmsClassesRefresh } from "./classes-refresh";
 export { lmsClassesRefreshRoster } from "./classes-refresh-roster";
 export { lmsClassesSyncRoster } from "./classes-sync-roster";
 export { lmsClassesListTopics } from "./classes-list-topics";
+export {
+  lmsCourseworkInspect,
+  type LmsCourseworkInspectRequest,
+  type LmsCourseworkInspectResponse,
+} from "./coursework-inspect";
 export { lmsConnectionsBegin } from "./connections-begin";
 export { lmsConnectionsComplete } from "./connections-complete";
 export { lmsConnectionsDescribe } from "./connections-describe";
