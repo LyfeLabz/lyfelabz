@@ -212,6 +212,35 @@ export type GoogleClassroomCourseWorkDetailResource = {
   readonly alternateLink?: string;
 };
 
+// Grade reconciliation preview. Read-only list of EVERY student submission
+// on one coursework item (no `userId` filter), with only the grade-bearing
+// fields. Deliberately a separate operation from the grade-passback
+// `listStudentSubmissions` so the read-only preview never shares a code path
+// with the grade-writing engine.
+export type GoogleClassroomCourseWorkSubmissionsListRequest = {
+  readonly accessToken: string;
+  readonly courseId: string;
+  readonly courseWorkId: string;
+  readonly pageToken?: string;
+  readonly pageSize?: number;
+  readonly signal?: AbortSignal;
+};
+
+export type GoogleClassroomSubmissionGradeResource = {
+  readonly id: string;
+  readonly userId?: string;
+  readonly courseWorkId?: string;
+  readonly state?: string;
+  readonly late?: boolean;
+  readonly assignedGrade?: number;
+  readonly draftGrade?: number;
+};
+
+export type GoogleClassroomCourseWorkSubmissionsListResponse = {
+  readonly studentSubmissions?: readonly GoogleClassroomSubmissionGradeResource[];
+  readonly nextPageToken?: string;
+};
+
 // Sprint 30A.2 - Google Classroom grade passback. Narrow subset of the
 // `studentSubmissions` REST v1 payloads: only what the adapter actually
 // reads. `userId` on the resource is Classroom's own internal id for the
@@ -315,6 +344,10 @@ export interface GoogleClassroomTransport {
     input: GoogleClassroomCourseWorkGetRequest,
   ): Promise<GoogleClassroomCourseWorkDetailResource>;
 
+  listCourseWorkSubmissions(
+    input: GoogleClassroomCourseWorkSubmissionsListRequest,
+  ): Promise<GoogleClassroomCourseWorkSubmissionsListResponse>;
+
   listStudentSubmissions(
     input: GoogleClassroomStudentSubmissionListRequest,
   ): Promise<GoogleClassroomStudentSubmissionListResponse>;
@@ -363,6 +396,9 @@ class UnboundGoogleClassroomTransport implements GoogleClassroomTransport {
   }
   getCourseWork(): never {
     this.unbound("getCourseWork");
+  }
+  listCourseWorkSubmissions(): never {
+    this.unbound("listCourseWorkSubmissions");
   }
   listStudentSubmissions(): never {
     this.unbound("listStudentSubmissions");
@@ -783,6 +819,11 @@ function urlEncodeFormBody(fields: Record<string, string>): string {
 const COURSE_WORK_HEALTH_FIELDS =
   "id,courseId,title,state,workType,maxPoints,creationTime,updateTime,dueDate,dueTime,alternateLink";
 
+// Partial-response mask for the grade reconciliation preview's submission
+// list: only identity, state, and the two grade fields.
+const COURSE_WORK_SUBMISSION_GRADE_FIELDS =
+  "studentSubmissions(id,userId,courseWorkId,state,late,assignedGrade,draftGrade),nextPageToken";
+
 function classroomUrl(path: string, query?: Record<string, string>): string {
   const base = `${GOOGLE_CLASSROOM_API_ROOT}${path}`;
   if (!query) return base;
@@ -1022,6 +1063,28 @@ export function createHttpsGoogleClassroomTransport(
           ...(input.signal !== undefined ? { signal: input.signal } : {}),
         },
       )) as GoogleClassroomCourseWorkDetailResource;
+      return parsed;
+    },
+
+    async listCourseWorkSubmissions(input) {
+      const parsed = (await callUpstream(
+        fetchImpl,
+        classroomUrl(
+          `/courses/${encodeURIComponent(input.courseId)}/courseWork/${encodeURIComponent(input.courseWorkId)}/studentSubmissions`,
+          {
+            fields: COURSE_WORK_SUBMISSION_GRADE_FIELDS,
+            ...(input.pageToken ? { pageToken: input.pageToken } : {}),
+            ...(input.pageSize !== undefined
+              ? { pageSize: String(input.pageSize) }
+              : {}),
+          },
+        ),
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${input.accessToken}` },
+          ...(input.signal !== undefined ? { signal: input.signal } : {}),
+        },
+      )) as GoogleClassroomCourseWorkSubmissionsListResponse;
       return parsed;
     },
 

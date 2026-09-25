@@ -19,6 +19,11 @@ export {
   type LmsGradePassbacksRetryResponse,
   type LmsGradePassbacksRetryStatus,
 } from "./lms-grade-passbacks-retry";
+export {
+  lmsGradePassbacksPreview,
+  type LmsGradePassbacksPreviewRequest,
+  type LmsGradePassbacksPreviewResponse,
+} from "./lms-grade-passbacks-preview";
 export { lmsDeepLinkResolve } from "./deep-link-resolve";
 export { lmsClassesDiscover } from "./classes-discover";
 export { lmsClassesImport } from "./classes-import";

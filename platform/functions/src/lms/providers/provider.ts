@@ -200,6 +200,44 @@ export type LmsAssignmentSnapshot = {
   readonly lmsAssignmentUrl?: string;
 };
 
+// -------------------- Submission grade read --------------------
+//
+// Read-only observation of the grades that currently exist on every
+// student submission of one upstream assignment. Used by the grade
+// reconciliation preview to compare what the LMS actually holds against
+// LyfeLabz's canonical target BEFORE anything could be written. Never
+// mutates a submission; entirely separate from the grade-passback
+// operations below.
+
+export type LmsListSubmissionGradesInput = {
+  readonly accessToken: string;
+  readonly lmsClassId: string;
+  readonly lmsAssignmentId: string;
+};
+
+// Vendor-neutral submission lifecycle. `new`/`created` = not turned in;
+// `other` covers any state with no LyfeLabz meaning yet.
+export type LmsSubmissionState =
+  | "new"
+  | "created"
+  | "turnedIn"
+  | "returned"
+  | "reclaimed"
+  | "other";
+
+// `assignedGrade` is the grade the LMS treats as recorded (visible to the
+// student once returned); `draftGrade` is the teacher's pending grade.
+// Each is null when unset. `studentProviderAccountId` is the same opaque
+// upstream account id used by `LmsRosterStudent.providerAccountId`.
+export type LmsSubmissionGrade = {
+  readonly submissionId: string;
+  readonly studentProviderAccountId: string;
+  readonly state: LmsSubmissionState;
+  readonly late: boolean;
+  readonly assignedGrade: number | null;
+  readonly draftGrade: number | null;
+};
+
 // -------------------- Grade passback (Sprint 30A.2) --------------------
 //
 // Minimum vendor-neutral surface required for outbound-only, best-score
@@ -365,6 +403,13 @@ export interface LmsProviderAdapter {
   // failure uses the same `PlatformError` vocabulary as the other
   // operations.
   fetchAssignment(input: LmsFetchAssignmentInput): Promise<LmsAssignmentSnapshot>;
+
+  // List the current grade state of every student submission on one
+  // previously published upstream assignment. Read-only. Rejects (never
+  // returns a partial list) on any upstream or pagination failure.
+  listSubmissionGrades(
+    input: LmsListSubmissionGradesInput,
+  ): Promise<readonly LmsSubmissionGrade[]>;
 
   // Resolve the student's upstream StudentSubmission for one coursework
   // item, or `null` when none exists yet. Sprint 30A.2 grade-passback

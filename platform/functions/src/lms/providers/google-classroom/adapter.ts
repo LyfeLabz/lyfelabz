@@ -4,6 +4,8 @@ import type {
   LmsCredentialRefresh,
   LmsAssignmentLiveState,
   LmsAssignmentSnapshot,
+  LmsSubmissionGrade,
+  LmsSubmissionState,
   LmsDiscoveredClass,
   LmsOAuthAuthorizationRequest,
   LmsOAuthGrant,
@@ -21,6 +23,7 @@ import {
   type GoogleClassroomCourseResource,
   type GoogleClassroomCourseWorkDetailResource,
   type GoogleClassroomDate,
+  type GoogleClassroomSubmissionGradeResource,
   type GoogleClassroomTimeOfDay,
 } from "./transport";
 
@@ -41,6 +44,7 @@ import {
 //   - listClassTopics     (Sprint 25 Phase 1)
 //   - publishAssignment   (Sprint 25 Phase 1)
 //   - fetchAssignment     (coursework health read; read-only)
+//   - listSubmissionGrades (grade reconciliation preview; read-only)
 //
 // Vendor neutrality (PDR-020f): every Google-specific concept lives
 // inside this file and the `transport.ts` / `config.ts` /
@@ -254,6 +258,60 @@ function toAssignmentSnapshot(
     ...(dueDate !== undefined ? { dueDate } : {}),
     ...(dueTime !== undefined ? { dueTime } : {}),
     ...(url !== undefined ? { lmsAssignmentUrl: url } : {}),
+  };
+}
+
+function toSubmissionState(state: unknown): LmsSubmissionState {
+  switch (state) {
+    case "NEW":
+      return "new";
+    case "CREATED":
+      return "created";
+    case "TURNED_IN":
+      return "turnedIn";
+    case "RETURNED":
+      return "returned";
+    case "RECLAIMED_BY_STUDENT":
+      return "reclaimed";
+    default:
+      return "other";
+  }
+}
+
+// A grade is honored only as a finite, non-negative number; anything else
+// (absent, null, malformed) is "unset".
+function toGrade(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : null;
+}
+
+function toSubmissionGrade(
+  submission: GoogleClassroomSubmissionGradeResource,
+  lmsAssignmentId: string,
+): LmsSubmissionGrade {
+  if (
+    submission === null ||
+    typeof submission !== "object" ||
+    typeof submission.id !== "string" ||
+    submission.id.length === 0 ||
+    typeof submission.userId !== "string" ||
+    submission.userId.length === 0 ||
+    (submission.courseWorkId !== undefined &&
+      submission.courseWorkId !== lmsAssignmentId)
+  ) {
+    throw new PlatformError(
+      "lms.upstreamMalformedResponse",
+      "Google Classroom returned a malformed studentSubmission entry for listSubmissionGrades.",
+    );
+  }
+  return {
+    submissionId: submission.id,
+    studentProviderAccountId: submission.userId,
+    state: toSubmissionState(submission.state),
+    late: submission.late === true,
+    assignedGrade: toGrade(submission.assignedGrade),
+    draftGrade: toGrade(submission.draftGrade),
   };
 }
 
@@ -861,6 +919,71 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
       );
     }
     return toAssignmentSnapshot(resource);
+  },
+
+  // Grade reconciliation preview - every submission's current grade state
+  // for one coursework item. Read-only. Bounded pagination under ONE
+  // AbortController-backed timeout covering all pages; any failure rejects
+  // the whole read so a caller never mistakes a partial list for the
+  // complete one.
+  async listSubmissionGrades(input): Promise<readonly LmsSubmissionGrade[]> {
+    let transport;
+    try {
+      transport = getGoogleClassroomTransport();
+    } catch (err) {
+      throw translateUpstreamError(err, "listSubmissionGrades");
+    }
+    const LIST_SUBMISSION_GRADES_TIMEOUT_MS = 30_000;
+    const PAGE_SIZE = 100;
+    const MAX_PAGES = 20;
+    const controller = new AbortController();
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    const collected: GoogleClassroomSubmissionGradeResource[] = [];
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          controller.abort();
+          reject(
+            new PlatformError(
+              "lms.upstreamCallFailed",
+              "Google Classroom listSubmissionGrades exceeded the 30s timeout.",
+            ),
+          );
+        }, LIST_SUBMISSION_GRADES_TIMEOUT_MS);
+      });
+      timeoutPromise.catch(() => undefined);
+
+      const workPromise = (async () => {
+        let pageToken: string | undefined = undefined;
+        for (let page = 0; page < MAX_PAGES; page += 1) {
+          const response = await transport.listCourseWorkSubmissions({
+            accessToken: input.accessToken,
+            courseId: input.lmsClassId,
+            courseWorkId: input.lmsAssignmentId,
+            pageSize: PAGE_SIZE,
+            signal: controller.signal,
+            ...(pageToken !== undefined ? { pageToken } : {}),
+          });
+          collected.push(...(response.studentSubmissions ?? []));
+          if (!response.nextPageToken) return;
+          pageToken = response.nextPageToken;
+        }
+        throw new PlatformError(
+          "lms.upstreamMalformedResponse",
+          "Google Classroom listSubmissionGrades exceeded the page bound.",
+        );
+      })();
+      workPromise.catch(() => undefined);
+
+      await Promise.race([workPromise, timeoutPromise]);
+    } catch (err) {
+      throw translateUpstreamError(err, "listSubmissionGrades");
+    } finally {
+      if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
+    }
+    return collected.map((submission) =>
+      toSubmissionGrade(submission, input.lmsAssignmentId),
+    );
   },
 
   // Sprint 30A.2 - resolve the student's upstream StudentSubmission for one

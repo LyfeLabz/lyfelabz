@@ -49,6 +49,7 @@ export {
 export {
   lmsAssignmentsPublish,
   lmsGradePassbacksRetry,
+  lmsGradePassbacksPreview,
   lmsDeepLinkResolve,
   lmsClassesDiscover,
   lmsClassesImport,

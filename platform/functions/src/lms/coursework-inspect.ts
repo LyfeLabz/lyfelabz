@@ -3,20 +3,13 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   platformCallable,
-  PlatformError,
-  classDocRef,
-  lmsAssignmentPublicationDocRef,
-  lmsConnectionDocRef,
   type AssignmentRecord,
   type AssignmentStatus,
-  type LmsAssignmentPublicationRecord,
   type LmsAssignmentPublicationStatus,
-  type LmsProviderId,
 } from "../shared";
 import {
   createClassAssignmentsLoader,
   resolveCurrentOccurrenceGroup,
-  type OccurrenceScope,
 } from "../assignments/current-occurrence-group";
 
 import {
@@ -25,8 +18,19 @@ import {
 } from "./providers/google-classroom/config-firebase";
 import type { LmsAssignmentLiveState, LmsAssignmentSnapshot } from "./providers/provider";
 import { getProviderAdapter } from "./providers/registry";
-import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
-import { resolveLiveCredential } from "./tokens/credential-resolver";
+import { assertAuthenticatedTeacherForLms } from "./shared/actor";
+import {
+  assertOwnedClass,
+  classifyUpstreamReadError,
+  createConnectionAccessResolver,
+  familyScopeFor,
+  loadFamilyOccurrences,
+  loadOwnedPublication,
+  parseFamilyRequest,
+  storedGradingOf,
+  succeededCourseworkIdOf,
+  type ConnectionAccess,
+} from "./shared/coursework-family";
 
 // lmsCourseworkInspect
 //
@@ -74,6 +78,7 @@ export type LmsCourseworkHealthStatus =
   | "publicationNotSucceeded"
   | "connectionUnavailable"
   | "courseworkNotFound"
+  | "courseworkDeleted"
   | "courseworkNotPublished"
   | "gradingMismatch"
   | "maxPointsMismatch"
@@ -117,17 +122,10 @@ export type LmsCourseworkInspectResponse = {
   readonly assignments: readonly LmsCourseworkInspectAssignment[];
 };
 
-const CLASS_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
-const LESSON_SLUG_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,126}[A-Za-z0-9])?$/;
-
 function isoOf(value: Timestamp | undefined): string | null {
   return value !== undefined && typeof value.toDate === "function"
     ? value.toDate().toISOString()
     : null;
-}
-
-function isPositiveFiniteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
 const NOT_CHECKED_LIVE: LmsCourseworkInspectAssignment["live"] = {
@@ -161,15 +159,8 @@ function liveFromSnapshot(
 }
 
 function liveFromError(err: unknown): LmsCourseworkInspectAssignment["live"] {
-  const errorCode =
-    err instanceof PlatformError ? err.code : "lms.upstreamCallFailed";
-  const existence: LmsCourseworkExistence =
-    errorCode === "lms.upstreamResourceNotFound"
-      ? "notFound"
-      : errorCode === "lms.upstreamAuthorizationFailed" ||
-          errorCode === "lms.insufficientScope"
-        ? "inaccessible"
-        : "error";
+  const { kind, errorCode } = classifyUpstreamReadError(err);
+  const existence: LmsCourseworkExistence = kind;
   return { ...NOT_CHECKED_LIVE, existence, errorCode };
 }
 
@@ -190,108 +181,32 @@ function statusFor(
     case "exists":
       break;
   }
+  // Classroom keeps returning a deleted item (state DELETED) for a time
+  // rather than a 404; report it as deleted, not merely unpublished.
+  if (live.state === "deleted") return "courseworkDeleted";
   if (live.state !== "published") return "courseworkNotPublished";
   if (gradingModeAgrees === false) return "gradingMismatch";
   if (maxPointsAgree === false) return "maxPointsMismatch";
   return "healthy";
 }
 
-type ConnectionAccess =
-  | {
-      readonly ok: true;
-      readonly providerId: LmsProviderId;
-      readonly accessToken: string;
-    }
-  | { readonly ok: false };
-
 async function handler(
   request: CallableRequest<unknown>,
 ): Promise<LmsCourseworkInspectResponse> {
   ensureGoogleClassroomProductionBindings();
   const actor = await assertAuthenticatedTeacherForLms(request);
-  if (request.data === null || typeof request.data !== "object") {
-    throw new PlatformError(
-      "lms.invalidRequest",
-      "Request payload must be a structured object.",
-    );
-  }
-  const payload = request.data as Record<string, unknown>;
-  const classId = requireNonEmptyString(
-    payload.classId,
-    "lms.invalidClassId",
-    "classId must be a non-empty string.",
-  );
-  const lessonSlug = requireNonEmptyString(
-    payload.lessonSlug,
-    "lms.invalidLessonSlug",
-    "lessonSlug must be a non-empty string.",
-  );
-  if (!CLASS_ID_PATTERN.test(classId)) {
-    throw new PlatformError("lms.invalidClassId", "classId is malformed.");
-  }
-  if (!LESSON_SLUG_PATTERN.test(lessonSlug)) {
-    throw new PlatformError("lms.invalidLessonSlug", "lessonSlug is malformed.");
-  }
+  const { classId, lessonSlug } = parseFamilyRequest(request.data);
+  await assertOwnedClass(classId, actor);
 
-  // Class ownership in the caller's authoritative school. A missing class
-  // and a foreign class are indistinguishable to the caller.
-  const classSnapshot = await classDocRef(classId).get();
-  const cls = classSnapshot.exists ? classSnapshot.data() : undefined;
-  if (!cls || cls.teacherId !== actor.uid || cls.schoolId !== actor.schoolId) {
-    throw new PlatformError("lms.forbidden", "Caller does not own this class.");
-  }
-
-  const scope: OccurrenceScope = {
-    classId,
-    lessonSlug,
-    teacherId: actor.uid,
-    schoolId: actor.schoolId,
-  };
+  const scope = familyScopeFor({ classId, lessonSlug }, actor);
   const loader = createClassAssignmentsLoader();
   const group = await resolveCurrentOccurrenceGroup(scope, actor.districtId, loader);
   const currentAssignmentId =
     group.resolution === "unresolved" ? null : group.currentAssignmentId;
-
-  const occurrences = (await loader(classId))
-    .filter(
-      ({ record }) =>
-        record.classId === scope.classId &&
-        record.lessonSlug === scope.lessonSlug &&
-        record.teacherId === scope.teacherId &&
-        record.schoolId === scope.schoolId,
-    )
-    .sort((a, b) => {
-      const at = a.record.createdAt.toMillis();
-      const bt = b.record.createdAt.toMillis();
-      return at !== bt ? at - bt : a.assignmentId.localeCompare(b.assignmentId);
-    });
+  const occurrences = await loadFamilyOccurrences(scope, loader);
 
   // One credential resolution per connection, shared across this family.
-  const connections = new Map<string, Promise<ConnectionAccess>>();
-  const accessFor = (connectionId: string): Promise<ConnectionAccess> => {
-    let pending = connections.get(connectionId);
-    if (!pending) {
-      pending = (async (): Promise<ConnectionAccess> => {
-        const snapshot = await lmsConnectionDocRef(connectionId).get();
-        const connection = snapshot.exists ? snapshot.data() : undefined;
-        if (
-          !connection ||
-          connection.teacherId !== actor.uid ||
-          connection.status !== "active"
-        ) {
-          return { ok: false };
-        }
-        const bundle = await resolveLiveCredential(connection.tokenRef);
-        return {
-          ok: true,
-          providerId: connection.providerId,
-          accessToken: bundle.accessToken,
-        };
-      })();
-      connections.set(connectionId, pending);
-    }
-    return pending;
-  };
+  const accessFor = createConnectionAccessResolver(actor.uid);
 
   const assignments: LmsCourseworkInspectAssignment[] = [];
   for (const { assignmentId, record } of occurrences) {
@@ -323,37 +238,11 @@ async function inspectOne(
     createdAt: isoOf(record.createdAt),
     publishedAt: isoOf(record.publishedAt),
   };
-  const assignmentGrading = record.classroomGrading;
-
-  let publication: LmsAssignmentPublicationRecord | undefined;
-  const publicationId = record.lmsPublicationRef;
-  if (typeof publicationId === "string" && publicationId.length > 0) {
-    const snapshot = await lmsAssignmentPublicationDocRef(publicationId).get();
-    const data = snapshot.exists ? snapshot.data() : undefined;
-    // A publication is honored only when it belongs to this exact
-    // assignment, class, and owner; anything else is treated as absent.
-    if (
-      data &&
-      data.assignmentId === assignmentId &&
-      data.classId === record.classId &&
-      data.ownerUid === ownerUid
-    ) {
-      publication = data;
-    }
-  }
-
-  // What LyfeLabz told Classroom: the publication's own grading snapshot
-  // when present, else the assignment's configuration.
-  const grading = publication?.classroomGrading ?? assignmentGrading;
-  const storedGraded =
-    grading?.mode === "graded" && isPositiveFiniteNumber(grading.maxPoints);
-  const storedMaxPoints = storedGraded ? grading.maxPoints : null;
-  const lmsAssignmentId =
-    publication?.status === "succeeded" &&
-    typeof publication.lmsAssignmentId === "string" &&
-    publication.lmsAssignmentId.length > 0
-      ? publication.lmsAssignmentId
-      : null;
+  const publication = await loadOwnedPublication(assignmentId, record, ownerUid);
+  const storedGrading = storedGradingOf(publication, record);
+  const storedGraded = storedGrading.graded;
+  const storedMaxPoints = storedGrading.maxPoints;
+  const lmsAssignmentId = succeededCourseworkIdOf(publication);
   const stored = {
     gradingMode: storedGraded ? ("graded" as const) : ("ungraded" as const),
     maxPoints: storedMaxPoints,

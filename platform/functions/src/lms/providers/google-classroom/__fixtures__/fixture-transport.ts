@@ -39,6 +39,9 @@ import type {
   GoogleClassroomCourseWorkDetailResource,
   GoogleClassroomCourseWorkGetRequest,
   GoogleClassroomCourseWorkResource,
+  GoogleClassroomCourseWorkSubmissionsListRequest,
+  GoogleClassroomCourseWorkSubmissionsListResponse,
+  GoogleClassroomSubmissionGradeResource,
   GoogleClassroomStudentListRequest,
   GoogleClassroomStudentListResponse,
   GoogleClassroomStudentResource,
@@ -215,6 +218,15 @@ export type GoogleClassroomFixtureOptions = {
   // test can fail the coursework read without failing the credential
   // refresh or any other transport operation.
   readonly courseWorkReadFailureMode?: FixtureFailureMode;
+  // Grade reconciliation preview - submissions returned by
+  // `listCourseWorkSubmissions`, keyed by (courseId, courseWorkId), and an
+  // independently-selectable failure mode for that read.
+  readonly courseWorkSubmissions?: readonly {
+    readonly courseId: string;
+    readonly courseWorkId: string;
+    readonly submissions: readonly GoogleClassroomSubmissionGradeResource[];
+  }[];
+  readonly courseWorkSubmissionsFailureMode?: FixtureFailureMode;
   readonly refreshTokenFailureMode?: FixtureFailureMode;
   readonly authorizationCode?: string;
   readonly refreshToken?: string;
@@ -243,6 +255,7 @@ export type GoogleClassroomFixtureCallLog = {
     Record<string, readonly GoogleClassroomCourseWorkResource[]>
   >;
   readonly getCourseWorkCalls: number;
+  readonly listCourseWorkSubmissionsCalls: number;
   readonly listStudentSubmissionsCalls: number;
   readonly patchStudentSubmissionGradeCalls: number;
   // Every grade-patch call this fixture instance observed, in call order.
@@ -276,6 +289,7 @@ export function createFixtureGoogleClassroomTransport(
   let topicListCalls = 0;
   let courseWorkCreateCalls = 0;
   let getCourseWorkCalls = 0;
+  let listCourseWorkSubmissionsCalls = 0;
   let listStudentSubmissionsCalls = 0;
   let patchStudentSubmissionGradeCalls = 0;
   const revokedTokens: string[] = [];
@@ -286,6 +300,9 @@ export function createFixtureGoogleClassroomTransport(
   const studentSubmissionSeeds = options.studentSubmissions ?? [];
   const courseWorkSeeds = options.courseWork ?? [];
   const courseWorkReadFailureMode = options.courseWorkReadFailureMode ?? "none";
+  const courseWorkSubmissionSeeds = options.courseWorkSubmissions ?? [];
+  const courseWorkSubmissionsFailureMode =
+    options.courseWorkSubmissionsFailureMode ?? "none";
   const gradePassbackFailureMode = options.gradePassbackFailureMode ?? "none";
   const gradePatchCallOrder: { submissionId: string; earnedPoints: number }[] =
     [];
@@ -555,6 +572,30 @@ export function createFixtureGoogleClassroomTransport(
       return Promise.resolve(seed.courseWork);
     },
 
+    async listCourseWorkSubmissions(
+      input: GoogleClassroomCourseWorkSubmissionsListRequest,
+    ): Promise<GoogleClassroomCourseWorkSubmissionsListResponse> {
+      listCourseWorkSubmissionsCalls += 1;
+      applyFailureMode(courseWorkSubmissionsFailureMode, "listCourseWorkSubmissions");
+      requireAccessToken(input.accessToken, "listCourseWorkSubmissions");
+      const seed = courseWorkSubmissionSeeds.find(
+        (s) => s.courseId === input.courseId && s.courseWorkId === input.courseWorkId,
+      );
+      if (!seed) {
+        throw new GoogleClassroomFixtureUpstreamError(
+          404,
+          "NOT_FOUND",
+          `fixture: coursework ${input.courseWorkId} does not exist`,
+        );
+      }
+      return Promise.resolve(
+        paginate(seed.submissions, input.pageToken, (page, nextPageToken) => ({
+          studentSubmissions: page,
+          ...(nextPageToken !== undefined ? { nextPageToken } : {}),
+        })),
+      );
+    },
+
     async listStudentSubmissions(
       input: GoogleClassroomStudentSubmissionListRequest,
     ): Promise<GoogleClassroomStudentSubmissionListResponse> {
@@ -608,6 +649,7 @@ export function createFixtureGoogleClassroomTransport(
         topicListCalls,
         courseWorkCreateCalls,
         getCourseWorkCalls,
+        listCourseWorkSubmissionsCalls,
         revokedTokens: [...revokedTokens],
         createdCourseWorkByCourse: frozenCreated,
         listStudentSubmissionsCalls,

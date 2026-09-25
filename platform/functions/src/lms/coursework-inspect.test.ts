@@ -447,6 +447,14 @@ describe("lmsCourseworkInspect health classification", () => {
     expect(row.status).toBe("courseworkNotPublished");
   });
 
+  it("reports coursework Classroom still returns in DELETED state as courseworkDeleted", async () => {
+    addPublished("a1", "2026-01-01T00:00:00Z", { live: liveCoursework({ state: "deleted" }) });
+    const [row] = (await __lmsCourseworkInspectHandler(request())).assignments;
+    expect(row.live.existence).toBe("exists");
+    expect(row.live.state).toBe("deleted");
+    expect(row.status).toBe("courseworkDeleted");
+  });
+
   it("reports deleted/missing coursework as courseworkNotFound", async () => {
     addPublished("a1", "2026-01-01T00:00:00Z");
     const [row] = (await __lmsCourseworkInspectHandler(request())).assignments;

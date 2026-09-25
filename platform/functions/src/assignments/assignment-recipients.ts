@@ -371,7 +371,7 @@ export async function isCanonicalRecipient(
 // function because `reconcileAssignmentRecipients` below needs the raw
 // filtered `studentId` set to diff against existing recipients, not that
 // function's already-deduplicated, already-sorted return array.
-async function loadActiveEnrolledStudentIds(
+export async function loadActiveEnrolledStudentIds(
   classId: string,
   schoolId: string,
 ): Promise<ReadonlySet<string>> {
@@ -409,7 +409,7 @@ async function loadActiveEnrolledStudentIds(
 // so the two checks were always comparing values already proven equal by
 // that point - collapsing them removes a literally-redundant comparison
 // against an already-guaranteed-equal value, not a distinct security check.
-async function loadExistingRecipientStudentIds(
+export async function loadExistingRecipientStudentIds(
   context: RecipientOwnershipContext,
 ): Promise<ReadonlySet<string>> {
   const snapshot = await assignmentRecipientsCollectionRef(
