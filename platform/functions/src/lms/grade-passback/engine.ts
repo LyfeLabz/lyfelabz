@@ -7,14 +7,12 @@ import {
   assignmentDocRef,
   attemptsCollectionRef,
   lmsAssignmentPublicationDocRef,
-  lmsConnectionDocRef,
   lmsGradePassbackDocRef,
   log,
   resolveActiveProviderAccountIdForUser,
   runFirestoreTransaction,
   writeAuditEvent,
   type AssessmentAttemptRecord,
-  type LmsProviderId,
 } from "../../shared";
 import {
   selectHighestCompletedAttempt,
@@ -24,11 +22,21 @@ import {
   occurrenceScopeOf,
   resolveCurrentOccurrenceGroup,
 } from "../../assignments/current-occurrence-group";
-import { resolveLiveCredential } from "../tokens/credential-resolver";
-import { getProviderAdapter } from "../providers/registry";
 import { ensureGoogleClassroomProductionBindings } from "../providers/google-classroom/config-firebase";
 import { lmsGradePassbackIdFor } from "../shared/ids";
+import {
+  readStudentSubmission,
+  resolveLiveGradeDestination,
+  type GradeDestinationFailureStatus,
+  type LiveGradeDestination,
+} from "./destination";
 import { computeGradePassbackEarnedPoints } from "./grade-calculation";
+import {
+  WRITE_ACTIONS,
+  decideGradeAction,
+  type GradeReconciliationAction,
+} from "./reconciliation-plan";
+import { isInGradeSyncRoster } from "./roster";
 
 // Sprint 30A.2 - Google Classroom best-score grade-passback synchronization
 // engine.
@@ -79,6 +87,29 @@ import { computeGradePassbackEarnedPoints } from "./grade-calculation";
 // value is monotonic by construction: a later lower-scoring attempt can
 // never lower it. Classroom's own stored grade is NEVER read back as
 // authoritative; LyfeLabz's attempt history is the sole source of truth.
+//
+// -------------------- Canonical write safety --------------------
+//
+// No grade is ever written merely because a publication is stored, a
+// passback record exists, or a LyfeLabz score was computed. Before any
+// PATCH, on every route (automatic post-attempt passback, teacher Retry,
+// teacher reconciliation apply), this engine establishes fresh truth:
+//   1. the destination (Current, or the locked legacy/closed-Current
+//      destination) from the canonical occurrence grouping;
+//   2. the LIVE destination preflight (`resolveLiveGradeDestination`):
+//      graded, succeeded publication, own active connection, live
+//      coursework exists + PUBLISHED + graded + live maxPoints equal to the
+//      stored grading maxPoints. Any failure: no write
+//      (`destinationUnavailable`);
+//   3. the canonical grade-sync roster (`isInGradeSyncRoster`);
+//   4. the canonical cumulative best (unchanged, below);
+//   5. UNDER THE LEASE, a fresh read of the student's live Classroom
+//      submission and the canonical decision (`decideGradeAction`): only a
+//      write action (fill blank / raise / replace a narrow missing-work
+//      draft zero) PATCHes. Equal or higher Classroom grades and protected
+//      zeros/divergent grades are recorded without any upstream write.
+// The decision is re-evaluated after every PATCH in the reconciliation
+// loop, so a newer target is re-checked against fresh Classroom state too.
 //
 // -------------------- Concurrency design --------------------
 //
@@ -149,8 +180,37 @@ export type GradePassbackSyncOutcome =
   | { readonly outcome: "noAttempts" }
   | { readonly outcome: "deferred" }
   | { readonly outcome: "alreadySynced" }
-  | { readonly outcome: "synced"; readonly earnedPoints: number }
+  | {
+      readonly outcome: "synced";
+      readonly earnedPoints: number;
+      readonly action: GradeReconciliationAction;
+    }
+  // Fresh Classroom state needed no write (equal, or Classroom higher).
+  | { readonly outcome: "noChange"; readonly action: GradeReconciliationAction }
+  // Fresh Classroom state is a protected grade; nothing written.
+  | { readonly outcome: "protected"; readonly action: GradeReconciliationAction }
+  | { readonly outcome: "outsideRoster" }
+  | {
+      readonly outcome: "destinationUnavailable";
+      readonly status: GradeDestinationFailureStatus;
+    }
+  // The caller's expected destination (e.g. a teacher's previewed Current,
+  // coursework, and maxPoints) no longer matches the fresh destination.
+  | { readonly outcome: "destinationChanged" }
   | { readonly outcome: "failed"; readonly errorCode: string };
+
+// Who triggered the evaluation. `attempt` (post-finalize) keeps the
+// established short-circuit: nothing is re-sent when the desired value has
+// not advanced past the last confirmed sync. `teacher` (Retry, reconciliation
+// apply) is an explicit request to re-evaluate against fresh Classroom
+// state even when LyfeLabz believes it is already synced.
+export type GradePassbackTrigger = "attempt" | "teacher";
+
+export type GradePassbackExpectedDestination = {
+  readonly assignmentId: string;
+  readonly lmsAssignmentId: string;
+  readonly maxPoints: number;
+};
 
 type Phase1Deferred = {
   readonly kind:
@@ -168,10 +228,6 @@ type Phase1Acquired = {
   readonly targetGeneration: number;
   readonly targetEarnedPoints: number;
   readonly studentId: string;
-  readonly connectionId: string;
-  readonly providerId: LmsProviderId;
-  readonly lmsClassId: string;
-  readonly lmsAssignmentId: string;
 };
 
 type Phase1Result = Phase1Deferred | Phase1Acquired;
@@ -204,6 +260,7 @@ async function advanceDesiredStateAndAcquireLease(
   assignmentId: string,
   occurrenceAssignmentIds: ReadonlyArray<string>,
   studentId: string,
+  force: boolean,
 ): Promise<Phase1Result> {
   return runFirestoreTransaction<Phase1Result>(async (tx) => {
     const assignmentSnap = await tx.get(assignmentDocRef(assignmentId));
@@ -295,9 +352,10 @@ async function advanceDesiredStateAndAcquireLease(
         : existing.syncGeneration;
     const lastSyncedGeneration = existing?.lastSyncedGeneration ?? 0;
 
-    if (syncGeneration <= lastSyncedGeneration) {
+    if (syncGeneration <= lastSyncedGeneration && !force) {
       // No write needed: nothing advanced and the document already
-      // reflects a fully-synced state.
+      // reflects a fully-synced state. A teacher-triggered evaluation
+      // (`force`) still proceeds, to re-check fresh Classroom state.
       return { kind: "alreadySynced" };
     }
 
@@ -307,6 +365,8 @@ async function advanceDesiredStateAndAcquireLease(
       existing.leaseExpiresAt.toMillis() > now.toMillis();
 
     if (leaseHeld) {
+      // (Also covers a forced evaluation while another worker is active:
+      // that worker re-reads Classroom itself before any write.)
       // Another worker already owns synchronization authority. Persist
       // the advance (if any) so that worker converges to it on its own
       // next reconciliation, but issue NO upstream call ourselves - this
@@ -394,10 +454,6 @@ async function advanceDesiredStateAndAcquireLease(
       targetGeneration: syncGeneration,
       targetEarnedPoints: desiredEarnedPoints,
       studentId,
-      connectionId: publication.connectionId,
-      providerId: publication.providerId,
-      lmsClassId: publication.lmsClassId,
-      lmsAssignmentId: publication.lmsAssignmentId,
     };
   });
 }
@@ -420,6 +476,7 @@ async function reconcileAfterUpstreamSuccess(
   leaseToken: string,
   syncedGeneration: number,
   syncedEarnedPoints: number,
+  action: GradeReconciliationAction,
 ): Promise<ReconcileOutcome> {
   return runFirestoreTransaction<ReconcileOutcome>(async (tx) => {
     const ref = lmsGradePassbackDocRef(gradePassbackId);
@@ -457,6 +514,8 @@ async function reconcileAfterUpstreamSuccess(
         lastSyncedGeneration: syncedGeneration,
         lastSyncedEarnedPoints: syncedEarnedPoints,
         lastSyncedAt: FieldValue.serverTimestamp(),
+        lastDecision: action,
+        lastDecisionAt: FieldValue.serverTimestamp(),
         status: "synced",
         leaseOwnerToken: FieldValue.delete(),
         leaseGeneration: FieldValue.delete(),
@@ -504,66 +563,85 @@ async function reconcileAfterFailure(
   }
 }
 
-// Cache a resolved submission id (best-effort; a failure to persist the
-// cache never fails the sync - the next call simply re-resolves).
-async function cacheSubmissionId(
+// Reconcile after a fresh decision that required NO upstream write:
+// confirm we still own the lease; if a newer desired value appeared
+// meanwhile, keep the lease and report it (the loop re-evaluates); otherwise
+// record the decision and release the lease.
+//   - alreadyEqual / preservedClassroomHigher: Classroom already satisfies
+//     LyfeLabz, so this generation is recorded as synced (no retry needed).
+//   - protected*: status `protected`; the generation is NOT marked synced,
+//     so a later attempt or teacher action re-evaluates fresh state.
+async function reconcileAfterNoWrite(
   gradePassbackId: string,
-  submissionId: string,
-): Promise<void> {
-  try {
-    await lmsGradePassbackDocRef(gradePassbackId).set(
-      { submissionId, updatedAt: FieldValue.serverTimestamp() },
+  leaseToken: string,
+  evaluatedGeneration: number,
+  evaluatedEarnedPoints: number,
+  action: GradeReconciliationAction,
+): Promise<ReconcileOutcome> {
+  return runFirestoreTransaction<ReconcileOutcome>(async (tx) => {
+    const ref = lmsGradePassbackDocRef(gradePassbackId);
+    const snap = await tx.get(ref);
+    const data = snap.exists ? snap.data() : undefined;
+    if (!data || data.leaseOwnerToken !== leaseToken) {
+      return { kind: "supersededSilently" };
+    }
+    if (data.syncGeneration > evaluatedGeneration) {
+      const now = Timestamp.now();
+      tx.set(
+        ref,
+        {
+          leaseExpiresAt: Timestamp.fromMillis(now.toMillis() + LEASE_TTL_MS),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      return {
+        kind: "advance",
+        targetGeneration: data.syncGeneration,
+        targetEarnedPoints: data.desiredEarnedPoints,
+      };
+    }
+    const satisfied = action === "alreadyEqual" || action === "preservedClassroomHigher";
+    tx.set(
+      ref,
+      {
+        ...(satisfied
+          ? {
+              status: "synced",
+              lastSyncedGeneration: evaluatedGeneration,
+              ...(action === "alreadyEqual"
+                ? { lastSyncedEarnedPoints: evaluatedEarnedPoints }
+                : {}),
+            }
+          : { status: "protected" }),
+        lastDecision: action,
+        lastDecisionAt: FieldValue.serverTimestamp(),
+        leaseOwnerToken: FieldValue.delete(),
+        leaseGeneration: FieldValue.delete(),
+        leaseExpiresAt: FieldValue.delete(),
+        lastErrorCode: FieldValue.delete(),
+        updatedAt: FieldValue.serverTimestamp(),
+      },
       { merge: true },
     );
-  } catch {
-    // Best-effort cache only.
-  }
+    return { kind: "converged" };
+  });
 }
 
-// Phase 2: while holding the lease, resolve the submission and PATCH the
-// grade, reconciling (and continuing upward, per the module comment) after
-// every success until fully converged, then release authority.
+// Phase 2: while holding the lease, freshly read the student's live
+// Classroom submission, decide canonically, and PATCH only when the decision
+// permits it - reconciling (and continuing upward, per the module comment)
+// after every step until converged, then release authority. The destination
+// was live-verified immediately before this phase.
 async function performUpstreamSyncLoop(
   acquired: Phase1Acquired,
+  destination: LiveGradeDestination,
 ): Promise<GradePassbackSyncOutcome> {
-  // This engine is invoked from callables (`assessmentAttemptsFinalize`,
-  // `lmsGradePassbacksRetry`) that do not otherwise touch the Google
-  // Classroom provider, so - mirroring `lmsAssignmentsPublish`'s own
-  // handler-entry call - it must independently bind its own transport
-  // rather than depend on a sibling callable having already run in the
-  // same worker. The installer is idempotent and respects a
-  // test-injected transport.
-  ensureGoogleClassroomProductionBindings();
-
-  const connectionSnap = await lmsConnectionDocRef(acquired.connectionId).get();
-  if (!connectionSnap.exists) {
-    await reconcileAfterFailure(
-      acquired.gradePassbackId,
-      acquired.leaseToken,
-      "lms.connectionNotFound",
-    );
-    return { outcome: "failed", errorCode: "lms.connectionNotFound" };
-  }
-  const connection = connectionSnap.data();
-  if (!connection || connection.status !== "active") {
-    const errorCode = "lms.connectionNotActive";
-    await reconcileAfterFailure(acquired.gradePassbackId, acquired.leaseToken, errorCode);
-    return { outcome: "failed", errorCode };
-  }
-
   let currentGeneration = acquired.targetGeneration;
   let currentEarnedPoints = acquired.targetEarnedPoints;
-  const adapter = getProviderAdapter(acquired.providerId);
-
-  // The MOST RECENT successfully-confirmed synced values, used only for
-  // the final response payload.
-  let lastSyncedEarnedPoints = currentEarnedPoints;
 
   for (;;) {
-    let submissionId: string;
     try {
-      const bundle = await resolveLiveCredential(connection.tokenRef);
-
       const studentProviderAccountId = await resolveActiveProviderAccountIdForUser(
         acquired.studentId,
         "google.com",
@@ -575,94 +653,92 @@ async function performUpstreamSyncLoop(
         );
       }
 
-      const cachedSnap = await lmsGradePassbackDocRef(
-        acquired.gradePassbackId,
-      ).get();
-      const cachedSubmissionId = cachedSnap.exists
-        ? cachedSnap.data()?.submissionId
-        : undefined;
-
-      if (typeof cachedSubmissionId === "string" && cachedSubmissionId.length > 0) {
-        submissionId = cachedSubmissionId;
-      } else {
-        const resolved = await adapter.resolveStudentSubmission({
-          accessToken: bundle.accessToken,
-          lmsClassId: acquired.lmsClassId,
-          lmsAssignmentId: acquired.lmsAssignmentId,
-          studentProviderAccountId,
-        });
-        if (resolved === null) {
-          throw new PlatformError(
-            "gradePassback.submissionNotFound",
-            "No Classroom submission exists yet for this student.",
-          );
-        }
-        submissionId = resolved.submissionId;
-        await cacheSubmissionId(acquired.gradePassbackId, resolved.submissionId);
+      const read = await readStudentSubmission(destination, studentProviderAccountId);
+      if (read.kind === "none") {
+        throw new PlatformError(
+          "gradePassback.submissionNotFound",
+          "No Classroom submission exists yet for this student.",
+        );
+      }
+      if (read.kind === "ambiguous") {
+        throw new PlatformError(
+          "gradePassback.submissionAmbiguous",
+          "More than one Classroom submission matched this student.",
+        );
       }
 
-      // Defensive re-check immediately before the upstream call: a worker
+      // Defensive re-check immediately before any upstream write: a worker
       // that was suspended for a long time (e.g. resuming after being
       // stuck past the lease TTL, per the module comment on
       // `LEASE_TTL_MS`) may have already lost authority to a worker that
       // reclaimed the lease and finished. Catching this here means a
       // resumed-stale worker aborts WITHOUT issuing even a redundant
-      // upstream call, rather than only discovering the loss after
-      // dispatching one more PATCH. This does not eliminate the
-      // fundamentally irreducible network-layer race (a request already
-      // in flight when this check runs) - see the `LEASE_TTL_MS` comment
-      // - but it closes the much more common "resumed after a long stall"
-      // case entirely.
+      // upstream call. This does not eliminate the irreducible network-layer
+      // race (a request already in flight when this check runs) - see the
+      // `LEASE_TTL_MS` comment.
       const ownershipSnap = await lmsGradePassbackDocRef(acquired.gradePassbackId).get();
       const ownershipData = ownershipSnap.exists ? ownershipSnap.data() : undefined;
       if (!ownershipData || ownershipData.leaseOwnerToken !== acquired.leaseToken) {
         return { outcome: "failed", errorCode: "gradePassback.lostLeaseAuthority" };
       }
 
-      try {
-        await adapter.patchStudentSubmissionGrade({
-          accessToken: bundle.accessToken,
-          lmsClassId: acquired.lmsClassId,
-          lmsAssignmentId: acquired.lmsAssignmentId,
-          submissionId,
-          earnedPoints: currentEarnedPoints,
-        });
-      } catch (patchErr) {
-        // A cached submission id may be stale (e.g. the upstream
-        // submission was removed). Invalidate the cache once and retry
-        // resolution on the NEXT reconciliation pass rather than looping
-        // indefinitely here.
-        if (
-          patchErr instanceof PlatformError &&
-          patchErr.code === "lms.upstreamResourceNotFound"
-        ) {
-          try {
-            await lmsGradePassbackDocRef(acquired.gradePassbackId).set(
-              { submissionId: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp() },
-              { merge: true },
-            );
-          } catch {
-            // Best-effort invalidation only.
-          }
+      const decision = decideGradeAction(currentEarnedPoints, read.submission);
+
+      if (!WRITE_ACTIONS.has(decision.action)) {
+        const reconciled = await reconcileAfterNoWrite(
+          acquired.gradePassbackId,
+          acquired.leaseToken,
+          currentGeneration,
+          currentEarnedPoints,
+          decision.action,
+        );
+        if (reconciled.kind === "supersededSilently") {
+          return { outcome: "failed", errorCode: "gradePassback.lostLeaseAuthority" };
         }
-        throw patchErr;
+        if (reconciled.kind === "advance") {
+          currentGeneration = reconciled.targetGeneration;
+          currentEarnedPoints = reconciled.targetEarnedPoints;
+          continue;
+        }
+        safeLog(() =>
+          log.info("lms.gradePassbackNoWrite", {
+            gradePassbackId: acquired.gradePassbackId,
+            action: decision.action,
+          }),
+        );
+        return decision.action === "alreadyEqual" ||
+          decision.action === "preservedClassroomHigher"
+          ? { outcome: "noChange", action: decision.action }
+          : { outcome: "protected", action: decision.action };
       }
 
-      lastSyncedEarnedPoints = currentEarnedPoints;
+      await destination.adapter.patchStudentSubmissionGrade({
+        accessToken: destination.accessToken,
+        lmsClassId: destination.lmsClassId,
+        lmsAssignmentId: destination.lmsAssignmentId,
+        submissionId: read.submission.submissionId,
+        earnedPoints: currentEarnedPoints,
+      });
+
       const reconciled = await reconcileAfterUpstreamSuccess(
         acquired.gradePassbackId,
         acquired.leaseToken,
         currentGeneration,
         currentEarnedPoints,
+        decision.action,
       );
       if (reconciled.kind === "supersededSilently") {
         return { outcome: "failed", errorCode: "gradePassback.lostLeaseAuthority" };
       }
       if (reconciled.kind === "converged") {
-        return { outcome: "synced", earnedPoints: lastSyncedEarnedPoints };
+        return {
+          outcome: "synced",
+          earnedPoints: currentEarnedPoints,
+          action: decision.action,
+        };
       }
-      // kind === "advance": continue the loop with the newer target,
-      // same lease.
+      // kind === "advance": continue the loop with the newer target, same
+      // lease; the next iteration re-reads Classroom before writing again.
       currentGeneration = reconciled.targetGeneration;
       currentEarnedPoints = reconciled.targetEarnedPoints;
       continue;
@@ -720,25 +796,86 @@ async function resolvePassbackScope(
 }
 
 export async function synchronizeGradePassback(input: {
-  // The assignment the triggering attempt belongs to (finalize) or the
-  // assignment a teacher asked to retry. Under a valid Current the grade
-  // destination is Current, not necessarily this assignment.
+  // The assignment the triggering attempt belongs to (finalize), the
+  // assignment a teacher asked to retry, or Current (reconciliation apply).
+  // Under a valid Current the grade destination is Current, not
+  // necessarily this assignment.
   readonly assignmentId: string;
   readonly studentId: string;
   // The caller's verified district context (finalize: the student actor;
-  // retry: the teacher actor), passed to canonical Current resolution.
+  // retry/apply: the teacher actor), passed to canonical Current
+  // resolution and the roster check.
   readonly districtId: string;
+  readonly trigger?: GradePassbackTrigger;
+  // When supplied, the fresh destination must match exactly or nothing is
+  // written (`destinationChanged`).
+  readonly expectedDestination?: GradePassbackExpectedDestination;
 }): Promise<GradePassbackSyncOutcome> {
+  // This engine is invoked from callables that may not otherwise touch the
+  // Google Classroom provider, so - mirroring `lmsAssignmentsPublish`'s own
+  // handler-entry call - it must independently bind its own transport
+  // rather than depend on a sibling callable having already run in the
+  // same worker. The installer is idempotent and respects a test-injected
+  // transport.
+  ensureGoogleClassroomProductionBindings();
+
   let phase1: Phase1Result;
   let targetAssignmentId = input.assignmentId;
+  let destination: LiveGradeDestination;
   try {
     const scope = await resolvePassbackScope(input.assignmentId, input.districtId);
     if (scope === null) return { outcome: "notApplicable" };
     targetAssignmentId = scope.targetAssignmentId;
+
+    const targetSnap = await assignmentDocRef(targetAssignmentId).get();
+    const target = targetSnap.exists ? targetSnap.data() : undefined;
+    if (!target || target.classroomGrading?.mode !== "graded") {
+      return { outcome: "notApplicable" };
+    }
+
+    const resolved = await resolveLiveGradeDestination(targetAssignmentId, target);
+    if (!resolved.ok) {
+      if (
+        resolved.status === "currentUngraded" ||
+        resolved.status === "currentNotPublishedToClassroom"
+      ) {
+        // The destination's own grading/publication is not a valid graded
+        // Classroom target (unpublished, failed publication, or a
+        // publication grading snapshot that does not cohere): never fall
+        // back to any other coursework.
+        return { outcome: "noPublication" };
+      }
+      await auditOutcome(input.studentId, targetAssignmentId, {
+        outcome: "failed",
+        errorCode: `gradePassback.destination.${resolved.status}`,
+      });
+      return { outcome: "destinationUnavailable", status: resolved.status };
+    }
+    destination = resolved.destination;
+
+    const expected = input.expectedDestination;
+    if (
+      expected !== undefined &&
+      (expected.assignmentId !== destination.assignmentId ||
+        expected.lmsAssignmentId !== destination.lmsAssignmentId ||
+        expected.maxPoints !== destination.maxPoints)
+    ) {
+      return { outcome: "destinationChanged" };
+    }
+
+    const inRoster = await isInGradeSyncRoster({
+      assignmentId: targetAssignmentId,
+      record: target,
+      studentId: input.studentId,
+      districtId: input.districtId,
+    });
+    if (!inRoster) return { outcome: "outsideRoster" };
+
     phase1 = await advanceDesiredStateAndAcquireLease(
       scope.targetAssignmentId,
       scope.occurrenceAssignmentIds,
       input.studentId,
+      input.trigger === "teacher",
     );
   } catch (err) {
     safeLog(() =>
@@ -759,25 +896,34 @@ export async function synchronizeGradePassback(input: {
     return { outcome: phase1.kind };
   }
 
-  const result = await performUpstreamSyncLoop(phase1);
+  const result = await performUpstreamSyncLoop(phase1, destination);
+  await auditOutcome(input.studentId, targetAssignmentId, result, destination.providerId);
+  return result;
+}
 
+async function auditOutcome(
+  studentId: string,
+  targetAssignmentId: string,
+  result: GradePassbackSyncOutcome,
+  providerId?: string,
+): Promise<void> {
   const auditPayload = {
     assignmentId: targetAssignmentId,
-    providerId: phase1.providerId,
+    ...(providerId !== undefined ? { providerId } : {}),
   };
   try {
     if (result.outcome === "synced") {
       await writeAuditEvent({
-        actorUserId: input.studentId,
+        actorUserId: studentId,
         actorRole: "system",
         action: "lms.gradePassbackSucceeded",
         targetType: "assignment",
         targetId: targetAssignmentId,
-        payload: { ...auditPayload, earnedPoints: result.earnedPoints },
+        payload: { ...auditPayload, earnedPoints: result.earnedPoints, decision: result.action },
       });
     } else if (result.outcome === "failed") {
       await writeAuditEvent({
-        actorUserId: input.studentId,
+        actorUserId: studentId,
         actorRole: "system",
         action: "lms.gradePassbackFailed",
         targetType: "assignment",
@@ -788,6 +934,4 @@ export async function synchronizeGradePassback(input: {
   } catch {
     // Audit failure is non-blocking, matching the existing lms.* convention.
   }
-
-  return result;
 }

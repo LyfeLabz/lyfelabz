@@ -279,6 +279,14 @@ export const AUDIT_ACTIONS = [
   // actually reaches the synchronization engine. Payload carries only the
   // targeted `studentId` and the bounded result category.
   "lms.gradePassbackRetryRequested",
+  // `lms.gradeReconciliationApplied`: a teacher confirmed a Classroom grade
+  // reconciliation for one class + lesson family. Emitted once per apply,
+  // targeting Current. Payload carries only `classId`, `lessonSlug`, the
+  // number of grades written, per-outcome counts, and whether the
+  // destination changed mid-batch; never a grade value per student, a
+  // Classroom id, or credential material. Per-student writes are recorded
+  // by `lms.gradePassbackSucceeded` / `lms.gradePassbackFailed`.
+  "lms.gradeReconciliationApplied",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

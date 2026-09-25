@@ -588,8 +588,12 @@ export function createFixtureGoogleClassroomTransport(
           `fixture: coursework ${input.courseWorkId} does not exist`,
         );
       }
+      const matching =
+        input.userId === undefined
+          ? seed.submissions
+          : seed.submissions.filter((s) => s.userId === input.userId);
       return Promise.resolve(
-        paginate(seed.submissions, input.pageToken, (page, nextPageToken) => ({
+        paginate(matching, input.pageToken, (page, nextPageToken) => ({
           studentSubmissions: page,
           ...(nextPageToken !== undefined ? { nextPageToken } : {}),
         })),

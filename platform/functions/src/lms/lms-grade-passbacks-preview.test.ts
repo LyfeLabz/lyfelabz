@@ -556,15 +556,22 @@ describe("lmsGradePassbacksPreview per-student classification", () => {
     // Blank, target from an older UNGRADED occurrence: 70% -> 14.
     subs.push(submission(student("blank"), null, null, "created"));
     attemptOn("a3", "blank", 70);
-    // Assigned and draft differ -> review.
+    // Assigned and draft differ -> protected.
     subs.push(submission(student("diverge"), 16, 17));
     attemptOn("a4", "diverge", 90);
-    // Missing-work zero (draft 0, late, not turned in) -> review, never auto-fill.
+    // Approved narrow missing-work placeholder (draft 0, assigned blank,
+    // late, never turned in, positive target) -> replaceable.
     subs.push(submission(student("zero"), null, 0, "created", true));
     attemptOn("a4", "zero", 70);
-    // Explicit zero on both fields -> same conservative review.
+    // Assigned zero -> protected.
     subs.push(submission(student("zero2"), 0, 0, "returned"));
     attemptOn("a4", "zero2", 50);
+    // Draft zero on turned-in work -> protected.
+    subs.push(submission(student("zeroTurnedIn"), null, 0, "turnedIn", true));
+    attemptOn("a4", "zeroTurnedIn", 70);
+    // Draft zero on work that is not late -> protected.
+    subs.push(submission(student("zeroOnTime"), null, 0, "created", false));
+    attemptOn("a4", "zeroOnTime", 70);
     // No LyfeLabz attempt.
     subs.push(submission(student("none"), null, null, "new"));
     // Lower later attempt does not lower the target: 100 then 40 -> 20.
@@ -588,28 +595,32 @@ describe("lmsGradePassbacksPreview per-student classification", () => {
     expect(view("decimal")).toEqual(["preservedClassroomHigher", 18, null]);
     expect(view("blank")).toEqual(["wouldFillBlank", 14, 14]);
     expect(row(result, "blank").bestAssignmentId).toBe("a3");
-    expect(view("diverge")).toEqual(["reviewGradesDiffer", 18, 18]);
-    expect(view("zero")).toEqual(["reviewExistingZero", 14, 14]);
+    expect(view("diverge")).toEqual(["protectedGradesDiffer", 18, null]);
+    expect(view("zero")).toEqual(["wouldReplaceMissingDraftZero", 14, 14]);
     expect(row(result, "zero").classroom).toEqual({
       state: "created",
       late: true,
       assignedGrade: null,
       draftGrade: 0,
     });
-    expect(view("zero2")).toEqual(["reviewExistingZero", 10, 10]);
+    expect(view("zero2")).toEqual(["protectedAssignedZero", 10, null]);
+    expect(view("zeroTurnedIn")).toEqual(["protectedDraftZero", 14, null]);
+    expect(view("zeroOnTime")).toEqual(["protectedDraftZero", 14, null]);
     expect(view("none")).toEqual(["noLyfeLabzAttempt", null, null]);
     expect(row(result, "none").classroom?.state).toBe("new");
     expect(view("lower")).toEqual(["wouldFillBlank", 20, 20]);
     expect(view("perfect")).toEqual(["alreadyEqual", 20, null]);
 
-    expect(result.summary.wouldWrite).toBe(3);
+    expect(result.summary.wouldWrite).toBe(4);
     expect(result.summary.byAction).toEqual({
       alreadyEqual: 2,
       wouldRaise: 1,
       preservedClassroomHigher: 2,
       wouldFillBlank: 2,
-      reviewGradesDiffer: 1,
-      reviewExistingZero: 2,
+      protectedGradesDiffer: 1,
+      wouldReplaceMissingDraftZero: 1,
+      protectedAssignedZero: 1,
+      protectedDraftZero: 2,
       noLyfeLabzAttempt: 1,
     });
   });

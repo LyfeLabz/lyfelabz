@@ -24,6 +24,11 @@ export {
   type LmsGradePassbacksPreviewRequest,
   type LmsGradePassbacksPreviewResponse,
 } from "./lms-grade-passbacks-preview";
+export {
+  lmsGradePassbacksApply,
+  type LmsGradePassbacksApplyRequest,
+  type LmsGradePassbacksApplyResponse,
+} from "./lms-grade-passbacks-apply";
 export { lmsDeepLinkResolve } from "./deep-link-resolve";
 export { lmsClassesDiscover } from "./classes-discover";
 export { lmsClassesImport } from "./classes-import";

@@ -50,6 +50,7 @@ export {
   lmsAssignmentsPublish,
   lmsGradePassbacksRetry,
   lmsGradePassbacksPreview,
+  lmsGradePassbacksApply,
   lmsDeepLinkResolve,
   lmsClassesDiscover,
   lmsClassesImport,

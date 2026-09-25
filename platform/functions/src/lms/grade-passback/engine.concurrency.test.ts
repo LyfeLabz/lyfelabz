@@ -356,14 +356,30 @@ jest.mock("../tokens/credential-resolver", () => ({
 let activePatchCalls = 0;
 let maxObservedConcurrentPatchCalls = 0;
 const patchCallOrder: number[] = [];
-const resolveStudentSubmissionQueue: (() => Promise<{ submissionId: string } | null>)[] = [];
+// The engine's fresh per-student Classroom read before every write
+// (`listSubmissionGrades`) is the controllable pause point that used to be
+// `resolveStudentSubmission`. The simulated gradebook reflects every PATCH.
+type SimSubmission = { assignedGrade: number | null; draftGrade: number | null };
+let simGrade: SimSubmission = { assignedGrade: null, draftGrade: null };
+function simSubmissionList() {
+  return [
+    {
+      submissionId: "submission-1",
+      studentProviderAccountId: "google-acct-1",
+      state: "created",
+      late: false,
+      ...simGrade,
+    },
+  ];
+}
+const resolveStudentSubmissionQueue: (() => Promise<ReturnType<typeof simSubmissionList>>)[] = [];
 const patchStudentSubmissionGradeQueue: (() => Promise<void>)[] = [];
 
 // Queue a controlled pause on the NEXT `resolveStudentSubmission` call.
 // `waitUntilReached` resolves the instant that call is entered (before it
 // starts waiting on the gate), so a test can synchronize deterministically
 // instead of guessing a microtask-tick count.
-function queueControlledResolveStudentSubmission(): {
+function queueControlledSubmissionRead(): {
   resolve: () => void;
   waitUntilReached: Promise<void>;
 } {
@@ -372,7 +388,7 @@ function queueControlledResolveStudentSubmission(): {
   resolveStudentSubmissionQueue.push(async () => {
     reached.resolve();
     await gate.promise;
-    return { submissionId: "submission-1" };
+    return simSubmissionList();
   });
   return { resolve: gate.resolve, waitUntilReached: reached.promise };
 }
@@ -387,10 +403,10 @@ function queueControlledPatch(): { resolve: () => void; waitUntilReached: Promis
   return { resolve: gate.resolve, waitUntilReached: reached.promise };
 }
 
-const mockResolveStudentSubmission = jest.fn(async () => {
+const mockListSubmissionGrades = jest.fn(async () => {
   const next = resolveStudentSubmissionQueue.shift();
   if (next) return next();
-  return { submissionId: "submission-1" };
+  return simSubmissionList();
 });
 const mockPatchStudentSubmissionGrade = jest.fn(async (input: { earnedPoints: number }) => {
   activePatchCalls += 1;
@@ -401,6 +417,7 @@ const mockPatchStudentSubmissionGrade = jest.fn(async (input: { earnedPoints: nu
       await next();
     }
     patchCallOrder.push(input.earnedPoints);
+    simGrade = { assignedGrade: input.earnedPoints, draftGrade: input.earnedPoints };
   } finally {
     activePatchCalls -= 1;
   }
@@ -408,10 +425,16 @@ const mockPatchStudentSubmissionGrade = jest.fn(async (input: { earnedPoints: nu
 
 jest.mock("../providers/registry", () => ({
   getProviderAdapter: () => ({
-    resolveStudentSubmission: () => mockResolveStudentSubmission(),
+    listSubmissionGrades: () => mockListSubmissionGrades(),
+    fetchAssignment: (input: { lmsAssignmentId: string }) =>
+      Promise.resolve({ lmsAssignmentId: input.lmsAssignmentId, state: "published", maxPoints: 20 }),
     patchStudentSubmissionGrade: (input: { earnedPoints: number }) =>
       mockPatchStudentSubmissionGrade(input),
   }),
+}));
+
+jest.mock("./roster", () => ({
+  isInGradeSyncRoster: () => Promise.resolve(true),
 }));
 
 jest.mock("../providers/google-classroom/config-firebase", () => ({
@@ -512,6 +535,8 @@ beforeEach(() => {
   patchCallOrder.length = 0;
   resolveStudentSubmissionQueue.length = 0;
   patchStudentSubmissionGradeQueue.length = 0;
+  simGrade = { assignedGrade: null, draftGrade: null };
+  mockListSubmissionGrades.mockClear();
   mockWriteAuditEvent.mockReset();
   mockWriteAuditEvent.mockResolvedValue({ eventId: "evt-1" });
   mockResolveActiveProviderAccountIdForUser.mockReset();
@@ -522,7 +547,6 @@ beforeEach(() => {
     providerId: "googleClassroom",
     teacherId: TEACHER_ID,
   });
-  mockResolveStudentSubmission.mockClear();
   mockPatchStudentSubmissionGrade.mockClear();
 });
 
@@ -531,7 +555,7 @@ describe("synchronizeGradePassback - concurrency (mandatory proof)", () => {
     seedFullHappyPath();
     seedAttempt(70);
 
-    const paused = queueControlledResolveStudentSubmission();
+    const paused = queueControlledSubmissionRead();
 
     const aPromise = sync();
     await paused.waitUntilReached;
@@ -544,7 +568,7 @@ describe("synchronizeGradePassback - concurrency (mandatory proof)", () => {
     paused.resolve();
     const aResult = await aPromise;
 
-    expect(aResult).toEqual({ outcome: "synced", earnedPoints: 18 });
+    expect(aResult).toEqual({ outcome: "synced", earnedPoints: 18, action: expect.any(String) });
     expect(patchCallOrder).toEqual([14, 18]);
     expectNonDecreasing(patchCallOrder);
     expect(maxObservedConcurrentPatchCalls).toBe(1);
@@ -574,7 +598,7 @@ describe("synchronizeGradePassback - concurrency (mandatory proof)", () => {
     paused.resolve();
     const aResult = await aPromise;
 
-    expect(aResult).toEqual({ outcome: "synced", earnedPoints: 18 });
+    expect(aResult).toEqual({ outcome: "synced", earnedPoints: 18, action: expect.any(String) });
     expect(patchCallOrder).toEqual([14, 18]);
     expect(maxObservedConcurrentPatchCalls).toBe(1);
   });
@@ -607,7 +631,7 @@ describe("synchronizeGradePassback - concurrency (mandatory proof)", () => {
     reconcileGate.resolve();
     const aResult = await aPromise;
 
-    expect(aResult).toEqual({ outcome: "synced", earnedPoints: 18 });
+    expect(aResult).toEqual({ outcome: "synced", earnedPoints: 18, action: expect.any(String) });
     expect(patchCallOrder).toEqual([14, 18]);
     expectNonDecreasing(patchCallOrder);
 
@@ -622,7 +646,7 @@ describe("synchronizeGradePassback - concurrency (mandatory proof)", () => {
 
     // A acquires the lease, then hangs forever inside resolveStudentSubmission
     // (simulating a crashed/killed worker instance).
-    const stuck = queueControlledResolveStudentSubmission();
+    const stuck = queueControlledSubmissionRead();
 
     const aPromise = sync();
     await stuck.waitUntilReached;
@@ -634,7 +658,7 @@ describe("synchronizeGradePassback - concurrency (mandatory proof)", () => {
     mockNowMs += LEASE_TTL_MS + 1000;
 
     const bResult = await sync();
-    expect(bResult).toEqual({ outcome: "synced", earnedPoints: 16 });
+    expect(bResult).toEqual({ outcome: "synced", earnedPoints: 16, action: expect.any(String) });
     expect(patchCallOrder).toEqual([16]);
 
     // The stale worker A finally "wakes up" long after losing authority.
@@ -717,7 +741,7 @@ describe("synchronizeGradePassback - concurrency (mandatory proof)", () => {
     // B is unaffected by A's pause (different call index) and runs to
     // completion first, syncing the current best (90 -> 18).
     const bResult = await sync();
-    expect(bResult).toEqual({ outcome: "synced", earnedPoints: 18 });
+    expect(bResult).toEqual({ outcome: "synced", earnedPoints: 18, action: expect.any(String) });
     expect(patchCallOrder).toEqual([18]);
 
     // Now let the "earlier-initiated" A finally execute. Because it always
@@ -730,5 +754,51 @@ describe("synchronizeGradePassback - concurrency (mandatory proof)", () => {
     // A never called Classroom at all, and certainly never with a lower
     // value than what B already confirmed.
     expect(patchCallOrder).toEqual([18]);
+  });
+
+  it("a teacher-triggered evaluation (Retry/apply) overlapping automatic passback never double-writes: it defers to the lease owner", async () => {
+    seedFullHappyPath();
+    seedAttempt(80);
+    const paused = queueControlledSubmissionRead();
+    const automatic = sync();
+    await paused.waitUntilReached;
+
+    const teacher = await synchronizeGradePassback({
+      assignmentId: ASSIGNMENT_ID,
+      studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
+      trigger: "teacher",
+    });
+    expect(teacher).toEqual({ outcome: "deferred" });
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+
+    paused.resolve();
+    expect(await automatic).toEqual({ outcome: "synced", earnedPoints: 16, action: "wouldFillBlank" });
+    expect(patchCallOrder).toEqual([16]);
+    expect(maxObservedConcurrentPatchCalls).toBe(1);
+  });
+
+  it("a Classroom grade the teacher raises while a sync is in flight is read fresh and preserved", async () => {
+    seedFullHappyPath();
+    seedAttempt(80);
+    // Pause the worker at its fresh read, change Classroom, then let the read
+    // observe the new state.
+    const gate = createDeferred();
+    const reached = createDeferred();
+    resolveStudentSubmissionQueue.push(async () => {
+      reached.resolve();
+      await gate.promise;
+      return simSubmissionList();
+    });
+    const worker = sync();
+    await reached.promise;
+    simGrade = { assignedGrade: 20, draftGrade: 20 };
+    gate.resolve();
+
+    expect(await worker).toEqual({ outcome: "noChange", action: "preservedClassroomHigher" });
+    expect(patchCallOrder).toEqual([]);
+    const finalState = readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID);
+    expect(finalState?.leaseOwnerToken).toBeUndefined();
+    expect(finalState?.lastDecision).toBe("preservedClassroomHigher");
   });
 });

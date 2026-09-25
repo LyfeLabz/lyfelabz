@@ -213,6 +213,9 @@ export type LmsListSubmissionGradesInput = {
   readonly accessToken: string;
   readonly lmsClassId: string;
   readonly lmsAssignmentId: string;
+  // Optional: restrict the read to one student's submission (the fresh
+  // per-student re-read a write route performs immediately before writing).
+  readonly studentProviderAccountId?: string;
 };
 
 // Vendor-neutral submission lifecycle. `new`/`created` = not turned in;

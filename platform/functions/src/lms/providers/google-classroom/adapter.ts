@@ -960,6 +960,9 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
             accessToken: input.accessToken,
             courseId: input.lmsClassId,
             courseWorkId: input.lmsAssignmentId,
+            ...(input.studentProviderAccountId !== undefined
+              ? { userId: input.studentProviderAccountId }
+              : {}),
             pageSize: PAGE_SIZE,
             signal: controller.signal,
             ...(pageToken !== undefined ? { pageToken } : {}),

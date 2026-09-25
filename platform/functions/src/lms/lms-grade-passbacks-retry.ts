@@ -8,7 +8,10 @@ import {
   writeAuditEvent,
 } from "../shared";
 
-import { synchronizeGradePassback } from "./grade-passback/engine";
+import {
+  synchronizeGradePassback,
+  type GradePassbackSyncOutcome,
+} from "./grade-passback/engine";
 import { googleClassroomProductionSecrets } from "./providers/google-classroom/config-firebase";
 
 // lmsGradePassbacksRetry
@@ -49,9 +52,19 @@ export type LmsGradePassbacksRetryStatus =
   | "failed"
   | "notApplicable";
 
+// `status` keeps the established four-value contract the client validates.
+// `detail` (additive) says exactly what the fresh evaluation found, e.g.
+// `{ outcome: "noChange", action: "preservedClassroomHigher" }` or
+// `{ outcome: "destinationUnavailable", reason: "courseworkDeleted" }`. It
+// never carries a grade value, Classroom id, or credential material.
 export type LmsGradePassbacksRetryResponse = {
   readonly ok: true;
   readonly status: LmsGradePassbacksRetryStatus;
+  readonly detail: {
+    readonly outcome: GradePassbackSyncOutcome["outcome"];
+    readonly action?: string;
+    readonly reason?: string;
+  };
 };
 
 const ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,254}[a-zA-Z0-9])?$/;
@@ -85,20 +98,43 @@ function validateRequest(data: unknown): LmsGradePassbacksRetryRequest {
 }
 
 function mapOutcomeToStatus(
-  outcome: Awaited<ReturnType<typeof synchronizeGradePassback>>["outcome"],
+  outcome: GradePassbackSyncOutcome["outcome"],
 ): LmsGradePassbacksRetryStatus {
   switch (outcome) {
+    // Classroom now holds (or already held) an acceptable grade.
     case "synced":
     case "alreadySynced":
+    case "noChange":
       return "synced";
     case "noAttempts":
     case "deferred":
       return "pending";
+    // Nothing to write by rule: protected Classroom grade, student outside
+    // the grade-sync roster, or an ungraded destination.
     case "notApplicable":
+    case "protected":
+    case "outsideRoster":
       return "notApplicable";
     case "noPublication":
+    case "destinationUnavailable":
+    case "destinationChanged":
     case "failed":
       return "failed";
+  }
+}
+
+function detailOf(result: GradePassbackSyncOutcome): LmsGradePassbacksRetryResponse["detail"] {
+  switch (result.outcome) {
+    case "synced":
+    case "noChange":
+    case "protected":
+      return { outcome: result.outcome, action: result.action };
+    case "destinationUnavailable":
+      return { outcome: result.outcome, reason: result.status };
+    case "failed":
+      return { outcome: result.outcome, reason: result.errorCode };
+    default:
+      return { outcome: result.outcome };
   }
 }
 
@@ -157,13 +193,24 @@ async function lmsGradePassbacksRetryHandler(
     // Audit failure is non-blocking, matching the existing lms.* convention.
   }
 
+  // Retry means "re-evaluate this student's cumulative grade sync now",
+  // never "repeat the historical write". The engine resolves Current fresh
+  // from the canonical grouping (the assignment given here only identifies
+  // the class + lesson family), runs the live destination preflight,
+  // recomputes the cumulative best, re-reads the student's live Classroom
+  // grade, and writes only if the canonical decision allows it.
   const result = await synchronizeGradePassback({
     assignmentId,
     studentId,
     districtId: context.districtId,
+    trigger: "teacher",
   });
 
-  return { ok: true, status: mapOutcomeToStatus(result.outcome) };
+  return {
+    ok: true,
+    status: mapOutcomeToStatus(result.outcome),
+    detail: detailOf(result),
+  };
 }
 
 export const lmsGradePassbacksRetry = platformCallable(

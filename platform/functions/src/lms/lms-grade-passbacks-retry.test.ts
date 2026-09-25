@@ -156,6 +156,8 @@ describe("lmsGradePassbacksRetry", () => {
       // The teacher's verified district context is passed through to
       // canonical Current resolution (reassignment model).
       districtId: "district-1",
+      // Retry is an explicit teacher re-evaluation of fresh Classroom state.
+      trigger: "teacher",
     });
   });
 
@@ -164,7 +166,7 @@ describe("lmsGradePassbacksRetry", () => {
     const res = await __lmsGradePassbacksRetryHandler(
       makeRequest({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID }),
     );
-    expect(res).toEqual({ ok: true, status: "synced" });
+    expect(res).toMatchObject({ ok: true, status: "synced" });
   });
 
   it("maps a recovered failed sync to status synced (retry recovers a failed pending sync)", async () => {
@@ -172,7 +174,7 @@ describe("lmsGradePassbacksRetry", () => {
     const res = await __lmsGradePassbacksRetryHandler(
       makeRequest({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID }),
     );
-    expect(res).toEqual({ ok: true, status: "synced" });
+    expect(res).toMatchObject({ ok: true, status: "synced" });
   });
 
   it("maps a failed outcome to status failed without throwing", async () => {
@@ -183,7 +185,7 @@ describe("lmsGradePassbacksRetry", () => {
     const res = await __lmsGradePassbacksRetryHandler(
       makeRequest({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID }),
     );
-    expect(res).toEqual({ ok: true, status: "failed" });
+    expect(res).toMatchObject({ ok: true, status: "failed" });
   });
 
   it("maps noAttempts and deferred to status pending (not a failure)", async () => {
@@ -191,13 +193,13 @@ describe("lmsGradePassbacksRetry", () => {
     const r1 = await __lmsGradePassbacksRetryHandler(
       makeRequest({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID }),
     );
-    expect(r1).toEqual({ ok: true, status: "pending" });
+    expect(r1).toMatchObject({ ok: true, status: "pending" });
 
     mockSynchronizeGradePassback.mockResolvedValueOnce({ outcome: "deferred" });
     const r2 = await __lmsGradePassbacksRetryHandler(
       makeRequest({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID }),
     );
-    expect(r2).toEqual({ ok: true, status: "pending" });
+    expect(r2).toMatchObject({ ok: true, status: "pending" });
   });
 
   it("maps alreadySynced to status synced", async () => {
@@ -205,7 +207,26 @@ describe("lmsGradePassbacksRetry", () => {
     const res = await __lmsGradePassbacksRetryHandler(
       makeRequest({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID }),
     );
-    expect(res).toEqual({ ok: true, status: "synced" });
+    expect(res).toMatchObject({ ok: true, status: "synced" });
+  });
+
+  it.each([
+    [{ outcome: "synced", earnedPoints: 18, action: "wouldReplaceMissingDraftZero" }, "synced", { outcome: "synced", action: "wouldReplaceMissingDraftZero" }],
+    [{ outcome: "noChange", action: "alreadyEqual" }, "synced", { outcome: "noChange", action: "alreadyEqual" }],
+    [{ outcome: "noChange", action: "preservedClassroomHigher" }, "synced", { outcome: "noChange", action: "preservedClassroomHigher" }],
+    [{ outcome: "protected", action: "protectedAssignedZero" }, "notApplicable", { outcome: "protected", action: "protectedAssignedZero" }],
+    [{ outcome: "outsideRoster" }, "notApplicable", { outcome: "outsideRoster" }],
+    [{ outcome: "destinationUnavailable", status: "courseworkDeleted" }, "failed", { outcome: "destinationUnavailable", reason: "courseworkDeleted" }],
+    [{ outcome: "destinationChanged" }, "failed", { outcome: "destinationChanged" }],
+    [{ outcome: "failed", errorCode: "lms.upstreamCallFailed" }, "failed", { outcome: "failed", reason: "lms.upstreamCallFailed" }],
+  ])("maps engine %j to status %s with an accurate detail", async (engineResult, status, detail) => {
+    mockSynchronizeGradePassback.mockResolvedValueOnce(engineResult);
+    const res = await __lmsGradePassbacksRetryHandler(
+      makeRequest({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID }),
+    );
+    expect(res).toEqual({ ok: true, status, detail });
+    // The response never carries a grade value.
+    expect(JSON.stringify(res)).not.toMatch(/earnedPoints|18/);
   });
 
   it("writes exactly one lms.gradePassbackRetryRequested audit event, scoped to the caller's own school/district", async () => {
@@ -230,6 +251,6 @@ describe("lmsGradePassbacksRetry", () => {
     const res = await __lmsGradePassbacksRetryHandler(
       makeRequest({ assignmentId: ASSIGNMENT_ID, studentId: STUDENT_ID }),
     );
-    expect(res).toEqual({ ok: true, status: "synced" });
+    expect(res).toMatchObject({ ok: true, status: "synced" });
   });
 });

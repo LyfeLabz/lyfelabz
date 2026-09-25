@@ -221,6 +221,7 @@ export type GoogleClassroomCourseWorkSubmissionsListRequest = {
   readonly accessToken: string;
   readonly courseId: string;
   readonly courseWorkId: string;
+  readonly userId?: string;
   readonly pageToken?: string;
   readonly pageSize?: number;
   readonly signal?: AbortSignal;
@@ -1073,6 +1074,7 @@ export function createHttpsGoogleClassroomTransport(
           `/courses/${encodeURIComponent(input.courseId)}/courseWork/${encodeURIComponent(input.courseWorkId)}/studentSubmissions`,
           {
             fields: COURSE_WORK_SUBMISSION_GRADE_FIELDS,
+            ...(input.userId !== undefined ? { userId: input.userId } : {}),
             ...(input.pageToken ? { pageToken: input.pageToken } : {}),
             ...(input.pageSize !== undefined
               ? { pageSize: String(input.pageSize) }
