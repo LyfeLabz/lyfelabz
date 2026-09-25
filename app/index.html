@@ -1874,7 +1874,9 @@
   .shell-assign-row-set-current[hidden] {
     display: none;
   }
-  .shell-assign-disambig-current-marker {
+  .shell-assign-disambig-current-marker,
+  /* Assignment Details: the same canonical Current marker beside Status. */
+  .shell-assignment-detail-current-marker {
     /* Historical Assignment Resolution, post-release UX patch. The marker
        is the last child of the flex-row `.shell-assign-disambig-option`
        (see curriculum.ts), so it naturally follows the recipient metadata
@@ -3229,6 +3231,23 @@
     margin: 0;
     color: var(--tw-ink);
     font-weight: 500;
+  }
+  /* Every meta value (including the Status pill, which carries the pill
+     classes instead of -meta-value) starts at its label's left edge rather
+     than the browser's default <dd> indent. */
+  .shell-assignment-detail-meta dd {
+    margin: 0;
+  }
+  /* Status: the label on its own line, then the lifecycle pill with the
+     informational Current marker directly beside it. */
+  .shell-assignment-detail-meta-pair-status {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.5rem;
+  }
+  .shell-assignment-detail-meta-pair-status > dt {
+    flex-basis: 100%;
   }
   .shell-assignment-detail-lifecycle {
     display: flex;

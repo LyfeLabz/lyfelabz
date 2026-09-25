@@ -395,11 +395,11 @@ describe("assignment detail - Current-aware Classroom grade-sync status", () => 
     expect(retryBtn(mount)).toBeNull();
   });
 
-  test("no passback records at all: Current is not even looked up", async () => {
+  test("no passback records at all: Current is looked up once (for the header marker) and no Retry renders", async () => {
     const { seam, currentCalls } = currentAwareSeam({}, { resolution: "valid", currentAssignmentId: VIEWED });
     const { mount } = renderWithGradePassback(seam);
     await settle();
-    expect(currentCalls).toEqual([]);
+    expect(currentCalls).toEqual([{ classId: "c1", lessonSlug: "earths-layers" }]);
     expect(retryBtn(mount)).toBeNull();
   });
 
@@ -579,5 +579,118 @@ describe("assignment detail - Current-aware Classroom grade-sync status", () => 
     await settle();
     expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
     expect(retryBtn(mount)?.disabled).toBe(false);
+  });
+});
+
+// Assignment Details header: an informational Current marker beside the
+// Status value, from the same single canonical Current lookup the roster's
+// grade-sync context uses.
+describe("assignment detail - Current marker beside Status", () => {
+  type Current = { resolution: "valid" | "unresolved" | "invalid" | "inactive"; currentAssignmentId: string | null };
+
+  function seamWith(
+    statuses: Readonly<Record<string, AssignmentGradePassbackStatus>>,
+    current: Current | (() => Promise<Current>),
+  ) {
+    const currentCalls: unknown[] = [];
+    const seam: AssignmentGradePassbackSeam = {
+      ...makeSeam(statuses, async () => "synced"),
+      currentReader: async (input) => {
+        currentCalls.push(input);
+        return typeof current === "function" ? current() : current;
+      },
+    };
+    return { seam, currentCalls };
+  }
+  const marker = (mount: HTMLElement) =>
+    mount.querySelector<HTMLElement>("[data-testid=assignment-detail-current-marker]");
+  const statusValue = (mount: HTMLElement) =>
+    mount.querySelector<HTMLElement>("[data-testid=assignment-detail-status-value]");
+
+  test("viewed assignment is the valid Current: CURRENT renders beside the unchanged Status value", async () => {
+    const { seam } = seamWith({ [STUDENT_ID]: "synced" }, { resolution: "valid", currentAssignmentId: "a1" });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(statusValue(mount)?.textContent).toBe("Published");
+    expect(statusValue(mount)?.className).toBe(
+      "shell-assignment-detail-status shell-assignment-detail-status-published",
+    );
+    const m = marker(mount);
+    expect(m?.textContent).toBe("Current");
+    expect(m?.tagName).toBe("DD");
+    expect(m?.className).toBe("shell-assignment-detail-current-marker");
+    // A second value of the same Status term, right after the lifecycle pill.
+    const pair = mount.querySelector("[data-testid=assignment-detail-status]");
+    expect(pair?.classList.contains("shell-assignment-detail-meta-pair-status")).toBe(true);
+    expect(Array.from(pair?.children ?? []).map((c) => c.tagName)).toEqual(["DT", "DD", "DD"]);
+    // Informational only: no control of any kind.
+    expect(pair?.querySelector("button, a, input")).toBeNull();
+  });
+
+  test.each([
+    ["a different assignment is the valid Current", { resolution: "valid", currentAssignmentId: "a4-current" } as Current],
+    ["no Current pointer (legacy)", { resolution: "unresolved", currentAssignmentId: null } as Current],
+    ["an invalid Current pointer", { resolution: "invalid", currentAssignmentId: null } as Current],
+    ["a managed but inactive Current (pointer id not exposed)", { resolution: "inactive", currentAssignmentId: null } as Current],
+  ])("%s: no CURRENT marker", async (_label, current) => {
+    const { seam } = seamWith({}, current);
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(marker(mount)).toBeNull();
+    expect(statusValue(mount)?.textContent).toBe("Published");
+  });
+
+  test("Current lookup failure: no CURRENT marker (fail closed), header intact", async () => {
+    const { seam } = seamWith({}, async () => {
+      throw new Error("lifecycle unavailable");
+    });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(marker(mount)).toBeNull();
+    expect(statusValue(mount)?.textContent).toBe("Published");
+  });
+
+  test("no Current source wired: header renders exactly as before, no marker", async () => {
+    const { mount } = renderWithGradePassback(makeSeam({}, async () => "synced"));
+    await settle();
+    expect(marker(mount)).toBeNull();
+    expect(statusValue(mount)?.textContent).toBe("Published");
+  });
+
+  test("Current with a failed automatic sync: CURRENT and the operational Retry render together", async () => {
+    const { seam } = seamWith({ [STUDENT_ID]: "failed" }, { resolution: "valid", currentAssignmentId: "a1" });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(marker(mount)?.textContent).toBe("Current");
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
+    expect(retryBtn(mount)).not.toBeNull();
+  });
+
+  test("historical assignment with a failed record: no CURRENT, muted history, no Retry", async () => {
+    const { seam } = seamWith({ [STUDENT_ID]: "failed" }, { resolution: "valid", currentAssignmentId: "a4-current" });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(marker(mount)).toBeNull();
+    expect(statusEl(mount)?.textContent).toBe("Historical Classroom sync failed");
+    expect(retryBtn(mount)).toBeNull();
+  });
+
+  test("one lifecycle lookup per load is shared by the header and the grade-sync context", async () => {
+    const { seam, currentCalls } = seamWith({ [STUDENT_ID]: "failed" }, { resolution: "valid", currentAssignmentId: "a1" });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(marker(mount)).not.toBeNull();
+    expect(retryBtn(mount)).not.toBeNull();
+    expect(currentCalls).toEqual([{ classId: "c1", lessonSlug: "earths-layers" }]);
+  });
+
+  test("a Retry click still re-reads Current fresh (not from the shared cache)", async () => {
+    const { seam, currentCalls } = seamWith({ [STUDENT_ID]: "failed" }, { resolution: "valid", currentAssignmentId: "a1" });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(currentCalls.length).toBe(1);
+    retryBtn(mount)!.click();
+    await settle();
+    expect(currentCalls.length).toBe(2);
   });
 });

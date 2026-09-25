@@ -1,4 +1,8 @@
-import { gradeSyncContextFor, type GradeSyncContext } from "./grade-sync-context";
+import {
+  gradeSyncContextFor,
+  type CurrentForFamily,
+  type GradeSyncContext,
+} from "./grade-sync-context";
 import { renderAssignmentSummaryCard } from "../summary/card";
 import type {
   AssignmentSummary,
@@ -380,6 +384,23 @@ export function renderAssignmentDetail(
             deps.recipientCandidatesListCallable!(input),
           );
 
+  // The family's canonical Current (`assignmentsLifecycleState`), resolved
+  // at most once per load through the same per-render cache, and shared by
+  // the header's Current marker and the roster's grade-sync context. A
+  // Retry click still re-reads Current fresh (see renderRosterPanel).
+  const currentReader = deps.gradePassback?.currentReader;
+  const sharedCurrentForFamily =
+    currentReader === undefined
+      ? undefined
+      : (metadata: AssignmentDetailMetadata): Promise<CurrentForFamily> | null => {
+          const classId = metadata.classId ?? "";
+          const lessonSlug = metadata.lessonSlug ?? "";
+          if (classId.length === 0 || lessonSlug.length === 0) return null;
+          return detailCache.get(`current:${classId}:${lessonSlug}`, () =>
+            currentReader({ classId, lessonSlug }),
+          );
+        };
+
   const rerender = (): void => {
     body.textContent = "";
     if (!mount.isConnected) return;
@@ -417,6 +438,7 @@ export function renderAssignmentDetail(
             recipientListCallable: sharedRecipientListCallable,
             attemptGetForTeacherCallable: sharedAttemptGetCallable,
             recipientCandidatesListCallable: sharedCandidatesListCallable,
+            currentForFamily: sharedCurrentForFamily,
           },
           closeUi,
           reopenUi,
@@ -840,6 +862,12 @@ type SharedDetailCallables = {
   readonly recipientCandidatesListCallable:
     | AssignmentRecipientCandidatesListCallable
     | undefined;
+  // Cached canonical Current for the viewed assignment's family, or null
+  // when it cannot be looked up (no class/lesson). Absent when no Current
+  // source is wired.
+  readonly currentForFamily:
+    | ((metadata: AssignmentDetailMetadata) => Promise<CurrentForFamily> | null)
+    | undefined;
 };
 
 function renderReady(
@@ -892,7 +920,7 @@ function renderReady(
   meta.setAttribute("data-testid", "assignment-detail-meta");
 
   appendMetaPair(doc, meta, "class", "Class", metadata.className);
-  appendMetaPair(
+  const statusPair = appendMetaPair(
     doc,
     meta,
     "status",
@@ -900,6 +928,8 @@ function renderReady(
     STATUS_LABEL[metadata.status],
     `shell-assignment-detail-status shell-assignment-detail-status-${metadata.status}`,
   );
+  statusPair.classList.add("shell-assignment-detail-meta-pair-status");
+  appendCurrentMarkerWhenCurrent(doc, statusPair, metadata, shared);
 
   header.appendChild(meta);
 
@@ -1183,6 +1213,7 @@ function renderReady(
       shared.summaryCallable,
       deps.gradePassback,
       onSelectStudent,
+      shared.currentForFamily,
     );
   }
 
@@ -1254,6 +1285,9 @@ async function renderRosterPanel(
   onSelectStudent:
     | ((studentId: string, studentDisplayName: string) => void)
     | undefined,
+  cachedCurrentForFamily?: (
+    metadata: AssignmentDetailMetadata,
+  ) => Promise<CurrentForFamily> | null,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -1335,9 +1369,11 @@ async function renderRosterPanel(
     gradePassback === undefined
       ? "operational"
       : resolveGradeSyncContextFor(gradePassback, metadata);
+  // Initial context shares the header's cached Current lookup (one
+  // lifecycle call per load); only a Retry click re-reads it fresh.
   const gradeSyncContext =
     gradePassback !== undefined && gradePassbackStatuses.size > 0
-      ? await resolveGradeSyncContext()
+      ? await resolveGradeSyncContextFor(gradePassback, metadata, cachedCurrentForFamily)
       : "operational";
 
   // Sprint 16 Slice 4: a published assignment with zero recipients is
@@ -1719,15 +1755,20 @@ const HISTORICAL_GRADE_SYNC_FAILED = "Historical Classroom sync failed";
 async function resolveGradeSyncContextFor(
   seam: AssignmentGradePassbackSeam,
   metadata: AssignmentDetailMetadata,
+  cachedCurrentForFamily?: (
+    metadata: AssignmentDetailMetadata,
+  ) => Promise<CurrentForFamily> | null,
 ): Promise<GradeSyncContext> {
   // No Current source wired: the pre-Current behavior (every record is
   // operational for its own assignment).
-  if (seam.currentReader === undefined) return "operational";
+  const currentReader = seam.currentReader;
+  if (currentReader === undefined) return "operational";
   const classId = metadata.classId ?? "";
   const lessonSlug = metadata.lessonSlug ?? "";
   if (classId.length === 0 || lessonSlug.length === 0) return "nonActionable";
   try {
-    const current = await seam.currentReader({ classId, lessonSlug });
+    const current = await (cachedCurrentForFamily?.(metadata) ??
+      currentReader({ classId, lessonSlug }));
     return gradeSyncContextFor(metadata.assignmentId, current);
   } catch {
     // Fail closed: never offer an operational action on an unknown state.
@@ -2515,7 +2556,7 @@ function appendMetaPair(
   label: string,
   value: string,
   valueClass?: string,
-): void {
+): HTMLElement {
   const cell = doc.createElement("div");
   cell.className = "shell-assignment-detail-meta-pair";
   cell.setAttribute("data-testid", `assignment-detail-${key}`);
@@ -2532,6 +2573,41 @@ function appendMetaPair(
   cell.appendChild(val);
 
   parent.appendChild(cell);
+  return cell;
+}
+
+// Informational Current marker beside the Status value. Status is the
+// lifecycle (Published/Closed); Current is the operational selection - two
+// distinct facts, so the marker is a second value of the same Status term
+// ("Status: Published, Current"), never a control. Shown ONLY when the
+// canonical resolution is `valid` and names this exact assignment; every
+// other state (another Current, no pointer, invalid, managed-but-inactive
+// whose pointer id is not exposed, or an unknown lookup) fails closed.
+function appendCurrentMarkerWhenCurrent(
+  doc: Document,
+  statusPair: HTMLElement,
+  metadata: AssignmentDetailMetadata,
+  shared: SharedDetailCallables,
+): void {
+  const pending = shared.currentForFamily?.(metadata) ?? null;
+  if (pending === null) return;
+  void pending.then(
+    (current) => {
+      if (
+        current.resolution !== "valid" ||
+        current.currentAssignmentId !== metadata.assignmentId ||
+        !statusPair.isConnected
+      ) {
+        return;
+      }
+      const marker = doc.createElement("dd");
+      marker.className = "shell-assignment-detail-current-marker";
+      marker.setAttribute("data-testid", "assignment-detail-current-marker");
+      marker.textContent = "Current";
+      statusPair.appendChild(marker);
+    },
+    () => undefined,
+  );
 }
 
 function renderDraftEditor(
