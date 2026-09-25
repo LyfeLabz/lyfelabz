@@ -100,8 +100,12 @@ import { isInGradeSyncRoster } from "./roster";
 //      graded, succeeded publication, own active connection, live
 //      coursework exists + PUBLISHED + graded + live maxPoints equal to the
 //      stored grading maxPoints. Any failure: no write
-//      (`destinationUnavailable`);
-//   3. the canonical grade-sync roster (`isInGradeSyncRoster`);
+//      (`destinationUnavailable`), an audit event, and - for AUTOMATIC
+//      passback only - a durable `status: "failed"` on the canonical
+//      passback record so the teacher can see it and Retry
+//      (`handlePreflightFailure`);
+//   3. the canonical grade-sync roster (`isInGradeSyncRoster`), checked
+//      before the preflight so failures are only recorded in scope;
 //   4. the canonical cumulative best (unchanged, below);
 //   5. UNDER THE LEASE, a fresh read of the student's live Classroom
 //      submission and the canonical decision (`decideGradeAction`): only a
@@ -218,8 +222,23 @@ type Phase1Deferred = {
     | "noPublication"
     | "noAttempts"
     | "deferred"
-    | "alreadySynced";
+    | "alreadySynced"
+    // recordFailure mode only: the failure was durably recorded.
+    | "failureRecorded";
 };
+
+// What phase 1 does once it has recomputed the desired state:
+//   - acquire: take the lease so phase 2 may evaluate/write (`force` = a
+//     teacher-triggered evaluation proceeds even when already synced);
+//   - recordFailure: AUTOMATIC passback whose live destination preflight
+//     failed. No lease, no Classroom call: persist the advanced desired
+//     state plus `status: "failed"` and the bounded error code, so the
+//     teacher sees the unsynced grade and can Retry. Uses the identical
+//     "already synced" and "lease held" guards as acquisition, so it can
+//     never overwrite a newer confirmed sync or an in-flight worker.
+type Phase1Mode =
+  | { readonly kind: "acquire"; readonly force: boolean }
+  | { readonly kind: "recordFailure"; readonly errorCode: string };
 
 type Phase1Acquired = {
   readonly kind: "acquired";
@@ -260,8 +279,9 @@ async function advanceDesiredStateAndAcquireLease(
   assignmentId: string,
   occurrenceAssignmentIds: ReadonlyArray<string>,
   studentId: string,
-  force: boolean,
+  mode: Phase1Mode,
 ): Promise<Phase1Result> {
+  const force = mode.kind === "acquire" && mode.force;
   return runFirestoreTransaction<Phase1Result>(async (tx) => {
     const assignmentSnap = await tx.get(assignmentDocRef(assignmentId));
     if (!assignmentSnap.exists) return { kind: "notApplicable" };
@@ -388,6 +408,59 @@ async function advanceDesiredStateAndAcquireLease(
         );
       }
       return { kind: "deferred" };
+    }
+
+    if (mode.kind === "recordFailure") {
+      // Unsynced work, no active worker, and the destination cannot be
+      // written right now: record the failure on the canonical record (the
+      // SAME identity a successful sync uses). No lease is taken, so any
+      // later Retry, apply, or attempt re-evaluates everything fresh.
+      const failureFields = {
+        status: "failed" as const,
+        lastErrorCode: mode.errorCode,
+        lastAttemptedAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+      if (!existing) {
+        tx.set(ref, {
+          assignmentId,
+          studentId,
+          classId: assignment.classId,
+          ownerUid: assignment.teacherId,
+          schoolId: assignment.schoolId,
+          districtId,
+          providerId: publication.providerId,
+          connectionId: publication.connectionId,
+          lmsClassId: publication.lmsClassId,
+          lmsAssignmentId: publication.lmsAssignmentId,
+          lmsPublicationRef: publicationId,
+          maxPoints,
+          desiredBestPercentage: best.percentage,
+          desiredEarnedPoints,
+          bestAttemptId: best.attemptId,
+          syncGeneration,
+          lastSyncedGeneration,
+          ...failureFields,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+      } else {
+        tx.set(
+          ref,
+          {
+            ...(advanced
+              ? {
+                  desiredBestPercentage: best.percentage,
+                  desiredEarnedPoints,
+                  bestAttemptId: best.attemptId,
+                  syncGeneration,
+                }
+              : {}),
+            ...failureFields,
+          },
+          { merge: true },
+        );
+      }
+      return { kind: "failureRecorded" };
     }
 
     // No valid lease is held (absent, or expired and now reclaimable).
@@ -833,7 +906,29 @@ export async function synchronizeGradePassback(input: {
       return { outcome: "notApplicable" };
     }
 
-    const resolved = await resolveLiveGradeDestination(targetAssignmentId, target);
+    // Roster first (Firestore only): a failure is only ever recorded for a
+    // student inside the canonical grade-sync scope.
+    const inRoster = await isInGradeSyncRoster({
+      assignmentId: targetAssignmentId,
+      record: target,
+      studentId: input.studentId,
+      districtId: input.districtId,
+    });
+    if (!inRoster) return { outcome: "outsideRoster" };
+
+    // Live destination preflight. A credential that cannot be resolved
+    // (e.g. `lms.reconnectRequired`) is a preflight failure too.
+    let resolved: Awaited<ReturnType<typeof resolveLiveGradeDestination>>;
+    try {
+      resolved = await resolveLiveGradeDestination(targetAssignmentId, target);
+    } catch (err) {
+      const errorCode =
+        err instanceof PlatformError ? err.code : "gradePassback.syncFailed";
+      return await handlePreflightFailure(input, scope, targetAssignmentId, {
+        outcome: "failed",
+        errorCode,
+      });
+    }
     if (!resolved.ok) {
       if (
         resolved.status === "currentUngraded" ||
@@ -842,14 +937,13 @@ export async function synchronizeGradePassback(input: {
         // The destination's own grading/publication is not a valid graded
         // Classroom target (unpublished, failed publication, or a
         // publication grading snapshot that does not cohere): never fall
-        // back to any other coursework.
+        // back to any other coursework, and there is nothing to retry.
         return { outcome: "noPublication" };
       }
-      await auditOutcome(input.studentId, targetAssignmentId, {
-        outcome: "failed",
-        errorCode: `gradePassback.destination.${resolved.status}`,
+      return await handlePreflightFailure(input, scope, targetAssignmentId, {
+        outcome: "destinationUnavailable",
+        status: resolved.status,
       });
-      return { outcome: "destinationUnavailable", status: resolved.status };
     }
     destination = resolved.destination;
 
@@ -863,19 +957,11 @@ export async function synchronizeGradePassback(input: {
       return { outcome: "destinationChanged" };
     }
 
-    const inRoster = await isInGradeSyncRoster({
-      assignmentId: targetAssignmentId,
-      record: target,
-      studentId: input.studentId,
-      districtId: input.districtId,
-    });
-    if (!inRoster) return { outcome: "outsideRoster" };
-
     phase1 = await advanceDesiredStateAndAcquireLease(
       scope.targetAssignmentId,
       scope.occurrenceAssignmentIds,
       input.studentId,
-      input.trigger === "teacher",
+      { kind: "acquire", force: input.trigger === "teacher" },
     );
   } catch (err) {
     safeLog(() =>
@@ -892,6 +978,10 @@ export async function synchronizeGradePassback(input: {
     };
   }
 
+  if (phase1.kind === "failureRecorded") {
+    // Unreachable in acquire mode; fail closed rather than write.
+    return { outcome: "failed", errorCode: "gradePassback.syncFailed" };
+  }
   if (phase1.kind !== "acquired") {
     return { outcome: phase1.kind };
   }
@@ -899,6 +989,52 @@ export async function synchronizeGradePassback(input: {
   const result = await performUpstreamSyncLoop(phase1, destination);
   await auditOutcome(input.studentId, targetAssignmentId, result, destination.providerId);
   return result;
+}
+
+// A live destination preflight failure (or an unresolvable credential):
+// nothing is ever written to Classroom and no other coursework is tried.
+//   - teacher trigger (Retry, reconciliation apply): the caller receives the
+//     failure synchronously; no passback record is touched.
+//   - automatic trigger (post-attempt passback): nobody is waiting, so the
+//     failure is recorded durably on the canonical passback record
+//     (`recordFailure` phase-1 mode) so the teacher sees "Classroom grade
+//     sync did not succeed" and can Retry. If nothing is unsynced (already
+//     synced) or another worker holds the lease, nothing is recorded and
+//     that result is returned instead.
+// The destination audit event is written in every case.
+async function handlePreflightFailure(
+  input: { readonly studentId: string; readonly trigger?: GradePassbackTrigger },
+  scope: {
+    readonly targetAssignmentId: string;
+    readonly occurrenceAssignmentIds: ReadonlyArray<string>;
+  },
+  targetAssignmentId: string,
+  failure:
+    | { readonly outcome: "destinationUnavailable"; readonly status: GradeDestinationFailureStatus }
+    | { readonly outcome: "failed"; readonly errorCode: string },
+): Promise<GradePassbackSyncOutcome> {
+  const errorCode =
+    failure.outcome === "failed"
+      ? failure.errorCode
+      : `gradePassback.destination.${failure.status}`;
+  await auditOutcome(input.studentId, targetAssignmentId, { outcome: "failed", errorCode });
+  if (input.trigger === "teacher") return failure;
+
+  const recorded = await advanceDesiredStateAndAcquireLease(
+    scope.targetAssignmentId,
+    scope.occurrenceAssignmentIds,
+    input.studentId,
+    { kind: "recordFailure", errorCode },
+  );
+  switch (recorded.kind) {
+    case "failureRecorded":
+      return failure;
+    case "acquired":
+      // Unreachable in recordFailure mode (no lease is ever taken).
+      return failure;
+    default:
+      return { outcome: recorded.kind };
+  }
 }
 
 async function auditOutcome(

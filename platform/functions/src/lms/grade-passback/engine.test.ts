@@ -1172,6 +1172,29 @@ describe("synchronizeGradePassback - reassignment (Current destination, cumulati
     ]);
     expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
   });
+
+  it("automatic failure on a historical attempt is recorded on CURRENT's record; the historical coursework is never touched", async () => {
+    seedLockedExample();
+    seedPointer(C);
+    mockFetchAssignment.mockImplementation((input: { lmsAssignmentId: string }) =>
+      Promise.reject(new RealPlatformError("lms.upstreamTemporarilyUnavailable", `503 ${input.lmsAssignmentId}`)),
+    );
+    // The triggering attempt belongs to historical A.
+    expect(await sync(A)).toEqual({ outcome: "destinationUnavailable", status: "courseworkError" });
+    const current = readDoc("lmsGradePassbacks", lmsGradePassbackIdFor(C, STUDENT_ID));
+    expect(current).toMatchObject({
+      assignmentId: C,
+      lmsAssignmentId: "coursework-C",
+      status: "failed",
+      lastErrorCode: "gradePassback.destination.courseworkError",
+      desiredEarnedPoints: 19,
+    });
+    expect(readDoc("lmsGradePassbacks", lmsGradePassbackIdFor(A, STUDENT_ID))).toBeUndefined();
+    expect(mockFetchAssignment.mock.calls.map((c) => (c[0] as { lmsAssignmentId: string }).lmsAssignmentId)).toEqual([
+      "coursework-C",
+    ]);
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+  });
 });
 
 // Canonical write safety (all routes). Automatic post-attempt passback is
@@ -1274,14 +1297,23 @@ describe("synchronizeGradePassback - canonical fresh decision before any write",
     ["not published", { state: "draft", maxPoints: 20 }, "courseworkNotPublished"],
     ["ungraded live", { state: "published" }, "courseworkUngraded"],
     ["maxPoints drift", { state: "published", maxPoints: 25 }, "maxPointsMismatch"],
-  ] as const)("live coursework %s: no lease, no read, no PATCH", async (_label, live, status) => {
+  ] as const)("live coursework %s: no lease, no read, no PATCH; automatic passback records the failure", async (_label, live, status) => {
     seedFullHappyPath();
     seedAttempt({ percentage: 80 });
     mockFetchAssignment.mockResolvedValue({ lmsAssignmentId: LMS_ASSIGNMENT_ID, ...live });
     expect(await sync()).toEqual({ outcome: "destinationUnavailable", status });
     expect(mockListSubmissionGrades).not.toHaveBeenCalled();
     expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
-    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)).toBeUndefined();
+    const state = readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID);
+    expect(state).toMatchObject({
+      status: "failed",
+      lastErrorCode: `gradePassback.destination.${status}`,
+      desiredEarnedPoints: 16,
+      syncGeneration: 1,
+      lastSyncedGeneration: 0,
+    });
+    expect(state?.leaseOwnerToken).toBeUndefined();
+    expect(state?.lastDecision).toBeUndefined();
     expect(mockWriteAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "lms.gradePassbackFailed",
@@ -1378,5 +1410,240 @@ describe("synchronizeGradePassback - canonical fresh decision before any write",
     ]);
     expect(await sync()).toEqual({ outcome: "failed", errorCode: "gradePassback.submissionAmbiguous" });
     expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+  });
+});
+
+// Durable failure visibility for AUTOMATIC passback: a live destination
+// preflight failure (or unresolvable credential) never writes Classroom,
+// but is recorded on the canonical passback record so the teacher sees it
+// and can Retry. Teacher-triggered calls get the failure synchronously and
+// never produce this automatic-style record.
+describe("synchronizeGradePassback - automatic preflight failure is durably visible", () => {
+  const sync = (extra: Record<string, unknown> = {}) =>
+    synchronizeGradePassback({
+      assignmentId: ASSIGNMENT_ID,
+      studentId: STUDENT_ID,
+      districtId: DISTRICT_ID,
+      ...extra,
+    });
+
+  function expectFailedRecord(errorCode: string): void {
+    const state = readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID);
+    expect(state).toMatchObject({
+      assignmentId: ASSIGNMENT_ID,
+      studentId: STUDENT_ID,
+      status: "failed",
+      lastErrorCode: errorCode,
+      lmsAssignmentId: LMS_ASSIGNMENT_ID,
+      desiredEarnedPoints: 16,
+    });
+    expect(state?.leaseOwnerToken).toBeUndefined();
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+    expect(mockListSubmissionGrades).not.toHaveBeenCalled();
+  }
+
+  it.each([
+    ["temporary Classroom error", new RealPlatformError("lms.upstreamTemporarilyUnavailable", "503"), "courseworkError"],
+    ["Classroom 5xx", new RealPlatformError("lms.upstreamCallFailed", "500"), "courseworkError"],
+    ["Classroom authorization failure", new RealPlatformError("lms.upstreamAuthorizationFailed", "403"), "courseworkInaccessible"],
+    ["missing coursework", new RealPlatformError("lms.upstreamResourceNotFound", "404"), "courseworkNotFound"],
+  ])("%s: failed record with the specific reason, no write", async (_label, error, status) => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    mockFetchAssignment.mockRejectedValue(error);
+    expect(await sync()).toEqual({ outcome: "destinationUnavailable", status });
+    expectFailedRecord(`gradePassback.destination.${status}`);
+    expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "lms.gradePassbackFailed",
+        payload: expect.objectContaining({ errorCode: `gradePassback.destination.${status}` }),
+      }),
+    );
+  });
+
+  it("connection unavailable: failed record, no write", async () => {
+    seedGradedAssignment();
+    seedSucceededPublication();
+    seedActiveConnection({ status: "revoked" });
+    seedAttempt({ percentage: 80 });
+    expect(await sync()).toEqual({ outcome: "destinationUnavailable", status: "connectionUnavailable" });
+    expectFailedRecord("gradePassback.destination.connectionUnavailable");
+    expect(mockFetchAssignment).not.toHaveBeenCalled();
+  });
+
+  it("reconnect-required credential: failed record with the credential code, no write", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    mockResolveLiveCredential.mockRejectedValue(new RealPlatformError("lms.reconnectRequired", "grant"));
+    expect(await sync()).toEqual({ outcome: "failed", errorCode: "lms.reconnectRequired" });
+    expectFailedRecord("lms.reconnectRequired");
+  });
+
+  it("a newer attempt advances the desired value on an existing record while recording the failure", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 70 });
+    expect(await sync()).toMatchObject({ outcome: "synced", earnedPoints: 14 });
+    mockPatchStudentSubmissionGrade.mockClear();
+    seedAttempt({ percentage: 80 });
+    mockFetchAssignment.mockRejectedValue(new RealPlatformError("lms.upstreamTemporarilyUnavailable", "503"));
+    expect(await sync()).toEqual({ outcome: "destinationUnavailable", status: "courseworkError" });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)).toMatchObject({
+      status: "failed",
+      desiredEarnedPoints: 16,
+      syncGeneration: 2,
+      lastSyncedGeneration: 1,
+      lastSyncedEarnedPoints: 14,
+    });
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+  });
+
+  it("nothing unsynced: a preflight failure never downgrades a confirmed sync to failed", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    expect(await sync()).toMatchObject({ outcome: "synced" });
+    mockFetchAssignment.mockRejectedValue(new RealPlatformError("lms.upstreamTemporarilyUnavailable", "503"));
+    expect(await sync()).toEqual({ outcome: "alreadySynced" });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)).toMatchObject({ status: "synced" });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)?.lastErrorCode).toBeUndefined();
+  });
+
+  it("teacher-triggered preflight failure is returned synchronously and records nothing", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    mockFetchAssignment.mockResolvedValue({ lmsAssignmentId: LMS_ASSIGNMENT_ID, state: "deleted", maxPoints: 20 });
+    expect(await sync({ trigger: "teacher" })).toEqual({
+      outcome: "destinationUnavailable",
+      status: "courseworkDeleted",
+    });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)).toBeUndefined();
+    // Same for a reconciliation-apply call carrying its expected fence.
+    expect(
+      await sync({
+        trigger: "teacher",
+        expectedDestination: { assignmentId: ASSIGNMENT_ID, lmsAssignmentId: LMS_ASSIGNMENT_ID, maxPoints: 20 },
+      }),
+    ).toEqual({ outcome: "destinationUnavailable", status: "courseworkDeleted" });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)).toBeUndefined();
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+  });
+
+  it("teacher-triggered preflight failure leaves an existing synced record untouched", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    await sync();
+    const before = JSON.stringify(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID));
+    mockFetchAssignment.mockRejectedValue(new RealPlatformError("lms.upstreamCallFailed", "500"));
+    expect(await sync({ trigger: "teacher" })).toEqual({
+      outcome: "destinationUnavailable",
+      status: "courseworkError",
+    });
+    expect(JSON.stringify(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID))).toBe(before);
+  });
+
+  it("Retry after the outage clears: fresh evaluation writes and replaces the failed status", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    mockFetchAssignment.mockRejectedValueOnce(new RealPlatformError("lms.upstreamTemporarilyUnavailable", "503"));
+    expect(await sync()).toMatchObject({ outcome: "destinationUnavailable" });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)?.status).toBe("failed");
+
+    expect(await sync({ trigger: "teacher" })).toEqual({
+      outcome: "synced",
+      earnedPoints: 16,
+      action: "wouldFillBlank",
+    });
+    const state = readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID);
+    expect(state).toMatchObject({ status: "synced", lastSyncedEarnedPoints: 16, lastDecision: "wouldFillBlank" });
+    expect(state?.lastErrorCode).toBeUndefined();
+    expect(mockPatchStudentSubmissionGrade).toHaveBeenCalledTimes(1);
+  });
+
+  it("Retry when Classroom already holds the right grade: successful no-op, failed status cleared", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    mockFetchAssignment.mockRejectedValueOnce(new RealPlatformError("lms.upstreamTemporarilyUnavailable", "503"));
+    await sync();
+    setClassroomGrade(LMS_ASSIGNMENT_ID, "google-acct-1", { assignedGrade: 16, draftGrade: 16 });
+    expect(await sync({ trigger: "teacher" })).toEqual({ outcome: "noChange", action: "alreadyEqual" });
+    const state = readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID);
+    expect(state).toMatchObject({ status: "synced", lastDecision: "alreadyEqual" });
+    expect(state?.lastErrorCode).toBeUndefined();
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+  });
+
+  it("Retry while the destination is still unsafe returns the fresh reason and writes nothing", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    mockFetchAssignment.mockResolvedValue({ lmsAssignmentId: LMS_ASSIGNMENT_ID, state: "published", maxPoints: 25 });
+    await sync();
+    expect(await sync({ trigger: "teacher" })).toEqual({
+      outcome: "destinationUnavailable",
+      status: "maxPointsMismatch",
+    });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)?.lastErrorCode).toBe(
+      "gradePassback.destination.maxPointsMismatch",
+    );
+    expect(mockPatchStudentSubmissionGrade).not.toHaveBeenCalled();
+  });
+
+  it("race: a teacher sync that succeeds after the automatic preflight failed is never overwritten by the delayed failure record", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    let first = true;
+    mockFetchAssignment.mockImplementation(async (input: { lmsAssignmentId: string }) => {
+      if (first) {
+        first = false;
+        // While the automatic worker's preflight is failing, a teacher
+        // reconciliation runs to completion for the same student.
+        const teacher = await sync({ trigger: "teacher" });
+        expect(teacher).toMatchObject({ outcome: "synced", earnedPoints: 16 });
+        throw new RealPlatformError("lms.upstreamTemporarilyUnavailable", "503");
+      }
+      return defaultFetchAssignment(input);
+    });
+    const automatic = await sync();
+    // The delayed failure found nothing unsynced and recorded nothing.
+    expect(automatic).toEqual({ outcome: "alreadySynced" });
+    const state = readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID);
+    expect(state).toMatchObject({ status: "synced", lastSyncedEarnedPoints: 16 });
+    expect(state?.lastErrorCode).toBeUndefined();
+    expect(mockPatchStudentSubmissionGrade).toHaveBeenCalledTimes(1);
+  });
+
+  it("race: an automatic preflight failure while a teacher sync holds the lease defers and never marks it failed", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    let releasePatch!: () => void;
+    let patchReached!: () => void;
+    const reached = new Promise<void>((r) => (patchReached = r));
+    const gate = new Promise<void>((r) => (releasePatch = r));
+    mockPatchStudentSubmissionGrade.mockImplementationOnce(async (input: never) => {
+      patchReached();
+      await gate;
+      return defaultPatch(input);
+    });
+    const teacher = sync({ trigger: "teacher" });
+    await reached;
+
+    mockFetchAssignment.mockRejectedValueOnce(new RealPlatformError("lms.upstreamTemporarilyUnavailable", "503"));
+    expect(await sync()).toEqual({ outcome: "deferred" });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)?.status).toBe("syncing");
+
+    releasePatch();
+    expect(await teacher).toMatchObject({ outcome: "synced", earnedPoints: 16 });
+    const state = readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID);
+    expect(state).toMatchObject({ status: "synced" });
+    expect(state?.lastErrorCode).toBeUndefined();
+    expect(mockPatchStudentSubmissionGrade).toHaveBeenCalledTimes(1);
+  });
+
+  it("a student outside the grade-sync roster gets no failure record", async () => {
+    seedFullHappyPath();
+    seedAttempt({ percentage: 80 });
+    mockIsInGradeSyncRoster.mockResolvedValue(false);
+    mockFetchAssignment.mockRejectedValue(new RealPlatformError("lms.upstreamCallFailed", "500"));
+    expect(await sync()).toEqual({ outcome: "outsideRoster" });
+    expect(readDoc("lmsGradePassbacks", GRADE_PASSBACK_ID)).toBeUndefined();
+    expect(mockFetchAssignment).not.toHaveBeenCalled();
   });
 });
