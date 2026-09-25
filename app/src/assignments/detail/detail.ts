@@ -1,3 +1,4 @@
+import { gradeSyncContextFor, type GradeSyncContext } from "./grade-sync-context";
 import { renderAssignmentSummaryCard } from "../summary/card";
 import type {
   AssignmentSummary,
@@ -1327,6 +1328,17 @@ async function renderRosterPanel(
       gradePassbackStatuses = new Map();
     }
   }
+  // Grade destination is the family's Current: a Retry is operational only
+  // when the viewed assignment is that destination (resolved once here and
+  // re-checked on every Retry click).
+  const resolveGradeSyncContext = async (): Promise<GradeSyncContext> =>
+    gradePassback === undefined
+      ? "operational"
+      : resolveGradeSyncContextFor(gradePassback, metadata);
+  const gradeSyncContext =
+    gradePassback !== undefined && gradePassbackStatuses.size > 0
+      ? await resolveGradeSyncContext()
+      : "operational";
 
   // Sprint 16 Slice 4: a published assignment with zero recipients is
   // a calm empty state, not three empty group headers. The `Roster`
@@ -1374,6 +1386,8 @@ async function renderRosterPanel(
       ? undefined
       : {
           statuses: gradePassbackStatuses,
+          context: gradeSyncContext,
+          recheckContext: resolveGradeSyncContext,
           retry: (studentId) =>
             gradePassback.retry({ assignmentId: metadata.assignmentId, studentId }),
         },
@@ -1687,15 +1701,39 @@ function renderLateRecipientLifecycleNote(
 // Sprint 30A.2 - calm, coarse copy for the per-student grade-passback
 // status line. Never exposes a raw Google error, a Classroom submission
 // id, OAuth details, or internal lease/generation state - only these
-// four fixed strings ever render.
+// fixed strings ever render.
 const GRADE_PASSBACK_STATUS_LINE: Readonly<
   Record<AssignmentGradePassbackStatus, string>
 > = Object.freeze({
   pending: "Classroom grade sync pending.",
   syncing: "Syncing to Classroom...",
   synced: "Synced to Classroom.",
-  failed: "Classroom grade sync did not succeed.",
+  failed: "Classroom sync failed",
 });
+
+// A failed record on an assignment that is no longer the grade destination
+// (a different assignment is Current): preserved history, not an
+// operational failure, so it is muted and never offers Retry.
+const HISTORICAL_GRADE_SYNC_FAILED = "Historical Classroom sync failed";
+
+async function resolveGradeSyncContextFor(
+  seam: AssignmentGradePassbackSeam,
+  metadata: AssignmentDetailMetadata,
+): Promise<GradeSyncContext> {
+  // No Current source wired: the pre-Current behavior (every record is
+  // operational for its own assignment).
+  if (seam.currentReader === undefined) return "operational";
+  const classId = metadata.classId ?? "";
+  const lessonSlug = metadata.lessonSlug ?? "";
+  if (classId.length === 0 || lessonSlug.length === 0) return "nonActionable";
+  try {
+    const current = await seam.currentReader({ classId, lessonSlug });
+    return gradeSyncContextFor(metadata.assignmentId, current);
+  } catch {
+    // Fail closed: never offer an operational action on an unknown state.
+    return gradeSyncContextFor(metadata.assignmentId, null);
+  }
+}
 
 function appendRosterGroup(
   doc: Document,
@@ -1714,6 +1752,8 @@ function appendRosterGroup(
   showPercentage: boolean,
   gradePassback?: {
     readonly statuses: ReadonlyMap<string, AssignmentGradePassbackStatus>;
+    readonly context: GradeSyncContext;
+    readonly recheckContext: () => Promise<GradeSyncContext>;
     readonly retry: (
       studentId: string,
     ) => Promise<AssignmentGradePassbackRetryResult>;
@@ -1800,7 +1840,8 @@ function appendRosterGroup(
       // ONLY when there is something useful to show. A `synced` status
       // and an absent status (never attempted, or an ungraded/legacy
       // assignment) both render nothing extra, so the ordinary row stays
-      // uncluttered.
+      // uncluttered. Current-aware: Retry only in the operational context;
+      // a superseded assignment shows only a muted historical failure.
       const initialStatus = gradePassback?.statuses.get(row.studentId);
       if (
         gradePassback !== undefined &&
@@ -1808,13 +1849,22 @@ function appendRosterGroup(
           initialStatus === "syncing" ||
           initialStatus === "failed")
       ) {
-        appendGradePassbackControl(
-          doc,
-          li,
-          row.studentId,
-          initialStatus,
-          gradePassback.retry,
-        );
+        if (gradePassback.context === "operational") {
+          appendGradePassbackControl(
+            doc,
+            li,
+            row.studentId,
+            initialStatus,
+            gradePassback.retry,
+            gradePassback.recheckContext,
+          );
+        } else if (gradePassback.context === "superseded") {
+          if (initialStatus === "failed") {
+            appendHistoricalGradeSyncStatus(doc, li, row.studentId);
+          }
+        } else {
+          appendGradeSyncStatusLine(doc, li, row.studentId, initialStatus);
+        }
       }
       list.appendChild(li);
     }
@@ -1822,6 +1872,39 @@ function appendRosterGroup(
   }
 
   host.appendChild(group);
+}
+
+function appendGradeSyncStatusLine(
+  doc: Document,
+  li: HTMLElement,
+  studentId: string,
+  initialStatus: AssignmentGradePassbackStatus,
+): HTMLElement {
+  const status = doc.createElement("span");
+  status.className = "shell-assignment-detail-roster-grade-status";
+  status.setAttribute(
+    "data-testid",
+    `assignment-detail-roster-grade-status-${studentId}`,
+  );
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.textContent = GRADE_PASSBACK_STATUS_LINE[initialStatus];
+  li.appendChild(status);
+  return status;
+}
+
+function markHistorical(status: HTMLElement): void {
+  status.classList.add("shell-assignment-detail-roster-grade-status-historical");
+  status.setAttribute("data-grade-sync-context", "superseded");
+  status.textContent = HISTORICAL_GRADE_SYNC_FAILED;
+}
+
+function appendHistoricalGradeSyncStatus(
+  doc: Document,
+  li: HTMLElement,
+  studentId: string,
+): void {
+  markHistorical(appendGradeSyncStatusLine(doc, li, studentId, "failed"));
 }
 
 // Sprint 30A.2 - self-contained per-row grade-passback status + Retry
@@ -1837,19 +1920,11 @@ function appendGradePassbackControl(
   studentId: string,
   initialStatus: AssignmentGradePassbackStatus,
   retry: (studentId: string) => Promise<AssignmentGradePassbackRetryResult>,
+  recheckContext: () => Promise<GradeSyncContext>,
 ): void {
   let locked = false;
 
-  const status = doc.createElement("span");
-  status.className = "shell-assignment-detail-roster-grade-status";
-  status.setAttribute(
-    "data-testid",
-    `assignment-detail-roster-grade-status-${studentId}`,
-  );
-  status.setAttribute("role", "status");
-  status.setAttribute("aria-live", "polite");
-  status.textContent = GRADE_PASSBACK_STATUS_LINE[initialStatus];
-  li.appendChild(status);
+  const status = appendGradeSyncStatusLine(doc, li, studentId, initialStatus);
 
   const button = doc.createElement("button");
   button.type = "button";
@@ -1866,8 +1941,23 @@ function appendGradePassbackControl(
     locked = true;
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
-    void retry(studentId)
+    // Current may have changed since the roster rendered: confirm this
+    // assignment is still the operational destination before retrying. If
+    // it is not, the row becomes non-actionable and no Retry is sent.
+    void recheckContext()
+      .then((context) => {
+        if (context === "operational") return true;
+        button.remove();
+        if (context === "superseded" && initialStatus === "failed") {
+          markHistorical(status);
+        }
+        return false;
+      })
+      .then((stillOperational) =>
+        stillOperational ? retry(studentId) : undefined,
+      )
       .then((next) => {
+        if (next === undefined) return;
         if (next === "synced" || next === "notApplicable") {
           status.remove();
           button.remove();

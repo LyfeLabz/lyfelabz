@@ -11,6 +11,8 @@
 // recipient identifier, no attempt identifier, no session identifier,
 // no raw score, and no answer information is named on this shape.
 
+import type { CurrentForFamily } from "./grade-sync-context";
+
 export type AssignmentStatus = "draft" | "published" | "closed";
 
 export type AssignmentDetailMetadata = {
@@ -198,9 +200,22 @@ export type AssignmentGradePassbackRetryCallable = (input: {
   readonly studentId: string;
 }) => Promise<AssignmentGradePassbackRetryResult>;
 
+// Canonical Current for the viewed assignment's class + lesson family (the
+// `assignmentsLifecycleState` resolution). Used only to decide whether the
+// roster's grade-sync Retry is operational for the viewed assignment; see
+// `grade-sync-context.ts`.
+export type AssignmentGradeSyncCurrentReader = (input: {
+  readonly classId: string;
+  readonly lessonSlug: string;
+}) => Promise<CurrentForFamily>;
+
 export type AssignmentGradePassbackSeam = {
   readonly statusesReader: AssignmentGradePassbackStatusesReader;
   readonly retry: AssignmentGradePassbackRetryCallable;
+  // Optional. When present, Retry is offered only when the viewed
+  // assignment is the operational grade destination (re-checked on click).
+  // When absent, every record is treated as operational (legacy behavior).
+  readonly currentReader?: AssignmentGradeSyncCurrentReader;
 };
 
 // Student Progress & Assignment Membership Phase A, Slice 3: the fact a

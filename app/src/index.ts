@@ -556,6 +556,22 @@ async function run(): Promise<void> {
                 }
                 return createFirebaseGradePassbackRetry(functions)(input);
               },
+              // Canonical Current for this assignment's class + lesson (the
+              // certified `assignmentsLifecycleState` callable), so the
+              // roster offers grade-sync Retry only where this assignment
+              // is the operational grade destination. Read lazily; missing
+              // assignments-callables wiring rejects, which the surface
+              // treats as "Current unknown" (no Retry).
+              currentReader: async (input) => {
+                if (assignments === null) {
+                  throw new Error("Current is unavailable.");
+                }
+                const out = await assignments.lifecycleState(input);
+                return {
+                  resolution: out.currentAssignmentResolution,
+                  currentAssignmentId: out.currentAssignmentId,
+                };
+              },
             }
           : undefined,
       // Student Progress & Assignment Membership Phase A, Slice 3: hand a

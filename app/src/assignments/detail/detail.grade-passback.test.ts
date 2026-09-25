@@ -158,9 +158,7 @@ describe("assignment detail - Google Classroom grade-passback retry (Sprint 30A.
     const seam = makeSeam({ [STUDENT_ID]: "failed" }, async () => "synced");
     const { mount } = renderWithGradePassback(seam);
     await settle();
-    expect(statusEl(mount)?.textContent).toBe(
-      "Classroom grade sync did not succeed.",
-    );
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
     expect(retryBtn(mount)).not.toBeNull();
     expect(retryBtn(mount)?.disabled).toBe(false);
   });
@@ -237,9 +235,7 @@ describe("assignment detail - Google Classroom grade-passback retry (Sprint 30A.
     button?.click();
     await settle();
 
-    expect(statusEl(mount)?.textContent).toBe(
-      "Classroom grade sync did not succeed.",
-    );
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
     expect(retryBtn(mount)).not.toBeNull();
     expect(retryBtn(mount)?.disabled).toBe(false);
   });
@@ -267,7 +263,7 @@ describe("assignment detail - Google Classroom grade-passback retry (Sprint 30A.
     await settle();
 
     const text = statusEl(mount)?.textContent ?? "";
-    expect(text).toBe("Classroom grade sync did not succeed.");
+    expect(text).toBe("Classroom sync failed");
     expect(text).not.toMatch(/PlatformError|provider\.ts|upstreamCallFailed/);
     expect(retryBtn(mount)?.disabled).toBe(false);
   });
@@ -340,5 +336,248 @@ describe("Student Progress & Assignment Membership Phase A, Slice 3: name click 
 
     expect(statusEl(mount)).toBeNull();
     expect(retryBtn(mount)).toBeNull();
+  });
+});
+
+// Current-aware grade-sync presentation. The Classroom grade destination is
+// the class + lesson family's Current; historical passback records are
+// preserved but a Retry is offered only where the viewed assignment is the
+// operational destination.
+describe("assignment detail - Current-aware Classroom grade-sync status", () => {
+  type Current = { resolution: "valid" | "unresolved" | "invalid" | "inactive"; currentAssignmentId: string | null };
+
+  function currentAwareSeam(
+    statuses: Readonly<Record<string, AssignmentGradePassbackStatus>>,
+    current: Current | (() => Promise<Current>),
+    retryImpl: (input: { assignmentId: string; studentId: string }) => Promise<
+      "synced" | "pending" | "failed" | "notApplicable"
+    > = async () => "synced",
+  ) {
+    const retryCalls: { assignmentId: string; studentId: string }[] = [];
+    const currentCalls: { classId: string; lessonSlug: string }[] = [];
+    const seam: AssignmentGradePassbackSeam = {
+      ...makeSeam(statuses, async (input) => {
+        retryCalls.push(input);
+        return retryImpl(input);
+      }),
+      currentReader: async (input) => {
+        currentCalls.push(input);
+        return typeof current === "function" ? current() : current;
+      },
+    };
+    return { seam, retryCalls, currentCalls };
+  }
+
+  const VIEWED = "a1";
+
+  test("Current + failed sync: compact operational status and Retry", async () => {
+    const { seam, currentCalls } = currentAwareSeam({ [STUDENT_ID]: "failed" }, {
+      resolution: "valid",
+      currentAssignmentId: VIEWED,
+    });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
+    expect(statusEl(mount)?.classList.contains("shell-assignment-detail-roster-grade-status-historical")).toBe(false);
+    expect(retryBtn(mount)).not.toBeNull();
+    // Current is resolved from the viewed assignment's own class + lesson.
+    expect(currentCalls).toEqual([{ classId: "c1", lessonSlug: "earths-layers" }]);
+  });
+
+  test("Current + synced: nothing extra, no Retry", async () => {
+    const { seam } = currentAwareSeam({ [STUDENT_ID]: "synced" }, {
+      resolution: "valid",
+      currentAssignmentId: VIEWED,
+    });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(statusEl(mount)).toBeNull();
+    expect(retryBtn(mount)).toBeNull();
+  });
+
+  test("no passback records at all: Current is not even looked up", async () => {
+    const { seam, currentCalls } = currentAwareSeam({}, { resolution: "valid", currentAssignmentId: VIEWED });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(currentCalls).toEqual([]);
+    expect(retryBtn(mount)).toBeNull();
+  });
+
+  test("Amelia-style: historical failed record while a different assignment is Current shows muted history and no Retry", async () => {
+    // Viewing historical A2; Current is A4 (already reconciled and synced there).
+    const { seam, retryCalls } = currentAwareSeam({ [STUDENT_ID]: "failed" }, {
+      resolution: "valid",
+      currentAssignmentId: "a4-current",
+    });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    const status = statusEl(mount);
+    // The historical record is preserved and still rendered, as history.
+    expect(status?.textContent).toBe("Historical Classroom sync failed");
+    expect(status?.classList.contains("shell-assignment-detail-roster-grade-status-historical")).toBe(true);
+    expect(status?.getAttribute("data-grade-sync-context")).toBe("superseded");
+    expect(retryBtn(mount)).toBeNull();
+    expect(retryCalls).toEqual([]);
+  });
+
+  test("Adela/Lily-style: several historical failed records under a different Current, none offers Retry", async () => {
+    const OTHER = "student-2";
+    const recipientsTwo: AssignmentRecipientListCallable = async () => ({
+      assignmentId: "a1",
+      recipients: [
+        { studentId: STUDENT_ID, studentDisplayName: "Adela" },
+        { studentId: OTHER, studentDisplayName: "Lily" },
+      ],
+    } as never);
+    const attemptsTwo: AttemptsListForClassCallable = async () => ({
+      attempts: [STUDENT_ID, OTHER].map((studentId) => ({
+        studentId,
+        assignmentId: "a1",
+        percentage: 90,
+        attemptNumber: 1,
+        submittedAt: 1,
+      })),
+    } as never);
+    const { seam } = currentAwareSeam({ [STUDENT_ID]: "failed", [OTHER]: "failed" }, {
+      resolution: "valid",
+      currentAssignmentId: "u91-current",
+    });
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "a1",
+      loadMetadata: async () => publishedMeta,
+      summaryCallable: async () => summaryFor(2),
+      recipientListCallable: recipientsTwo,
+      attemptsListForClassCallable: attemptsTwo,
+      gradePassback: seam,
+    });
+    await settle();
+    expect(mount.querySelectorAll("[data-testid^=assignment-detail-roster-grade-retry-]").length).toBe(0);
+    const statuses = Array.from(mount.querySelectorAll("[data-testid^=assignment-detail-roster-grade-status-]"));
+    expect(statuses.map((s) => s.textContent)).toEqual([
+      "Historical Classroom sync failed",
+      "Historical Classroom sync failed",
+    ]);
+  });
+
+  test("historical pending/syncing records under a different Current render nothing (stale in-flight state is not history worth showing)", async () => {
+    for (const st of ["pending", "syncing"] as const) {
+      const { seam } = currentAwareSeam({ [STUDENT_ID]: st }, { resolution: "valid", currentAssignmentId: "other" });
+      const { mount } = renderWithGradePassback(seam);
+      await settle();
+      expect(statusEl(mount)).toBeNull();
+      expect(retryBtn(mount)).toBeNull();
+      mount.remove();
+    }
+  });
+
+  test("historical successful record renders nothing extra and no Retry", async () => {
+    const { seam } = currentAwareSeam({ [STUDENT_ID]: "synced" }, { resolution: "valid", currentAssignmentId: "other" });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(statusEl(mount)).toBeNull();
+    expect(retryBtn(mount)).toBeNull();
+  });
+
+  test("legacy family with no Current pointer: the assignment is its own destination, Retry stays", async () => {
+    const { seam } = currentAwareSeam({ [STUDENT_ID]: "failed" }, { resolution: "unresolved", currentAssignmentId: null });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
+    expect(retryBtn(mount)).not.toBeNull();
+  });
+
+  test.each([
+    ["managed/inactive Current", { resolution: "inactive", currentAssignmentId: null } as Current],
+    ["invalid Current pointer", { resolution: "invalid", currentAssignmentId: null } as Current],
+  ])("%s: status stays visible but no operational Retry (no resurrection)", async (_label, current) => {
+    const { seam } = currentAwareSeam({ [STUDENT_ID]: "failed" }, current);
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
+    expect(retryBtn(mount)).toBeNull();
+  });
+
+  test("Current cannot be determined: fail closed, status visible, no Retry", async () => {
+    const { seam } = currentAwareSeam({ [STUDENT_ID]: "failed" }, async () => {
+      throw new Error("lifecycle unavailable");
+    });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
+    expect(retryBtn(mount)).toBeNull();
+  });
+
+  test("metadata without class/lesson: fail closed, no Retry", async () => {
+    const { seam } = currentAwareSeam({ [STUDENT_ID]: "failed" }, { resolution: "valid", currentAssignmentId: VIEWED });
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "a1",
+      loadMetadata: async () => ({ ...publishedMeta, lessonSlug: undefined }),
+      summaryCallable: async () => summaryFor(1),
+      recipientListCallable,
+      attemptsListForClassCallable,
+      gradePassback: seam,
+    });
+    await settle();
+    expect(retryBtn(mount)).toBeNull();
+  });
+
+  test("Current changes while the page is open: clicking the stale Retry re-checks, sends no Retry, and shows history", async () => {
+    let current: Current = { resolution: "valid", currentAssignmentId: VIEWED };
+    const { seam, retryCalls } = currentAwareSeam({ [STUDENT_ID]: "failed" }, async () => current);
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    expect(retryBtn(mount)).not.toBeNull();
+
+    current = { resolution: "valid", currentAssignmentId: "newer-current" };
+    retryBtn(mount)!.click();
+    await settle();
+
+    expect(retryCalls).toEqual([]);
+    expect(retryBtn(mount)).toBeNull();
+    expect(statusEl(mount)?.textContent).toBe("Historical Classroom sync failed");
+  });
+
+  test("Current closed while the page is open: stale Retry is withdrawn without calling the backend", async () => {
+    let current: Current = { resolution: "valid", currentAssignmentId: VIEWED };
+    const { seam, retryCalls } = currentAwareSeam({ [STUDENT_ID]: "failed" }, async () => current);
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    current = { resolution: "inactive", currentAssignmentId: null };
+    retryBtn(mount)!.click();
+    await settle();
+    expect(retryCalls).toEqual([]);
+    expect(retryBtn(mount)).toBeNull();
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
+  });
+
+  test("Retry on Current still calls the existing hardened backend path with the viewed assignment and student only", async () => {
+    const { seam, retryCalls } = currentAwareSeam({ [STUDENT_ID]: "failed" }, {
+      resolution: "valid",
+      currentAssignmentId: VIEWED,
+    });
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    retryBtn(mount)!.click();
+    await settle();
+    expect(retryCalls).toEqual([{ assignmentId: VIEWED, studentId: STUDENT_ID }]);
+    // Successful retry clears the row, as before.
+    expect(statusEl(mount)).toBeNull();
+    expect(retryBtn(mount)).toBeNull();
+  });
+
+  test("Current automatic-sync failure that fails again on Retry stays operational and retryable", async () => {
+    const { seam } = currentAwareSeam(
+      { [STUDENT_ID]: "failed" },
+      { resolution: "valid", currentAssignmentId: VIEWED },
+      async () => "failed",
+    );
+    const { mount } = renderWithGradePassback(seam);
+    await settle();
+    retryBtn(mount)!.click();
+    await settle();
+    expect(statusEl(mount)?.textContent).toBe("Classroom sync failed");
+    expect(retryBtn(mount)?.disabled).toBe(false);
   });
 });

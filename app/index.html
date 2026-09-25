@@ -3369,6 +3369,16 @@
     color: var(--tw-ink-muted);
     font-variant-numeric: tabular-nums;
   }
+  /* Classroom grade-sync status: compact, secondary to the student's result.
+     A failure on an assignment that is no longer Current is history: muted
+     and never paired with Retry. */
+  .shell-assignment-detail-roster-grade-status {
+    color: var(--tw-ink-soft);
+    font-size: 0.88rem;
+  }
+  .shell-assignment-detail-roster-grade-status-historical {
+    color: var(--tw-ink-muted);
+  }
 
   /* Late recipients: each name and its Add action are one scannable row. */
   .shell-assignment-detail-late-recipients-status,
