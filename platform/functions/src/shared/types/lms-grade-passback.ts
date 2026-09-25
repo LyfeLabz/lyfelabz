@@ -42,7 +42,16 @@ export const LMS_GRADE_PASSBACKS_COLLECTION = "lmsGradePassbacks";
 // transaction write is the actual mutual-exclusion primitive - the lease
 // fields are the data that transaction protects). See
 // `lms/grade-passback/engine.ts` for the full protocol and its proof.
-export type LmsGradePassbackStatus = "pending" | "syncing" | "synced" | "failed";
+// `protected` (additive): the last fresh evaluation found a protected
+// Classroom grade (assigned zero, non-placeholder draft zero, or divergent
+// assigned/draft grades), so nothing was written. Records written before
+// this status existed are unaffected.
+export type LmsGradePassbackStatus =
+  | "pending"
+  | "syncing"
+  | "synced"
+  | "failed"
+  | "protected";
 
 export type LmsGradePassbackRecord = {
   readonly assignmentId: string;
@@ -96,9 +105,14 @@ export type LmsGradePassbackRecord = {
   // an upper bound.
   readonly leaseGeneration?: number;
   readonly leaseExpiresAt?: Timestamp;
-  // Opaque cached Classroom StudentSubmission id. Re-resolved when absent
-  // or when a cached id 404s upstream.
+  // Legacy: opaque cached Classroom StudentSubmission id written by the
+  // pre-canonical-decision engine. No longer written or read (every write
+  // now re-reads the live submission first); retained for existing records.
   readonly submissionId?: string;
+  // The canonical decision (`reconciliation-plan.ts` action) of the last
+  // fresh evaluation that reached Classroom, and when. Additive.
+  readonly lastDecision?: string;
+  readonly lastDecisionAt?: Timestamp;
   readonly lastAttemptedAt?: Timestamp;
   readonly lastSyncedAt?: Timestamp;
   // Bounded, non-PII error code (a `PlatformError`-style dotted code, e.g.
