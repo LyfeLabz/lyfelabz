@@ -445,7 +445,11 @@ describe("authored variant - Earth's Layers canonical (in memory, no writes)", (
 
   test("its relocated artifact satisfies the curated Hosting dependency validator; the unrelocated v2 would not", () => {
     const hosting = require("../../../../scripts/app-hosting/build.cjs");
-    const destinations = hosting.collectApprovedCopies(paths.REPO_ROOT).map((e) => e.destination);
+    // listApprovedCopies: the manifest-declared inventory without requiring
+    // the gitignored app/dist/bundle.js to have been built first, so this
+    // test does not depend on another suite running `npm run build`.
+    const destinations = hosting.listApprovedCopies(paths.REPO_ROOT).map((e) => e.destination);
+    expect(destinations).toContain("app/dist/bundle.js");
     const r = elBuild(elSource);
     const canonicalV2 = fs.readFileSync(path.join(paths.REPO_ROOT, elBase.outputs.v2), "utf8");
     const probe = (bytes) => {

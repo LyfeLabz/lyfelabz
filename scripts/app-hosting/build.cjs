@@ -145,7 +145,11 @@ function readRetainedVariantCopies(repoRoot = repositoryRoot) {
   });
 }
 
-function collectApprovedCopies(repoRoot = repositoryRoot) {
+// The approved copy list as declared by the manifests, before any
+// source-file existence check. Build outputs such as app/dist/bundle.js
+// appear here even when they have not been built yet; collectApprovedCopies
+// adds that validation and is what every real artifact build uses.
+function listApprovedCopies(repoRoot = repositoryRoot) {
   const { files, copies } = readApplicationManifest();
   const approved = [];
 
@@ -159,7 +163,11 @@ function collectApprovedCopies(repoRoot = repositoryRoot) {
   for (const relativePath of files) approved.push({ source: relativePath, destination: relativePath, transform: null });
   approved.push(...copies);
   approved.push(...readRetainedVariantCopies(repoRoot));
+  return approved;
+}
 
+function collectApprovedCopies(repoRoot = repositoryRoot) {
+  const approved = listApprovedCopies(repoRoot);
   const seenDestinations = validateApprovedCopies(approved, repoRoot);
   if (seenDestinations.has(variantManifestRelativePath)) fail('private variant manifest must never enter the artifact');
   return approved;
@@ -285,6 +293,7 @@ module.exports = {
   buildApplicationArtifact,
   collectApprovedCopies,
   defaultOutputDirectory,
+  listApprovedCopies,
   readApplicationManifest,
   readRetainedVariantCopies,
   resolveArtifactReference,

@@ -11,6 +11,7 @@ const {
   assertRegularSource,
   buildApplicationArtifact,
   collectApprovedCopies,
+  listApprovedCopies,
   readApplicationManifest,
   readRetainedVariantCopies,
   validateApprovedCopies,
@@ -83,6 +84,10 @@ test('approved application inventory is explicit, sorted, exact, and determinist
   assert.deepEqual(artifactFiles(outputDirectory), result.files);
   assert.deepEqual(result.files, collectApprovedCopies().map((entry) => entry.destination).sort());
   assert.deepEqual(buildApplicationArtifact({ outputDirectory }).files, result.files);
+});
+
+test('the unvalidated approved list is exactly what validated collection returns', () => {
+  assert.deepEqual(collectApprovedCopies(), listApprovedCopies());
 });
 
 test('unsafe paths, traversal, absolute paths, duplicates, missing files, and symlinks fail closed', () => {
