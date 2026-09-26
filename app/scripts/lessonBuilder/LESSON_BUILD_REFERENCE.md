@@ -120,6 +120,75 @@ outputs. Compared fields:
 - runtime include
 - lesson-quiz call sites
 
+## Authored presentation variants
+
+A configured lesson may declare authored differentiated presentations
+(F5.2 §5.2) in an optional `variants` block of its existing config. The V1
+vocabulary is closed: `reading-adapted` only.
+
+```js
+variants: {
+  "reading-adapted": {
+    source: "lesson-sources/variants/<slug>.reading-adapted.html", // fixed form
+    adaptableSections: ["explore", ...],      // section ids whose prose may adapt
+    adaptableSelectors: ["p", ".callout-body"], // tag | .class | tag.class
+    lockedSelectors: [".edu-note", ".qr-card"], // whole subtree locked; wins
+  },
+},
+```
+
+The variant source is a full copy of the canonical source (same V1/V2
+markers). It lives in `lesson-sources/variants/`, never at the top level, so
+no curriculum or assessment scan treats it as a lesson. It is built by the
+same scanner, config validation and transformer, for the **v2 target only**,
+and then (`variantSource.cjs`):
+
+- gets a neutral generated notice naming neither the variantKey nor the
+  source file;
+- has relative same-origin references rewritten to the absolute
+  `/app/lessons/...` path they resolve to from the canonical lesson
+  (`variantLinks.cjs`). In-page anchors are kept. `<base>`, relative
+  `srcset`/`@import`, and relative URLs inside scripts are refused;
+- must pass the invariance gate against the canonical v2 build
+  (`variantInvariance.cjs`), after the same relocation:
+  - markup outside adaptable sections is byte-identical;
+  - every script and style block is byte-identical;
+  - the locked skeleton inside adaptable sections is identical;
+  - adaptable prose uses only bare inline prose tags or tag forms the
+    canonical prose already uses, and no prose run is emptied;
+  - element ids are identical;
+  - no disclosure term (adapted, simplified, accommodation, IEP,
+    differentiation, variant, the variantKey or source filename) increases.
+    A lesson's own glossary term is exempt;
+- must match the full instructional-equivalence contract with zero
+  exclusions;
+- must have an identical quiz, faithful to every committed
+  `<slug>.r<N>.json` payload the canonical quiz is faithful to (at least
+  one);
+- must build byte-identically twice.
+
+Only an adaptable container (matched by `adaptableSelectors`, not inside
+a `lockedSelectors` subtree, and with no `lockedSelectors` descendant) may
+change. A container holding a locked descendant (for example the Earth's
+Layers wrap-up chain chips inside a `.bridge-callout`) stays in the locked
+skeleton, including its own text. Adjacent adaptable containers form
+one run, so paragraphs may be split, merged or re-worded, but locked
+elements may not move. Removing content within a run is not structurally
+detectable; the concept-checklist review covers it.
+
+CLI (repository-only; never commits, deploys, or writes the presentation
+index):
+
+- `node app/scripts/build-variants.cjs --check`: gate every declared
+  variant and require its current build to be a retained manifest revision.
+  Also runs inside `variants:verify`, so it is part of
+  `npm --prefix app run verify`.
+- `node app/scripts/build-variants.cjs --dry-run --lesson=<slug> --variant=<key>`:
+  gate one variant in memory and print its revision id and prose statistics.
+- `node app/scripts/build-variants.cjs --generate --lesson=<slug> --variant=<key> --published-at=<ISO-8601>`:
+  retain the gated bytes through `generateVariantArtifact()` (add-only
+  artifact plus append-only manifest entry).
+
 ## Launcher override contract
 
 The Sprint 17 launcher URL contract is `/lesson_<slug>.html?assignment=<id>`.

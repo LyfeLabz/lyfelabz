@@ -29,6 +29,12 @@ const { sha256Hex } = require("./hash.cjs");
 // lesson behavior.
 const LESSON_SLUG_VARIANT_RE = /^[a-z0-9-]+$/;
 
+// F5.2 §3.2 - the closed V1 variantKey vocabulary. Mirrors the server's
+// variantKeyForReadingLevel() output in
+// platform/functions/src/shared/types/presentation-variant.ts; authored
+// variant configs may only declare keys from this set.
+const V1_VARIANT_KEYS = Object.freeze(["reading-adapted"]);
+
 // "pr" + full 64 lowercase-hex-char SHA-256 digest. Full digest from the
 // start (M2): no prefix-collision remediation scheme exists or is needed.
 const PRESENTATION_REVISION_ID_RE = /^pr[0-9a-f]{64}$/;
@@ -96,6 +102,7 @@ function variantRelativeOutputPath(lessonSlug, presentationRevisionId) {
 }
 
 module.exports = {
+  V1_VARIANT_KEYS,
   LESSON_SLUG_VARIANT_RE,
   PRESENTATION_REVISION_ID_RE,
   assertValidLessonSlugForVariant,

@@ -159,4 +159,16 @@ module.exports = {
     'id="el-score"',
     'id="el-submit-status"',
   ],
+  // Authored differentiated presentations (F5.2 §5.2; variantSource.cjs).
+  // Only prose inside these sections and containers may differ from the
+  // canonical lesson. The content-preservation contract for this variant is
+  // docs/platform/DIFFERENTIATION_CONTENT_PRESERVATION_EARTHS_LAYERS.md.
+  variants: {
+    "reading-adapted": {
+      source: "lesson-sources/variants/earths-layers.reading-adapted.html",
+      adaptableSections: ["engage", "explore", "layers", "crust", "mantle-zone", "core", "explain"],
+      adaptableSelectors: ["p", ".callout-body", ".bridge-callout"],
+      lockedSelectors: [".edu-note", ".qr-card", ".crust-grid", ".wrapup-chips"],
+    },
+  },
 };

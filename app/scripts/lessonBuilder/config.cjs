@@ -67,6 +67,46 @@ function validateConfigShape(cfg, slug) {
   if (!Array.isArray(cfg.v2ProhibitedSignatures)) fail(`${slug}: v2ProhibitedSignatures must be an array`);
   if (!Array.isArray(cfg.v1RequiredSignatures)) fail(`${slug}: v1RequiredSignatures must be an array`);
   if (!Array.isArray(cfg.sharedRequiredSignatures)) fail(`${slug}: sharedRequiredSignatures must be an array`);
+  if (cfg.variants !== undefined) validateVariantsShape(cfg, slug);
+}
+
+// Optional authored presentation variants (see variantSource.cjs). Every
+// field is required and explicit; nothing about adaptability is implied.
+const SELECTOR_RE = /^([a-z][a-z0-9]*)?(?:\.([A-Za-z0-9_-]+))?$/;
+const SECTION_ID_RE = /^[A-Za-z][A-Za-z0-9_-]*$/;
+
+function validateStringList(list, what, pattern, { allowEmpty = false } = {}) {
+  if (!Array.isArray(list) || (!allowEmpty && list.length === 0)) fail(`${what} must be a${allowEmpty ? "n" : " non-empty"} array`);
+  const seen = new Set();
+  for (const item of list) {
+    if (typeof item !== "string" || item.length === 0 || !pattern.test(item) || item === ".") {
+      fail(`${what} has an invalid entry: ${JSON.stringify(item)}`);
+    }
+    if (seen.has(item)) fail(`${what} repeats ${JSON.stringify(item)}`);
+    seen.add(item);
+  }
+}
+
+function validateVariantsShape(cfg, slug) {
+  const { V1_VARIANT_KEYS, isValidLessonSlugForVariant } = require("./variantIdentity.cjs");
+  if (!cfg.variants || typeof cfg.variants !== "object" || Array.isArray(cfg.variants)) {
+    fail(`${slug}: variants must be an object keyed by variantKey`);
+  }
+  if (!isValidLessonSlugForVariant(slug)) fail(`${slug}: slug is not valid for variant publication`);
+  for (const [variantKey, v] of Object.entries(cfg.variants)) {
+    if (!V1_VARIANT_KEYS.includes(variantKey)) {
+      fail(`${slug}: variants["${variantKey}"] is not in the V1 variantKey vocabulary (${V1_VARIANT_KEYS.join(", ")})`);
+    }
+    const at = `${slug}: variants["${variantKey}"]`;
+    if (!v || typeof v !== "object") fail(`${at} must be an object`);
+    const expectedSource = `lesson-sources/variants/${slug}.${variantKey}.html`;
+    if (v.source !== expectedSource) fail(`${at}.source must be "${expectedSource}"`);
+    validateStringList(v.adaptableSections, `${at}.adaptableSections`, SECTION_ID_RE);
+    validateStringList(v.adaptableSelectors, `${at}.adaptableSelectors`, SELECTOR_RE);
+    validateStringList(v.lockedSelectors, `${at}.lockedSelectors`, SELECTOR_RE, { allowEmpty: true });
+    const known = new Set(["source", "adaptableSections", "adaptableSelectors", "lockedSelectors"]);
+    for (const key of Object.keys(v)) if (!known.has(key)) fail(`${at} has unknown field "${key}"`);
+  }
 }
 
 function validateScanAgainstConfig(cfg, scan) {
@@ -141,6 +181,7 @@ module.exports = {
   loadConfig,
   listConfiguredSlugs,
   validateConfigShape,
+  validateVariantsShape,
   validateScanAgainstConfig,
   assertSignatures,
   LESSONS_DIR,

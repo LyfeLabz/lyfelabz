@@ -21,6 +21,7 @@
 
 const manifestMod = require("./lessonBuilder/variantManifest.cjs");
 const hostingExclusion = require("./lessonBuilder/hostingExclusion.cjs");
+const variantSource = require("./lessonBuilder/variantSource.cjs");
 
 function main() {
   const failures = [];
@@ -36,9 +37,18 @@ function main() {
     for (const f of hosting.failures) failures.push(`[hosting-exclusion] ${f}`);
   }
 
+  // Authored variant sources (variantSource.cjs): each declared variant
+  // must still pass every canonical-invariance gate against the current
+  // canonical lesson, and its current build must be a retained revision.
+  const authored = variantSource.checkAuthoredVariants({});
+  if (!authored.ok) {
+    for (const f of authored.failures) failures.push(`[authored-variant] ${f}`);
+  }
+
   if (failures.length === 0) {
     process.stdout.write(
       `[verify-variants] OK: ${entries.length} retained revision(s) verified; ` +
+        `${authored.checked.length} authored variant source(s) gated; ` +
         "retention manifest excluded from Hosting, revision artifacts deployable\n",
     );
     return;

@@ -1077,7 +1077,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div id="term-differentiation" class="name-it" style="border-left-color: var(--gold);">
       <div class="name-it-label" style="color: var(--gold);">Key idea: Differentiation</div>
-      <p>Because of density, the molten Earth separated into layers in a process called <strong style="color: var(--gold);">differentiation</strong>. Heavy metals like iron and nickel sank to the center to form the core, while lighter materials rose to form the mantle and crust. As Earth slowly cooled, these layers solidified into the structure we observe today.</p>
+      <p>Because of density, the molten Earth separated into layers in a process called <strong style="color: var(--gold);">differentiation</strong>. Heavy metals like iron and nickel sank to the center to form the core, while lighter materials rose to form the mantle and crust. As Earth slowly cooled, these layers settled into the structure we observe today.</p>
     </div>
 
     <!-- Differentiation figure -->
@@ -1239,8 +1239,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="card-title">Thin as an Apple's Skin</div>
       </div>
       <div class="card-body">
-        <p>The crust is like the skin of an apple. It is very thin compared to the other three layers, only about 4 to 25 miles thick. It is the <strong>least dense</strong> layer, made mostly of rock and soil that is <strong>brittle</strong>, meaning it breaks easily.</p>
-        <p>The crust is not one solid shell. It is broken into many large pieces called <span class="vocab">plates</span>. These plates rest on the soft mantle just below and slowly move.</p>
+        <p>The crust is like the skin of an apple. It is very thin compared to the other three layers, only about 4 to 25 miles thick. It is the <strong>least dense</strong> layer, made mostly of solid rock that is <strong>brittle</strong>, meaning it breaks easily.</p>
+        <p>The crust is not one solid shell. Together with the very top of the mantle, it is broken into many large pieces called <span class="vocab">plates</span>. These plates ride on a softer part of the mantle below and slowly move.</p>
         <div class="callout slate">
           <span class="callout-icon">&#9889;</span>
           <div class="callout-body"><strong>How earthquakes start:</strong> Plates usually slide along smoothly, but sometimes they get stuck and pressure builds up. When that pressure is finally released, it travels out as energy that shakes the crust. That shaking is an earthquake.</div>
@@ -1417,7 +1417,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
       <div class="card-body">
         <p>The outer core is the only liquid layer, about 1,400 miles thick, made of liquid iron and nickel. Scientists know this layer is liquid by studying earthquakes and how seismic waves move through Earth.</p>
-        <p>The flowing of liquid metal in the outer core creates Earth's <strong>magnetic field</strong>, the invisible force that makes a compass needle point north.</p>
+        <p>The flowing of liquid metal in the outer core creates Earth's <strong>magnetic field</strong>, an invisible field around our planet that makes a compass needle point north.</p>
       </div>
     </div>
 
@@ -1427,7 +1427,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="card-title">Inner Core: A Solid Ball of Iron</div>
       </div>
       <div class="card-body">
-        <p>The inner core is the center layer of Earth, about 780 miles thick. It is solid metal, a dense ball of iron crystals made of iron and nickel.</p>
+        <p>The inner core is the center layer of Earth, about 780 miles thick. It is a dense, solid ball of iron and nickel metal.</p>
         <p>You might wonder how the inner core can be solid when it is hotter than the liquid outer core. The answer is pressure. The crushing weight of every layer above squeezes the inner core so tightly that the metal cannot become liquid.</p>
       </div>
     </div>
@@ -1905,10 +1905,10 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 <!-- ===== FOUR LAYERS INTERACTIVE ===== -->
 <script>
 const layerData = {
-  1: { label: 'Layer 1 · Surface', title: 'Crust', body: 'The thin, brittle outer layer you live on, only 4 to 25 miles thick. It is the least dense layer, made of rock and soil, and it is broken into moving plates. This is where earthquakes and volcanoes appear.' },
+  1: { label: 'Layer 1 · Surface', title: 'Crust', body: 'The thin, brittle outer layer you live on, only 4 to 25 miles thick. It is the least dense layer, made mostly of solid rock, and it forms the top of Earth’s moving plates. This is where earthquakes and volcanoes appear.' },
   2: { label: 'Layer 2 · Below the crust', title: 'Mantle', body: 'The largest layer, about 1,800 miles of hot, dense rock. It is solid but flows slowly like toothpaste because of temperature differences. Its movement drives the plates above. The upper mantle includes the flowing asthenosphere.' },
   3: { label: 'Layer 3 · Deeper still', title: 'Outer Core', body: 'The only liquid layer, about 1,400 miles thick, made of liquid iron and nickel. The flowing of this liquid metal creates Earth’s magnetic field. Scientists know it is liquid from how seismic waves move through it.' },
-  4: { label: 'Layer 4 · The center', title: 'Inner Core', body: 'The center of Earth, about 780 miles thick. It is a solid, dense ball of iron crystals made of iron and nickel. Even though it is the hottest layer, crushing pressure keeps it solid. Density, temperature, and pressure are all highest here.' }
+  4: { label: 'Layer 4 · The center', title: 'Inner Core', body: 'The center of Earth, about 780 miles thick. It is a solid, dense ball of iron and nickel metal. Even though it is the hottest layer, crushing pressure keeps it solid. Density, temperature, and pressure are all highest here.' }
 };
 function layerClick(n) {
   const d = layerData[n];
