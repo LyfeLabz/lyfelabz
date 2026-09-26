@@ -2262,7 +2262,7 @@ function epuSubmitQuiz() {
     function epuShowSubmitError(msg) {
       epuFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || epuGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(epuQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(epuQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         epuFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

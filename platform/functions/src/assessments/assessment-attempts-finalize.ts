@@ -27,6 +27,7 @@ import {
   type AssessmentSessionResponse,
   type AssignmentRecord,
 } from "../shared";
+import { WRITTEN_RESPONSE_MAX_LENGTH } from "../shared/types/assessment-session";
 
 import { isCanonicalRecipient } from "../assignments/assignment-recipients";
 import { synchronizeGradePassback } from "../lms/grade-passback/engine";
@@ -96,6 +97,7 @@ const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
   "maxScore",
   "percentage",
   "responses",
+  "writtenResponse",
   "attemptNumber",
   "attemptId",
   "assessmentRevisionId",
@@ -215,6 +217,28 @@ function readCanonicalSessionResponses(
     map.set(entry.itemId, entry.response);
   }
   return map;
+}
+
+// Sprint 30 Show Your Thinking. The written response reaches the attempt only
+// from the session autosave persisted (never from the finalize request, which
+// refuses the key above), exactly like `responses`. It is unscored: the scorer
+// never sees it. Absent/empty => absent on the attempt. A stored non-string or
+// over-cap value is structurally impossible through autosave's validator; it
+// fails closed here like every other malformed-session shape rather than
+// persisting a malformed immutable record.
+function sessionWrittenResponseForAttempt(
+  session: AssessmentSessionRecord,
+): { readonly writtenResponse?: string } {
+  const value: unknown = session.writtenResponse;
+  if (value === undefined) return {};
+  if (typeof value !== "string" || value.length > WRITTEN_RESPONSE_MAX_LENGTH) {
+    throw new PlatformError(
+      "assessmentAttempts.malformedSession",
+      "Session written response is malformed.",
+    );
+  }
+  const text = value.trim();
+  return text.length > 0 ? { writtenResponse: text } : {};
 }
 
 // F5.2 §3.4/§8.4 - copy the session's frozen delivery state onto the attempt
@@ -842,6 +866,7 @@ async function assessmentAttemptsFinalizeHandler(
       }
 
       const responsesByItemId = readCanonicalSessionResponses(session);
+      const writtenResponseFields = sessionWrittenResponseForAttempt(session);
       const scoring = scoreAttempt(revision, answerKey, responsesByItemId);
 
       const priorCount = await countExistingAttempts(
@@ -885,6 +910,7 @@ async function assessmentAttemptsFinalizeHandler(
         itemResults: scoring.itemResults,
         idempotencyKey: input.idempotencyKey,
         submittedAt: FieldValue.serverTimestamp(),
+        ...writtenResponseFields,
         // §3.4/§8.4 - propagate the session's frozen delivery state verbatim.
         ...sessionDeliveryForAttempt(session),
       };

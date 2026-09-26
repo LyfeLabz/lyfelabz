@@ -59,6 +59,15 @@ export type AssessmentSessionResponse = {
   readonly response: unknown;
 };
 
+// Sprint 30 Show Your Thinking. The student's unscored written explanation
+// (the post-quiz "Show Your Thinking" response) is carried beside, never
+// inside, the scored `responses` array: it is not an assessment item, has no
+// answer-key entry, and never reaches the scorer. Autosave stores it on the
+// Live session as trimmed text (absent when empty) and finalize freezes it
+// onto the attempt verbatim, so each attempt owns the response written for
+// it. The cap bounds document size well under the Firestore 1 MiB limit.
+export const WRITTEN_RESPONSE_MAX_LENGTH = 10000;
+
 // Canonical assessment-session record shape per
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §6, §11, and §13.
 //
@@ -97,6 +106,9 @@ export type AssessmentSessionRecord = {
   readonly startedAt: Timestamp;
   readonly responses?: readonly AssessmentSessionResponse[];
   readonly lastActivityAt?: Timestamp;
+  // Show Your Thinking text (see WRITTEN_RESPONSE_MAX_LENGTH). Student-authored
+  // and mutable only through autosave; absent until the student supplies one.
+  readonly writtenResponse?: string;
   // F5.2 §3.3 - Persistent Student Differentiation Slice 6 additive fields.
   // Frozen at creation from the validated launch grant / no-ref legitimacy
   // check and never rewritten by autosave, sweep, recover, or finalize. All
@@ -151,7 +163,11 @@ export type AssessmentSessionCreationWrite = {
 // explanations) are structurally impossible to write through this shape;
 // the scorer produces those artifacts and writes them only to
 // `attempts/{attemptId}` per §7.
+// `writtenResponse` is written only when the request carries one: a string
+// sets it, `FieldValue.delete()` clears it (empty text). Omitted, the stored
+// value is left untouched so quiz-selection autosaves never erase it.
 export type AssessmentSessionAutosaveWrite = {
   readonly responses: readonly AssessmentSessionResponse[];
   readonly lastActivityAt: FieldValue;
+  readonly writtenResponse?: string | FieldValue;
 };

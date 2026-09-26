@@ -7821,8 +7821,9 @@
     if (raw.length <= IDEMPOTENCY_KEY_MAX_LENGTH) return raw;
     return raw.slice(0, IDEMPOTENCY_KEY_MAX_LENGTH);
   }
-  function serialize(responses) {
-    return JSON.stringify(responses);
+  function serialize(responses, writtenResponse) {
+    if (writtenResponse === void 0) return JSON.stringify(responses);
+    return JSON.stringify({ responses, writtenResponse });
   }
   function isNonEmptyString(value) {
     return typeof value === "string" && value.length > 0;
@@ -7904,7 +7905,7 @@
       }
       await ensureBegun();
     }
-    async function autosave(responses) {
+    async function autosave(responses, writtenResponse) {
       if (destroyed) return { persisted: false };
       if (assignmentId === null) return { persisted: false };
       if (mode === "finalized") return { persisted: false };
@@ -7913,7 +7914,7 @@
       if (sessionId === null) {
         throw new Error("session was not established");
       }
-      const serialized = serialize(responses);
+      const serialized = serialize(responses, writtenResponse);
       if (lastAutosaveSerialized === serialized) {
         return { persisted: false };
       }
@@ -7923,7 +7924,7 @@
       const activeSessionId = sessionId;
       inflightAutosave = (async () => {
         try {
-          const result = await callables.autosave(activeSessionId, responses);
+          const result = writtenResponse === void 0 ? await callables.autosave(activeSessionId, responses) : await callables.autosave(activeSessionId, responses, writtenResponse);
           if (!destroyed) {
             lastAutosaveSerialized = serialized;
           }
@@ -7939,7 +7940,7 @@
       })();
       return inflightAutosave;
     }
-    async function finalize(responses) {
+    async function finalize(responses, writtenResponse) {
       if (destroyed) {
         throw new Error("assessment runtime has been destroyed");
       }
@@ -7960,7 +7961,7 @@
         if (sessionId === null) {
           throw new Error("session was not established");
         }
-        await autosave(responses);
+        await autosave(responses, writtenResponse);
         if (finalizeIdempotencyKey === null) {
           finalizeIdempotencyKey = truncateIdempotencyKey(env.randomId());
         }
@@ -8093,6 +8094,14 @@
     }
     return out;
   }
+  var WRITTEN_RESPONSE_MAX_LENGTH = 1e4;
+  function normalizeWrittenResponse(options) {
+    if (options === null || typeof options !== "object") return void 0;
+    const raw = options.writtenResponse;
+    if (typeof raw !== "string") return void 0;
+    const text = raw.trim();
+    return text.length > WRITTEN_RESPONSE_MAX_LENGTH ? text.slice(0, WRITTEN_RESPONSE_MAX_LENGTH).trim() : text;
+  }
   function isRecoverableFirebaseError(err) {
     if (err === null || typeof err !== "object") return false;
     const code = err.code;
@@ -8153,7 +8162,7 @@
           return null;
         }
       },
-      finalize: async (indexSelections) => {
+      finalize: async (indexSelections, options) => {
         if (runtime === null) {
           if (!hasAssignmentContext) return null;
           return {
@@ -8164,8 +8173,9 @@
         }
         if (!runtime.hasAssignmentContext) return null;
         const responses = mapIndexSelectionsToResponses(indexSelections);
+        const writtenResponse = normalizeWrittenResponse(options);
         try {
-          const result = await runtime.finalize(responses);
+          const result = await runtime.finalize(responses, writtenResponse);
           return { ok: true, result };
         } catch (err) {
           recordLastError(win, "finalize", err);
@@ -8330,8 +8340,10 @@
         }
         return { sessionId, alreadyLive: data.alreadyLive === true };
       },
-      autosave: async (sessionId, responses) => {
-        const res = await autosave({ sessionId, responses });
+      autosave: async (sessionId, responses, writtenResponse) => {
+        const res = await autosave(
+          writtenResponse === void 0 ? { sessionId, responses } : { sessionId, responses, writtenResponse }
+        );
         const data = isRecord(res.data) ? res.data : {};
         return { persisted: data.persisted === true };
       },
@@ -8402,7 +8414,7 @@
       lastError: null,
       begin: () => runtime.begin(),
       autosave: (responses) => runtime.autosave(responses),
-      finalize: (responses) => runtime.finalize(responses),
+      finalize: (responses, writtenResponse) => runtime.finalize(responses, writtenResponse),
       getAttempt: (attemptId) => runtime.getAttempt(attemptId)
     };
     const ns = win[NAMESPACE] ?? {};
@@ -8448,6 +8460,12 @@
     });
     attachRuntimeAdapter(runtimeWin, runtime);
   }
+  var __internal = {
+    installLessonQuiz,
+    normalizeWrittenResponse,
+    createBackedCallables,
+    WRITTEN_RESPONSE_MAX_LENGTH
+  };
   if (typeof window !== "undefined") {
     const w = window;
     const existing = w[NAMESPACE]?.[RUNTIME_KEY];

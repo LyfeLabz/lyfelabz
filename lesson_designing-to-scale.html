@@ -3285,7 +3285,7 @@ function cmSubmitQuiz() {
     function cmShowSubmitError(msg) {
       cmFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || cmGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(cmQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(cmQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         cmFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

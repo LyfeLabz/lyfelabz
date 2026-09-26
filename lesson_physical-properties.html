@@ -3646,7 +3646,7 @@ function ppSubmitQuiz() {
     function ppShowSubmitError(msg) {
       ppFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ppGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(ppQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(ppQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         ppFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

@@ -814,6 +814,16 @@ Every group header count on the Assignment Detail roster is anchored to the corr
 
 Teacher lifecycle mutations (`assignmentsPublish`, `assignmentsClose`, `assignmentsReopen`, `assignmentsUpdateDraft`) invalidate the affected dashboard card's per-assignment progress cache and re-issue exactly one `assessmentAssignmentSummary` read for that assignment when the card is rendered. No polling, no realtime listener, no timer-driven refresh, no push, and no browser persistence (`localStorage`, `sessionStorage`, `IndexedDB`) is introduced. A full authoritative registry re-hydration through `assignmentsTeacherList` remains available as a fallback after any authentication transition.
 
+## 37. Sprint 30 Reconciliation (Show Your Thinking Written Response)
+
+The post-quiz "Show Your Thinking" explanation is persisted with the attempt it was written for. It is an unscored, student-authored artifact, not an assessment item: it has no revision or answer-key entry, never enters `responses`, and never reaches the scorer, so §6, §7, §15, and `ASSESSMENT_SCORING_CONTRACT.md` (item types, response representation, scoring rule) are unchanged.
+
+- **Session.** `assessmentSessionsAutosave` accepts an optional top-level `writtenResponse` string beside `responses`. It is trimmed and capped at 10,000 characters; a non-string or over-cap value is refused with `assessmentSessions.invalidRequest` before any read or write. Omitted leaves the stored value untouched (selection-only autosaves never erase it); empty text clears it. The field is Live-state student input, mutable by autosave only (§14).
+- **Attempt.** `assessmentAttemptsFinalize` copies the session's `writtenResponse` onto the attempt inside the existing transaction, exactly as it copies `responses`; absent or blank yields no field. The finalize request refuses a `writtenResponse` key: attempt content comes only from the session. A malformed stored value fails closed with `assessmentAttempts.malformedSession`. Score, `itemResults`, idempotent replay, the audit payload (which never carries the text), and grade passback are unchanged. The field is immutable after write like every attempt field, so each attempt, including attempts on superseded assignment occurrences, keeps its own response.
+- **Teacher read.** `assessmentAttemptGetForTeacher` projects `writtenResponse` (`null` when absent). Teacher Student Detail reads it lazily per attempt; list and summary callables are unchanged.
+- **Historical attempts.** Attempts finalized before this reconciliation carry no `writtenResponse`; the text was never sent to the V2 pipeline. The field is never backfilled.
+- No Security Rules change, composite index, new collection, or new callable is introduced.
+
 ## Change Log
 
 - 2026-07-12 - Initial issuance under Sprint 10A step F-2. Ratified by PDR-026.
@@ -823,3 +833,4 @@ Teacher lifecycle mutations (`assignmentsPublish`, `assignmentsClose`, `assignme
 
 - 2026-07-18 - Sprint 15 reconciliation. Added §35 recording the Sprint 15 `assignmentsRecipientList` callable (authorized for the owning teacher under PDR-029o; not aggregate analytics), the client-side roster grouping composition against certified reads, and the client-side per-question factual summary aggregator (silent below the `>= 3` minimum-attempt threshold; no persistent rollup introduced). No pipeline behavior is added; §35 narrows §17, §18, and §20 against the certified Sprint 15 implementation.
 - 2026-07-18 - Sprint 16 reconciliation. Added §36 recording the client-side per-render fetch deduplication on Assignment Detail, the summary-anchored group counts with a calm synchronization note on disagreement, and the targeted read-only teacher-facing refresh path. No new callable, Firestore field, custom claim, Rules relaxation, composite index, or schema change was introduced; §36 narrows §35 against the certified Sprint 16 client hardening.
+- 2026-09-25 - Sprint 30 reconciliation. Added §37 recording the unscored Show Your Thinking `writtenResponse` carried by autosave onto the session, frozen onto the attempt at finalize, and projected to the owning teacher. No scoring, Rules, index, or callable change.

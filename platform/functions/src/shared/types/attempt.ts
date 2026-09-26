@@ -60,6 +60,11 @@ export type AssessmentAttemptRecord = {
   readonly itemResults: readonly AssessmentAttemptItemResult[];
   readonly idempotencyKey: string;
   readonly submittedAt: Timestamp;
+  // Sprint 30 Show Your Thinking: the session's written response frozen at
+  // finalize. Unscored and never read by the scorer. Absent when the student
+  // wrote none, and on every attempt finalized before this field existed
+  // (never backfilled).
+  readonly writtenResponse?: string;
   // F5.2 §3.4 - Persistent Student Differentiation Slice 6 additive fields,
   // copied verbatim from the session's frozen delivery state inside the
   // finalize transaction (absent on session => absent here). Immutable, like
@@ -96,6 +101,8 @@ export type AssessmentAttemptCreationWrite = {
   readonly itemResults: readonly AssessmentAttemptItemResult[];
   readonly idempotencyKey: string;
   readonly submittedAt: FieldValue;
+  // Copied from the session when present; omitted otherwise.
+  readonly writtenResponse?: string;
   // Slice 6 delivery propagation (§3.4). Optional and additive: the finalize
   // transaction copies these from the session when present (differentiated =>
   // both pair fields; canonical/canonicalFallback => `deliveryOutcome` only;

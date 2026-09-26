@@ -53,6 +53,10 @@ const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 // are not part of the certified callable contract; they are the pilot
 // pattern the pilot lesson and every Slice-6 rollout lesson consume.
 type LessonAutosaveResult = { readonly persisted: boolean } | null;
+// Sprint 30 Show Your Thinking. Optional second argument to `finalize`: the
+// lesson hands over the student's written explanation (the same text the v1
+// Sheets path posts as `thinking`). Unscored; persisted on the attempt.
+type LessonFinalizeOptions = { readonly writtenResponse?: unknown };
 type LessonFinalizeResult =
   | { readonly ok: true; readonly result: FinalizeResult }
   | { readonly ok: false; readonly message: string; readonly recoverable: boolean }
@@ -69,6 +73,7 @@ type LessonQuizGlobal = {
   ): Promise<LessonAutosaveResult>;
   finalize(
     indexSelections: ReadonlyArray<number | null | undefined>,
+    options?: LessonFinalizeOptions,
   ): Promise<LessonFinalizeResult>;
 };
 
@@ -102,7 +107,10 @@ type RuntimeGlobal = {
   lastError: RuntimeLastError | null;
   begin: () => Promise<void>;
   autosave: (responses: readonly SessionResponse[]) => Promise<{ readonly persisted: boolean }>;
-  finalize: (responses: readonly SessionResponse[]) => Promise<FinalizeResult>;
+  finalize: (
+    responses: readonly SessionResponse[],
+    writtenResponse?: string,
+  ) => Promise<FinalizeResult>;
   getAttempt: (attemptId?: string) => Promise<AttemptSummary>;
 };
 
@@ -125,6 +133,24 @@ function mapIndexSelectionsToResponses(
     out.push({ itemId: `q${qi + 1}`, response: OPTION_LETTERS[idx]! });
   }
   return out;
+}
+
+// Mirrors the server's WRITTEN_RESPONSE_MAX_LENGTH
+// (platform/functions/src/shared/types/assessment-session.ts).
+const WRITTEN_RESPONSE_MAX_LENGTH = 10000;
+
+// Normalize the lesson-supplied Show Your Thinking text to the server
+// contract: a trimmed string within the cap, or undefined (nothing sent).
+// Over-cap text is truncated rather than sent, because the server refuses
+// it and that refusal would otherwise fail the scored submission as well.
+function normalizeWrittenResponse(options: unknown): string | undefined {
+  if (options === null || typeof options !== "object") return undefined;
+  const raw = (options as { writtenResponse?: unknown }).writtenResponse;
+  if (typeof raw !== "string") return undefined;
+  const text = raw.trim();
+  return text.length > WRITTEN_RESPONSE_MAX_LENGTH
+    ? text.slice(0, WRITTEN_RESPONSE_MAX_LENGTH).trim()
+    : text;
 }
 
 // The lesson helper is a thin normalizer: pure mapping + soft error
@@ -247,7 +273,7 @@ function installLessonQuiz(
         return null;
       }
     },
-    finalize: async (indexSelections) => {
+    finalize: async (indexSelections, options) => {
       if (runtime === null) {
         if (!hasAssignmentContext) return null;
         return {
@@ -258,8 +284,9 @@ function installLessonQuiz(
       }
       if (!runtime.hasAssignmentContext) return null;
       const responses = mapIndexSelectionsToResponses(indexSelections);
+      const writtenResponse = normalizeWrittenResponse(options);
       try {
-        const result = await runtime.finalize(responses);
+        const result = await runtime.finalize(responses, writtenResponse);
         return { ok: true, result };
       } catch (err) {
         recordLastError(win, "finalize", err);
@@ -445,8 +472,12 @@ function createBackedCallables(functions: Functions): RuntimeCallables {
       }
       return { sessionId, alreadyLive: data.alreadyLive === true };
     },
-    autosave: async (sessionId, responses) => {
-      const res = await autosave({ sessionId, responses });
+    autosave: async (sessionId, responses, writtenResponse) => {
+      const res = await autosave(
+        writtenResponse === undefined
+          ? { sessionId, responses }
+          : { sessionId, responses, writtenResponse },
+      );
       const data = isRecord(res.data) ? res.data : {};
       return { persisted: data.persisted === true };
     },
@@ -524,7 +555,8 @@ function attachRuntimeAdapter(
     lastError: null,
     begin: () => runtime.begin(),
     autosave: (responses) => runtime.autosave(responses),
-    finalize: (responses) => runtime.finalize(responses),
+    finalize: (responses, writtenResponse) =>
+      runtime.finalize(responses, writtenResponse),
     getAttempt: (attemptId) => runtime.getAttempt(attemptId),
   };
   const ns = win[NAMESPACE] ?? {};
@@ -587,6 +619,15 @@ async function bootstrap(win: Window): Promise<void> {
   });
   attachRuntimeAdapter(runtimeWin, runtime);
 }
+
+// Exported for unit tests of the real lesson adapter and callable payloads.
+// Not part of the public runtime API.
+export const __internal = {
+  installLessonQuiz,
+  normalizeWrittenResponse,
+  createBackedCallables,
+  WRITTEN_RESPONSE_MAX_LENGTH,
+};
 
 // Fire the bootstrap immediately. The IIFE bundle produced by esbuild
 // executes synchronously on <script> load; the async body only awaits

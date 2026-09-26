@@ -227,6 +227,7 @@ type Fixture = {
   assignment?: unknown;
   enrollment?: unknown;
   recipient?: unknown;
+  priorAttemptCount?: number;
 };
 
 const fixture: Fixture = {};
@@ -351,7 +352,8 @@ function installTransactionRunner() {
             return { empty: true, size: 0, docs: [] };
           }
           // Attempt count.
-          return { empty: true, size: 0, docs: [] };
+          const size = fixture.priorAttemptCount ?? 0;
+          return { empty: size === 0, size, docs: [] };
         }
         throw new Error(`Unexpected ref kind: ${JSON.stringify(refOrQuery)}`);
       },
@@ -410,6 +412,7 @@ describe("assessmentAttemptsFinalize", () => {
     fixture.assignment = undefined;
     fixture.enrollment = undefined;
     fixture.recipient = undefined;
+    fixture.priorAttemptCount = undefined;
     seedDefaultFixture();
     installTransactionRunner();
   });
@@ -1487,5 +1490,173 @@ describe("assessmentAttemptsFinalize", () => {
     expect(write.deliveryOutcome).toBe("differentiated");
     // Same assessment revision as attempt 1 - differentiation never touches it.
     expect(write.assessmentRevisionId).toBe(REVISION_ID);
+  });
+
+  describe("Sprint 30 Show Your Thinking writtenResponse", () => {
+    const THINKING = "Heat drives mantle convection, which moves the plates.";
+
+    function withWrittenResponse(value: unknown) {
+      seedDefaultFixture({
+        session: { ...(fixture.session as object), writtenResponse: value },
+      });
+    }
+
+    it("freezes the session's written response onto the attempt it belongs to", async () => {
+      withWrittenResponse(THINKING);
+      await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(mockAttemptCreationDocRef).toHaveBeenCalledWith(ATTEMPT_ID);
+      const write = txSets[0].data as Record<string, unknown>;
+      expect(write.writtenResponse).toBe(THINKING);
+      // Historical identity: the attempt is stamped with the session's own
+      // assignment occurrence and class, never a later Current.
+      expect(write.assignmentId).toBe(ASSIGNMENT_ID);
+      expect(write.classId).toBe(CLASS_ID);
+      expect(write.studentId).toBe(STUDENT_UID);
+    });
+
+    it("leaves score, item results, and scored responses unchanged", async () => {
+      const baseline = await __assessmentAttemptsFinalizeHandler(makeRequest());
+      const baselineWrite = { ...(txSets[0].data as Record<string, unknown>) };
+      txSets.length = 0;
+      txDeletes.length = 0;
+      withWrittenResponse(THINKING);
+      const withText = await __assessmentAttemptsFinalizeHandler(makeRequest());
+      const write = txSets[0].data as Record<string, unknown>;
+
+      expect(withText).toEqual(baseline);
+      expect(withText).not.toHaveProperty("writtenResponse");
+      expect(write.score).toBe(baselineWrite.score);
+      expect(write.maxScore).toBe(baselineWrite.maxScore);
+      expect(write.percentage).toBe(baselineWrite.percentage);
+      expect(write.itemResults).toEqual(baselineWrite.itemResults);
+      expect(write.responses).toEqual(baselineWrite.responses);
+      const { writtenResponse, ...rest } = write;
+      expect(writtenResponse).toBe(THINKING);
+      expect(rest).toEqual(baselineWrite);
+    });
+
+    it("omits the field when the session has no written response", async () => {
+      await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(txSets[0].data).not.toHaveProperty("writtenResponse");
+    });
+
+    it("omits the field when the stored written response is blank", async () => {
+      withWrittenResponse("   ");
+      await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(txSets[0].data).not.toHaveProperty("writtenResponse");
+    });
+
+    it.each([
+      ["a number", 7],
+      ["an object", { text: THINKING }],
+      ["an over-cap string", "x".repeat(10001)],
+    ])("fails closed on %s with no attempt, audit, or passback", async (_label, value) => {
+      withWrittenResponse(value);
+      await expect(
+        __assessmentAttemptsFinalizeHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "assessmentAttempts.malformedSession" });
+      expect(txSets).toHaveLength(0);
+      expect(txDeletes).toHaveLength(0);
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      expect(mockSynchronizeGradePassback).not.toHaveBeenCalled();
+    });
+
+    it("refuses a written response carried on the finalize request itself", async () => {
+      await expect(
+        __assessmentAttemptsFinalizeHandler(
+          makeRequest({
+            data: {
+              sessionId: SESSION_ID,
+              idempotencyKey: IDEMPOTENCY_KEY,
+              writtenResponse: THINKING,
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assessmentAttempts.invalidRequest" });
+      expect(txSets).toHaveLength(0);
+    });
+
+    it("gives each repeated attempt its own written response without touching earlier attempts", async () => {
+      withWrittenResponse("First attempt thinking.");
+      await __assessmentAttemptsFinalizeHandler(makeRequest());
+
+      seedDefaultFixture({
+        session: {
+          ...(fixture.session as object),
+          sessionOrdinal: 2,
+          writtenResponse: "Second attempt thinking.",
+        },
+        priorAttemptCount: 1,
+      });
+      await __assessmentAttemptsFinalizeHandler(
+        makeRequest({
+          data: { sessionId: `${ASSIGNMENT_ID}__${STUDENT_UID}__2`, idempotencyKey: "idem-2" },
+        }),
+      );
+
+      expect(txSets).toHaveLength(2);
+      expect(mockAttemptCreationDocRef).toHaveBeenNthCalledWith(1, ATTEMPT_ID);
+      expect(mockAttemptCreationDocRef).toHaveBeenNthCalledWith(
+        2,
+        `${ASSIGNMENT_ID}__${STUDENT_UID}__a2`,
+      );
+      const first = txSets[0].data as Record<string, unknown>;
+      const second = txSets[1].data as Record<string, unknown>;
+      expect(first.attemptNumber).toBe(1);
+      expect(first.writtenResponse).toBe("First attempt thinking.");
+      expect(second.attemptNumber).toBe(2);
+      expect(second.writtenResponse).toBe("Second attempt thinking.");
+      // Attempts are only ever created with set(); nothing rewrites attempt 1.
+      expect(
+        txSets.every((s) => (s.ref as { __kind: string }).__kind === "attemptCreation"),
+      ).toBe(true);
+    });
+
+    it("idempotent replay neither writes nor alters the stored written response", async () => {
+      withWrittenResponse("A different retry text.");
+      seedDefaultFixture({
+        session: { ...(fixture.session as object) },
+        existingAttempt: {
+          studentId: STUDENT_UID,
+          assignmentId: ASSIGNMENT_ID,
+          classId: CLASS_ID,
+          teacherId: TEACHER_UID,
+          schoolId: SCHOOL_ID,
+          districtId: DISTRICT_ID,
+          activityId: ACTIVITY_ID,
+          assessmentId: ASSESSMENT_ID,
+          assessmentRevisionId: REVISION_ID,
+          attemptNumber: 1,
+          score: 2,
+          maxScore: 2,
+          percentage: 100,
+          responses: DEFAULT_RESPONSES,
+          itemResults: [],
+          idempotencyKey: IDEMPOTENCY_KEY,
+          submittedAt: {},
+          writtenResponse: THINKING,
+        },
+      });
+      const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(result.replay).toBe(true);
+      expect(result).not.toHaveProperty("writtenResponse");
+      expect(txSets).toHaveLength(0);
+      expect(txDeletes).toHaveLength(0);
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      expect(mockSynchronizeGradePassback).not.toHaveBeenCalled();
+    });
+
+    it("keeps the grade-passback trigger and the audit payload unchanged (no response text)", async () => {
+      withWrittenResponse(THINKING);
+      await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(mockSynchronizeGradePassback).toHaveBeenCalledTimes(1);
+      expect(mockSynchronizeGradePassback).toHaveBeenCalledWith({
+        assignmentId: ASSIGNMENT_ID,
+        studentId: STUDENT_UID,
+        districtId: DISTRICT_ID,
+      });
+      expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
+      expect(JSON.stringify(mockWriteAuditEvent.mock.calls[0])).not.toContain(THINKING);
+    });
   });
 });

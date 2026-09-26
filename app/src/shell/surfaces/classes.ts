@@ -71,6 +71,7 @@ import {
 } from "./shared/activeAssignments";
 import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
 import type {
+  AttemptGetForTeacherCallable,
   AttemptsListForClassCallable,
   CompletedAttemptSummary,
 } from "../../assignments/detail/attempts-wire";
@@ -327,6 +328,11 @@ export type ClassesSurfaceDeps = {
   readonly loadExpectedAssignments?:
     | (() => AssessmentStudentAssignmentsForClassCallable | null)
     | null;
+  // Sprint 30 Show Your Thinking: lazy accessor for the certified
+  // `assessmentAttemptGetForTeacher` callable, used only when a teacher opens
+  // a Student Detail card's Show Your Thinking disclosure. Absent-or-null
+  // renders no disclosure; the rest of Student Detail is unchanged.
+  readonly loadAttemptDetail?: (() => AttemptGetForTeacherCallable | null) | null;
   // Sprint 30A.1 human-review finalization: canonical teacher class-order
   // writer. The Classes workspace is now the sole place a teacher edits
   // class order (drag or keyboard, see `renderClassCard`); the Assign
@@ -464,6 +470,7 @@ export function renderClassesSurface(
   const loadRoster = deps.loadRoster ?? null;
   const loadAttempts = deps.loadAttempts ?? null;
   const loadExpectedAssignments = deps.loadExpectedAssignments ?? null;
+  const loadAttemptDetail = deps.loadAttemptDetail ?? null;
   const assignmentDetail = deps.assignmentDetail ?? null;
   const assignmentSummary = deps.assignmentSummary ?? null;
   const navigateToSurface = deps.navigateToSurface ?? null;
@@ -860,6 +867,7 @@ export function renderClassesSurface(
           classAttempts,
           loadExpectedAssignments,
           listAllAssignments,
+          loadAttemptDetail,
         );
         return;
       }
@@ -3588,6 +3596,7 @@ function renderClassWorkspaceState(
     | (() => AssessmentStudentAssignmentsForClassCallable | null)
     | null,
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
+  loadAttemptDetail: (() => AttemptGetForTeacherCallable | null) | null,
 ): void {
   const workspace = doc.createElement("div");
   workspace.className = "shell-class-workspace";
@@ -3687,6 +3696,7 @@ function renderClassWorkspaceState(
         classAttempts,
         loadExpectedAssignments,
         listAssignments,
+        loadAttemptDetail,
       );
     } else {
       renderRosterSurface(doc, surfaceMount, rosterView, onSelectStudent);
@@ -4385,6 +4395,7 @@ function renderStudentDetailSurface(
     | (() => AssessmentStudentAssignmentsForClassCallable | null)
     | null,
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
+  loadAttemptDetail: (() => AttemptGetForTeacherCallable | null) | null = null,
 ): void {
   const detail = doc.createElement("div");
   detail.className = "shell-student-detail";
@@ -4545,6 +4556,8 @@ function renderStudentDetailSurface(
           (a) => a.studentId === studentId,
         );
         const registry = listAssignments();
+        const attemptDetail =
+          loadAttemptDetail === null ? null : loadAttemptDetail();
         const list =
           expected.groups !== undefined
             ? buildGroupedStudentDetailList(
@@ -4552,12 +4565,14 @@ function renderStudentDetailSurface(
                 studentAttempts,
                 expected.groups,
                 registry,
+                attemptDetail,
               )
             : buildPerAssignmentStudentDetailList(
                 doc,
                 studentAttempts,
                 expected.assignments,
                 registry,
+                attemptDetail,
               );
         if (list === null) {
           appendStudentDetailEmpty(doc, body);
@@ -4654,6 +4669,7 @@ function buildPerAssignmentStudentDetailList(
   studentAttempts: ReadonlyArray<CompletedAttemptSummary>,
   expectedAssignments: ReadonlyArray<StudentExpectedAssignment>,
   registry: ReadonlyArray<AssignmentDetailMetadata>,
+  attemptDetail: AttemptGetForTeacherCallable | null = null,
 ): HTMLElement | null {
   // Group completed attempts by assignmentId: the sole source of
   // "completed" and of Best/First/Latest/Growth/Attempts/Latest Date.
@@ -4684,9 +4700,9 @@ function buildPerAssignmentStudentDetailList(
   list.setAttribute("data-testid", "student-detail-assignments");
 
   for (const [assignmentId, attempts] of byAssignment) {
-    list.appendChild(
-      buildCompletedAssignmentCard(doc, assignmentId, attempts, resolveTitle(assignmentId), registry),
-    );
+    const card = buildCompletedAssignmentCard(doc, assignmentId, attempts, resolveTitle(assignmentId), registry);
+    appendWrittenResponses(doc, card, attempts, attemptDetail);
+    list.appendChild(card);
   }
 
   // In Progress / Not Started cards: no metrics grid is ever rendered, so no
@@ -4756,6 +4772,7 @@ function buildGroupedStudentDetailList(
   studentAttempts: ReadonlyArray<CompletedAttemptSummary>,
   groups: ReadonlyArray<StudentAssignmentGroup>,
   registry: ReadonlyArray<AssignmentDetailMetadata>,
+  attemptDetail: AttemptGetForTeacherCallable | null = null,
 ): HTMLElement | null {
   const list = doc.createElement("ul");
   list.className = "shell-student-detail-assignments";
@@ -4767,7 +4784,10 @@ function buildGroupedStudentDetailList(
     const ids = new Set(group.assignmentIds);
     const attempts = studentAttempts.filter((a) => ids.has(a.assignmentId));
     const card = buildGroupCard(doc, group, attempts, registry);
-    if (card !== null) list.appendChild(card);
+    if (card !== null) {
+      appendWrittenResponses(doc, card, attempts, attemptDetail);
+      list.appendChild(card);
+    }
   }
 
   // Orphan attempts (their assignment is in no group): own card each.
@@ -4779,15 +4799,15 @@ function buildGroupedStudentDetailList(
     else orphans.set(attempt.assignmentId, [attempt]);
   }
   for (const [assignmentId, attempts] of orphans) {
-    list.appendChild(
-      buildCompletedAssignmentCard(
-        doc,
-        assignmentId,
-        attempts,
-        registryTitle(registry, assignmentId) ?? "Assignment",
-        registry,
-      ),
+    const card = buildCompletedAssignmentCard(
+      doc,
+      assignmentId,
+      attempts,
+      registryTitle(registry, assignmentId) ?? "Assignment",
+      registry,
     );
+    appendWrittenResponses(doc, card, attempts, attemptDetail);
+    list.appendChild(card);
   }
 
   return list.childElementCount === 0 ? null : list;
@@ -4879,6 +4899,108 @@ function buildGroupCard(
     if (grid !== null && statusEl !== null) li.insertBefore(statusEl, grid);
   }
   return li;
+}
+
+// Sprint 30 Show Your Thinking. A disclosure listing each of the card's
+// attempts with the written response frozen on THAT attempt. Responses are
+// read per attempt (`assessmentAttemptGetForTeacher`) only when the teacher
+// opens the disclosure, so Student Detail's initial load is unchanged. A
+// Current group card spans several assignment occurrences; its attempts are
+// still listed one by one (oldest first), never merged, so a historical
+// attempt's response stays attached to that attempt. Cards with no attempts
+// (Not started / In progress) get no disclosure.
+function appendWrittenResponses(
+  doc: Document,
+  card: HTMLElement,
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+  attemptDetail: AttemptGetForTeacherCallable | null,
+): void {
+  if (attemptDetail === null || attempts.length === 0) return;
+  const ordered = [...attempts].sort(
+    (a, b) =>
+      a.submittedAt - b.submittedAt ||
+      a.attemptNumber - b.attemptNumber ||
+      a.attemptId.localeCompare(b.attemptId),
+  );
+
+  const panelId = `student-detail-thinking-${card.getAttribute("data-assignment-id") ?? ""}`;
+  const toggle = doc.createElement("button");
+  toggle.type = "button";
+  toggle.className = "shell-student-detail-thinking-toggle";
+  toggle.setAttribute("data-testid", "student-detail-thinking-toggle");
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", panelId);
+  toggle.textContent = "Show Your Thinking";
+  card.appendChild(toggle);
+
+  const panel = doc.createElement("div");
+  panel.className = "shell-student-detail-thinking";
+  panel.id = panelId;
+  panel.setAttribute("data-testid", "student-detail-thinking");
+  panel.hidden = true;
+  card.appendChild(panel);
+
+  // Loaded once per render; a failed read is retried on the next open.
+  let loaded = false;
+  toggle.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    panel.hidden = !open;
+    if (!open || loaded) return;
+    loaded = true;
+
+    panel.replaceChildren();
+    const loading = doc.createElement("p");
+    loading.className = "shell-student-detail-thinking-muted";
+    loading.setAttribute("data-testid", "student-detail-thinking-loading");
+    loading.setAttribute("role", "status");
+    loading.textContent = "Loading written responses…";
+    panel.appendChild(loading);
+
+    void Promise.all(
+      ordered.map((attempt) =>
+        attemptDetail({ attemptId: attempt.attemptId }).then(
+          (detail) => ({ attempt, ok: true as const, text: detail.writtenResponse ?? null }),
+          () => ({ attempt, ok: false as const, text: null }),
+        ),
+      ),
+    ).then((rows) => {
+      if (!panel.isConnected) return;
+      if (rows.some((r) => !r.ok)) loaded = false;
+      panel.replaceChildren();
+      const list = doc.createElement("ol");
+      list.className = "shell-student-detail-thinking-list";
+      for (const row of rows) {
+        const item = doc.createElement("li");
+        item.className = "shell-student-detail-thinking-item";
+        item.setAttribute("data-testid", "student-detail-thinking-item");
+        item.setAttribute("data-attempt-id", row.attempt.attemptId);
+
+        const label = doc.createElement("p");
+        label.className = "shell-student-detail-thinking-label";
+        label.textContent = `Attempt ${row.attempt.attemptNumber} · ${formatAttemptDate(row.attempt.submittedAt)}`;
+        item.appendChild(label);
+
+        const body = doc.createElement("p");
+        if (!row.ok) {
+          body.className = "shell-student-detail-thinking-muted";
+          body.setAttribute("data-testid", "student-detail-thinking-error");
+          body.textContent = "We couldn't load this response. Close and reopen to try again.";
+        } else if (row.text === null) {
+          body.className = "shell-student-detail-thinking-muted";
+          body.setAttribute("data-testid", "student-detail-thinking-none");
+          body.textContent = "No written response saved for this attempt.";
+        } else {
+          body.className = "shell-student-detail-thinking-text";
+          body.setAttribute("data-testid", "student-detail-thinking-text");
+          body.textContent = row.text;
+        }
+        item.appendChild(body);
+        list.appendChild(item);
+      }
+      panel.appendChild(list);
+    });
+  });
 }
 
 // Card title + a secondary status/date line from server metadata (the

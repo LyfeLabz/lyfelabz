@@ -61,9 +61,14 @@ export type BeginCallable = (
   launchRef?: string,
 ) => Promise<{ readonly sessionId: string; readonly alreadyLive: boolean }>;
 
+// Sprint 30 Show Your Thinking: `writtenResponse` is the optional, unscored
+// written explanation. It travels beside `responses` (never inside it) and is
+// sent only when defined, so a selection-only autosave is byte-identical to
+// the pre-feature request and never erases a stored response.
 export type AutosaveCallable = (
   sessionId: string,
   responses: readonly SessionResponse[],
+  writtenResponse?: string,
 ) => Promise<{ readonly persisted: boolean }>;
 
 export type FinalizeCallable = (

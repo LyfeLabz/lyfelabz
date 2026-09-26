@@ -2418,7 +2418,7 @@ function pmSubmitQuiz() {
     function pmShowSubmitError(msg) {
       pmFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || pmGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(pmQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(pmQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         pmFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

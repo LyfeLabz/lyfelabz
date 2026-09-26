@@ -12,6 +12,7 @@ import {
   type AssessmentSessionRecord,
   type AssessmentSessionResponse,
 } from "../shared";
+import { WRITTEN_RESPONSE_MAX_LENGTH } from "../shared/types/assessment-session";
 
 // Client-supplied request payload for assessmentSessionsAutosave per
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §21. The authenticated student
@@ -23,9 +24,15 @@ import {
 // points earned, explanation payloads) are likewise never accepted and are
 // rejected with `assessmentSessions.invalidResponses` when present on any
 // response element (§6, §15).
+//
+// `writtenResponse` (Sprint 30 Show Your Thinking) is the optional, unscored
+// written explanation. It travels beside `responses`, never inside it, so the
+// scored item set and the scorer are untouched. Omitted leaves the stored
+// value unchanged; a string replaces it (trimmed; empty clears it).
 export type AssessmentSessionsAutosaveRequest = {
   readonly sessionId: string;
   readonly responses: readonly AssessmentSessionResponse[];
+  readonly writtenResponse?: string;
 };
 
 // Return payload of a successful autosave call. `persisted` is `true` when
@@ -199,9 +206,35 @@ function normalizeResponse(raw: unknown, index: number): AssessmentSessionRespon
   return { itemId, response: entry.response };
 }
 
+// Show Your Thinking validation. Absent => undefined (leave stored value
+// alone). Present => must be a string no longer than the cap once trimmed.
+// Anything else is refused rather than coerced, so a malformed client can
+// never write a non-string onto the session or the attempt.
+function normalizeWrittenResponse(
+  payload: Record<string, unknown>,
+): string | undefined {
+  if (!("writtenResponse" in payload)) return undefined;
+  const raw = payload.writtenResponse;
+  if (typeof raw !== "string") {
+    throw new PlatformError(
+      "assessmentSessions.invalidRequest",
+      "writtenResponse must be a string.",
+    );
+  }
+  const text = raw.trim();
+  if (text.length > WRITTEN_RESPONSE_MAX_LENGTH) {
+    throw new PlatformError(
+      "assessmentSessions.invalidRequest",
+      `writtenResponse may not exceed ${WRITTEN_RESPONSE_MAX_LENGTH} characters.`,
+    );
+  }
+  return text;
+}
+
 function validateRequest(data: unknown): {
   readonly sessionId: string;
   readonly responses: readonly AssessmentSessionResponse[];
+  readonly writtenResponse: string | undefined;
 } {
   if (data === null || typeof data !== "object") {
     throw new PlatformError(
@@ -255,7 +288,8 @@ function validateRequest(data: unknown): {
       `responses exceed the ${MAX_SERIALIZED_RESPONSES_BYTES}-byte autosave cap.`,
     );
   }
-  return { sessionId, responses };
+  const writtenResponse = normalizeWrittenResponse(payload);
+  return { sessionId, responses, writtenResponse };
 }
 
 async function loadLiveSession(
@@ -327,9 +361,10 @@ function safeLog(fn: () => void): void {
 //     `assessmentSessionsRecover` (deferred slice) rather than by autosave
 //
 // Frozen-field enforcement is structural rather than diffed: the write
-// shape (`AssessmentSessionAutosaveWrite`) exposes only `responses` and
-// `lastActivityAt`. Ownership fields, `sessionOrdinal`, `status`, and
-// `startedAt` are unreachable from this callable. This mirrors the
+// shape (`AssessmentSessionAutosaveWrite`) exposes only `responses`,
+// `lastActivityAt`, and the optional unscored `writtenResponse`. Ownership
+// fields, `sessionOrdinal`, `status`, and `startedAt` are unreachable from
+// this callable. This mirrors the
 // narrow-write pattern used across the certified callable set.
 //
 // Idempotency (§21 autosave is idempotent under identical payload):
@@ -376,7 +411,14 @@ async function assessmentSessionsAutosaveHandler(
     );
   }
 
-  if (responsesEqual(input.responses, session.responses)) {
+  const writtenResponseUnchanged =
+    input.writtenResponse === undefined ||
+    input.writtenResponse === (session.writtenResponse ?? "");
+
+  if (
+    responsesEqual(input.responses, session.responses) &&
+    writtenResponseUnchanged
+  ) {
     safeLog(() =>
       log.info("assessmentSessions.autosaveCoalesced", {
         actorUserId: actor.uid,
@@ -390,6 +432,14 @@ async function assessmentSessionsAutosaveHandler(
   const write: AssessmentSessionAutosaveWrite = {
     responses: input.responses,
     lastActivityAt: FieldValue.serverTimestamp(),
+    ...(input.writtenResponse === undefined
+      ? {}
+      : {
+          writtenResponse:
+            input.writtenResponse.length > 0
+              ? input.writtenResponse
+              : FieldValue.delete(),
+        }),
   };
 
   await assessmentSessionAutosaveDocRef(input.sessionId).update(write);

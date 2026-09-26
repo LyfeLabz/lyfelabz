@@ -2530,7 +2530,7 @@ function cdSubmitQuiz() {
     function cdShowSubmitError(msg) {
       cdFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || cdGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(cdQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(cdQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         cdFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

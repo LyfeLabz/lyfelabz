@@ -4081,6 +4081,80 @@
     margin: 0;
     font-variant-numeric: tabular-nums;
   }
+  /* Sprint 30 Show Your Thinking: per-attempt written responses under a
+     Student Detail card. A narrow mirror of the existing disclosure grammar
+     (.shell-lesson-resources-toggle: native button, aria-expanded, rotating
+     decorative caret) and the metric cell surface, not a new visual system. */
+  .shell-student-detail-thinking-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0.55rem 0 0 0;
+    padding: 0.15rem 0;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--tw-ink-soft, #3a4653);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 28px;
+  }
+  .shell-student-detail-thinking-toggle::after {
+    content: "\203A";
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--tw-ink-muted, #566472);
+    transition: transform 0.15s ease;
+  }
+  .shell-student-detail-thinking-toggle[aria-expanded="true"]::after {
+    transform: rotate(90deg);
+  }
+  .shell-student-detail-thinking-toggle:hover,
+  .shell-student-detail-thinking-toggle:focus-visible {
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-student-detail-thinking-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-student-detail-thinking[hidden] { display: none; }
+  .shell-student-detail-thinking { margin: 0.4rem 0 0 0; }
+  .shell-student-detail-thinking-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .shell-student-detail-thinking-item {
+    padding: 0.55rem 0.7rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-student-detail-thinking-label {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tw-ink-muted);
+  }
+  .shell-student-detail-thinking-text {
+    margin: 0;
+    color: var(--tw-ink);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .shell-student-detail-thinking-muted {
+    margin: 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.9rem;
+  }
   .shell-snapshot-region { margin: 0.5rem 0 0 0; }
   .shell-snapshot-empty {
     color: var(--tw-ink-muted);

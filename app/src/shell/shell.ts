@@ -10,7 +10,10 @@ import type { CreateClass } from "../classes/createClass";
 import type { ActivateClass } from "../classes/activateClass";
 import type { SyncRoster } from "../classes/syncRoster";
 import type { LoadClassRosterAccessor } from "../classes/classRoster";
-import type { AttemptsListForClassCallable } from "../assignments/detail/attempts-wire";
+import type {
+  AttemptGetForTeacherCallable,
+  AttemptsListForClassCallable,
+} from "../assignments/detail/attempts-wire";
 import type { AssessmentStudentAssignmentsForClassCallable } from "../assignments/detail/studentAssignments-wire";
 import type { ImportFromClassroomDeps } from "../classes/importFromClassroom";
 import type {
@@ -134,6 +137,8 @@ export type ShellDeps = {
   readonly loadExpectedAssignments?:
     | (() => AssessmentStudentAssignmentsForClassCallable | null)
     | null;
+  // Sprint 30 Show Your Thinking: lazy accessor for assessmentAttemptGetForTeacher.
+  readonly loadAttemptDetail?: (() => AttemptGetForTeacherCallable | null) | null;
   // Slice 7: Student Services accommodation seams (G19-gated; optional).
   readonly listStudents?: AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: AccommodationsGetCallable | null;
@@ -294,6 +299,7 @@ export function mountTeacherShell(
     loadRoster: deps.loadRoster ?? null,
     loadAttempts: deps.loadAttempts ?? null,
     loadExpectedAssignments: deps.loadExpectedAssignments ?? null,
+    loadAttemptDetail: deps.loadAttemptDetail ?? null,
     listStudents: deps.listStudents ?? null,
     getAccommodation: deps.getAccommodation ?? null,
     setAccommodation: deps.setAccommodation ?? null,

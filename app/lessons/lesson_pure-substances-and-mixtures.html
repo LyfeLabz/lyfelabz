@@ -3417,7 +3417,7 @@ function psmSubmitQuiz() {
     function psmShowSubmitError(msg) {
       psmFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || psmGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(psmQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(psmQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         psmFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

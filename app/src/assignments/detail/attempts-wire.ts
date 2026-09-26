@@ -40,6 +40,9 @@ export type TeacherVisibleAttempt = {
   readonly attemptNumber: number;
   readonly percentage: number;
   readonly itemResults: ReadonlyArray<TeacherVisibleItemResult>;
+  // Sprint 30 Show Your Thinking: the written response frozen on this
+  // attempt, or null when it carries none (or predates the field).
+  readonly writtenResponse?: string | null;
 };
 
 export type AttemptGetForTeacherCallable = (input: {
@@ -135,6 +138,9 @@ export function createAttemptGetForTeacherCallable(
         : 0,
       percentage: isNumber(attempt.percentage) ? attempt.percentage : 0,
       itemResults,
+      writtenResponse: isString(attempt.writtenResponse)
+        ? attempt.writtenResponse
+        : null,
     };
   };
 }

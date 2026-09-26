@@ -10,7 +10,10 @@ import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
 import type { LoadClassRosterAccessor } from "../../classes/classRoster";
-import type { AttemptsListForClassCallable } from "../../assignments/detail/attempts-wire";
+import type {
+  AttemptGetForTeacherCallable,
+  AttemptsListForClassCallable,
+} from "../../assignments/detail/attempts-wire";
 import type { AssessmentStudentAssignmentsForClassCallable } from "../../assignments/detail/studentAssignments-wire";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
@@ -154,6 +157,10 @@ export type WorkspaceDeps = {
   readonly loadExpectedAssignments?:
     | (() => AssessmentStudentAssignmentsForClassCallable | null)
     | null;
+  // Sprint 30 Show Your Thinking: lazy accessor for assessmentAttemptGetForTeacher,
+  // forwarded so Student Detail can show each attempt's written response.
+  // Null in harnesses that do not exercise it.
+  readonly loadAttemptDetail?: (() => AttemptGetForTeacherCallable | null) | null;
   // Slice 7: Student Services accommodation seams. Optional; absent until
   // G19 production gate is satisfied (Slices 2-6 production-verified).
   readonly listStudents?: AccommodationsListStudentsCallable | null;
@@ -260,6 +267,7 @@ export const WORKSPACE_SURFACES: Readonly<
         loadRoster: deps.loadRoster ?? null,
         loadAttempts: deps.loadAttempts ?? null,
         loadExpectedAssignments: deps.loadExpectedAssignments ?? null,
+        loadAttemptDetail: deps.loadAttemptDetail ?? null,
         // Sprint 28.6C: class-scoped Assignments section reuse.
         assignmentDetail: deps.assignmentDetail ?? null,
         assignmentSummary: deps.assignmentSummary ?? null,

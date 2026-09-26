@@ -10,7 +10,10 @@ import type { CreateClass } from "../../classes/createClass";
 import type { ActivateClass } from "../../classes/activateClass";
 import type { SyncRoster } from "../../classes/syncRoster";
 import type { LoadClassRosterAccessor } from "../../classes/classRoster";
-import type { AttemptsListForClassCallable } from "../../assignments/detail/attempts-wire";
+import type {
+  AttemptGetForTeacherCallable,
+  AttemptsListForClassCallable,
+} from "../../assignments/detail/attempts-wire";
 import type { AssessmentStudentAssignmentsForClassCallable } from "../../assignments/detail/studentAssignments-wire";
 import type { ImportFromClassroomDeps } from "../../classes/importFromClassroom";
 import type {
@@ -242,6 +245,10 @@ export type SurfaceDeps = {
   readonly loadExpectedAssignments?: () =>
     | AssessmentStudentAssignmentsForClassCallable
     | null;
+  // Sprint 30 Show Your Thinking: getter for the assessmentAttemptGetForTeacher
+  // accessor (per-attempt written responses on Student Detail). Same lazy-
+  // pass-through semantics as loadAttempts.
+  readonly loadAttemptDetail?: () => AttemptGetForTeacherCallable | null;
   // Slice 7: Student Services accommodation callable getters (G19-gated).
   readonly listStudents?: () => AccommodationsListStudentsCallable | null;
   readonly getAccommodation?: () => AccommodationsGetCallable | null;
@@ -1069,6 +1076,9 @@ export const makeActiveTeacherSurface =
     const loadExpectedAssignments:
       | (() => AssessmentStudentAssignmentsForClassCallable | null)
       | null = deps.loadExpectedAssignments ?? null;
+    // Sprint 30 Show Your Thinking: same lazy-accessor pass-through.
+    const loadAttemptDetail: (() => AttemptGetForTeacherCallable | null) | null =
+      deps.loadAttemptDetail ?? null;
     const listStudents =
       deps.listStudents !== undefined ? deps.listStudents() : null;
     const getAccommodation =
@@ -1096,6 +1106,7 @@ export const makeActiveTeacherSurface =
       loadRoster,
       loadAttempts,
       loadExpectedAssignments,
+      loadAttemptDetail,
       listStudents,
       getAccommodation,
       setAccommodation,

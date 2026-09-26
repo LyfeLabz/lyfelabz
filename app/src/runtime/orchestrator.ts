@@ -48,8 +48,14 @@ export type AssessmentRuntime = {
   readonly hasAssignmentContext: boolean;
   getStatus(): RuntimeStatus;
   begin(): Promise<void>;
-  autosave(responses: readonly SessionResponse[]): Promise<{ readonly persisted: boolean }>;
-  finalize(responses: readonly SessionResponse[]): Promise<FinalizeResult>;
+  autosave(
+    responses: readonly SessionResponse[],
+    writtenResponse?: string,
+  ): Promise<{ readonly persisted: boolean }>;
+  finalize(
+    responses: readonly SessionResponse[],
+    writtenResponse?: string,
+  ): Promise<FinalizeResult>;
   getAttempt(attemptId?: string): Promise<AttemptSummary>;
   destroy(): void;
 };
@@ -72,8 +78,14 @@ function truncateIdempotencyKey(raw: string): string {
   return raw.slice(0, IDEMPOTENCY_KEY_MAX_LENGTH);
 }
 
-function serialize(responses: readonly SessionResponse[]): string {
-  return JSON.stringify(responses);
+// Coalescing key. A selection-only payload serializes exactly as before;
+// a payload carrying a written response also keys on its text.
+function serialize(
+  responses: readonly SessionResponse[],
+  writtenResponse: string | undefined,
+): string {
+  if (writtenResponse === undefined) return JSON.stringify(responses);
+  return JSON.stringify({ responses, writtenResponse });
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -174,6 +186,7 @@ export function createAssessmentRuntime(
 
   async function autosave(
     responses: readonly SessionResponse[],
+    writtenResponse?: string,
   ): Promise<{ readonly persisted: boolean }> {
     if (destroyed) return { persisted: false };
     if (assignmentId === null) return { persisted: false };
@@ -183,7 +196,7 @@ export function createAssessmentRuntime(
     if (sessionId === null) {
       throw new Error("session was not established");
     }
-    const serialized = serialize(responses);
+    const serialized = serialize(responses, writtenResponse);
     if (lastAutosaveSerialized === serialized) {
       return { persisted: false };
     }
@@ -193,7 +206,10 @@ export function createAssessmentRuntime(
     const activeSessionId = sessionId;
     inflightAutosave = (async () => {
       try {
-        const result = await callables.autosave(activeSessionId, responses);
+        const result =
+          writtenResponse === undefined
+            ? await callables.autosave(activeSessionId, responses)
+            : await callables.autosave(activeSessionId, responses, writtenResponse);
         if (!destroyed) {
           lastAutosaveSerialized = serialized;
         }
@@ -212,6 +228,7 @@ export function createAssessmentRuntime(
 
   async function finalize(
     responses: readonly SessionResponse[],
+    writtenResponse?: string,
   ): Promise<FinalizeResult> {
     if (destroyed) {
       throw new Error("assessment runtime has been destroyed");
@@ -237,8 +254,9 @@ export function createAssessmentRuntime(
       // be finalized so the certified scorer reads the caller's intended
       // responses out of the session document. Byte-identical payload is
       // coalesced by the autosave path; only a real change makes a
-      // second write.
-      await autosave(responses);
+      // second write. The Show Your Thinking text rides the same final
+      // autosave so finalize freezes it from the session onto the attempt.
+      await autosave(responses, writtenResponse);
       if (finalizeIdempotencyKey === null) {
         finalizeIdempotencyKey = truncateIdempotencyKey(env.randomId());
       }

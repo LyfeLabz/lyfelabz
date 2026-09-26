@@ -13,10 +13,12 @@ const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
 
 const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
+const DELETE_SENTINEL = Symbol("delete");
 
 jest.mock("firebase-admin/firestore", () => ({
   FieldValue: {
     serverTimestamp: () => SERVER_TIMESTAMP_SENTINEL,
+    delete: () => DELETE_SENTINEL,
   },
 }));
 
@@ -167,6 +169,172 @@ describe("assessmentSessionsAutosave", () => {
 
     expect(result).toEqual({ sessionId: SESSION_ID, persisted: false });
     expect(mockSessionUpdate).not.toHaveBeenCalled();
+  });
+
+  describe("Show Your Thinking writtenResponse", () => {
+    const THINKING = "Heat drives convection, which moves the plates.";
+
+    it("persists a trimmed written response beside the scored responses", async () => {
+      mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot());
+      mockSessionUpdate.mockResolvedValueOnce(undefined);
+
+      const result = await __assessmentSessionsAutosaveHandler(
+        makeRequest({
+          data: {
+            sessionId: SESSION_ID,
+            responses: RESPONSES,
+            writtenResponse: `  ${THINKING}\n`,
+          },
+        }),
+      );
+
+      expect(result).toEqual({ sessionId: SESSION_ID, persisted: true });
+      expect(mockSessionUpdate).toHaveBeenCalledWith({
+        responses: RESPONSES,
+        lastActivityAt: SERVER_TIMESTAMP_SENTINEL,
+        writtenResponse: THINKING,
+      });
+    });
+
+    it("leaves a stored written response untouched when a selection autosave omits it", async () => {
+      mockSessionGet.mockResolvedValueOnce(
+        liveSessionSnapshot({ writtenResponse: THINKING }),
+      );
+      mockSessionUpdate.mockResolvedValueOnce(undefined);
+
+      await __assessmentSessionsAutosaveHandler(makeRequest());
+
+      const write = mockSessionUpdate.mock.calls[0]![0] as Record<string, unknown>;
+      expect("writtenResponse" in write).toBe(false);
+    });
+
+    it("coalesces when responses and the written response are unchanged", async () => {
+      mockSessionGet.mockResolvedValueOnce(
+        liveSessionSnapshot({ responses: RESPONSES, writtenResponse: THINKING }),
+      );
+
+      const result = await __assessmentSessionsAutosaveHandler(
+        makeRequest({
+          data: { sessionId: SESSION_ID, responses: RESPONSES, writtenResponse: THINKING },
+        }),
+      );
+
+      expect(result).toEqual({ sessionId: SESSION_ID, persisted: false });
+      expect(mockSessionUpdate).not.toHaveBeenCalled();
+    });
+
+    it("writes when only the written response changed", async () => {
+      mockSessionGet.mockResolvedValueOnce(
+        liveSessionSnapshot({ responses: RESPONSES, writtenResponse: "old" }),
+      );
+      mockSessionUpdate.mockResolvedValueOnce(undefined);
+
+      const result = await __assessmentSessionsAutosaveHandler(
+        makeRequest({
+          data: { sessionId: SESSION_ID, responses: RESPONSES, writtenResponse: THINKING },
+        }),
+      );
+
+      expect(result).toEqual({ sessionId: SESSION_ID, persisted: true });
+      expect(mockSessionUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ writtenResponse: THINKING }),
+      );
+    });
+
+    it("clears the stored written response when the student sends empty text", async () => {
+      mockSessionGet.mockResolvedValueOnce(
+        liveSessionSnapshot({ responses: RESPONSES, writtenResponse: THINKING }),
+      );
+      mockSessionUpdate.mockResolvedValueOnce(undefined);
+
+      await __assessmentSessionsAutosaveHandler(
+        makeRequest({
+          data: { sessionId: SESSION_ID, responses: RESPONSES, writtenResponse: "   " },
+        }),
+      );
+
+      expect(mockSessionUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ writtenResponse: DELETE_SENTINEL }),
+      );
+    });
+
+    it("coalesces empty text against a session that has no written response", async () => {
+      mockSessionGet.mockResolvedValueOnce(
+        liveSessionSnapshot({ responses: RESPONSES }),
+      );
+
+      const result = await __assessmentSessionsAutosaveHandler(
+        makeRequest({
+          data: { sessionId: SESSION_ID, responses: RESPONSES, writtenResponse: "" },
+        }),
+      );
+
+      expect(result).toEqual({ sessionId: SESSION_ID, persisted: false });
+      expect(mockSessionUpdate).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["a number", 42],
+      ["null", null],
+      ["an object", { text: THINKING }],
+      ["an array", [THINKING]],
+    ])("refuses %s without writing", async (_label, value) => {
+      await expect(
+        __assessmentSessionsAutosaveHandler(
+          makeRequest({
+            data: { sessionId: SESSION_ID, responses: RESPONSES, writtenResponse: value },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assessmentSessions.invalidRequest" });
+      expect(mockSessionGet).not.toHaveBeenCalled();
+      expect(mockSessionUpdate).not.toHaveBeenCalled();
+    });
+
+    it("refuses an over-cap written response without writing", async () => {
+      await expect(
+        __assessmentSessionsAutosaveHandler(
+          makeRequest({
+            data: {
+              sessionId: SESSION_ID,
+              responses: RESPONSES,
+              writtenResponse: "x".repeat(10001),
+            },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assessmentSessions.invalidRequest" });
+      expect(mockSessionUpdate).not.toHaveBeenCalled();
+    });
+
+    it("accepts a written response exactly at the cap", async () => {
+      mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot());
+      mockSessionUpdate.mockResolvedValueOnce(undefined);
+
+      await __assessmentSessionsAutosaveHandler(
+        makeRequest({
+          data: {
+            sessionId: SESSION_ID,
+            responses: RESPONSES,
+            writtenResponse: "x".repeat(10000),
+          },
+        }),
+      );
+
+      expect(mockSessionUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it("still enforces ownership before writing a written response", async () => {
+      mockSessionGet.mockResolvedValueOnce(
+        liveSessionSnapshot({ studentId: "other-student" }),
+      );
+      await expect(
+        __assessmentSessionsAutosaveHandler(
+          makeRequest({
+            data: { sessionId: SESSION_ID, responses: RESPONSES, writtenResponse: THINKING },
+          }),
+        ),
+      ).rejects.toMatchObject({ code: "assessmentSessions.notOwned" });
+      expect(mockSessionUpdate).not.toHaveBeenCalled();
+    });
   });
 
   it("rejects a non-owner caller with notOwned", async () => {

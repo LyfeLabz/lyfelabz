@@ -2219,7 +2219,7 @@ function rsSubmitQuiz() {
     function rsShowSubmitError(msg) {
       rsFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || rsGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(rsQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(rsQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         rsFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

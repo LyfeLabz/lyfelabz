@@ -245,8 +245,30 @@ describe("assessmentAttemptGetForTeacher", () => {
         "studentDisplayName",
         "studentId",
         "submittedAt",
+        "writtenResponse",
       ].sort(),
     );
+  });
+
+  it("returns the Show Your Thinking response frozen on the attempt", async () => {
+    seedAttempt({ writtenResponse: "Heat drives mantle convection." });
+    const result = await __assessmentAttemptGetForTeacherHandler(makeRequest());
+    expect(result.attempt.writtenResponse).toBe("Heat drives mantle convection.");
+    // Unscored: the scored response and result sets are unchanged by it.
+    expect(result.attempt.responses).toHaveLength(2);
+    expect(result.attempt.itemResults).toHaveLength(2);
+  });
+
+  it("returns a null written response for a pre-existing attempt without one", async () => {
+    seedAttempt();
+    const result = await __assessmentAttemptGetForTeacherHandler(makeRequest());
+    expect(result.attempt.writtenResponse).toBeNull();
+  });
+
+  it("never projects a malformed stored written response", async () => {
+    seedAttempt({ writtenResponse: { text: "x" } });
+    const result = await __assessmentAttemptGetForTeacherHandler(makeRequest());
+    expect(result.attempt.writtenResponse).toBeNull();
   });
 
   it("returns the approved submitted responses verbatim", async () => {

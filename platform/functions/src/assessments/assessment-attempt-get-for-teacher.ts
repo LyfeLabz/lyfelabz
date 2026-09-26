@@ -75,6 +75,10 @@ export type TeacherVisibleAttemptDetail = {
   readonly status: "completed";
   readonly responses: readonly TeacherVisibleAttemptResponse[];
   readonly itemResults: readonly TeacherVisibleAttemptItemResult[];
+  // Sprint 30 Show Your Thinking: the student's written response frozen on
+  // this attempt, or `null` when the attempt carries none (no response
+  // written, or finalized before written responses were persisted).
+  readonly writtenResponse: string | null;
 };
 
 export type AssessmentAttemptGetForTeacherResponse = {
@@ -246,6 +250,11 @@ export function projectTeacherAttemptDetail(
     status: "completed",
     responses: attempt.responses.map(projectResponse),
     itemResults: attempt.itemResults.map(projectItemResult),
+    writtenResponse:
+      typeof attempt.writtenResponse === "string" &&
+      attempt.writtenResponse.length > 0
+        ? attempt.writtenResponse
+        : null,
   };
 }
 

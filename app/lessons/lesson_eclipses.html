@@ -2299,7 +2299,7 @@ function ecSubmitQuiz() {
     function ecShowSubmitError(msg) {
       ecFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ecGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(ecQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(ecQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         ecFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

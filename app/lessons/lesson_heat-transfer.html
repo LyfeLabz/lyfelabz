@@ -2007,7 +2007,7 @@ function htSubmitQuiz() {
     function htShowSubmitError(msg) {
       htFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || htGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(htQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(htQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         htFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

@@ -2038,7 +2038,7 @@ function vcSubmitQuiz() {
     function vcShowSubmitError(msg) {
       vcFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || vcGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(vcQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(vcQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         vcFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

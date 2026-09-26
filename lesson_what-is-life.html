@@ -3059,7 +3059,7 @@ function wlSubmitQuiz() {
     function wlShowSubmitError(msg) {
       wlFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || wlGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(wlQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(wlQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
         wlFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {

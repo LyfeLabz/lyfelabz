@@ -29,7 +29,7 @@ const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 
 type Env = {
   runtime: ReturnType<typeof createAssessmentRuntime>;
-  autosaveCalls: Array<{ sessionId: string; responses: unknown }>;
+  autosaveCalls: Array<{ sessionId: string; responses: unknown; writtenResponse?: string }>;
   finalizeCalls: Array<{ sessionId: string; idempotencyKey: string }>;
 };
 
@@ -55,8 +55,8 @@ function buildEnv(assignmentId: string | null): Env {
   };
   const callables: RuntimeCallables = {
     begin: async () => ({ sessionId: "sess-v2", alreadyLive: false }),
-    autosave: async (sessionId, responses) => {
-      autosaveCalls.push({ sessionId, responses });
+    autosave: async (sessionId, responses, writtenResponse) => {
+      autosaveCalls.push({ sessionId, responses, writtenResponse });
       return { persisted: true };
     },
     finalize: async (sessionId, idempotencyKey) => {
@@ -120,11 +120,14 @@ function installRuntimeGlobal(env: Env): void {
     },
     finalize: async (
       indexSelections: ReadonlyArray<number | null | undefined>,
+      options?: { writtenResponse?: unknown },
     ) => {
       if (!rt.hasAssignmentContext) return null;
       const responses = mapIndexes(indexSelections);
+      const written =
+        typeof options?.writtenResponse === "string" ? options.writtenResponse : undefined;
       try {
-        const result = await rt.finalize(responses);
+        const result = await rt.finalize(responses, written);
         return { ok: true, result } as const;
       } catch (err) {
         return {
@@ -270,6 +273,33 @@ describe("v2 lesson artifact - runtime behavior (assignment context)", () => {
     // Shared local scoring UI still renders (perfect score).
     expect(document.getElementById("el-score-num")!.textContent).toBe("10/10");
     expect(document.getElementById("el-think-model")!.className).toContain("show");
+  });
+
+  it("hands the Show Your Thinking text to finalize so it rides the final autosave", async () => {
+    const env = buildEnv("asg-v2");
+    installRuntimeGlobal(env);
+    mountV2Dom();
+    evalV2Script();
+    answerAll(false);
+    fillThinking();
+    (window as unknown as { elSubmitQuiz: () => void }).elSubmitQuiz();
+    await flush();
+    expect(env.finalizeCalls).toHaveLength(1);
+    // Exactly one autosave carries the text: the final pre-finalize autosave,
+    // with the full scored payload. Selection autosaves never carry it (and
+    // the server leaves a stored response untouched when it is omitted, so a
+    // late selection autosave cannot erase it).
+    const withText = env.autosaveCalls.filter((c) => c.writtenResponse !== undefined);
+    expect(withText).toHaveLength(1);
+    expect(withText[0]!.writtenResponse).toBe(
+      "Heat drives convection, moves plates, produces surface change.",
+    );
+    // The scored payload is still exactly the ten quiz selections.
+    expect(
+      (withText[0]!.responses as Array<{ itemId: string }>).map((r) => r.itemId),
+    ).toEqual(["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10"]);
+    // Local scoring UI is unchanged by the written response.
+    expect(document.getElementById("el-score-num")!.textContent).toBe("0/10");
   });
 
   it("dispatches autosave on each answer selection", async () => {
