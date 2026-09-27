@@ -1295,6 +1295,14 @@ describe("synchronizeGradePassback - canonical fresh decision before any write",
   it.each([
     ["deleted", { state: "deleted", maxPoints: 20 }, "courseworkDeleted"],
     ["not published", { state: "draft", maxPoints: 20 }, "courseworkNotPublished"],
+    // 18. A natively scheduled item (DRAFT + future scheduledTime) is still
+    // unpublished: grade passback must never write to it before Classroom
+    // publishes it.
+    [
+      "scheduled but not yet published",
+      { state: "draft", maxPoints: 20, scheduledTime: "2099-01-05T13:00:00Z" },
+      "courseworkNotPublished",
+    ],
     ["ungraded live", { state: "published" }, "courseworkUngraded"],
     ["maxPoints drift", { state: "published", maxPoints: 25 }, "maxPointsMismatch"],
   ] as const)("live coursework %s: no lease, no read, no PATCH; automatic passback records the failure", async (_label, live, status) => {

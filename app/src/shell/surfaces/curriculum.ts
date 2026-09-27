@@ -258,8 +258,9 @@ const sessionPreferences: {
 // `Assignment` below.
 //
 // `RowConfig` retains only what genuinely varies by class: whether the
-// class is included in this Assign action, its scheduled release date/
-// time, and its Google Classroom topic selection.
+// class is included in this Assign action, its posting timing (Post now or
+// Schedule, plus the scheduled date/time), and its Google Classroom topic
+// selection.
 //
 // Second human-review correction (this pass): the per-class "Also publish
 // to Google Classroom" toggle is REMOVED. Selecting an LMS-linked class
@@ -267,18 +268,28 @@ const sessionPreferences: {
 // second opt-in. See `runAssignmentLifecycle`'s `wantsLms` derivation.
 type RowConfig = {
   enabled: boolean;
+  // Scheduled Classroom publication hardening: the teacher's EXPLICIT
+  // per-class posting choice, and the sole authority for whether this
+  // class's assignment carries an `availableAt`. "now" (the default) never
+  // sends one, whatever `date`/`time` happen to hold; "scheduled" sends
+  // exactly the instant `date`+`time` resolve to (see `resolveRowSchedule`).
+  // This replaces the former implicit `scheduleTouched` rule, under which a
+  // row could DISPLAY a future date/time yet publish immediately merely
+  // because the teacher never interacted with it.
+  publishTiming: PublishTiming;
+  // Only meaningful while `publishTiming === "scheduled"`. Pre-filled
+  // (today + the remembered release time) purely as a starting point for
+  // the Schedule controls; a pre-filled value is never a schedule on its own.
   date: string;
   time: string;
   topic: string;
   lmsTopicId: string;
-  // Sprint 30A.3: true only once the teacher has deliberately edited this
-  // row's Date or Time input. `date`/`time` are PRE-FILLED with a decorative
-  // default (today + DEFAULT_RELEASE_TIME) purely for UI presentation, and
-  // that default must never be treated as a genuine scheduling instruction -
-  // only an explicit edit means "actually delay this class's Classroom
-  // publication." Never reset once true for this row's lifetime in the
-  // dialog session.
-  scheduleTouched: boolean;
+  // Set by `renderRow` on every render: true only for a creation row (the
+  // only row shape that renders the Post now / Schedule control). Keeps
+  // schedule validation from ever gating on a row whose controls the
+  // teacher cannot see (e.g. an Update row rehydrated from an earlier
+  // dialog session in which it was still a creation row).
+  schedulable?: boolean;
   // The row's selection at the moment an unresolved Current first locked
   // it (a locked row is force-deselected and cannot be toggled). When the
   // teacher then resolves that row in-dialog with "Set as current", the
@@ -445,30 +456,176 @@ const TOPIC_FILTERS: ReadonlyArray<{
 
 function todayIsoDate(doc: Document): string {
   const win = doc.defaultView ?? window;
-  const d = new win.Date();
+  return isoLocalDate(new win.Date());
+}
+
+// A Date's browser-local calendar day as "YYYY-MM-DD" (the date input's
+// own value format).
+function isoLocalDate(d: Date): string {
   const yyyy = String(d.getFullYear()).padStart(4, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 }
 
-// Sprint 30A.3: converts a row's Date+Time ("YYYY-MM-DD" + "HH:MM") into
-// the RFC3339 UTC instant stored as the draft's `availableAt`, from which
-// the server also derives Google Classroom's `scheduledTime`. `Date`
-// parses "YYYY-MM-DDTHH:MM" as the BROWSER'S OWN local timezone (standard
-// JS behavior for this exact form) - the same timezone the `<input
-// type="date">`/`<input type="time">` controls already display in, so no
-// separate timezone source is introduced. There is no canonical school/
-// user timezone wired anywhere near this code today; browser-local is the
-// smallest correct choice given that, and matches what the teacher sees
-// on screen. Returns null for an unparseable/empty value rather than
-// guessing, so the caller can safely omit `availableAt` and fall back to
-// immediate availability and publication.
-function rowScheduledTimeIso(cfg: RowConfig): string | null {
-  if (!cfg.scheduleTouched || cfg.date === "" || cfg.time === "") return null;
-  const parsed = new Date(`${cfg.date}T${cfg.time}`);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toISOString();
+// -----------------------------------------------------------------------------
+// Per-class posting timing (Post now / Schedule)
+// -----------------------------------------------------------------------------
+
+export type PublishTiming = "now" | "scheduled";
+
+// The server (`lmsAssignmentsPublish`) publishes immediately, rather than
+// sending Classroom a `scheduledTime`, when the stored `availableAt` is
+// within 60 seconds of the moment it runs. A schedule the dialog accepts
+// must therefore still be comfortably outside that window when the server
+// reads it: the 60-second server buffer plus 60 seconds of allowance for
+// the draft -> publish -> Classroom call chain. A time closer than this is
+// rejected here rather than silently published immediately, so the dialog
+// never tells the teacher something is scheduled that the server will
+// intentionally post now.
+export const SCHEDULE_MIN_LEAD_MS = 2 * 60_000;
+
+export type RowScheduleResolution =
+  | { readonly kind: "now" }
+  | { readonly kind: "scheduled"; readonly instant: Date }
+  | {
+      readonly kind: "invalid";
+      readonly reason: "missing" | "tooSoon" | "afterDue";
+    };
+
+const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+const HH_MM_RE = /^(\d{2}):(\d{2})$/;
+
+// Browser-local wall-clock date + time -> the absolute instant it names.
+// Uses the numeric `Date` constructor, which the spec defines as LOCAL time
+// in the browser's own timezone - the same timezone the `<input
+// type="date">`/`<input type="time">` controls display in. There is no
+// canonical school/user timezone on this client path; browser-local matches
+// what the teacher sees on screen. Across a DST transition the result is the
+// real instant the browser resolves (a nonexistent spring-forward time moves
+// forward; an ambiguous fall-back time takes the first occurrence), and the
+// row preview is formatted from this SAME instant, so what the teacher reads
+// is exactly what is stored. Returns null for a missing/malformed value.
+export function localDateTimeToInstant(date: string, time: string): Date | null {
+  const d = ISO_DATE_RE.exec(date);
+  const t = HH_MM_RE.exec(time.slice(0, 5));
+  if (!d || !t) return null;
+  const [year, month, day] = [Number(d[1]), Number(d[2]), Number(d[3])];
+  const [hours, minutes] = [Number(t[1]), Number(t[2])];
+  if (month < 1 || month > 12 || day < 1 || day > 31 || hours > 23 || minutes > 59) {
+    return null;
+  }
+  const instant = new Date(year, month - 1, day, hours, minutes, 0, 0);
+  // Reject roll-over dates such as 2026-02-30 rather than silently posting
+  // on a different day than the one entered.
+  if (
+    Number.isNaN(instant.getTime()) ||
+    instant.getFullYear() !== year ||
+    instant.getMonth() !== month - 1 ||
+    instant.getDate() !== day
+  ) {
+    return null;
+  }
+  return instant;
+}
+
+// The ONE resolver for a row's posting timing, shared by the preview, the
+// validation message, the Assign gate, and the draft payload, so they can
+// never disagree. Due-date rule: the Classroom due moment for a LyfeLabz due
+// date is 11:59 PM at the END of that calendar day (lmsAssignmentsPublish
+// resolves it in the school's timezone via `lmsDueInstantFor`), so a posting
+// time is valid only when it falls strictly before 11:59 PM on the due date.
+// That is the actual product model, not an extra restriction: coursework
+// posted after it is due is never meaningful to a student. This check uses
+// the browser's timezone, which matches the school's for a teacher on a
+// correctly configured device.
+export function resolveRowSchedule(input: {
+  readonly publishTiming: PublishTiming;
+  readonly date: string;
+  readonly time: string;
+  readonly dueDate: string;
+  readonly nowMs: number;
+}): RowScheduleResolution {
+  if (input.publishTiming !== "scheduled") return { kind: "now" };
+  const instant = localDateTimeToInstant(input.date, input.time);
+  if (instant === null) return { kind: "invalid", reason: "missing" };
+  if (instant.getTime() < input.nowMs + SCHEDULE_MIN_LEAD_MS) {
+    return { kind: "invalid", reason: "tooSoon" };
+  }
+  if (input.dueDate !== "") {
+    const dueEnd = localDateTimeToInstant(input.dueDate, "23:59");
+    if (dueEnd !== null && instant.getTime() >= dueEnd.getTime()) {
+      return { kind: "invalid", reason: "afterDue" };
+    }
+  }
+  return { kind: "scheduled", instant };
+}
+
+export const SCHEDULE_INVALID_MESSAGE: Readonly<
+  Record<"missing" | "tooSoon" | "afterDue", string>
+> = Object.freeze({
+  missing: "Choose a posting date and time.",
+  tooSoon: "Choose a time at least 2 minutes from now, or choose Post now.",
+  afterDue: "Choose a posting time before the due date.",
+});
+
+// "Posts Mon, Sep 28 at 8:00 AM EDT", formatted from the exact instant that
+// becomes `availableAt`, in the browser's own timezone (the zone name is
+// included so a device set to an unexpected timezone is visible before the
+// teacher confirms). The year is added only when it differs from this year.
+export function formatPostingPreview(instant: Date, nowMs: number): string {
+  const sameYear = new Date(nowMs).getFullYear() === instant.getFullYear();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).formatToParts(instant);
+  const part = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  const datePart = sameYear
+    ? `${part("weekday")}, ${part("month")} ${part("day")}`
+    : `${part("weekday")}, ${part("month")} ${part("day")}, ${part("year")}`;
+  return `Posts ${datePart} at ${part("hour")}:${part("minute")} ${part("dayPeriod")} ${part("timeZoneName")}`;
+}
+
+// One per open Assign dialog. `renderRow` registers a refresher for each
+// creation row (re-registering on an in-place re-render replaces the
+// previous one); `refreshAll` re-evaluates every row's preview/validation.
+type RowScheduleContext = {
+  readonly dueDate: () => string;
+  readonly register: (classId: string, refresh: () => void) => void;
+  readonly refreshAll: () => void;
+};
+
+function createRowScheduleContext(dueDate: () => string): RowScheduleContext {
+  const refreshers = new Map<string, () => void>();
+  return {
+    dueDate,
+    register: (classId, refresh) => {
+      refreshers.set(classId, refresh);
+    },
+    refreshAll: () => {
+      for (const refresh of refreshers.values()) refresh();
+    },
+  };
+}
+
+function resolveRowScheduleFor(
+  cfg: RowConfig,
+  dueDate: string,
+  nowMs: number,
+): RowScheduleResolution {
+  return resolveRowSchedule({
+    publishTiming: cfg.publishTiming,
+    date: cfg.date,
+    time: cfg.time,
+    dueDate,
+    nowMs,
+  });
 }
 
 // The visible "✓ Assigned" badge must reflect an authoritative signal
@@ -1656,13 +1813,15 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         // by default (`enabled: true`), matching the common "assign to
         // all of my classes" workflow. The teacher may deselect any
         // class below.
+        // Posting timing defaults to Post now. `date`/`time` only seed
+        // the Schedule controls if the teacher explicitly chooses Schedule.
         {
           enabled: true,
+          publishTiming: "now",
           date: todayIsoDate(doc),
           time: sessionPreferences.releaseTime,
           topic: sessionPreferences.topic,
           lmsTopicId: sessionPreferences.lmsTopicId,
-          scheduleTouched: false,
         },
     );
   }
@@ -1677,6 +1836,12 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   const shared: SharedAssignConfig = existing
     ? { ...existing.shared }
     : { graded: false, points: DEFAULT_POINTS, dueDate: "" };
+
+  // Posting-timing context shared by every class row in this dialog: the
+  // live due date (schedule validation depends on it) and each creation
+  // row's own schedule-status refresher, so a due-date change or a confirm
+  // attempt re-evaluates every row against the current clock.
+  const scheduleContext = createRowScheduleContext(() => shared.dueDate);
 
   const linksByClassId =
     cachedClassLinks && cachedClassLinks.uid === session.uid
@@ -1781,6 +1946,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     value: shared.dueDate,
     onInput: (v) => {
       shared.dueDate = v;
+      // A scheduled class's posting time is validated against the due
+      // date, so every row's schedule status must re-evaluate when it moves.
+      scheduleContext.refreshAll();
+      updateConfirmState();
     },
   });
   dueDateInput.input.setAttribute("data-testid", "assign-shared-due-date");
@@ -1858,10 +2027,14 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   // `integrations` seam wired) - matching the per-row condition below
   // that omits the column's cell entirely in that case, keeping the
   // shared grid's columns aligned either way.
+  // Scheduled Classroom publication hardening: the former Date and Time
+  // columns are replaced by one "Posting" column holding each class's
+  // explicit Post now / Schedule choice; a scheduled class's date, time,
+  // and resolved posting time appear on a line beneath it instead.
   const headerLabels =
     integrations !== null
-      ? ["", "Class", "Topic", "Date", "Time"]
-      : ["", "Class", "Date", "Time"];
+      ? ["", "Class", "Topic", "Posting"]
+      : ["", "Class", "Posting"];
   for (const label of headerLabels) {
     const cell = doc.createElement("span");
     cell.textContent = label;
@@ -1869,10 +2042,26 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   }
 
   const rowsHost = doc.createElement("div");
-  rowsHost.className = "shell-assign-rows";
+  rowsHost.className =
+    integrations !== null
+      ? "shell-assign-rows"
+      : "shell-assign-rows shell-assign-rows-no-topic";
   rowsHost.setAttribute("data-testid", "assign-rows");
   rowsHost.appendChild(rowsHeader);
   body.appendChild(rowsHost);
+
+  // Every selected class the teacher chose to Schedule must resolve to a
+  // valid posting time before Assign can proceed. Only rows that render the
+  // Post now / Schedule control are considered (see RowConfig.schedulable).
+  const allSchedulesValid = (nowMs: number): boolean => {
+    for (const r of rowState.values()) {
+      if (!r.enabled || r.schedulable !== true) continue;
+      if (resolveRowScheduleFor(r, shared.dueDate, nowMs).kind === "invalid") {
+        return false;
+      }
+    }
+    return true;
+  };
 
   const updateConfirmState = (): void => {
     let enabledCount = 0;
@@ -1885,7 +2074,8 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     // shape (assignments.invalidClassroomGrading).
     const gradingValid =
       !shared.graded || isValidClassroomMaxPoints(shared.points);
-    const canConfirm = enabledCount > 0 && gradingValid;
+    const canConfirm =
+      enabledCount > 0 && gradingValid && allSchedulesValid(Date.now());
     confirm.disabled = !canConfirm;
     confirm.setAttribute("aria-disabled", canConfirm ? "false" : "true");
     // Sprint 30A.1 FINAL UI POLISH (human review): a compact, always-
@@ -1924,6 +2114,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
           rowLifecycleState,
           rowsHost,
           onConfirm,
+          scheduleContext,
         }
       : undefined;
     const row = renderRow(
@@ -1935,6 +2126,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       integrations,
       lc,
       retryCtx,
+      scheduleContext,
     );
     rowsHost.appendChild(row);
   }
@@ -1954,6 +2146,18 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     // reached with a stale disabled state. No class assignment request
     // is made (Scenario D).
     if (shared.graded && !isValidClassroomMaxPoints(shared.points)) return;
+    // Posting timing is validated against ONE clock reading taken here, and
+    // that same reading resolves every scheduled row's `availableAt` below,
+    // so a schedule that passes validation can never be re-resolved a few
+    // milliseconds later into a different answer. Time passes while the
+    // dialog is open, so a schedule that was valid when entered may no
+    // longer be: refresh every row's message and refuse to dispatch.
+    const confirmNowMs = Date.now();
+    if (!allSchedulesValid(confirmNowMs)) {
+      scheduleContext.refreshAll();
+      updateConfirmState();
+      return;
+    }
     submissionInFlight = true;
     confirm.disabled = true;
     confirm.setAttribute("aria-busy", "true");
@@ -1972,6 +2176,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       readonly className: string;
       readonly cfg: RowConfig;
       readonly link: IntegrationsClassLink | null;
+      // This class's authoritative `availableAt` (RFC3339 UTC), resolved
+      // once from `confirmNowMs`, or null for Post now. Each row resolves
+      // from its OWN `cfg` only, so no class's schedule reaches another.
+      readonly availableAt: string | null;
     };
     type ActiveClassSummary = Extract<ClassSummary, { status: "active" }>;
     const classById = new Map<string, ActiveClassSummary>(
@@ -1982,7 +2190,16 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       stored.rows.set(cid, { ...cfg });
       if (cfg.enabled) {
         enabledCount += 1;
-        if (!firstEnabledTime) firstEnabledTime = cfg.time;
+        const resolved =
+          cfg.schedulable === true
+            ? resolveRowScheduleFor(cfg, shared.dueDate, confirmNowMs)
+            : ({ kind: "now" } as const);
+        // The remembered release time only seeds a FUTURE Schedule choice;
+        // it is learned from a class the teacher actually scheduled, never
+        // from a Post now row's inert pre-filled time.
+        if (!firstEnabledTime && resolved.kind === "scheduled") {
+          firstEnabledTime = cfg.time;
+        }
         if (!firstEnabledTopic && cfg.topic) firstEnabledTopic = cfg.topic;
         if (!firstEnabledLmsTopicId && cfg.lmsTopicId)
           firstEnabledLmsTopicId = cfg.lmsTopicId;
@@ -1996,6 +2213,8 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
             : cid,
           cfg,
           link: linksByClassId.get(cid) ?? null,
+          availableAt:
+            resolved.kind === "scheduled" ? resolved.instant.toISOString() : null,
         });
       }
     }
@@ -2160,6 +2379,10 @@ type RowRetryContext = {
   // it, exactly as it does for every other confirmation this surface
   // shows.
   onConfirm: (summary: string) => void;
+  // The dialog's posting-timing context, carried here so a row re-rendered
+  // in place (Retry, Set/Change Current) keeps validating against the same
+  // live due date and stays registered for confirm-time refresh.
+  scheduleContext?: RowScheduleContext;
 };
 
 // Historical Assignment Resolution, Implementation Slice 10 (extracted),
@@ -2742,9 +2965,17 @@ function renderRow(
   integrations: IntegrationsDeps | null,
   lifecycle?: LifecycleStateEntry,
   retryContext?: RowRetryContext,
+  schedule?: RowScheduleContext,
 ): HTMLElement {
   const cfg = rowState.get(cls.id);
   if (!cfg) throw new Error(`missing row state for class ${cls.id}`);
+  // Only a creation row (below) renders the Post now / Schedule control;
+  // every other row shape is never schedule-validated.
+  cfg.schedulable = false;
+  const scheduleContext =
+    schedule ??
+    retryContext?.scheduleContext ??
+    createRowScheduleContext(() => "");
 
   // Sprint 30A.1 UX correction: a compact, horizontally-aligned row
   // rather than a tall stacked card. `row` is a `display:contents` grid
@@ -3095,6 +3326,8 @@ function renderRow(
   let lmsTopicSelect: HTMLSelectElement | null = null;
   let dateInput: HTMLInputElement | null = null;
   let timeInput: HTMLInputElement | null = null;
+  const timingInputs: HTMLInputElement[] = [];
+  let refreshRowSchedule: (() => void) | null = null;
 
   if (isCreationRow) {
     if (link && integrations !== null) {
@@ -3150,33 +3383,154 @@ function renderRow(
       row.appendChild(placeholder);
     }
 
+    // Scheduled Classroom publication hardening: an explicit per-class
+    // "Post now | Schedule" choice (RowConfig.publishTiming), styled with
+    // the dialog's existing segmented Graded/Ungraded control. Post now is
+    // the default and hides the date/time controls entirely, so no
+    // pre-filled date/time can ever look like a schedule that will not be
+    // honored. Schedule reveals them together with the resolved posting
+    // time and any validation message.
+    cfg.schedulable = true;
+    const timingName = `assign-row-timing-${cls.id}`;
+    const timingGroup = doc.createElement("div");
+    timingGroup.className = "shell-assign-grading shell-assign-row-timing";
+    timingGroup.setAttribute("role", "radiogroup");
+    timingGroup.setAttribute("aria-label", `${cls.title} posting`);
+    timingGroup.setAttribute("data-testid", `assign-row-timing-${cls.id}`);
+    const makeTimingOption = (
+      value: PublishTiming,
+      optionLabel: string,
+    ): { wrapper: HTMLElement; input: HTMLInputElement } => {
+      const wrapper = doc.createElement("label");
+      wrapper.className = "shell-assign-grading-option";
+      const input = doc.createElement("input");
+      input.type = "radio";
+      input.name = timingName;
+      input.value = value;
+      input.setAttribute("data-testid", `assign-row-timing-${value}-${cls.id}`);
+      wrapper.appendChild(input);
+      const text = doc.createElement("span");
+      text.textContent = optionLabel;
+      wrapper.appendChild(text);
+      timingGroup.appendChild(wrapper);
+      return { wrapper, input };
+    };
+    const postNowOption = makeTimingOption("now", "Post now");
+    const scheduleOption = makeTimingOption("scheduled", "Schedule");
+    timingInputs.push(postNowOption.input, scheduleOption.input);
+    row.appendChild(timingGroup);
+
+    const schedulePanel = doc.createElement("div");
+    schedulePanel.className = "shell-assign-row-schedule";
+    schedulePanel.setAttribute("data-testid", `assign-row-schedule-${cls.id}`);
+
     dateInput = doc.createElement("input");
     dateInput.type = "date";
     dateInput.className = "shell-assign-row-date";
     dateInput.id = `assign-row-date-${cls.id}`;
     dateInput.setAttribute("data-testid", `assign-row-date-${cls.id}`);
-    dateInput.setAttribute("aria-label", `${cls.title} release date`);
+    dateInput.setAttribute("aria-label", `${cls.title} posting date`);
     dateInput.value = cfg.date;
-    dateInput.addEventListener("input", () => {
-      cfg.date = dateInput!.value;
-      // Sprint 30A.3: a deliberate edit, not the decorative pre-filled
-      // default - see RowConfig.scheduleTouched.
-      cfg.scheduleTouched = true;
-    });
-    row.appendChild(dateInput);
+    schedulePanel.appendChild(dateInput);
 
     timeInput = doc.createElement("input");
     timeInput.type = "time";
     timeInput.className = "shell-assign-row-time";
     timeInput.id = `assign-row-time-${cls.id}`;
     timeInput.setAttribute("data-testid", `assign-row-time-${cls.id}`);
-    timeInput.setAttribute("aria-label", `${cls.title} release time`);
+    timeInput.setAttribute("aria-label", `${cls.title} posting time`);
     timeInput.value = cfg.time;
-    timeInput.addEventListener("input", () => {
-      cfg.time = timeInput!.value;
-      cfg.scheduleTouched = true;
+    schedulePanel.appendChild(timeInput);
+
+    const preview = doc.createElement("span");
+    preview.className = "shell-assign-row-schedule-preview";
+    preview.setAttribute("data-testid", `assign-row-schedule-preview-${cls.id}`);
+    preview.setAttribute("aria-live", "polite");
+    schedulePanel.appendChild(preview);
+
+    const scheduleInvalid = doc.createElement("span");
+    scheduleInvalid.className = "shell-assign-field-validation";
+    scheduleInvalid.setAttribute("data-testid", `assign-row-schedule-invalid-${cls.id}`);
+    scheduleInvalid.setAttribute("role", "alert");
+    scheduleInvalid.hidden = true;
+    schedulePanel.appendChild(scheduleInvalid);
+
+    row.appendChild(schedulePanel);
+
+    const dateEl = dateInput;
+    const timeEl = timeInput;
+    // Re-renders this row's timing presentation from `cfg` and the current
+    // clock. Pure presentation: whether `availableAt` is sent is decided
+    // solely by `cfg.publishTiming` + `resolveRowSchedule` at confirm time.
+    const refreshSchedule = (): void => {
+      const scheduled = cfg.publishTiming === "scheduled";
+      postNowOption.input.checked = !scheduled;
+      scheduleOption.input.checked = scheduled;
+      postNowOption.wrapper.classList.toggle("shell-assign-grading-option-active", !scheduled);
+      scheduleOption.wrapper.classList.toggle("shell-assign-grading-option-active", scheduled);
+      row.setAttribute("data-publish-timing", cfg.publishTiming);
+      schedulePanel.hidden = !scheduled;
+      const nowMs = Date.now();
+      const resolved = resolveRowScheduleFor(cfg, scheduleContext.dueDate(), nowMs);
+      const showInvalid = scheduled && cfg.enabled && resolved.kind === "invalid";
+      preview.textContent =
+        resolved.kind === "scheduled" ? formatPostingPreview(resolved.instant, nowMs) : "";
+      scheduleInvalid.hidden = !showInvalid;
+      scheduleInvalid.textContent =
+        resolved.kind === "invalid" ? SCHEDULE_INVALID_MESSAGE[resolved.reason] : "";
+      for (const el of [dateEl, timeEl]) {
+        if (showInvalid) el.setAttribute("aria-invalid", "true");
+        else el.removeAttribute("aria-invalid");
+      }
+    };
+    refreshSchedule();
+    scheduleContext.register(cls.id, refreshSchedule);
+
+    // A convenience only: the first time the teacher chooses Schedule for a
+    // row they have not edited yet, a pre-filled value that is not a usable
+    // future time (today's remembered release time has already passed) moves
+    // to the same time tomorrow. A schedule the teacher typed is never
+    // rewritten. A row rehydrated as scheduled counts as teacher-entered.
+    let scheduleEdited = cfg.publishTiming === "scheduled";
+    const seedScheduleIfNeeded = (): void => {
+      if (scheduleEdited) return;
+      if (cfg.time === "") cfg.time = sessionPreferences.releaseTime;
+      const nowMs = Date.now();
+      const today = todayIsoDate(doc);
+      const candidate = localDateTimeToInstant(today, cfg.time);
+      if (candidate === null || candidate.getTime() < nowMs + SCHEDULE_MIN_LEAD_MS) {
+        const tomorrow = new Date(nowMs);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        cfg.date = isoLocalDate(tomorrow);
+      } else {
+        cfg.date = today;
+      }
+      dateEl.value = cfg.date;
+      timeEl.value = cfg.time;
+    };
+
+    const onTimingChange = (): void => {
+      cfg.publishTiming = scheduleOption.input.checked ? "scheduled" : "now";
+      if (cfg.publishTiming === "scheduled") seedScheduleIfNeeded();
+      refreshSchedule();
+      onChange();
+    };
+    postNowOption.input.addEventListener("change", onTimingChange);
+    scheduleOption.input.addEventListener("change", onTimingChange);
+
+    dateEl.addEventListener("input", () => {
+      cfg.date = dateEl.value;
+      scheduleEdited = true;
+      refreshSchedule();
+      onChange();
     });
-    row.appendChild(timeInput);
+    timeEl.addEventListener("input", () => {
+      cfg.time = timeEl.value;
+      scheduleEdited = true;
+      refreshSchedule();
+      onChange();
+    });
+    refreshRowSchedule = refreshSchedule;
   }
 
   // Historical Assignment Resolution, Implementation Slice 10. The
@@ -3200,9 +3554,12 @@ function renderRow(
     if (dateInput) controls.push(dateInput);
     if (timeInput) controls.push(timeInput);
     if (lmsTopicSelect) controls.push(lmsTopicSelect);
+    controls.push(...timingInputs);
     for (const el of controls) {
       (el as HTMLInputElement | HTMLSelectElement).disabled = !enabled;
     }
+    // A deselected class shows no schedule validation message.
+    refreshRowSchedule?.();
     onChange();
   };
   if (!isLockedRow) {
@@ -3392,6 +3749,10 @@ type PerClassOutcome = {
   // LMS-linked). Otherwise one of the four `AssignmentLmsPublicationState`
   // values produced by `runPublicationAction`.
   readonly lmsState: "notRequested" | AssignmentLmsPublicationState;
+  // True only when Classroom publication succeeded AND the server reports
+  // it created the item with a native scheduled publish time (not yet
+  // visible to students), so the summary can say "Scheduled".
+  readonly lmsScheduled?: boolean;
 };
 
 // Run the certified per-class lifecycle:
@@ -3413,6 +3774,7 @@ async function runAssignmentLifecycle(input: {
     readonly className: string;
     readonly cfg: RowConfig;
     readonly link: IntegrationsClassLink | null;
+    readonly availableAt: string | null;
   }[];
   // Sprint 30A.1 UX correction: ONE shared grading configuration for the
   // whole Assign action, derived once by the caller from the dialog-level
@@ -3481,11 +3843,11 @@ async function runAssignmentLifecycle(input: {
       // server's sole source for Google Classroom's `scheduledTime`
       // (`lmsAssignmentsPublish` reads it from the assignment), so the two
       // can never drift and a later publication retry keeps the schedule.
-      // Null unless the teacher deliberately edited this row's Date/Time
-      // (the pre-filled default is never a schedule), in which case the
-      // draft carries no `availableAt` and publication is immediate, exactly
-      // as before.
-      const scheduledTime = rowScheduledTimeIso(row.cfg);
+      // Null for a class the teacher left on Post now (the default): the
+      // draft then carries no `availableAt` and publication is immediate.
+      // Resolved by the confirm handler from this row's explicit posting
+      // choice (see RowConfig.publishTiming), never from pre-filled values.
+      const scheduledTime = row.availableAt;
 
       // Step 1: authoritative draft. If this fails, no publish and no
       // LMS side effect.
@@ -3628,6 +3990,9 @@ async function runAssignmentLifecycle(input: {
         lyfelabzState: "published",
         lmsRequested: true,
         lmsState: result.kind,
+        lmsScheduled:
+          result.kind === "succeeded" &&
+          result.outcome.lmsInitialState === "draft",
       };
     }),
   );
@@ -3680,6 +4045,14 @@ function summarizeOutcomes(
     (o) => o.lmsState === "identityMismatch",
   ).length;
   const lmsFailed = lmsRequested - lmsSucceeded;
+  // Of the successful Classroom publications, how many the server created
+  // as scheduled (not yet visible to students) versus visible now.
+  const lmsScheduled = outcomes.filter(
+    (o) => o.lmsState === "succeeded" && o.lmsScheduled === true,
+  ).length;
+  const lmsPostedNow = lmsSucceeded - lmsScheduled;
+  const classesPhrase = (n: number): string =>
+    n === 1 ? "1 class" : `${n} classes`;
 
   // Phrase the "saved but not published" clause once so the singular and
   // plural forms stay consistent wherever it appears.
@@ -3735,8 +4108,14 @@ function summarizeOutcomes(
   // The line is calm and provider-neutral: no error code, no OAuth term,
   // no callable name, no Google identity (blueprint §10).
   let lmsLine: string;
-  if (lmsFailed === 0) {
+  if (lmsFailed === 0 && lmsScheduled === 0) {
     lmsLine = "Publishing to Google Classroom succeeded.";
+  } else if (lmsFailed === 0 && lmsPostedNow === 0) {
+    // Every Classroom item was created with a native scheduled publish
+    // time: never imply students can already see it.
+    lmsLine = `Scheduled in Google Classroom for ${classesPhrase(lmsScheduled)}.`;
+  } else if (lmsFailed === 0) {
+    lmsLine = `Published to Google Classroom for ${classesPhrase(lmsPostedNow)} and scheduled for ${classesPhrase(lmsScheduled)}.`;
   } else if (lmsSucceeded === 0 && lmsFailed === lmsReconnect) {
     // Every requested publication was blocked by an inactive connection.
     lmsLine =
@@ -3757,7 +4136,9 @@ function summarizeOutcomes(
   } else if (lmsSucceeded === 0) {
     lmsLine = "Publishing to Google Classroom did not succeed.";
   } else {
-    lmsLine = `Publishing to Google Classroom succeeded for ${lmsSucceeded} class${lmsSucceeded === 1 ? "" : "es"} and did not succeed for ${lmsFailed}.`;
+    const scheduledNote =
+      lmsScheduled > 0 ? ` (${lmsScheduled} scheduled)` : "";
+    lmsLine = `Publishing to Google Classroom succeeded for ${lmsSucceeded} class${lmsSucceeded === 1 ? "" : "es"}${scheduledNote} and did not succeed for ${lmsFailed}.`;
   }
   return `${base} ${lmsLine}`;
 }

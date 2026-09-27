@@ -1636,12 +1636,19 @@
      checkbox now (the drag handle is gone) - five tracks total. Row
      density is also tightened (padding, row-gap) per human review ("more
      whitespace than necessary"). */
+  /* Scheduled Classroom publication hardening: the Date and Time tracks
+     are replaced by one "Posting" track (the per-class Post now / Schedule
+     control). A scheduled class's date, time, and resolved posting time
+     sit on a full-width line beneath its row (`.shell-assign-row-schedule`). */
   .shell-assign-rows {
     display: grid;
-    grid-template-columns: auto minmax(9rem, 1.3fr) minmax(8rem, 1fr) minmax(7.5rem, 0.85fr) minmax(6rem, 0.7fr);
+    grid-template-columns: auto minmax(9rem, 1.3fr) minmax(8rem, 1fr) auto;
     column-gap: 0.6rem;
     row-gap: 0.25rem;
     align-items: center;
+  }
+  .shell-assign-rows-no-topic {
+    grid-template-columns: auto minmax(9rem, 1fr) auto;
   }
   .shell-assign-rows-header {
     display: contents;
@@ -1718,6 +1725,37 @@
     background: #fff;
     width: 100%;
     box-sizing: border-box;
+  }
+  .shell-assign-row-timing {
+    justify-self: start;
+  }
+  .shell-assign-row-timing .shell-assign-grading-option {
+    white-space: nowrap;
+  }
+  .shell-assign-row-schedule {
+    grid-column: 2 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.6rem;
+    padding: 0 0 0.35rem 0;
+  }
+  .shell-assign-row-schedule[hidden] {
+    display: none;
+  }
+  .shell-assign-row-schedule .shell-assign-row-date {
+    width: 10rem;
+  }
+  .shell-assign-row-schedule .shell-assign-row-time {
+    width: 7.5rem;
+  }
+  .shell-assign-row-schedule-preview {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--tw-toggle-active-ink, #1f6b3d);
+  }
+  .shell-assign-row-schedule-preview:empty {
+    display: none;
   }
   .shell-assign-row-disambig {
     grid-column: 1 / -1;
@@ -2079,11 +2117,14 @@
     .shell-assign-row-identity { flex: 1 1 100%; }
     .shell-assign-row-topic,
     .shell-assign-row-date,
-    .shell-assign-row-time {
+    .shell-assign-row-time,
+    .shell-assign-row-schedule .shell-assign-row-date,
+    .shell-assign-row-schedule .shell-assign-row-time {
       flex: 1 1 8rem;
       min-width: 0;
       width: auto;
     }
+    .shell-assign-row-schedule,
     .shell-assign-row-disambig,
     .shell-assign-row-current-panel,
     .shell-assign-validation,

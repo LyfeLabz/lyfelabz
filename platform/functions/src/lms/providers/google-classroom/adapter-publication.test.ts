@@ -279,16 +279,14 @@ describe("googleClassroomAdapter.publishAssignment (Sprint 25 Phase 1)", () => {
   });
 
   // Sprint 30A.3.
-  describe("due date (Sprint 30A.3)", () => {
-    it("converts an ISO 'YYYY-MM-DD' dueDate into Classroom's {year,month,day} shape for the transport call", async () => {
+  describe("due date: Classroom requires dueDate AND dueTime, both UTC", () => {
+    const captureCreate = () => {
       const capturing = createFixtureGoogleClassroomTransport();
-      let capturedDueDate:
-        | { year: number; month: number; day: number }
-        | undefined;
+      const captured: { req?: Record<string, unknown> } = {};
       (capturing as unknown as Record<string, unknown>).createCourseWork = (
-        req: { dueDate?: { year: number; month: number; day: number } },
+        req: Record<string, unknown>,
       ) => {
-        capturedDueDate = req.dueDate;
+        captured.req = req;
         return Promise.resolve({
           id: "fixture-coursework-due-date",
           alternateLink: "https://classroom.google.com/c/fixture/a/due/details",
@@ -296,33 +294,27 @@ describe("googleClassroomAdapter.publishAssignment (Sprint 25 Phase 1)", () => {
       };
       setGoogleClassroomTransport(capturing);
       setGoogleClassroomConfig(FIXTURE_CONFIG);
+      return captured;
+    };
 
+    it("16. splits the due instant into Classroom's UTC dueDate + dueTime pair", async () => {
+      const captured = captureCreate();
+      // 11:59 PM EDT on Sep 23 is 03:59 UTC on Sep 24: the UTC date rolls
+      // over, which is exactly why Classroom needs both fields together.
       await googleClassroomAdapter.publishAssignment({
         accessToken: FIXTURE_ACCESS_TOKEN,
         lmsClassId: PLANET_FORGE_COURSE_ID,
         title: FIXTURE_ASSIGNMENT_TITLE,
         lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
-        dueDate: "2026-09-23",
+        dueAt: "2026-09-24T03:59:00.000Z",
       });
 
-      expect(capturedDueDate).toEqual({ year: 2026, month: 9, day: 23 });
+      expect(captured.req?.dueDate).toEqual({ year: 2026, month: 9, day: 24 });
+      expect(captured.req?.dueTime).toEqual({ hours: 3, minutes: 59 });
     });
 
-    it("does not forward a dueDate field to the transport when not supplied", async () => {
-      const capturing = createFixtureGoogleClassroomTransport();
-      let capturedRequest: Record<string, unknown> = {};
-      (capturing as unknown as Record<string, unknown>).createCourseWork = (
-        req: Record<string, unknown>,
-      ) => {
-        capturedRequest = req;
-        return Promise.resolve({
-          id: "fixture-coursework-no-due-date",
-          alternateLink: "https://classroom.google.com/c/fixture/a/no-due/details",
-        });
-      };
-      setGoogleClassroomTransport(capturing);
-      setGoogleClassroomConfig(FIXTURE_CONFIG);
-
+    it("does not forward dueDate or dueTime to the transport when no due instant is supplied", async () => {
+      const captured = captureCreate();
       await googleClassroomAdapter.publishAssignment({
         accessToken: FIXTURE_ACCESS_TOKEN,
         lmsClassId: PLANET_FORGE_COURSE_ID,
@@ -330,10 +322,11 @@ describe("googleClassroomAdapter.publishAssignment (Sprint 25 Phase 1)", () => {
         lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
       });
 
-      expect(capturedRequest).not.toHaveProperty("dueDate");
+      expect(captured.req).not.toHaveProperty("dueDate");
+      expect(captured.req).not.toHaveProperty("dueTime");
     });
 
-    it("rejects a malformed dueDate rather than forwarding it upstream", async () => {
+    it("rejects a malformed due instant rather than forwarding it upstream", async () => {
       setupFixture();
       await expect(
         googleClassroomAdapter.publishAssignment({
@@ -341,9 +334,49 @@ describe("googleClassroomAdapter.publishAssignment (Sprint 25 Phase 1)", () => {
           lmsClassId: PLANET_FORGE_COURSE_ID,
           title: FIXTURE_ASSIGNMENT_TITLE,
           lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
-          dueDate: "09/23/2026",
+          dueAt: "09/23/2026",
         }),
       ).rejects.toBeInstanceOf(PlatformError);
+    });
+  });
+
+  describe("create-response observability", () => {
+    it("reports the state and scheduledTime Classroom echoed on create", async () => {
+      const capturing = createFixtureGoogleClassroomTransport();
+      (capturing as unknown as Record<string, unknown>).createCourseWork = () =>
+        Promise.resolve({
+          id: "fixture-coursework-echo",
+          state: "DRAFT",
+          scheduledTime: "2026-09-23T11:45:00Z",
+        });
+      setGoogleClassroomTransport(capturing);
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+
+      const result = await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+        scheduledTime: "2026-09-23T11:45:00.000Z",
+      });
+
+      expect(result).toMatchObject({
+        lmsAssignmentId: "fixture-coursework-echo",
+        reportedState: "draft",
+        reportedScheduledTime: "2026-09-23T11:45:00Z",
+      });
+    });
+
+    it("reports nothing extra when Classroom's response omits state", async () => {
+      setupFixture();
+      const result = await googleClassroomAdapter.publishAssignment({
+        accessToken: FIXTURE_ACCESS_TOKEN,
+        lmsClassId: PLANET_FORGE_COURSE_ID,
+        title: FIXTURE_ASSIGNMENT_TITLE,
+        lyfelabzAssignmentUrl: FIXTURE_ASSIGNMENT_URL,
+      });
+      expect(result).not.toHaveProperty("reportedState");
+      expect(result).not.toHaveProperty("reportedScheduledTime");
     });
   });
 

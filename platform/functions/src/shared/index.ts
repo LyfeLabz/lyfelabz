@@ -279,6 +279,7 @@ export {
   type LmsAssignmentPublicationCreationWrite,
   type LmsAssignmentPublicationRecord,
   type LmsAssignmentPublicationStatus,
+  type LmsPublicationInitialState,
   type LmsClassLinkBreakWrite,
   type LmsClassLinkCreationWrite,
   type LmsClassLinkRecord,

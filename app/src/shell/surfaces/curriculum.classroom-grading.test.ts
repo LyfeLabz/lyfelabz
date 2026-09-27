@@ -667,172 +667,74 @@ describe("Assign dialog - per-class schedule isolation (Sprint 30A.1 UX correcti
   });
 });
 
-describe("Assign dialog - scheduled Classroom publication (Sprint 30A.3)", () => {
+// Scheduled Classroom publication hardening: every class row carries an
+// EXPLICIT Post now / Schedule choice (RowConfig.publishTiming). Post now is
+// the default and never sends `availableAt`, whatever the hidden date/time
+// inputs hold; Schedule makes that row's resolved date+time the one
+// authoritative `availableAt` (which lmsAssignmentsPublish turns into
+// Classroom's native `scheduledTime`). This replaces the former implicit
+// `scheduleTouched` rule, under which a visibly future date/time could
+// still publish immediately.
+describe("Assign dialog - explicit Post now / Schedule per class", () => {
+  // Only Date is faked, so the harness's setTimeout-based `settle()` keeps
+  // working while "now" is pinned for deterministic schedule validation.
+  const NOW = new Date(2031, 8, 22, 7, 0, 0, 0).getTime(); // Mon Sep 22 2031, 07:00 local
   beforeEach(() => {
     _resetCurriculumSessionStateForTest();
     document
       .querySelectorAll("[data-testid=assign-overlay]")
       .forEach((el) => el.remove());
-  });
-
-  test("leaving Date/Time untouched (the decorative pre-filled default) sends NO scheduledTime, exactly like today", async () => {
-    const asn = okAssignments();
-    const it = makeIntegrations();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listFour,
-      assignments: asn.seam,
-      integrations: it.deps,
+    jest.useFakeTimers({
+      now: NOW,
+      doNotFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "setImmediate",
+        "clearImmediate",
+        "queueMicrotask",
+        "nextTick",
+        "hrtime",
+        "performance",
+      ],
     });
-    await openDialogFor(mount, "earths-layers");
-
-    // No interaction with the Date/Time inputs at all.
-    confirm();
-    await settle();
-
-    expect(it.publishCalls.length).toBeGreaterThan(0);
-    for (const call of it.publishCalls) {
-      expect(call).not.toHaveProperty("scheduledTime");
-    }
+  });
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
-  test("deliberately setting a class's Date/Time records that class's instant durably as availableAt (the server's sole schedule source)", async () => {
-    const asn = okAssignments();
-    const it = makeIntegrations();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listFour,
-      assignments: asn.seam,
-      integrations: it.deps,
-    });
-    await openDialogFor(mount, "earths-layers");
-
-    const futureYear = new Date().getFullYear() + 1;
-    const c1Date = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-date-c1]",
-    )!;
-    const c1Time = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-time-c1]",
-    )!;
-    c1Date.value = `${futureYear}-09-23`;
-    c1Date.dispatchEvent(new Event("input"));
-    c1Time.value = "07:45";
-    c1Time.dispatchEvent(new Event("input"));
-
-    confirm();
-    await settle();
-
-    const c1Draft = asn.draftInputs.find((d) => d.classId === "c1");
-    expect(c1Draft?.availableAt).toBe(
-      new Date(`${futureYear}-09-23T07:45`).toISOString(),
-    );
-    // The publish request itself carries no schedule: lmsAssignmentsPublish
-    // derives Classroom scheduledTime from the stored availableAt, so an
-    // initial publish and a later retry cannot disagree.
-    const c1Publish = it.publishCalls.find((p) => p.linkId === "link-c1");
-    expect(c1Publish).toBeDefined();
-    expect(c1Publish).not.toHaveProperty("scheduledTime");
-  });
-
-  test("two classes with different deliberately-set schedules record different availableAt instants, not a shared one", async () => {
-    const asn = okAssignments();
-    const it = makeIntegrations();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listFour,
-      assignments: asn.seam,
-      integrations: it.deps,
-    });
-    await openDialogFor(mount, "earths-layers");
-
-    const futureYear = new Date().getFullYear() + 1;
-    const c1Date = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-date-c1]",
-    )!;
-    const c1Time = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-time-c1]",
-    )!;
-    const c3Date = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-date-c3]",
-    )!;
-    const c3Time = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-time-c3]",
-    )!;
-    c1Date.value = `${futureYear}-09-23`;
-    c1Date.dispatchEvent(new Event("input"));
-    c1Time.value = "07:45";
-    c1Time.dispatchEvent(new Event("input"));
-    c3Date.value = `${futureYear}-09-24`;
-    c3Date.dispatchEvent(new Event("input"));
-    c3Time.value = "11:30";
-    c3Time.dispatchEvent(new Event("input"));
-
-    confirm();
-    await settle();
-
-    const c1Draft = asn.draftInputs.find((d) => d.classId === "c1");
-    const c3Draft = asn.draftInputs.find((d) => d.classId === "c3");
-    expect(c1Draft?.availableAt).toBe(new Date(`${futureYear}-09-23T07:45`).toISOString());
-    expect(c3Draft?.availableAt).toBe(new Date(`${futureYear}-09-24T11:30`).toISOString());
-  });
-
-  test("touching only one of two selected classes leaves the untouched class with no scheduledTime", async () => {
-    const asn = okAssignments();
-    const it = makeIntegrations();
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listFour,
-      assignments: asn.seam,
-      integrations: it.deps,
-    });
-    await openDialogFor(mount, "earths-layers");
-
-    const futureYear = new Date().getFullYear() + 1;
-    const c1Date = document.querySelector<HTMLInputElement>(
-      "[data-testid=assign-row-date-c1]",
-    )!;
-    c1Date.value = `${futureYear}-09-23`;
-    c1Date.dispatchEvent(new Event("input"));
-
-    confirm();
-    await settle();
-
-    const c3Publish = it.publishCalls.find((p) => p.linkId === "link-c3");
-    expect(c3Publish).not.toHaveProperty("scheduledTime");
-  });});
-
-// Scheduled LyfeLabz student availability: the same deliberately chosen
-// instant that becomes Classroom's `scheduledTime` is written, verbatim, as
-// the LyfeLabz draft's `availableAt` (Data Model §3.6: hidden from students
-// until this time). The untouched pre-filled default is never a schedule.
-describe("Assign dialog - scheduled LyfeLabz availability", () => {
-  beforeEach(() => {
-    _resetCurriculumSessionStateForTest();
-    document
-      .querySelectorAll("[data-testid=assign-overlay]")
-      .forEach((el) => el.remove());
-  });
-
-  const setRow = (classId: string, date: string | null, time: string | null) => {
-    if (date !== null) {
-      const d = document.querySelector<HTMLInputElement>(
-        `[data-testid=assign-row-date-${classId}]`,
-      )!;
-      d.value = date;
-      d.dispatchEvent(new Event("input"));
-    }
-    if (time !== null) {
-      const t = document.querySelector<HTMLInputElement>(
-        `[data-testid=assign-row-time-${classId}]`,
-      )!;
-      t.value = time;
-      t.dispatchEvent(new Event("input"));
-    }
+  const byTestId = <T extends HTMLElement>(id: string): T | null =>
+    document.querySelector<T>(`[data-testid=${id}]`);
+  const chooseSchedule = (classId: string): void => {
+    byTestId<HTMLInputElement>(`assign-row-timing-scheduled-${classId}`)!.click();
   };
+  const choosePostNow = (classId: string): void => {
+    byTestId<HTMLInputElement>(`assign-row-timing-now-${classId}`)!.click();
+  };
+  const setField = (id: string, value: string): void => {
+    const el = byTestId<HTMLInputElement>(id)!;
+    el.value = value;
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  };
+  const setSchedule = (classId: string, date: string, time: string): void => {
+    setField(`assign-row-date-${classId}`, date);
+    setField(`assign-row-time-${classId}`, time);
+  };
+  const localIso = (date: string, time: string): string =>
+    new Date(`${date}T${time}`).toISOString();
 
-  const openFor = async () => {
+  const openFor = async (
+    publishOutcome?: (linkId: string) => Partial<IntegrationsPublicationOutcome>,
+  ) => {
     const asn = okAssignments();
     const it = makeIntegrations();
+    if (publishOutcome) {
+      const base = it.deps.callables.publishAssignment;
+      (it.deps.callables as { publishAssignment: unknown }).publishAssignment = async (
+        input: { linkId: string },
+      ) => ({ ...(await base(input as never)), ...publishOutcome(input.linkId) });
+    }
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, {
       listClasses: listFour,
@@ -840,60 +742,281 @@ describe("Assign dialog - scheduled LyfeLabz availability", () => {
       integrations: it.deps,
     });
     await openDialogFor(mount, "earths-layers");
-    return { asn, it };
+    return { asn, it, mount };
   };
+  const draftFor = (asn: ReturnType<typeof okAssignments>, id: string) =>
+    asn.draftInputs.find((d) => d.classId === id);
 
-  test("untouched Date/Time: no draft carries availableAt (immediate availability preserved)", async () => {
+  test("every class defaults to Post now; the date/time controls are hidden, not implied", async () => {
+    await openFor();
+    for (const id of ["c1", "c2", "c3", "c4"]) {
+      expect(byTestId<HTMLInputElement>(`assign-row-timing-now-${id}`)?.checked).toBe(true);
+      expect(byTestId<HTMLInputElement>(`assign-row-timing-scheduled-${id}`)?.checked).toBe(false);
+      expect(byTestId<HTMLElement>(`assign-row-schedule-${id}`)?.hidden).toBe(true);
+      expect(byTestId(`assign-row-${id}`)?.getAttribute("data-publish-timing")).toBe("now");
+    }
+    const headers = Array.from(
+      document.querySelectorAll<HTMLElement>(".shell-assign-rows-header span"),
+    ).map((el) => el.textContent);
+    expect(headers).toEqual(["", "Class", "Topic", "Posting"]);
+  });
+
+  test("1. Post now sends no availableAt and no scheduledTime for any class", async () => {
+    const { asn, it } = await openFor();
+    confirm();
+    await settle();
+    expect(asn.draftInputs).toHaveLength(4);
+    for (const input of asn.draftInputs) expect(input).not.toHaveProperty("availableAt");
+    expect(it.publishCalls.length).toBe(2);
+    for (const call of it.publishCalls) expect(call).not.toHaveProperty("scheduledTime");
+  });
+
+  test("3. a pre-filled or previously entered future time never schedules a Post now class", async () => {
     const { asn } = await openFor();
+    // Enter a real future schedule, then return to Post now: the values stay
+    // in the (hidden) inputs but must not be honored.
+    chooseSchedule("c1");
+    setSchedule("c1", "2031-09-29", "08:00");
+    choosePostNow("c1");
+    expect(byTestId<HTMLElement>("assign-row-schedule-c1")?.hidden).toBe(true);
+    // Writing into a Post now row's hidden inputs is likewise inert.
+    setSchedule("c3", "2031-09-30", "09:00");
     confirm();
     await settle();
-    expect(asn.draftInputs.length).toBeGreaterThan(0);
-    for (const input of asn.draftInputs) {
-      expect(input).not.toHaveProperty("availableAt");
-    }
+    expect(draftFor(asn, "c1")).not.toHaveProperty("availableAt");
+    expect(draftFor(asn, "c3")).not.toHaveProperty("availableAt");
   });
 
-  test("a deliberate schedule writes availableAt as the ONE instant; the publish request carries no competing schedule", async () => {
+  test("2 + 4. choosing Schedule makes that row's resolved date/time the authoritative availableAt", async () => {
     const { asn, it } = await openFor();
-    const futureYear = new Date().getFullYear() + 1;
-    setRow("c1", `${futureYear}-09-23`, "07:45");
+    chooseSchedule("c1");
+    expect(byTestId<HTMLElement>("assign-row-schedule-c1")?.hidden).toBe(false);
+    setSchedule("c1", "2031-09-29", "08:00");
     confirm();
     await settle();
-    const c1Draft = asn.draftInputs.find((d) => d.classId === "c1");
+    expect(draftFor(asn, "c1")?.availableAt).toBe(localIso("2031-09-29", "08:00"));
+    // The publish request itself carries no schedule: the server derives
+    // Classroom scheduledTime from the stored availableAt.
     const c1Publish = it.publishCalls.find((p) => p.linkId === "link-c1");
-    expect(c1Draft?.availableAt).toBe(
-      new Date(`${futureYear}-09-23T07:45`).toISOString(),
-    );
     expect(c1Publish).toBeDefined();
     expect(c1Publish).not.toHaveProperty("scheduledTime");
   });
 
-  test("per-class schedules stay independent; an untouched class keeps immediate availability", async () => {
-    const { asn, it } = await openFor();
-    const futureYear = new Date().getFullYear() + 1;
-    setRow("c1", `${futureYear}-09-23`, "07:45");
-    setRow("c3", `${futureYear}-09-24`, "11:30");
+  test("5 + 6. Post now A, Schedule B 8:00, Schedule C 9:00: each class keeps its own timing", async () => {
+    const { asn } = await openFor();
+    // c1 stays Post now.
+    chooseSchedule("c2");
+    setSchedule("c2", "2031-09-29", "08:00");
+    chooseSchedule("c3");
+    setSchedule("c3", "2031-09-29", "09:00");
+    chooseSchedule("c4");
+    setSchedule("c4", "2031-09-30", "08:00");
     confirm();
     await settle();
-    const draftFor = (id: string) => asn.draftInputs.find((d) => d.classId === id);
-    expect(draftFor("c1")?.availableAt).toBe(new Date(`${futureYear}-09-23T07:45`).toISOString());
-    expect(draftFor("c3")?.availableAt).toBe(new Date(`${futureYear}-09-24T11:30`).toISOString());
-    expect(it.publishCalls.every((p) => !("scheduledTime" in p))).toBe(true);
-    expect(draftFor("c2")).not.toHaveProperty("availableAt");
-    expect(draftFor("c4")).not.toHaveProperty("availableAt");
+    expect(draftFor(asn, "c1")).not.toHaveProperty("availableAt");
+    expect(draftFor(asn, "c2")?.availableAt).toBe(localIso("2031-09-29", "08:00"));
+    expect(draftFor(asn, "c3")?.availableAt).toBe(localIso("2031-09-29", "09:00"));
+    expect(draftFor(asn, "c4")?.availableAt).toBe(localIso("2031-09-30", "08:00"));
   });
 
-  test("a deliberate schedule on a class with no Classroom link still delays LyfeLabz availability", async () => {
-    const { asn, it } = await openFor();
-    const futureYear = new Date().getFullYear() + 1;
-    setRow("c2", `${futureYear}-09-23`, "07:45");
+  test("the first selected class's schedule never leaks into another row", async () => {
+    const { asn } = await openFor();
+    chooseSchedule("c1");
+    setSchedule("c1", "2031-09-29", "08:00");
+    // c3 chooses Schedule AFTER c1 was edited: it must seed from its own
+    // pre-filled values, never from c1's.
+    chooseSchedule("c3");
+    const c3Date = byTestId<HTMLInputElement>("assign-row-date-c3")!.value;
+    const c3Time = byTestId<HTMLInputElement>("assign-row-time-c3")!.value;
+    expect(`${c3Date}T${c3Time}`).not.toBe("2031-09-29T08:00");
     confirm();
     await settle();
-    expect(asn.draftInputs.find((d) => d.classId === "c2")?.availableAt).toBe(
-      new Date(`${futureYear}-09-23T07:45`).toISOString(),
+    expect(draftFor(asn, "c3")?.availableAt).toBe(localIso(c3Date, c3Time));
+    expect(draftFor(asn, "c3")?.availableAt).not.toBe(draftFor(asn, "c1")?.availableAt);
+    expect(draftFor(asn, "c2")).not.toHaveProperty("availableAt");
+  });
+
+  test("choosing Schedule when the remembered time has already passed today seeds tomorrow, and shows the resolved posting time", async () => {
+    // Now is 07:00; set the clock to 09:00 so today's 07:45 default is past.
+    jest.setSystemTime(new Date(2031, 8, 22, 9, 0, 0, 0));
+    const { asn } = await openFor();
+    chooseSchedule("c1");
+    expect(byTestId<HTMLInputElement>("assign-row-date-c1")?.value).toBe("2031-09-23");
+    expect(byTestId<HTMLInputElement>("assign-row-time-c1")?.value).toBe("07:45");
+    const preview = byTestId<HTMLElement>("assign-row-schedule-preview-c1")?.textContent ?? "";
+    expect(preview).toMatch(/^Posts Tue, Sep 23 at 7:45 AM \S+$/);
+    expect(byTestId<HTMLElement>("assign-row-schedule-invalid-c1")?.hidden).toBe(true);
+    confirm();
+    await settle();
+    expect(draftFor(asn, "c1")?.availableAt).toBe(localIso("2031-09-23", "07:45"));
+  });
+
+  test("choosing Schedule while today's remembered time is still ahead seeds today", async () => {
+    const { asn } = await openFor(); // now 07:00, default 07:45
+    chooseSchedule("c1");
+    expect(byTestId<HTMLInputElement>("assign-row-date-c1")?.value).toBe("2031-09-22");
+    confirm();
+    await settle();
+    expect(draftFor(asn, "c1")?.availableAt).toBe(localIso("2031-09-22", "07:45"));
+  });
+
+  test("7. a scheduled class with a missing date or time blocks Assign with a clear message and sends nothing", async () => {
+    const { asn } = await openFor();
+    chooseSchedule("c1");
+    setField("assign-row-date-c1", "");
+    const invalid = byTestId<HTMLElement>("assign-row-schedule-invalid-c1")!;
+    expect(invalid.hidden).toBe(false);
+    expect(invalid.textContent).toBe("Choose a posting date and time.");
+    expect(byTestId<HTMLInputElement>("assign-row-date-c1")?.getAttribute("aria-invalid")).toBe("true");
+    expect(confirmButton().disabled).toBe(true);
+    confirm();
+    await settle();
+    expect(asn.draftInputs).toHaveLength(0);
+  });
+
+  test("8. a scheduled time already in the past is rejected, never silently posted now", async () => {
+    const { asn } = await openFor();
+    chooseSchedule("c1");
+    setSchedule("c1", "2031-09-22", "06:30");
+    expect(byTestId<HTMLElement>("assign-row-schedule-invalid-c1")?.textContent).toBe(
+      "Choose a time at least 2 minutes from now, or choose Post now.",
     );
-    // No Classroom publication exists for an unlinked class.
+    expect(confirmButton().disabled).toBe(true);
+    confirm();
+    await settle();
+    expect(asn.draftInputs).toHaveLength(0);
+  });
+
+  test("9. near-now: 1 minute ahead is rejected (the server would post it immediately); 2 minutes ahead is accepted", async () => {
+    const { asn } = await openFor(); // now is exactly 07:00:00
+    chooseSchedule("c1");
+    setSchedule("c1", "2031-09-22", "07:01");
+    expect(byTestId<HTMLElement>("assign-row-schedule-invalid-c1")?.hidden).toBe(false);
+    expect(confirmButton().disabled).toBe(true);
+    setSchedule("c1", "2031-09-22", "07:02");
+    expect(byTestId<HTMLElement>("assign-row-schedule-invalid-c1")?.hidden).toBe(true);
+    expect(confirmButton().disabled).toBe(false);
+    confirm();
+    await settle();
+    expect(draftFor(asn, "c1")?.availableAt).toBe(localIso("2031-09-22", "07:02"));
+  });
+
+  test("a schedule that was valid when entered but has since passed is re-checked at Assign time and refused", async () => {
+    const { asn } = await openFor();
+    chooseSchedule("c1");
+    setSchedule("c1", "2031-09-22", "07:10");
+    expect(confirmButton().disabled).toBe(false);
+    // The teacher leaves the dialog open past the chosen time.
+    jest.setSystemTime(new Date(2031, 8, 22, 7, 9, 30, 0));
+    confirm();
+    await settle();
+    expect(asn.draftInputs).toHaveLength(0);
+    expect(byTestId<HTMLElement>("assign-row-schedule-invalid-c1")?.hidden).toBe(false);
+    expect(confirmButton().disabled).toBe(true);
+    expect(byTestId("assign-dialog")).not.toBeNull();
+  });
+
+  test("a posting time after the end of the due date is rejected; one earlier that day is accepted", async () => {
+    const { asn } = await openFor();
+    setField("assign-shared-due-date", "2031-09-29");
+    chooseSchedule("c1");
+    setSchedule("c1", "2031-09-30", "08:00");
+    expect(byTestId<HTMLElement>("assign-row-schedule-invalid-c1")?.textContent).toBe(
+      "Choose a posting time before the due date.",
+    );
+    expect(confirmButton().disabled).toBe(true);
+    setSchedule("c1", "2031-09-29", "23:59");
+    expect(confirmButton().disabled).toBe(true);
+    setSchedule("c1", "2031-09-29", "20:00");
+    expect(confirmButton().disabled).toBe(false);
+    // Moving the due date re-validates every scheduled row immediately.
+    setField("assign-shared-due-date", "2031-09-28");
+    expect(byTestId<HTMLElement>("assign-row-schedule-invalid-c1")?.hidden).toBe(false);
+    expect(confirmButton().disabled).toBe(true);
+    setField("assign-shared-due-date", "2031-09-29");
+    confirm();
+    await settle();
+    expect(draftFor(asn, "c1")?.availableAt).toBe(localIso("2031-09-29", "20:00"));
+    expect(draftFor(asn, "c1")?.dueDate).toBe("2031-09-29");
+  });
+
+  test("a deselected scheduled class shows no validation message and never blocks Assign", async () => {
+    const { asn } = await openFor();
+    chooseSchedule("c1");
+    setField("assign-row-date-c1", "");
+    expect(confirmButton().disabled).toBe(true);
+    rowEnabled("c1").click();
+    expect(byTestId<HTMLElement>("assign-row-schedule-invalid-c1")?.hidden).toBe(true);
+    expect(confirmButton().disabled).toBe(false);
+    expect(byTestId<HTMLInputElement>("assign-row-timing-scheduled-c1")?.disabled).toBe(true);
+    confirm();
+    await settle();
+    expect(draftFor(asn, "c1")).toBeUndefined();
+  });
+
+  test("a scheduled class with no Classroom link still delays LyfeLabz availability", async () => {
+    const { asn, it } = await openFor();
+    chooseSchedule("c2");
+    setSchedule("c2", "2031-09-29", "08:00");
+    confirm();
+    await settle();
+    expect(draftFor(asn, "c2")?.availableAt).toBe(localIso("2031-09-29", "08:00"));
     expect(it.publishCalls.find((p) => p.linkId === "link-c2")).toBeUndefined();
+  });
+
+  test("the remembered release time is learned only from a class that was actually scheduled", async () => {
+    const first = await openFor();
+    // A Post now row's hidden time is inert and must not become the default.
+    setField("assign-row-time-c1", "10:10");
+    chooseSchedule("c3");
+    setSchedule("c3", "2031-09-29", "08:20");
+    confirm();
+    await settle();
+    expect(draftFor(first.asn, "c3")?.availableAt).toBe(localIso("2031-09-29", "08:20"));
+    first.mount
+      .querySelector<HTMLButtonElement>("[data-testid=lesson-assign-what-is-life]")
+      ?.click();
+    await settle();
+    // Newly offered rows seed from the scheduled class's time, and still
+    // default to Post now.
+    expect(byTestId<HTMLInputElement>("assign-row-time-c2")?.value).toBe("08:20");
+    expect(byTestId<HTMLInputElement>("assign-row-timing-now-c2")?.checked).toBe(true);
+  });
+
+  test("result wording: all scheduled says Scheduled in Google Classroom, never that it was published", async () => {
+    const { mount } = await openFor(() => ({ lmsInitialState: "draft" }));
+    chooseSchedule("c1");
+    setSchedule("c1", "2031-09-29", "08:00");
+    chooseSchedule("c3");
+    setSchedule("c3", "2031-09-29", "09:00");
+    confirm();
+    await settle();
+    const text = mount.querySelector("[data-testid=assign-success]")?.textContent ?? "";
+    expect(text).toContain("Scheduled in Google Classroom for 2 classes.");
+    expect(text).not.toContain("Publishing to Google Classroom succeeded");
+  });
+
+  test("result wording: one immediate and one scheduled Classroom class are reported separately", async () => {
+    const { mount } = await openFor((linkId) => ({
+      lmsInitialState: linkId === "link-c3" ? "draft" : "published",
+    }));
+    chooseSchedule("c3");
+    setSchedule("c3", "2031-09-29", "09:00");
+    confirm();
+    await settle();
+    const text = mount.querySelector("[data-testid=assign-success]")?.textContent ?? "";
+    expect(text).toContain("Published to Google Classroom for 1 class and scheduled for 1 class.");
+  });
+
+  test("result wording: the server decides - a schedule the server posted immediately is reported as published", async () => {
+    const { mount } = await openFor(() => ({ lmsInitialState: "published" }));
+    chooseSchedule("c1");
+    setSchedule("c1", "2031-09-29", "08:00");
+    confirm();
+    await settle();
+    const text = mount.querySelector("[data-testid=assign-success]")?.textContent ?? "";
+    expect(text).toContain("Publishing to Google Classroom succeeded.");
+    expect(text).not.toContain("Scheduled");
   });
 });
 

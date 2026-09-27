@@ -305,6 +305,13 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
         ...(readOptionalString(data.errorMessage) !== undefined
           ? { errorMessage: readOptionalString(data.errorMessage)! }
           : {}),
+        ...(data.lmsInitialState === "draft" ||
+        data.lmsInitialState === "published"
+          ? { lmsInitialState: data.lmsInitialState }
+          : {}),
+        ...(readOptionalString(data.lmsScheduledTime) !== undefined
+          ? { lmsScheduledTime: readOptionalString(data.lmsScheduledTime)! }
+          : {}),
       };
       return Object.freeze(outcome);
     },

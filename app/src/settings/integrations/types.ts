@@ -50,6 +50,12 @@ export type IntegrationsPublicationOutcome = {
   readonly lmsAssignmentUrl?: string;
   readonly errorCode?: string;
   readonly errorMessage?: string;
+  // On success: `published` when the Classroom item is visible to students
+  // now, `draft` when it was created with a native scheduled publish time
+  // (`lmsScheduledTime`, RFC3339 UTC). Decided by the server, so the Assign
+  // summary reports what actually happened rather than what was requested.
+  readonly lmsInitialState?: "draft" | "published";
+  readonly lmsScheduledTime?: string;
 };
 
 // The client-side view of an LMS class link. Consumed by the Assign
@@ -184,7 +190,7 @@ export type IntegrationsCallables = {
     readonly instructions?: string;
     readonly lmsTopicId?: string;
     // No scheduling or due-date field: the server derives Classroom
-    // `scheduledTime` and `dueDate` from the assignment's durable
+    // `scheduledTime` and the due moment from the assignment's durable
     // `availableAt` and `dueDate` (both written on the draft), so the
     // initial publish and any later retry use the same values.
     readonly attemptNonce?: string;

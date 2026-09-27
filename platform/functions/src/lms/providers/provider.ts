@@ -139,20 +139,20 @@ export type LmsPublishAssignmentInput = {
   // preserving LyfeLabz's own convention of never sending a synthetic
   // zero for "ungraded".
   readonly maxPoints?: number;
-  // Sprint 30A.3 - the Classroom-facing due date, ISO "YYYY-MM-DD".
-  // Absent means no due date; the adapter must not fabricate one. This is
-  // a purely presentational/informational date on the LMS coursework
-  // item - distinct from LyfeLabz's own `windowClosesAt`/`availableAt`
-  // assessment-access-window fields, which this input never carries and
-  // which are unaffected by it.
-  readonly dueDate?: string;
-  // Sprint 30A.3 - per-class scheduled publication instant, RFC3339 UTC.
-  // Absent means publish immediately (today's behavior, unchanged). LMS
-  // student visibility is delayed until this instant; LyfeLabz's own
-  // assignment status/visibility is NOT gated by this field - it is
-  // unaffected and becomes "published" immediately, exactly as before
-  // this feature. See assignments-publish.ts for the deliberate scope
-  // boundary this draws.
+  // The LMS-facing due moment, RFC3339 UTC: the END of the LyfeLabz
+  // assignment's due date in the school's timezone (see
+  // `lms/shared/due-instant.ts` for the convention). An absolute instant
+  // rather than a calendar date because Google Classroom requires `dueDate`
+  // and `dueTime` together, both in UTC. Absent means no due date; the
+  // adapter must not fabricate one. Informational on the LMS coursework item
+  // only - distinct from LyfeLabz's own `windowClosesAt`/`availableAt`
+  // assessment-access-window fields, which it never affects.
+  readonly dueAt?: string;
+  // Sprint 30A.3 - per-class scheduled publication instant, RFC3339 UTC,
+  // derived by lmsAssignmentsPublish from the assignment's `availableAt`
+  // (which also gates LyfeLabz student access until the same instant).
+  // Absent means publish immediately. When present the LMS item is created
+  // unpublished and the provider itself publishes it at this instant.
   readonly scheduledTime?: string;
 };
 
@@ -164,6 +164,11 @@ export type LmsPublishAssignmentInput = {
 export type LmsPublishedAssignment = {
   readonly lmsAssignmentId: string;
   readonly lmsAssignmentUrl?: string;
+  // What the provider's create response itself reported, when it reported
+  // it (observability only; never used to decide anything). Lets the
+  // orchestrator detect a provider that did not honor a requested schedule.
+  readonly reportedState?: LmsAssignmentLiveState;
+  readonly reportedScheduledTime?: string;
 };
 
 // -------------------- Coursework health read --------------------
@@ -197,6 +202,9 @@ export type LmsAssignmentSnapshot = {
   readonly updatedAt?: string;
   readonly dueDate?: string;
   readonly dueTime?: string;
+  // RFC3339 instant at which the provider will publish a not-yet-published
+  // item (Google Classroom `scheduledTime`), only when the provider has one.
+  readonly scheduledTime?: string;
   readonly lmsAssignmentUrl?: string;
 };
 

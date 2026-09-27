@@ -111,6 +111,31 @@ describe("googleClassroomAdapter.fetchAssignment", () => {
     expect(snapshot).toEqual({ lmsAssignmentId: COURSE_WORK_ID, state: "published" });
   });
 
+  it("carries a natively scheduled DRAFT item's scheduledTime", async () => {
+    setupFixture({
+      courseWork: [
+        {
+          courseId: COURSE_ID,
+          courseWork: {
+            id: COURSE_WORK_ID,
+            state: "DRAFT",
+            scheduledTime: "2026-01-08T12:45:00Z",
+          },
+        },
+      ],
+    });
+    const snapshot = await googleClassroomAdapter.fetchAssignment({
+      accessToken: FIXTURE_ACCESS_TOKEN,
+      lmsClassId: COURSE_ID,
+      lmsAssignmentId: COURSE_WORK_ID,
+    });
+    expect(snapshot).toEqual({
+      lmsAssignmentId: COURSE_WORK_ID,
+      state: "draft",
+      scheduledTime: "2026-01-08T12:45:00Z",
+    });
+  });
+
   it.each([
     ["DRAFT", "draft"],
     ["DELETED", "deleted"],
@@ -226,7 +251,7 @@ describe("HTTPS transport getCourseWork", () => {
     const url = new URL(recorded[0].url);
     expect(url.pathname).toBe(`/v1/courses/${COURSE_ID}/courseWork/${COURSE_WORK_ID}`);
     expect(url.searchParams.get("fields")).toBe(
-      "id,courseId,title,state,workType,maxPoints,creationTime,updateTime,dueDate,dueTime,alternateLink",
+      "id,courseId,title,state,workType,maxPoints,creationTime,updateTime,dueDate,dueTime,scheduledTime,alternateLink",
     );
   });
 

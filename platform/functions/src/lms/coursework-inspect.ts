@@ -79,6 +79,12 @@ export type LmsCourseworkHealthStatus =
   | "connectionUnavailable"
   | "courseworkNotFound"
   | "courseworkDeleted"
+  // Classroom item is still DRAFT but carries a native scheduled publish
+  // time in the future: LyfeLabz created it that way on purpose, and
+  // Classroom will publish it at that instant. Distinct from
+  // `courseworkNotPublished` (a DRAFT with no pending schedule, or one whose
+  // scheduled time has already passed without it publishing).
+  | "courseworkScheduled"
   | "courseworkNotPublished"
   | "gradingMismatch"
   | "maxPointsMismatch"
@@ -107,6 +113,7 @@ export type LmsCourseworkInspectAssignment = {
     readonly updatedAt: string | null;
     readonly dueDate: string | null;
     readonly dueTime: string | null;
+    readonly scheduledTime: string | null;
     readonly lmsAssignmentUrl: string | null;
   };
   readonly gradingModeAgrees: boolean | null;
@@ -138,6 +145,7 @@ const NOT_CHECKED_LIVE: LmsCourseworkInspectAssignment["live"] = {
   updatedAt: null,
   dueDate: null,
   dueTime: null,
+  scheduledTime: null,
   lmsAssignmentUrl: null,
 };
 
@@ -154,6 +162,7 @@ function liveFromSnapshot(
     updatedAt: snapshot.updatedAt ?? null,
     dueDate: snapshot.dueDate ?? null,
     dueTime: snapshot.dueTime ?? null,
+    scheduledTime: snapshot.scheduledTime ?? null,
     lmsAssignmentUrl: snapshot.lmsAssignmentUrl ?? null,
   };
 }
@@ -164,10 +173,24 @@ function liveFromError(err: unknown): LmsCourseworkInspectAssignment["live"] {
   return { ...NOT_CHECKED_LIVE, existence, errorCode };
 }
 
+// True when an unpublished item carries a native scheduled publish time that
+// has not arrived yet. A scheduled time already in the past means Classroom
+// should have published the item and did not, which stays a genuine
+// `courseworkNotPublished` finding.
+function isPendingScheduledPublication(
+  live: LmsCourseworkInspectAssignment["live"],
+  nowMs: number,
+): boolean {
+  if (live.state !== "draft" || live.scheduledTime === null) return false;
+  const scheduledMs = Date.parse(live.scheduledTime);
+  return Number.isFinite(scheduledMs) && scheduledMs > nowMs;
+}
+
 function statusFor(
   live: LmsCourseworkInspectAssignment["live"],
   gradingModeAgrees: boolean | null,
   maxPointsAgree: boolean | null,
+  nowMs: number,
 ): LmsCourseworkHealthStatus {
   switch (live.existence) {
     case "notFound":
@@ -184,6 +207,7 @@ function statusFor(
   // Classroom keeps returning a deleted item (state DELETED) for a time
   // rather than a 404; report it as deleted, not merely unpublished.
   if (live.state === "deleted") return "courseworkDeleted";
+  if (isPendingScheduledPublication(live, nowMs)) return "courseworkScheduled";
   if (live.state !== "published") return "courseworkNotPublished";
   if (gradingModeAgrees === false) return "gradingMismatch";
   if (maxPointsAgree === false) return "maxPointsMismatch";
@@ -309,7 +333,7 @@ async function inspectOne(
     live,
     gradingModeAgrees,
     maxPointsAgree,
-    status: statusFor(live, gradingModeAgrees, maxPointsAgree),
+    status: statusFor(live, gradingModeAgrees, maxPointsAgree, Date.now()),
   };
 }
 

@@ -24,6 +24,8 @@ const mockConnectionGet = jest.fn();
 const mockAssignmentLmsPublicationUpdate = jest.fn();
 const mockWriteAuditEvent = jest.fn();
 const mockLogError = jest.fn();
+const mockLogWarn = jest.fn();
+const mockSchoolGet = jest.fn();
 const mockGetLmsTokenStore = jest.fn();
 const mockGetProviderAdapter = jest.fn();
 const mockAssertAuthenticatedTeacherForLms = jest.fn();
@@ -62,7 +64,7 @@ jest.mock("../shared", () => {
       return maybeHandler;
     },
     PlatformError,
-    log: { info: jest.fn(), warn: jest.fn(), error: mockLogError },
+    log: { info: jest.fn(), warn: mockLogWarn, error: mockLogError },
     writeAuditEvent: mockWriteAuditEvent,
     assignmentDocRef: jest.fn(() => ({ get: mockAssignmentGet })),
     assignmentLmsPublicationDocRef: jest.fn(() => ({
@@ -79,6 +81,7 @@ jest.mock("../shared", () => {
       return q;
     }),
     lmsConnectionDocRef: jest.fn(() => ({ get: mockConnectionGet })),
+    schoolDocRef: jest.fn(() => ({ get: mockSchoolGet })),
   };
 });
 
@@ -207,6 +210,10 @@ function setupHappyPath(options: { alreadySucceeded?: boolean } = {}) {
   mockLinkGet.mockResolvedValue(makeLinkDoc());
   mockConnectionGet.mockResolvedValue(makeConnectionDoc());
   mockClassLinksGet.mockResolvedValue(makeClassLinksResult([FIXTURE_LINK_ID]));
+  mockSchoolGet.mockResolvedValue({
+    exists: true,
+    data: () => ({ timezone: "America/New_York" }),
+  });
 
   if (options.alreadySucceeded) {
     mockPublicationCreationGet.mockResolvedValue({
@@ -416,14 +423,17 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
       return publishAssignment;
     }
 
-    it("initial publication sends the assignment's stored due date", async () => {
+    // 11:59 PM on 2026-09-23 in the school's America/New_York zone (EDT).
+    const SEP_23_DUE_AT = "2026-09-24T03:59:00.000Z";
+
+    it("initial publication sends the assignment's stored due date as the end of that day in the school's timezone", async () => {
       setupHappyPath();
       mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ dueDate: "2026-09-23" }));
       const publishAssignment = okAdapter();
 
       await __lmsAssignmentsPublishHandler(makeRequest());
 
-      expect(publishAssignment.mock.calls[0][0]).toMatchObject({ dueDate: "2026-09-23" });
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({ dueAt: SEP_23_DUE_AT });
     });
 
     it("a failed publication followed by a retry (no due date on the request, as after a reload) keeps the same due date", async () => {
@@ -445,8 +455,8 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
       const retry = await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n-retry" }));
 
       expect(retry.status).toBe("succeeded");
-      expect(publishAssignment.mock.calls[0][0]).toMatchObject({ dueDate: "2026-09-23" });
-      expect(publishAssignment.mock.calls[1][0]).toMatchObject({ dueDate: "2026-09-23" });
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({ dueAt: SEP_23_DUE_AT });
+      expect(publishAssignment.mock.calls[1][0]).toMatchObject({ dueAt: SEP_23_DUE_AT });
     });
 
     it("an assignment without a due date publishes (and retries) without inventing one", async () => {
@@ -457,8 +467,11 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
       await __lmsAssignmentsPublishHandler(makeRequest({ attemptNonce: "n2" }));
 
       for (const call of publishAssignment.mock.calls) {
+        expect(call[0]).not.toHaveProperty("dueAt");
         expect(call[0]).not.toHaveProperty("dueDate");
       }
+      // No due date to resolve means the school record is never read.
+      expect(mockSchoolGet).not.toHaveBeenCalled();
     });
 
     it("ignores a request dueDate: it can neither add a due date nor override the stored one", async () => {
@@ -466,11 +479,11 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
       const publishAssignment = okAdapter();
 
       await __lmsAssignmentsPublishHandler(makeRequest({ dueDate: "2030-01-01", attemptNonce: "n1" }));
-      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty("dueDate");
+      expect(publishAssignment.mock.calls[0][0]).not.toHaveProperty("dueAt");
 
       mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ dueDate: "2026-09-23" }));
       await __lmsAssignmentsPublishHandler(makeRequest({ dueDate: "2030-01-01", attemptNonce: "n2" }));
-      expect(publishAssignment.mock.calls[1][0]).toMatchObject({ dueDate: "2026-09-23" });
+      expect(publishAssignment.mock.calls[1][0]).toMatchObject({ dueAt: SEP_23_DUE_AT });
     });
 
     it("a malformed stored due date is refused before any upstream call (never forwarded or guessed)", async () => {
@@ -498,10 +511,44 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
       await __lmsAssignmentsPublishHandler(makeRequest({ lmsTopicId: "topic-1" }));
 
       expect(publishAssignment.mock.calls[0][0]).toMatchObject({
-        dueDate: "2026-09-23",
+        dueAt: SEP_23_DUE_AT,
         maxPoints: 20,
         lmsTopicId: "topic-1",
       });
+    });
+
+    it("uses the school's own timezone, not UTC or the server's zone", async () => {
+      setupHappyPath();
+      mockSchoolGet.mockResolvedValue({
+        exists: true,
+        data: () => ({ timezone: "America/Los_Angeles" }),
+      });
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ dueDate: "2026-09-23" }));
+      const publishAssignment = okAdapter();
+
+      await __lmsAssignmentsPublishHandler(makeRequest());
+
+      // 11:59 PM PDT (UTC-7) on Sep 23.
+      expect(publishAssignment.mock.calls[0][0]).toMatchObject({
+        dueAt: "2026-09-24T06:59:00.000Z",
+      });
+    });
+
+    it.each([
+      ["a missing school record", { exists: false, data: () => undefined }],
+      ["a school with no timezone", { exists: true, data: () => ({}) }],
+      ["an unrecognized timezone", { exists: true, data: () => ({ timezone: "Mars/Olympus" }) }],
+    ])("%s fails closed before any upstream call (never guessed)", async (_label, schoolDoc) => {
+      setupHappyPath();
+      mockSchoolGet.mockResolvedValue(schoolDoc);
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ dueDate: "2026-09-23" }));
+      const publishAssignment = jest.fn();
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+
+      await expect(__lmsAssignmentsPublishHandler(makeRequest())).rejects.toMatchObject({
+        code: "lms.assignmentNotPublishable",
+      });
+      expect(publishAssignment).not.toHaveBeenCalled();
     });
   });
 
@@ -654,7 +701,7 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
 
       const expected = {
         scheduledTime: new Date(NOW + 20 * HOUR).toISOString(),
-        dueDate: "2026-09-25",
+        dueAt: "2026-09-26T03:59:00.000Z",
       };
       expect(publishAssignment.mock.calls[0][0]).toMatchObject(expected);
       expect(publishAssignment.mock.calls[1][0]).toMatchObject(expected);
@@ -672,6 +719,146 @@ describe("lmsAssignmentsPublish callable (Sprint 25 Phase 1)", () => {
         __lmsAssignmentsPublishHandler(makeRequest()),
       ).rejects.toMatchObject({ code: "lms.assignmentNotPublishable" });
       expect(publishAssignment).not.toHaveBeenCalled();
+    });
+  });
+
+  // Scheduled Classroom publication observability: every succeeded record,
+  // the success audit event, and the callable response state whether the
+  // Classroom item was created visible now or natively scheduled.
+  describe("publication observability: lmsInitialState / lmsScheduledTime", () => {
+    const HOUR = 60 * 60 * 1000;
+    const NOW = Date.UTC(2026, 8, 22, 12, 0, 0);
+    const at = (ms: number) => ({ toMillis: () => ms });
+    let nowSpy: jest.SpyInstance<number, []>;
+    beforeEach(() => {
+      nowSpy = jest.spyOn(Date, "now").mockReturnValue(NOW);
+    });
+    afterEach(() => {
+      nowSpy.mockRestore();
+    });
+
+    const writtenRecord = () =>
+      mockPublicationCreationSet.mock.calls[0][0] as Record<string, unknown>;
+    const auditPayload = () =>
+      (mockWriteAuditEvent.mock.calls[0][0] as { payload: Record<string, unknown> })
+        .payload;
+
+    it("11. immediate publication records lmsInitialState 'published' and no lmsScheduledTime", async () => {
+      setupHappyPath();
+      const res = await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(writtenRecord()).toMatchObject({
+        status: "succeeded",
+        lmsInitialState: "published",
+      });
+      expect(writtenRecord()).not.toHaveProperty("lmsScheduledTime");
+      expect(auditPayload()).toMatchObject({ lmsInitialState: "published" });
+      expect(auditPayload()).not.toHaveProperty("scheduledTime");
+      expect(res).toMatchObject({ status: "succeeded", lmsInitialState: "published" });
+      expect(res).not.toHaveProperty("lmsScheduledTime");
+    });
+
+    it("12 + 13. scheduled publication records 'draft', the durable availableAt instant, and the audit scheduledTime", async () => {
+      setupHappyPath();
+      const availableAt = at(NOW + 20 * HOUR);
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ availableAt }));
+      const res = await __lmsAssignmentsPublishHandler(makeRequest());
+      const iso = new Date(NOW + 20 * HOUR).toISOString();
+      expect(writtenRecord()).toMatchObject({ lmsInitialState: "draft" });
+      // The exact Timestamp the schedule was derived from, not a re-parse.
+      expect(writtenRecord().lmsScheduledTime).toBe(availableAt);
+      expect(auditPayload()).toMatchObject({ lmsInitialState: "draft", scheduledTime: iso });
+      expect(res).toMatchObject({
+        status: "succeeded",
+        lmsInitialState: "draft",
+        lmsScheduledTime: iso,
+      });
+    });
+
+    it("an availableAt already inside the 60-second window is published now and recorded as 'published'", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ availableAt: at(NOW + 30_000) }));
+      const res = await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(writtenRecord()).toMatchObject({ lmsInitialState: "published" });
+      expect(writtenRecord()).not.toHaveProperty("lmsScheduledTime");
+      expect(res).toMatchObject({ lmsInitialState: "published" });
+    });
+
+    it("a failed publication record carries no initial-state fields", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ availableAt: at(NOW + 20 * HOUR) }));
+      mockGetProviderAdapter.mockReturnValue({
+        publishAssignment: jest
+          .fn()
+          .mockRejectedValue(new PlatformError("lms.providerUnavailable", "down")),
+      });
+      const res = await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(res.status).toBe("failed");
+      expect(writtenRecord()).toMatchObject({ status: "failed" });
+      expect(writtenRecord()).not.toHaveProperty("lmsInitialState");
+      expect(writtenRecord()).not.toHaveProperty("lmsScheduledTime");
+    });
+
+    it("a replayed success returns the recorded state and scheduled time without a second upstream call", async () => {
+      setupHappyPath();
+      const scheduledMs = NOW + 20 * HOUR;
+      mockPublicationCreationGet.mockResolvedValue({
+        exists: true,
+        data: () => ({
+          status: "succeeded",
+          lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+          lmsInitialState: "draft",
+          lmsScheduledTime: at(scheduledMs),
+        }),
+      });
+      const publishAssignment = jest.fn();
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+      const res = await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(publishAssignment).not.toHaveBeenCalled();
+      expect(res).toMatchObject({
+        status: "succeeded",
+        lmsInitialState: "draft",
+        lmsScheduledTime: new Date(scheduledMs).toISOString(),
+      });
+    });
+
+    it("a replayed success from a record predating these fields reports neither", async () => {
+      setupHappyPath({ alreadySucceeded: true });
+      const res = await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(res).not.toHaveProperty("lmsInitialState");
+      expect(res).not.toHaveProperty("lmsScheduledTime");
+    });
+
+    it("logs (never retries or re-records) when Classroom reports a state other than the one requested", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ availableAt: at(NOW + 20 * HOUR) }));
+      const publishAssignment = jest.fn().mockResolvedValue({
+        lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+        reportedState: "published",
+      });
+      mockGetProviderAdapter.mockReturnValue({ publishAssignment });
+      await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(publishAssignment).toHaveBeenCalledTimes(1);
+      expect(writtenRecord()).toMatchObject({ lmsInitialState: "draft" });
+      expect(mockLogWarn).toHaveBeenCalledWith(
+        "lms.publicationStateUnexpected",
+        expect.objectContaining({ requestedState: "draft", reportedState: "published" }),
+      );
+    });
+
+    it("no mismatch log when Classroom's reported state matches", async () => {
+      setupHappyPath();
+      mockAssignmentGet.mockResolvedValue(makeAssignmentDoc({ availableAt: at(NOW + 20 * HOUR) }));
+      mockGetProviderAdapter.mockReturnValue({
+        publishAssignment: jest.fn().mockResolvedValue({
+          lmsAssignmentId: FIXTURE_LMS_ASSIGNMENT_ID,
+          reportedState: "draft",
+        }),
+      });
+      await __lmsAssignmentsPublishHandler(makeRequest());
+      expect(mockLogWarn).not.toHaveBeenCalledWith(
+        "lms.publicationStateUnexpected",
+        expect.anything(),
+      );
     });
   });
 

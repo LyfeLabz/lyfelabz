@@ -13,9 +13,11 @@ import {
   lmsClassLinksCollectionRef,
   lmsConnectionDocRef,
   log,
+  schoolDocRef,
   writeAuditEvent,
   type AuditAction,
   type LmsAssignmentPublicationCreationWrite,
+  type LmsPublicationInitialState,
 } from "../shared";
 
 import { buildAssignmentDeepLinkUrl } from "./deep-link-url";
@@ -23,8 +25,10 @@ import {
   ensureGoogleClassroomProductionBindings,
   googleClassroomProductionSecrets,
 } from "./providers/google-classroom/config-firebase";
+import type { LmsPublishedAssignment } from "./providers/provider";
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
+import { lmsDueInstantFor } from "./shared/due-instant";
 import { lmsAssignmentPublicationIdFor } from "./shared/ids";
 import { resolveLiveCredential } from "./tokens/credential-resolver";
 
@@ -108,6 +112,14 @@ export type LmsAssignmentsPublishResponse = {
   readonly status: "succeeded" | "failed";
   readonly lmsAssignmentId?: string;
   readonly lmsAssignmentUrl?: string;
+  // On success only: whether the LMS item was created visible now
+  // (`published`) or created unpublished with a native scheduled publish
+  // time (`draft`, with `lmsScheduledTime` as RFC3339 UTC). Lets the Assign
+  // dialog say "Scheduled" truthfully instead of implying the item is
+  // already visible to students. Absent on a replayed success whose record
+  // predates these fields.
+  readonly lmsInitialState?: LmsPublicationInitialState;
+  readonly lmsScheduledTime?: string;
   readonly errorCode?: string;
   readonly errorMessage?: string;
 };
@@ -131,8 +143,9 @@ function optionalNonEmptyString(value: unknown): string | undefined {
 // no due date - one is never invented. Because it is read from the record on
 // every call, a publication retry keeps the teacher's due date with no
 // client-side state. A malformed stored value fails closed (refused, never
-// forwarded or guessed); the Google Classroom adapter converts a valid value
-// directly into Classroom's {year, month, day} with no timezone step.
+// forwarded or guessed). The handler then resolves it to the absolute LMS
+// due moment (end of that day in the school's timezone) via
+// `lmsDueInstantFor`, because Classroom requires `dueDate` + `dueTime`.
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function dueDateFromAssignment(dueDate: unknown): string | undefined {
@@ -358,6 +371,18 @@ async function handler(
         existing.lmsAssignmentUrl.length > 0
           ? { lmsAssignmentUrl: existing.lmsAssignmentUrl }
           : {}),
+        ...(existing.lmsInitialState === "draft" ||
+        existing.lmsInitialState === "published"
+          ? { lmsInitialState: existing.lmsInitialState }
+          : {}),
+        ...(existing.lmsScheduledTime !== undefined &&
+        typeof existing.lmsScheduledTime.toMillis === "function"
+          ? {
+              lmsScheduledTime: new Date(
+                existing.lmsScheduledTime.toMillis(),
+              ).toISOString(),
+            }
+          : {}),
       };
     }
   }
@@ -365,6 +390,19 @@ async function handler(
   const title = titleOverride ?? assignment.title ?? assignment.lessonSlug;
   const scheduledTime = scheduledTimeFromAvailableAt(assignment.availableAt);
   const dueDate = dueDateFromAssignment(assignment.dueDate);
+  // The school's own timezone is read only when there is a due date to
+  // resolve; the assignment's denormalized schoolId is already verified
+  // above to be the caller's own school.
+  const dueAt =
+    dueDate !== undefined
+      ? lmsDueInstantFor(
+          dueDate,
+          (await schoolDocRef(assignment.schoolId).get()).data()?.timezone,
+        )
+      : undefined;
+  // Observability: the state this attempt creates the LMS item in.
+  const lmsInitialState: LmsPublicationInitialState =
+    scheduledTime !== undefined ? "draft" : "published";
   // Sprint 30A.1 - Classroom grading configuration is read from the
   // canonical assignment record, never from a second client-supplied
   // value at publication time (the request contract above carries no
@@ -392,7 +430,7 @@ async function handler(
   // the failed record and emit lms.publishFailed, then return the graceful
   // failure response. lms.insufficientScope is non-terminal: it writes no
   // record and emits no audit event (§2.7, blueprint §11).
-  let published: { lmsAssignmentId: string; lmsAssignmentUrl?: string } | undefined;
+  let published: LmsPublishedAssignment | undefined;
   try {
     published = await adapter.publishAssignment({
       accessToken: bundle.accessToken,
@@ -402,7 +440,7 @@ async function handler(
       lyfelabzAssignmentUrl,
       ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
       ...(maxPoints !== undefined ? { maxPoints } : {}),
-      ...(dueDate !== undefined ? { dueDate } : {}),
+      ...(dueAt !== undefined ? { dueAt } : {}),
       ...(scheduledTime !== undefined ? { scheduledTime } : {}),
     });
   } catch (upstreamErr) {
@@ -492,6 +530,25 @@ async function handler(
     };
   }
 
+  // Observability only: if the provider's own create response reports a
+  // state that contradicts what was requested (for example, an item asked
+  // to be scheduled that came back already published), surface it in logs.
+  // The requested state is still what is recorded; nothing is retried.
+  if (
+    published.reportedState !== undefined &&
+    published.reportedState !== lmsInitialState
+  ) {
+    safeLog(() =>
+      log.warn("lms.publicationStateUnexpected", {
+        actorUserId: actor.uid,
+        assignmentId,
+        publicationId,
+        requestedState: lmsInitialState,
+        reportedState: published?.reportedState,
+      }),
+    );
+  }
+
   // Phase B: persistence and audit of a confirmed upstream success.
   // `published` is set; the coursework item exists in the upstream LMS.
   // Do not clobber the succeeded record from here — later local failures
@@ -514,6 +571,11 @@ async function handler(
       ? { lmsAssignmentUrl: published.lmsAssignmentUrl }
       : {}),
     publishedAt: FieldValue.serverTimestamp(),
+    lmsInitialState,
+    // The exact durable instant `scheduledTime` was derived from.
+    ...(scheduledTime !== undefined && assignment.availableAt !== undefined
+      ? { lmsScheduledTime: assignment.availableAt }
+      : {}),
   };
 
   // Phase B1: write the succeeded publication record.
@@ -582,6 +644,8 @@ async function handler(
         lmsAssignmentId: published.lmsAssignmentId,
         publicationId,
         ...(lmsTopicId !== undefined ? { lmsTopicId } : {}),
+        lmsInitialState,
+        ...(scheduledTime !== undefined ? { scheduledTime } : {}),
       },
     });
   } catch {
@@ -608,6 +672,8 @@ async function handler(
     ...(published.lmsAssignmentUrl !== undefined
       ? { lmsAssignmentUrl: published.lmsAssignmentUrl }
       : {}),
+    lmsInitialState,
+    ...(scheduledTime !== undefined ? { lmsScheduledTime: scheduledTime } : {}),
   };
 }
 

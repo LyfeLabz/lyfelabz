@@ -241,6 +241,7 @@ function toAssignmentSnapshot(
   const url = nonEmptyString(resource.alternateLink);
   const dueDate = toIsoDate(resource.dueDate);
   const dueTime = dueDate !== undefined ? toIsoTimeOfDay(resource.dueTime) : undefined;
+  const scheduledTime = nonEmptyString(resource.scheduledTime);
   // Classroom treats zero or unspecified maxPoints as ungraded.
   const maxPoints =
     typeof resource.maxPoints === "number" &&
@@ -257,6 +258,7 @@ function toAssignmentSnapshot(
     ...(updatedAt !== undefined ? { updatedAt } : {}),
     ...(dueDate !== undefined ? { dueDate } : {}),
     ...(dueTime !== undefined ? { dueTime } : {}),
+    ...(scheduledTime !== undefined ? { scheduledTime } : {}),
     ...(url !== undefined ? { lmsAssignmentUrl: url } : {}),
   };
 }
@@ -334,26 +336,37 @@ function isCourseActive(course: GoogleClassroomCourseResource): boolean {
   return course.courseState === "ACTIVE" || course.courseState === undefined;
 }
 
-// Sprint 30A.3 - converts the vendor-neutral "YYYY-MM-DD" due date into
-// Classroom's own `Date` shape (year/month/day, no time component). The
-// callable layer (`assignments-publish.ts`) already validates the input
-// string's format before this ever runs; this parse still fails closed
-// (throws) rather than send a malformed date upstream if that contract is
-// ever violated by a future caller.
-function parseIsoDateToClassroomDate(
-  isoDate: string,
-): { readonly year: number; readonly month: number; readonly day: number } {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
-  if (!match) {
+// Converts the vendor-neutral due instant (RFC3339) into the pair Classroom
+// requires: `dueDate` {year, month, day} and `dueTime` {hours, minutes},
+// BOTH expressed in UTC and always sent together. The callable layer
+// (`assignments-publish.ts`) computes the instant from the assignment's due
+// date and the school's timezone; this conversion still fails closed
+// (throws) rather than send a malformed due moment upstream if that
+// contract is ever violated by a future caller.
+const RFC3339_INSTANT =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
+
+function toClassroomDueParts(dueAt: string): {
+  readonly dueDate: { readonly year: number; readonly month: number; readonly day: number };
+  readonly dueTime: { readonly hours: number; readonly minutes: number };
+} {
+  // Strict RFC3339 only: `Date.parse` alone would also accept locale forms
+  // such as "09/23/2026" and silently read them in the server's own zone.
+  const ms = RFC3339_INSTANT.test(dueAt) ? Date.parse(dueAt) : Number.NaN;
+  if (!Number.isFinite(ms)) {
     throw new PlatformError(
       "lms.invalidRequest",
-      'dueDate must be a "YYYY-MM-DD" string.',
+      "dueAt must be an RFC3339 timestamp.",
     );
   }
+  const d = new Date(ms);
   return {
-    year: Number(match[1]),
-    month: Number(match[2]),
-    day: Number(match[3]),
+    dueDate: {
+      year: d.getUTCFullYear(),
+      month: d.getUTCMonth() + 1,
+      day: d.getUTCDate(),
+    },
+    dueTime: { hours: d.getUTCHours(), minutes: d.getUTCMinutes() },
   };
 }
 
@@ -834,9 +847,7 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
         link: input.lyfelabzAssignmentUrl,
         ...(input.lmsTopicId !== undefined ? { topicId: input.lmsTopicId } : {}),
         ...(input.maxPoints !== undefined ? { maxPoints: input.maxPoints } : {}),
-        ...(input.dueDate !== undefined
-          ? { dueDate: parseIsoDateToClassroomDate(input.dueDate) }
-          : {}),
+        ...(input.dueAt !== undefined ? toClassroomDueParts(input.dueAt) : {}),
         ...(input.scheduledTime !== undefined
           ? { scheduledTime: input.scheduledTime }
           : {}),
@@ -851,11 +862,16 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
           "Google Classroom returned a coursework resource with a missing or empty id.",
         );
       }
+      const reportedScheduledTime = nonEmptyString(result.scheduledTime);
       return {
         lmsAssignmentId: result.id,
         ...(typeof result.alternateLink === "string" && result.alternateLink.length > 0
           ? { lmsAssignmentUrl: result.alternateLink }
           : {}),
+        ...(result.state !== undefined
+          ? { reportedState: toLiveState(result.state) }
+          : {}),
+        ...(reportedScheduledTime !== undefined ? { reportedScheduledTime } : {}),
       };
     } catch (err) {
       throw translateUpstreamError(err, "publishAssignment");

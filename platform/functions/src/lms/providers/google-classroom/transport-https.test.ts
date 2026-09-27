@@ -397,7 +397,7 @@ describe("createHttpsGoogleClassroomTransport", () => {
         expect(body).not.toHaveProperty("maxPoints");
       });
 
-      it("includes dueDate in the request body when supplied", async () => {
+      it("16. includes dueDate AND dueTime together in the request body when supplied", async () => {
         const { fetchImpl, recorded } = makeFetchImpl(() => ({
           status: 200,
           body: JSON.stringify({
@@ -417,10 +417,36 @@ describe("createHttpsGoogleClassroomTransport", () => {
           courseId: "fixture-course-planet-forge",
           title: "Fictional Assignment Title",
           link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
-          dueDate: { year: 2026, month: 9, day: 23 },
+          dueDate: { year: 2026, month: 9, day: 24 },
+          dueTime: { hours: 3, minutes: 59 },
         });
         const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
-        expect(body.dueDate).toEqual({ year: 2026, month: 9, day: 23 });
+        expect(body.dueDate).toEqual({ year: 2026, month: 9, day: 24 });
+        expect(body.dueTime).toEqual({ hours: 3, minutes: 59 });
+      });
+
+      it("never sends a dueDate without its dueTime (Classroom rejects the half pair)", async () => {
+        const { fetchImpl, recorded } = makeFetchImpl(() => ({
+          status: 200,
+          body: JSON.stringify({ id: "fixture-coursework-1" }),
+        }));
+        const transport = createHttpsGoogleClassroomTransport({
+          resolveConfig: () => ({
+            clientId: FIXTURE_CLIENT_ID,
+            clientSecret: FIXTURE_CLIENT_SECRET,
+          }),
+          fetchImpl,
+        });
+        await transport.createCourseWork({
+          accessToken: "fixture-access-token",
+          courseId: "fixture-course-planet-forge",
+          title: "Fictional Assignment Title",
+          link: "https://app.lyfelabz.invalid/a/fixture-assignment-1",
+          dueDate: { year: 2026, month: 9, day: 24 },
+        });
+        const body = JSON.parse(recorded[0].body!) as Record<string, unknown>;
+        expect(body).not.toHaveProperty("dueDate");
+        expect(body).not.toHaveProperty("dueTime");
       });
 
       it("omits dueDate entirely from the request body when not supplied", async () => {

@@ -204,7 +204,19 @@ export type LmsAssignmentPublicationRecord = {
   // matching the assignment-record absence convention). Never retried or
   // rewritten - a publication record is append-one-per-attempt.
   readonly classroomGrading?: ClassroomGradingConfig;
+  // Scheduled Classroom publication observability. Additive, optional,
+  // server-owned, and written only on a `succeeded` record: the state
+  // LyfeLabz CREATED the LMS item in. `published` means it was visible to
+  // students immediately; `draft` means it was created unpublished with a
+  // native scheduled publish time, recorded in `lmsScheduledTime` (the
+  // assignment's `availableAt` instant at the moment of this attempt).
+  // Records written before these fields existed simply lack them; no
+  // reader may infer anything from their absence.
+  readonly lmsInitialState?: LmsPublicationInitialState;
+  readonly lmsScheduledTime?: Timestamp;
 };
+
+export type LmsPublicationInitialState = "draft" | "published";
 
 export type LmsAssignmentPublicationCreationWrite = {
   readonly assignmentId: string;
@@ -223,6 +235,9 @@ export type LmsAssignmentPublicationCreationWrite = {
   readonly publishedAt: FieldValue;
   // Sprint 30A.1 - see the field comment on `LmsAssignmentPublicationRecord.classroomGrading`.
   readonly classroomGrading?: ClassroomGradingConfig;
+  // See the field comments on `LmsAssignmentPublicationRecord`.
+  readonly lmsInitialState?: LmsPublicationInitialState;
+  readonly lmsScheduledTime?: Timestamp;
 };
 
 // -------------------- lmsRosterMemberships/{linkId__identityHash} --------------------

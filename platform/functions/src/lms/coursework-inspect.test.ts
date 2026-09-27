@@ -447,6 +447,31 @@ describe("lmsCourseworkInspect health classification", () => {
     expect(row.status).toBe("courseworkNotPublished");
   });
 
+  it("17. reports a DRAFT carrying a future native scheduledTime as courseworkScheduled", async () => {
+    addPublished("a1", "2026-01-01T00:00:00Z", {
+      live: liveCoursework({ state: "draft", scheduledTime: "2099-01-05T13:00:00Z" }),
+    });
+    const [row] = (await __lmsCourseworkInspectHandler(request())).assignments;
+    expect(row.live.state).toBe("draft");
+    expect(row.live.scheduledTime).toBe("2099-01-05T13:00:00Z");
+    expect(row.status).toBe("courseworkScheduled");
+  });
+
+  it("a DRAFT whose scheduled time has already passed is still courseworkNotPublished (Classroom did not publish it)", async () => {
+    addPublished("a1", "2026-01-01T00:00:00Z", {
+      live: liveCoursework({ state: "draft", scheduledTime: "2000-01-05T13:00:00Z" }),
+    });
+    const [row] = (await __lmsCourseworkInspectHandler(request())).assignments;
+    expect(row.status).toBe("courseworkNotPublished");
+  });
+
+  it("a published item reports its scheduledTime as null when Classroom has none", async () => {
+    addPublished("a1", "2026-01-01T00:00:00Z", { live: liveCoursework() });
+    const [row] = (await __lmsCourseworkInspectHandler(request())).assignments;
+    expect(row.live.scheduledTime).toBeNull();
+    expect(row.status).toBe("healthy");
+  });
+
   it("reports coursework Classroom still returns in DELETED state as courseworkDeleted", async () => {
     addPublished("a1", "2026-01-01T00:00:00Z", { live: liveCoursework({ state: "deleted" }) });
     const [row] = (await __lmsCourseworkInspectHandler(request())).assignments;

@@ -146,11 +146,13 @@ export type GoogleClassroomCourseWorkCreateRequest = {
   // for ungraded coursework, so this field is included in the request body
   // only when present here.
   readonly maxPoints?: number;
-  // Sprint 30A.3 - Classroom's own due-date representation: a calendar
-  // date with no time component. Additive optional field; absent means
-  // no due date is sent, matching Classroom's contract that a coursework
-  // item without a dueDate is valid.
+  // Classroom's due moment, split the way CourseWork requires it: `dueDate`
+  // and `dueTime`, BOTH in UTC, and always sent together (the CourseWork
+  // contract: `dueTime` "must be specified if `dueDate` is specified", and
+  // vice versa). Absent means no due date is sent, matching Classroom's
+  // contract that a coursework item without a due date is valid.
   readonly dueDate?: { readonly year: number; readonly month: number; readonly day: number };
+  readonly dueTime?: { readonly hours: number; readonly minutes: number };
   // Sprint 30A.3 - native Google Classroom scheduled publication. When
   // present (an RFC3339 UTC timestamp), the coursework is created with
   // `state: "DRAFT"` plus this `scheduledTime`; Classroom's own servers
@@ -171,6 +173,9 @@ export type GoogleClassroomCourseWorkCreateRequest = {
 export type GoogleClassroomCourseWorkResource = {
   readonly id: string;
   readonly alternateLink?: string;
+  // Echoed by Classroom on create; read for observability only.
+  readonly state?: string;
+  readonly scheduledTime?: string;
 };
 
 // Coursework health read. `courseWork.get` for ONE coursework item the
@@ -209,6 +214,7 @@ export type GoogleClassroomCourseWorkDetailResource = {
   readonly updateTime?: string;
   readonly dueDate?: GoogleClassroomDate;
   readonly dueTime?: GoogleClassroomTimeOfDay;
+  readonly scheduledTime?: string;
   readonly alternateLink?: string;
 };
 
@@ -818,7 +824,7 @@ function urlEncodeFormBody(fields: Record<string, string>): string {
 // Partial-response mask for the coursework health read: exactly the fields
 // `GoogleClassroomCourseWorkDetailResource` declares.
 const COURSE_WORK_HEALTH_FIELDS =
-  "id,courseId,title,state,workType,maxPoints,creationTime,updateTime,dueDate,dueTime,alternateLink";
+  "id,courseId,title,state,workType,maxPoints,creationTime,updateTime,dueDate,dueTime,scheduledTime,alternateLink";
 
 // Partial-response mask for the grade reconciliation preview's submission
 // list: only identity, state, and the two grade fields.
@@ -1026,8 +1032,12 @@ export function createHttpsGoogleClassroomTransport(
       // ungraded coursework (Google treats zero-or-unspecified the same,
       // but LyfeLabz's own contract is omission, never a synthetic zero).
       if (input.maxPoints !== undefined) bodyObj.maxPoints = input.maxPoints;
-      // Sprint 30A.3: send `dueDate` only when the teacher chose one.
-      if (input.dueDate !== undefined) bodyObj.dueDate = input.dueDate;
+      // Send the due moment only when the teacher chose one, and only as
+      // the complete `dueDate` + `dueTime` pair Classroom requires.
+      if (input.dueDate !== undefined && input.dueTime !== undefined) {
+        bodyObj.dueDate = input.dueDate;
+        bodyObj.dueTime = input.dueTime;
+      }
       if (input.scheduledTime !== undefined) {
         bodyObj.scheduledTime = input.scheduledTime;
       }

@@ -1073,6 +1073,17 @@ describe("Assign Experience - Sprint 6E", () => {
       )
       ?.click();
     await flush();
+    // The remembered release time is learned only from a class the teacher
+    // explicitly scheduled (a Post now row's hidden time is never a
+    // schedule), so choose Schedule with a future date first.
+    document
+      .querySelector<HTMLInputElement>("[data-testid=assign-row-timing-scheduled-c1]")!
+      .click();
+    const date = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-date-c1]",
+    );
+    date!.value = `${new Date().getFullYear() + 1}-09-23`;
+    date!.dispatchEvent(new Event("input"));
     const time = document.querySelector<HTMLInputElement>(
       "[data-testid=assign-row-time-c1]",
     );
