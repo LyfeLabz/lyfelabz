@@ -1,5 +1,17 @@
 # Internal Review Board Report: Repository Evidence Review
 
+> **Human-reviewed consolidation — 2026-09-27:** This earlier analysis is now read with the [ratified curriculum baseline](hqim-4a-human-decision-reconciliation.md), [delivery principles](curriculum-delivery-principles.md), and [evidence synthesis](grade6-evidence-visibility-synthesis.md). HQIM-3A remains **A = 3, B = 6, C = 11, D = 2, E = 0**; older coverage counts are a different classification system. This is internal documentation, not an external submission or implementation authorization. Historical source snapshots and external-framework checks below are not production or current eligibility certification.
+
+## Later curriculum and evidence decisions
+
+The [required Grade 6 baseline](hqim-4a-human-decision-reconciliation.md) includes all eight Body Systems maps, Gray Zone, Cell Energy, Fossil Hunt, Floatlandia, Eclipse Alignment, Gravity Wells, Amplitude, and both engineering challenges alongside the 23 ordinary lessons. Protein Pathway, eight disease explorations, and Moon Tonight are extensions. Required future physical PS1-6 and PS1-8 performances remain undeveloped.
+
+The authentic [classroom Build-a-Boat design](engineering-challenge-principles.md) governs curriculum analysis; descriptions of the Floatia page below describe its digital representation. Ball Run's local-state/PDF/email mechanisms are an experimental summer-program prototype, not final Engineering Challenge architecture. Physical artifacts and teacher observation remain legitimate evidence.
+
+Required [Fossil Hunt](fossil-hunt-scientific-accuracy-audit.md) strengthens correlation performance but has scientific-accuracy, scaffold, reset-state, and retained-reasoning qualifications. [Amplitude](grade6-evidence-visibility-synthesis.md) provides strong investigation performance despite incomplete submitted trial history. The Body Systems maps and its existing individual sprint synthesis are separate evidence; neither should be erased or duplicated because of retention limits.
+
+Apply the [modeling policy](scientific-modeling-progression-audit.md): ESS1-1a and LS1-2 genuinely require development; other standards can require use without independent creation. Engineering representations remain engineering evidence, and model revision is not a universal Grade 6 requirement. These qualifications change no frozen classification.
+
 LyfeLabz Grade 6-7 Science. Original self-evaluation prepared 2026-09-17;
 repository factual correction dated 2026-09-19 against commit
 `4f6f02b01eb988696592265223d2ddff28832eb4` and the Phase 1 audit.
@@ -226,10 +238,12 @@ artifacts are additional instructional evidence, not automatically scored PE
 attainment.
 
 For the two inspected LS writing tasks, submission requires text and reveals a
-model response, but the authenticated `lessonQuiz.finalize` calls send only
-selected answers. Legacy public submission code includes a `thinking` field.
-Production receipt was not tested. Do not generalize task existence into an
-assurance that the platform preserves every student artifact.
+model response. Their historically verified authenticated writing omission is
+partly superseded by current source support for transmission, retention, and
+teacher display. The consolidation census finds 22 of 23 ordinary Grade 6
+handoffs passing writing; Conducting Experiments remains an exception.
+Production is not verified. See the [writing trace](v2-constructed-response-evidence-trace.md)
+for attempt, retry, and historical-prompt qualifications.
 
 Ball-run already has trial tables, controlled revisions, comparisons, and
 reports. Floatia requires a scaled drawing, tests, and defense. Review their
@@ -273,10 +287,11 @@ and drift checks, rather than create a second editable copy of lesson notes.
 **Internal assessment: incomplete and under active development.**
 
 Some guidance exists, including Floatia's material-budget cap or raised cargo target
-for extension; it is not a comprehensive differentiation program. The checkout
-still contains `G19_GATE_OPEN = false` and an empty
-`app/lessons/variants/manifest.json`. These do not establish live production
-configuration. Historical staging statements in platform documentation are not
+for extension; it is not a comprehensive differentiation program. The September 19 checkout
+contained `G19_GATE_OPEN = false` and an empty variant manifest. Later external
+assessment-presentation/variant work supersedes the empty-manifest observation;
+see the [session record](documentation-consolidation-record.md). This does not
+establish live production configuration. Historical staging statements in platform documentation are not
 re-certified here. Final capability disclosures and teacher instructions must
 wait for the differentiation workstream's completed evidence. This HQIM pass
 does not recommend flipping gates or activating production features.

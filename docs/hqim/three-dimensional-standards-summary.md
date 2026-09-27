@@ -1,5 +1,17 @@
 # Three-Dimensional Summary by Standard: Grade 6
 
+> **Human-reviewed consolidation — 2026-09-27:** This earlier analysis is now read with the [ratified curriculum baseline](hqim-4a-human-decision-reconciliation.md), [delivery principles](curriculum-delivery-principles.md), and [evidence synthesis](grade6-evidence-visibility-synthesis.md). HQIM-3A remains **A = 3, B = 6, C = 11, D = 2, E = 0**; older coverage counts are a different classification system. This is internal documentation, not an external submission or implementation authorization. Historical source snapshots and external-framework checks below are not production or current eligibility certification.
+
+## Later curriculum and evidence decisions
+
+The [required Grade 6 baseline](hqim-4a-human-decision-reconciliation.md) includes all eight Body Systems maps, Gray Zone, Cell Energy, Fossil Hunt, Floatlandia, Eclipse Alignment, Gravity Wells, Amplitude, and both engineering challenges alongside the 23 ordinary lessons. Protein Pathway, eight disease explorations, and Moon Tonight are extensions. Required future physical PS1-6 and PS1-8 performances remain undeveloped.
+
+The authentic [classroom Build-a-Boat design](engineering-challenge-principles.md) governs curriculum analysis; descriptions of the Floatia page below describe its digital representation. Ball Run's local-state/PDF/email mechanisms are an experimental summer-program prototype, not final Engineering Challenge architecture. Physical artifacts and teacher observation remain legitimate evidence.
+
+Required [Fossil Hunt](fossil-hunt-scientific-accuracy-audit.md) strengthens correlation performance but has scientific-accuracy, scaffold, reset-state, and retained-reasoning qualifications. [Amplitude](grade6-evidence-visibility-synthesis.md) provides strong investigation performance despite incomplete submitted trial history. The Body Systems maps and its existing individual sprint synthesis are separate evidence; neither should be erased or duplicated because of retention limits.
+
+Apply the [modeling policy](scientific-modeling-progression-audit.md): ESS1-1a and LS1-2 genuinely require development; other standards can require use without independent creation. Engineering representations remain engineering evidence, and model revision is not a universal Grade 6 requirement. These qualifications change no frozen classification.
+
 This document describes instructional relationships among disciplinary core
 ideas, practices, and crosscutting reasoning for the 22 mapped Grade 6 standards.
 A DCI is content within a performance expectation, not the complete PE itself.
@@ -160,10 +172,10 @@ response happens. The reasoning runs through Systems and System Models (one
 input, coordinated multi-system response) and Structure and Function (each
 organizational level defined by what its structure enables). Students predict
 interactions and write the sprint explanation. The writing is not
-automatically scored and is omitted from the inspected authenticated
-finalization call; legacy public code includes `thinking`, but production
-receipt was not tested. Strengthen this existing task rather than duplicate
-it.
+automatically scored. Its historical authenticated omission is partly superseded
+by current writing-path source support; production is unverified. See the
+[writing trace](v2-constructed-response-evidence-trace.md). Strengthen this
+existing task rather than duplicate it.
 
 ### 6.MS-LS4-1
 
@@ -201,10 +213,10 @@ Function (similar structures serving different functions as the signature of
 shared descent rather than shared environment). Students argue for
 evolutionary relationships by reading recurring anatomical patterns as
 inherited structure and writing a common-ancestry argument. Writing is not
-automatically scored; the inspected authenticated finalization omits it, while
-legacy public code includes `thinking`. Production receipt was not tested.
-Evaluation, retention, and grade-boundary review are needed, not a duplicate
-task.
+automatically scored. Current source supports passing and retaining this writing,
+qualifying the historical omission; production remains unverified. See the
+[writing trace](v2-constructed-response-evidence-trace.md). Evaluation, retention
+verification, and grade-boundary review are needed, not a duplicate task.
 
 ## Physical Science
 

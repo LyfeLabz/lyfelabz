@@ -1,5 +1,17 @@
 # Standards Alignment Narrative
 
+> **Human-reviewed consolidation — 2026-09-27:** This earlier analysis is now read with the [ratified curriculum baseline](hqim-4a-human-decision-reconciliation.md), [delivery principles](curriculum-delivery-principles.md), and [evidence synthesis](grade6-evidence-visibility-synthesis.md). HQIM-3A remains **A = 3, B = 6, C = 11, D = 2, E = 0**; older coverage counts are a different classification system. This is internal documentation, not an external submission or implementation authorization. Historical source snapshots and external-framework checks below are not production or current eligibility certification.
+
+## Later curriculum and evidence decisions
+
+The [required Grade 6 baseline](hqim-4a-human-decision-reconciliation.md) includes all eight Body Systems maps, Gray Zone, Cell Energy, Fossil Hunt, Floatlandia, Eclipse Alignment, Gravity Wells, Amplitude, and both engineering challenges alongside the 23 ordinary lessons. Protein Pathway, eight disease explorations, and Moon Tonight are extensions. Required future physical PS1-6 and PS1-8 performances remain undeveloped.
+
+The authentic [classroom Build-a-Boat design](engineering-challenge-principles.md) governs curriculum analysis; descriptions of the Floatia page below describe its digital representation. Ball Run's local-state/PDF/email mechanisms are an experimental summer-program prototype, not final Engineering Challenge architecture. Physical artifacts and teacher observation remain legitimate evidence.
+
+Required [Fossil Hunt](fossil-hunt-scientific-accuracy-audit.md) strengthens correlation performance but has scientific-accuracy, scaffold, reset-state, and retained-reasoning qualifications. [Amplitude](grade6-evidence-visibility-synthesis.md) provides strong investigation performance despite incomplete submitted trial history. The Body Systems maps and its existing individual sprint synthesis are separate evidence; neither should be erased or duplicated because of retention limits.
+
+Apply the [modeling policy](scientific-modeling-progression-audit.md): ESS1-1a and LS1-2 genuinely require development; other standards can require use without independent creation. Engineering representations remain engineering evidence, and model revision is not a universal Grade 6 requirement. These qualifications change no frozen classification.
+
 LyfeLabz Grade 6-7 Science - repository-evidence draft. Factually corrected
 2026-09-19 against commit `4f6f02b01eb988696592265223d2ddff28832eb4` and the
 Phase 1 audit. Sources are the current canonical lessons, activity files,
@@ -149,10 +161,12 @@ three-system explanation (`bs-thinking`). For LS4-2,
 lesson submit flow, and are not automatically scored. Strengthen evaluation
 and retention rather than create duplicate tasks.
 
-The inspected authenticated `lessonQuiz.finalize` calls send selected answers
-without those written responses. The legacy public submission branches include
-a `thinking` field. Production receipt was not tested, so neither branch's
-source proves a broader production-retention claim.
+The historically inspected authenticated `lessonQuiz.finalize` calls omitted
+writing. Later source changes support writing transmission, retention, and
+teacher display; 22 of 23 ordinary Grade 6 lesson handoffs now pass it in the
+consolidation snapshot, with Conducting Experiments separately modified.
+Production operation remains unverified. The [writing trace](v2-constructed-response-evidence-trace.md)
+distinguishes historical loss, current source, attempts, retries, and prompt context.
 
 Authenticated selected-response attempts are finalized server-side, with client
 create/update/delete denied by `platform/firebase/firestore.rules`. This
@@ -177,9 +191,11 @@ source markers are not accessibility certification. Some extension guidance
 exists; consistent multilingual and differentiated instructional guidance is
 not established across the program.
 
-Differentiation remains active development. The checked-out application has
-`G19_GATE_OPEN = false`, and the checked-in variant manifest is empty. These
-facts do not establish live production configuration. Final capability and
+Differentiation remains active development. The September 19 snapshot had
+`G19_GATE_OPEN = false` and an empty variant manifest. Later external
+assessment-presentation/variant work has superseded the empty-manifest snapshot;
+see the [session record](documentation-consolidation-record.md). Neither snapshot
+establishes live production configuration. Final capability and
 accessibility conclusions await the owning workstream and separate verification.
 
 Known badge corrections are partly complete: Layer Detective, Amplitude

@@ -1,5 +1,7 @@
 # Curriculum Scope and Sequence
 
+> **Human-reviewed consolidation — 2026-09-27:** This earlier analysis is now read with the [ratified curriculum baseline](hqim-4a-human-decision-reconciliation.md), [delivery principles](curriculum-delivery-principles.md), and [evidence synthesis](grade6-evidence-visibility-synthesis.md). HQIM-3A remains **A = 3, B = 6, C = 11, D = 2, E = 0**; older coverage counts are a different classification system. This is internal documentation, not an external submission or implementation authorization. Historical source snapshots and external-framework checks below are not production or current eligibility certification.
+
 LyfeLabz Grade 6-7 proposed instructional sequence. Repository factual
 correction: 2026-09-19, baseline `4f6f02b01eb988696592265223d2ddff28832eb4`.
 Source evidence is the two coverage maps and current instructional files.
@@ -21,8 +23,8 @@ generated `app/src/curriculum/curriculum.manifest.json` group 50 catalog units
 by subject. Course-unit numbering here serves a different purpose.
 
 Catalog ownership and supporting evidence are distinct. Plate Tectonics is a
-Grade 7 catalog lesson with a Grade 6 bridge badge; ball-run is shared practice
-used in the proposed sequences. Cross-grade support does not automatically
+Grade 7 catalog lesson with a Grade 6 bridge badge; Ball Run is required Grade 6
+Engineering Challenge curriculum with possible Grade 7 supporting use. Cross-grade support does not automatically
 establish assessed attainment for either grade. Games are supporting activities;
 no formal coverage claim here rests on a game alone. For 49 pipeline lessons,
 `lesson-sources/` is canonical and root/v2 pages are generated outputs.
@@ -62,6 +64,8 @@ foundation (planning investigations, controlling variables) that the
 experimental and data-analysis verbs throughout both grades depend on, and it
 is available from the start of the year.
 
+Required membership is settled in the [HQIM-4A inventory](hqim-4a-human-decision-reconciliation.md): 23 ordinary lessons, 17 existing non-lesson experiences, and two required future physical investigations. The placements below remain proposals. “Supporting files” does not mean optional; the owner-ratified status controls.
+
 ### Unit 1: What Is Life? Cells and Their Structures
 
 - **Family:** Living Systems
@@ -78,6 +82,7 @@ is available from the start of the year.
   [game_is-it-alive.html](../../game_is-it-alive.html),
   [game_cell-explorer.html](../../game_cell-explorer.html),
   [game_cellular-showdown.html](../../game_cellular-showdown.html)
+- **Status:** Gray Zone and Cell Energy are required; Protein Pathway is an extension.
 - **Prerequisites:** none
 - **Rationale:** The year opens at the smallest living scale with the deepest
   multi-modal cluster in the catalog, because the question of what counts as
@@ -89,6 +94,7 @@ is available from the start of the year.
 - **Family:** Living Systems
 - **Standards:** 6.MS-LS1-3
 - **Anchor lesson:** [lesson_body-systems.html](../../lesson_body-systems.html)
+- **Required applications:** all eight body-system maps; all eight disease pages are extensions.
 - **Supporting files:** eight body-system pages (`system_circulatory.html`
   through `system_skeletal.html`), eight disease pages
   (`disease_circulatory.html` through `disease_skeletal.html`),
@@ -100,7 +106,8 @@ is available from the start of the year.
   interact to carry out essential functions scales structure-and-function
   reasoning up one level, and the disease pages give students authentic cases
   where a system failure reveals the interaction the standard asks them to
-  argue for.
+  argue for. Disease cases are extensions; required baseline performance must
+  stand without them. The ordinary sprint synthesis remains individual evidence.
 
 ### Unit 3: Evidence of Change: Fossils and Evolution
 
@@ -122,6 +129,7 @@ is available from the start of the year.
 - **Standards:** 6.MS-ESS1-4, 6.MS-ESS2-3
 - **Anchor lessons:** [lesson_layers-of-time.html](../../lesson_layers-of-time.html),
   [lesson_continental-drift.html](../../lesson_continental-drift.html)
+- **Required applications:** [Fossil Hunt](../../extension_fossil-hunt.html) and [Floatlandia Fracture](../../simulation_floatlandia-fracture.html). Fossil Hunt has unresolved [scientific-accuracy findings](fossil-hunt-scientific-accuracy-audit.md).
 - **Supporting files:** [extension_fossil-hunt.html](../../extension_fossil-hunt.html),
   [game_layer-detective.html](../../game_layer-detective.html)
 - **Prerequisites:** Unit 3
@@ -131,6 +139,8 @@ is available from the start of the year.
   Grade 7 plate tectonics lesson will resolve.
 
 ### Unit 5: Earth in Space
+
+Eclipse Alignment and Gravity Wells are required. Moon Tonight remains an extension.
 
 - **Family:** Sun, Gravity, and Earth's Cycles
 - **Standards:** 6.MS-ESS1-1a, 6.MS-ESS1-5(MA), 6.MS-PS2-4
@@ -151,6 +161,8 @@ is available from the start of the year.
   displays; independent construction is not an additional explicit PE demand.
 
 ### Unit 6: Matter and Its Particles
+
+Required future endpoints are authentic physical [PS1-6](ps1-6-physical-performance-requirements.md) and [PS1-8](ps1-8-physical-performance-requirements.md) performances. They are not yet implemented; no simulation substitution is implied.
 
 - **Family:** Matter and Its Particles
 - **Standards:** 6.MS-PS1-7(MA), 6.MS-PS1-8(MA), 6.MS-PS1-6
@@ -174,6 +186,8 @@ is available from the start of the year.
   performance concern. No experiment is implemented by this sequence document.
 
 ### Unit 7: Waves and Signals
+
+Amplitude Challenge is required and provides substantive trials-to-CER performance. Its incomplete submitted history is an evidence-retention qualification.
 
 - **Family:** Energy, Waves, and Fields
 - **Standards:** 6.MS-PS4-1, 6.MS-PS4-2, 6.MS-PS4-3
@@ -208,23 +222,20 @@ is available from the start of the year.
   that the capstone can apply those skills without re-teaching them, keeping
   the taught-versus-assessed boundary inspectable.
 
-### Unit 9: Build It: The Floatia Capstone
+### Unit 9 (proposed placement): Physical Engineering Challenges
 
 - **Family:** Engineered Systems
 - **Standards:** 6.MS-ETS2-3(MA) (assessed); applies ETS1-1, ETS1-5(MA),
   ETS1-6(MA), ETS2-1(MA), ETS2-2(MA)
 - **Anchor file:**
   [challenge_welcome-to-floatia.html](../../challenge_welcome-to-floatia.html)
-- **Supporting files:**
+- **Second required Engineering Challenge:**
   [challenge_ball-run_day1.html](../../challenge_ball-run_day1.html) through
   [challenge_ball-run_day5.html](../../challenge_ball-run_day5.html) and
   [challenge_slow-motion-ball-run.html](../../challenge_slow-motion-ball-run.html)
-  (hands-on prototyping practice, currently unbadged)
+  (required Ball Run sequence; experimental technical prototype)
 - **Prerequisites:** Unit 8
-- **Rationale:** The year closes with students building, testing, and refining
-  a physical prototype and defending their decisions, which converts the
-  engineering lessons into assessed performance and gives the Structure and
-  Function theme its culminating designed structure.
+- **Rationale:** Both challenges provide physical construction, testing, and revision. Their relative order and year placement are not ratified. The authentic [classroom Build-a-Boat design](engineering-challenge-principles.md) governs curriculum analysis; the Floatia page is a separate representation. Full tool-use performance and consistent individual evaluation remain qualified. A successful build or quiz does not establish complete ETS2-3(MA) attainment.
 
 ## Grade 7 Scope and Sequence
 
@@ -432,10 +443,12 @@ configured authenticated assessment payloads contain 495 `singleChoice` items
 
 Body Systems requires a written three-system explanation; Biological Evolution
 requires a whale-origin CER. Both have model responses and are not automatically
-scored. Their inspected authenticated `lessonQuiz.finalize` calls include only
-selected answers. Legacy public submission code includes a `thinking` field;
-production receipt was not tested. Strengthen evaluation and retention of the
-existing tasks rather than commissioning duplicate written arguments.
+scored. Their historical authenticated writing omission is partly superseded:
+current source supports writing transmission, retention, and teacher display,
+with 22 of 23 ordinary Grade 6 handoffs passing it in the consolidation census.
+Conducting Experiments remains separately modified; production is unverified.
+See the [writing trace](v2-constructed-response-evidence-trace.md). Strengthen
+evaluation and retention of existing tasks rather than commissioning duplicates.
 
 Authenticated selected-response attempts use server-side finalization and
 client write restrictions (`platform/functions/src/assessments/` and
