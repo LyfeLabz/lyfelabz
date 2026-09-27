@@ -1117,10 +1117,13 @@ async function run(): Promise<void> {
       : null;
   };
 
-  // F5.2 §14 G19: set to true only after Slices 2-6 are production-verified.
-  // Changing this to true exposes the Slice 7 teacher activation surface in
-  // production. Leave false until the G19 gate is formally satisfied.
-  const G19_GATE_OPEN = false;
+  // F5.2 §14 G19: exposes the Slice 7 teacher activation surface (Settings ->
+  // Student Services) to active teachers. Opened for the owner-authorized
+  // production differentiation pilot (activation checkpoint C3) with formal
+  // G19/staging recertification deferred by owner decision. Differentiated
+  // delivery itself stays governed by the server-owned
+  // platformConfig/differentiatedDelivery flag (fail-closed when absent).
+  const G19_GATE_OPEN = true;
 
   const table = createRouteTable({
     onSignOut,

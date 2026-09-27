@@ -397,6 +397,26 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     expect(mount.querySelector("[data-testid=ss-ra-action]")?.textContent).toBe("Deactivate");
   });
 
+  test("browsing Student Services (class, student list, student detail) is read-only: no accommodation is written", async () => {
+    const mount = mkMount();
+    const listMock = makeListStudents([{ studentId: "stu-1", studentDisplayName: "Alice" }]);
+    const getMock = makeGetAccommodation(0, "inactive");
+    const setMock = makeSetAccommodation(1);
+    renderSettingsSurface(mount, teacher, {
+      ...wiredDeps(),
+      listStudents: listMock,
+      getAccommodation: getMock,
+      setAccommodation: setMock,
+      listClasses: async () => Object.freeze([lmsClass]),
+    });
+    switchToSS(mount);
+    await openStudentDetail(mount, "stu-1", lmsClass.id);
+    expect(mount.querySelector("[data-testid=ss-ra-action]")?.textContent).toBe("Activate");
+    expect(listMock).toHaveBeenCalled();
+    expect(getMock).toHaveBeenCalled();
+    expect(setMock).not.toHaveBeenCalled();
+  });
+
   test("Student Services deactivation requires a confirmation step before writing", async () => {
     const mount = mkMount();
     const setMock = makeSetAccommodation(4);
