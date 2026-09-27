@@ -117,6 +117,14 @@ export type PresentationVariantIndexDoc = {
   // Server-owned attribution: the trusted operator/service identity that ran
   // the publish tooling. Never accepted from an arbitrary client request.
   readonly publishedBy: string;
+  // F5.3 Slice 3 (reserved, OPTIONAL, not yet written): the canonical
+  // assessment revision and immutable assessment presentation the current
+  // instructional revision is bound to (manifest binding). Absent means the
+  // F5.2 meaning: differentiated instruction with the canonical assessment
+  // presentation. The publisher refuses bound revisions until a later slice
+  // writes these fields together with the assessment-presentation record.
+  readonly assessmentRevisionId?: string;
+  readonly assessmentPresentationRevisionId?: string;
 };
 
 // Write shape for a publish or a rollback/repoint: the pointer is (re)set to

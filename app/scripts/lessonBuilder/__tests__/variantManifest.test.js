@@ -23,7 +23,12 @@ function makeEntry({ lessonSlug = "earths-layers", variantKey = "reading-adapted
   const presentationRevisionId = identity.computePresentationRevisionId(bytes);
   const sha256 = presentationRevisionId.slice(2);
   const relPath = identity.variantRelativeOutputPath(lessonSlug, presentationRevisionId);
-  return { lessonSlug, variantKey, presentationRevisionId, path: relPath, sha256, publishedAt, bytes };
+  const entry = { lessonSlug, variantKey, presentationRevisionId, path: relPath, sha256, publishedAt };
+  // The artifact bytes ride along for the fixture helpers only. Non-enumerable,
+  // so they are never presented to appendEntry as a manifest field (the entry
+  // field set is closed since F5.3 Slice 3).
+  Object.defineProperty(entry, "bytes", { value: bytes, enumerable: false });
+  return entry;
 }
 
 function writeArtifactForEntry(repoRoot, entry) {

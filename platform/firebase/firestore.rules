@@ -835,6 +835,25 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- assessmentPresentations/{assessmentPresentationRevisionId} ----------
+    //
+    // F5.3 Accessible Assessment Presentations, Slice 3. Immutable,
+    // content-addressed (`ap<sha256>`) student-facing presentations of one
+    // canonical assessment revision (adapted wording, displayed choices with
+    // their canonical optionIds, deliberately omitted distractors, adapted
+    // Show Your Thinking). Server-owned: written only by the publish tooling
+    // through the Admin SDK (create-or-verify-equal, never updated or
+    // deleted) and read only server-side. Students receive the presentation
+    // through the published lesson artifact, never from this collection.
+    // Zero direct client read/write for ANY role, including enumeration.
+    //
+    // Explicit `allow read, write: if false;` (mirroring `presentationVariants`
+    // and `launchGrants`) so the server-only intent is documented at the
+    // surface and cannot be relaxed by a broader accidental edit.
+    match /assessmentPresentations/{assessmentPresentationRevisionId} {
+      allow read, write: if false;
+    }
+
     // ---------- launchGrants/{grantId} ----------
     //
     // F5.2 Persistent Student Differentiation, Slice 4 (server resolution +

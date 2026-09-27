@@ -17,8 +17,17 @@ const path = require("path");
 const paths = require("./paths.cjs");
 const { sha256Hex } = require("./hash.cjs");
 const identity = require("./variantIdentity.cjs");
+const assessmentPresentation = require("./assessmentPresentation.cjs");
 
 const MANIFEST_FIELDS = ["lessonSlug", "variantKey", "presentationRevisionId", "path", "sha256", "publishedAt"];
+
+// F5.3 Slice 3: OPTIONAL, revision-bound assessment-presentation binding.
+// Both or neither. An entry without them is a pre-F5.3 entry and keeps its
+// F5.2 meaning: differentiated instructional presentation, canonical
+// assessment presentation. With them, the instructional artifact is bound to
+// exactly one retained, certified assessment presentation of exactly one
+// canonical assessment revision (verified by verifyRetention).
+const OPTIONAL_BINDING_FIELDS = ["assessmentRevisionId", "assessmentPresentationRevisionId"];
 
 function fail(message) {
   throw new Error(`[variant-manifest] ${message}`);
@@ -52,16 +61,23 @@ function readManifest(repoRoot = paths.REPO_ROOT) {
 // Deterministic serialization: stable field order per entry, strict
 // insertion order preserved (append-only - never resorted, since sorting
 // would rewrite the ledger's historical ordering), 2-space indent, single
-// trailing newline.
+// trailing newline. Optional binding fields are emitted only when present,
+// so every pre-F5.3 entry serializes byte-identically to before.
 function serializeManifest(entries) {
-  const normalized = entries.map((e) => ({
-    lessonSlug: e.lessonSlug,
-    variantKey: e.variantKey,
-    presentationRevisionId: e.presentationRevisionId,
-    path: e.path,
-    sha256: e.sha256,
-    publishedAt: e.publishedAt,
-  }));
+  const normalized = entries.map((e) => {
+    const out = {
+      lessonSlug: e.lessonSlug,
+      variantKey: e.variantKey,
+      presentationRevisionId: e.presentationRevisionId,
+      path: e.path,
+      sha256: e.sha256,
+      publishedAt: e.publishedAt,
+    };
+    for (const field of OPTIONAL_BINDING_FIELDS) {
+      if (e[field] !== undefined) out[field] = e[field];
+    }
+    return out;
+  });
   return `${JSON.stringify(normalized, null, 2)}\n`;
 }
 
@@ -84,6 +100,25 @@ function validateEntryShape(entry) {
   if (entry.path !== expectedPath) {
     fail(`manifest entry path "${entry.path}" does not match the identity formula "${expectedPath}"`);
   }
+  // Closed field set: an unknown field would otherwise be silently dropped by
+  // serializeManifest on the next append.
+  for (const key of Object.keys(entry)) {
+    if (!MANIFEST_FIELDS.includes(key) && !OPTIONAL_BINDING_FIELDS.includes(key)) {
+      fail(`manifest entry has unknown field "${key}" (path: ${entry.path})`);
+    }
+  }
+  const bound = OPTIONAL_BINDING_FIELDS.filter((f) => entry[f] !== undefined);
+  if (bound.length === 1) {
+    fail(`manifest entry must carry assessmentRevisionId and assessmentPresentationRevisionId together (path: ${entry.path})`);
+  }
+  if (bound.length === 2) {
+    if (typeof entry.assessmentPresentationRevisionId !== "string" || !assessmentPresentation.AP_ID_PATTERN.test(entry.assessmentPresentationRevisionId)) {
+      fail(`manifest entry assessmentPresentationRevisionId must be ap<sha256> (path: ${entry.path})`);
+    }
+    if (typeof entry.assessmentRevisionId !== "string" || entry.assessmentRevisionId !== entry.assessmentRevisionId.trim() || !entry.assessmentRevisionId.startsWith(`assessment_${entry.lessonSlug}__r`)) {
+      fail(`manifest entry assessmentRevisionId must be a revision of assessment_${entry.lessonSlug} (path: ${entry.path})`);
+    }
+  }
 }
 
 function sameEntry(a, b) {
@@ -92,7 +127,8 @@ function sameEntry(a, b) {
     a.variantKey === b.variantKey &&
     a.presentationRevisionId === b.presentationRevisionId &&
     a.sha256 === b.sha256 &&
-    a.path === b.path
+    a.path === b.path &&
+    OPTIONAL_BINDING_FIELDS.every((f) => a[f] === b[f])
   );
 }
 
@@ -206,6 +242,9 @@ function verifyRetention({ repoRoot = paths.REPO_ROOT } = {}) {
         `manifest-listed artifact altered: ${entry.path} (expected sha256 ${entry.sha256}, found ${actualSha})`,
       );
     }
+    // F5.3 Slice 3: a bound entry must name a retained, valid, approved
+    // assessment presentation of the same lesson and assessment revision.
+    failures.push(...assessmentPresentation.verifyManifestBinding(entry, { repoRoot }));
   }
 
   if (fs.existsSync(variantsRoot)) {
@@ -225,6 +264,7 @@ function verifyRetention({ repoRoot = paths.REPO_ROOT } = {}) {
 
 module.exports = {
   MANIFEST_FIELDS,
+  OPTIONAL_BINDING_FIELDS,
   resolveVariantsRoot,
   resolveManifestPath,
   readManifest,

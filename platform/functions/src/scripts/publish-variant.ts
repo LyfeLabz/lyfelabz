@@ -587,6 +587,8 @@ function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
       presentationRevisionId: string;
       path: string;
       sha256: string;
+      assessmentRevisionId?: string;
+      assessmentPresentationRevisionId?: string;
     }>;
   };
 
@@ -611,6 +613,10 @@ function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
         error: `no retained revision ${presentationRevisionId} for ${lessonSlug}__${variantKey} in the manifest`,
       });
     }
+    const bindingRefusal = refuseUnpropagatedAssessmentBinding(match);
+    if (bindingRefusal !== null) {
+      return Promise.resolve({ ok: false as const, error: bindingRefusal });
+    }
     const absFile = path.join(repoRoot, match.path);
     if (!fs.existsSync(absFile)) {
       return Promise.resolve({ ok: false as const, error: `retained artifact missing from tree: ${match.path}` });
@@ -634,6 +640,27 @@ function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
       },
     });
   };
+}
+
+// F5.3 Slice 3 fail-closed guard. A manifest entry bound to an assessment
+// presentation (assessmentPresentationRevisionId) cannot be published until a
+// later F5.3 slice writes the assessment-presentation record and propagates
+// the binding through the index, grant, session, and attempt. Publishing it
+// now would repoint the index to the instructional artifact while silently
+// dropping the certified assessment presentation. Pre-F5.3 entries (no
+// binding) are unaffected.
+export function refuseUnpropagatedAssessmentBinding(entry: {
+  readonly assessmentRevisionId?: string;
+  readonly assessmentPresentationRevisionId?: string;
+}): string | null {
+  if (entry.assessmentPresentationRevisionId === undefined && entry.assessmentRevisionId === undefined) {
+    return null;
+  }
+  return (
+    "refusing to publish: this revision is bound to an assessment presentation " +
+    `(${String(entry.assessmentPresentationRevisionId)} for ${String(entry.assessmentRevisionId)}), ` +
+    "and assessment-presentation propagation is not implemented yet (F5.3 Slice 5)"
+  );
 }
 
 // Positive Admin SDK project binding, shared with deploy-assessment. See

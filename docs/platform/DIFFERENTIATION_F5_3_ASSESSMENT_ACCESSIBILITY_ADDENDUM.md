@@ -2,7 +2,7 @@
 
 ## F5.3 Addendum: Accessible Assessment Presentations
 
-**Status:** Specification addendum to `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (F5.2). Owner-approved with decisions D1-D8 (section "Owner decisions"). **Slices 1-2 implemented** (answer-position quality gate; server response validation); slices 3+ not started. No Rules, lesson, or assessment content has changed. Where this addendum and F5.2 conflict, this addendum governs for assessment presentation only; every F5.2 contract not named in section 16 is unchanged.
+**Status:** Specification addendum to `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (F5.2). Owner-approved with decisions D1-D8 (section "Owner decisions"). **Slices 1-3 implemented** (answer-position quality gate; server response validation; immutable assessment-presentation records, certification records, manifest binding, and the `assessmentPresentations` deny-all Rules block); slices 4+ not started. No lesson or assessment content has changed. Where this addendum and F5.2 conflict, this addendum governs for assessment presentation only; every F5.2 contract not named in section 16 is unchanged.
 
 **Evidence base:** repository HEAD `176fe27`; staging certification C4-C6 (2026-09-27); a read-only audit of all 49 committed assessment payloads.
 
@@ -144,7 +144,7 @@ Scoring is canonical and server-authoritative, as today:
 **New server validation (fail closed):**
 
 1. **Implemented in Slice 2.** A response's `optionId` must be one of the item's canonical `optionIds` in the frozen revision. This applies to **all** sessions, canonical included. Before Slice 2 a non-member string silently scored 0 and an unknown `itemId` was ignored.
-2. If the session froze an `assessmentPresentationId`:
+2. If the session froze an `assessmentPresentationRevisionId`:
    - the response must be one of that item's **displayed** `optionIds` in the frozen presentation;
    - the presentation's `assessmentRevisionId` must equal the session's `assessmentRevisionId`.
 3. Autosave rejects an invalid response with `INVALID_ARGUMENT`. Finalize re-validates inside its transaction and refuses the attempt on any violation, writing nothing.
@@ -168,22 +168,24 @@ Scoring is canonical and server-authoritative, as today:
 
 The earlier assumption that "`presentationRevisionId` alone is sufficient" is superseded. A reduced-choice presentation changes which option IDs are legal, and the server must validate that at scoring time without parsing HTML.
 
-**Assessment presentation record** (new, immutable, content-addressed):
-- **Identity:** `assessmentPresentationId = "ap" + sha256(canonical JSON of the record body)`.
-- **Location:** `assessmentPresentations/{assessmentPresentationId}`. Written only by the publisher through the Admin SDK, create-or-verify-equal, never updated or deleted. Client access is denied (explicit `allow read, write: if false`), the same pattern as `presentationVariants`.
+**Assessment presentation record** (new, immutable, content-addressed; implemented in Slice 3 by `app/scripts/lessonBuilder/assessmentPresentation.cjs`):
+- **Identity:** `assessmentPresentationRevisionId = "ap" + sha256(canonicalJson(record))`. `canonicalJson` is deterministic: object keys sorted by UTF-16 code unit, arrays kept in order, no insignificant whitespace, strings must already be Unicode NFC, numbers must be safe integers. The record never contains its own id.
+- **Retained copy (source of truth for history):** `platform/functions/src/scripts/assessment-presentations/<id>.json`, beside the canonical payloads it maps onto and never hosting-served. The file bytes must be exactly `canonicalJson(record) + "\n"`, so a file is valid only if its name, its bytes, and its content hash all agree. Files are add-only.
+- **Firestore:** `assessmentPresentations/{assessmentPresentationRevisionId}`. Reserved in Slice 3: the explicit deny-all Rules block and the server type (`shared/types/assessment-presentation.ts`) exist; the publisher writes it (create-or-verify-equal, never updated or deleted) in Slice 5.
 
-Record body:
+Record body (closed schema; unknown fields fail):
 
 | Field | Meaning |
 |---|---|
-| `lessonSlug`, `variantKey` | Owning lesson and delivery profile |
-| `assessmentRevisionId` | The one canonical revision this presentation maps to |
-| `traits` | `{ language: "canonical"\|"adapted", choiceCount: 3\|4 }` |
-| `items[]` | Per canonical `itemId`, in canonical order: `stem`, `directions?`, `displayedOptions[]` (each `{ optionId, text }` in display order), `omittedOptionIds[]`, `explanation` (student-facing) |
-| `showYourThinking` | `{ prompt, modelAnswer, requiredTerms[] }` as displayed |
-| `schemaVersion` | `1` |
+| `schemaVersion`, `kind` | `1`, `"lyfelabz.assessmentPresentation"` |
+| `lessonSlug` | Owning lesson |
+| `assessmentRevisionId` | The one canonical revision this presentation maps onto (`assessment_<slug>__r<N>`) |
+| `traits` | `{ language: "canonical" \| "adapted", choiceCount }`. Generic: no variant key is stored. Any combination that differs from canonical is valid (adapted + 3, adapted + 4, canonical + 3); canonical language with the full choice count is refused as "no presentation needed" |
+| `directions` | Adapted assessment directions, or `null` (required `null` under canonical language) |
+| `items[]` | Every canonical item, in canonical order: `itemId`, `stem`, `displayedOptions[]` (display order, each `{ optionId, text }` with a canonical `optionId`), `omittedOptions[]` (each `{ optionId, rationale }`: a deliberately omitted canonical distractor and the authored reason), `feedback` (adapted student-facing explanation, or `null` for the canonical explanation) |
+| `showYourThinking` | `{ prompt, modelAnswer, requiredTerms[] }` under adapted language; `null` under canonical language (the canonical prompt applies) |
 
-The record holds no correctness data. It must not include `correctOptionId`; correctness is joined from the server-only answer key.
+The record holds no correctness, points, or scoring data. Keys such as `correctOptionId`, `correct`, `isCorrect`, `answerKey`, `points`, or `score` anywhere in it are an explicit failure. Tooling may read the committed canonical payload (which includes the answer key) to verify a presentation, but copies nothing from the key into it. The omission `rationale` is authored review content, kept in the record because it is part of what was decided for that presentation; the record is server-only and never client-readable.
 
 **Provenance chain** (each question is answered by an immutable identity):
 
@@ -191,16 +193,16 @@ The record holds no correctness data. It must not include `correctOptionId`; cor
 |---|---|
 | Canonical assessment revision and scoring semantics | `assessmentRevisionId`, plus its answer key |
 | Instructional presentation seen | `presentationRevisionId`, pointing to the retained artifact |
-| Exact item wording, displayed choices, their order, omitted distractor, displayed-to-canonical mapping, Show Your Thinking prompt, explanations | `assessmentPresentationId`, pointing to the immutable record |
+| Exact item wording, displayed choices, their order, omitted distractor, displayed-to-canonical mapping, Show Your Thinking prompt, explanations | `assessmentPresentationRevisionId`, pointing to the immutable record |
 | Accommodation configuration used | `accommodationConfigRevision`, pointing to `studentAccommodations/{uid}/history/r<N>` |
 | How the attempt was scored | `itemResults` on the attempt |
 
 **New frozen fields (additive, optional):**
-- **Presentation variant index:** `assessmentRevisionId`, `assessmentPresentationId`.
-- **Launch grant:** `assessmentPresentationId` and `accommodationConfigRevision`. Present only on `differentiated` grants, and copied from the index and the accommodation read at issuance.
-- **Session and attempt:** `assessmentPresentationId` and `accommodationConfigRevision`. Frozen at begin from the grant and copied verbatim at finalize, exactly like `presentationRevisionId`.
+- **Presentation variant index:** `assessmentRevisionId`, `assessmentPresentationRevisionId`.
+- **Launch grant:** `assessmentPresentationRevisionId` and `accommodationConfigRevision`. Present only on `differentiated` grants, and copied from the index and the accommodation read at issuance.
+- **Session and attempt:** `assessmentPresentationRevisionId` and `accommodationConfigRevision`. Frozen at begin from the grant and copied verbatim at finalize, exactly like `presentationRevisionId`.
 
-The artifact embeds the same `assessmentPresentationId`, and the manifest entry records it (section 11), so the artifact and the record cannot silently diverge.
+The artifact embeds the same `assessmentPresentationRevisionId`, and the manifest entry records it (section 11), so the artifact and the record cannot silently diverge.
 
 ---
 
@@ -218,7 +220,7 @@ The artifact embeds the same `assessmentPresentationId`, and the manifest entry 
 - `requiredTerms` (for example `convection` for Earth's Layers) must appear in both prompts. The build checks this.
 - Equivalence of the evidence demand is a human certification item.
 
-**9.3 Provenance.** The prompt the student saw is pinned by `assessmentPresentationId`. The response stays attached to the same session and attempt, and teacher visibility and history are unchanged.
+**9.3 Provenance.** The prompt the student saw is pinned by `assessmentPresentationRevisionId`. The response stays attached to the same session and attempt, and teacher visibility and history are unchanged.
 
 **9.4 Backlog, retained and separate.** Canonical Show Your Thinking prompts have no historical version identity, because canonical lessons are unversioned. The Earth's Layers canonical remediation changed canonical text. This addendum does not solve it. The natural later fix is to give canonical lessons a canonical assessment presentation record (slice 9).
 
@@ -229,7 +231,7 @@ The artifact embeds the same `assessmentPresentationId`, and the manifest entry 
 Student-facing explanations may be adapted.
 - They must preserve scientific meaning, instructional intent, and answer rationale.
 - They must not add information that changes what earns credit.
-- They are pinned by `assessmentPresentationId`.
+- They are pinned by `assessmentPresentationRevisionId`.
 - The canonical explanation in the answer key (and therefore in `itemResults`, which teachers see today) is unchanged.
 
 Teacher views that later show the adapted explanation must read it from the presentation record.
@@ -258,15 +260,15 @@ Teacher views that later show the adapted explanation must read it from the pres
    - no `correct`, `answer`, or similar marker text.
 10. The generated quiz literal's `correct` index points at the display position of the canonical correct `optionId`.
 11. Answer-position quality standard (section 13) on the presentation's display positions.
-12. `assessmentPresentationId` is recomputed from the source and embedded in the artifact. The deterministic double build and drift check (existing) pass.
-13. A human certification record exists whose `assessmentPresentationId` equals the computed id (section 12).
+12. `assessmentPresentationRevisionId` is recomputed from the source and embedded in the artifact. The deterministic double build and drift check (existing) pass.
+13. A human certification record exists whose `assessmentPresentationRevisionId` equals the computed id (section 12).
 
 **Publish checks (`publish-variant`, fail closed):**
 - The manifest entry's `assessmentRevisionId` equals the deployed `assessments/<id>.currentRevisionId`.
 - The presentation record is created, or verified equal, before the index is repointed. This extends the existing LOCAL_VERIFIED > HOSTING_DEPLOYED > HOSTED_BYTES_VERIFIED > INDEX_UPDATED sequence.
-- The index records `assessmentRevisionId` and `assessmentPresentationId`.
+- The index records `assessmentRevisionId` and `assessmentPresentationRevisionId`.
 
-**Manifest:** new entries add optional `assessmentRevisionId` and `assessmentPresentationId`. Existing entries, including `prff01d9...375c`, stay valid and are never rewritten.
+**Manifest:** new entries add optional `assessmentRevisionId` and `assessmentPresentationRevisionId`. Existing entries, including `prff01d9...375c`, stay valid and are never rewritten. As implemented in Slice 3 (`variantManifest.cjs`): the two fields are both-or-neither, serialized after `publishedAt` only when present (the existing entry reserializes byte-identically), and the entry field set is closed. `verifyRetention` additionally requires a bound entry to name a retained, valid record of the same lesson and assessment revision with an approved certification record. An entry without the fields keeps its F5.2 meaning: differentiated instruction with the canonical assessment presentation. The index type carries the same two optional fields, reserved; until slice 5 the publisher refuses any bound revision (`refuseUnpropagatedAssessmentBinding`) rather than publish the instruction without its certified assessment presentation.
 
 ---
 
@@ -283,15 +285,21 @@ Mechanical checks cannot establish:
 - Show Your Thinking evidence equivalence;
 - explanation equivalence.
 
-**Record:** `lesson-sources/variants/reviews/<slug>.<variantKey>.<apId first 12>.md`, never served. It contains:
-- a header: lesson, `variantKey`, `assessmentRevisionId`, `assessmentPresentationId`, reviewer, date, overall determination;
-- one row per item:
+**Record (implemented in Slice 3):** `lesson-sources/variants/reviews/<assessmentPresentationRevisionId>.json`, never served, validated by `validateReview`. It is machine-checkable JSON rather than Markdown, so the gate can enforce it:
 
-| Item | Canonical stem | Adapted stem | Canonical correct (id: text) | Adapted correct text | Canonical distractors | Retained distractors | Omitted + rationale | Concept / standard | DOK canonical / adapted | Cueing check | Determination |
+| Field | Meaning |
+|---|---|
+| `schemaVersion` | `1` |
+| `assessmentPresentationRevisionId` | The exact presentation certified |
+| `reviewer` | `{ role, reviewerId }`: a generic role (for example `scienceContentReviewer`) and an opaque reviewer identifier; no person is hardcoded |
+| `reviewedAt` | ISO-8601 UTC timestamp |
+| `determination` | `approved`, `changesRequested`, or `rejected` |
+| `criteria` | One entry per criterion above (`scientificAccuracy`, `standardAndLearningTargetPreserved`, `cognitiveDemandPreserved`, `correctAnswerEquivalence`, `distractorMisconceptionEquivalence`, `omittedDistractorAppropriate`, `noAnswerCueing`, `showYourThinkingEquivalence`, `explanationEquivalence`), each `{ result: pass \| fail \| notApplicable, notes? }` |
+| `items[]` | One `{ itemId, result: pass \| fail, notes? }` per presentation item |
 
-- a Show Your Thinking row (prompt, model answer, evidence expectation, `requiredTerms`) and an explanations row.
+Applicability is computed from the record: `omittedDistractorAppropriate` applies only when a distractor is omitted, `showYourThinkingEquivalence` only under adapted language, and `explanationEquivalence` only when adapted feedback exists. An applicable criterion cannot be `notApplicable`, an inapplicable one must be, and an `approved` review cannot contain a failed criterion or item.
 
-The build requires `determination: approved` bound to the exact computed `assessmentPresentationId`. Any content change produces a new id, so the prior approval no longer applies.
+The build requires `determination: approved` bound to the exact computed `assessmentPresentationRevisionId`. Any content change produces a new id, so the prior approval no longer applies.
 
 ---
 
@@ -362,7 +370,7 @@ Periodic patterns (a period-4 cycle matching in at least 80% of positions), bala
 | Condition | Outcome |
 |---|---|
 | Accommodation active, delivery disabled | `canonicalFallback` grant, reason `operationalDisable` (unchanged; proven in C4) |
-| No active index, retired index, or index lacking `assessmentPresentationId` for a profile whose traits differ from canonical | `canonicalFallback` (coverage gap) |
+| No active index, retired index, or index lacking `assessmentPresentationRevisionId` for a profile whose traits differ from canonical | `canonicalFallback` (coverage gap) |
 | Index `assessmentRevisionId` differs from the assignment's frozen `assessmentRevisionId` | `canonicalFallback`, new reason `coverageAssessmentMismatch`, with telemetry |
 | Presentation record missing, or its `assessmentRevisionId` differs, at begin | Begin refused (no silent canonical freeze, F5.2 P1 posture) |
 | Artifact hash mismatch at publish | Publish refused (existing) |
@@ -394,7 +402,7 @@ This is technically coherent, because every item is scored against the same cano
 **Behavior:**
 - **Cumulative attempts, best score (`best-attempt.ts`), Current reconciliation:** unchanged. Attempts are compared by `percentage` regardless of presentation.
 - **Classroom passback:** unchanged; it uses the best `percentage` and never reads delivery fields (F5.2).
-- **Provenance:** every attempt records `assessmentPresentationId` and `accommodationConfigRevision` when accommodated, so reduced-choice use is always determinable.
+- **Provenance:** every attempt records `assessmentPresentationRevisionId` and `accommodationConfigRevision` when accommodated, so reduced-choice use is always determinable.
 - **Teacher reporting (recommended; owner decision D2):** attempt detail shows a neutral label such as "Accommodated presentation: adapted language, 3 choices", resolved from the presentation's traits. Students see no label.
 
 **Changing conditions between attempts** (each new session resolves freshly; nothing already frozen changes):
@@ -444,7 +452,7 @@ This is technically coherent, because every item is scored against the same cano
 
 **17.1 Compatibility.** No migration of historical data is required.
 - Canonical attempts and pre-feature attempts carry no new fields. Absent fields mean the canonical four-choice presentation.
-- The C6 attempt (`prff01d9...375c`, no `assessmentPresentationId`) is interpretable as "adapted instruction, canonical four-choice assessment", which is exactly what it was.
+- The C6 attempt (`prff01d9...375c`, no `assessmentPresentationRevisionId`) is interpretable as "adapted instruction, canonical four-choice assessment", which is exactly what it was.
 - Canonical lessons keep the index-derived letter responses.
 - New fields are optional everywhere.
 
@@ -518,9 +526,9 @@ Production is paused at C3 with `prff01d9...375c` published. Whether production 
 |---|---|---|
 | 1 | `assessmentQuality` check + ratchet allowlist (section 13) | `app/scripts/lessonBuilder`, `lessons:verify` |
 | 2 | Server response-membership validation for all sessions (7.1) | `assessment-sessions-autosave.ts`, `assessment-attempts-finalize.ts` |
-| 3 | Presentation record schema, content-addressed id, build-time generation from the authoring source, mechanical checks 1-13, manifest extension | `assessmentFidelity.cjs`, `variantSource.cjs`, `variantManifest.cjs`, new schema module |
+| 3 | **Implemented.** Presentation record schema, canonical serialization and content-addressed id, retained-record verification, validation against the canonical revision (section 11 checks 1-8, 10-11), certification-record schema, optional manifest binding (verified in `verifyRetention`, which the publisher runs), `assessmentPresentations` deny-all Rules block, and a publisher refusal for bound revisions until slice 5. Deferred: generating the variant quiz HTML from a record and embedding its id in the artifact (slice 4, since slice 3 must not change student-visible output), and the wording leak heuristics of check 9 (slice 7, with the first real content) | `assessmentPresentation.cjs`, `variantManifest.cjs`, `verify-assessment-quality.cjs`, `publish-variant.ts`, `shared/types/assessment-presentation.ts`, `shared/types/presentation-variant.ts`, `firestore.rules` |
 | 4 | Runtime: presentation-bound option-id mapping in `lessonQuiz` (canonical path unchanged) | `app/src/runtime/entry.ts` |
-| 5 | Publisher: record create-or-verify, revision linkage check, index fields; Rules deny block | `publish-variant.ts`, `variant-publication.ts`, `firestore.rules`, rules tests |
+| 5 | Publisher: record create-or-verify, revision linkage check, index fields (the Rules deny block already landed in slice 3) | `publish-variant.ts`, `variant-publication.ts`, `firestore.rules`, rules tests |
 | 6 | Resolver, grant, begin, finalize: new frozen fields, `coverageAssessmentMismatch`, displayed-set validation | `resolve-launch-presentation.ts`, `launch-presentation-deps.ts`, `resolve-begin-delivery.ts`, begin, finalize |
 | 7 | Earth's Layers presentation content + review record (human certification) | `lesson-sources/variants/` |
 | 8 | Staging C7 certification | staging only |
