@@ -6,5 +6,15 @@
     "path": "app/lessons/variants/lesson_earths-layers__prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c.html",
     "sha256": "ff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c",
     "publishedAt": "2026-09-26T22:29:49.000Z"
+  },
+  {
+    "lessonSlug": "earths-layers",
+    "variantKey": "reading-adapted",
+    "presentationRevisionId": "pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189",
+    "path": "app/lessons/variants/lesson_earths-layers__pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189.html",
+    "sha256": "90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189",
+    "publishedAt": "2026-09-27T22:58:03.000Z",
+    "assessmentRevisionId": "assessment_earths-layers__r1",
+    "assessmentPresentationRevisionId": "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25"
   }
 ]

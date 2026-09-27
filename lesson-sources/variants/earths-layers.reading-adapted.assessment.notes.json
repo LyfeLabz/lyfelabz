@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "kind": "lyfelabz.assessmentPresentationAuthoringNotes",
+  "lessonSlug": "earths-layers",
+  "assessmentRevisionId": "assessment_earths-layers__r1",
+  "items": [
+    {
+      "itemId": "q1",
+      "correctMeaning": "Both say Earth has four main layers. Only the stem wording changes (\"is divided into\" becomes \"have\"); the correct option text is unchanged.",
+      "distractorMisconceptions": {
+        "B": "Treats the core as one layer (crust, mantle, core) and misses its split into a liquid outer core and a solid inner core.",
+        "D": "Counts subdivisions the lesson also names (lithosphere, asthenosphere, oceanic and continental crust) as separate main layers."
+      }
+    },
+    {
+      "itemId": "q2",
+      "correctMeaning": "Both name differentiation as the process in which heavy metals sank to the center while Earth was molten. The stem adds a plain-language gloss of \"molten\" and splits one sentence into two; the option text is unchanged.",
+      "distractorMisconceptions": {
+        "A": "Confuses density sorting during Earth's formation with convection currents, the ongoing density-driven circulation in the mantle. The choice uses the lesson's own vocabulary term (Convection Current), which keeps the lure as strong as the canonical \"Convection\".",
+        "D": "Confuses sorting inside the young Earth by density with erosion, a familiar process that moves and sorts material (sediment) at the surface. Students who know that heavier sediment settles first may apply that surface idea to Earth's interior."
+      }
+    },
+    {
+      "itemId": "q3",
+      "correctMeaning": "Identical wording: dense materials sink below less dense materials.",
+      "distractorMisconceptions": {
+        "A": "Thinks iron and nickel went to the center because they are magnetic, confusing the magnetic field with density as the cause of sorting.",
+        "C": "Confuses temperature with density: assumes the hottest materials are the densest because the core is both hot and dense."
+      }
+    },
+    {
+      "itemId": "q4",
+      "correctMeaning": "Identical wording: the crust is a thin, brittle layer and the least dense.",
+      "distractorMisconceptions": {
+        "A": "Reverses the depth trend: gives the crust the thickness and density of the deeper layers.",
+        "C": "Gives the crust the outer core's liquid iron and nickel, confusing layer composition and state."
+      }
+    },
+    {
+      "itemId": "q5",
+      "correctMeaning": "Identical wording: oceanic crust is thinner, younger, and more dense.",
+      "distractorMisconceptions": {
+        "A": "Reverses oceanic crust's thickness and density (thinks ocean crust is the thick, light type).",
+        "C": "Swaps the two crust types: gives continental crust the thinness, youth, and basalt of oceanic crust. \"Younger\" is added so the swap mirrors the correct choice; it is the same misconception."
+      }
+    },
+    {
+      "itemId": "q6",
+      "correctMeaning": "Canonical: the flowing mantle moves the plates above it. Adapted: it (the slowly flowing mantle named in the stem) moves the plates above it. Same meaning; every choice now uses \"It\" so no choice repeats the stem.",
+      "distractorMisconceptions": {
+        "B": "Believes a flowing mantle must be liquid or melted and melts the crust (the key solid-that-flows misconception).",
+        "C": "Reverses the effect: thinks mantle flow calms the surface and stops earthquakes instead of moving the plates that cause them."
+      }
+    },
+    {
+      "itemId": "q7",
+      "correctMeaning": "Identical wording: the asthenosphere. The stem keeps the approved Grade 7 framing \"responsible for convection currents\" (C6) and is split into three short sentences.",
+      "distractorMisconceptions": {
+        "A": "Confuses the rigid lithosphere with the asthenosphere below it; the two are taught as a pair.",
+        "C": "Links convection to the hottest, deepest layer, confusing the heat source with the layer that flows."
+      }
+    },
+    {
+      "itemId": "q8",
+      "correctMeaning": "Canonical: energy and heat from Earth's interior. Adapted: heat energy from deep inside Earth. Same cause. \"Drives\" becomes \"causes\" in the stem, and \"Earth\" is no longer in the stem, so the correct choice no longer echoes it.",
+      "distractorMisconceptions": {
+        "B": "Attributes mantle motion to an outside force, by analogy with the Moon's gravity causing tides.",
+        "D": "Names a motion inside Earth instead of heat as the driver, confusing the core's role as a heat source with spinning. \"Only\" is kept from canonical so the choice keeps its meaning."
+      }
+    },
+    {
+      "itemId": "q9",
+      "correctMeaning": "Canonical: the energy is released as an earthquake in the crust. Adapted: energy shakes the crust as an earthquake. Both say the released energy produces an earthquake in the crust. The stem already says the pressure is released, so the choice no longer repeats \"released\" (a canonical stem echo), and it is no longer much longer than the distractors.",
+      "distractorMisconceptions": {
+        "A": "Thinks the energy released when stuck plates slip goes into Earth's magnetic field and flips it, instead of shaking the crust. It mixes up two ideas taught in the same lesson (earthquake energy and the magnetic field) and misplaces where the released energy goes.",
+        "D": "Confuses the timescale: expects a sudden release to build new land at once instead of shaking the crust."
+      }
+    },
+    {
+      "itemId": "q10",
+      "correctMeaning": "Canonical: heat drives convection in the mantle, which moves plates and produces earthquakes and volcanoes. Adapted: the same chain, with \"produces\" replaced by \"causes\". Same meaning and same four links.",
+      "distractorMisconceptions": {
+        "C": "Knows the crust moves but does not connect that motion to heat and convection in the deeper layers.",
+        "D": "Picks a real feature of Earth's interior (the magnetic field made in the core) as the wrong cause of earthquakes and volcanoes."
+      }
+    }
+  ],
+  "showYourThinking": {
+    "evidenceComparison": "Both prompts ask for the same evidence: one or two sentences that explain, in order, the causal steps from the hot core to earthquakes and volcanoes at the surface, not a list of layers, using the word convection. The adapted prompt splits the canonical two sentences into five short ones and replaces \"layered inner structure ends up causing\" with \"inner layers cause\". It adds no step and removes none. The adapted model answer states the same chain as the canonical model (hot core, mantle convection, plate motion, surface change) and ends with the same success check. Its ending follows the lesson: stuck plates build pressure and suddenly slip, causing earthquakes, and in some places where plates meet or pull apart, rock below melts into magma that can erupt from volcanoes (not at every boundary). It also names density (hot rock is less dense and rises, cooler rock is more dense and sinks), which the canonical model implies with \"rising and sinking material\" and which the lesson's Convection Current KEY IDEA teaches. The success check does not add density as a requirement. Reviewer decision: whether naming density in the model answer is acceptable.",
+    "causalChain": [
+      {
+        "step": "Heat from the core",
+        "terms": [
+          "heat",
+          "hot"
+        ]
+      },
+      {
+        "step": "Density differences",
+        "terms": [
+          "dense",
+          "density"
+        ]
+      },
+      {
+        "step": "Convection in the mantle",
+        "terms": [
+          "convection"
+        ]
+      },
+      {
+        "step": "Plate motion",
+        "terms": [
+          "plate"
+        ]
+      },
+      {
+        "step": "Earthquakes and volcanoes",
+        "terms": [
+          "earthquake",
+          "volcano"
+        ]
+      }
+    ]
+  },
+  "unchanged": {
+    "q1.option:B": "Single number word; no simpler form.",
+    "q1.option:C": "Single number word; no simpler form.",
+    "q1.option:D": "Single number word; no simpler form.",
+    "q2.option:B": "Scientific term being assessed; renaming it would change what is assessed.",
+    "q2.option:D": "Scientific term taught in earlier units; renaming it would change the distractor.",
+    "q3.stem": "Already one short question that uses the key term \"densest\".",
+    "q3.option:A": "Already short, plain wording; the assessed meaning is carried by this exact text.",
+    "q3.option:B": "Already short, plain wording; the assessed meaning is carried by this exact text.",
+    "q3.option:C": "Already short, plain wording; the assessed meaning is carried by this exact text. \"Always\" is kept so the misconception keeps its canonical meaning.",
+    "q4.option:A": "Already short, plain wording; the assessed meaning is carried by this exact text.",
+    "q4.option:B": "Already short, plain wording; the assessed meaning is carried by this exact text. \"Brittle\" is lesson vocabulary.",
+    "q4.option:C": "Already short, plain wording; the assessed meaning is carried by this exact text. Owner-preferred wording: it centers the outer core's composition and state.",
+    "q5.option:A": "Already short, plain wording; the assessed meaning is carried by this exact text.",
+    "q5.option:B": "Already short, plain wording; the assessed meaning is carried by this exact text.",
+    "q7.option:A": "Assessed layer name.",
+    "q7.option:B": "Assessed layer name.",
+    "q7.option:C": "Assessed layer name.",
+    "q8.option:B": "Already short, plain wording; the assessed meaning is carried by this exact text."
+  }
+}

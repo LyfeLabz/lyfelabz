@@ -403,7 +403,271 @@ function validateAssessmentPresentation(record, canonicalPayload) {
     for (const f of quality.warnings) warnings.push(`displayed answer positions: ${f.code} - ${f.detail}`);
   }
 
+  // Answer-cue heuristics on the displayed wording (section 11 check 9).
+  // Under adapted language the author controls every word, so a hard cue
+  // fails. Under canonical language the wording IS the canonical revision's,
+  // which a presentation cannot change, so cues are reported as warnings.
+  if (failures.length === 0) {
+    const cues = answerCueFindings(record, canonicalPayload);
+    for (const it of cues.items) {
+      for (const f of it.presentation.hard) {
+        const line = `${it.itemId} answer cue: ${f.code} - ${f.detail}`;
+        if (language === "adapted") fail(line);
+        else warnings.push(line);
+      }
+      for (const f of it.presentation.warnings) warnings.push(`${it.itemId} answer cue: ${f.code} - ${f.detail}`);
+    }
+    for (const f of cues.assessment) warnings.push(`answer cue: ${f.code} - ${f.detail}`);
+  }
+
   return { ok: failures.length === 0, failures, warnings };
+}
+
+// ---------------------------------------------------------------------------
+// Answer-cue heuristics (section 11 check 9; F5.3 Slice 6A)
+// ---------------------------------------------------------------------------
+//
+// Deterministic, wording-only checks. They never rewrite content; they list
+// findings for the human reviewer, who certifies `noAnswerCueing` in any case.
+//
+// HARD (fails an adapted-language presentation):
+//   LENGTH_CUE       the correct choice is uniquely the longest displayed
+//                    choice and at least CUE_LENGTH_RATIO_FAIL (1.5) times the
+//                    length of the next longest (characters, trimmed).
+//   ANSWER_MARKER    a displayed choice contains marker text: the words
+//                    correct / incorrect / answer(s), or a check, cross, or
+//                    star symbol.
+// WARNING (always listed, never fails):
+//   LENGTH_LONGEST   the correct choice is uniquely the longest at a ratio of
+//                    at least CUE_LENGTH_RATIO_WARN (1.3) but below 1.5.
+//   STEM_ECHO        a distinctive stem word (4+ letters, not a stop word)
+//                    appears in the correct choice and in no displayed
+//                    distractor. Words match when they share a prefix of at
+//                    least 4 letters that covers all but at most 2 letters of
+//                    the shorter word (dense / denser / densest, plate /
+//                    plates, flow / flows / flowing).
+//   ABSOLUTE_QUALIFIER  at least one displayed distractor uses an absolute
+//                    (always, never, only, all, none, every, exactly,
+//                    completely, entirely, no) and the correct choice uses
+//                    none: a test-wise elimination cue.
+//   ALL_NONE_OF_ABOVE   a displayed choice is "all/none/both of the above"
+//                    (or "of these").
+//   ARTICLE_AGREEMENT   the stem ends in "a" or "an", the correct choice agrees
+//                    with it, and at least one distractor does not.
+// ASSESSMENT-LEVEL WARNING:
+//   LONGEST_ANSWER_BIAS  the correct choice is uniquely the longest on more
+//                    than ceil(n / k) items.
+//
+// Every finding is also computed on the canonical four-choice item, so the
+// reviewer can tell an inherited canonical cue from one the presentation
+// introduced.
+
+const CUE_LENGTH_RATIO_FAIL = 1.5;
+const CUE_LENGTH_RATIO_WARN = 1.3;
+const CUE_STOP_WORDS = Object.freeze(new Set([
+  "about", "above", "after", "again", "also", "always", "because", "been", "before", "being", "best", "both",
+  "choose", "could", "describe", "describes", "does", "doing", "down", "during", "each", "even", "every",
+  "explain", "explains", "following", "from", "happen", "happens", "have", "having", "here", "into", "just",
+  "make", "makes", "many", "more", "most", "much", "must", "never", "only", "other", "over", "question", "same",
+  "sentence", "should", "some", "statement", "such", "than", "that", "their", "them", "then", "there", "these",
+  "they", "this", "those", "through", "true", "under", "until", "very", "were", "what", "when", "where",
+  "which", "while", "will", "with", "would", "your",
+]));
+const CUE_ABSOLUTES = Object.freeze(["always", "never", "only", "all", "none", "every", "exactly", "completely", "entirely", "no"]);
+const CUE_MARKER_WORDS = /\b(correct|incorrect|answers?)\b/i;
+const CUE_MARKER_SYMBOLS = /[✓✔✗✘★☆]/;
+const CUE_ALL_NONE = /\b(?:all|none|both)\s+of\s+(?:the\s+above|these|them)\b/i;
+
+function cueWords(text) {
+  return String(text)
+    .normalize("NFC")
+    .toLowerCase()
+    .replace(/[‘’]/g, "'")
+    .split(/[^a-z0-9']+/)
+    .map((w) => w.replace(/'s$/, "").replace(/'/g, ""))
+    .filter(Boolean);
+}
+
+function distinctiveWords(text) {
+  return [...new Set(cueWords(text).filter((w) => w.length >= 4 && !CUE_STOP_WORDS.has(w)))];
+}
+
+function wordsMatch(a, b) {
+  if (a === b) return true;
+  const shorter = Math.min(a.length, b.length);
+  let lcp = 0;
+  while (lcp < shorter && a[lcp] === b[lcp]) lcp += 1;
+  return lcp >= 4 && lcp >= shorter - 2;
+}
+
+function textHasWord(text, word) {
+  return cueWords(text).some((w) => w.length >= 4 && wordsMatch(w, word));
+}
+
+function charLength(text) {
+  return [...String(text).trim()].length;
+}
+
+// Pure: cue findings for one displayed item. `choices` are { optionId, text }
+// in display order; `correctOptionId` comes from the canonical payload and is
+// used only for this analysis.
+function itemCueFindings({ stem, choices, correctOptionId }) {
+  const hard = [];
+  const warnings = [];
+  const correct = choices.find((c) => c.optionId === correctOptionId);
+  const distractors = choices.filter((c) => c.optionId !== correctOptionId);
+  if (!correct || distractors.length === 0) return { hard, warnings, correctUniquelyLongest: false };
+
+  const correctLen = charLength(correct.text);
+  const longestDistractor = Math.max(...distractors.map((d) => charLength(d.text)));
+  const correctUniquelyLongest = correctLen > longestDistractor;
+  if (correctUniquelyLongest) {
+    const ratio = longestDistractor > 0 ? correctLen / longestDistractor : Infinity;
+    const detail = `correct ${correctOptionId} is ${correctLen} characters, next longest ${longestDistractor} (ratio ${ratio.toFixed(2)})`;
+    if (ratio >= CUE_LENGTH_RATIO_FAIL) hard.push({ code: "LENGTH_CUE", detail: `${detail}; threshold ${CUE_LENGTH_RATIO_FAIL}` });
+    else if (ratio >= CUE_LENGTH_RATIO_WARN) warnings.push({ code: "LENGTH_LONGEST", detail });
+  }
+
+  for (const c of choices) {
+    if (CUE_MARKER_WORDS.test(c.text) || CUE_MARKER_SYMBOLS.test(c.text)) {
+      hard.push({ code: "ANSWER_MARKER", detail: `choice ${c.optionId} contains answer-marker text: ${JSON.stringify(c.text)}` });
+    }
+    if (CUE_ALL_NONE.test(c.text)) {
+      warnings.push({ code: "ALL_NONE_OF_ABOVE", detail: `choice ${c.optionId} is an all/none/both-of-the-above choice` });
+    }
+  }
+
+  const echoed = distinctiveWords(stem).filter(
+    (w) => textHasWord(correct.text, w) && !distractors.some((d) => textHasWord(d.text, w)),
+  );
+  if (echoed.length > 0) {
+    warnings.push({ code: "STEM_ECHO", detail: `stem word(s) ${echoed.map((w) => `"${w}"`).join(", ")} appear in correct ${correctOptionId} and in no displayed distractor` });
+  }
+
+  const absolutesIn = (text) => CUE_ABSOLUTES.filter((a) => cueWords(text).includes(a));
+  const flagged = distractors.map((d) => ({ id: d.optionId, found: absolutesIn(d.text) })).filter((d) => d.found.length > 0);
+  if (flagged.length > 0 && absolutesIn(correct.text).length === 0) {
+    warnings.push({
+      code: "ABSOLUTE_QUALIFIER",
+      detail: `distractor(s) ${flagged.map((d) => `${d.id} (${d.found.join(", ")})`).join("; ")} use absolute qualifiers; correct ${correctOptionId} uses none`,
+    });
+  }
+
+  const article = /\b(a|an)\s*[_.:…]*\s*$/i.exec(String(stem).trim());
+  if (article) {
+    const wantsVowel = article[1].toLowerCase() === "an";
+    const agrees = (text) => /^[aeiou]/i.test(String(text).trim()) === wantsVowel;
+    if (agrees(correct.text) && distractors.some((d) => !agrees(d.text))) {
+      warnings.push({ code: "ARTICLE_AGREEMENT", detail: `stem ends in "${article[1]}"; correct ${correctOptionId} agrees and at least one distractor does not` });
+    }
+  }
+  return { hard, warnings, correctUniquelyLongest };
+}
+
+// Pure: cue findings for every item of a presentation (as displayed) and of
+// its canonical four-choice item (the baseline), plus assessment-level bias.
+function answerCueFindings(record, canonicalPayload) {
+  const byId = new Map(canonicalPayload.items.map((it) => [it.itemId, it]));
+  const items = [];
+  let longestCount = 0;
+  let canonicalLongestCount = 0;
+  for (const item of record.items) {
+    const c = byId.get(item.itemId);
+    const presentation = itemCueFindings({ stem: item.stem, choices: item.displayedOptions, correctOptionId: c.correctOptionId });
+    const canonical = itemCueFindings({ stem: c.stem, choices: c.options, correctOptionId: c.correctOptionId });
+    if (presentation.correctUniquelyLongest) longestCount += 1;
+    if (canonical.correctUniquelyLongest) canonicalLongestCount += 1;
+    items.push({ itemId: item.itemId, presentation, canonical });
+  }
+  const assessment = [];
+  const k = record.traits && Number.isInteger(record.traits.choiceCount) ? record.traits.choiceCount : 0;
+  const cap = k > 0 ? Math.ceil(record.items.length / k) : Infinity;
+  if (longestCount > cap) {
+    assessment.push({ code: "LONGEST_ANSWER_BIAS", detail: `the correct choice is uniquely the longest on ${longestCount} of ${record.items.length} items (more than ${cap})` });
+  }
+  return { items, assessment, longestCount, canonicalLongestCount };
+}
+
+// ---------------------------------------------------------------------------
+// Identical-to-canonical text (review aid; F5.3 Slice 6A)
+// ---------------------------------------------------------------------------
+//
+// Under adapted language, lists every student-facing string that is exactly
+// the canonical string, or equal to it after case, whitespace, and
+// punctuation are ignored, or that falls back to canonical content because
+// the record leaves it null. Never a failure: a short term such as "The
+// asthenosphere" is often right to keep. The reviewer decides; an authoring
+// note may give the author's reason (assessmentPresentationReview.cjs).
+// `canonicalLesson` supplies what the payload does not hold:
+// { directions, showYourThinking: { prompt, modelAnswer } | null } as plain text.
+
+function comparableText(text) {
+  return String(text).normalize("NFC").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function compareText(field, adapted, canonical) {
+  if (canonical === null || canonical === undefined) return null;
+  if (adapted === null || adapted === undefined) return { field, kind: "canonicalUsed", text: canonical };
+  if (adapted === canonical) return { field, kind: "identical", text: adapted };
+  if (comparableText(adapted) === comparableText(canonical)) return { field, kind: "identicalAfterNormalization", text: adapted, canonical };
+  return null;
+}
+
+function identicalTextFindings(record, canonicalPayload, canonicalLesson = {}) {
+  const findings = [];
+  if (!record.traits || record.traits.language !== "adapted") return findings;
+  const push = (f) => {
+    if (f) findings.push(f);
+  };
+  push(compareText("directions", record.directions, canonicalLesson.directions));
+  const byId = new Map(canonicalPayload.items.map((it) => [it.itemId, it]));
+  for (const item of record.items) {
+    const c = byId.get(item.itemId);
+    push(compareText(`${item.itemId}.stem`, item.stem, c.stem));
+    const textById = new Map(c.options.map((o) => [o.optionId, o.text]));
+    for (const o of item.displayedOptions) push(compareText(`${item.itemId}.option:${o.optionId}`, o.text, textById.get(o.optionId)));
+    push(compareText(`${item.itemId}.feedback`, item.feedback, c.explanation));
+  }
+  const canonicalSyt = canonicalLesson.showYourThinking;
+  if (record.showYourThinking && canonicalSyt) {
+    push(compareText("showYourThinking.prompt", record.showYourThinking.prompt, canonicalSyt.prompt));
+    push(compareText("showYourThinking.modelAnswer", record.showYourThinking.modelAnswer, canonicalSyt.modelAnswer));
+  }
+  return findings;
+}
+
+// ---------------------------------------------------------------------------
+// Required-term equivalence (section 9.2; F5.3 Slice 6A)
+// ---------------------------------------------------------------------------
+//
+// Every required term must appear in BOTH the canonical and the adapted Show
+// Your Thinking prompt (case-insensitive substring, the same matching the
+// renderer uses to emphasize the term). validateAssessmentPresentation checks
+// the adapted side from the record alone; the canonical prompt lives in the
+// lesson, so the renderer and the review tooling pass it here.
+
+function requiredTermEquivalence(showYourThinking, canonicalShowYourThinking) {
+  const failures = [];
+  const terms = [];
+  if (!showYourThinking) return { ok: true, failures, terms };
+  if (!canonicalShowYourThinking || !isNonEmptyString(canonicalShowYourThinking.prompt)) {
+    failures.push("the canonical lesson has no Show Your Thinking prompt to compare the required terms against");
+    return { ok: false, failures, terms };
+  }
+  const has = (text, term) => isNonEmptyString(text) && text.toLowerCase().includes(term.toLowerCase());
+  for (const term of showYourThinking.requiredTerms || []) {
+    const row = {
+      term,
+      canonicalPrompt: has(canonicalShowYourThinking.prompt, term),
+      adaptedPrompt: has(showYourThinking.prompt, term),
+      canonicalModelAnswer: has(canonicalShowYourThinking.modelAnswer, term),
+      adaptedModelAnswer: has(showYourThinking.modelAnswer, term),
+    };
+    terms.push(row);
+    if (!row.canonicalPrompt) failures.push(`required term "${term}" is not in the canonical Show Your Thinking prompt`);
+    if (!row.adaptedPrompt) failures.push(`required term "${term}" is not in the adapted Show Your Thinking prompt`);
+  }
+  return { ok: failures.length === 0, failures, terms };
 }
 
 // ---------------------------------------------------------------------------
@@ -638,6 +902,8 @@ module.exports = {
   CORRECTNESS_KEYS,
   REVIEW_CRITERIA,
   REVIEW_DETERMINATIONS,
+  CUE_LENGTH_RATIO_FAIL,
+  CUE_LENGTH_RATIO_WARN,
   canonicalJson,
   assessmentPresentationRevisionIdFor,
   serializeRecord,
@@ -646,6 +912,10 @@ module.exports = {
   reviewDir,
   loadCanonicalPayload,
   validateAssessmentPresentation,
+  itemCueFindings,
+  answerCueFindings,
+  identicalTextFindings,
+  requiredTermEquivalence,
   verifyRetainedRecord,
   verifyRetainedRecords,
   applicableCriteria,

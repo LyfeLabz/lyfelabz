@@ -26,6 +26,12 @@ const { sha256Hex } = require("./hash.cjs");
 const identity = require("./variantIdentity.cjs");
 const manifestMod = require("./variantManifest.cjs");
 
+// F5.3 Slice 6A: every local, uncertified assessment-presentation preview
+// (variantSource.buildUncertifiedAssessmentPreview) carries this marker, and
+// retention refuses any bytes that contain it, so a preview can never become
+// a retained revision or a manifest entry.
+const UNCERTIFIED_PREVIEW_MARKER = "LYFELABZ:UNCERTIFIED-ASSESSMENT-PREVIEW";
+
 function fail(message) {
   throw new Error(`[variant-build] ${message}`);
 }
@@ -45,6 +51,9 @@ function generateVariantArtifact({
   }
   if (typeof bytes !== "string" && !Buffer.isBuffer(bytes)) {
     fail("bytes must be the exact final artifact content (string or Buffer) - never source text or metadata");
+  }
+  if ((Buffer.isBuffer(bytes) ? bytes.toString("utf8") : bytes).includes(UNCERTIFIED_PREVIEW_MARKER)) {
+    fail("bytes are an uncertified assessment-presentation preview; a preview is never retained or published");
   }
   if (typeof publishedAt !== "string" || publishedAt.length === 0) {
     // No implicit wall-clock default: forces every caller (real publish
@@ -103,4 +112,4 @@ function generateVariantArtifact({
   return { ...entry, absPath, fileWritten, appended };
 }
 
-module.exports = { generateVariantArtifact };
+module.exports = { UNCERTIFIED_PREVIEW_MARKER, generateVariantArtifact };

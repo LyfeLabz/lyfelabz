@@ -57,11 +57,12 @@ const equivalence = require("./equivalence.cjs");
 const fidelity = require("./assessmentFidelity.cjs");
 const identity = require("./variantIdentity.cjs");
 const manifestMod = require("./variantManifest.cjs");
-const { generateVariantArtifact } = require("./variantBuild.cjs");
+const { generateVariantArtifact, UNCERTIFIED_PREVIEW_MARKER } = require("./variantBuild.cjs");
 const { relocateHtml } = require("./variantLinks.cjs");
 const invariance = require("./variantInvariance.cjs");
 const { sha256Hex } = require("./hash.cjs");
 const presentationRender = require("./assessmentPresentationRender.cjs");
+const assessmentPresentation = require("./assessmentPresentation.cjs");
 
 const ASSESSMENT_PAYLOAD_DIR = path.join("platform", "functions", "src", "scripts", "assessments");
 
@@ -310,6 +311,83 @@ function checkAuthoredVariants({ repoRoot = paths.REPO_ROOT, configs = null } = 
   return { ok: failures.length === 0, checked, failures };
 }
 
+// -- Uncertified local preview (F5.3 Slice 6A) -----------------------------
+//
+// Renders a DRAFT assessment-presentation record into the lesson exactly as
+// a certified build would (same F5.2 gates on the instruction-only build,
+// same pure renderer, rendered twice and compared, same no-disclosure check),
+// WITHOUT requiring a retained record or an approved review. The result is
+// for owner review only:
+//   - the returned `html` is marked (UNCERTIFIED_PREVIEW_MARKER comment, a
+//     visible banner, noindex, and a CSP that blocks third-party scripts and
+//     beacons), and generateVariantArtifact refuses marked bytes, so a
+//     preview can never be retained, entered in the manifest, or published;
+//   - nothing is written here; the CLI writes only to a gitignored scratch
+//     directory (scripts/assessment-presentation-review.cjs).
+// `projectedPresentationRevisionId` is the id the UNMARKED bytes would have.
+// It is informational: no artifact with that id is created.
+
+const PREVIEW_CSP = "default-src 'self' https: data:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline'; connect-src 'self'";
+
+function markPreview(html, apId) {
+  const headAt = html.indexOf("<head>");
+  if (headAt === -1 || html.indexOf("<head>", headAt + 1) !== -1) fail("preview: expected exactly one <head>");
+  const head =
+    `<head>\n<!-- ${UNCERTIFIED_PREVIEW_MARKER} ${apId}: local owner-review preview. Not certified, never retained, never published. -->\n` +
+    `<meta http-equiv="Content-Security-Policy" content="${PREVIEW_CSP}">\n<meta name="robots" content="noindex,nofollow">`;
+  let out = html.slice(0, headAt) + head + html.slice(headAt + "<head>".length);
+  const bodyMatch = /<body[^>]*>/.exec(out);
+  if (!bodyMatch) fail("preview: no <body>");
+  const at = bodyMatch.index + bodyMatch[0].length;
+  const banner =
+    `\n<div style="position:sticky;top:0;z-index:99999;background:#b00020;color:#fff;font:700 14px/1.4 sans-serif;padding:8px 16px;text-align:center;">` +
+    `UNCERTIFIED PREVIEW - owner review only - ${apId}</div>`;
+  out = out.slice(0, at) + banner + out.slice(at);
+  return out;
+}
+
+function buildUncertifiedAssessmentPreview({ slug, variantKey, record, repoRoot = paths.REPO_ROOT, cfg = null }) {
+  const config = cfg || configMod.loadConfig(slug);
+  if (!config.variants || !config.variants[variantKey]) {
+    fail(`lesson "${slug}" declares no authored "${variantKey}" variant`);
+  }
+  if (!record || record.lessonSlug !== slug) fail(`preview: the draft record does not belong to lesson "${slug}"`);
+  // The instruction-only build: every F5.2 gate, and no configured binding.
+  const { assessmentPresentationRevisionId: _bound, ...unbound } = config.variants[variantKey];
+  const instructionCfg = { ...config, variants: { ...config.variants, [variantKey]: unbound } };
+  const built = buildAuthoredVariant({ slug, variantKey, repoRoot, cfg: instructionCfg });
+
+  const canonicalPayload = assessmentPresentation.loadCanonicalPayload(record.assessmentRevisionId, { repoRoot });
+  const apId = assessmentPresentation.assessmentPresentationRevisionIdFor(record);
+  const render = () =>
+    presentationRender.renderAssessmentPresentation(built.bytes, {
+      record,
+      assessmentPresentationRevisionId: apId,
+      canonicalPayload,
+    });
+  const a = render();
+  const b = render();
+  if (a.html !== b.html) fail("assessment-presentation rendering is not deterministic");
+
+  const canonicalRelocated = relocateHtml(
+    buildV2(config, readUnder(repoRoot, config.canonicalSource, "lesson-sources"), config.generatedNotice.v2, "canonical source"),
+  ).html;
+  invariance.assertNoDisclosure(canonicalRelocated, a.html, [variantKey, path.basename(config.variants[variantKey].source)]);
+
+  const html = markPreview(a.html, apId);
+  if (markPreview(b.html, apId) !== html) fail("preview marking is not deterministic");
+  return {
+    lessonSlug: slug,
+    variantKey,
+    assessmentPresentationRevisionId: apId,
+    instructionPresentationRevisionId: built.presentationRevisionId,
+    projectedPresentationRevisionId: identity.computePresentationRevisionId(a.html),
+    unmarkedSha256: sha256Hex(a.html),
+    binding: a.binding,
+    html,
+  };
+}
+
 module.exports = {
   ASSESSMENT_PAYLOAD_DIR,
   neutralNotice,
@@ -318,4 +396,5 @@ module.exports = {
   generateAuthoredVariant,
   checkAuthoredVariants,
   loadAssessmentPayloads,
+  buildUncertifiedAssessmentPreview,
 };

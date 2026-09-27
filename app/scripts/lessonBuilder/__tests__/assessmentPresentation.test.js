@@ -16,6 +16,11 @@ const os = require("os");
 const path = require("path");
 
 const AP = require("../assessmentPresentation.cjs");
+
+// F5.3 Slice 6B: the owner-certified Earth's Layers presentation and the
+// historical unbound revision it must never disturb.
+const EARTHS_LAYERS_AP = "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25";
+const HISTORICAL_PR = "prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c";
 const manifestMod = require("../variantManifest.cjs");
 const { sha256Hex } = require("../hash.cjs");
 
@@ -400,10 +405,17 @@ describe("retained record files", () => {
     expect(failures).toContain("unexpected file");
   });
 
-  test("the repository currently retains no assessment presentations and verifies cleanly", () => {
+  test("the repository retains exactly the owner-certified Earth's Layers presentation, and it verifies cleanly", () => {
+    // F5.3 Slice 6B: the first real retained record. Records are add-only.
     const result = AP.verifyRetainedRecords();
     expect(result.ok).toBe(true);
-    expect(result.count).toBe(0);
+    expect(result.count).toBe(1);
+    expect(fs.readdirSync(AP.retainedRecordDir())).toEqual([`${EARTHS_LAYERS_AP}.json`]);
+    const checked = AP.checkCertifiedPresentation(EARTHS_LAYERS_AP, {
+      lessonSlug: "earths-layers",
+      assessmentRevisionId: "assessment_earths-layers__r1",
+    });
+    expect(checked.failures).toEqual([]);
   });
 });
 
@@ -454,13 +466,17 @@ describe("human certification review", () => {
 });
 
 describe("variant manifest binding", () => {
-  test("the real manifest's pre-F5.3 entry stays valid and reserializes byte-identically", () => {
+  test("the real manifest's pre-F5.3 entry stays unbound and valid, the bound entry is certified, and it reserializes byte-identically", () => {
     const entries = manifestMod.readManifest();
-    expect(entries.length).toBeGreaterThanOrEqual(1);
-    for (const e of entries) {
-      expect(e.assessmentPresentationRevisionId).toBeUndefined();
-      expect(AP.verifyManifestBinding(e)).toEqual([]);
-    }
+    expect(entries.length).toBeGreaterThanOrEqual(2);
+    const historical = entries.find((e) => e.presentationRevisionId === HISTORICAL_PR);
+    expect(historical).toBeDefined();
+    expect(historical.assessmentRevisionId).toBeUndefined();
+    expect(historical.assessmentPresentationRevisionId).toBeUndefined();
+    const bound = entries.find((e) => e.assessmentPresentationRevisionId === EARTHS_LAYERS_AP);
+    expect(bound).toMatchObject({ lessonSlug: "earths-layers", variantKey: "reading-adapted", assessmentRevisionId: "assessment_earths-layers__r1" });
+    expect(bound.presentationRevisionId).not.toBe(HISTORICAL_PR);
+    for (const e of entries) expect(AP.verifyManifestBinding(e)).toEqual([]);
     const real = fs.readFileSync(manifestMod.resolveManifestPath(), "utf8");
     expect(manifestMod.serializeManifest(entries)).toBe(real);
     expect(manifestMod.verifyRetention({}).ok).toBe(true);

@@ -195,10 +195,60 @@ function boldRequiredTerms(escapedPrompt, requiredTerms) {
   return out;
 }
 
+const THINK_PROMPT_RE = /(<p class="think-prompt">)([\s\S]*?)(<\/p>)/g;
+const THINK_MODEL_RE = /(<div class="think-model"[^>]*>\s*<span class="tm-label">[^<]*<\/span>)([\s\S]*?)(<\/div>)/g;
+const THINK_INPUT_RE = /(<textarea class="think-input"[^>]*\saria-label=")([^"]*)(")/g;
+
+const NAMED_ENTITIES = Object.freeze({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", middot: "·", rsquo: "’", lsquo: "‘" });
+
+// Plain text of an HTML fragment (tags removed, entities decoded, whitespace
+// collapsed). Used only to read canonical wording for comparison.
+function htmlToText(fragment) {
+  return String(fragment)
+    .replace(/<[^>]*>/g, "")
+    .replace(/&(#x[0-9a-f]+|#[0-9]+|[a-z]+);/gi, (all, ent) => {
+      if (ent[0] === "#") {
+        const code = ent[1] === "x" || ent[1] === "X" ? parseInt(ent.slice(2), 16) : parseInt(ent.slice(1), 10);
+        return Number.isFinite(code) ? String.fromCodePoint(code) : all;
+      }
+      return NAMED_ENTITIES[ent.toLowerCase()] !== undefined ? NAMED_ENTITIES[ent.toLowerCase()] : all;
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Reads the lesson's Show Your Thinking wording as plain text, or null when
+// the lesson has no think box. Throws when the anchors are ambiguous.
+function readShowYourThinking(html) {
+  const prompts = [...html.matchAll(THINK_PROMPT_RE)];
+  if (prompts.length === 0) return null;
+  const models = [...html.matchAll(THINK_MODEL_RE)];
+  const inputs = [...html.matchAll(THINK_INPUT_RE)];
+  if (prompts.length !== 1 || models.length !== 1 || inputs.length !== 1) {
+    fail(`lesson has ${prompts.length} think-prompt, ${models.length} think-model, ${inputs.length} think-input anchor(s); expected exactly one each`);
+  }
+  return {
+    prompt: htmlToText(prompts[0][2]),
+    modelAnswer: htmlToText(models[0][2]),
+    ariaLabel: htmlToText(inputs[0][2]),
+  };
+}
+
+// Reads the quiz section's directions (its one plain section-desc) as plain
+// text, or null when the lesson has no such paragraph.
+function readQuizDirections(html) {
+  const quizAt = html.indexOf('<section id="quiz"');
+  if (quizAt === -1) return null;
+  const end = html.indexOf("</section>", quizAt);
+  const segment = html.slice(quizAt, end === -1 ? undefined : end);
+  const matches = [...segment.matchAll(/<p class="section-desc">([^<]*)<\/p>/g)];
+  return matches.length === 1 ? htmlToText(matches[0][1]) : null;
+}
+
 function renderShowYourThinking(html, syt) {
-  const promptRe = /(<p class="think-prompt">)([\s\S]*?)(<\/p>)/g;
-  const modelRe = /(<div class="think-model"[^>]*>\s*<span class="tm-label">[^<]*<\/span>)([\s\S]*?)(<\/div>)/g;
-  const inputRe = /(<textarea class="think-input"[^>]*\saria-label=")([^"]*)(")/g;
+  const promptRe = THINK_PROMPT_RE;
+  const modelRe = THINK_MODEL_RE;
+  const inputRe = THINK_INPUT_RE;
   for (const [re, name] of [[promptRe, "think-prompt"], [modelRe, "think-model"], [inputRe, "think-input aria-label"]]) {
     const n = [...html.matchAll(re)].length;
     if (n !== 1) fail(`lesson has ${n} ${name} anchor(s); an adapted Show Your Thinking block needs exactly one`);
@@ -246,6 +296,16 @@ function renderAssessmentPresentation(html, { record, assessmentPresentationRevi
   }
   const containerTag = `<div id="${literal.prefix}-quiz-questions">`;
   if (countOf(html, containerTag) !== 1) fail(`expected exactly one ${containerTag}`);
+
+  // Section 9.2: every required term must be in BOTH prompts. The html is the
+  // instruction-only build, whose Show Your Thinking is locked to canonical
+  // by the F5.2 invariance gate, so its prompt is the canonical prompt.
+  // A lesson with no think box is refused below by the anchor check.
+  const canonicalSyt = record.showYourThinking !== null ? readShowYourThinking(html) : null;
+  if (canonicalSyt !== null) {
+    const terms = AP.requiredTermEquivalence(record.showYourThinking, canonicalSyt);
+    if (!terms.ok) fail(`Show Your Thinking required terms are not equivalent:\n  - ${terms.failures.join("\n  - ")}`);
+  }
 
   const { questions, items } = buildPresentationQuiz(record, canonicalPayload);
   const block = bindingBlockFor(record, assessmentPresentationRevisionId, items);
@@ -296,8 +356,11 @@ module.exports = {
   BINDING_ELEMENT_ID,
   BINDING_SCHEMA_VERSION,
   escapeHtml,
+  htmlToText,
   buildPresentationQuiz,
   readBindingBlock,
+  readShowYourThinking,
+  readQuizDirections,
   renderAssessmentPresentation,
   renderCertifiedAssessmentPresentation,
 };

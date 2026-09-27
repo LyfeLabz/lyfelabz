@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "assessmentPresentationRevisionId": "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25",
+  "reviewer": {
+    "role": "owner",
+    "reviewerId": "lyfelabz-owner"
+  },
+  "reviewedAt": "2026-09-27T22:57:50.000Z",
+  "determination": "approved",
+  "criteria": {
+    "scientificAccuracy": {
+      "result": "pass",
+      "notes": "Science and content accuracy certified, including the solid but slowly flowing mantle, lithosphere and asthenosphere, convection from density differences, the solid inner core under pressure, and the revised Show Your Thinking ending (stuck plates slip and cause earthquakes; in some places rock melts into magma that can erupt)."
+    },
+    "standardAndLearningTargetPreserved": {
+      "result": "pass",
+      "notes": "Same standards and learning targets as assessment_earths-layers__r1."
+    },
+    "cognitiveDemandPreserved": {
+      "result": "pass",
+      "notes": "Same cognitive demand and rigor; three displayed choices is the accepted accommodation (D1)."
+    },
+    "correctAnswerEquivalence": {
+      "result": "pass",
+      "notes": "Every adapted correct choice keeps the canonical correct meaning; the canonical correct option is displayed on every item."
+    },
+    "distractorMisconceptionEquivalence": {
+      "result": "pass",
+      "notes": "Retained distractors keep meaningful misconception coverage, including q2 (Convection currents, Erosion), q4 (It is a liquid layer made of iron and nickel), and q9 (The released energy reverses Earth's magnetic field; A new continent forms right away)."
+    },
+    "omittedDistractorAppropriate": {
+      "result": "pass",
+      "notes": "Each item omits exactly one canonical distractor with a recorded rationale; q2 omits Transmission and q9 omits the inner-core distractor after owner review."
+    },
+    "noAnswerCueing": {
+      "result": "pass",
+      "notes": "No unacceptable answer cueing. Automated review: 0 hard findings; 2 warnings (q3 always, q8 only) inherited from canonical wording and accepted."
+    },
+    "showYourThinkingEquivalence": {
+      "result": "pass",
+      "notes": "Equivalent evidence expectation and success check; required term convection present in both prompts; density and the differentiated earthquake and volcanism mechanisms in the model answer approved."
+    },
+    "explanationEquivalence": {
+      "result": "pass",
+      "notes": "Adapted feedback preserves the meaning of each canonical explanation."
+    }
+  },
+  "items": [
+    {
+      "itemId": "q1",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q2",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q3",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q4",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q5",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q6",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q7",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q8",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q9",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    },
+    {
+      "itemId": "q10",
+      "result": "pass",
+      "notes": "Owner final review of this exact content-addressed presentation (F5.3 Slice 6A review packet, revised draft)."
+    }
+  ]
+}
