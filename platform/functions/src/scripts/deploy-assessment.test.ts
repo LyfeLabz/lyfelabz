@@ -3,6 +3,7 @@ import {
   ensureTargetSafe,
   main,
   parseArgs,
+  type CliArgs,
   type CliDeps,
 } from "./deploy-assessment";
 
@@ -59,6 +60,7 @@ function makeDeps(overrides: Partial<CliDeps> = {}): CliDeps & {
           revisionOrdinal: 1,
           assessmentCreated: true,
         })),
+    bindAdminProject: overrides.bindAdminProject ?? jest.fn(),
     setEnv:
       overrides.setEnv ??
       ((k, v) => {
@@ -74,7 +76,7 @@ describe("parseArgs", () => {
   it("defaults target to emulator and requires --file", () => {
     expect(parseArgs(["--file=x.json"])).toEqual({
       ok: true,
-      args: { target: "emulator", file: "x.json", iKnowProduction: false },
+      args: { target: "emulator", file: "x.json", iKnowProduction: false, project: null, apply: false },
     });
     expect(parseArgs([]).ok).toBe(false);
   });
@@ -86,13 +88,42 @@ describe("parseArgs", () => {
     expect(parseArgs(["--i-know=maybe"]).ok).toBe(false);
   });
 
-  it("accepts production with the explicit second flag", () => {
+  it("accepts production with the explicit second flag, project, and apply", () => {
     expect(
       parseArgs(["--target=production", "--file=x.json", "--i-know=production"]),
     ).toEqual({
       ok: true,
-      args: { target: "production", file: "x.json", iKnowProduction: true },
+      args: { target: "production", file: "x.json", iKnowProduction: true, project: null, apply: false },
     });
+    expect(
+      parseArgs([
+        "--target=production",
+        "--file=x.json",
+        "--i-know=production",
+        "--project=lyfelabz-prod",
+        "--apply",
+      ]),
+    ).toEqual({
+      ok: true,
+      args: {
+        target: "production",
+        file: "x.json",
+        iKnowProduction: true,
+        project: "lyfelabz-prod",
+        apply: true,
+      },
+    });
+  });
+
+  it.each([
+    ["duplicate project", ["--target=production", "--file=x.json", "--project=lyfelabz-prod", "--project=lyfelabz-prod"]],
+    ["empty project", ["--target=production", "--file=x.json", "--project="]],
+    ["bare project flag", ["--target=production", "--file=x.json", "--project"]],
+    ["duplicate apply", ["--target=production", "--file=x.json", "--apply", "--apply"]],
+    ["apply with a value", ["--target=production", "--file=x.json", "--apply=true"]],
+    ["project with the emulator target", ["--file=x.json", "--project=lyfelabz-prod"]],
+  ])("rejects %s", (_label, argv) => {
+    expect(parseArgs(argv).ok).toBe(false);
   });
 });
 
@@ -100,7 +131,7 @@ describe("ensureTargetSafe", () => {
   it("permits emulator without any additional flags or env", () => {
     expect(
       ensureTargetSafe(
-        { target: "emulator", file: "x.json", iKnowProduction: false },
+        { target: "emulator", file: "x.json", iKnowProduction: false, project: null, apply: false },
         {},
       ),
     ).toBeNull();
@@ -109,7 +140,7 @@ describe("ensureTargetSafe", () => {
   it("refuses production without --i-know=production", () => {
     expect(
       ensureTargetSafe(
-        { target: "production", file: "x.json", iKnowProduction: false },
+        { target: "production", file: "x.json", iKnowProduction: false, project: "lyfelabz-prod", apply: false },
         { GOOGLE_APPLICATION_CREDENTIALS: "/tmp/creds" },
       ),
     ).toMatch(/--i-know/);
@@ -118,7 +149,7 @@ describe("ensureTargetSafe", () => {
   it("refuses production while FIRESTORE_EMULATOR_HOST is set", () => {
     expect(
       ensureTargetSafe(
-        { target: "production", file: "x.json", iKnowProduction: true },
+        { target: "production", file: "x.json", iKnowProduction: true, project: "lyfelabz-prod", apply: false },
         {
           FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
           GOOGLE_APPLICATION_CREDENTIALS: "/tmp/creds",
@@ -130,10 +161,73 @@ describe("ensureTargetSafe", () => {
   it("refuses production when GOOGLE_APPLICATION_CREDENTIALS is unset", () => {
     expect(
       ensureTargetSafe(
-        { target: "production", file: "x.json", iKnowProduction: true },
+        { target: "production", file: "x.json", iKnowProduction: true, project: "lyfelabz-prod", apply: false },
         {},
       ),
     ).toMatch(/GOOGLE_APPLICATION_CREDENTIALS/);
+  });
+});
+
+describe("ensureTargetSafe production project binding", () => {
+  const PROD_ARGS: CliArgs = {
+    target: "production",
+    file: "x.json",
+    iKnowProduction: true,
+    project: "lyfelabz-prod",
+    apply: true,
+  };
+  const CREDS = { GOOGLE_APPLICATION_CREDENTIALS: "/tmp/creds" };
+
+  it("accepts the explicit production project with matching or absent ambient projects", () => {
+    expect(ensureTargetSafe(PROD_ARGS, CREDS)).toBeNull();
+    expect(
+      ensureTargetSafe(PROD_ARGS, {
+        ...CREDS,
+        GCLOUD_PROJECT: "lyfelabz-prod",
+        GOOGLE_CLOUD_PROJECT: "lyfelabz-prod",
+        CLOUDSDK_CORE_PROJECT: "lyfelabz-prod",
+      }),
+    ).toBeNull();
+  });
+
+  it("requires an explicit --project for production", () => {
+    expect(ensureTargetSafe({ ...PROD_ARGS, project: null }, CREDS)).toMatch(
+      /--project=lyfelabz-prod/,
+    );
+  });
+
+  it.each(["lyfelabz-staging", "production", "default", "LYFELABZ-PROD", "lyfelabz-prod "])(
+    "refuses any project other than the literal production id: %j",
+    (project) => {
+      expect(ensureTargetSafe({ ...PROD_ARGS, project }, CREDS)).toMatch(/only 'lyfelabz-prod'/);
+    },
+  );
+
+  it.each(["GCLOUD_PROJECT", "GOOGLE_CLOUD_PROJECT", "CLOUDSDK_CORE_PROJECT"])(
+    "refuses a conflicting ambient %s",
+    (key) => {
+      expect(
+        ensureTargetSafe(PROD_ARGS, { ...CREDS, [key]: "lyfelabz-staging" }),
+      ).toContain(key);
+    },
+  );
+
+  it("refuses FIREBASE_CONFIG, which can supply another project to the Admin SDK", () => {
+    expect(
+      ensureTargetSafe(PROD_ARGS, {
+        ...CREDS,
+        FIREBASE_CONFIG: JSON.stringify({ projectId: "lyfelabz-staging" }),
+      }),
+    ).toMatch(/FIREBASE_CONFIG/);
+  });
+
+  it("applies the same gate to a production dry-run", () => {
+    expect(
+      ensureTargetSafe({ ...PROD_ARGS, apply: false }, { ...CREDS, GCLOUD_PROJECT: "other" }),
+    ).toMatch(/GCLOUD_PROJECT/);
+    expect(ensureTargetSafe({ ...PROD_ARGS, apply: false, iKnowProduction: false }, CREDS)).toMatch(
+      /--i-know/,
+    );
   });
 });
 
@@ -224,10 +318,102 @@ describe("main", () => {
         "--target=production",
         "--file=pilot.json",
         "--i-know=production",
+        "--project=lyfelabz-prod",
+        "--apply",
       ],
       deps,
     );
     expect(code).toBe(0);
     expect(deps.envMutations.FIRESTORE_EMULATOR_HOST).toBeUndefined();
+  });
+
+  it("never binds the Admin SDK in emulator mode", async () => {
+    const bindAdminProject = jest.fn();
+    const deps = makeDeps({ bindAdminProject });
+    expect(await main(["--file=pilot.json"], deps)).toBe(0);
+    expect(bindAdminProject).not.toHaveBeenCalled();
+  });
+});
+
+describe("main production binding and dry-run", () => {
+  const PROD = ["--target=production", "--file=pilot.json", "--i-know=production", "--project=lyfelabz-prod"];
+  const CREDS = { GOOGLE_APPLICATION_CREDENTIALS: "/tmp/creds" };
+
+  it("defaults to a local zero-write dry-run: no bind, no deploy, no env mutation", async () => {
+    const deploy = jest.fn();
+    const bindAdminProject = jest.fn();
+    const deps = makeDeps({ env: CREDS, deploy, bindAdminProject });
+    expect(await main(PROD, deps)).toBe(0);
+    expect(deploy).not.toHaveBeenCalled();
+    expect(bindAdminProject).not.toHaveBeenCalled();
+    expect(deps.envMutations).toEqual({});
+    expect(deps.logs[0]).toContain("dry-run ok");
+    expect(deps.logs[0]).toContain("revision=assessment_earths-layers__r1");
+    expect(deps.logs[0]).toContain("writes=0");
+    expect(deps.logs[0]).toContain("project=lyfelabz-prod");
+  });
+
+  it("dry-run refuses an invalid payload with the certified validator's code", async () => {
+    const deploy = jest.fn();
+    const invalid = JSON.stringify({ ...JSON.parse(PILOT), revisionOrdinal: 0 });
+    const deps = makeDeps({ env: CREDS, deploy, readFile: () => invalid });
+    expect(await main(PROD, deps)).toBe(2);
+    expect(deps.errors[0]).toContain("payload validation failed");
+    expect(deploy).not.toHaveBeenCalled();
+  });
+
+  it("--apply binds the default Admin SDK app to lyfelabz-prod before deploying", async () => {
+    const order: string[] = [];
+    const bindAdminProject = jest.fn((projectId: string) => {
+      order.push(`bind:${projectId}`);
+    });
+    const deploy = jest.fn(() => {
+      order.push("deploy");
+      return Promise.resolve({
+        assessmentId: "assessment_earths-layers",
+        revisionId: "assessment_earths-layers__r1",
+        revisionOrdinal: 1,
+        assessmentCreated: true,
+      });
+    });
+    const deps = makeDeps({ env: CREDS, deploy, bindAdminProject });
+    expect(await main([...PROD, "--apply"], deps)).toBe(0);
+    expect(order).toEqual(["bind:lyfelabz-prod", "deploy"]);
+    expect(deps.envMutations).toEqual({
+      GCLOUD_PROJECT: "lyfelabz-prod",
+      GOOGLE_CLOUD_PROJECT: "lyfelabz-prod",
+    });
+  });
+
+  it("--apply refuses to deploy when the Admin SDK cannot be bound to lyfelabz-prod", async () => {
+    const deploy = jest.fn();
+    const bindAdminProject = jest.fn(() => {
+      throw new Error("default Admin SDK app is already bound to 'lyfelabz-staging', not 'lyfelabz-prod'");
+    });
+    const deps = makeDeps({ env: CREDS, deploy, bindAdminProject });
+    expect(await main([...PROD, "--apply"], deps)).toBe(2);
+    expect(deps.errors[0]).toContain("could not bind the Admin SDK");
+    expect(deploy).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["no --project", ["--target=production", "--file=pilot.json", "--i-know=production", "--apply"], CREDS],
+    ["staging --project", ["--target=production", "--file=pilot.json", "--i-know=production", "--project=lyfelabz-staging", "--apply"], CREDS],
+    ["conflicting GOOGLE_CLOUD_PROJECT", [...PROD, "--apply"], { ...CREDS, GOOGLE_CLOUD_PROJECT: "lyfelabz-staging" }],
+    ["conflicting CLOUDSDK_CORE_PROJECT", [...PROD, "--apply"], { ...CREDS, CLOUDSDK_CORE_PROJECT: "lyfelabz-staging" }],
+    ["FIREBASE_CONFIG", [...PROD, "--apply"], { ...CREDS, FIREBASE_CONFIG: "{}" }],
+    ["emulator host", [...PROD, "--apply"], { ...CREDS, FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080" }],
+    ["no credentials", [...PROD, "--apply"], {}],
+    ["no acknowledgement", ["--target=production", "--file=pilot.json", "--project=lyfelabz-prod", "--apply"], CREDS],
+  ])("refuses %s before reading, binding, or deploying", async (_label, argv, env) => {
+    const readFile = jest.fn(() => PILOT);
+    const deploy = jest.fn();
+    const bindAdminProject = jest.fn();
+    const deps = makeDeps({ env, readFile, deploy, bindAdminProject });
+    expect(await main(argv, deps)).toBe(2);
+    expect(readFile).not.toHaveBeenCalled();
+    expect(bindAdminProject).not.toHaveBeenCalled();
+    expect(deploy).not.toHaveBeenCalled();
+    expect(deps.envMutations).toEqual({});
   });
 });

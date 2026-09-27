@@ -41,6 +41,11 @@ import type {
   RetireResult,
   DeployHostingPort,
 } from "../variants/variant-publication";
+import {
+  PRODUCTION_PROJECT_ID,
+  PROJECT_ENV_KEYS,
+  STAGING_PROJECT_ID,
+} from "./deployment-projects";
 
 export type PublishOp = "publish" | "rollback" | "retire";
 
@@ -50,7 +55,8 @@ export type PublishOp = "publish" | "rollback" | "retire";
 // every staging deploy or Firestore mutation must positively resolve to exactly
 // this project id or fail closed. Production (`lyfelabz-prod`) is never a
 // fallback for the staging target.
-export const STAGING_PROJECT_ID = "lyfelabz-staging";
+// Defined once in ./deployment-projects and re-exported here.
+export { STAGING_PROJECT_ID };
 
 // The ONE production project. Like staging, a hard literal: a production
 // publication must name it explicitly (`--project=lyfelabz-prod`) and the Admin
@@ -58,7 +64,7 @@ export const STAGING_PROJECT_ID = "lyfelabz-staging";
 // credentials, a service-account key for another project, ADC quota-project
 // metadata, `FIREBASE_CONFIG`, or a gcloud default can never redirect the
 // production index write.
-export const PRODUCTION_PROJECT_ID = "lyfelabz-prod";
+export { PRODUCTION_PROJECT_ID };
 
 // The only origins that serve the lyfelabz-prod application Hosting site. The
 // production liveness fetch uses exactly the validated `--hosting-origin`.
@@ -70,7 +76,7 @@ export const PRODUCTION_HOSTING_ORIGINS: readonly string[] = [
 // Environment variables that name a project for the Admin SDK or gcloud
 // tooling. For a staging or production run each must be absent or already
 // equal the validated target project.
-const PROJECT_ENV_KEYS = ["GCLOUD_PROJECT", "GOOGLE_CLOUD_PROJECT", "CLOUDSDK_CORE_PROJECT"] as const;
+// (PROJECT_ENV_KEYS is shared from ./deployment-projects.)
 
 export type PublishTarget = "emulator" | "staging" | "production";
 
@@ -539,8 +545,8 @@ import * as crypto from "crypto";
 import * as path from "path";
 import { createRequire } from "module";
 import { execFileSync } from "child_process";
-import { applicationDefault, getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue } from "firebase-admin/firestore";
+import { bindAdminProjectReal } from "./admin-project-binding";
 
 import {
   publishRetainedRevision,
@@ -630,28 +636,9 @@ function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
   };
 }
 
-// Positive Admin SDK project binding. Explicit app options take precedence over
-// every ambient source (service-account key project, FIREBASE_CONFIG,
-// GOOGLE_CLOUD_PROJECT/GCLOUD_PROJECT, ADC quota project), so initializing the
-// DEFAULT app with `projectId` before any Firestore access pins every typed-ref
-// read/write (shared/firestore/admin.ts reuses the existing default app) to the
-// validated project. An already-initialized default app bound anywhere else
-// fails closed.
-export function bindAdminProjectReal(projectId: string): void {
-  const existing = getApps().find((app) => app.name === "[DEFAULT]");
-  if (existing) {
-    if (existing.options.projectId !== projectId) {
-      throw new Error(
-        `default Admin SDK app is already bound to '${String(existing.options.projectId)}', not '${projectId}'`,
-      );
-    }
-    return;
-  }
-  const app = initializeApp({ projectId, credential: applicationDefault() });
-  if (app.options.projectId !== projectId) {
-    throw new Error(`Admin SDK app bound to '${String(app.options.projectId)}', not '${projectId}'`);
-  }
-}
+// Positive Admin SDK project binding, shared with deploy-assessment. See
+// ./admin-project-binding for the precedence argument.
+export { bindAdminProjectReal };
 
 const hashBytes: HashBytesPort = (bytes) =>
   crypto.createHash("sha256").update(bytes as crypto.BinaryLike).digest("hex");
