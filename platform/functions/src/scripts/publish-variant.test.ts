@@ -1,14 +1,19 @@
 import {
   configureEmulatorEnv,
+  configureProductionEnv,
   configureStagingEnv,
+  ensureProductionTargetSafe,
   ensureStagingTargetSafe,
   ensureTargetSafe,
   main,
   makeStagingDeployHosting,
   parseArgs,
+  PRODUCTION_HOSTING_ORIGINS,
+  PRODUCTION_PROJECT_ID,
   STAGING_PROJECT_ID,
   type CliArgs,
   type CliDeps,
+  type PublishContext,
 } from "./publish-variant";
 import type { PublishInput, PublishResult, RetireInput, RetireResult } from "../variants/variant-publication";
 
@@ -42,18 +47,24 @@ function makeDeps(overrides: Partial<CliDeps> = {}): CliDeps & {
   logs: string[];
   errors: string[];
   publishCalls: PublishInput[];
+  publishContexts: PublishContext[];
   retireCalls: RetireInput[];
+  boundProjects: string[];
 } {
   const logs: string[] = [];
   const errors: string[] = [];
   const publishCalls: PublishInput[] = [];
+  const publishContexts: PublishContext[] = [];
   const retireCalls: RetireInput[] = [];
+  const boundProjects: string[] = [];
   const env: NodeJS.ProcessEnv = { ...(overrides.env ?? {}) };
   return {
     logs,
     errors,
     publishCalls,
+    publishContexts,
     retireCalls,
+    boundProjects,
     env,
     setEnv: (key, value) => {
       env[key] = value;
@@ -62,9 +73,15 @@ function makeDeps(overrides: Partial<CliDeps> = {}): CliDeps & {
     logError: (m) => errors.push(m),
     publish:
       overrides.publish ??
-      ((input: PublishInput) => {
+      ((input: PublishInput, context: PublishContext) => {
         publishCalls.push(input);
+        publishContexts.push(context);
         return Promise.resolve(okPublish(input));
+      }),
+    bindAdminProject:
+      overrides.bindAdminProject ??
+      ((projectId: string) => {
+        boundProjects.push(projectId);
       }),
     retire:
       overrides.retire ??
@@ -160,9 +177,9 @@ describe("ensureTargetSafe", () => {
     variantKey: "reading-adapted",
     presentationRevisionId: REV,
     publishedBy: "op",
-    hostingOrigin: "https://lyfelabz.com",
+    hostingOrigin: "https://app.lyfelabz.com",
     iKnowProduction: true,
-    project: null,
+    project: PRODUCTION_PROJECT_ID,
   };
 
   test("emulator target is always safe", () => {
@@ -459,5 +476,262 @@ describe("main routing and exit codes", () => {
       deps,
     );
     expect(code).toBe(1);
+  });
+});
+
+describe("production target binding (fail-closed; ambient project resolution never trusted)", () => {
+  const prodArgs: CliArgs = {
+    op: "publish",
+    target: "production",
+    lessonSlug: "earths-layers",
+    variantKey: "reading-adapted",
+    presentationRevisionId: REV,
+    publishedBy: "op",
+    hostingOrigin: "https://app.lyfelabz.com",
+    iKnowProduction: true,
+    project: PRODUCTION_PROJECT_ID,
+  };
+  const okEnv = { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json" };
+
+  test("PRODUCTION_PROJECT_ID and the approved origins are hard literals", () => {
+    expect(PRODUCTION_PROJECT_ID).toBe("lyfelabz-prod");
+    expect(PRODUCTION_HOSTING_ORIGINS).toEqual(["https://app.lyfelabz.com", "https://lyfelabz-prod.web.app"]);
+  });
+
+  test("a fully specified production publish is safe", () => {
+    expect(ensureProductionTargetSafe(prodArgs, okEnv)).toBeNull();
+    expect(ensureTargetSafe(prodArgs, okEnv)).toBeNull();
+  });
+
+  test("still requires the explicit production acknowledgement", () => {
+    expect(ensureProductionTargetSafe({ ...prodArgs, iKnowProduction: false }, okEnv)).toBe(
+      "production target requires --i-know=production",
+    );
+  });
+
+  test("requires an explicit --project", () => {
+    expect(ensureProductionTargetSafe({ ...prodArgs, project: null }, okEnv)).toContain(
+      `production target requires --project=${PRODUCTION_PROJECT_ID}`,
+    );
+  });
+
+  test.each([STAGING_PROJECT_ID, "lyfelabz-prod-2", "LYFELABZ-PROD", "prod"])(
+    "refuses project %s",
+    (project) => {
+      expect(ensureProductionTargetSafe({ ...prodArgs, project }, okEnv)).toContain(
+        `production target refuses project '${project}'`,
+      );
+    },
+  );
+
+  test.each(["GCLOUD_PROJECT", "GOOGLE_CLOUD_PROJECT", "CLOUDSDK_CORE_PROJECT"])(
+    "refuses a conflicting ambient %s (cannot silently target staging)",
+    (key) => {
+      expect(ensureProductionTargetSafe(prodArgs, { ...okEnv, [key]: STAGING_PROJECT_ID })).toContain(
+        `${key}='${STAGING_PROJECT_ID}' does not match the authorized production project`,
+      );
+    },
+  );
+
+  test("allows ambient project variables that already equal production", () => {
+    expect(
+      ensureProductionTargetSafe(prodArgs, {
+        ...okEnv,
+        GCLOUD_PROJECT: PRODUCTION_PROJECT_ID,
+        GOOGLE_CLOUD_PROJECT: PRODUCTION_PROJECT_ID,
+      }),
+    ).toBeNull();
+  });
+
+  test("refuses FIREBASE_CONFIG (it can supply another project to the Admin SDK)", () => {
+    expect(
+      ensureProductionTargetSafe(prodArgs, { ...okEnv, FIREBASE_CONFIG: '{"projectId":"lyfelabz-staging"}' }),
+    ).toContain("FIREBASE_CONFIG is set");
+  });
+
+  test("still refuses the emulator and missing credentials", () => {
+    expect(ensureProductionTargetSafe(prodArgs, { ...okEnv, FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080" })).toBe(
+      "refusing production publish while FIRESTORE_EMULATOR_HOST is set",
+    );
+    expect(ensureProductionTargetSafe(prodArgs, {})).toBe("production target requires GOOGLE_APPLICATION_CREDENTIALS");
+  });
+
+  test.each([
+    "https://lyfelabz.com",
+    "http://app.lyfelabz.com",
+    "https://lyfelabz-staging.web.app",
+    "https://app.lyfelabz.com.evil.test",
+    "https://app.lyfelabz.com/app",
+    "https://lyfelabz-marketing.web.app",
+  ])("refuses unapproved hosting origin %s", (hostingOrigin) => {
+    expect(ensureProductionTargetSafe({ ...prodArgs, hostingOrigin }, okEnv)).toContain(
+      "is not an approved production origin",
+    );
+  });
+
+  test.each(["https://app.lyfelabz.com", "https://lyfelabz-prod.web.app", "https://app.lyfelabz.com/"])(
+    "accepts approved hosting origin %s",
+    (hostingOrigin) => {
+      expect(ensureProductionTargetSafe({ ...prodArgs, hostingOrigin }, okEnv)).toBeNull();
+    },
+  );
+
+  test("refuses a LYFELABZ_HOSTING_ORIGIN that disagrees with --hosting-origin", () => {
+    expect(
+      ensureProductionTargetSafe(prodArgs, { ...okEnv, LYFELABZ_HOSTING_ORIGIN: "https://lyfelabz-staging.web.app" }),
+    ).toContain("LYFELABZ_HOSTING_ORIGIN='https://lyfelabz-staging.web.app' disagrees");
+    expect(
+      ensureProductionTargetSafe(prodArgs, { ...okEnv, LYFELABZ_HOSTING_ORIGIN: "https://lyfelabz-prod.web.app" }),
+    ).toContain("disagrees");
+    expect(
+      ensureProductionTargetSafe(prodArgs, { ...okEnv, LYFELABZ_HOSTING_ORIGIN: "https://app.lyfelabz.com/" }),
+    ).toBeNull();
+  });
+
+  test("retire needs no origin, but a supplied origin must still be approved", () => {
+    const retire = { ...prodArgs, op: "retire" as const, presentationRevisionId: null };
+    expect(ensureProductionTargetSafe({ ...retire, hostingOrigin: null }, okEnv)).toBeNull();
+    expect(ensureProductionTargetSafe({ ...retire, hostingOrigin: "https://evil.test" }, okEnv)).toContain(
+      "is not an approved production origin",
+    );
+  });
+
+  test("configureProductionEnv forces both project vars and refuses any other id", () => {
+    const env: Record<string, string> = {};
+    configureProductionEnv(PRODUCTION_PROJECT_ID, (k, v) => {
+      env[k] = v;
+    });
+    expect(env).toEqual({ GCLOUD_PROJECT: PRODUCTION_PROJECT_ID, GOOGLE_CLOUD_PROJECT: PRODUCTION_PROJECT_ID });
+    const untouched: Record<string, string> = {};
+    expect(() =>
+      configureProductionEnv(STAGING_PROJECT_ID, (k, v) => {
+        untouched[k] = v;
+      }),
+    ).toThrow(/only 'lyfelabz-prod' is authorized/);
+    expect(untouched).toEqual({});
+  });
+});
+
+describe("main binds the Admin SDK and the liveness origin to the validated target", () => {
+  const prodArgv = [
+    "--target=production",
+    "--i-know=production",
+    "--project=lyfelabz-prod",
+    "--lesson=earths-layers",
+    "--variant=reading-adapted",
+    "--revision=" + REV,
+    "--published-by=op",
+  ];
+
+  test("production binds lyfelabz-prod BEFORE publishing and fetches from the validated origin", async () => {
+    const order: string[] = [];
+    const deps = makeDeps({
+      env: { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json", LYFELABZ_HOSTING_ORIGIN: "https://lyfelabz-prod.web.app/" },
+      bindAdminProject: (p) => {
+        order.push(`bind:${p}`);
+      },
+    });
+    const origPublish = deps.publish;
+    const code = await main([...prodArgv, "--hosting-origin=https://lyfelabz-prod.web.app"], {
+      ...deps,
+      publish: (input, ctx) => {
+        order.push("publish");
+        return origPublish(input, ctx);
+      },
+    });
+    expect(code).toBe(0);
+    expect(order).toEqual(["bind:lyfelabz-prod", "publish"]);
+    expect(deps.publishContexts).toEqual([{ fetchOrigin: "https://lyfelabz-prod.web.app" }]);
+    expect(deps.env.GCLOUD_PROJECT).toBe(PRODUCTION_PROJECT_ID);
+    expect(deps.env.GOOGLE_CLOUD_PROJECT).toBe(PRODUCTION_PROJECT_ID);
+  });
+
+  test("the validated origin wins; a disagreeing environment origin refuses before any binding", async () => {
+    const deps = makeDeps({
+      env: { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json", LYFELABZ_HOSTING_ORIGIN: "https://lyfelabz-staging.web.app" },
+    });
+    const code = await main([...prodArgv, "--hosting-origin=https://app.lyfelabz.com"], deps);
+    expect(code).toBe(2);
+    expect(deps.boundProjects).toEqual([]);
+    expect(deps.publishCalls).toHaveLength(0);
+  });
+
+  test("ambient staging state (ADC-style env, no --project) cannot reach a production write", async () => {
+    const deps = makeDeps({
+      env: { GOOGLE_APPLICATION_CREDENTIALS: "/adc.json", GOOGLE_CLOUD_PROJECT: STAGING_PROJECT_ID },
+    });
+    const noProject = prodArgv.filter((a) => a !== "--project=lyfelabz-prod");
+    expect(await main([...noProject, "--hosting-origin=https://app.lyfelabz.com"], deps)).toBe(2);
+    expect(await main([...prodArgv, "--hosting-origin=https://app.lyfelabz.com"], deps)).toBe(2);
+    expect(deps.boundProjects).toEqual([]);
+    expect(deps.publishCalls).toHaveLength(0);
+  });
+
+  test("--project=lyfelabz-staging with --target=production is refused", async () => {
+    const deps = makeDeps({ env: { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json" } });
+    const argv = prodArgv.map((a) => (a === "--project=lyfelabz-prod" ? "--project=lyfelabz-staging" : a));
+    expect(await main([...argv, "--hosting-origin=https://app.lyfelabz.com"], deps)).toBe(2);
+    expect(deps.publishCalls).toHaveLength(0);
+  });
+
+  test("a failed Admin SDK binding refuses before publishing", async () => {
+    const deps = makeDeps({
+      env: { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json" },
+      bindAdminProject: () => {
+        throw new Error("default Admin SDK app is already bound to 'lyfelabz-staging'");
+      },
+    });
+    const code = await main([...prodArgv, "--hosting-origin=https://app.lyfelabz.com"], deps);
+    expect(code).toBe(2);
+    expect(deps.publishCalls).toHaveLength(0);
+    expect(deps.errors.join(" ")).toContain("could not bind the Admin SDK");
+  });
+
+  test("production retire binds lyfelabz-prod before retiring", async () => {
+    const deps = makeDeps({ env: { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json" } });
+    const argv = [
+      "--op=retire",
+      "--target=production",
+      "--i-know=production",
+      "--project=lyfelabz-prod",
+      "--lesson=earths-layers",
+      "--variant=reading-adapted",
+      "--published-by=op",
+    ];
+    expect(await main(argv, deps)).toBe(0);
+    expect(deps.boundProjects).toEqual([PRODUCTION_PROJECT_ID]);
+    expect(deps.retireCalls).toHaveLength(1);
+  });
+
+  test("staging still binds only lyfelabz-staging and fetches from its validated origin", async () => {
+    const deps = makeDeps({
+      env: { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json", LYFELABZ_HOSTING_ORIGIN: "https://app.lyfelabz.com" },
+    });
+    const code = await main(
+      [
+        "--target=staging",
+        "--project=lyfelabz-staging",
+        "--hosting-origin=https://lyfelabz-staging.web.app",
+        "--lesson=earths-layers",
+        "--variant=reading-adapted",
+        "--revision=" + REV,
+        "--published-by=op",
+      ],
+      deps,
+    );
+    expect(code).toBe(0);
+    expect(deps.boundProjects).toEqual([STAGING_PROJECT_ID]);
+    expect(deps.publishContexts).toEqual([{ fetchOrigin: "https://lyfelabz-staging.web.app" }]);
+  });
+
+  test("the emulator binds nothing and keeps the LYFELABZ_HOSTING_ORIGIN behavior", async () => {
+    const deps = makeDeps({ env: { LYFELABZ_HOSTING_ORIGIN: "http://127.0.0.1:5000" } });
+    const code = await main(
+      ["--lesson=earths-layers", "--variant=reading-adapted", "--revision=" + REV, "--published-by=op"],
+      deps,
+    );
+    expect(code).toBe(0);
+    expect(deps.boundProjects).toEqual([]);
+    expect(deps.publishContexts).toEqual([{ fetchOrigin: "http://127.0.0.1:5000" }]);
   });
 });

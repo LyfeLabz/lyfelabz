@@ -255,6 +255,46 @@ function writeApprovedFile(repoRoot, outputDirectory, entry) {
   }
 }
 
+// esbuild outputs that ship publicly. esbuild writes module-path comments and
+// module keys relative to the build's working directory; when a dependency
+// resolves outside it (for example a symlinked node_modules in an isolated
+// release checkout) those strings become the developer's real filesystem path.
+const bundledOutputs = ['app/dist/bundle.js', 'assets/lyfelabz-assessment-runtime-active.js'];
+
+// A leaked development path must be anchored like a filesystem path: a
+// leading "/" or a run of "../", then a home or temp root; or a Windows drive
+// followed by Users. URL paths (preceded by a host character) and ordinary
+// relative strings such as "../index.html" do not match.
+const leakedPathPatterns = [
+  /(?:^|[^A-Za-z0-9._~%-])(?:(?:\.\.\/)+|\/)(?:Users|home|private\/var\/folders|private\/tmp|var\/folders)\/[A-Za-z0-9._-]+\//m,
+  /(?:^|[^A-Za-z0-9])[A-Za-z]:(?:\\\\|\\|\/)(?:Users|Documents and Settings)(?:\\\\|\\|\/)/m,
+];
+
+function findLeakedDevelopmentPath(text) {
+  for (const pattern of leakedPathPatterns) {
+    const match = pattern.exec(text);
+    if (match) return match[0].replace(/^[^A-Za-z0-9./\\]/, '');
+  }
+  return null;
+}
+
+function validateBundleHygiene(outputDirectory) {
+  const problems = [];
+  for (const relativePath of bundledOutputs) {
+    const absolutePath = path.join(outputDirectory, relativePath);
+    if (!fs.existsSync(absolutePath)) continue;
+    const leaked = findLeakedDevelopmentPath(fs.readFileSync(absolutePath, 'utf8'));
+    if (leaked !== null) problems.push(`${relativePath} contains ${JSON.stringify(leaked)}`);
+  }
+  if (problems.length > 0) {
+    fail(
+      `public bundle embeds a local development path (rebuild from a checkout with real installed dependencies, ` +
+        `never a symlinked node_modules):\n${problems.join('\n')}`,
+    );
+  }
+  return { bundlesChecked: bundledOutputs.length, clean: true };
+}
+
 function buildApplicationArtifact(options = {}) {
   const repoRoot = options.repositoryRoot || repositoryRoot;
   const outputDirectory = validateOutputDirectory(options.outputDirectory || defaultOutputDirectory);
@@ -271,11 +311,13 @@ function buildApplicationArtifact(options = {}) {
   const actual = artifactFiles(outputDirectory);
   if (JSON.stringify(actual) !== JSON.stringify(expected)) fail('built artifact does not exactly match approved inventory');
   const dependencyValidation = validateHtmlDependencies(outputDirectory);
+  const bundleHygiene = validateBundleHygiene(outputDirectory);
   return {
     files: actual,
     outputDirectory,
     retainedVariants: approved.filter((entry) => entry.destination.startsWith('app/lessons/variants/')).length,
-    dependencyValidation
+    dependencyValidation,
+    bundleHygiene
   };
 }
 
@@ -293,6 +335,7 @@ module.exports = {
   buildApplicationArtifact,
   collectApprovedCopies,
   defaultOutputDirectory,
+  findLeakedDevelopmentPath,
   listApprovedCopies,
   readApplicationManifest,
   readRetainedVariantCopies,
@@ -300,6 +343,7 @@ module.exports = {
   validateCopyEntry,
   validateDestinationPolicy,
   validateApprovedCopies,
+  validateBundleHygiene,
   validateHtmlDependencies,
   validateOutputDirectory,
   validateRelativePath

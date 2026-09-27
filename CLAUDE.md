@@ -152,6 +152,13 @@ changes, new GCP infrastructure, migrations, and production-data mutations
 require explicit attention. Call them out; never hide them inside an ordinary
 feature fix.
 
+Production Hosting releases are built from an isolated clean checkout or
+worktree of the exact release commit, never from a working tree with
+uncommitted changes. That checkout must use real installed dependencies
+(`npm --prefix app ci`): never symlink `node_modules` into a release checkout,
+because esbuild then embeds resolved local filesystem paths in the public
+bundle. `scripts/app-hosting/build.cjs` refuses a bundle containing such a path.
+
 ---
 
 # REPOSITORY GOVERNANCE

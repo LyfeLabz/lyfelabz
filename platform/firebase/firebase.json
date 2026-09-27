@@ -7,6 +7,9 @@
     "rules": "storage.rules"
   },
   "hosting": {
+    "predeploy": [
+      "node -e \"console.error('REFUSED: platform/firebase/firebase.json Hosting is emulator-only (scripts/ux-review). Production Hosting deploys only from the repository-root firebase.json curated artifact (dist/app-hosting).'); process.exit(1)\""
+    ],
     "public": "../..",
     "ignore": [
       "firebase.json",

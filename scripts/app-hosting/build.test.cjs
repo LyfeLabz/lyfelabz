@@ -11,10 +11,12 @@ const {
   assertRegularSource,
   buildApplicationArtifact,
   collectApprovedCopies,
+  findLeakedDevelopmentPath,
   listApprovedCopies,
   readApplicationManifest,
   readRetainedVariantCopies,
   validateApprovedCopies,
+  validateBundleHygiene,
   validateDestinationPolicy,
   validateOutputDirectory,
   validateRelativePath
@@ -88,6 +90,53 @@ test('approved application inventory is explicit, sorted, exact, and determinist
 
 test('the unvalidated approved list is exactly what validated collection returns', () => {
   assert.deepEqual(collectApprovedCopies(), listApprovedCopies());
+});
+
+test('bundle hygiene accepts legitimate bundle content', () => {
+  const legitimate = [
+    '// node_modules/@firebase/util/dist/index.esm2017.js',
+    '"node_modules/@firebase/component/dist/esm/index.esm2017.js"() {',
+    '// src/assignments/detail/detail.ts',
+    'canonicalSourceRelativeToApp: "../index.html",',
+    'fetch("https://example.com/Users/profile/avatar.png")',
+    'const docs = "https://docs.example.org/home/getting-started/";',
+    'history.pushState({}, "", "/app/teacher");',
+    'const note = "Users/teachers can reorder classes";',
+    'var re = /^[A-Za-z]:$/;',
+  ].join('\n');
+  assert.equal(findLeakedDevelopmentPath(legitimate), null);
+});
+
+test('bundle hygiene rejects leaked absolute development paths', () => {
+  const leaks = [
+    '// ../../../../../../../../Users/breezy/Documents/GitHub/lyfelabz/app/node_modules/@firebase/util/dist/index.esm2017.js',
+    '"../../../../Users/dev/repo/app/node_modules/x/index.js"() {',
+    '// /Users/someone/repo/app/node_modules/firebase/app.js',
+    '// ../../../home/runner/work/lyfelabz/app/node_modules/x.js',
+    '"/home/dev/lyfelabz/app/node_modules/x.js"',
+    '// ../../../../private/var/folders/ab/xyz/T/checkout/app/node_modules/x.js',
+    '// ../../private/tmp/release-wt/app/node_modules/x.js',
+    '"C:\\\\Users\\\\dev\\\\repo\\\\app\\\\node_modules\\\\x.js"',
+    '// C:/Users/dev/repo/app/node_modules/x.js',
+    '// D:\\Documents and Settings\\dev\\repo\\x.js',
+  ];
+  for (const sample of leaks) assert.notEqual(findLeakedDevelopmentPath(`var a = 1;\n${sample}\nvar b = 2;`), null, sample);
+});
+
+test('bundle hygiene fails the artifact build closed on a leaked path', () => {
+  const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'lyfelabz-bundle-hygiene-'));
+  try {
+    fs.mkdirSync(path.join(dir, 'app/dist'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'app/dist/bundle.js'), '// src/index.ts\nconsole.log(1);\n');
+    assert.deepEqual(validateBundleHygiene(dir), { bundlesChecked: 2, clean: true });
+    fs.writeFileSync(
+      path.join(dir, 'app/dist/bundle.js'),
+      '// ../../../../Users/dev/repo/app/node_modules/@firebase/util/dist/index.esm2017.js\n',
+    );
+    assert.throws(() => validateBundleHygiene(dir), /embeds a local development path/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('unsafe paths, traversal, absolute paths, duplicates, missing files, and symlinks fail closed', () => {

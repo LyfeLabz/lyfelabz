@@ -52,7 +52,34 @@ export type PublishOp = "publish" | "rollback" | "retire";
 // fallback for the staging target.
 export const STAGING_PROJECT_ID = "lyfelabz-staging";
 
+// The ONE production project. Like staging, a hard literal: a production
+// publication must name it explicitly (`--project=lyfelabz-prod`) and the Admin
+// SDK is then positively bound to it (see `bindAdminProject`), so ambient
+// credentials, a service-account key for another project, ADC quota-project
+// metadata, `FIREBASE_CONFIG`, or a gcloud default can never redirect the
+// production index write.
+export const PRODUCTION_PROJECT_ID = "lyfelabz-prod";
+
+// The only origins that serve the lyfelabz-prod application Hosting site. The
+// production liveness fetch uses exactly the validated `--hosting-origin`.
+export const PRODUCTION_HOSTING_ORIGINS: readonly string[] = [
+  "https://app.lyfelabz.com",
+  "https://lyfelabz-prod.web.app",
+];
+
+// Environment variables that name a project for the Admin SDK or gcloud
+// tooling. For a staging or production run each must be absent or already
+// equal the validated target project.
+const PROJECT_ENV_KEYS = ["GCLOUD_PROJECT", "GOOGLE_CLOUD_PROJECT", "CLOUDSDK_CORE_PROJECT"] as const;
+
 export type PublishTarget = "emulator" | "staging" | "production";
+
+// Per-run context main() hands to the publish seam: the origin the liveness
+// fetch MUST use. For staging and production it is the validated
+// `--hosting-origin`; only the emulator falls back to LYFELABZ_HOSTING_ORIGIN.
+export type PublishContext = {
+  readonly fetchOrigin: string;
+};
 
 export type CliArgs = {
   readonly op: PublishOp;
@@ -63,17 +90,22 @@ export type CliArgs = {
   readonly publishedBy: string;
   readonly hostingOrigin: string | null;
   readonly iKnowProduction: boolean;
-  // Explicit, operator-supplied project id. Required for the staging target and
-  // must equal STAGING_PROJECT_ID; the double lock (explicit intent + literal
-  // guard) means a mistyped or defaulted project can never silently deploy.
+  // Explicit, operator-supplied project id. Required for the staging and
+  // production targets and must equal STAGING_PROJECT_ID / PRODUCTION_PROJECT_ID
+  // respectively; the double lock (explicit intent + literal guard) means a
+  // mistyped or defaulted project can never silently deploy or write.
   readonly project: string | null;
 };
 
 export type CliDeps = {
   // Injected engine seams. The real CLI wires these to the state machine with
   // real ports; tests wire fakes so no Hosting/Firestore/network is touched.
-  readonly publish: (input: PublishInput) => Promise<PublishResult>;
+  readonly publish: (input: PublishInput, context: PublishContext) => Promise<PublishResult>;
   readonly retire: (input: RetireInput) => Promise<RetireResult>;
+  // Positively binds the Admin SDK default app to the validated project id
+  // before any Firestore access, throwing if it cannot (for example an app is
+  // already bound elsewhere). Called for the staging and production targets.
+  readonly bindAdminProject: (projectId: string) => void;
   readonly env: NodeJS.ProcessEnv;
   readonly setEnv: (key: string, value: string) => void;
   readonly log: (message: string) => void;
@@ -254,12 +286,46 @@ export function ensureTargetSafe(args: CliArgs, env: NodeJS.ProcessEnv): string 
   if (args.target === "staging") {
     return ensureStagingTargetSafe(args, env);
   }
+  return ensureProductionTargetSafe(args, env);
+}
+
+// Canonical form of an approved production origin (one trailing slash is
+// tolerated), or null when the value is not exactly an approved origin.
+export function normalizeProductionOrigin(value: string): string | null {
+  const trimmed = value.endsWith("/") ? value.slice(0, -1) : value;
+  return PRODUCTION_HOSTING_ORIGINS.includes(trimmed) ? trimmed : null;
+}
+
+// Positively proves that a would-be production operation is explicitly and
+// exclusively bound to lyfelabz-prod and its Hosting site, failing closed
+// otherwise. Mirrors ensureStagingTargetSafe, plus the explicit production
+// acknowledgement.
+export function ensureProductionTargetSafe(
+  args: CliArgs,
+  env: NodeJS.ProcessEnv,
+): string | null {
   if (!args.iKnowProduction) {
     return "production target requires --i-know=production";
+  }
+  if (args.project === null) {
+    return `production target requires --project=${PRODUCTION_PROJECT_ID} (explicit, verified project id; ambient project resolution is never trusted)`;
+  }
+  if (args.project !== PRODUCTION_PROJECT_ID) {
+    return `production target refuses project '${args.project}': only '${PRODUCTION_PROJECT_ID}' is authorized`;
   }
   const emulatorHost = env.FIRESTORE_EMULATOR_HOST;
   if (typeof emulatorHost === "string" && emulatorHost.length > 0) {
     return "refusing production publish while FIRESTORE_EMULATOR_HOST is set";
+  }
+  for (const key of PROJECT_ENV_KEYS) {
+    const val = env[key];
+    if (typeof val === "string" && val.length > 0 && val !== PRODUCTION_PROJECT_ID) {
+      return `refusing production publish: ${key}='${val}' does not match the authorized production project '${PRODUCTION_PROJECT_ID}'`;
+    }
+  }
+  const firebaseConfig = env.FIREBASE_CONFIG;
+  if (typeof firebaseConfig === "string" && firebaseConfig.length > 0) {
+    return "refusing production publish while FIREBASE_CONFIG is set (it can supply another project to the Admin SDK); unset it";
   }
   const credentials = env.GOOGLE_APPLICATION_CREDENTIALS;
   if (typeof credentials !== "string" || credentials.length === 0) {
@@ -269,6 +335,21 @@ export function ensureTargetSafe(args: CliArgs, env: NodeJS.ProcessEnv): string 
   // the liveness check; without an origin the machine cannot prove liveness.
   if ((args.op === "publish" || args.op === "rollback") && args.hostingOrigin === null) {
     return `production --op=${args.op} requires --hosting-origin=<https://...> for the liveness fetch`;
+  }
+  if (args.hostingOrigin !== null) {
+    const origin = normalizeProductionOrigin(args.hostingOrigin);
+    if (origin === null) {
+      return (
+        `production --hosting-origin '${args.hostingOrigin}' is not an approved production origin ` +
+        `(${PRODUCTION_HOSTING_ORIGINS.join(", ")})`
+      );
+    }
+    // The liveness fetch uses exactly the validated origin; an environment
+    // origin that disagrees is refused rather than silently ignored.
+    const envOrigin = env.LYFELABZ_HOSTING_ORIGIN;
+    if (typeof envOrigin === "string" && envOrigin.length > 0 && normalizeProductionOrigin(envOrigin) !== origin) {
+      return `refusing production publish: LYFELABZ_HOSTING_ORIGIN='${envOrigin}' disagrees with --hosting-origin '${origin}'`;
+    }
   }
   return null;
 }
@@ -306,6 +387,24 @@ export function configureStagingEnv(
   setEnv("GOOGLE_CLOUD_PROJECT", projectId);
 }
 
+// Production counterpart of configureStagingEnv: only ever called after
+// ensureProductionTargetSafe has proven the project id, and refuses any other
+// id as defense in depth. Environment variables alone are NOT a sufficient
+// binding (the Admin SDK prefers app options and service-account credentials
+// over them); main() additionally calls deps.bindAdminProject.
+export function configureProductionEnv(
+  projectId: string,
+  setEnv: (k: string, v: string) => void,
+): void {
+  if (projectId !== PRODUCTION_PROJECT_ID) {
+    throw new Error(
+      `configureProductionEnv refuses project '${projectId}': only '${PRODUCTION_PROJECT_ID}' is authorized`,
+    );
+  }
+  setEnv("GCLOUD_PROJECT", projectId);
+  setEnv("GOOGLE_CLOUD_PROJECT", projectId);
+}
+
 export async function main(argv: readonly string[], deps: CliDeps): Promise<number> {
   const parsed = parseArgs(argv, deps.env);
   if (!parsed.ok) {
@@ -320,11 +419,26 @@ export async function main(argv: readonly string[], deps: CliDeps): Promise<numb
     return 2;
   }
 
-  if (args.target === "emulator") {
-    configureEmulatorEnv(deps.env, deps.setEnv);
-  } else if (args.target === "staging") {
-    // args.project is proven === STAGING_PROJECT_ID by ensureTargetSafe above.
-    configureStagingEnv(args.project as string, deps.setEnv);
+  let fetchOrigin: string;
+  try {
+    if (args.target === "emulator") {
+      configureEmulatorEnv(deps.env, deps.setEnv);
+      fetchOrigin = deps.env.LYFELABZ_HOSTING_ORIGIN ?? "";
+    } else if (args.target === "staging") {
+      // args.project is proven === STAGING_PROJECT_ID by ensureTargetSafe above.
+      configureStagingEnv(args.project as string, deps.setEnv);
+      deps.bindAdminProject(STAGING_PROJECT_ID);
+      fetchOrigin = args.hostingOrigin ?? "";
+    } else {
+      // args.project is proven === PRODUCTION_PROJECT_ID and the origin is an
+      // approved production origin (ensureProductionTargetSafe above).
+      configureProductionEnv(args.project as string, deps.setEnv);
+      deps.bindAdminProject(PRODUCTION_PROJECT_ID);
+      fetchOrigin = args.hostingOrigin !== null ? (normalizeProductionOrigin(args.hostingOrigin) as string) : "";
+    }
+  } catch (err) {
+    deps.logError(`refusing to run: could not bind the Admin SDK to the target project: ${(err as Error).message}`);
+    return 2;
   }
 
   try {
@@ -345,13 +459,16 @@ export async function main(argv: readonly string[], deps: CliDeps): Promise<numb
       return 0;
     }
 
-    const result = await deps.publish({
-      lessonSlug: args.lessonSlug,
-      variantKey: args.variantKey,
-      presentationRevisionId: args.presentationRevisionId as string,
-      publishedBy: args.publishedBy,
-      mode: args.op,
-    });
+    const result = await deps.publish(
+      {
+        lessonSlug: args.lessonSlug,
+        variantKey: args.variantKey,
+        presentationRevisionId: args.presentationRevisionId as string,
+        publishedBy: args.publishedBy,
+        mode: args.op,
+      },
+      { fetchOrigin },
+    );
     if (!result.ok) {
       deps.logError(
         `${args.op} failed at stage ${result.failedStage}: ${result.error} ` +
@@ -422,6 +539,7 @@ import * as crypto from "crypto";
 import * as path from "path";
 import { createRequire } from "module";
 import { execFileSync } from "child_process";
+import { applicationDefault, getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue } from "firebase-admin/firestore";
 
 import {
@@ -512,6 +630,29 @@ function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
   };
 }
 
+// Positive Admin SDK project binding. Explicit app options take precedence over
+// every ambient source (service-account key project, FIREBASE_CONFIG,
+// GOOGLE_CLOUD_PROJECT/GCLOUD_PROJECT, ADC quota project), so initializing the
+// DEFAULT app with `projectId` before any Firestore access pins every typed-ref
+// read/write (shared/firestore/admin.ts reuses the existing default app) to the
+// validated project. An already-initialized default app bound anywhere else
+// fails closed.
+export function bindAdminProjectReal(projectId: string): void {
+  const existing = getApps().find((app) => app.name === "[DEFAULT]");
+  if (existing) {
+    if (existing.options.projectId !== projectId) {
+      throw new Error(
+        `default Admin SDK app is already bound to '${String(existing.options.projectId)}', not '${projectId}'`,
+      );
+    }
+    return;
+  }
+  const app = initializeApp({ projectId, credential: applicationDefault() });
+  if (app.options.projectId !== projectId) {
+    throw new Error(`Admin SDK app bound to '${String(app.options.projectId)}', not '${projectId}'`);
+  }
+}
+
 const hashBytes: HashBytesPort = (bytes) =>
   crypto.createHash("sha256").update(bytes as crypto.BinaryLike).digest("hex");
 
@@ -544,7 +685,6 @@ if (require.main === module) {
   const preParsed = parseArgs(argv, process.env);
   const preTarget = preParsed.ok ? preParsed.args.target : "emulator";
   const preProject = preParsed.ok ? preParsed.args.project : null;
-  const preHostingOrigin = preParsed.ok ? preParsed.args.hostingOrigin : null;
 
   // The real staging Hosting deploy: `firebase deploy --only hosting` scoped to
   // the proven staging project. execFileSync with an argument array (no shell)
@@ -568,14 +708,10 @@ if (require.main === module) {
       ? makeStagingDeployHosting(preProject, stagingDeployRunner)
       : () => Promise.resolve({ ok: true as const });
 
-  // Staging binds the liveness fetch to the validated --hosting-origin (proven
-  // to resolve to the staging site). Other targets keep the existing
-  // LYFELABZ_HOSTING_ORIGIN env behavior unchanged.
-  const fetchOrigin =
-    preTarget === "staging" && preHostingOrigin !== null
-      ? preHostingOrigin
-      : process.env.LYFELABZ_HOSTING_ORIGIN ?? "";
-
+  // The liveness origin is NOT decided here: main() validates the target and
+  // passes the exact origin to use in the publish context (the validated
+  // --hosting-origin for staging and production; LYFELABZ_HOSTING_ORIGIN only
+  // for the emulator).
   void main(argv, {
     env: process.env,
     setEnv: (key, value) => {
@@ -584,12 +720,14 @@ if (require.main === module) {
     log: (message) => process.stdout.write(`${message}\n`),
     logError: (message) => process.stderr.write(`${message}\n`),
 
-    publish: (input) => {
+    bindAdminProject: bindAdminProjectReal,
+
+    publish: (input, context) => {
       const loadRetainedRevision = makeLoadRetainedRevision(repoRoot);
       return publishRetainedRevision(input, {
         loadRetainedRevision,
         deployHosting,
-        fetchHosted: makeFetchHosted(fetchOrigin),
+        fetchHosted: makeFetchHosted(context.fetchOrigin),
         hashBytes,
         writeIndexActivate: async (revision, publishedBy) => {
           await presentationVariantIndexActivateDocRef(revision.lessonSlug, revision.variantKey).set({
