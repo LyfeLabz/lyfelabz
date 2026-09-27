@@ -14,7 +14,8 @@
     "lessons:build": "node scripts/build-lessons.cjs",
     "lessons:verify": "node scripts/build-lessons.cjs --check",
     "variants:verify": "node scripts/verify-variants.cjs",
-    "verify": "npm run curriculum:verify && npm run lessons:verify && npm run variants:verify && npm run typecheck && npm run lint && npm run test"
+    "assessments:verify": "node scripts/verify-assessment-quality.cjs",
+    "verify": "npm run curriculum:verify && npm run lessons:verify && npm run variants:verify && npm run assessments:verify && npm run typecheck && npm run lint && npm run test"
   },
   "dependencies": {
     "firebase": "^10.12.2"

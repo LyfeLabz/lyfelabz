@@ -18,6 +18,8 @@ P5.1 disposition was CERTIFIED AFTER MINOR CONTRACT PATCHES; those patches (P1/P
 
 **Does not ship:** any second accommodation dimension; IEP/504 documents, diagnoses, disability labels, case management, approval chains; cross-school/district authorization (policy preserved, not implemented — P4-2); canonical lesson versioning; reporting changes; grade passback or any Classroom change; differentiated assessment content; lesson instructional text; delivery/compliance dashboards or per-lesson coverage UI; client version-negotiation infrastructure.
 
+**Addendum (owner-directed scope expansion, not yet implemented):** "differentiated assessment content" is superseded by `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` (accessible assessment presentations: adapted language, three-choice multiple choice, adapted Show Your Thinking and explanations, canonical scoring identity preserved). Its section 16 lists exactly which F5.2 contracts it changes; all others stand.
+
 ---
 
 ### 3. Data Contracts

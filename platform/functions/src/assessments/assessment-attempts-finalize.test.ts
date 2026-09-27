@@ -536,39 +536,89 @@ describe("assessmentAttemptsFinalize", () => {
     );
   });
 
-  it("scores an incorrect response whose value matches no option as incorrect", async () => {
-    seedDefaultFixture({
-      session: {
-        ...(fixture.session as object),
-        responses: [
-          { itemId: "q1", response: "Z" },
-          { itemId: "q2", response: "C" },
-        ],
-      },
-    });
-    const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
-    expect(result.itemResults[0].isCorrect).toBe(false);
-    expect(result.itemResults[0].studentResponse).toBe("Z");
-    expect(result.score).toBe(1);
-  });
+  // F5.3 Slice 2 (supersedes the pre-Slice-2 "score unknown values as
+  // incorrect" and "ignore unknown itemIds" behavior): a response the frozen
+  // revision cannot admit is refused, never scored. Nothing is written, the
+  // session survives for correction, and no audit or passback occurs.
+  describe("F5.3 Slice 2 revision-bound response validation", () => {
+    async function expectRefused(responses: unknown[], messagePart: string) {
+      seedDefaultFixture({
+        session: { ...(fixture.session as object), responses },
+      });
+      const err = await __assessmentAttemptsFinalizeHandler(makeRequest()).catch(
+        (e: unknown) => e,
+      );
+      expect(err).toBeInstanceOf(PlatformError);
+      expect((err as PlatformError).code).toBe("assessmentAttempts.invalidResponse");
+      expect((err as PlatformError).message).toContain(messagePart);
+      expect(txSets).toHaveLength(0);
+      expect(txDeletes).toHaveLength(0);
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      expect(mockSynchronizeGradePassback).not.toHaveBeenCalled();
+      return err as PlatformError;
+    }
 
-  it("ignores a response element whose itemId is not in the revision", async () => {
-    seedDefaultFixture({
-      session: {
-        ...(fixture.session as object),
-        responses: [
+    it("refuses an optionId that matches no option instead of scoring it incorrect", async () => {
+      const err = await expectRefused(
+        [{ itemId: "q1", response: "Z-probe" }, { itemId: "q2", response: "C" }],
+        "is not one of the item's optionIds",
+      );
+      expect(err.message).not.toContain("Z-probe");
+      expect(err.message).not.toContain("Because");
+    });
+
+    it("refuses an optionId that exists only on a different item", async () => {
+      // q1 offers A/B; C belongs to q2.
+      await expectRefused([{ itemId: "q1", response: "C" }], 'itemId "q1"');
+    });
+
+    it("refuses a response element whose itemId is not in the revision", async () => {
+      await expectRefused(
+        [
           { itemId: "q1", response: "A" },
           { itemId: "q2", response: "C" },
-          { itemId: "ghost", response: "X" },
+          { itemId: "ghost", response: "A" },
         ],
-      },
+        "is not an item of this assessment revision",
+      );
     });
-    const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
-    expect(result.score).toBe(2);
-    expect(result.itemResults).toHaveLength(2);
-    const write = txSets[0].data as Record<string, unknown>;
-    // Persisted responses are the verbatim session responses.
-    expect((write.responses as unknown[]).length).toBe(3);
+
+    it("refuses an empty-string response", async () => {
+      await expectRefused([{ itemId: "q1", response: "" }], 'itemId "q1"');
+    });
+
+    it("still scores canonical responses normally, including partial submissions", async () => {
+      seedDefaultFixture({
+        session: {
+          ...(fixture.session as object),
+          responses: [{ itemId: "q1", response: "B" }],
+        },
+      });
+      const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(result.score).toBe(0);
+      expect(result.maxScore).toBe(2);
+      expect(result.itemResults.map((r) => r.studentResponse)).toEqual(["B", null]);
+      expect(txSets).toHaveLength(1);
+    });
+
+    it("keeps revision integrity failures ahead of response refusal", async () => {
+      seedDefaultFixture({
+        revision: {
+          ...DEFAULT_REVISION,
+          items: [
+            { ...DEFAULT_REVISION.items[0], itemType: "multipleSelect" },
+            DEFAULT_REVISION.items[1],
+          ],
+        },
+        session: {
+          ...(fixture.session as object),
+          responses: [{ itemId: "q1", response: "Z" }],
+        },
+      });
+      await expect(
+        __assessmentAttemptsFinalizeHandler(makeRequest()),
+      ).rejects.toMatchObject({ code: "assessmentAttempts.answerKeyIntegrity" });
+    });
   });
 
   it("returns an existing attempt on idempotent replay without writing again", async () => {

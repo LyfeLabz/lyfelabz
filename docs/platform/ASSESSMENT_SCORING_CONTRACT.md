@@ -179,7 +179,7 @@ AssessmentSessionResponse {
 
 ### 8.2 Response value
 
-For the v1 `singleChoice` item type, `response` is the `optionId` of the option the student selected. It is a string. It MUST match exactly one `optionId` in the paired revision item's `options[*].optionId` when the attempt is scored (Section 9). A response that does not match any option is not correct.
+For the v1 `singleChoice` item type, `response` is the `optionId` of the option the student selected. It is a string. It MUST match exactly one `optionId` in the paired revision item's `options[*].optionId` when the attempt is scored (Section 9). A response that does not match any option, or that names an `itemId` absent from the revision, is **refused** at both boundaries (F5.3 Slice 2; `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` section 7): autosave rejects it with `assessmentSessions.invalidResponses` before it is stored, and finalize refuses the attempt with `assessmentAttempts.invalidResponse` without writing. Before F5.3 Slice 2 such a response was scored as not correct.
 
 ### 8.3 Wire and storage invariants
 

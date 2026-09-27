@@ -31,6 +31,11 @@ import { WRITTEN_RESPONSE_MAX_LENGTH } from "../shared/types/assessment-session"
 
 import { isCanonicalRecipient } from "../assignments/assignment-recipients";
 import { synchronizeGradePassback } from "../lms/grade-passback/engine";
+import {
+  allowedOptionIdsByItem,
+  describeInvalidResponse,
+  findInvalidResponse,
+} from "./response-validation";
 import { googleClassroomProductionSecrets } from "../lms/providers/google-classroom/config-firebase";
 
 // Grace period per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7.1 and
@@ -868,6 +873,22 @@ async function assessmentAttemptsFinalizeHandler(
       const responsesByItemId = readCanonicalSessionResponses(session);
       const writtenResponseFields = sessionWrittenResponseForAttempt(session);
       const scoring = scoreAttempt(revision, answerKey, responsesByItemId);
+      // F5.3 Slice 2: the same revision-bound validator autosave applies,
+      // per ASSESSMENT_SCORING_CONTRACT.md §16 item 8. An unknown itemId or an
+      // optionId the item does not have is refused, never scored as
+      // incorrect: nothing is written and no audit event is emitted. It runs
+      // after `scoreAttempt` (pure, no side effects) so revision/answer-key
+      // integrity failures keep precedence; the computed score is discarded.
+      const invalidResponse = findInvalidResponse(
+        session.responses ?? [],
+        allowedOptionIdsByItem(revision),
+      );
+      if (invalidResponse !== null) {
+        throw new PlatformError(
+          "assessmentAttempts.invalidResponse",
+          describeInvalidResponse(invalidResponse),
+        );
+      }
 
       const priorCount = await countExistingAttempts(
         actor.uid,

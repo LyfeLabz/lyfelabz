@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "policy": "F5.3 Slice 1 answer-position quality debt register. Shrink-only: entries may only be removed, and only legacy r1 payloads pinned in LEGACY_DEBT_BASELINE (assessmentQuality.cjs) may appear. Target is zero entries, reached through new compliant canonical revisions; deployed revisions are never edited. See docs/platform/DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md section 13.",
+  "entries": [
+    {
+      "payload": "cell-types.r1.json",
+      "correctSequence": "ACBCBDCDAC",
+      "findings": [
+        "SPREAD_OF_TWO"
+      ],
+      "reason": "Spread of two (C correct 4 of 10). Warning-level debt; remediate in the lesson's next canonical revision."
+    },
+    {
+      "payload": "communication-systems.r1.json",
+      "correctSequence": "BACDBACDBA",
+      "findings": [
+        "PERIODIC_PATTERN"
+      ],
+      "reason": "Balanced counts, but the correct positions repeat an obvious period-4 cycle students can predict. Warning-level debt; remediate in the lesson's next canonical revision."
+    },
+    {
+      "payload": "design-tradeoffs.r1.json",
+      "correctSequence": "ACBBCCABBC",
+      "findings": [
+        "POSITION_NEVER_CORRECT",
+        "SPREAD_TOO_WIDE"
+      ],
+      "reason": "Position D never correct. Not covered by the 2026-09-02 rebalance pass (97777dc). Remediate via a future canonical revision."
+    },
+    {
+      "payload": "earths-layers.r1.json",
+      "correctSequence": "CBBBBABABB",
+      "findings": [
+        "POSITION_NEVER_CORRECT",
+        "POSITION_OVER_CAP",
+        "RUN_TOO_LONG",
+        "SPREAD_TOO_WIDE"
+      ],
+      "reason": "Sprint 17 pilot payload (deployed 2026-07-28); predates the 2026-09-02 rebalance pass. D never correct, B correct 7 of 10 including 4 in a row. Remediate only via a canonical r2 after revision-bound quiz rendering exists (F5.3 section 17.3, owner decision D5)."
+    },
+    {
+      "payload": "earths-place-in-the-universe.r1.json",
+      "correctSequence": "CBDACBDACB",
+      "findings": [
+        "PERIODIC_PATTERN"
+      ],
+      "reason": "Balanced counts, but the correct positions repeat an obvious period-4 cycle students can predict. Warning-level debt; remediate in the lesson's next canonical revision."
+    },
+    {
+      "payload": "ecosystem-stability.r1.json",
+      "correctSequence": "BDACBDACBA",
+      "findings": [
+        "PERIODIC_PATTERN"
+      ],
+      "reason": "Balanced counts, but the correct positions repeat an obvious period-4 cycle students can predict. Warning-level debt; remediate in the lesson's next canonical revision."
+    },
+    {
+      "payload": "engineering-systems.r1.json",
+      "correctSequence": "ACBCBAABBC",
+      "findings": [
+        "POSITION_NEVER_CORRECT",
+        "SPREAD_TOO_WIDE"
+      ],
+      "reason": "Position D never correct. Not covered by the 2026-09-02 rebalance pass (97777dc). Remediate via a future canonical revision."
+    },
+    {
+      "payload": "human-impacts.r1.json",
+      "correctSequence": "BDACBDACBD",
+      "findings": [
+        "PERIODIC_PATTERN"
+      ],
+      "reason": "Balanced counts, but the correct positions repeat an obvious period-4 cycle students can predict. Warning-level debt; remediate in the lesson's next canonical revision."
+    },
+    {
+      "payload": "introduction-to-electricity.r1.json",
+      "correctSequence": "CABDCABDCB",
+      "findings": [
+        "PERIODIC_PATTERN"
+      ],
+      "reason": "Balanced counts, but the correct positions repeat an obvious period-4 cycle students can predict. Warning-level debt; remediate in the lesson's next canonical revision."
+    },
+    {
+      "payload": "organelles.r1.json",
+      "correctSequence": "CBDCCDBCDC",
+      "findings": [
+        "POSITION_NEVER_CORRECT",
+        "POSITION_OVER_CAP",
+        "SPREAD_TOO_WIDE"
+      ],
+      "reason": "Position A never correct; C correct 5 of 10. Not covered by the 2026-09-02 rebalance pass (97777dc). Remediate via a future canonical revision."
+    },
+    {
+      "payload": "parts-of-an-ecosystem.r1.json",
+      "correctSequence": "CADBCADBCA",
+      "findings": [
+        "PERIODIC_PATTERN"
+      ],
+      "reason": "Balanced counts, but the correct positions repeat an obvious period-4 cycle students can predict. Warning-level debt; remediate in the lesson's next canonical revision."
+    },
+    {
+      "payload": "technology-and-society.r1.json",
+      "correctSequence": "BCBCBBADCB",
+      "findings": [
+        "POSITION_OVER_CAP",
+        "SPREAD_TOO_WIDE"
+      ],
+      "reason": "B correct 5 of 10. Not covered by the 2026-09-02 rebalance pass (97777dc). Remediate via a future canonical revision."
+    },
+    {
+      "payload": "transportation-systems.r1.json",
+      "correctSequence": "BCADBCADBC",
+      "findings": [
+        "PERIODIC_PATTERN"
+      ],
+      "reason": "Balanced counts, but the correct positions repeat an obvious period-4 cycle students can predict. Warning-level debt; remediate in the lesson's next canonical revision."
+    },
+    {
+      "payload": "water-cycle.r1.json",
+      "correctSequence": "ACBDACBDAC",
+      "findings": [
+        "PERIODIC_PATTERN"
+      ],
+      "reason": "Balanced counts, but the correct positions repeat an obvious period-4 cycle students can predict. Warning-level debt; remediate in the lesson's next canonical revision."
+    }
+  ]
+}

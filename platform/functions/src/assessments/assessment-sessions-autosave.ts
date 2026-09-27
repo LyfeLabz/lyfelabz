@@ -4,6 +4,7 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 import {
   platformCallable,
   PlatformError,
+  assessmentRevisionDocRef,
   assessmentSessionAutosaveDocRef,
   assessmentSessionDocRef,
   log,
@@ -13,6 +14,11 @@ import {
   type AssessmentSessionResponse,
 } from "../shared";
 import { WRITTEN_RESPONSE_MAX_LENGTH } from "../shared/types/assessment-session";
+import {
+  allowedOptionIdsByItem,
+  describeInvalidResponse,
+  findInvalidResponse,
+} from "./response-validation";
 
 // Client-supplied request payload for assessmentSessionsAutosave per
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §21. The authenticated student
@@ -111,14 +117,14 @@ async function assertActiveStudentInDistrict(
   };
 }
 
-// Deep structural validation of a single response value. Autosave values
-// are opaque to the server (the scorer interprets them against the paired
-// answer key at finalize time), so this walk enforces only the shape
-// invariants that keep the collection safe: JSON-serializable data,
-// bounded depth, no forbidden scoring keys, no function or symbol values.
-// Rejecting non-serializable inputs at the boundary prevents Firestore
-// write-time surprises and preserves the "sessions carry answers only"
-// invariant in §6.
+// Deep structural validation of a single response value. This walk enforces
+// the item-type-independent shape invariants that keep the collection safe:
+// JSON-serializable data, bounded depth, no forbidden scoring keys, no
+// function or symbol values. Rejecting non-serializable inputs at the
+// boundary prevents Firestore write-time surprises and preserves the
+// "sessions carry answers only" invariant in §6. Per-item admissibility
+// against the session's frozen revision (F5.3 Slice 2) is applied after the
+// session is loaded; see `assertResponsesAdmissible`.
 function validateResponseValue(value: unknown, depth: number): void {
   if (depth > 6) {
     throw new PlatformError(
@@ -312,6 +318,41 @@ async function loadLiveSession(
   return data;
 }
 
+// F5.3 Slice 2. Every response must name an item of the session's frozen
+// assessment revision and carry an admissible value for that item's type
+// (v1 singleChoice: one of the item's canonical optionIds). The revision is
+// read from the session's frozen `assessmentRevisionId`, never from the
+// request. Invalid responses are refused before anything is written, so an
+// inadmissible value can never reach the session or be scored.
+async function assertResponsesAdmissible(
+  session: AssessmentSessionRecord,
+  responses: readonly AssessmentSessionResponse[],
+): Promise<void> {
+  if (responses.length === 0) return;
+  const revisionId = session.assessmentRevisionId;
+  if (typeof revisionId !== "string" || revisionId.length === 0) {
+    throw new PlatformError(
+      "assessmentSessions.revisionMissing",
+      "Session carries no frozen assessment revision.",
+    );
+  }
+  const snapshot = await assessmentRevisionDocRef(revisionId).get();
+  const revision = snapshot.exists ? snapshot.data() : undefined;
+  if (!revision) {
+    throw new PlatformError(
+      "assessmentSessions.revisionMissing",
+      "The session's assessment revision is not published.",
+    );
+  }
+  const invalid = findInvalidResponse(responses, allowedOptionIdsByItem(revision));
+  if (invalid !== null) {
+    throw new PlatformError(
+      "assessmentSessions.invalidResponses",
+      describeInvalidResponse(invalid),
+    );
+  }
+}
+
 // Deep structural equality for the currently stored `responses` array
 // against the incoming autosave payload. Both arrays share the canonical
 // `{itemId, response}` element shape; ordering is significant because the
@@ -410,6 +451,10 @@ async function assessmentSessionsAutosaveHandler(
       "Session is not accepting autosave writes.",
     );
   }
+
+  // Validated before the coalesce check so a byte-identical replay of an
+  // inadmissible payload is refused too, never acknowledged.
+  await assertResponsesAdmissible(session, input.responses);
 
   const writtenResponseUnchanged =
     input.writtenResponse === undefined ||

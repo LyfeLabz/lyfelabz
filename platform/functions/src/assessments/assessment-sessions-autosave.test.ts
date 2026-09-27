@@ -4,6 +4,8 @@ const mockSessionGet = jest.fn();
 const mockSessionUpdate = jest.fn();
 
 const mockSessionDocRef = jest.fn(() => ({ get: mockSessionGet }));
+const mockRevisionGet = jest.fn();
+const mockRevisionDocRef = jest.fn(() => ({ get: mockRevisionGet }));
 const mockSessionAutosaveDocRef = jest.fn(() => ({ update: mockSessionUpdate }));
 
 const mockRequireDistrictContext = jest.fn();
@@ -35,6 +37,7 @@ jest.mock("../shared", () => {
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assessmentSessionDocRef: mockSessionDocRef,
+    assessmentRevisionDocRef: mockRevisionDocRef,
     assessmentSessionAutosaveDocRef: mockSessionAutosaveDocRef,
     requireDistrictContext: mockRequireDistrictContext,
   };
@@ -58,8 +61,33 @@ const SESSION_ID = `${ASSIGNMENT_ID}__${STUDENT_UID}__1`;
 
 const RESPONSES = [
   { itemId: "q1", response: "A" },
-  { itemId: "q2", response: { choice: 3 } },
+  { itemId: "q2", response: "C" },
 ];
+
+// The session's frozen revision (student-visible shape; no answer key).
+function singleChoiceItem(itemId: string, optionIds = ["A", "B", "C", "D"]) {
+  return {
+    itemId,
+    itemType: "singleChoice",
+    stem: `${itemId}?`,
+    options: optionIds.map((optionId) => ({ optionId, text: optionId })),
+    points: 1,
+  };
+}
+
+function revisionSnapshot(items: unknown[] = [singleChoiceItem("q1"), singleChoiceItem("q2")]) {
+  return {
+    exists: true,
+    data: () => ({
+      assessmentId: ASSESSMENT_ID,
+      revisionOrdinal: 1,
+      activityId: ACTIVITY_ID,
+      itemOrderingRule: "authoredOrder",
+      items,
+      schemaVersion: 1,
+    }),
+  };
+}
 
 const VALID_DISTRICT_CONTEXT = Object.freeze({
   uid: STUDENT_UID,
@@ -108,6 +136,9 @@ describe("assessmentSessionsAutosave", () => {
     mockSessionGet.mockReset();
     mockSessionUpdate.mockReset();
     mockSessionDocRef.mockClear();
+    mockRevisionGet.mockReset();
+    mockRevisionGet.mockResolvedValue(revisionSnapshot());
+    mockRevisionDocRef.mockClear();
     mockSessionAutosaveDocRef.mockClear();
     mockRequireDistrictContext.mockReset();
     mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
@@ -128,7 +159,7 @@ describe("assessmentSessionsAutosave", () => {
     expect(mockSessionUpdate).toHaveBeenCalledWith({
       responses: [
         { itemId: "q1", response: "A" },
-        { itemId: "q2", response: { choice: 3 } },
+        { itemId: "q2", response: "C" },
       ],
       lastActivityAt: SERVER_TIMESTAMP_SENTINEL,
     });
@@ -606,5 +637,126 @@ describe("assessmentSessionsAutosave", () => {
         }),
       ),
     ).rejects.toMatchObject({ code: "assessmentSessions.invalidResponses" });
+  });
+});
+
+describe("assessmentSessionsAutosave F5.3 Slice 2 revision-bound response validation", () => {
+  beforeEach(() => {
+    mockSessionGet.mockReset();
+    mockSessionUpdate.mockReset();
+    mockSessionDocRef.mockClear();
+    mockSessionAutosaveDocRef.mockClear();
+    mockRevisionGet.mockReset();
+    mockRevisionGet.mockResolvedValue(revisionSnapshot());
+    mockRevisionDocRef.mockClear();
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
+  });
+
+  async function autosave(responses: unknown[]) {
+    return __assessmentSessionsAutosaveHandler(
+      makeRequest({ data: { sessionId: SESSION_ID, responses } }),
+    );
+  }
+
+  async function expectRefused(responses: unknown[], messagePart: string) {
+    mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot());
+    const err = await autosave(responses).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(PlatformError);
+    expect((err as PlatformError).code).toBe("assessmentSessions.invalidResponses");
+    expect((err as PlatformError).message).toContain(messagePart);
+    expect(mockSessionUpdate).not.toHaveBeenCalled();
+    return err as PlatformError;
+  }
+
+  it("accepts canonical optionIds of the session's frozen revision", async () => {
+    mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot());
+    await expect(autosave([{ itemId: "q1", response: "D" }])).resolves.toEqual({
+      sessionId: SESSION_ID,
+      persisted: true,
+    });
+    expect(mockRevisionDocRef).toHaveBeenCalledWith(REVISION_ID);
+  });
+
+  it("refuses an unknown optionId without writing and without echoing the value", async () => {
+    const err = await expectRefused(
+      [{ itemId: "q1", response: "Z-secret-probe" }],
+      "is not one of the item's optionIds",
+    );
+    expect(err.message).not.toContain("Z-secret-probe");
+  });
+
+  it("refuses an optionId that belongs to a different item", async () => {
+    mockRevisionGet.mockResolvedValue(
+      revisionSnapshot([
+        singleChoiceItem("q1", ["q1-a", "q1-b", "q1-c"]),
+        singleChoiceItem("q2", ["q2-a", "q2-b", "q2-c"]),
+      ]),
+    );
+    await expectRefused([{ itemId: "q1", response: "q2-b" }], 'itemId "q1"');
+  });
+
+  it("refuses an itemId that is not in the revision", async () => {
+    await expectRefused(
+      [{ itemId: "q1", response: "A" }, { itemId: "ghost", response: "A" }],
+      "is not an item of this assessment revision",
+    );
+  });
+
+  it.each([
+    ["null", null],
+    ["number", 2],
+    ["boolean", true],
+    ["object", { optionId: "A" }],
+    ["array", ["A"]],
+    ["lowercase near-miss", "a"],
+    ["padded near-miss", " A"],
+    ["empty string", ""],
+  ])("refuses a malformed %s response value", async (_label, value) => {
+    await expectRefused([{ itemId: "q1", response: value }], 'itemId "q1"');
+  });
+
+  it("refuses responses to an item type with no admissibility rule", async () => {
+    mockRevisionGet.mockResolvedValue(
+      revisionSnapshot([{ ...singleChoiceItem("q1"), itemType: "multiSelect" }]),
+    );
+    await expectRefused([{ itemId: "q1", response: "A" }], "does not accept responses");
+  });
+
+  it("refuses a byte-identical replay of an inadmissible stored payload instead of coalescing it", async () => {
+    const stored = [{ itemId: "q1", response: "Z" }];
+    mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot({ responses: stored }));
+    const err = await autosave(stored).catch((e: unknown) => e);
+    expect((err as PlatformError).code).toBe("assessmentSessions.invalidResponses");
+    expect(mockSessionUpdate).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the frozen revision is not published", async () => {
+    mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot());
+    mockRevisionGet.mockResolvedValue({ exists: false, data: () => undefined });
+    const err = await autosave(RESPONSES).catch((e: unknown) => e);
+    expect((err as PlatformError).code).toBe("assessmentSessions.revisionMissing");
+    expect(mockSessionUpdate).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the session carries no frozen revision", async () => {
+    mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot({ assessmentRevisionId: "" }));
+    const err = await autosave(RESPONSES).catch((e: unknown) => e);
+    expect((err as PlatformError).code).toBe("assessmentSessions.revisionMissing");
+    expect(mockRevisionDocRef).not.toHaveBeenCalled();
+    expect(mockSessionUpdate).not.toHaveBeenCalled();
+  });
+
+  it("an empty responses snapshot (no answers yet) needs no revision read", async () => {
+    mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot({ responses: [{ itemId: "q1", response: "A" }] }));
+    await expect(autosave([])).resolves.toEqual({ sessionId: SESSION_ID, persisted: true });
+    expect(mockRevisionDocRef).not.toHaveBeenCalled();
+  });
+
+  it("validates ownership before reading the revision", async () => {
+    mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot({ studentId: "someone-else" }));
+    const err = await autosave([{ itemId: "q1", response: "Z" }]).catch((e: unknown) => e);
+    expect((err as PlatformError).code).toBe("assessmentSessions.notOwned");
+    expect(mockRevisionDocRef).not.toHaveBeenCalled();
   });
 });
