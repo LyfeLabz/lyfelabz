@@ -35,6 +35,10 @@ type PortOverrides = {
   readCoverageThrows?: boolean;
   isValidGrantId?: (value: unknown) => boolean;
   nowMs?: number;
+  // F5.3 Slice 5: verdict of the assessment-presentation verification port.
+  // null = verified; a string = the refusal reason.
+  presentationVerdict?: string | null;
+  verifyPresentationThrows?: boolean;
 };
 
 type Harness = {
@@ -47,6 +51,8 @@ type Harness = {
     readCoverage: Array<{ lessonSlug: string; variantKey: string }>;
   };
 };
+
+const presentationChecks: Array<{ apId: string; lessonSlug: string; assessmentRevisionId: string }> = [];
 
 function makeHarness(overrides: PortOverrides = {}): Harness {
   const events: BeginDeliveryTelemetryEvent[] = [];
@@ -88,6 +94,13 @@ function makeHarness(overrides: PortOverrides = {}): Harness {
       ((value): boolean => typeof value === "string" && /^[0-9a-f]{32}$/.test(value)),
     telemetry: (event) => events.push(event),
     nowMs: () => overrides.nowMs ?? NOW_MS,
+    verifyAssessmentPresentation: (apId, expected) => {
+      presentationChecks.push({ apId, ...expected });
+      if (overrides.verifyPresentationThrows) {
+        return Promise.reject(new Error("presentation read failed"));
+      }
+      return Promise.resolve(overrides.presentationVerdict === undefined ? null : overrides.presentationVerdict);
+    },
   };
   return { ports, events, calls };
 }
@@ -118,10 +131,13 @@ function fallbackGrant(overrides: Partial<RawLaunchGrant> = {}): RawLaunchGrant 
   };
 }
 
+const ASSESSMENT_REVISION = `assessment_${LESSON}__r1`;
+
 const baseInput = {
   studentId: STUDENT,
   assignmentId: ASSIGNMENT,
   lessonSlug: LESSON,
+  assessmentRevisionId: ASSESSMENT_REVISION,
 };
 
 async function expectCode(promise: Promise<unknown>, code: string): Promise<PlatformError> {
@@ -455,5 +471,94 @@ describe("resolveBeginDelivery - telemetry never carries the launchRef token", (
         expect(serialized).not.toContain("launchRef");
       }
     }
+  });
+});
+
+describe("F5.3 Slice 5 - assessment-presentation provenance frozen at begin", () => {
+  const AP_ID = `ap${"c".repeat(64)}`;
+  const input = { ...baseInput, launchRef: VALID_GRANT_ID };
+
+  beforeEach(() => {
+    presentationChecks.length = 0;
+  });
+
+  it("freezes the grant's presentation id and configRevision after verifying the presentation", async () => {
+    const h = makeHarness({ grant: differentiatedGrant({ assessmentPresentationRevisionId: AP_ID, accommodationConfigRevision: 3 }) });
+    const freeze = await resolveBeginDelivery(h.ports, input);
+    expect(freeze).toEqual({
+      deliveryOutcome: "differentiated",
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_A,
+      assessmentPresentationRevisionId: AP_ID,
+      accommodationConfigRevision: 3,
+    });
+    // Verified against this session's lesson and the assignment's frozen revision.
+    expect(presentationChecks).toEqual([{ apId: AP_ID, lessonSlug: LESSON, assessmentRevisionId: ASSESSMENT_REVISION }]);
+  });
+
+  it("a grant without a presentation id keeps the F5.2 freeze (canonical assessment) and records configRevision", async () => {
+    const h = makeHarness({ grant: differentiatedGrant({ accommodationConfigRevision: 1 }) });
+    const freeze = await resolveBeginDelivery(h.ports, input);
+    expect(freeze).toEqual({
+      deliveryOutcome: "differentiated",
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_A,
+      accommodationConfigRevision: 1,
+    });
+    expect(presentationChecks).toEqual([]);
+  });
+
+  it("a pre-F5.3 grant (no provenance) freezes exactly as before", async () => {
+    const h = makeHarness({ grant: differentiatedGrant() });
+    expect(await resolveBeginDelivery(h.ports, input)).toEqual({
+      deliveryOutcome: "differentiated",
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_A,
+    });
+  });
+
+  it.each(["missing", "contentMismatch", "lessonMismatch", "assessmentRevisionMismatch", "schema"])(
+    "refuses begin (LAUNCH_REF_INVALID, no session) when the presentation verification fails: %s",
+    async (verdict) => {
+      const h = makeHarness({
+        grant: differentiatedGrant({ assessmentPresentationRevisionId: AP_ID }),
+        presentationVerdict: verdict,
+      });
+      await expectCode(resolveBeginDelivery(h.ports, input), "LAUNCH_REF_INVALID");
+      expect(h.events).toContainEqual(expect.objectContaining({ type: "grantInvalid", reason: "assessmentPresentation" }));
+    },
+  );
+
+  it("fails closed and retriable when the presentation read throws", async () => {
+    const h = makeHarness({
+      grant: differentiatedGrant({ assessmentPresentationRevisionId: AP_ID }),
+      verifyPresentationThrows: true,
+    });
+    await expectCode(resolveBeginDelivery(h.ports, input), "BEGIN_VALIDATION_UNAVAILABLE");
+  });
+
+  it.each([
+    ["a malformed presentation id", { assessmentPresentationRevisionId: "ap123" }],
+    ["a non-string presentation id", { assessmentPresentationRevisionId: 7 }],
+    ["a zero configRevision", { accommodationConfigRevision: 0 }],
+    ["a string configRevision", { accommodationConfigRevision: "3" }],
+    ["a fractional configRevision", { accommodationConfigRevision: 1.5 }],
+  ])("refuses a differentiated grant with %s", async (_label, extra) => {
+    const h = makeHarness({ grant: differentiatedGrant(extra) });
+    await expectCode(resolveBeginDelivery(h.ports, input), "LAUNCH_REF_INVALID");
+    expect(h.events).toContainEqual(expect.objectContaining({ reason: "malformedProvenance" }));
+  });
+
+  it.each([
+    ["a presentation id", { assessmentPresentationRevisionId: AP_ID }],
+    ["a configRevision", { accommodationConfigRevision: 2 }],
+  ])("refuses a canonicalFallback grant carrying %s", async (_label, extra) => {
+    const h = makeHarness({ grant: fallbackGrant(extra) });
+    await expectCode(resolveBeginDelivery(h.ports, input), "LAUNCH_REF_INVALID");
+  });
+
+  it("the no-ref path never freezes presentation provenance", async () => {
+    const h = makeHarness({ reading: { active: true, level: "adapted", configRevision: 3 }, enabled: false });
+    expect(await resolveBeginDelivery(h.ports, baseInput)).toEqual({ deliveryOutcome: "canonicalFallback" });
   });
 });

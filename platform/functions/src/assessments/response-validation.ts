@@ -19,10 +19,9 @@
 // admissibility rule here. Until it does, responses to an item of an
 // unsupported type are refused rather than accepted opaquely.
 //
-// F5.3 Slice 3 foundation: `allowedOptionIdsByItem` is the canonical
-// admissible set. An accessible assessment presentation will narrow it per
-// item to the options actually displayed (a subset of these canonical ids)
-// before calling `findInvalidResponse`; no other boundary change is needed.
+// F5.3 Slice 5: `allowedOptionIdsByItem` is the canonical admissible set; for
+// a session that froze an assessment presentation, both boundaries narrow it
+// with `narrowToDisplayedOptions` before calling `findInvalidResponse`.
 
 export type ResponseValidationRevision = {
   readonly items?: ReadonlyArray<{
@@ -63,6 +62,28 @@ export function allowedOptionIdsByItem(
     }
   }
   return index;
+}
+
+// F5.3 Slice 5: narrows the canonical admissible set to the options a frozen
+// assessment presentation DISPLAYED for each item (canonical AND displayed).
+// An item the presentation does not display is left with no admissible
+// option, and an item type without a rule stays refused. A canonical option
+// the presentation deliberately omitted (a three-choice presentation's fourth
+// distractor) is therefore refused even though the revision contains it.
+export function narrowToDisplayedOptions(
+  allowed: AllowedResponseIndex,
+  displayedByItem: ReadonlyMap<string, ReadonlySet<string>>,
+): AllowedResponseIndex {
+  const narrowed = new Map<string, ReadonlySet<string> | null>();
+  for (const [itemId, canonical] of allowed) {
+    if (canonical === null) {
+      narrowed.set(itemId, null);
+      continue;
+    }
+    const displayed = displayedByItem.get(itemId) ?? new Set<string>();
+    narrowed.set(itemId, new Set([...canonical].filter((optionId) => displayed.has(optionId))));
+  }
+  return narrowed;
 }
 
 // Returns the first invalid response (in array order), or null when every

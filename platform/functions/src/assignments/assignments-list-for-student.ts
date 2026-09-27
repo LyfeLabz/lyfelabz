@@ -465,6 +465,10 @@ async function assignmentsListForStudentHandler(
       studentId: actor.uid,
       assignmentId: record.assignmentId,
       lessonSlug: record.lessonSlug,
+      // F5.3 Slice 5: the assignment's frozen revision (server-derived).
+      ...(typeof record.assessmentRevisionId === "string"
+        ? { assessmentRevisionId: record.assessmentRevisionId }
+        : {}),
     });
     let presentation: LaunchPresentation | undefined;
     let launchRef: string | undefined;

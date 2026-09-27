@@ -139,6 +139,11 @@ export type PresentationVariantIndexActivateWrite = {
   readonly status: "active";
   readonly updatedAt: FieldValue;
   readonly publishedBy: string;
+  // F5.3 Slice 5: present together iff the published revision is bound to an
+  // assessment presentation. The write is a full `.set()`, so repointing to an
+  // unbound revision removes them.
+  readonly assessmentRevisionId?: string;
+  readonly assessmentPresentationRevisionId?: string;
 };
 
 // Write shape for retirement: only the status flips (plus attribution and
@@ -162,6 +167,8 @@ export function assertActivateWriteConsistent(write: {
   readonly currentPresentationRevisionId: string;
   readonly currentPath: string;
   readonly contentSha256: string;
+  readonly assessmentRevisionId?: unknown;
+  readonly assessmentPresentationRevisionId?: unknown;
 }): void {
   if (!isValidLessonSlugForVariant(write.lessonSlug)) {
     throw new Error(`[presentation-variant] invalid lessonSlug: ${write.lessonSlug}`);
@@ -190,4 +197,27 @@ export function assertActivateWriteConsistent(write: {
       `[presentation-variant] currentPath "${write.currentPath}" does not match the identity formula "${expectedPath}"`,
     );
   }
+  // F5.3 Slice 5: the optional assessment-presentation binding is both-or-
+  // neither, well-formed, and names a revision of THIS lesson's assessment.
+  // A half or malformed binding makes the index malformed (resolver:
+  // canonicalFallback with defect telemetry; no-ref begin: refusal).
+  const hasRev = write.assessmentRevisionId !== undefined;
+  const hasAp = write.assessmentPresentationRevisionId !== undefined;
+  if (hasRev !== hasAp) {
+    throw new Error("[presentation-variant] assessment-presentation binding must carry assessmentRevisionId and assessmentPresentationRevisionId together");
+  }
+  if (hasRev) {
+    if (
+      typeof write.assessmentPresentationRevisionId !== "string" ||
+      !ASSESSMENT_PRESENTATION_REVISION_ID_RE.test(write.assessmentPresentationRevisionId)
+    ) {
+      throw new Error("[presentation-variant] assessmentPresentationRevisionId must be ap<sha256>");
+    }
+    const revisionRe = new RegExp(`^assessment_${write.lessonSlug}__r[1-9][0-9]*$`);
+    if (typeof write.assessmentRevisionId !== "string" || !revisionRe.test(write.assessmentRevisionId)) {
+      throw new Error(`[presentation-variant] assessmentRevisionId must be a revision of assessment_${write.lessonSlug}`);
+    }
+  }
 }
+
+const ASSESSMENT_PRESENTATION_REVISION_ID_RE = /^ap[0-9a-f]{64}$/;

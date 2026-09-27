@@ -40,12 +40,25 @@ import {
   assertActivateWriteConsistent,
   type PresentationVariantStatus,
 } from "../shared/types/presentation-variant";
+import { canonicalJson } from "../shared/types/assessment-presentation";
 
 export type PublicationStage =
   | "LOCAL_VERIFIED"
   | "HOSTING_DEPLOYED"
   | "HOSTED_BYTES_VERIFIED"
+  // F5.3 Slice 5: only for a revision bound to an assessment presentation.
+  | "ASSESSMENT_PRESENTATION_RECORDED"
   | "INDEX_UPDATED";
+
+// F5.3 Slice 5: the assessment-presentation binding of a retained revision,
+// reconciled by the loader from the manifest entry, the certified retained
+// record, and the binding block embedded in the artifact bytes.
+export type RetainedAssessmentBinding = {
+  readonly assessmentRevisionId: string;
+  readonly assessmentPresentationRevisionId: string;
+  // The immutable record (canonical JSON content) to publish.
+  readonly record: Readonly<Record<string, unknown>>;
+};
 
 // One immutable, retained build of (lessonSlug, variantKey), as reconciled
 // from the trusted append-only manifest. Every field is server/manifest
@@ -59,6 +72,9 @@ export type RetainedRevision = {
   readonly path: string;
   // Full 64-hex SHA-256 of the retained bytes (the manifest sha256).
   readonly sha256: string;
+  // F5.3 Slice 5: present iff the manifest entry binds an assessment
+  // presentation. Absent keeps the F5.2 meaning.
+  readonly assessmentBinding?: RetainedAssessmentBinding;
 };
 
 export type PublicationMode = "publish" | "rollback";
@@ -115,12 +131,27 @@ export type WriteIndexActivatePort = (
 
 export type LogPort = (message: string) => void;
 
+// F5.3 Slice 5: the lesson's currently deployed canonical assessment revision
+// (`assessments/assessment_<slug>.currentRevisionId`), or null when none.
+export type ReadDeployedAssessmentRevisionPort = (lessonSlug: string) => Promise<string | null>;
+
+// F5.3 Slice 5: create `assessmentPresentations/{id}` with exactly `record`,
+// or verify an existing document is identical (never update or delete).
+export type EnsureAssessmentPresentationPort = (
+  assessmentPresentationRevisionId: string,
+  record: Readonly<Record<string, unknown>>,
+) => Promise<{ readonly ok: true; readonly created: boolean } | { readonly ok: false; readonly error: string }>;
+
 export type PublishDeps = {
   readonly loadRetainedRevision: LoadRetainedRevisionPort;
   readonly deployHosting: DeployHostingPort;
   readonly fetchHosted: FetchHostedPort;
   readonly hashBytes: HashBytesPort;
   readonly writeIndexActivate: WriteIndexActivatePort;
+  // Required only for a bound revision; a bound revision without them fails
+  // closed at LOCAL_VERIFIED.
+  readonly readDeployedAssessmentRevision?: ReadDeployedAssessmentRevisionPort;
+  readonly ensureAssessmentPresentation?: EnsureAssessmentPresentationPort;
   readonly log?: LogPort;
 };
 
@@ -213,6 +244,108 @@ function verifyHostedBytes(
 // Publish (or roll back to) a retained revision, advancing the current index
 // pointer ONLY after hosted-byte liveness verification. See the file header
 // for the index-last guarantee.
+// F5.3 Slice 5: every check a bound revision must pass before any Hosting or
+// Firestore side effect. Returns an error message, or null when publishable.
+async function verifyBindingForPublication(
+  binding: RetainedAssessmentBinding,
+  revision: RetainedRevision,
+  deps: PublishDeps,
+): Promise<string | null> {
+  if (deps.readDeployedAssessmentRevision === undefined || deps.ensureAssessmentPresentation === undefined) {
+    return "a revision bound to an assessment presentation needs the assessment-presentation publication ports";
+  }
+  let actualId: string;
+  try {
+    actualId = `ap${deps.hashBytes(canonicalJson(binding.record))}`;
+  } catch (err) {
+    return `assessment presentation record is not canonical: ${(err as Error).message}`;
+  }
+  if (actualId !== binding.assessmentPresentationRevisionId) {
+    return `assessment presentation record hashes to ${actualId}, not ${binding.assessmentPresentationRevisionId}`;
+  }
+  if (binding.record.lessonSlug !== revision.lessonSlug) {
+    return `assessment presentation belongs to lesson "${String(binding.record.lessonSlug)}", not "${revision.lessonSlug}"`;
+  }
+  if (binding.record.assessmentRevisionId !== binding.assessmentRevisionId) {
+    return `assessment presentation maps to ${String(binding.record.assessmentRevisionId)}, not ${binding.assessmentRevisionId}`;
+  }
+  let deployed: string | null;
+  try {
+    deployed = await deps.readDeployedAssessmentRevision(revision.lessonSlug);
+  } catch (err) {
+    return `could not read the deployed assessment revision: ${(err as Error).message}`;
+  }
+  if (deployed !== binding.assessmentRevisionId) {
+    return `bound assessment revision ${binding.assessmentRevisionId} is not the deployed current revision (${String(deployed)})`;
+  }
+  return null;
+}
+
+// F5.3 Slice 5: pure reconciliation of a retained revision's assessment
+// binding. The loader supplies the manifest entry, the binding block parsed
+// from the artifact bytes (null when the artifact carries none), and the
+// certification result of the one Slice 3 check (null for an unbound entry).
+// Manifest, artifact, and certified record must all agree exactly.
+export function reconcileAssessmentBinding(args: {
+  readonly entry: {
+    readonly lessonSlug: string;
+    readonly assessmentRevisionId?: string;
+    readonly assessmentPresentationRevisionId?: string;
+  };
+  readonly artifactBindingBlock: unknown;
+  readonly certification: { readonly record: unknown; readonly failures: readonly string[] } | null;
+}): { readonly ok: true; readonly binding?: RetainedAssessmentBinding } | { readonly ok: false; readonly error: string } {
+  const { entry, artifactBindingBlock, certification } = args;
+  const bound = entry.assessmentPresentationRevisionId !== undefined || entry.assessmentRevisionId !== undefined;
+  if (!bound) {
+    if (artifactBindingBlock !== null && artifactBindingBlock !== undefined) {
+      return { ok: false, error: "the artifact carries an assessment-presentation binding but its manifest entry is unbound" };
+    }
+    return { ok: true };
+  }
+  if (
+    typeof entry.assessmentPresentationRevisionId !== "string" ||
+    typeof entry.assessmentRevisionId !== "string"
+  ) {
+    return { ok: false, error: "the manifest entry carries half an assessment-presentation binding" };
+  }
+  if (certification === null || certification.failures.length > 0 || certification.record === null) {
+    const detail = certification ? certification.failures.join("; ") : "no certification result";
+    return { ok: false, error: `assessment presentation ${entry.assessmentPresentationRevisionId} is not certified for publication: ${detail}` };
+  }
+  const record = certification.record as { readonly items?: ReadonlyArray<{ readonly itemId: string; readonly displayedOptions: ReadonlyArray<{ readonly optionId: string }> }> } & Record<string, unknown>;
+  const expectedBlock = {
+    schemaVersion: 1,
+    lessonSlug: entry.lessonSlug,
+    assessmentRevisionId: entry.assessmentRevisionId,
+    assessmentPresentationRevisionId: entry.assessmentPresentationRevisionId,
+    items: (record.items ?? []).map((item) => ({
+      itemId: item.itemId,
+      optionIds: item.displayedOptions.map((o) => o.optionId),
+    })),
+  };
+  let blockMatches = false;
+  try {
+    blockMatches =
+      artifactBindingBlock !== null &&
+      artifactBindingBlock !== undefined &&
+      canonicalJson(artifactBindingBlock) === canonicalJson(expectedBlock);
+  } catch {
+    blockMatches = false;
+  }
+  if (!blockMatches) {
+    return { ok: false, error: "the artifact's assessment-presentation binding does not match its manifest entry and certified record" };
+  }
+  return {
+    ok: true,
+    binding: {
+      assessmentRevisionId: entry.assessmentRevisionId,
+      assessmentPresentationRevisionId: entry.assessmentPresentationRevisionId,
+      record,
+    },
+  };
+}
+
 export async function publishRetainedRevision(
   input: PublishInput,
   deps: PublishDeps,
@@ -266,6 +399,8 @@ export async function publishRetainedRevision(
       currentPresentationRevisionId: revision.presentationRevisionId,
       currentPath: revision.path,
       contentSha256: revision.sha256,
+      assessmentRevisionId: revision.assessmentBinding?.assessmentRevisionId,
+      assessmentPresentationRevisionId: revision.assessmentBinding?.assessmentPresentationRevisionId,
     });
   } catch (err) {
     const error = (err as Error).message;
@@ -277,6 +412,20 @@ export async function publishRetainedRevision(
       stagesCompleted,
       indexAdvanced: false,
     };
+  }
+  const binding = revision.assessmentBinding;
+  if (binding !== undefined) {
+    const bindingError = await verifyBindingForPublication(binding, revision, deps);
+    if (bindingError !== null) {
+      log(`[publish] LOCAL_VERIFIED failed (assessment presentation): ${bindingError}`);
+      return {
+        ok: false,
+        failedStage: "LOCAL_VERIFIED",
+        error: bindingError,
+        stagesCompleted,
+        indexAdvanced: false,
+      };
+    }
   }
   stagesCompleted.push("LOCAL_VERIFIED");
   log(`[publish] LOCAL_VERIFIED ok: ${revision.path}`);
@@ -317,6 +466,33 @@ export async function publishRetainedRevision(
   }
   stagesCompleted.push("HOSTED_BYTES_VERIFIED");
   log(`[publish] HOSTED_BYTES_VERIFIED ok: exact hosted bytes match ${revision.sha256}`);
+
+  // -------- Stage 3b: ASSESSMENT_PRESENTATION_RECORDED (F5.3, bound only) ---
+  // The immutable record must exist exactly before the index can point
+  // students at an artifact that depends on it.
+  if (binding !== undefined && deps.ensureAssessmentPresentation !== undefined) {
+    let recorded;
+    try {
+      recorded = await deps.ensureAssessmentPresentation(binding.assessmentPresentationRevisionId, binding.record);
+    } catch (err) {
+      recorded = { ok: false as const, error: (err as Error).message };
+    }
+    if (!recorded.ok) {
+      log(`[publish] ASSESSMENT_PRESENTATION_RECORDED failed: ${recorded.error}`);
+      return {
+        ok: false,
+        failedStage: "ASSESSMENT_PRESENTATION_RECORDED",
+        error: recorded.error,
+        stagesCompleted,
+        indexAdvanced: false,
+      };
+    }
+    stagesCompleted.push("ASSESSMENT_PRESENTATION_RECORDED");
+    log(
+      `[publish] ASSESSMENT_PRESENTATION_RECORDED ok: ${binding.assessmentPresentationRevisionId} ` +
+        `(${recorded.created ? "created" : "already identical"})`,
+    );
+  }
 
   // -------- Stage 4: INDEX_UPDATED (step 9, ALWAYS LAST) -------------------
   // The one and only index-write call site. Reached only because every stage

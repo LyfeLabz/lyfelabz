@@ -1,4 +1,5 @@
 import {
+  assessmentPresentationDocRef,
   assertActivateWriteConsistent,
   isDifferentiatedDeliveryEnabled,
   isValidGrantId,
@@ -11,6 +12,7 @@ import {
   variantKeyForReadingLevel,
 } from "../shared";
 import type { ReadingResolution } from "../shared";
+import { checkAssessmentPresentationDoc } from "../shared/presentation/assessment-presentation-identity";
 
 import {
   type BeginCoverageKind,
@@ -83,11 +85,30 @@ async function readCoverage(
       currentPresentationRevisionId: data.currentPresentationRevisionId,
       currentPath: data.currentPath,
       contentSha256: data.contentSha256,
+      assessmentRevisionId: data.assessmentRevisionId,
+      assessmentPresentationRevisionId: data.assessmentPresentationRevisionId,
     });
   } catch {
     return "malformed";
   }
   return "active";
+}
+
+// F5.3 Slice 5: verify a grant-named assessment presentation against its
+// immutable record (existence, content-addressed id, lesson, frozen
+// assessment revision). A thrown read propagates to the core, which fails
+// closed (BEGIN_VALIDATION_UNAVAILABLE).
+async function verifyAssessmentPresentation(
+  assessmentPresentationRevisionId: string,
+  expected: { readonly lessonSlug: string; readonly assessmentRevisionId: string },
+): Promise<string | null> {
+  const snapshot = await assessmentPresentationDocRef(assessmentPresentationRevisionId).get();
+  const check = checkAssessmentPresentationDoc(
+    assessmentPresentationRevisionId,
+    snapshot.exists ? snapshot.data() : undefined,
+    expected,
+  );
+  return check.ok ? null : check.reason;
 }
 
 // Best-effort, non-sensitive telemetry. Never logs the raw `launchRef` token,
@@ -178,5 +199,6 @@ export function buildBeginDeliveryPorts(
     isValidGrantId,
     telemetry,
     nowMs,
+    verifyAssessmentPresentation,
   };
 }

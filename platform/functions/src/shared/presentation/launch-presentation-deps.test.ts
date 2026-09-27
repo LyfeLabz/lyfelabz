@@ -250,3 +250,99 @@ describe("launch-presentation-deps: readReading (§3.1)", () => {
     expect(await ports.readReading("student-uid")).toEqual({ active: false });
   });
 });
+
+describe("launch-presentation-deps: F5.3 Slice 5 provenance", () => {
+  const AP_ID = `ap${"c".repeat(64)}`;
+  const REV_R1 = `assessment_${LESSON_SLUG}__r1`;
+
+  it("mints a differentiated grant carrying the presentation id and configRevision, with the unchanged 6h TTL", async () => {
+    const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
+    await ports.mintGrant({
+      outcomeAtIssuance: "differentiated",
+      studentId: "student-uid",
+      assignmentId: "assign-1",
+      lessonSlug: LESSON_SLUG,
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_ID,
+      assessmentPresentationRevisionId: AP_ID,
+      accommodationConfigRevision: 1,
+    });
+    const written = mockCreate.mock.calls[0][0];
+    expect(written).toMatchObject({
+      outcomeAtIssuance: "differentiated",
+      presentationRevisionId: REVISION_ID,
+      assessmentPresentationRevisionId: AP_ID,
+      accommodationConfigRevision: 1,
+    });
+    expect(written.expiresAt.toMillis() - written.issuedAt.toMillis()).toBe(6 * 60 * 60 * 1000);
+    expect(LAUNCH_GRANT_TTL_MS).toBe(6 * 60 * 60 * 1000);
+  });
+
+  it("an unbound differentiated grant omits the presentation id", async () => {
+    const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
+    await ports.mintGrant({
+      outcomeAtIssuance: "differentiated",
+      studentId: "s",
+      assignmentId: "a",
+      lessonSlug: LESSON_SLUG,
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_ID,
+      accommodationConfigRevision: 2,
+    });
+    const written = mockCreate.mock.calls[0][0];
+    expect(written).not.toHaveProperty("assessmentPresentationRevisionId");
+    expect(written.accommodationConfigRevision).toBe(2);
+  });
+
+  it("refuses to mint a canonicalFallback grant carrying provenance", async () => {
+    const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
+    await expect(
+      ports.mintGrant({
+        outcomeAtIssuance: "canonicalFallback",
+        studentId: "s",
+        assignmentId: "a",
+        lessonSlug: LESSON_SLUG,
+        assessmentPresentationRevisionId: AP_ID,
+      } as never),
+    ).rejects.toThrow("canonicalFallback grant must NOT carry assessment-presentation");
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("reads a bound active index into an assessmentBinding", async () => {
+    mockIndexGet.mockResolvedValue(
+      activeIndexSnapshot({ assessmentRevisionId: REV_R1, assessmentPresentationRevisionId: AP_ID }),
+    );
+    const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({
+      kind: "active",
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_ID,
+      path: PATH,
+      assessmentBinding: { assessmentRevisionId: REV_R1, assessmentPresentationRevisionId: AP_ID },
+    });
+  });
+
+  it.each([
+    ["half a binding", { assessmentPresentationRevisionId: AP_ID }],
+    ["a malformed presentation id", { assessmentRevisionId: REV_R1, assessmentPresentationRevisionId: "ap123" }],
+    ["another lesson's revision", { assessmentRevisionId: "assessment_other__r1", assessmentPresentationRevisionId: AP_ID }],
+  ])("treats %s on the index as malformed (fail closed)", async (_label, extra) => {
+    mockIndexGet.mockResolvedValue(activeIndexSnapshot(extra));
+    const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({ kind: "malformed" });
+  });
+
+  it("reads the accommodation configRevision for provenance, ignoring a malformed one", async () => {
+    mockAccommodationGet.mockResolvedValue({
+      exists: true,
+      data: () => ({ configRevision: 4, readingAccessibility: { status: "active", level: "adapted" } }),
+    });
+    const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
+    expect(await ports.readReading("student-uid")).toEqual({ active: true, level: "adapted", configRevision: 4 });
+    mockAccommodationGet.mockResolvedValue({
+      exists: true,
+      data: () => ({ configRevision: "4", readingAccessibility: { status: "active", level: "adapted" } }),
+    });
+    expect(await ports.readReading("student-uid")).toEqual({ active: true, level: "adapted" });
+  });
+});

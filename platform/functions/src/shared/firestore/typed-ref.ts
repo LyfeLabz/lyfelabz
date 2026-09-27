@@ -100,6 +100,10 @@ import {
   type LaunchGrantRecord,
 } from "../types/launch-grant";
 import {
+  ASSESSMENT_PRESENTATIONS_COLLECTION,
+  type AssessmentPresentationRecord,
+} from "../types/assessment-presentation";
+import {
   SCHOOLS_COLLECTION,
   type SchoolCreationWrite,
   type SchoolRecord,
@@ -1225,6 +1229,18 @@ export function launchGrantCreationDocRef(
   return getAdminFirestore()
     .collection(LAUNCH_GRANTS_COLLECTION)
     .doc(grantId) as DocumentReference<LaunchGrantCreationWrite>;
+}
+
+// F5.3 Slice 5 - immutable assessment-presentation records,
+// `assessmentPresentations/{ap<sha256>}`. Written only by the publish tooling
+// (create-or-verify-equal, never updated or deleted) and read server-side at
+// session begin, autosave, and finalize. Deny-all to every client.
+export function assessmentPresentationDocRef(
+  assessmentPresentationRevisionId: string,
+): DocumentReference<AssessmentPresentationRecord> {
+  return getAdminFirestore()
+    .collection(ASSESSMENT_PRESENTATIONS_COLLECTION)
+    .doc(assessmentPresentationRevisionId) as DocumentReference<AssessmentPresentationRecord>;
 }
 
 // -------------------- External identity references --------------------

@@ -6,6 +6,8 @@ const mockSessionUpdate = jest.fn();
 const mockSessionDocRef = jest.fn(() => ({ get: mockSessionGet }));
 const mockRevisionGet = jest.fn();
 const mockRevisionDocRef = jest.fn(() => ({ get: mockRevisionGet }));
+const mockPresentationGet = jest.fn();
+const mockPresentationDocRef = jest.fn(() => ({ get: mockPresentationGet }));
 const mockSessionAutosaveDocRef = jest.fn(() => ({ update: mockSessionUpdate }));
 
 const mockRequireDistrictContext = jest.fn();
@@ -38,6 +40,7 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assessmentSessionDocRef: mockSessionDocRef,
     assessmentRevisionDocRef: mockRevisionDocRef,
+    assessmentPresentationDocRef: mockPresentationDocRef,
     assessmentSessionAutosaveDocRef: mockSessionAutosaveDocRef,
     requireDistrictContext: mockRequireDistrictContext,
   };
@@ -45,6 +48,7 @@ jest.mock("../shared", () => {
 
 import { PlatformError } from "../shared/errors/platform-error";
 import { __assessmentSessionsAutosaveHandler } from "./assessment-sessions-autosave";
+import { computeAssessmentPresentationRevisionId } from "../shared/presentation/assessment-presentation-identity";
 
 const STUDENT_UID = "student-uid";
 const SCHOOL_ID = "school-a";
@@ -758,5 +762,134 @@ describe("assessmentSessionsAutosave F5.3 Slice 2 revision-bound response valida
     const err = await autosave([{ itemId: "q1", response: "Z" }]).catch((e: unknown) => e);
     expect((err as PlatformError).code).toBe("assessmentSessions.notOwned");
     expect(mockRevisionDocRef).not.toHaveBeenCalled();
+  });
+});
+
+describe("assessmentSessionsAutosave F5.3 Slice 5 displayed-option validation", () => {
+  // q1 displays C, A, D (canonical B omitted); q2 displays A, B, D (C omitted).
+  function presentation(displayed: Record<string, string[]>, overrides: Record<string, unknown> = {}) {
+    return {
+      schemaVersion: 1,
+      kind: "lyfelabz.assessmentPresentation",
+      lessonSlug: ACTIVITY_ID,
+      assessmentRevisionId: REVISION_ID,
+      traits: { language: "adapted", choiceCount: displayed.q1.length },
+      directions: null,
+      items: Object.entries(displayed).map(([itemId, ids]) => ({
+        itemId,
+        stem: `${itemId}?`,
+        displayedOptions: ids.map((optionId) => ({ optionId, text: optionId })),
+        omittedOptions: ["A", "B", "C", "D"].filter((id) => !ids.includes(id)).map((optionId) => ({ optionId, rationale: "r" })),
+        feedback: null,
+      })),
+      showYourThinking: null,
+      ...overrides,
+    };
+  }
+  const THREE = presentation({ q1: ["C", "A", "D"], q2: ["A", "B", "D"] });
+  const FOUR = presentation({ q1: ["D", "B", "A", "C"], q2: ["C", "D", "B", "A"] });
+  const apIdOf = (r: unknown) => computeAssessmentPresentationRevisionId(r);
+
+  beforeEach(() => {
+    mockSessionGet.mockReset();
+    mockSessionUpdate.mockReset();
+    mockRevisionGet.mockReset();
+    mockRevisionGet.mockResolvedValue(revisionSnapshot());
+    mockRevisionDocRef.mockClear();
+    mockPresentationGet.mockReset();
+    mockPresentationDocRef.mockClear();
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
+  });
+
+  function arrange(record: Record<string, unknown>, sessionApId = apIdOf(record)) {
+    mockSessionGet.mockResolvedValueOnce(
+      liveSessionSnapshot({
+        deliveryOutcome: "differentiated",
+        variantKey: "reading-adapted",
+        presentationRevisionId: `pr${"a".repeat(64)}`,
+        assessmentPresentationRevisionId: sessionApId,
+        accommodationConfigRevision: 1,
+      }),
+    );
+    mockPresentationGet.mockResolvedValue({ exists: true, data: () => record });
+  }
+
+  async function autosave(responses: unknown[], extra: Record<string, unknown> = {}) {
+    return __assessmentSessionsAutosaveHandler(makeRequest({ data: { sessionId: SESSION_ID, responses, ...extra } }));
+  }
+
+  it("accepts options the three-choice presentation displayed", async () => {
+    arrange(THREE);
+    await expect(autosave([{ itemId: "q1", response: "C" }, { itemId: "q2", response: "D" }])).resolves.toEqual({ sessionId: SESSION_ID, persisted: true });
+    expect(mockPresentationDocRef).toHaveBeenCalledWith(apIdOf(THREE));
+    // The write never touches the session's frozen provenance.
+    expect(Object.keys(mockSessionUpdate.mock.calls[0]![0]).sort()).toEqual(["lastActivityAt", "responses"]);
+  });
+
+  it("rejects the omitted canonical fourth option even though the revision contains it", async () => {
+    arrange(THREE);
+    const err = await autosave([{ itemId: "q1", response: "B" }]).catch((e: unknown) => e);
+    expect((err as PlatformError).code).toBe("assessmentSessions.invalidResponses");
+    expect(mockSessionUpdate).not.toHaveBeenCalled();
+  });
+
+  it("rejects an option displayed only for a different item", async () => {
+    arrange(THREE); // C is displayed for q1 but omitted for q2
+    const err = await autosave([{ itemId: "q2", response: "C" }]).catch((e: unknown) => e);
+    expect((err as PlatformError).code).toBe("assessmentSessions.invalidResponses");
+  });
+
+  it("rejects an unknown canonical option", async () => {
+    arrange(THREE);
+    const err = await autosave([{ itemId: "q1", response: "Z" }]).catch((e: unknown) => e);
+    expect((err as PlatformError).code).toBe("assessmentSessions.invalidResponses");
+  });
+
+  it("accepts every option of a reordered four-choice presentation", async () => {
+    arrange(FOUR);
+    for (const response of ["A", "B", "C", "D"]) {
+      mockSessionGet.mockResolvedValueOnce(
+        liveSessionSnapshot({
+          deliveryOutcome: "differentiated",
+          variantKey: "reading-adapted",
+          presentationRevisionId: `pr${"a".repeat(64)}`,
+          assessmentPresentationRevisionId: apIdOf(FOUR),
+        }),
+      );
+      await expect(autosave([{ itemId: "q1", response }])).resolves.toMatchObject({ persisted: true });
+    }
+  });
+
+  it.each([
+    ["the record is missing", () => mockPresentationGet.mockResolvedValue({ exists: false, data: () => undefined })],
+    ["the stored content was altered", () => mockPresentationGet.mockResolvedValue({ exists: true, data: () => ({ ...THREE, directions: "altered" }) })],
+    ["the record maps to another revision", () => {
+      const other = presentation({ q1: ["C", "A", "D"], q2: ["A", "B", "D"] }, { assessmentRevisionId: `${REVISION_ID}x` });
+      mockSessionGet.mockReset();
+      arrange(other);
+    }],
+  ])("fails closed when %s", async (_label, mutate) => {
+    arrange(THREE);
+    mutate();
+    const err = await autosave([{ itemId: "q1", response: "C" }]).catch((e: unknown) => e);
+    expect((err as PlatformError).code).toBe("assessmentSessions.presentationUnavailable");
+    expect(mockSessionUpdate).not.toHaveBeenCalled();
+  });
+
+  it.each(["displayedOptions", "displayedOptionIds", "assessmentPresentationRevisionId"])(
+    "refuses a client-supplied %s instead of trusting it",
+    async (key) => {
+      arrange(THREE);
+      const err = await autosave([{ itemId: "q1", response: "B" }], { [key]: ["B"] }).catch((e: unknown) => e);
+      expect((err as PlatformError).code).toBe("assessmentSessions.invalidRequest");
+      expect(mockSessionUpdate).not.toHaveBeenCalled();
+    },
+  );
+
+  it("a legacy session without a presentation id reads no presentation record", async () => {
+    mockSessionGet.mockResolvedValueOnce(liveSessionSnapshot());
+    await expect(autosave([{ itemId: "q1", response: "B" }])).resolves.toMatchObject({ persisted: true });
+    expect(mockPresentationDocRef).not.toHaveBeenCalled();
   });
 });

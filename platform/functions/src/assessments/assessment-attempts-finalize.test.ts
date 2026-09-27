@@ -53,6 +53,7 @@ const mockAnswerKeyDocRef = jest.fn((id: string) => ({
   id,
 }));
 const mockAttemptDocRef = jest.fn((id: string) => ({ __kind: "attempt", id }));
+const mockPresentationDocRef = jest.fn((id: string) => ({ __kind: "assessmentPresentation", id }));
 const mockAttemptCreationDocRef = jest.fn((id: string) => ({
   __kind: "attemptCreation",
   id,
@@ -108,6 +109,7 @@ jest.mock("../shared", () => {
     assessmentSessionDocRef: mockSessionDocRef,
     assessmentRevisionDocRef: mockRevisionDocRef,
     assessmentAnswerKeyDocRef: mockAnswerKeyDocRef,
+    assessmentPresentationDocRef: mockPresentationDocRef,
     attemptDocRef: mockAttemptDocRef,
     attemptCreationDocRef: mockAttemptCreationDocRef,
     attemptsCollectionRef: mockAttemptsCollectionRef,
@@ -117,6 +119,7 @@ jest.mock("../shared", () => {
 });
 
 import { PlatformError } from "../shared/errors/platform-error";
+import { computeAssessmentPresentationRevisionId } from "../shared/presentation/assessment-presentation-identity";
 import {
   __assessmentAttemptsFinalizeHandler,
   __parseAssignmentIdFromSessionId,
@@ -228,6 +231,7 @@ type Fixture = {
   enrollment?: unknown;
   recipient?: unknown;
   priorAttemptCount?: number;
+  presentation?: unknown;
 };
 
 const fixture: Fixture = {};
@@ -254,6 +258,7 @@ function seedDefaultFixture(overrides: Partial<Fixture> = {}) {
   fixture.revision = DEFAULT_REVISION;
   fixture.answerKey = DEFAULT_ANSWER_KEY;
   fixture.existingAttempt = undefined;
+  fixture.presentation = undefined;
   fixture.assignment = {
     classId: CLASS_ID,
     teacherId: TEACHER_UID,
@@ -322,6 +327,12 @@ function installTransactionRunner() {
           return makeSnap({
             exists: fixture.revision !== undefined,
             data: () => fixture.revision,
+          });
+        }
+        if (refOrQuery.__kind === "assessmentPresentation") {
+          return makeSnap({
+            exists: fixture.presentation !== undefined,
+            data: () => fixture.presentation,
           });
         }
         if (refOrQuery.__kind === "answerKey") {
@@ -396,6 +407,7 @@ describe("assessmentAttemptsFinalize", () => {
     mockSessionDocRef.mockClear();
     mockRevisionDocRef.mockClear();
     mockAnswerKeyDocRef.mockClear();
+    mockPresentationDocRef.mockClear();
     mockAttemptDocRef.mockClear();
     mockAttemptCreationDocRef.mockClear();
     mockAttemptsCollectionRef.mockClear();
@@ -1540,6 +1552,153 @@ describe("assessmentAttemptsFinalize", () => {
     expect(write.deliveryOutcome).toBe("differentiated");
     // Same assessment revision as attempt 1 - differentiation never touches it.
     expect(write.assessmentRevisionId).toBe(REVISION_ID);
+  });
+
+  describe("F5.3 Slice 5 assessment-presentation provenance and displayed options", () => {
+    const FOUR_OPTION_REVISION = {
+      ...DEFAULT_REVISION,
+      items: ["q1", "q2"].map((itemId) => ({
+        itemId,
+        itemType: "singleChoice",
+        stem: "?",
+        points: 1,
+        options: ["A", "B", "C", "D"].map((optionId) => ({ optionId, text: optionId })),
+      })),
+    };
+    // Answer key (DEFAULT_ANSWER_KEY): q1 -> A, q2 -> C.
+    function presentation(displayed: Record<string, string[]>) {
+      return {
+        schemaVersion: 1,
+        kind: "lyfelabz.assessmentPresentation",
+        lessonSlug: ACTIVITY_ID,
+        assessmentRevisionId: REVISION_ID,
+        traits: { language: "adapted", choiceCount: displayed.q1.length },
+        directions: null,
+        items: Object.entries(displayed).map(([itemId, ids]) => ({
+          itemId,
+          stem: `${itemId}?`,
+          displayedOptions: ids.map((optionId) => ({ optionId, text: optionId })),
+          omittedOptions: ["A", "B", "C", "D"].filter((id) => !ids.includes(id)).map((optionId) => ({ optionId, rationale: "r" })),
+          feedback: null,
+        })),
+        showYourThinking: null,
+      };
+    }
+    const THREE = presentation({ q1: ["C", "A", "D"], q2: ["A", "B", "C"] }); // q1 omits B, q2 omits D
+    const FOUR = presentation({ q1: ["D", "A", "C", "B"], q2: ["C", "D", "B", "A"] });
+
+    function seedBound(record: Record<string, unknown>, responses: unknown[], sessionExtra: Record<string, unknown> = {}) {
+      seedDefaultFixture({
+        revision: FOUR_OPTION_REVISION,
+        presentation: record,
+        session: {
+          ...(fixture.session as object),
+          responses,
+          deliveryOutcome: "differentiated",
+          variantKey: "reading-adapted",
+          presentationRevisionId: `pr${"a".repeat(64)}`,
+          assessmentPresentationRevisionId: computeAssessmentPresentationRevisionId(record),
+          accommodationConfigRevision: 2,
+          ...sessionExtra,
+        },
+      });
+    }
+
+    it("accepts displayed three-choice options, scores on the canonical key, and copies the frozen provenance", async () => {
+      seedBound(THREE, [{ itemId: "q1", response: "A" }, { itemId: "q2", response: "B" }]);
+      const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(result.score).toBe(1);
+      expect(result.maxScore).toBe(2);
+      const write = txSets[0].data as Record<string, unknown>;
+      expect(write).toMatchObject({
+        deliveryOutcome: "differentiated",
+        variantKey: "reading-adapted",
+        assessmentRevisionId: REVISION_ID,
+        assessmentPresentationRevisionId: computeAssessmentPresentationRevisionId(THREE),
+        accommodationConfigRevision: 2,
+        maxScore: 2,
+      });
+    });
+
+    it("refuses the omitted canonical fourth option: no attempt, no audit, no passback", async () => {
+      seedBound(THREE, [{ itemId: "q1", response: "B" }]);
+      const err = await __assessmentAttemptsFinalizeHandler(makeRequest()).catch((e: unknown) => e);
+      expect((err as PlatformError).code).toBe("assessmentAttempts.invalidResponse");
+      expect(txSets).toHaveLength(0);
+      expect(txDeletes).toHaveLength(0);
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      expect(mockSynchronizeGradePassback).not.toHaveBeenCalled();
+    });
+
+    it("refuses an option displayed only for another item", async () => {
+      seedBound(THREE, [{ itemId: "q2", response: "D" }]); // D displayed for q1, omitted for q2
+      const err = await __assessmentAttemptsFinalizeHandler(makeRequest()).catch((e: unknown) => e);
+      expect((err as PlatformError).code).toBe("assessmentAttempts.invalidResponse");
+    });
+
+    it("accepts every option of a four-choice presentation", async () => {
+      seedBound(FOUR, [{ itemId: "q1", response: "B" }, { itemId: "q2", response: "C" }]);
+      const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(result.score).toBe(1);
+    });
+
+    it.each([
+      ["missing", () => { fixture.presentation = undefined; }],
+      ["altered", () => { fixture.presentation = { ...THREE, directions: "altered" }; }],
+    ])("fails closed when the frozen presentation record is %s", async (_label, mutate) => {
+      seedBound(THREE, [{ itemId: "q1", response: "A" }]);
+      mutate();
+      const err = await __assessmentAttemptsFinalizeHandler(makeRequest()).catch((e: unknown) => e);
+      expect((err as PlatformError).code).toBe("assessmentAttempts.presentationUnavailable");
+      expect(txSets).toHaveLength(0);
+    });
+
+    it("uses only the session's frozen id; it never re-resolves index, accommodation, or flag state", async () => {
+      seedBound(THREE, [{ itemId: "q1", response: "A" }]);
+      await __assessmentAttemptsFinalizeHandler(makeRequest());
+      expect(mockPresentationDocRef).toHaveBeenCalledWith(computeAssessmentPresentationRevisionId(THREE));
+      // The finalize module is wired with no index, accommodation, or flag
+      // reference at all (see the ../shared mock); reaching one would throw.
+    });
+
+    it("a differentiated session without a presentation id keeps F5.2 behavior (canonical options, no presentation read)", async () => {
+      seedDefaultFixture({
+        revision: FOUR_OPTION_REVISION,
+        session: {
+          ...(fixture.session as object),
+          responses: [{ itemId: "q1", response: "B" }],
+          deliveryOutcome: "differentiated",
+          variantKey: "reading-adapted",
+          presentationRevisionId: `pr${"a".repeat(64)}`,
+        },
+      });
+      await __assessmentAttemptsFinalizeHandler(makeRequest());
+      const write = txSets[0].data as Record<string, unknown>;
+      expect(write).not.toHaveProperty("assessmentPresentationRevisionId");
+      expect(write).not.toHaveProperty("accommodationConfigRevision");
+      expect(mockPresentationDocRef).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["provenance on a canonical session", { deliveryOutcome: "canonical", variantKey: undefined, presentationRevisionId: undefined }],
+      ["a malformed presentation id", { assessmentPresentationRevisionId: "ap123" }],
+      ["a malformed configRevision", { accommodationConfigRevision: 0 }],
+    ])("refuses a session carrying %s", async (_label, extra) => {
+      seedBound(THREE, [{ itemId: "q1", response: "A" }], extra);
+      const err = await __assessmentAttemptsFinalizeHandler(makeRequest()).catch((e: unknown) => e);
+      expect((err as PlatformError).code).toBe("assessmentAttempts.malformedSession");
+      expect(txSets).toHaveLength(0);
+    });
+
+    it.each(["assessmentPresentationRevisionId", "accommodationConfigRevision", "displayedOptions"])(
+      "refuses a client-supplied %s on the finalize request",
+      async (key) => {
+        const err = await __assessmentAttemptsFinalizeHandler(
+          makeRequest({ data: { sessionId: SESSION_ID, idempotencyKey: "idem-1", [key]: "x" } }),
+        ).catch((e: unknown) => e);
+        expect((err as PlatformError).code).toBe("assessmentAttempts.invalidRequest");
+      },
+    );
   });
 
   describe("Sprint 30 Show Your Thinking writtenResponse", () => {

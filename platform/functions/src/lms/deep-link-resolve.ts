@@ -399,6 +399,10 @@ async function lmsDeepLinkResolveHandler(
       studentId: actor.uid,
       assignmentId,
       lessonSlug: assignment.lessonSlug,
+      // F5.3 Slice 5: the assignment's frozen revision (server-derived).
+      ...(typeof assignment.assessmentRevisionId === "string"
+        ? { assessmentRevisionId: assignment.assessmentRevisionId }
+        : {}),
     });
     if (resolution.kind === "differentiated") {
       presentation = resolution.presentation;

@@ -70,6 +70,8 @@ export type RawLaunchGrant = {
   readonly outcomeAtIssuance?: unknown;
   readonly variantKey?: unknown;
   readonly presentationRevisionId?: unknown;
+  readonly assessmentPresentationRevisionId?: unknown;
+  readonly accommodationConfigRevision?: unknown;
   readonly expiresAt?: unknown;
 };
 
@@ -90,7 +92,9 @@ export type BeginDeliveryTelemetryEvent =
         | "malformedRecord"
         | "malformedPair"
         | "invalidOutcome"
-        | "malformedExpiry";
+        | "malformedExpiry"
+        | "malformedProvenance"
+        | "assessmentPresentation";
     }
   | {
       readonly type: "grantExpired";
@@ -156,6 +160,16 @@ export type BeginDeliveryPorts = {
   readonly telemetry: (event: BeginDeliveryTelemetryEvent) => void;
   // Injectable clock (epoch ms) so expiry is deterministic in tests.
   readonly nowMs: () => number;
+  // F5.3 Slice 5: verify the immutable assessment presentation a
+  // differentiated grant names: it must exist, its content must hash to its
+  // id, and it must belong to this lesson and map onto exactly the
+  // assignment's frozen assessment revision. Resolves null when verified, or a
+  // non-sensitive reason; a thrown read fails closed
+  // (BEGIN_VALIDATION_UNAVAILABLE).
+  readonly verifyAssessmentPresentation: (
+    assessmentPresentationRevisionId: string,
+    expected: { readonly lessonSlug: string; readonly assessmentRevisionId: string },
+  ) => Promise<string | null>;
 };
 
 export type ResolveBeginDeliveryInput = {
@@ -164,10 +178,15 @@ export type ResolveBeginDeliveryInput = {
   // The assignment-FROZEN lessonSlug (server-derived), used both to bind-check
   // a supplied grant and to key the no-ref coverage check.
   readonly lessonSlug: string;
+  // F5.3 Slice 5: the assignment-FROZEN assessment revision (server-derived),
+  // which a grant-named assessment presentation must map onto exactly.
+  readonly assessmentRevisionId: string;
   // The opaque launch reference transported by the client, or `undefined` for a
   // canonical launch. The client supplies only this id; it can name no content.
   readonly launchRef?: string;
 };
+
+const ASSESSMENT_PRESENTATION_ID_RE = /^ap[0-9a-f]{64}$/;
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
@@ -191,11 +210,11 @@ function readExpiryMs(expiresAt: RawLaunchGrant["expiresAt"]): number | undefine
 // §8.2 step 2 - validate a supplied launch grant and return the exact delivery
 // freeze it recorded, or throw a stable refusal. Never re-resolves the current
 // index; the grant is immutable issuance evidence.
-function resolveWithGrant(
+async function resolveWithGrant(
   ports: BeginDeliveryPorts,
   input: ResolveBeginDeliveryInput,
   grant: RawLaunchGrant | undefined,
-): SessionDeliveryFreeze {
+): Promise<SessionDeliveryFreeze> {
   const { studentId, assignmentId, lessonSlug } = input;
 
   // No such grant. Byte-identical refusal shape (no existence disclosure); the
@@ -246,6 +265,31 @@ function resolveWithGrant(
       ports.telemetry({ type: "grantInvalid", studentId, assignmentId, lessonSlug, reason: "malformedPair" });
       throw invalidLaunchRef();
     }
+    // F5.3 Slice 5: optional differentiated-only provenance, well-formed or
+    // refused. The grant is the ONLY source; nothing comes from the client.
+    const apId = grant.assessmentPresentationRevisionId;
+    const configRevision = grant.accommodationConfigRevision;
+    if (
+      (apId !== undefined && (typeof apId !== "string" || !ASSESSMENT_PRESENTATION_ID_RE.test(apId))) ||
+      (configRevision !== undefined &&
+        (typeof configRevision !== "number" || !Number.isSafeInteger(configRevision) || configRevision < 1))
+    ) {
+      ports.telemetry({ type: "grantInvalid", studentId, assignmentId, lessonSlug, reason: "malformedProvenance" });
+      throw invalidLaunchRef();
+    }
+    if (typeof apId === "string") {
+      // The named presentation must be honorable for THIS session: present,
+      // content-addressed, same lesson, same frozen assessment revision. Never
+      // a silent downgrade to the canonical assessment (F5.3 section 14.1).
+      const verdict = await ports.verifyAssessmentPresentation(apId, {
+        lessonSlug,
+        assessmentRevisionId: input.assessmentRevisionId,
+      });
+      if (verdict !== null) {
+        ports.telemetry({ type: "grantInvalid", studentId, assignmentId, lessonSlug, reason: "assessmentPresentation" });
+        throw invalidLaunchRef();
+      }
+    }
     ports.telemetry({
       type: "differentiatedBound",
       studentId,
@@ -258,13 +302,17 @@ function resolveWithGrant(
       deliveryOutcome: "differentiated",
       variantKey: grant.variantKey,
       presentationRevisionId: grant.presentationRevisionId,
+      ...(typeof apId === "string" ? { assessmentPresentationRevisionId: apId } : {}),
+      ...(typeof configRevision === "number" ? { accommodationConfigRevision: configRevision } : {}),
     };
   }
 
   if (grant.outcomeAtIssuance === "canonicalFallback") {
     if (
       grant.variantKey !== undefined ||
-      grant.presentationRevisionId !== undefined
+      grant.presentationRevisionId !== undefined ||
+      grant.assessmentPresentationRevisionId !== undefined ||
+      grant.accommodationConfigRevision !== undefined
     ) {
       ports.telemetry({ type: "grantInvalid", studentId, assignmentId, lessonSlug, reason: "malformedPair" });
       throw invalidLaunchRef();
@@ -366,7 +414,7 @@ export async function resolveBeginDelivery(
         throw invalidLaunchRef();
       }
       const grant = await ports.readGrant(input.launchRef);
-      return resolveWithGrant(ports, input, grant);
+      return await resolveWithGrant(ports, input, grant);
     }
     return await resolveWithoutGrant(ports, input);
   } catch (err) {

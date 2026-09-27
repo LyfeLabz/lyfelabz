@@ -4,6 +4,7 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 import {
   platformCallable,
   PlatformError,
+  assessmentPresentationDocRef,
   assessmentRevisionDocRef,
   assessmentSessionAutosaveDocRef,
   assessmentSessionDocRef,
@@ -15,9 +16,14 @@ import {
 } from "../shared";
 import { WRITTEN_RESPONSE_MAX_LENGTH } from "../shared/types/assessment-session";
 import {
+  checkAssessmentPresentationDoc,
+  displayedOptionIdsByItem,
+} from "../shared/presentation/assessment-presentation-identity";
+import {
   allowedOptionIdsByItem,
   describeInvalidResponse,
   findInvalidResponse,
+  narrowToDisplayedOptions,
 } from "./response-validation";
 
 // Client-supplied request payload for assessmentSessionsAutosave per
@@ -249,6 +255,17 @@ function validateRequest(data: unknown): {
     );
   }
   const payload = data as Record<string, unknown>;
+  // F5.3 Slice 5: the displayed-option set and presentation identity come
+  // only from the session's frozen assessment presentation; a client that
+  // tries to supply them is refused, never trusted.
+  for (const key of ["assessmentPresentationRevisionId", "displayedOptions", "displayedOptionIds"]) {
+    if (key in payload) {
+      throw new PlatformError(
+        "assessmentSessions.invalidRequest",
+        `Server-owned field "${key}" is not permitted on the request.`,
+      );
+    }
+  }
   if (!isNonEmptyString(payload.sessionId)) {
     throw new PlatformError(
       "assessmentSessions.invalidSessionId",
@@ -344,7 +361,28 @@ async function assertResponsesAdmissible(
       "The session's assessment revision is not published.",
     );
   }
-  const invalid = findInvalidResponse(responses, allowedOptionIdsByItem(revision));
+  let allowed = allowedOptionIdsByItem(revision);
+  // F5.3 Slice 5: a session that froze an assessment presentation admits only
+  // the canonical options that presentation DISPLAYED. The displayed set comes
+  // from the immutable record named by the session's frozen id, never from the
+  // request; an unverifiable record fails closed.
+  const apId = session.assessmentPresentationRevisionId;
+  if (apId !== undefined) {
+    const snapshot = typeof apId === "string" ? await assessmentPresentationDocRef(apId).get() : undefined;
+    const check = checkAssessmentPresentationDoc(
+      String(apId),
+      snapshot && snapshot.exists ? snapshot.data() : undefined,
+      { assessmentRevisionId: revisionId },
+    );
+    if (!check.ok) {
+      throw new PlatformError(
+        "assessmentSessions.presentationUnavailable",
+        "The session's assessment presentation could not be verified.",
+      );
+    }
+    allowed = narrowToDisplayedOptions(allowed, displayedOptionIdsByItem(check.record));
+  }
+  const invalid = findInvalidResponse(responses, allowed);
   if (invalid !== null) {
     throw new PlatformError(
       "assessmentSessions.invalidResponses",

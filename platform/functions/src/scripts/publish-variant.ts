@@ -550,16 +550,27 @@ import { bindAdminProjectReal } from "./admin-project-binding";
 
 import {
   publishRetainedRevision,
+  reconcileAssessmentBinding,
   retireVariant,
+  type EnsureAssessmentPresentationPort,
   type LoadRetainedRevisionPort,
   type FetchHostedPort,
   type HashBytesPort,
+  type ReadDeployedAssessmentRevisionPort,
 } from "../variants/variant-publication";
 import {
+  assessmentDocRef,
+  assessmentPresentationDocRef,
   presentationVariantIndexActivateDocRef,
   presentationVariantIndexDocRef,
   presentationVariantIndexRetireDocRef,
 } from "../shared/firestore/typed-ref";
+import { runFirestoreTransaction } from "../shared/firestore/transaction";
+import { assessmentIdForLessonSlug } from "../shared/assessment-identifiers";
+import {
+  canonicalJson,
+  type AssessmentPresentationRecord,
+} from "../shared/types/assessment-presentation";
 
 function repoRootFromCompiled(): string {
   // lib/scripts/publish-variant.js -> lib -> functions -> platform -> repo.
@@ -569,7 +580,7 @@ function repoRootFromCompiled(): string {
 // Reuse the ONE canonical append-only manifest reader/verifier (Slice 2's
 // variantManifest.cjs) so there is no second retention implementation. The
 // manifest itself must pass verifyRetention() before any entry is trusted.
-function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
+export function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
   // createRequire (not a bare `require`) lets this Cloud Functions module load
   // the ONE canonical append-only manifest reader/verifier (Slice 2's
   // variantManifest.cjs), which lives in a sibling package outside the
@@ -613,10 +624,6 @@ function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
         error: `no retained revision ${presentationRevisionId} for ${lessonSlug}__${variantKey} in the manifest`,
       });
     }
-    const bindingRefusal = refuseUnpropagatedAssessmentBinding(match);
-    if (bindingRefusal !== null) {
-      return Promise.resolve({ ok: false as const, error: bindingRefusal });
-    }
     const absFile = path.join(repoRoot, match.path);
     if (!fs.existsSync(absFile)) {
       return Promise.resolve({ ok: false as const, error: `retained artifact missing from tree: ${match.path}` });
@@ -629,6 +636,14 @@ function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
         error: `retained artifact ${match.path} bytes hash to ${actualSha}, manifest records ${match.sha256}`,
       });
     }
+    // F5.3 Slice 5: reconcile the manifest entry, the certified retained
+    // assessment presentation (the ONE Slice 3 check), and the binding block
+    // embedded in the exact artifact bytes. An unbound entry must carry no
+    // block; a bound entry must be certified and embed exactly its binding.
+    const reconciled = reconcileRetainedBinding(repoRoot, req, match, onDisk);
+    if (!reconciled.ok) {
+      return Promise.resolve({ ok: false as const, error: reconciled.error });
+    }
     return Promise.resolve({
       ok: true as const,
       revision: {
@@ -637,35 +652,88 @@ function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevisionPort {
         presentationRevisionId: match.presentationRevisionId,
         path: match.path,
         sha256: match.sha256,
+        ...(reconciled.binding !== undefined ? { assessmentBinding: reconciled.binding } : {}),
       },
     });
   };
 }
 
-// F5.3 Slice 3 fail-closed guard. A manifest entry bound to an assessment
-// presentation (assessmentPresentationRevisionId) cannot be published until a
-// later F5.3 slice writes the assessment-presentation record and propagates
-// the binding through the index, grant, session, and attempt. Publishing it
-// now would repoint the index to the instructional artifact while silently
-// dropping the certified assessment presentation. Pre-F5.3 entries (no
-// binding) are unaffected.
-export function refuseUnpropagatedAssessmentBinding(entry: {
-  readonly assessmentRevisionId?: string;
-  readonly assessmentPresentationRevisionId?: string;
-}): string | null {
-  if (entry.assessmentPresentationRevisionId === undefined && entry.assessmentRevisionId === undefined) {
-    return null;
+const ASSESSMENT_BINDING_ELEMENT = 'id="lyfelabz-assessment-presentation"';
+
+function reconcileRetainedBinding(
+  repoRoot: string,
+  req: NodeRequire,
+  entry: {
+    readonly lessonSlug: string;
+    readonly assessmentRevisionId?: string;
+    readonly assessmentPresentationRevisionId?: string;
+  },
+  artifactBytes: Buffer,
+): ReturnType<typeof reconcileAssessmentBinding> {
+  const text = artifactBytes.toString("utf8");
+  const bound = entry.assessmentPresentationRevisionId !== undefined || entry.assessmentRevisionId !== undefined;
+  if (!bound) {
+    // Unbound (F5.2) revision: needs no build tooling beyond the manifest.
+    return reconcileAssessmentBinding({
+      entry,
+      artifactBindingBlock: text.includes(ASSESSMENT_BINDING_ELEMENT) ? {} : null,
+      certification: null,
+    });
   }
-  return (
-    "refusing to publish: this revision is bound to an assessment presentation " +
-    `(${String(entry.assessmentPresentationRevisionId)} for ${String(entry.assessmentRevisionId)}), ` +
-    "and assessment-presentation propagation is not implemented yet (F5.3 Slice 5)"
-  );
+  // Bound revision: reuse the build tooling's certification check and binding
+  // reader (both live in the app package; its dependencies must be
+  // installed, and a load failure fails closed).
+  let certification: { record: unknown; failures: string[] };
+  let block: unknown;
+  try {
+    const presentations = req(
+      path.join(repoRoot, "app", "scripts", "lessonBuilder", "assessmentPresentation.cjs"),
+    ) as {
+      checkCertifiedPresentation: (
+        apId: string,
+        opts: { repoRoot: string; lessonSlug: string; assessmentRevisionId?: string },
+      ) => { record: unknown; failures: string[] };
+    };
+    const render = req(
+      path.join(repoRoot, "app", "scripts", "lessonBuilder", "assessmentPresentationRender.cjs"),
+    ) as { readBindingBlock: (html: string) => unknown };
+    certification = presentations.checkCertifiedPresentation(String(entry.assessmentPresentationRevisionId), {
+      repoRoot,
+      lessonSlug: entry.lessonSlug,
+      assessmentRevisionId: entry.assessmentRevisionId,
+    });
+    block = render.readBindingBlock(text);
+  } catch (err) {
+    return { ok: false, error: `could not verify the assessment-presentation binding: ${(err as Error).message}` };
+  }
+  return reconcileAssessmentBinding({ entry, artifactBindingBlock: block, certification });
 }
 
 // Positive Admin SDK project binding, shared with deploy-assessment. See
 // ./admin-project-binding for the precedence argument.
 export { bindAdminProjectReal };
+
+// F5.3 Slice 5 publication ports (Admin SDK, bound to the validated project).
+const readDeployedAssessmentRevision: ReadDeployedAssessmentRevisionPort = async (lessonSlug) => {
+  const snap = await assessmentDocRef(assessmentIdForLessonSlug(lessonSlug)).get();
+  const current = snap.exists ? snap.data()?.currentRevisionId : undefined;
+  return typeof current === "string" ? current : null;
+};
+
+// Create-or-verify-equal inside a transaction: an existing document must be
+// byte-for-byte the same canonical content; it is never updated or deleted.
+const ensureAssessmentPresentation: EnsureAssessmentPresentationPort = (apId, record) =>
+  runFirestoreTransaction(async (tx) => {
+    const ref = assessmentPresentationDocRef(apId);
+    const snap = await tx.get(ref);
+    if (snap.exists) {
+      return canonicalJson(snap.data()) === canonicalJson(record)
+        ? { ok: true as const, created: false }
+        : { ok: false as const, error: `assessmentPresentations/${apId} already exists with different content` };
+    }
+    tx.create(ref, record as unknown as AssessmentPresentationRecord);
+    return { ok: true as const, created: true };
+  });
 
 const hashBytes: HashBytesPort = (bytes) =>
   crypto.createHash("sha256").update(bytes as crypto.BinaryLike).digest("hex");
@@ -743,7 +811,11 @@ if (require.main === module) {
         deployHosting,
         fetchHosted: makeFetchHosted(context.fetchOrigin),
         hashBytes,
+        readDeployedAssessmentRevision,
+        ensureAssessmentPresentation,
         writeIndexActivate: async (revision, publishedBy) => {
+          // Full `.set()`: a bound revision writes its binding; repointing to
+          // an unbound revision removes any previous binding.
           await presentationVariantIndexActivateDocRef(revision.lessonSlug, revision.variantKey).set({
             lessonSlug: revision.lessonSlug,
             variantKey: revision.variantKey,
@@ -753,6 +825,12 @@ if (require.main === module) {
             status: "active",
             updatedAt: FieldValue.serverTimestamp(),
             publishedBy,
+            ...(revision.assessmentBinding !== undefined
+              ? {
+                  assessmentRevisionId: revision.assessmentBinding.assessmentRevisionId,
+                  assessmentPresentationRevisionId: revision.assessmentBinding.assessmentPresentationRevisionId,
+                }
+              : {}),
           });
         },
         log: (m) => process.stdout.write(`${m}\n`),

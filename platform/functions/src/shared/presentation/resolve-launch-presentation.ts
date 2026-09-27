@@ -42,6 +42,15 @@ import type { ReadingLevel } from "../types/student-accommodation";
 //     defect-severity anomaly"). (row 5, resolve column)
 //   - Active + valid ACTIVE index + delivery enabled -> differentiated grant
 //     binding the index's current pair; presentation + launchRef. (row-G)
+//     F5.3 Slice 5: the grant also records the accommodation configRevision
+//     read here and, when the index binds an assessment presentation whose
+//     canonical assessment revision equals the assignment's frozen revision,
+//     that presentation's id. An index WITHOUT a binding keeps its F5.2
+//     meaning (differentiated instruction, canonical assessment). An index
+//     whose binding names a DIFFERENT revision than the assignment resolves
+//     to canonicalFallback (reason `coverageAssessmentMismatch`, telemetry):
+//     presentation and scoring revision must never disagree. A half or
+//     malformed binding is a malformed index (row 5).
 //   - Internal failure at any step -> canonical response, telemetry, NO grant.
 //     (row 8)
 
@@ -50,7 +59,14 @@ import type { ReadingLevel } from "../types/student-accommodation";
 // indistinguishable at resolution (§8.5 rows 1-2).
 export type ReadingResolution =
   | { readonly active: false }
-  | { readonly active: true; readonly level: ReadingLevel };
+  | {
+      readonly active: true;
+      readonly level: ReadingLevel;
+      // F5.3 Slice 5: the record's configRevision at read time (provenance
+      // only; recorded on differentiated grants). Optional so a reader that
+      // does not need it may omit it.
+      readonly configRevision?: number;
+    };
 
 // Evaluation of the current-presentation index for one (lessonSlug,
 // variantKey). Only `"active"` (an internally-consistent, non-retired index
@@ -65,6 +81,11 @@ export type VariantIndexEvaluation =
       readonly variantKey: string;
       readonly presentationRevisionId: string;
       readonly path: string;
+      // F5.3 Slice 5: present iff the index binds an assessment presentation.
+      readonly assessmentBinding?: {
+        readonly assessmentRevisionId: string;
+        readonly assessmentPresentationRevisionId: string;
+      };
     };
 
 // The server-selected differentiated pair + path returned to the calling
@@ -80,7 +101,8 @@ export type LaunchFallbackReason =
   | "operationalDisable"
   | "coverageAbsent"
   | "coverageRetired"
-  | "coverageMalformed";
+  | "coverageMalformed"
+  | "coverageAssessmentMismatch";
 
 // The Op C result. Only `differentiated` carries a `presentation`; only
 // `differentiated` and `canonicalFallback` carry a `launchRef`.
@@ -112,6 +134,8 @@ export type MintGrantInput =
       readonly lessonSlug: string;
       readonly variantKey: string;
       readonly presentationRevisionId: string;
+      readonly assessmentPresentationRevisionId?: string;
+      readonly accommodationConfigRevision?: number;
     };
 
 // Non-sensitive telemetry events (§ telemetry, §11). Carries only operational
@@ -148,6 +172,13 @@ export type LaunchPresentationTelemetryEvent =
       readonly variantKey: string;
     }
   | {
+      readonly type: "coverageAssessmentMismatch";
+      readonly studentId: string;
+      readonly assignmentId: string;
+      readonly lessonSlug: string;
+      readonly variantKey: string;
+    }
+  | {
       readonly type: "internalFailure";
       readonly studentId: string;
       readonly assignmentId: string;
@@ -161,6 +192,7 @@ export type LaunchPresentationTelemetryEvent =
       readonly lessonSlug: string;
       readonly variantKey: string;
       readonly presentationRevisionId: string;
+      readonly assessmentPresentationRevisionId?: string;
     };
 
 export type LaunchPresentationResolverPorts = {
@@ -186,6 +218,10 @@ export type ResolveLaunchPresentationInput = {
   readonly studentId: string;
   readonly assignmentId: string;
   readonly lessonSlug: string;
+  // F5.3 Slice 5: the assignment's FROZEN assessment revision (server-derived
+  // from the assignment record, never client input). An index binding is
+  // honored only when it names exactly this revision.
+  readonly assessmentRevisionId?: string;
 };
 
 export type LaunchPresentationResolver = {
@@ -279,11 +315,31 @@ export function createLaunchPresentationResolver(
 
       const index = await cachedReadVariantIndex(lessonSlug, variantKey);
 
+      if (index.kind === "active" && index.assessmentBinding !== undefined &&
+          index.assessmentBinding.assessmentRevisionId !== input.assessmentRevisionId) {
+        // F5.3 Slice 5: the bound assessment presentation maps onto a
+        // different canonical revision than the assignment froze (or the
+        // caller could not supply one). Never deliver a presentation whose
+        // choices would be scored against another revision: truthful
+        // canonicalFallback, with telemetry.
+        const launchRef = await ports.mintGrant({
+          outcomeAtIssuance: "canonicalFallback",
+          studentId,
+          assignmentId,
+          lessonSlug,
+        });
+        ports.telemetry({ type: "coverageAssessmentMismatch", studentId, assignmentId, lessonSlug, variantKey });
+        return { kind: "canonicalFallback", launchRef, reason: "coverageAssessmentMismatch" };
+      }
+
       if (index.kind === "active") {
         // Row G: valid active coverage + delivery enabled -> differentiated.
         // The grant binds the index's CURRENT pair; once minted it is
         // immutable evidence of exactly this revision (the A->B invariant is a
-        // property of the immutable grant, never re-resolved).
+        // property of the immutable grant, never re-resolved). F5.3: it also
+        // records the bound assessment presentation (if any) and the
+        // accommodation configRevision read above.
+        const apId = index.assessmentBinding?.assessmentPresentationRevisionId;
         const launchRef = await ports.mintGrant({
           outcomeAtIssuance: "differentiated",
           studentId,
@@ -291,6 +347,8 @@ export function createLaunchPresentationResolver(
           lessonSlug,
           variantKey: index.variantKey,
           presentationRevisionId: index.presentationRevisionId,
+          ...(apId !== undefined ? { assessmentPresentationRevisionId: apId } : {}),
+          ...(reading.configRevision !== undefined ? { accommodationConfigRevision: reading.configRevision } : {}),
         });
         ports.telemetry({
           type: "differentiatedResolved",
@@ -299,6 +357,7 @@ export function createLaunchPresentationResolver(
           lessonSlug,
           variantKey: index.variantKey,
           presentationRevisionId: index.presentationRevisionId,
+          ...(apId !== undefined ? { assessmentPresentationRevisionId: apId } : {}),
         });
         return {
           kind: "differentiated",

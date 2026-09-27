@@ -6,6 +6,7 @@ import {
   allowedOptionIdsByItem,
   describeInvalidResponse,
   findInvalidResponse,
+  narrowToDisplayedOptions,
 } from "./response-validation";
 
 // F5.3 Slice 2 - the shared revision-bound response validator used by both
@@ -93,5 +94,33 @@ describe("canonical four-choice compatibility with every committed payload", () 
       }
       expect(findInvalidResponse([{ itemId: item.itemId, response: "E" }], allowed)).not.toBeNull();
     }
+  });
+});
+
+describe("narrowToDisplayedOptions (F5.3 Slice 5)", () => {
+  const allowed = allowedOptionIdsByItem(REVISION);
+
+  it("admits only options that are canonical AND displayed", () => {
+    const narrowed = narrowToDisplayedOptions(allowed, new Map([
+      ["q1", new Set(["C", "A", "D"])],
+      ["q2", new Set(["A", "B"])],
+    ]));
+    expect(findInvalidResponse([{ itemId: "q1", response: "C" }], narrowed)).toBeNull();
+    expect(findInvalidResponse([{ itemId: "q1", response: "B" }], narrowed)).toMatchObject({ reason: "unknownOption" });
+  });
+
+  it("never widens past the canonical revision (a displayed id the revision lacks stays refused)", () => {
+    const narrowed = narrowToDisplayedOptions(allowed, new Map([["q2", new Set(["A", "B", "Z"])]]));
+    expect(findInvalidResponse([{ itemId: "q2", response: "Z" }], narrowed)).toMatchObject({ reason: "unknownOption" });
+  });
+
+  it("an item the presentation does not display admits nothing; unsupported types stay refused", () => {
+    const narrowed = narrowToDisplayedOptions(allowed, new Map([["q1", new Set(["A", "B"])]]));
+    expect(findInvalidResponse([{ itemId: "q2", response: "A" }], narrowed)).toMatchObject({ reason: "unknownOption" });
+    const withUnsupported = narrowToDisplayedOptions(
+      allowedOptionIdsByItem({ items: [{ itemId: "q1", itemType: "freeText", options: [{ optionId: "A" }] }] }),
+      new Map([["q1", new Set(["A"])]]),
+    );
+    expect(findInvalidResponse([{ itemId: "q1", response: "A" }], withUnsupported)).toMatchObject({ reason: "unsupportedItemType" });
   });
 });

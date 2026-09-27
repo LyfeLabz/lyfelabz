@@ -287,3 +287,94 @@ describe("resolve-launch-presentation - server-authoritative identity", () => {
     expect(h.readVariantIndex).toHaveBeenCalledWith(LESSON_SLUG, VARIANT_KEY);
   });
 });
+
+describe("F5.3 Slice 5 - assessment-presentation binding at resolution", () => {
+  const AP_ID = `ap${"c".repeat(64)}`;
+  const REV_R1 = `assessment_${LESSON_SLUG}__r1`;
+  const boundIndex: VariantIndexEvaluation = {
+    ...activeIndex,
+    assessmentBinding: { assessmentRevisionId: REV_R1, assessmentPresentationRevisionId: AP_ID },
+  };
+  const readingRev3: ReadingResolution = { active: true, level: "adapted", configRevision: 3 };
+
+  it("a bound index matching the assignment's frozen revision mints a grant carrying the presentation and configRevision", async () => {
+    const h = makePorts({
+      readReading: jest.fn(() => Promise.resolve(readingRev3)),
+      readVariantIndex: jest.fn(() => Promise.resolve(boundIndex)),
+    });
+    const result = await createLaunchPresentationResolver(h.ports).resolve({ ...INPUT, assessmentRevisionId: REV_R1 });
+    expect(result.kind).toBe("differentiated");
+    expect(h.mintGrant).toHaveBeenCalledWith({
+      outcomeAtIssuance: "differentiated",
+      studentId: STUDENT_ID,
+      assignmentId: ASSIGNMENT_ID,
+      lessonSlug: LESSON_SLUG,
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_A,
+      assessmentPresentationRevisionId: AP_ID,
+      accommodationConfigRevision: 3,
+    });
+    // The client-facing presentation never carries the assessment-presentation id.
+    expect((result as { presentation: Record<string, unknown> }).presentation).toEqual({
+      variantKey: VARIANT_KEY,
+      presentationRevisionId: REVISION_A,
+      path: PATH_A,
+    });
+  });
+
+  it("an unbound index keeps the F5.2 meaning: differentiated instruction, canonical assessment (no presentation id)", async () => {
+    const h = makePorts({ readReading: jest.fn(() => Promise.resolve(readingRev3)) });
+    const result = await createLaunchPresentationResolver(h.ports).resolve({ ...INPUT, assessmentRevisionId: REV_R1 });
+    expect(result.kind).toBe("differentiated");
+    const minted = h.mintGrant.mock.calls[0]![0] as Record<string, unknown>;
+    expect(minted).toMatchObject({ outcomeAtIssuance: "differentiated", accommodationConfigRevision: 3 });
+    expect(minted).not.toHaveProperty("assessmentPresentationRevisionId");
+  });
+
+  it.each([
+    ["names a different revision", `assessment_${LESSON_SLUG}__r2`],
+    ["could not supply the assignment's revision", undefined],
+  ])("a bound index whose revision disagrees with the assignment (caller %s) falls back to canonical", async (_label, revision) => {
+    const h = makePorts({ readVariantIndex: jest.fn(() => Promise.resolve(boundIndex)) });
+    const input = revision === undefined ? INPUT : { ...INPUT, assessmentRevisionId: revision };
+    const result = await createLaunchPresentationResolver(h.ports).resolve(input);
+    expect(result).toMatchObject({ kind: "canonicalFallback", reason: "coverageAssessmentMismatch" });
+    expect(h.mintGrant).toHaveBeenCalledWith({
+      outcomeAtIssuance: "canonicalFallback",
+      studentId: STUDENT_ID,
+      assignmentId: ASSIGNMENT_ID,
+      lessonSlug: LESSON_SLUG,
+    });
+    expect(h.telemetry).toHaveBeenCalledWith(expect.objectContaining({ type: "coverageAssessmentMismatch" }));
+  });
+
+  it("a malformed binding is a malformed index: canonicalFallback with defect telemetry, never differentiated", async () => {
+    const h = makePorts({ readVariantIndex: jest.fn(() => Promise.resolve({ kind: "malformed" } as VariantIndexEvaluation)) });
+    const result = await createLaunchPresentationResolver(h.ports).resolve({ ...INPUT, assessmentRevisionId: REV_R1 });
+    expect(result).toMatchObject({ kind: "canonicalFallback", reason: "coverageMalformed" });
+  });
+
+  it("delivery disabled still mints a fallback grant with no provenance even when the index is bound", async () => {
+    const h = makePorts({
+      isDeliveryEnabled: jest.fn(() => Promise.resolve(false)),
+      readVariantIndex: jest.fn(() => Promise.resolve(boundIndex)),
+    });
+    const result = await createLaunchPresentationResolver(h.ports).resolve({ ...INPUT, assessmentRevisionId: REV_R1 });
+    expect(result).toMatchObject({ kind: "canonicalFallback", reason: "operationalDisable" });
+    expect(h.mintGrant.mock.calls[0]![0]).toEqual({
+      outcomeAtIssuance: "canonicalFallback",
+      studentId: STUDENT_ID,
+      assignmentId: ASSIGNMENT_ID,
+      lessonSlug: LESSON_SLUG,
+    });
+  });
+
+  it("resolution inputs carry no client-selectable presentation field", async () => {
+    // The input type has no assessmentPresentationRevisionId; an extra property
+    // smuggled onto the input object is ignored by the resolver.
+    const h = makePorts({ readVariantIndex: jest.fn(() => Promise.resolve(activeIndex)) });
+    const smuggled = { ...INPUT, assessmentRevisionId: REV_R1, assessmentPresentationRevisionId: AP_ID } as typeof INPUT;
+    await createLaunchPresentationResolver(h.ports).resolve(smuggled);
+    expect(h.mintGrant.mock.calls[0]![0]).not.toHaveProperty("assessmentPresentationRevisionId");
+  });
+});

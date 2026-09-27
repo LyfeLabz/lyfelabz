@@ -118,6 +118,12 @@ const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
   "expiresAt",
   "lessonSlug",
   "grantId",
+  // F5.3 Slice 5: assessment-presentation provenance is grant-derived only.
+  "assessmentPresentationRevisionId",
+  "accommodationConfigRevision",
+  "assessmentRevisionId",
+  "displayedOptions",
+  "displayedOptionIds",
 ];
 
 function validateRequest(data: unknown): {
@@ -519,6 +525,7 @@ async function assessmentSessionsBeginHandler(
       studentId: actor.uid,
       assignmentId: input.assignmentId,
       lessonSlug: assignment.lessonSlug,
+      assessmentRevisionId,
       launchRef: input.launchRef,
     },
   );

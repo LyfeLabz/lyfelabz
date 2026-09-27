@@ -55,3 +55,33 @@ export type AssessmentPresentationRecord = {
     readonly requiredTerms: ReadonlyArray<string>;
   } | null;
 };
+
+// Deterministic serialization behind the content-addressed id (object keys
+// sorted by UTF-16 code unit, arrays in order, no insignificant whitespace,
+// NFC strings only, safe integers only). Identical to the build tooling's
+// `canonicalJson` (app/scripts/lessonBuilder/assessmentPresentation.cjs); a
+// parity test pins the two. Dependency-free so pure modules can use it; the
+// sha256 lives in shared/presentation/assessment-presentation-identity.ts.
+export function canonicalJson(value: unknown): string {
+  if (value === null) return "null";
+  if (typeof value === "string") {
+    if (value !== value.normalize("NFC")) {
+      throw new Error("[assessment-presentation] strings must be Unicode NFC-normalized");
+    }
+    return JSON.stringify(value);
+  }
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") {
+    if (!Number.isSafeInteger(value)) {
+      throw new Error("[assessment-presentation] only safe integers are allowed in a record");
+    }
+    return String(value);
+  }
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (typeof value === "object" && Object.getPrototypeOf(value) === Object.prototype) {
+    const record = value as Record<string, unknown>;
+    const keys = Object.keys(record).sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(record[k])}`).join(",")}}`;
+  }
+  throw new Error(`[assessment-presentation] unsupported value type in record: ${typeof value}`);
+}

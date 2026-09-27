@@ -61,6 +61,13 @@ export type LaunchGrantRecord =
       readonly outcomeAtIssuance: "differentiated";
       readonly variantKey: string;
       readonly presentationRevisionId: string;
+      // F5.3 Slice 5 (optional, differentiated only): the immutable assessment
+      // presentation bound to the delivered revision (from the index), and the
+      // accommodation configRevision read at issuance. Absent on grants minted
+      // before F5.3 and, for the presentation id, on unbound revisions
+      // (differentiated instruction with the canonical assessment).
+      readonly assessmentPresentationRevisionId?: string;
+      readonly accommodationConfigRevision?: number;
       readonly issuedAt: Timestamp;
       readonly expiresAt: Timestamp;
     }
@@ -89,6 +96,8 @@ export type LaunchGrantCreationWrite =
       readonly outcomeAtIssuance: "differentiated";
       readonly variantKey: string;
       readonly presentationRevisionId: string;
+      readonly assessmentPresentationRevisionId?: string;
+      readonly accommodationConfigRevision?: number;
       readonly issuedAt: Timestamp;
       readonly expiresAt: Timestamp;
     }
@@ -110,7 +119,25 @@ export function assertLaunchGrantPairInvariant(grant: {
   readonly outcomeAtIssuance: LaunchGrantOutcomeAtIssuance;
   readonly variantKey?: string;
   readonly presentationRevisionId?: string;
+  readonly assessmentPresentationRevisionId?: string;
+  readonly accommodationConfigRevision?: number;
 }): void {
+  // F5.3 Slice 5: the assessment-presentation id and the accommodation
+  // configRevision are differentiated-only provenance, and well-formed.
+  if (grant.outcomeAtIssuance !== "differentiated") {
+    if (grant.assessmentPresentationRevisionId !== undefined || grant.accommodationConfigRevision !== undefined) {
+      throw new Error("[launch-grant] a canonicalFallback grant must NOT carry assessment-presentation or accommodation provenance");
+    }
+  }
+  if (grant.assessmentPresentationRevisionId !== undefined && !/^ap[0-9a-f]{64}$/.test(grant.assessmentPresentationRevisionId)) {
+    throw new Error("[launch-grant] assessmentPresentationRevisionId must be ap<sha256>");
+  }
+  if (
+    grant.accommodationConfigRevision !== undefined &&
+    (!Number.isSafeInteger(grant.accommodationConfigRevision) || grant.accommodationConfigRevision < 1)
+  ) {
+    throw new Error("[launch-grant] accommodationConfigRevision must be a positive integer");
+  }
   const hasVariantKey =
     typeof grant.variantKey === "string" && grant.variantKey.length > 0;
   const hasRevisionId =

@@ -77,6 +77,10 @@ export type AssessmentAttemptRecord = {
   readonly deliveryOutcome?: DeliveryOutcome;
   readonly variantKey?: string;
   readonly presentationRevisionId?: string;
+  // F5.3 Slice 5: copied verbatim from the session freeze when present
+  // (differentiated only). Absent on every earlier attempt; never backfilled.
+  readonly assessmentPresentationRevisionId?: string;
+  readonly accommodationConfigRevision?: number;
 };
 
 // Write shape for the sole authorized attempt writer
@@ -111,4 +115,6 @@ export type AssessmentAttemptCreationWrite = {
   readonly deliveryOutcome?: DeliveryOutcome;
   readonly variantKey?: string;
   readonly presentationRevisionId?: string;
+  readonly assessmentPresentationRevisionId?: string;
+  readonly accommodationConfigRevision?: number;
 };

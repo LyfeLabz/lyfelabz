@@ -37,6 +37,8 @@ const mockAssignmentRecipientCreationDocRef = jest.fn(() => ({
 const mockStudentAccommodationDocRef = jest.fn(() => ({ get: mockAccommodationGet }));
 const mockLaunchGrantDocRef = jest.fn(() => ({ get: mockGrantGet }));
 const mockPresentationVariantIndexDocRef = jest.fn(() => ({ get: mockIndexGet }));
+const mockAssessmentPresentationGet = jest.fn();
+const mockAssessmentPresentationDocRef = jest.fn(() => ({ get: mockAssessmentPresentationGet }));
 
 const mockWriteAuditEvent = jest.fn();
 const mockRequireDistrictContext = jest.fn();
@@ -85,6 +87,7 @@ jest.mock("../shared", () => {
     studentAccommodationDocRef: mockStudentAccommodationDocRef,
     launchGrantDocRef: mockLaunchGrantDocRef,
     presentationVariantIndexDocRef: mockPresentationVariantIndexDocRef,
+    assessmentPresentationDocRef: mockAssessmentPresentationDocRef,
     isDifferentiatedDeliveryEnabled: mockIsDeliveryEnabled,
     isValidGrantId: (value: unknown) =>
       typeof value === "string" && /^[0-9a-f]{32}$/.test(value),
@@ -108,6 +111,7 @@ jest.mock("../shared", () => {
 });
 
 import { PlatformError } from "../shared/errors/platform-error";
+import { computeAssessmentPresentationRevisionId } from "../shared/presentation/assessment-presentation-identity";
 import {
   __assessmentSessionsBeginHandler,
   sessionIdFor,
@@ -334,6 +338,8 @@ describe("assessmentSessionsBegin", () => {
     mockAccommodationGet.mockReset();
     mockAccommodationGet.mockResolvedValue(absentAccommodationSnapshot());
     mockGrantGet.mockReset();
+    mockAssessmentPresentationGet.mockReset();
+    mockAssessmentPresentationDocRef.mockClear();
     mockIndexGet.mockReset();
     mockIndexGet.mockResolvedValue({ exists: false, data: () => undefined });
     mockIsDeliveryEnabled.mockReset();
@@ -1410,5 +1416,86 @@ describe("assessmentSessionsBegin", () => {
       await __assessmentSessionsBeginHandler(makeRequest());
       expect(mockSessionCreate).toHaveBeenCalledTimes(1);
     });
+  });
+
+  // -------- F5.3 Slice 5 - assessment-presentation provenance at begin --------
+  describe("F5.3 Slice 5 assessment-presentation provenance", () => {
+    function presentationRecord(overrides: Record<string, unknown> = {}) {
+      return {
+        schemaVersion: 1,
+        kind: "lyfelabz.assessmentPresentation",
+        lessonSlug: LESSON_SLUG,
+        assessmentRevisionId: REVISION_ID,
+        traits: { language: "adapted", choiceCount: 3 },
+        directions: null,
+        items: [
+          { itemId: "q1", stem: "q1?", displayedOptions: [{ optionId: "C", text: "c" }, { optionId: "A", text: "a" }, { optionId: "D", text: "d" }], omittedOptions: [{ optionId: "B", rationale: "r" }], feedback: null },
+        ],
+        showYourThinking: null,
+        ...overrides,
+      };
+    }
+
+    function arrangeBegin(grantExtra: Record<string, unknown>, record: unknown) {
+      mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+      mockGrantGet.mockResolvedValueOnce(differentiatedGrantSnapshot(grantExtra));
+      mockAssessmentPresentationGet.mockResolvedValueOnce(
+        record === undefined ? { exists: false, data: () => undefined } : { exists: true, data: () => record },
+      );
+      mockSessionCreate.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-ap", record: {} });
+    }
+
+    it("freezes the grant's assessment-presentation id and configRevision onto the new session", async () => {
+      const record = presentationRecord();
+      const apId = computeAssessmentPresentationRevisionId(record);
+      arrangeBegin({ assessmentPresentationRevisionId: apId, accommodationConfigRevision: 1 }, record);
+      await __assessmentSessionsBeginHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+      );
+      expect(mockAssessmentPresentationDocRef).toHaveBeenCalledWith(apId);
+      expect(mockSessionCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          deliveryOutcome: "differentiated",
+          presentationRevisionId: REVISION_A,
+          assessmentRevisionId: REVISION_ID,
+          assessmentPresentationRevisionId: apId,
+          accommodationConfigRevision: 1,
+        }),
+      );
+    });
+
+    it.each([
+      ["the presentation record is missing", () => undefined],
+      ["the presentation maps to another assessment revision", () => presentationRecord({ assessmentRevisionId: `${REVISION_ID}0` })],
+      ["the presentation belongs to another lesson", () => presentationRecord({ lessonSlug: "other-lesson" })],
+    ])("refuses begin with no session when %s", async (_label, make) => {
+      const record = make();
+      const apId = record === undefined
+        ? computeAssessmentPresentationRevisionId(presentationRecord())
+        : computeAssessmentPresentationRevisionId(record);
+      arrangeBegin({ assessmentPresentationRevisionId: apId }, record);
+      const err = await __assessmentSessionsBeginHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
+      ).catch((e: unknown) => e);
+      expect((err as PlatformError).code).toBe("LAUNCH_REF_INVALID");
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it.each(["assessmentPresentationRevisionId", "accommodationConfigRevision", "assessmentRevisionId", "displayedOptions"])(
+      "refuses a client-supplied %s on the begin request",
+      async (key) => {
+        const err = await __assessmentSessionsBeginHandler(
+          makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF, [key]: "x" } }),
+        ).catch((e: unknown) => e);
+        expect(err).toBeInstanceOf(PlatformError);
+        expect((err as PlatformError).code).toBe("assessmentSessions.invalidRequest");
+        expect(mockSessionCreate).not.toHaveBeenCalled();
+        expect(mockGrantGet).not.toHaveBeenCalled();
+      },
+    );
   });
 });

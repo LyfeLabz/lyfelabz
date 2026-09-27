@@ -5,6 +5,7 @@ import {
   platformCallable,
   PlatformError,
   assessmentAnswerKeyDocRef,
+  assessmentPresentationDocRef,
   assessmentRevisionDocRef,
   assessmentSessionDocRef,
   assignmentDocRef,
@@ -35,7 +36,12 @@ import {
   allowedOptionIdsByItem,
   describeInvalidResponse,
   findInvalidResponse,
+  narrowToDisplayedOptions,
 } from "./response-validation";
+import {
+  checkAssessmentPresentationDoc,
+  displayedOptionIdsByItem,
+} from "../shared/presentation/assessment-presentation-identity";
 import { googleClassroomProductionSecrets } from "../lms/providers/google-classroom/config-firebase";
 
 // Grace period per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7.1 and
@@ -102,6 +108,12 @@ const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
   "maxScore",
   "percentage",
   "responses",
+  // F5.3 Slice 5: presentation provenance and displayed options are frozen
+  // server-side on the session; a client can never supply them.
+  "assessmentPresentationRevisionId",
+  "accommodationConfigRevision",
+  "displayedOptions",
+  "displayedOptionIds",
   "writtenResponse",
   "attemptNumber",
   "attemptId",
@@ -260,12 +272,34 @@ type AttemptDeliveryFields = {
   readonly deliveryOutcome?: AssessmentSessionRecord["deliveryOutcome"];
   readonly variantKey?: string;
   readonly presentationRevisionId?: string;
+  readonly assessmentPresentationRevisionId?: string;
+  readonly accommodationConfigRevision?: number;
 };
 
 function sessionDeliveryForAttempt(
   session: AssessmentSessionRecord,
 ): AttemptDeliveryFields {
   const { deliveryOutcome, variantKey, presentationRevisionId } = session;
+  // F5.3 Slice 5: differentiated-only provenance, copied verbatim when present.
+  const apId = session.assessmentPresentationRevisionId;
+  const configRevision = session.accommodationConfigRevision;
+  const hasProvenance = apId !== undefined || configRevision !== undefined;
+  if (hasProvenance && deliveryOutcome !== "differentiated") {
+    throw new PlatformError(
+      "assessmentAttempts.malformedSession",
+      "Only a differentiated session may carry assessment-presentation or accommodation provenance.",
+    );
+  }
+  if (
+    (apId !== undefined && (typeof apId !== "string" || !/^ap[0-9a-f]{64}$/.test(apId))) ||
+    (configRevision !== undefined &&
+      (typeof configRevision !== "number" || !Number.isSafeInteger(configRevision) || configRevision < 1))
+  ) {
+    throw new PlatformError(
+      "assessmentAttempts.malformedSession",
+      "Session carries malformed assessment-presentation or accommodation provenance.",
+    );
+  }
   if (deliveryOutcome === undefined) {
     // Pre-Slice-6 session: no durable-outcome contract existed. Absent =>
     // absent; interpreted as canonical downstream, never backfilled.
@@ -289,7 +323,13 @@ function sessionDeliveryForAttempt(
         "Differentiated session is missing its frozen presentation pair.",
       );
     }
-    return { deliveryOutcome, variantKey, presentationRevisionId };
+    return {
+      deliveryOutcome,
+      variantKey,
+      presentationRevisionId,
+      ...(apId !== undefined ? { assessmentPresentationRevisionId: apId } : {}),
+      ...(configRevision !== undefined ? { accommodationConfigRevision: configRevision } : {}),
+    };
   }
   // canonical | canonicalFallback: no pair permitted (§3.3 invariant).
   if (variantKey !== undefined || presentationRevisionId !== undefined) {
@@ -879,10 +919,32 @@ async function assessmentAttemptsFinalizeHandler(
       // incorrect: nothing is written and no audit event is emitted. It runs
       // after `scoreAttempt` (pure, no side effects) so revision/answer-key
       // integrity failures keep precedence; the computed score is discarded.
-      const invalidResponse = findInvalidResponse(
-        session.responses ?? [],
-        allowedOptionIdsByItem(revision),
-      );
+      // F5.3 Slice 5: a session that froze an assessment presentation admits
+      // only the canonical options that presentation DISPLAYED, read from the
+      // immutable record inside this transaction (never re-resolved from the
+      // index, the accommodation, or the flag). Unverifiable fails closed.
+      // The frozen delivery provenance is validated first (malformed session
+      // shapes refuse as such), then reused verbatim for the attempt write.
+      const deliveryFields = sessionDeliveryForAttempt(session);
+      let admissible = allowedOptionIdsByItem(revision);
+      const sessionApId = session.assessmentPresentationRevisionId;
+      if (sessionApId !== undefined) {
+        const presentationSnap =
+          typeof sessionApId === "string" ? await tx.get(assessmentPresentationDocRef(sessionApId)) : undefined;
+        const presentation = checkAssessmentPresentationDoc(
+          String(sessionApId),
+          presentationSnap && presentationSnap.exists ? presentationSnap.data() : undefined,
+          { assessmentRevisionId: session.assessmentRevisionId },
+        );
+        if (!presentation.ok) {
+          throw new PlatformError(
+            "assessmentAttempts.presentationUnavailable",
+            "The session's assessment presentation could not be verified.",
+          );
+        }
+        admissible = narrowToDisplayedOptions(admissible, displayedOptionIdsByItem(presentation.record));
+      }
+      const invalidResponse = findInvalidResponse(session.responses ?? [], admissible);
       if (invalidResponse !== null) {
         throw new PlatformError(
           "assessmentAttempts.invalidResponse",
@@ -933,7 +995,7 @@ async function assessmentAttemptsFinalizeHandler(
         submittedAt: FieldValue.serverTimestamp(),
         ...writtenResponseFields,
         // §3.4/§8.4 - propagate the session's frozen delivery state verbatim.
-        ...sessionDeliveryForAttempt(session),
+        ...deliveryFields,
       };
 
       tx.set(attemptCreationDocRef(attemptId), attemptWrite);

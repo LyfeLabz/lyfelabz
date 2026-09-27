@@ -44,6 +44,12 @@ export type SessionDeliveryFreeze =
       readonly deliveryOutcome: "differentiated";
       readonly variantKey: string;
       readonly presentationRevisionId: string;
+      // F5.3 Slice 5 (optional): frozen from the validated grant. Present iff
+      // the grant bound an assessment presentation / recorded the
+      // accommodation configRevision; absent keeps the F5.2 meaning
+      // (differentiated instruction, canonical assessment presentation).
+      readonly assessmentPresentationRevisionId?: string;
+      readonly accommodationConfigRevision?: number;
     };
 
 // Per-item autosave response inline on the session document per
@@ -119,6 +125,11 @@ export type AssessmentSessionRecord = {
   readonly deliveryOutcome?: DeliveryOutcome;
   readonly variantKey?: string;
   readonly presentationRevisionId?: string;
+  // F5.3 Slice 5 additive, frozen at creation from the grant (differentiated
+  // only). Autosave and finalize validate responses against the presentation's
+  // displayed options when present; never rewritten.
+  readonly assessmentPresentationRevisionId?: string;
+  readonly accommodationConfigRevision?: number;
 };
 
 // Write shape for the assessment-session creation callable

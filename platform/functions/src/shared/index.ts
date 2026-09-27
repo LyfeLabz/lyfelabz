@@ -163,6 +163,7 @@ export {
 export {
   launchGrantCreationDocRef,
   launchGrantDocRef,
+  assessmentPresentationDocRef,
 } from "./firestore/typed-ref";
 export {
   presentationVariantIndexDocRef,

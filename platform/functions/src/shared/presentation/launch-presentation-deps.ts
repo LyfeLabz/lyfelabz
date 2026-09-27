@@ -44,7 +44,10 @@ async function readReading(studentId: string): Promise<ReadingResolution> {
   const data = snapshot.data();
   const reading = data?.readingAccessibility;
   if (reading && reading.status === "active") {
-    return { active: true, level: reading.level };
+    const configRevision = data?.configRevision;
+    return typeof configRevision === "number" && Number.isSafeInteger(configRevision) && configRevision >= 1
+      ? { active: true, level: reading.level, configRevision }
+      : { active: true, level: reading.level };
   }
   return { active: false };
 }
@@ -91,6 +94,8 @@ async function readVariantIndex(
       currentPresentationRevisionId: data.currentPresentationRevisionId,
       currentPath: data.currentPath,
       contentSha256: data.contentSha256,
+      assessmentRevisionId: data.assessmentRevisionId,
+      assessmentPresentationRevisionId: data.assessmentPresentationRevisionId,
     });
   } catch {
     return { kind: "malformed" };
@@ -100,6 +105,14 @@ async function readVariantIndex(
     variantKey: data.variantKey,
     presentationRevisionId: data.currentPresentationRevisionId,
     path: data.currentPath,
+    ...(data.assessmentPresentationRevisionId !== undefined && data.assessmentRevisionId !== undefined
+      ? {
+          assessmentBinding: {
+            assessmentRevisionId: data.assessmentRevisionId,
+            assessmentPresentationRevisionId: data.assessmentPresentationRevisionId,
+          },
+        }
+      : {}),
   };
 }
 
@@ -133,6 +146,12 @@ function makeMintGrant(nowMs: () => number) {
               outcomeAtIssuance: "differentiated" as const,
               variantKey: input.variantKey,
               presentationRevisionId: input.presentationRevisionId,
+              ...(input.assessmentPresentationRevisionId !== undefined
+                ? { assessmentPresentationRevisionId: input.assessmentPresentationRevisionId }
+                : {}),
+              ...(input.accommodationConfigRevision !== undefined
+                ? { accommodationConfigRevision: input.accommodationConfigRevision }
+                : {}),
             }
           : { ...base, outcomeAtIssuance: "canonicalFallback" as const };
       try {
@@ -183,6 +202,20 @@ function telemetry(event: LaunchPresentationTelemetryEvent): void {
           lessonSlug: event.lessonSlug,
           variantKey: event.variantKey,
           presentationRevisionId: event.presentationRevisionId,
+          ...(event.assessmentPresentationRevisionId !== undefined
+            ? { assessmentPresentationRevisionId: event.assessmentPresentationRevisionId }
+            : {}),
+        });
+        break;
+      case "coverageAssessmentMismatch":
+        // Defect-adjacent: a published binding disagrees with an assignment's
+        // frozen revision. Warn so it is visible.
+        log.warn("differentiation.launchFallback", {
+          reason: "coverageAssessmentMismatch",
+          studentId: event.studentId,
+          assignmentId: event.assignmentId,
+          lessonSlug: event.lessonSlug,
+          variantKey: event.variantKey,
         });
         break;
       default:
