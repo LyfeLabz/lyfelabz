@@ -30,6 +30,14 @@
  *     every committed payload the canonical quiz is faithful to;
  *   - built twice and required to be byte-identical (determinism).
  *
+ * F5.3 Slice 4: when the variant config names an
+ * `assessmentPresentationRevisionId`, every gate above still runs on the
+ * instruction-only build (so the authored source can never hand-edit the
+ * quiz); the certified assessment presentation is then rendered into the
+ * quiz, directions, and Show Your Thinking by assessmentPresentationRender.cjs
+ * (twice, byte-identical), the no-disclosure check re-runs on the final bytes,
+ * and the manifest entry records the binding.
+ *
  * Generation hands the exact final bytes to the existing content-addressed
  * generateVariantArtifact() (Slice 2): the revision id, retained path and
  * append-only manifest entry come from there, unchanged. Nothing here
@@ -53,6 +61,7 @@ const { generateVariantArtifact } = require("./variantBuild.cjs");
 const { relocateHtml } = require("./variantLinks.cjs");
 const invariance = require("./variantInvariance.cjs");
 const { sha256Hex } = require("./hash.cjs");
+const presentationRender = require("./assessmentPresentationRender.cjs");
 
 const ASSESSMENT_PAYLOAD_DIR = path.join("platform", "functions", "src", "scripts", "assessments");
 
@@ -139,7 +148,7 @@ function assertAssessmentIdentity(slug, canonicalV2, variantHtml, assessmentPayl
 
 // Pure build + gate. Inputs are bytes and an already-loaded config, so the
 // whole pipeline is testable against synthetic fixtures.
-function buildVariantArtifact({ cfg, variantKey, canonicalSourceBytes, variantSourceBytes, assessmentPayloads }) {
+function buildVariantArtifact({ cfg, variantKey, canonicalSourceBytes, variantSourceBytes, assessmentPayloads, repoRoot = paths.REPO_ROOT }) {
   configMod.validateConfigShape(cfg, cfg.slug);
   if (!cfg.variants || !cfg.variants[variantKey]) {
     fail(`lesson "${cfg.slug}" declares no authored "${variantKey}" variant`);
@@ -170,16 +179,38 @@ function buildVariantArtifact({ cfg, variantKey, canonicalSourceBytes, variantSo
   assertContractEqual(canonicalBody, variantBody);
   const assessmentRevisions = assertAssessmentIdentity(cfg.slug, canonicalV2, variantHtml, assessmentPayloads);
 
-  const presentationRevisionId = identity.computePresentationRevisionId(variantHtml);
+  let finalHtml = variantHtml;
+  let assessmentBinding = null;
+  const apId = variantConfig.assessmentPresentationRevisionId;
+  if (apId !== undefined) {
+    const render = () =>
+      presentationRender.renderCertifiedAssessmentPresentation(variantHtml, {
+        assessmentPresentationRevisionId: apId,
+        lessonSlug: cfg.slug,
+        repoRoot,
+      });
+    const a = render();
+    const b = render();
+    if (a.html !== b.html) fail("assessment-presentation rendering is not deterministic");
+    finalHtml = a.html;
+    assessmentBinding = {
+      assessmentRevisionId: a.binding.assessmentRevisionId,
+      assessmentPresentationRevisionId: a.binding.assessmentPresentationRevisionId,
+    };
+    invariance.assertNoDisclosure(canonicalRelocated, finalHtml, disclosureLiterals);
+  }
+
+  const presentationRevisionId = identity.computePresentationRevisionId(finalHtml);
   return {
     lessonSlug: cfg.slug,
     variantKey,
-    bytes: variantHtml,
-    sha256: sha256Hex(variantHtml),
+    bytes: finalHtml,
+    sha256: sha256Hex(finalHtml),
     presentationRevisionId,
     path: identity.variantRelativeOutputPath(cfg.slug, presentationRevisionId),
     relocatedReferences: first.rewritten,
     assessmentRevisions,
+    assessmentBinding,
     review,
   };
 }
@@ -216,6 +247,7 @@ function buildAuthoredVariant({ slug, variantKey, repoRoot = paths.REPO_ROOT, cf
     canonicalSourceBytes: readUnder(repoRoot, config.canonicalSource, "lesson-sources"),
     variantSourceBytes: readUnder(repoRoot, config.variants[variantKey].source, "lesson-sources"),
     assessmentPayloads: loadAssessmentPayloads(slug, repoRoot),
+    repoRoot,
   });
 }
 
@@ -230,6 +262,7 @@ function generateAuthoredVariant({ slug, variantKey, publishedAt, repoRoot = pat
     publishedAt,
     repoRoot,
     write,
+    assessmentBinding: built.assessmentBinding,
   });
   if (result.presentationRevisionId !== built.presentationRevisionId) {
     fail("generated revision id does not match the gated build");
@@ -253,8 +286,14 @@ function checkAuthoredVariants({ repoRoot = paths.REPO_ROOT, configs = null } = 
       const label = `${cfg.slug}/${variantKey}`;
       try {
         const built = buildAuthoredVariant({ slug: cfg.slug, variantKey, repoRoot, cfg });
+        const binding = built.assessmentBinding || {};
         const retained = entries.some(
-          (e) => e.lessonSlug === cfg.slug && e.variantKey === variantKey && e.presentationRevisionId === built.presentationRevisionId,
+          (e) =>
+            e.lessonSlug === cfg.slug &&
+            e.variantKey === variantKey &&
+            e.presentationRevisionId === built.presentationRevisionId &&
+            e.assessmentRevisionId === binding.assessmentRevisionId &&
+            e.assessmentPresentationRevisionId === binding.assessmentPresentationRevisionId,
         );
         if (!retained) {
           failures.push(

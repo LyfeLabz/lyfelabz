@@ -587,28 +587,47 @@ function verifyManifestBinding(entry, { repoRoot = paths.REPO_ROOT } = {}) {
   if (typeof entry.assessmentRevisionId !== "string" || !REVISION_ID_PATTERN.test(entry.assessmentRevisionId)) {
     return [`${where}: assessmentRevisionId must be assessment_<slug>__r<N>`];
   }
+  const checked = checkCertifiedPresentation(apId, {
+    repoRoot,
+    lessonSlug: entry.lessonSlug,
+    assessmentRevisionId: entry.assessmentRevisionId,
+  });
+  return checked.failures.map((f) => `${where}: ${f}`);
+}
+
+// The ONE "retained, valid, certified" check, shared by the manifest binding
+// and the build-time renderer (F5.3 Slice 4). Returns { record, failures }:
+// `record` is the retained record whenever it could be read (even if other
+// checks failed), `failures` is empty only when the record is retained under
+// its content-addressed name, byte-canonical, valid against its committed
+// canonical payload, belongs to the expected lesson and assessment revision,
+// and is certified by an approved review of this exact id.
+function checkCertifiedPresentation(apId, { repoRoot = paths.REPO_ROOT, lessonSlug, assessmentRevisionId } = {}) {
+  if (typeof apId !== "string" || !AP_ID_PATTERN.test(apId)) {
+    return { record: null, failures: ["assessmentPresentationRevisionId must be ap<sha256>"] };
+  }
   const file = `${apId}.json`;
   if (!fs.existsSync(path.join(retainedRecordDir(repoRoot), file))) {
-    return [`${where}: bound assessment presentation ${apId} is not retained`];
+    return { record: null, failures: [`bound assessment presentation ${apId} is not retained`] };
   }
   const retained = verifyRetainedRecord(file, { repoRoot });
-  const failures = retained.failures.map((f) => `${where}: ${f}`);
-  if (!retained.record) return failures;
-  if (retained.record.lessonSlug !== entry.lessonSlug) {
-    failures.push(`${where}: bound presentation belongs to lesson "${retained.record.lessonSlug}", not "${entry.lessonSlug}"`);
+  const failures = [...retained.failures];
+  if (!retained.record) return { record: null, failures };
+  if (lessonSlug !== undefined && retained.record.lessonSlug !== lessonSlug) {
+    failures.push(`bound presentation belongs to lesson "${retained.record.lessonSlug}", not "${lessonSlug}"`);
   }
-  if (retained.record.assessmentRevisionId !== entry.assessmentRevisionId) {
-    failures.push(`${where}: bound presentation maps to ${retained.record.assessmentRevisionId}, not ${entry.assessmentRevisionId}`);
+  if (assessmentRevisionId !== undefined && retained.record.assessmentRevisionId !== assessmentRevisionId) {
+    failures.push(`bound presentation maps to ${retained.record.assessmentRevisionId}, not ${assessmentRevisionId}`);
   }
   const review = loadReview(apId, { repoRoot });
   if (review === null) {
-    failures.push(`${where}: bound presentation ${apId} has no human certification review record`);
+    failures.push(`bound presentation ${apId} has no human certification review record`);
   } else {
     const r = validateReview(review, retained.record, apId);
-    for (const f of r.failures) failures.push(`${where}: review: ${f}`);
-    if (r.ok && !r.approved) failures.push(`${where}: bound presentation ${apId} is not approved (determination "${review.determination}")`);
+    for (const f of r.failures) failures.push(`review: ${f}`);
+    if (r.ok && !r.approved) failures.push(`bound presentation ${apId} is not approved (determination "${review.determination}")`);
   }
-  return failures;
+  return { record: retained.record, failures };
 }
 
 module.exports = {
@@ -633,4 +652,5 @@ module.exports = {
   validateReview,
   loadReview,
   verifyManifestBinding,
+  checkCertifiedPresentation,
 };

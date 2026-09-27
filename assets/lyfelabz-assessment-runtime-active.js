@@ -8094,6 +8094,87 @@
     }
     return out;
   }
+  var PRESENTATION_BINDING_ELEMENT_ID = "lyfelabz-assessment-presentation";
+  var PRESENTATION_UNAVAILABLE_MESSAGE = "This quiz could not be loaded correctly, so your answers were not submitted. Refresh the page and try again.";
+  var PresentationBindingError = class extends Error {
+    constructor(reason) {
+      super(`assessment presentation binding refused: ${reason}`);
+      this.name = "PresentationBindingError";
+    }
+  };
+  var BINDING_TOKEN_RE = /^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,126}[A-Za-z0-9])?$/;
+  function readPresentationBinding(doc) {
+    if (!doc || typeof doc.getElementById !== "function") return { kind: "none" };
+    const el = doc.getElementById(PRESENTATION_BINDING_ELEMENT_ID);
+    if (el === null) return { kind: "none" };
+    if (el.tagName !== "SCRIPT" || el.getAttribute("type") !== "application/json") {
+      return { kind: "malformed", reason: "binding element is not a JSON script block" };
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(el.textContent ?? "");
+    } catch {
+      return { kind: "malformed", reason: "binding block is not valid JSON" };
+    }
+    const root = parsed;
+    if (parsed === null || typeof parsed !== "object" || root.schemaVersion !== 1) {
+      return { kind: "malformed", reason: "binding block has an unsupported schemaVersion" };
+    }
+    if (!Array.isArray(root.items) || root.items.length === 0) {
+      return { kind: "malformed", reason: "binding block has no items" };
+    }
+    const items = [];
+    const seenItems = /* @__PURE__ */ new Set();
+    for (const raw of root.items) {
+      const item = raw;
+      if (raw === null || typeof raw !== "object" || Object.keys(raw).some((k) => k !== "itemId" && k !== "optionIds")) {
+        return { kind: "malformed", reason: "binding item has an unexpected shape" };
+      }
+      if (typeof item.itemId !== "string" || !BINDING_TOKEN_RE.test(item.itemId) || seenItems.has(item.itemId)) {
+        return { kind: "malformed", reason: "binding item has a missing, invalid, or duplicate itemId" };
+      }
+      seenItems.add(item.itemId);
+      if (!Array.isArray(item.optionIds) || item.optionIds.length < 2) {
+        return { kind: "malformed", reason: `item ${item.itemId} has no displayed option mapping` };
+      }
+      const optionIds = item.optionIds;
+      if (!optionIds.every((id) => typeof id === "string" && BINDING_TOKEN_RE.test(id)) || new Set(optionIds).size !== optionIds.length) {
+        return { kind: "malformed", reason: `item ${item.itemId} has a missing, invalid, or duplicate optionId` };
+      }
+      items.push({ itemId: item.itemId, optionIds });
+    }
+    return { kind: "bound", items };
+  }
+  function mapSelectionsForBinding(indexSelections, binding) {
+    if (binding.kind === "none") return mapIndexSelectionsToResponses(indexSelections);
+    if (binding.kind === "malformed") throw new PresentationBindingError(binding.reason);
+    if (!indexSelections || typeof indexSelections.length !== "number") {
+      throw new PresentationBindingError("selections are not an array");
+    }
+    if (indexSelections.length !== binding.items.length) {
+      throw new PresentationBindingError(
+        `lesson reports ${indexSelections.length} questions; the presentation has ${binding.items.length}`
+      );
+    }
+    const out = [];
+    for (let qi = 0; qi < indexSelections.length; qi++) {
+      const idx = indexSelections[qi];
+      if (idx === null || idx === void 0) continue;
+      const item = binding.items[qi];
+      if (typeof idx !== "number" || !Number.isInteger(idx) || idx < 0 || idx >= item.optionIds.length) {
+        throw new PresentationBindingError(`selection for item ${item.itemId} is not a displayed choice`);
+      }
+      out.push({ itemId: item.itemId, response: item.optionIds[idx] });
+    }
+    return out;
+  }
+  function documentOf(win) {
+    try {
+      return win.document;
+    } catch {
+      return void 0;
+    }
+  }
   var WRITTEN_RESPONSE_MAX_LENGTH = 1e4;
   function normalizeWrittenResponse(options) {
     if (options === null || typeof options !== "object") return void 0;
@@ -8146,14 +8227,21 @@
     }
   }
   function installLessonQuiz(win, runtime, hasAssignmentContext) {
+    const mapSelections = (indexSelections) => mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win)));
     const helper = {
       version: VERSION,
       optionLetters: OPTION_LETTERS,
       hasAssignmentContext: () => runtime !== null ? runtime.hasAssignmentContext : hasAssignmentContext,
-      mapIndexSelectionsToResponses,
+      mapIndexSelectionsToResponses: mapSelections,
       autosave: async (indexSelections) => {
         if (runtime === null || !runtime.hasAssignmentContext) return null;
-        const responses = mapIndexSelectionsToResponses(indexSelections);
+        let responses;
+        try {
+          responses = mapSelections(indexSelections);
+        } catch (err) {
+          recordLastError(win, "autosave", err);
+          return null;
+        }
         if (responses.length === 0) return null;
         try {
           return await runtime.autosave(responses);
@@ -8172,7 +8260,13 @@
           };
         }
         if (!runtime.hasAssignmentContext) return null;
-        const responses = mapIndexSelectionsToResponses(indexSelections);
+        let responses;
+        try {
+          responses = mapSelections(indexSelections);
+        } catch (err) {
+          recordLastError(win, "finalize", err);
+          return { ok: false, message: PRESENTATION_UNAVAILABLE_MESSAGE, recoverable: false };
+        }
         const writtenResponse = normalizeWrittenResponse(options);
         try {
           const result = await runtime.finalize(responses, writtenResponse);
@@ -8392,7 +8486,7 @@
       version: VERSION,
       optionLetters: OPTION_LETTERS,
       hasAssignmentContext: () => true,
-      mapIndexSelectionsToResponses,
+      mapIndexSelectionsToResponses: (indexSelections) => mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win))),
       autosave: async () => null,
       finalize: async () => ({
         ok: false,
@@ -8462,6 +8556,10 @@
   }
   var __internal = {
     installLessonQuiz,
+    readPresentationBinding,
+    mapSelectionsForBinding,
+    PRESENTATION_BINDING_ELEMENT_ID,
+    PRESENTATION_UNAVAILABLE_MESSAGE,
     normalizeWrittenResponse,
     createBackedCallables,
     WRITTEN_RESPONSE_MAX_LENGTH

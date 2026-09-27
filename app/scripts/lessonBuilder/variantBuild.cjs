@@ -37,6 +37,7 @@ function generateVariantArtifact({
   publishedAt,
   repoRoot = paths.REPO_ROOT,
   write = true,
+  assessmentBinding = null,
 }) {
   identity.assertValidLessonSlugForVariant(lessonSlug);
   if (typeof variantKey !== "string" || variantKey.length === 0) {
@@ -91,6 +92,12 @@ function generateVariantArtifact({
   }
 
   const entry = { lessonSlug, variantKey, presentationRevisionId, path: relPath, sha256, publishedAt };
+  // F5.3 Slice 4: an artifact rendered from a certified assessment
+  // presentation records its binding in the append-only manifest entry.
+  if (assessmentBinding !== null) {
+    entry.assessmentRevisionId = assessmentBinding.assessmentRevisionId;
+    entry.assessmentPresentationRevisionId = assessmentBinding.assessmentPresentationRevisionId;
+  }
   const { appended } = write ? manifestMod.appendEntry(entry, { repoRoot }) : { appended: false };
 
   return { ...entry, absPath, fileWritten, appended };

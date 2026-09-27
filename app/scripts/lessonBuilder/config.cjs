@@ -104,7 +104,12 @@ function validateVariantsShape(cfg, slug) {
     validateStringList(v.adaptableSections, `${at}.adaptableSections`, SECTION_ID_RE);
     validateStringList(v.adaptableSelectors, `${at}.adaptableSelectors`, SELECTOR_RE);
     validateStringList(v.lockedSelectors, `${at}.lockedSelectors`, SELECTOR_RE, { allowEmpty: true });
-    const known = new Set(["source", "adaptableSections", "adaptableSelectors", "lockedSelectors"]);
+    // F5.3 Slice 4: optional certified assessment presentation rendered into
+    // the variant's quiz and Show Your Thinking (assessmentPresentationRender.cjs).
+    if (v.assessmentPresentationRevisionId !== undefined && !/^ap[0-9a-f]{64}$/.test(String(v.assessmentPresentationRevisionId))) {
+      fail(`${at}.assessmentPresentationRevisionId must be ap<sha256>`);
+    }
+    const known = new Set(["source", "adaptableSections", "adaptableSelectors", "lockedSelectors", "assessmentPresentationRevisionId"]);
     for (const key of Object.keys(v)) if (!known.has(key)) fail(`${at} has unknown field "${key}"`);
   }
 }
