@@ -105,7 +105,7 @@ function baseConfig(overrides = {}) {
 
 function payloads(html = CANONICAL) {
   const quiz = fidelity.extractCanonicalQuiz(html, SLUG);
-  return [{ name: `${SLUG}.r1.json`, payload: fidelity.buildPayload(SLUG, quiz, "test") }];
+  return [{ name: `${SLUG}.r1.json`, payload: fidelity.buildPayload(SLUG, quiz, "test", 1) }];
 }
 
 function build(variantSource_, opts = {}) {

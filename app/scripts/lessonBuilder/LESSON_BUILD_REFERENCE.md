@@ -198,20 +198,43 @@ Current state:
 
 - Every assignable lesson has exactly one committed revision payload,
   `platform/functions/src/scripts/assessments/<slug>.r1.json`.
-- The lesson's `<prefix>QuizQuestions` literal is the authority. The
-  payload must be faithful to it (`assessmentFidelity.cjs`,
-  `assessment-fidelity.test.js`).
 - Canonical artifacts declare no assessment revision.
 - An assignment freezes its `assessmentRevisionId` at publication. The
   display is correct today only because one revision exists per lesson.
 - No lesson may receive a second deployed revision until Slice 9 is
   certified (PDR-031h).
 
-Planned (Slices 9A and 9B; not implemented):
+Implemented (Slice 9A, repository tooling only):
 
-- Each committed `<slug>.r<N>.json` becomes the authority for its own
-  revision. The lesson config declares which revision the unversioned page
-  renders, and the source literal must be faithful to that payload.
+- Each committed `<slug>.r<N>.json` is the authority for its own
+  revision. `assessmentRevisions.cjs` is the one place that discovers and
+  identity-checks them: every `.json` in the payload directory must be a
+  strict `<slug>.r<N>.json` (N of 1 or more, no leading zero), and its
+  `activityId` and `revisionOrdinal` must match the name. Revision ids and
+  declared ordinals are unique, and ordinals are contiguous from r1.
+  Discovery is sorted by slug and numeric ordinal. Any disagreement fails
+  closed.
+- The optional lesson-config field `canonicalAssessmentRevisionId`
+  (`assessment_<slug>__r<N>`) names the committed revision the unversioned
+  canonical source represents. When it is absent, the lesson resolves to r1
+  only while r1 is its single committed revision (every lesson today). With
+  more than one committed revision, the field is required and must name a
+  committed revision. Deployed Firestore state is never consulted.
+- The source literal must be faithful to that configured revision
+  (`checkCanonicalRevisionFidelity`, `assessment-fidelity.test.js`). Other
+  committed revisions are schema- and identity-checked on their own and
+  never compared with the mutable source.
+- `assessments:verify` audits every committed revision under its own file
+  name. Recorded r1 debt never covers r2, and the allowlist stays
+  shrink-only and r1-only.
+- `authorAssessments.cjs` never rewrites a committed revision (`--force` is
+  refused). A later revision needs `--lesson=<slug> --revision=<next N>
+  --published-by=<label>`, must change the quiz content, and must meet the
+  answer-position standard. The operator then declares it in the lesson
+  config.
+
+Planned (Slice 9B; not implemented):
+
 - Every canonical v1 and v2 artifact embeds an inert, machine-readable
   revision declaration. It is inserted in the canonical build path only,
   never in the variant path, so retained variant bytes (`pr90f…`,

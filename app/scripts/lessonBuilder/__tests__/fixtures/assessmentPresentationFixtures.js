@@ -83,7 +83,7 @@ ${v2}</script>
 }
 
 function canonicalPayload(html = lessonHtml()) {
-  return fidelity.buildPayload(SLUG, fidelity.extractCanonicalQuiz(html, SLUG), "synthetic-fixture");
+  return fidelity.buildPayload(SLUG, fidelity.extractCanonicalQuiz(html, SLUG), "synthetic-fixture", 1);
 }
 
 function recordBase(traits) {

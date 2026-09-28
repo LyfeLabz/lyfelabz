@@ -200,7 +200,7 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
 - **Persistent student differentiation:** Slices 1-6 implemented and staging-certified; Slice 7 teacher activation UI implemented but held dark (`G19_GATE_OPEN = false` in `app/src/index.ts`); the production G19 gate is not yet satisfied and differentiated delivery is disabled in production. See the differentiation routing row in §13.
 - **F5.3 assessment accessibility:**
   - Slices 1-8 are implemented. The Earth's Layers staging certification C7 is COMPLETE and PASSING: `pr90f…` + `ap1fed…` on `assessment_earths-layers__r1`, three displayed choices.
-  - Slice 9 (revision-bound canonical assessment rendering and revision-aware coverage) is specified. Slice 9.0 (documentation, PDR-031) is complete; 9A-9E are not started.
+  - Slice 9 (revision-bound canonical assessment rendering and revision-aware coverage) is specified. Slice 9.0 (documentation, PDR-031) is complete. 9A (payload authority and multi-revision repository tooling; no artifact, runtime, or server change) is implemented; 9B-9E are not started.
   - Earth's Layers r2 waits on Slice 9.
   - Production is not activated.
 - **Production certification:** the platform is certified through the Sprint 28.5 cross-platform certification. LMS publication has been exercised against **real** Google Classroom coursework (there is no runtime test-double seam, so browser certification of the LMS path hits real Google — plan LMS cert work accordingly).

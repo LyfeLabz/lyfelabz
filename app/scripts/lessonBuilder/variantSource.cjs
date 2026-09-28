@@ -55,6 +55,7 @@ const transformer = require("./transformer.cjs");
 const configMod = require("./config.cjs");
 const equivalence = require("./equivalence.cjs");
 const fidelity = require("./assessmentFidelity.cjs");
+const assessmentRevisions = require("./assessmentRevisions.cjs");
 const identity = require("./variantIdentity.cjs");
 const manifestMod = require("./variantManifest.cjs");
 const { generateVariantArtifact, UNCERTIFIED_PREVIEW_MARKER } = require("./variantBuild.cjs");
@@ -226,15 +227,15 @@ function readUnder(repoRoot, relPath, rootDir) {
   return fs.readFileSync(abs, "utf8");
 }
 
+// Every committed revision of the lesson, in ordinal order, discovered and
+// identity-checked by the shared assessmentRevisions.cjs (F5.3 Slice 9A). An
+// inconsistent payload directory fails closed rather than being filtered.
 function loadAssessmentPayloads(slug, repoRoot = paths.REPO_ROOT) {
   const dir = path.join(repoRoot, ASSESSMENT_PAYLOAD_DIR);
   if (!fs.existsSync(dir)) return [];
-  const re = new RegExp(`^${slug.replace(/-/g, "\\-")}\\.r[0-9]+\\.json$`);
-  return fs
-    .readdirSync(dir)
-    .filter((f) => re.test(f))
-    .sort()
-    .map((f) => ({ name: f, payload: JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")) }));
+  return assessmentRevisions
+    .revisionsForLesson(slug, { repoRoot })
+    .map((e) => ({ name: e.file, payload: e.payload }));
 }
 
 function buildAuthoredVariant({ slug, variantKey, repoRoot = paths.REPO_ROOT, cfg = null }) {

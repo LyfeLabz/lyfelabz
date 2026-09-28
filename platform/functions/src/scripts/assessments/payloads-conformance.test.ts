@@ -3,7 +3,7 @@ import * as path from "path";
 
 // Sprint 29G.1 - Committed assessment payload conformance coverage.
 //
-// Every committed `*.r1.json` assessment payload in this directory is a
+// Every committed `<slug>.r<N>.json` assessment payload in this directory is a
 // canonical `AssessmentDeploymentInput` (the exact shape the administrative
 // deploy CLI, `scripts/deploy-assessment.ts`, feeds to the certified
 // `deployAssessmentRevision` pipeline). Before Sprint 29G.1 only the bounded
@@ -101,10 +101,17 @@ import { deployAssessmentRevision } from "../../assessments/assessment-deploymen
 // The committed payloads live beside this test file. Discovery is by
 // filesystem so an added or removed payload is caught without editing an
 // enumeration by hand. Sorted for deterministic ordering.
-const PAYLOAD_SUFFIX = ".r1.json";
+//
+// F5.3 Slice 9A: a lesson may commit several revisions, each the authority
+// for its own content. Every `.json` file here is a claimed payload and must
+// be named `<slug>.r<N>.json` (canonical positive ordinal); the payload's
+// activityId and revisionOrdinal, and the identity the production pipeline
+// derives from them, must agree with that name.
+const PAYLOAD_FILE_PATTERN = /^([a-z0-9]+(?:-[a-z0-9]+)*)\.r([1-9][0-9]*)\.json$/;
 const PAYLOAD_DIR = __dirname;
 
-// Guardrail count. The committed set is 49 as of Sprint 29G.1. Asserting the
+// Guardrail count. The committed set is 49 as of Sprint 29G.1 (49 lessons,
+// r1 each; unchanged by F5.3 Slice 9A). Asserting the
 // exact count is deliberate: a payload silently lost (a bad merge, an errant
 // delete) or a payload silently added (an uncertified file) should force a
 // conscious update to this constant and a human review, rather than passing
@@ -114,15 +121,25 @@ const EXPECTED_PAYLOAD_COUNT = 49;
 function discoverPayloadFiles(): string[] {
   return fs
     .readdirSync(PAYLOAD_DIR)
-    .filter((name) => name.endsWith(PAYLOAD_SUFFIX))
+    .filter((name) => name.endsWith(".json"))
     .sort();
 }
 
 const payloadFiles = discoverPayloadFiles();
 
-describe("committed r1 assessment payload conformance", () => {
-  it(`discovers exactly ${String(EXPECTED_PAYLOAD_COUNT)} committed r1 payloads`, () => {
+describe("committed assessment payload conformance", () => {
+  it(`discovers exactly ${String(EXPECTED_PAYLOAD_COUNT)} committed payloads`, () => {
     expect(payloadFiles.length).toBe(EXPECTED_PAYLOAD_COUNT);
+  });
+
+  it("names every committed payload <slug>.r<N>.json with unique revisions", () => {
+    const malformed = payloadFiles.filter((name) => !PAYLOAD_FILE_PATTERN.test(name));
+    expect(malformed).toEqual([]);
+    const revisionIds = payloadFiles.map((name) => {
+      const match = PAYLOAD_FILE_PATTERN.exec(name);
+      return match === null ? name : `assessment_${match[1]}__r${match[2]}`;
+    });
+    expect(new Set(revisionIds).size).toBe(revisionIds.length);
   });
 
   // Every committed payload must parse as JSON and pass the real production
@@ -145,11 +162,16 @@ describe("committed r1 assessment payload conformance", () => {
         );
       }
 
+      const match = PAYLOAD_FILE_PATTERN.exec(fileName);
+      if (match === null) {
+        throw new Error(`${fileName}: not a <slug>.r<N>.json payload name`);
+      }
+      const [, slug, ordinalText] = match;
+      const ordinal = Number(ordinalText);
+
+      let result: Awaited<ReturnType<typeof deployAssessmentRevision>>;
       try {
-        const result = await deployAssessmentRevision(payload);
-        // Sanity: the validator resolved the payload to a canonical identity.
-        expect(result.assessmentId).toMatch(/^assessment_/);
-        expect(result.revisionOrdinal).toBeGreaterThanOrEqual(1);
+        result = await deployAssessmentRevision(payload);
       } catch (err) {
         const code = (err as { code?: unknown }).code;
         const message = (err as Error).message ?? String(err);
@@ -158,6 +180,11 @@ describe("committed r1 assessment payload conformance", () => {
             `${typeof code === "string" ? ` [${code}]` : ""}: ${message}`,
         );
       }
+      // The identity the production pipeline derives from the payload is
+      // exactly the identity the committed file name declares.
+      expect(result.assessmentId).toBe(`assessment_${slug}`);
+      expect(result.revisionOrdinal).toBe(ordinal);
+      expect(result.revisionId).toBe(`assessment_${slug}__r${ordinalText}`);
     },
   );
 });

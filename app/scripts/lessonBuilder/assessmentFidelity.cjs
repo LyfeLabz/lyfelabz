@@ -1,11 +1,17 @@
 /*
  * Sprint 28 Phase 5B - Assessment answer-key fidelity tooling.
  *
- * The canonical lesson quiz is the single authority for every assessment
- * revision payload. This module extracts a lesson's quiz DETERMINISTICALLY
- * and STATICALLY from its canonical source, transforms it into the
- * production assessment-deployment payload shape, and independently
- * validates a committed payload against a fresh extraction.
+ * This module extracts a lesson's quiz DETERMINISTICALLY and STATICALLY
+ * from its canonical source, transforms it into the production
+ * assessment-deployment payload shape, and independently validates a
+ * committed payload against a fresh extraction.
+ *
+ * F5.3 Slice 9A (addendum section 21.3, PDR-031): each committed
+ * `<slug>.r<N>.json` is the authority for its own revision. The canonical
+ * source quiz represents exactly one committed revision, the one its lesson
+ * config declares (assessmentRevisions.resolveCanonicalRevision), and must be
+ * faithful to THAT payload (checkCanonicalRevisionFidelity). Other committed
+ * revisions are never compared with the mutable source literal.
  *
  * SAFETY: the extractor never executes lesson JavaScript. It parses the
  * lesson's inline <script> blocks with acorn into an AST and STATICALLY
@@ -30,6 +36,7 @@
  */
 
 const acorn = require("acorn");
+const revisions = require("./assessmentRevisions.cjs");
 
 // -- Canonical quiz extraction (static AST, no execution) -----------------
 
@@ -205,10 +212,15 @@ function optionIdForIndex(i) {
 // Build the production payload from a canonical quiz. The ONLY transform:
 // itemId = q{n}, option letters by position, correctOptionId = letter of
 // the canonical `correct` index. No wording, ordering, or answer change.
-function buildPayload(slug, quiz, publishedBy) {
+// The revision ordinal is explicit (an integer of 1 or more); it is never
+// assumed.
+function buildPayload(slug, quiz, publishedBy, revisionOrdinal) {
+  if (!Number.isSafeInteger(revisionOrdinal) || revisionOrdinal < 1) {
+    throw new Error(`[${slug}] buildPayload needs an explicit revision ordinal of 1 or more, got ${JSON.stringify(revisionOrdinal)}`);
+  }
   return {
     activityId: slug,
-    revisionOrdinal: 1,
+    revisionOrdinal,
     itemOrderingRule: "authoredOrder",
     schemaVersion: 1,
     publishedBy,
@@ -243,7 +255,9 @@ function assertSchemaValid(payload, slug) {
   if (typeof payload.activityId !== "string" || !ACTIVITY_ID_PATTERN.test(payload.activityId)) {
     push("activityId must be a URL-safe non-empty string");
   }
-  if (payload.revisionOrdinal !== 1) push("revisionOrdinal must be 1 (r1)");
+  if (!Number.isSafeInteger(payload.revisionOrdinal) || payload.revisionOrdinal < 1) {
+    push("revisionOrdinal must be an integer of 1 or more");
+  }
   if (payload.itemOrderingRule !== "authoredOrder") push('itemOrderingRule must be "authoredOrder"');
   if (payload.schemaVersion !== 1) push("schemaVersion must be the numeric literal 1");
   if (typeof payload.publishedBy !== "string" || payload.publishedBy.trim().length === 0) {
@@ -356,11 +370,24 @@ function checkFidelity(slug, payload, quiz) {
   return problems;
 }
 
+// Proves the canonical source quiz is faithful to the committed revision its
+// lesson config declares. `revisionList` is the lesson's committed revisions
+// (assessmentRevisions.revisionsForLesson). Throws when the canonical revision
+// cannot be resolved (missing, undeclared among several, or not committed);
+// returns { revision, quiz, problems } with problems empty on exact fidelity.
+function checkCanonicalRevisionFidelity(cfg, html, revisionList) {
+  const revision = revisions.resolveCanonicalRevision(cfg, revisionList);
+  const quiz = extractCanonicalQuiz(html, cfg.slug);
+  const problems = checkFidelity(cfg.slug, revision.payload, quiz);
+  return { revision, quiz, problems };
+}
+
 module.exports = {
   extractScriptBodies,
   extractCanonicalQuiz,
   buildPayload,
   assertSchemaValid,
   checkFidelity,
+  checkCanonicalRevisionFidelity,
   optionIdForIndex,
 };

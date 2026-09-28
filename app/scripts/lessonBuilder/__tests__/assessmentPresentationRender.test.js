@@ -382,7 +382,7 @@ describe("real lesson markup compatibility (in memory, canonical text only)", ()
   test.each(files)("%s renders a canonical-language three-choice presentation", (file) => {
     const slug = file.slice("lesson_".length, -".html".length);
     const html = fs.readFileSync(path.join(lessonsDir, file), "utf8");
-    const payload = fidelity.buildPayload(slug, fidelity.extractCanonicalQuiz(html, slug), "synthetic-compat");
+    const payload = fidelity.buildPayload(slug, fidelity.extractCanonicalQuiz(html, slug), "synthetic-compat", 1);
     const record = {
       schemaVersion: 1,
       kind: "lyfelabz.assessmentPresentation",

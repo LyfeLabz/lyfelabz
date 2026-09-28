@@ -47,6 +47,7 @@ const path = require("path");
 const paths = require("./paths.cjs");
 const { sha256Hex } = require("./hash.cjs");
 const { evaluateDistribution } = require("./assessmentQuality.cjs");
+const revisions = require("./assessmentRevisions.cjs");
 
 const SCHEMA_VERSION = 1;
 const RECORD_KIND = "lyfelabz.assessmentPresentation";
@@ -132,11 +133,13 @@ function reviewDir(repoRoot = paths.REPO_ROOT) {
 }
 
 // Loads the committed canonical payload for an assessment revision id
-// (assessment_<slug>__r<N> -> <slug>.r<N>.json), or null when none exists.
+// (assessment_<slug>__r<N> -> <slug>.r<N>.json, the shared grammar in
+// assessmentRevisions.cjs), or null when none exists. Any ordinal of 1 or
+// more; identity is re-checked by validateAssessmentPresentation.
 function loadCanonicalPayload(assessmentRevisionId, { repoRoot = paths.REPO_ROOT } = {}) {
-  const m = REVISION_ID_PATTERN.exec(String(assessmentRevisionId || ""));
-  if (!m) return null;
-  const file = path.join(canonicalPayloadDir(repoRoot), `${m[1]}.r${m[2]}.json`);
+  const name = revisions.payloadFileNameForRevisionId(assessmentRevisionId || "");
+  if (name === null) return null;
+  const file = path.join(canonicalPayloadDir(repoRoot), name);
   if (!fs.existsSync(file)) return null;
   return JSON.parse(fs.readFileSync(file, "utf8"));
 }

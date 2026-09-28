@@ -43,6 +43,7 @@ const path = require("path");
 const AP = require("./assessmentPresentation.cjs");
 const render = require("./assessmentPresentationRender.cjs");
 const quality = require("./assessmentQuality.cjs");
+const revisions = require("./assessmentRevisions.cjs");
 const configMod = require("./config.cjs");
 const paths = require("./paths.cjs");
 const { sha256Hex } = require("./hash.cjs");
@@ -278,8 +279,7 @@ function analyzeDraft(draftPath, { repoRoot = paths.REPO_ROOT, notesPath = null 
   const canonicalLesson = loadCanonicalLesson(record.lessonSlug, { repoRoot });
   const np = notesPath || notesPathFor(draftPath);
   const notes = fs.existsSync(np) ? JSON.parse(fs.readFileSync(np, "utf8")) : null;
-  const m = /^assessment_([a-z0-9-]+)__r([0-9]+)$/.exec(record.assessmentRevisionId);
-  const payloadFile = path.join(AP.canonicalPayloadDir(repoRoot), `${m[1]}.r${m[2]}.json`);
+  const payloadFile = path.join(AP.canonicalPayloadDir(repoRoot), revisions.payloadFileNameForRevisionId(record.assessmentRevisionId));
   const result = analyze({ record, draftBytes, canonicalPayload, canonicalLesson, notes });
   result.draftPath = path.relative(repoRoot, draftPath);
   result.notesPath = notes === null ? null : path.relative(repoRoot, np);

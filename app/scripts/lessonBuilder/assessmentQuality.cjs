@@ -37,6 +37,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const revisions = require("./assessmentRevisions.cjs");
 
 const HARD_CODES = Object.freeze([
   "POSITION_NEVER_CORRECT",
@@ -49,7 +50,6 @@ const HARD_CODES = Object.freeze([
 const WARNING_CODES = Object.freeze(["SPREAD_OF_TWO", "PERIODIC_PATTERN"]);
 
 const PERIODIC_MATCH_THRESHOLD = 0.8;
-const PAYLOAD_FILE_PATTERN = /^([a-z0-9]+(?:-[a-z0-9]+)*)\.r([1-9][0-9]*)\.json$/;
 
 // Frozen legacy baseline (repository state at 176fe27, 2026-09-27): the
 // ONLY assessments that may ever appear in the allowlist, each pinned to the
@@ -197,10 +197,6 @@ function defaultRepoRoot() {
   return path.resolve(__dirname, "..", "..", "..");
 }
 
-function payloadDirectory(repoRoot) {
-  return path.join(repoRoot, "platform", "functions", "src", "scripts", "assessments");
-}
-
 function allowlistPath() {
   return path.join(__dirname, "assessment-quality-allowlist.json");
 }
@@ -213,16 +209,16 @@ function readAllowlist(file = allowlistPath()) {
   return parsed.entries;
 }
 
+// F5.3 Slice 9A: every committed revision is audited independently, keyed by
+// its own file name, so debt recorded for `<slug>.r1.json` never covers
+// `<slug>.r2.json`. Discovery is the shared assessmentRevisions.cjs, which
+// fails closed on any payload whose file name, lesson, or ordinal disagree.
+function auditRevisionEntries(entries) {
+  return entries.map((e) => ({ file: e.file, result: evaluatePayload(e.payload) }));
+}
+
 function auditCommittedPayloads(repoRoot = defaultRepoRoot()) {
-  const dir = payloadDirectory(repoRoot);
-  return fs
-    .readdirSync(dir)
-    .filter((file) => PAYLOAD_FILE_PATTERN.test(file))
-    .sort()
-    .map((file) => ({
-      file,
-      result: evaluatePayload(JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"))),
-    }));
+  return auditRevisionEntries(revisions.loadRevisions({ repoRoot }).revisions);
 }
 
 function codesOf(findings) {
@@ -254,8 +250,8 @@ function checkAllowlist(audit, entries, baseline = LEGACY_DEBT_BASELINE) {
       continue;
     }
     byFile.set(entry.payload, entry);
-    const match = PAYLOAD_FILE_PATTERN.exec(entry.payload || "");
-    if (!match || match[2] !== "1") {
+    const parsed = revisions.parsePayloadFileName(entry.payload || "");
+    if (parsed === null || parsed.ordinal !== 1) {
       failures.push(`allowlist entry ${entry.payload} is refused: only legacy r1 payloads can be debt; a new revision must meet the standard`);
     } else if (!baseline.includes(key)) {
       failures.push(`allowlist entry ${key} is not in the frozen legacy baseline; the allowlist may only shrink`);
@@ -301,9 +297,11 @@ function checkAllowlist(audit, entries, baseline = LEGACY_DEBT_BASELINE) {
 }
 
 function verifyRepository({ repoRoot = defaultRepoRoot(), allowlistFile = allowlistPath() } = {}) {
-  const audit = auditCommittedPayloads(repoRoot);
+  const discovered = revisions.discoverRevisions({ repoRoot });
+  const audit = auditRevisionEntries(discovered.revisions);
   const outcome = checkAllowlist(audit, readAllowlist(allowlistFile));
-  return { ok: outcome.failures.length === 0, audit, ...outcome };
+  const failures = [...discovered.failures, ...outcome.failures];
+  return { ok: failures.length === 0, audit, ...outcome, failures };
 }
 
 module.exports = {
@@ -312,6 +310,7 @@ module.exports = {
   LEGACY_DEBT_BASELINE,
   evaluateDistribution,
   evaluatePayload,
+  auditRevisionEntries,
   auditCommittedPayloads,
   readAllowlist,
   checkAllowlist,

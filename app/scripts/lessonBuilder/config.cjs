@@ -68,6 +68,11 @@ function validateConfigShape(cfg, slug) {
   if (!Array.isArray(cfg.v1RequiredSignatures)) fail(`${slug}: v1RequiredSignatures must be an array`);
   if (!Array.isArray(cfg.sharedRequiredSignatures)) fail(`${slug}: sharedRequiredSignatures must be an array`);
   if (cfg.variants !== undefined) validateVariantsShape(cfg, slug);
+  // F5.3 Slice 9A: optional declaration of the committed assessment revision
+  // the unversioned canonical lesson represents. Absent means r1, and only
+  // while r1 is the lesson's single committed revision
+  // (assessmentRevisions.resolveCanonicalRevision).
+  require("./assessmentRevisions.cjs").validateConfigDeclaration(cfg, slug);
 }
 
 // Optional authored presentation variants (see variantSource.cjs). Every
