@@ -237,6 +237,15 @@ The resolution payload contains exactly:
 - `internalTarget` (the workspace-surface route the client SHOULD dispatch to). For a `mode === "classroom"` assignment, the target routes the student into `My Assignments` (`PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §6.1) pre-focused on this assignment. For a `mode === "practice"` assignment, the target routes the student to the lesson surface without invoking the assessment pipeline.
 - `attemptContext` (either `authorized` when a new session MAY be begun by the assessment pipeline for this student, or `informational` when the window is closed without grace or when the assignment is `mode === "practice"`).
 
+**Reconciliation (F5.3 Slice 9.0, 2026-09-27).** The payload list above is no longer exhaustive, and every addition is additive and server-derived:
+
+- As implemented, the activity identifier is returned as `lessonSlug`.
+- Persistent differentiation (`DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` §7.1) adds the optional `presentation` and `launchRef`. They are present only for an accommodated student on a launch target.
+- PDR-031 and F5.3 Slice 9 (`DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` §21.5, implemented in Slice 9C-1) add `assessmentRevisionId`: the assignment's frozen assessment revision, returned for `assignmentLaunch` and `lessonPractice` targets for every student.
+  - The client uses it only to route to, and later verify, the frozen revision's lesson page, including for assignment-tied practice.
+  - It is not answer-key material and grants no authority. The resolver still refuses any client-supplied authority-bearing field.
+- The external deep-link URL shape (§8) is unchanged. The revision appears only in the internal lesson path the client navigates to after resolution, never in the Classroom-facing URL.
+
 The payload MUST NOT contain:
 
 - an attempt payload, a score, a session identifier, or answer-key material,
@@ -593,3 +602,4 @@ No blocking gap remains. Implementation of the publication and resolution paths 
 ## Change Log
 
 - 2026-07-12 - Initial issuance under Sprint 10A step F-3. Ratified by PDR-027.
+- 2026-09-27 - F5.3 Slice 9.0 reconciliation under PDR-031. §10.2 records that the resolution payload now also carries `lessonSlug` (as implemented), the optional F5.2 `presentation` and `launchRef`, and (planned, Slice 9C-1) the assignment's frozen `assessmentRevisionId` for launch targets. The external URL contract (§8) is unchanged.

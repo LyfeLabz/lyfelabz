@@ -2,7 +2,7 @@
 
 ## F5.3 Addendum: Accessible Assessment Presentations
 
-**Status:** Specification addendum to `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (F5.2). Owner-approved with decisions D1-D8 (section "Owner decisions"). **Slices 1-4 implemented** (answer-position quality gate; server response validation; immutable assessment-presentation records, certification records, manifest binding, and the `assessmentPresentations` deny-all Rules block; build-time rendering of a certified presentation into a lesson artifact and canonical-option-identity mapping in the browser runtime; publication, resolution, and provenance propagation through index, grant, session, and attempt, with displayed-option validation). The owner's Slice 5 covers the table's slices 5 and 6. **Slices 6A and 6B implemented** (owner-review tooling; the Earth's Layers presentation `ap1fed478c...02c25`, owner-certified, retained, bound, and rendered into the new retained revision `pr90f52136...2189`; see slices 6A and 7 in section 20). **Slice 8 (staging certification C7-A to C7-F) is COMPLETE and PASSING for Earth's Layers** (2026-09-28; section 18.1). Slices 9 and 10 and production are not started. No canonical lesson or assessment content has changed. Where this addendum and F5.2 conflict, this addendum governs for assessment presentation only; every F5.2 contract not named in section 16 is unchanged.
+**Status:** Specification addendum to `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (F5.2). Owner-approved with decisions D1-D8 (section "Owner decisions"). **Slices 1-4 implemented** (answer-position quality gate; server response validation; immutable assessment-presentation records, certification records, manifest binding, and the `assessmentPresentations` deny-all Rules block; build-time rendering of a certified presentation into a lesson artifact and canonical-option-identity mapping in the browser runtime; publication, resolution, and provenance propagation through index, grant, session, and attempt, with displayed-option validation). The owner's Slice 5 covers the table's slices 5 and 6. **Slices 6A and 6B implemented** (owner-review tooling; the Earth's Layers presentation `ap1fed478c...02c25`, owner-certified, retained, bound, and rendered into the new retained revision `pr90f52136...2189`; see slices 6A and 7 in section 20). **Slice 8 (staging certification C7-A to C7-F) is COMPLETE and PASSING for Earth's Layers** (2026-09-28; section 18.1). **Slice 9 (revision-bound canonical assessment rendering) is specified in section 21.** Its owner rulings are recorded, and its normative basis is ratified as PDR-031. Slice 9.0 (documentation reconciliation) is complete; implementation sub-slices 9A to 9E are not started. Slice 10 and production are not started. No canonical lesson or assessment content has changed. Where this addendum and F5.2 conflict, this addendum governs for assessment presentation only; every F5.2 contract not named in section 16 is unchanged.
 
 **Evidence base:** repository HEAD `176fe27`; staging certification C4-C6 (2026-09-27); a read-only audit of all 49 committed assessment payloads.
 
@@ -22,7 +22,7 @@ These are delivered together with the existing reading-adapted instructional pre
 **Invariant.** The assessment presentation changes how items are shown, never what is measured or how it is scored. Every accessible presentation maps onto exactly one canonical assessment revision, and is scored only by that revision's server-held answer key.
 
 **Non-goals.**
-- Canonical lesson versioning in general. This is the existing F5.2 non-goal; see the backlog note in 9.4.
+- Canonical lesson versioning in general. This is the existing F5.2 non-goal; see the backlog note in 9.4. Slice 9 (section 21) binds only the canonical *assessment* display to the assignment's frozen assessment revision. Canonical instruction and the canonical Show Your Thinking prompt remain unversioned.
 - Adaptive testing, item substitution, or a different number of items.
 - Different points, a separate grade scale, or a separate best-score track.
 - A second teacher-facing accommodation control. V1 keeps one service (Reading Accessibility); see section 4.
@@ -199,7 +199,7 @@ The record holds no correctness, points, or scoring data. Keys such as `correctO
 | How the attempt was scored | `itemResults` on the attempt |
 
 **New frozen fields (additive, optional):**
-- **Presentation variant index:** `assessmentRevisionId`, `assessmentPresentationRevisionId`.
+- **Presentation variant index:** `assessmentRevisionId`, `assessmentPresentationRevisionId`. Slice 9C adds revision-scoped index documents on which `assessmentRevisionId` is always present, including for unbound variants (section 21.7). The existing unscoped documents keep this meaning under the legacy rules in 21.7.
 - **Launch grant:** `assessmentPresentationRevisionId` and `accommodationConfigRevision`. Present only on `differentiated` grants, and copied from the index and the accommodation read at issuance. **As implemented (Slice 5):** `accommodationConfigRevision` is recorded on every new differentiated grant; `assessmentPresentationRevisionId` only when the index is bound and its `assessmentRevisionId` equals the assignment's frozen revision. The grant does not repeat `assessmentRevisionId`: the record carries it immutably and begin verifies it against the assignment. The grant pair invariant refuses either field on a `canonicalFallback` grant. The 6-hour TTL is unchanged. The index binding and both identities are never returned to the client.
 - **Session and attempt:** `assessmentPresentationRevisionId` and `accommodationConfigRevision`. Frozen at begin from the grant and copied verbatim at finalize, exactly like `presentationRevisionId`.
 
@@ -223,7 +223,14 @@ The artifact embeds the same `assessmentPresentationRevisionId` (and `assessment
 
 **9.3 Provenance.** The prompt the student saw is pinned by `assessmentPresentationRevisionId`. The response stays attached to the same session and attempt, and teacher visibility and history are unchanged.
 
-**9.4 Backlog, retained and separate.** Canonical Show Your Thinking prompts have no historical version identity, because canonical lessons are unversioned. The Earth's Layers canonical remediation changed canonical text. This addendum does not solve it. The natural later fix is to give canonical lessons a canonical assessment presentation record (slice 9).
+**9.4 Backlog, retained and separate.** Canonical Show Your Thinking prompts have no historical version identity, because canonical lessons are unversioned. The Earth's Layers canonical remediation changed canonical text. This addendum does not solve it.
+
+**Status (2026-09-27, owner ruling S9-D5): split out of Slice 9 and tracked here as a separate follow-up.**
+- The earlier suggestion that slice 9 would provide canonical assessment presentation records is withdrawn from Slice 9's scope.
+- Slice 9 binds the canonical *assessment* display to the frozen assessment revision (section 21). Every Slice 9 rendition carries the lesson's current canonical Show Your Thinking prompt, exactly as canonical pages do today.
+- A canonical session or attempt therefore still cannot identify which canonical prompt the student saw. Adapted prompts remain pinned by `assessmentPresentationRevisionId`.
+- The follow-up must define a canonical prompt identity and how sessions or attempts reference it. It must not create a second assessment-content authority beside the committed revision payloads.
+- It is not a prerequisite for Earth's Layers r2 unless r2 authoring changes the canonical prompt. Changing the prompt remains a lesson-content change governed by the ordinary content rules.
 
 ---
 
@@ -267,11 +274,11 @@ Teacher views that later show the adapted explanation must read it from the pres
 13. A human certification record exists whose `assessmentPresentationRevisionId` equals the computed id (section 12).
 
 **Publish checks (`publish-variant`, fail closed; implemented in Slice 5):** the retained-revision loader reconciles the manifest entry, the one Slice 3 certification check, and the binding block embedded in the artifact bytes (`reconcileAssessmentBinding`; an unbound entry whose artifact carries a block is refused too). LOCAL_VERIFIED then re-derives the record's id from its content and checks the binding against the deployed `currentRevisionId`, before any Hosting or Firestore side effect. A new stage, `ASSESSMENT_PRESENTATION_RECORDED`, creates `assessmentPresentations/{id}` or verifies an identical existing document (never updated or deleted) after the hosted bytes are proven and before `INDEX_UPDATED`. The index `.set()` writes the binding; repointing to an unbound revision removes it. The Slice 3 refusal (`refuseUnpropagatedAssessmentBinding`) is replaced by these checks.
-- The manifest entry's `assessmentRevisionId` equals the deployed `assessments/<id>.currentRevisionId`.
+- The manifest entry's `assessmentRevisionId` equals the deployed `assessments/<id>.currentRevisionId`. **Current implementation; changes in Slice 9C-2 (section 21.7).** The check becomes "the revision is deployed", so that r1 coverage can still be published or rolled back after r2 becomes current. Coverage is never published for an undeployed revision (owner ruling S9-U2).
 - The presentation record is created, or verified equal, before the index is repointed. This extends the existing LOCAL_VERIFIED > HOSTING_DEPLOYED > HOSTED_BYTES_VERIFIED > INDEX_UPDATED sequence.
 - The index records `assessmentRevisionId` and `assessmentPresentationRevisionId`.
 
-**Manifest:** new entries add optional `assessmentRevisionId` and `assessmentPresentationRevisionId`. Existing entries, including `prff01d9...375c`, stay valid and are never rewritten. As implemented in Slice 3 (`variantManifest.cjs`): the two fields are both-or-neither, serialized after `publishedAt` only when present (the existing entry reserializes byte-identically), and the entry field set is closed. `verifyRetention` additionally requires a bound entry to name a retained, valid record of the same lesson and assessment revision with an approved certification record. An entry without the fields keeps its F5.2 meaning: differentiated instruction with the canonical assessment presentation. The index carries the same two optional fields (written by the publisher since Slice 5).
+**Manifest:** new entries add optional `assessmentRevisionId` and `assessmentPresentationRevisionId`. Existing entries, including `prff01d9...375c`, stay valid and are never rewritten. As implemented in Slice 3 (`variantManifest.cjs`): the two fields are both-or-neither, serialized after `publishedAt` only when present (the existing entry reserializes byte-identically), and the entry field set is closed. `verifyRetention` additionally requires a bound entry to name a retained, valid record of the same lesson and assessment revision with an approved certification record. An entry without the fields keeps its F5.2 meaning: differentiated instruction with the canonical assessment presentation. The index carries the same two optional fields (written by the publisher since Slice 5). Slice 9C-2 changes the rule for entries appended from then on: every new entry records `assessmentRevisionId`, bound or unbound (owner ruling S9-D2). The only entries allowed without it are a pinned legacy list that can only shrink: `prff01d9...375c`, interpreted under the tested legacy-r1 rule (section 21.7).
 
 ---
 
@@ -383,11 +390,18 @@ Periodic patterns (a period-4 cycle matching in at least 80% of positions), bala
 | Variant retired before launch | `canonicalFallback` (existing) |
 | Variant retired or replaced after session start | The frozen session completes on its presentation, which stays retained and immutable |
 
+The rows above describe the current (pre-Slice-9) index. Slice 9 makes coverage resolution revision-aware and shares one evaluator between launch resolution and begin. The revised rows are in section 21.8. In particular, a begin without a `launchRef` whose frozen revision has no coverage becomes a truthful `canonicalFallback` (owner ruling S9-U1).
+
 **14.2 Responses.**
 - An unknown `optionId`, or a canonical `optionId` not displayed in the frozen presentation (for example the omitted distractor), is rejected by autosave and refused at finalize. Nothing is scored.
 - The client cannot name a presentation (forbidden begin keys, existing), cannot supply correctness (the key is server-only), and cannot change the displayed set (it is frozen server-side).
 
 **14.3 Known pre-existing property (out of scope).** Lesson pages include each question's correct index in the quiz literal, for instant feedback in practice mode. This addendum does not change it. It is recorded here so "no answer leakage" is not over-claimed: build leak checks concern wording and structure cues, not client data. Removing it is a separate owner decision.
+
+This condition contradicts the intended boundary in `ASSESSMENT_PIPELINE_SPECIFICATION.md` §11.2 and `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §15. It remains open as owner decision D7 (`SECURITY_BACKLOG_LESSON_PAGE_ANSWER_DATA.md`). Under owner ruling S9-E1 (PDR-031g), Slice 9 revision renditions temporarily inherit it:
+- they carry exactly the `q`, `options`, `correct` and `explanation` fields the canonical quiz literal already carries, and nothing broader;
+- D7 is not waived;
+- the D7 fix must cover the renditions.
 
 ---
 
@@ -480,13 +494,16 @@ This is technically coherent, because every item is scored against the same cano
   - Assignments freeze `assessmentRevisionId` at publish (`assignments-publish.ts:255-260`), but a lesson renders a single unversioned quiz.
   - Rebalancing the canonical quiz to r2 would make every Earth's Layers assignment already stamped r1 display r2's option order while being scored against r1's key.
   - The S0 staging resolver and the fidelity suite also assume one committed revision per lesson.
-- **Required path:**
+- **Required path (superseded 2026-09-27 by section 21; retained for traceability):**
   1. Ship slice 9 (canonical assessment presentation records, which make the rendered quiz revision-bound).
   2. Commit `earths-layers.r2.json` beside the retained `r1.json`, with a balanced, professionally designed order.
   3. Update the resolver and fidelity suites for "each committed revision has a faithful presentation".
   4. Deploy r2.
   5. New assignments get r2 at publish; r1 attempts remain interpretable forever.
 - An interim operational alternative (retiring or republishing every r1-stamped Current Earth's Layers assignment at cutover) is an owner decision (D5). It is not recommended.
+- **Current path.** Slice 9 is revision-bound canonical *renditions* derived from the committed revision payloads, not canonical assessment presentation records. The finalized sequence is:
+  - complete Slice 9 (9A to 9E, section 21.11), which PDR-031h requires before any second deployed revision;
+  - then follow the r2 publication sequence in section 21.12.
 
 ---
 
@@ -610,6 +627,31 @@ On `lyfelabz-staging`, with the same controlled pair and a fresh Earth's Layers 
 
 The staging differentiated-delivery flag remains `true` by owner decision D8. Production differentiated delivery is outside this certification.
 
+### 18.2 C8 staging certification plan: Slice 9 (PLANNED, not started)
+
+C8 runs on `lyfelabz-staging` after Slices 9A to 9D are implemented, owner-reviewed and committed, and deployed to staging from a clean release worktree under separate authorization. No lesson has a second deployed revision during C8 (PDR-031h). The multi-revision behavior (r1 and r2 together) is proven by the emulator and unit suites of 9A to 9D. It is proven live only in the later r2 sequence (section 21.12).
+
+1. **Regression of C7 (r1).** Re-run C7-C, C7-D and C7-E against the existing Earth's Layers r1 assignment:
+   - the differentiated grant still binds `pr90f…`, `ap1fed…` and `accommodationConfigRevision`;
+   - the page shows three choices;
+   - the staging-locked driver still passes every check;
+   - a normal browser submission scores against r1.
+2. **Canonical r1 launch.** A canonical student launches through My Science and through the Google Classroom deep link.
+   - Both land on the r1 canonical page, which declares r1.
+   - Begin returns r1, and the runtime verification passes.
+3. **Assignment-tied practice.** A practice-mode assignment deep link routes to its frozen revision's page.
+4. **Forced mismatch (negative).** The page's revision declaration is altered in the browser for an r1 assignment.
+   - No autosave is sent.
+   - Finalize is refused as non-recoverable with the existing message.
+   - The session's responses and update time are unchanged.
+5. **Revision-scoped coverage (separately authorized staging write).** The publisher repoints retained `pr90f…` into `presentationVariants/earths-layers__reading-adapted__r1` after re-confirming liveness.
+   - Resolution then uses the scoped document.
+   - The legacy document `presentationVariants/earths-layers__reading-adapted` is left unchanged.
+6. **History unchanged.**
+   - C6 `…__a1` and C7-F `…__a2`, the AP record `ap1fed…`, the assignment, and the Current Assignment pointer are identical before and after.
+   - There is no passback.
+   - Production is untouched.
+
 ---
 
 ### 19. Production implications
@@ -639,7 +681,14 @@ Production is paused at C3 with `prff01d9...375c` published. Whether production 
 | 6A | **Implemented, stopped at owner review.** Review tooling (`assessmentPresentationReview.cjs`, `scripts/assessment-presentation-review.cjs`, `npm --prefix app run assessments:review`): validate a draft, compute and verify its `ap` id and canonical bytes, render an owner-review packet, and render an uncertified local preview (`variantSource.buildUncertifiedAssessmentPreview`: every F5.2 gate, the pure renderer twice, the no-disclosure check; the output is marked, and `generateVariantArtifact` refuses marked bytes). Output goes only to the gitignored `app/dist/assessment-preview/` (refused by the Hosting build) or outside the repository. Draft authored at `lesson-sources/variants/earths-layers.reading-adapted.assessment.json` with authoring notes beside it (`.assessment.notes.json`: per-item correct-meaning and retained-distractor misconception claims, Show Your Thinking evidence comparison, unchanged-text reasons; not part of the identity, never served). No retained record, review record, config binding, artifact, or manifest entry | `app/scripts/lessonBuilder`, `app/scripts`, `lesson-sources/variants/` |
 | 7 | **Implemented as Slice 6B (repository only).** Owner-certified `ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25` (review record `lesson-sources/variants/reviews/<id>.json`, reviewer role `owner`, opaque reviewer id); retained record `platform/functions/src/scripts/assessment-presentations/<id>.json`; bound in `earths-layers.cjs` (`variants["reading-adapted"].assessmentPresentationRevisionId`); new retained revision `pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189` with an appended manifest entry carrying the binding. `prff01d9...375c` and its manifest entry are unchanged. Nothing was published: no Firestore, index, or Hosting write was performed (that is slice 8) | `lesson-sources/variants/`, `platform/functions/src/scripts/assessment-presentations/`, `earths-layers.cjs`, `app/lessons/variants/` |
 | 8 | **COMPLETE, PASSING (Earth's Layers, 2026-09-28).** Staging C7-A through C7-F; record in section 18.1 | staging only |
-| 9 | Later: canonical presentation records (revision-bound canonical quiz; canonical Show Your Thinking provenance), then Earth's Layers r2 | builder, runtime, payloads |
+| 9 | Revision-bound canonical assessment rendering and revision-aware coverage (section 21). Replaces the earlier plan of "canonical presentation records (revision-bound canonical quiz; canonical Show Your Thinking provenance)". Show Your Thinking provenance is split out (9.4). Earth's Layers r2 follows Slice 9 (21.12) | see 9.0 to 9E |
+| 9.0 | **Implemented (documentation only).** Normative reconciliation: PDR-031, contract §38, pipeline specification §8, §11.2 and §15, and the related documents | `docs/platform/`, `LESSON_BUILD_REFERENCE.md` |
+| 9A | Payload authority and multi-revision tooling | `app/scripts/lessonBuilder`, payload conformance |
+| 9B | Canonical revision declarations, renditions, variant baseline, revision path table | builder, Hosting manifest |
+| 9C-1 | Server read path and shared revision-aware coverage evaluator | resolver, begin, list, deep-link resolve |
+| 9C-2 | Publisher and revision-scoped coverage | `publish-variant.ts`, `variant-publication.ts`, manifest |
+| 9D | Client routing and runtime verification | launcher, deep-link arrival, assessment runtime |
+| 9E | Staging certification C8 (18.2) | staging only |
 | 10 | Optional: teacher provenance label (D2) | teacher attempt detail |
 
 **Test and certification gates:**
@@ -665,7 +714,207 @@ Production is paused at C3 with `prff01d9...375c` published. Whether production 
 | D2 | Teacher-visible accommodation label on attempts | Yes, neutral wording; not student-visible |
 | D3 | Answer-position standard thresholds and ratchet (section 13) | Adopt as written |
 | D4 | Who certifies adapted assessments, and the review-record location | Owner or designated science reviewer; `lesson-sources/variants/reviews/` |
-| D5 | Earth's Layers r2 timing | After slice 9; no cutover workaround |
+| D5 | Earth's Layers r2 timing | After slice 9; no cutover workaround. **Decided:** after Slice 9 (9A to 9E); PDR-031h makes it a gate |
 | D6 | Production C4-C6 on `prff01d9...375c` now, or wait for F5.3 | Owner call |
-| D7 | Removing client-side correct-answer data from lesson pages (14.3) | Separate backlog item |
+| D7 | Removing client-side correct-answer data from lesson pages (14.3) | Separate backlog item. **Still open.** Slice 9 renditions temporarily inherit the condition (S9-E1, PDR-031g), and the D7 fix must cover them |
 | D8 | Staging delivery flag, currently `true` since C5 | Set false until C7, or leave for continued testing. **Decided:** left `true`; C7 ran with it on (section 18.1) |
+
+---
+
+### 21. Slice 9: revision-bound canonical assessment rendering
+
+**Status:** Specified. The normative basis is ratified as PDR-031 (`LYFELABZ_PLATFORM_DECISIONS.md`) and reconciled in `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §38. 9.0 (documentation) is complete; 9A to 9E are not started. Nothing in this section is implemented yet unless it says "current".
+
+#### 21.1 Invariant
+
+**The assessment displayed to a student for an assignment corresponds to the assessment revision frozen on that assignment.**
+
+- `assignmentsPublish` freezes `assessmentRevisionId` once, at first publication (current behavior, PDR-031a).
+- Sessions freeze that value, autosave validates against it, and finalize scores against it (current).
+- Slice 9 extends the binding to what the student sees: canonical renditions, differentiated coverage, launch routing, and a runtime check.
+- The client never selects the revision. The server derives it from the assignment.
+- Until Slice 9 is certified, no lesson may receive a second deployed revision (PDR-031h). Today every lesson has exactly r1.
+
+#### 21.2 Owner rulings (Slice 9 architecture review, 2026-09-27)
+
+Labels are prefixed `S9-` to avoid confusion with this addendum's D1 to D8.
+
+| # | Ruling |
+|---|---|
+| S9-D1 | Per-revision accommodation coverage is part of Slice 9. Coverage resolves by lesson, instructional variant, and frozen assessment revision. Historical records stay valid. |
+| S9-D2 | New unbound variant publications record their embedded assessment revision. Historical `prff01d9...375c` is interpreted under an explicit, tested legacy-r1 rule. For a lesson with more than one assessment revision, an unbound publication whose embedded revision is unknown or ambiguous is refused. |
+| S9-D3 | Assignment-tied practice-mode deep links obey the frozen revision. There is one invariant and no practice exception. Practice not associated with an assignment may use the unversioned current canonical page. |
+| S9-D4 | Assessment revision identity may appear in internal lesson paths and machine-readable page data. It is not answer data. No opaque path token is introduced. It is never a teacher-configurable value or teacher-facing UI text (PDR-031f). |
+| S9-D5 | Canonical Show Your Thinking provenance is split out of Slice 9 (9.4). |
+| S9-D6 | Slice 9 renditions assume compatible quiz chrome across revisions: the same item count and the same quiz section text, progress text and wiring. The renderer is not generalized for structurally different chrome. |
+| S9-E1 | Renditions temporarily inherit the existing lesson-page answer-data condition, limited to the fields the canonical quiz literal already carries. D7 stays open and must cover renditions (PDR-031g). |
+| S9-E2 | Publish-time freezing is canonical (PDR-031a). |
+| S9-U1 | At a begin without a `launchRef`, a legitimate revision-coverage gap resolves to a truthful `canonicalFallback` with telemetry, through the same shared revision-aware evaluator used at launch. Malformed records, unavailable reads, and invalid provenance still fail closed. |
+| S9-U2 | Coverage is never published for an undeployed assessment revision. |
+| S9-U3 | No new student-facing mismatch notice. A mismatch fails closed through the existing recovery and relaunch experience. |
+
+#### 21.3 Canonical assessment authority and renditions (9A, 9B)
+
+- **Authority.** Each committed payload `platform/functions/src/scripts/assessments/<slug>.r<N>.json` is the authority for its own revision.
+  - Today the lesson's quiz literal is the authority and the r1 payload must be faithful to it (`assessmentFidelity.cjs`, `assessment-fidelity.test.js`).
+  - After 9A, the lesson config declares which revision the unversioned canonical page renders, and the source literal must be faithful to that revision's payload.
+  - Payload validation accepts any ordinal of 1 or more, provided it matches the file name.
+  - The answer-position ratchet is unchanged: only r1 may carry recorded debt.
+- **Renditions.** For a lesson with more than one committed revision, the build generates one v2 rendition per committed revision, including the current one, at `/app/lessons/assessment-revisions/lesson_<slug>__r<N>.html`. The directory name is proposed and fixed in 9B.
+  - A rendition is the current canonical v2 lesson with only the quiz literal regenerated from that revision's payload.
+  - It reuses the certified renderer primitives (`assessmentPresentationRender.cjs`: literal location, literal source, post-render verification).
+  - A `checkFidelity` post-condition must show the rendition's extracted quiz equals its payload.
+  - Instruction and the Show Your Thinking prompt are the current canonical ones.
+  - Renditions are deterministic, drift-checked by `lessons:verify`, and retained as long as their payload is committed. Payloads are add-only.
+  - Lessons with a single revision produce no rendition files.
+- **Answer data (S9-E1).** A rendition's literal carries exactly `q`, `options`, `correct` and `explanation`, as the canonical literal does today. It never carries rubric, rationale, authoring notes, or any field beyond those.
+- **Chrome (S9-D6).** A rendition is refused unless the revision's item count and literal shape match what the lesson's quiz chrome supports. Lessons whose literal carries extra fields (for example `visual`) are refused, as the AP renderer already does.
+- **Variant baseline.** A variant is built and gated against the canonical rendition of its own declared assessment revision, not against the current source quiz. This keeps `ap1fed…` renderable after the source moves to r2.
+  - `pr90f…` must stay byte-reproducible: `variants:verify` green with no new manifest entry.
+  - `prff01…` stays retained and unchanged.
+
+#### 21.4 Revision declaration and runtime verification (9B, 9D)
+
+- **Declaration.** Every canonical v1 and v2 artifact that loads the assessment runtime, and every rendition, embeds one inert JSON block, `<script type="application/json" id="lyfelabz-assessment-revision">`, holding `{ schemaVersion, lessonSlug, assessmentRevisionId }`. The id is proposed and fixed in 9B.
+  - The block is inserted only in the canonical build path, never in the variant build path, so retained variant bytes are unaffected.
+  - AP-bound pages already declare their revision in the existing `lyfelabz-assessment-presentation` block.
+  - The block carries no correctness data.
+- **Begin response.** `assessmentSessionsBegin` returns the session's frozen `assessmentRevisionId` (additive). For an already-live session it returns that session's value.
+- **Runtime check.** Before sending any response, the runtime compares the page's declared revision with begin's revision. The page's revision comes from the AP block, or else from the declaration; if both exist they must agree.
+  - On a mismatch, nothing is autosaved and finalize returns the existing non-recoverable refusal (S9-U3). The live session is harmless, and nothing is written to it.
+- **Legacy pages.** A page with neither block is a legacy pre-Slice-9 artifact: retained `prff01…`, or a browser-cached canonical page from before 9B was served. It is accepted only when begin returns an r1 revision. Every such artifact was built when r1 was the only revision, and a repository test proves that for each retained no-declaration artifact.
+- **Scope of the check.** The check protects honest clients from stale URLs and caches. It is not a security boundary. Scoring authority remains the server's frozen revision.
+
+#### 21.5 Launch routing (9D) and practice (S9-D3)
+
+- **Revision field.** `assignmentsListForStudent` items and `lmsDeepLinkResolve` responses (both `assignmentLaunch` and `lessonPractice`) carry `assessmentRevisionId`, read from the assignment.
+  - It is present for every student regardless of accommodation, so it discloses nothing about accommodations.
+  - Requests remain unable to name a revision.
+- **Path table.** The build generates a revision-to-path table that ships in the same Hosting release as the artifacts.
+  - Single-revision lessons: r1 maps to the existing unversioned v2 path.
+  - Multi-revision lessons: every revision maps to its rendition.
+- **Selection.** `buildAssignmentLaunchUrl` and `planPracticeLaunch` select by (slug, revision). This covers the canonical primary URL, the `canonicalFallback` URL, and the differentiated load-failure fallback. A missing or unknown revision fails closed to the existing retryable state.
+- **Practice.**
+  - My Assignments excludes practice-mode assignments (`assignments-list-for-student.ts`). The assignment-tied practice path is therefore the `lessonPractice` deep-link route, which routes to the frozen revision.
+  - Practice creates no session, so its guarantee is routing only.
+  - Anonymous and public practice, teacher curriculum preview, and Present Mode are not associated with an assignment and keep the unversioned page.
+- **Google Classroom.** The external URL `/app/a/{assignmentId}` and the coursework are unchanged. Every arrival re-resolves on the server, so existing Classroom links pick up the correct revision without republication.
+
+#### 21.6 Server read path (9C-1)
+
+- Additive response fields as in 21.4 and 21.5.
+- One shared coverage evaluator (21.7) replaces the two separate index parsers:
+  - `readVariantIndex` in `launch-presentation-deps.ts`;
+  - `readCoverage` in `begin-delivery-deps.ts`.
+- Op C and begin's check without a launch reference both key on the assignment's frozen revision.
+- Grant, session, and attempt shapes are unchanged. The Slice 2 and Slice 5 validation boundaries are unchanged.
+
+#### 21.7 Revision-aware coverage (9C-1 read, 9C-2 publish)
+
+- **Shape.** Revision-scoped documents `presentationVariants/{lessonSlug}__{variantKey}__r{N}` sit in the existing collection.
+  - `N` is the ordinal of the frozen `assessmentRevisionId`, parsed by the shared identifier helper. The id is unambiguous because slugs and variant keys cannot contain `__`.
+  - Fields are those of `PresentationVariantIndexDoc`, with `assessmentRevisionId` always present and equal to `assessment_{lessonSlug}__r{N}`. `assessmentPresentationRevisionId` is present only when bound.
+  - The existing deny-all Rules block `presentationVariants/{indexId}` already covers these ids. No Rules or composite index change is needed.
+- **Lookup** for (lesson, variant key, frozen revision), after the operational delivery flag:
+  1. If the scoped document exists, it alone decides (active, retired or malformed). An active document naming another revision is malformed. A retired scoped document never falls through to the legacy document.
+  2. Otherwise the legacy unscoped document `presentationVariants/{lessonSlug}__{variantKey}` is read:
+     - if bound, it is honored only when its `assessmentRevisionId` equals the frozen revision (current Slice 5 rule);
+     - if unbound with no recorded revision, the legacy-r1 rule applies: it is honored only when the frozen revision is `assessment_{lessonSlug}__r1`;
+     - anything else is a revision mismatch.
+  3. A revision mismatch, absence, or retirement is a coverage gap for that revision. Launch mints a `canonicalFallback` grant with telemetry (`coverageAssessmentMismatch`, `coverageAbsent`, `coverageRetired`). A begin without a launch reference freezes `canonicalFallback` with the same telemetry (S9-U1).
+  4. A malformed record or failed read: launch degrades to canonical with no grant (F5.2 §8.5 row 8); begin refuses with `BEGIN_VALIDATION_UNAVAILABLE`.
+  5. An assignment without a frozen revision receives no differentiated coverage.
+- **Legacy records.** The legacy document is never written again after 9C-2.
+  - Staging's legacy document (`pr90f…`, `ap1fed…`, r1) keeps serving r1 exactly as certified in C7.
+  - Production's legacy document (`prff01…`, unbound) serves only r1 assignments. Production delivery is disabled.
+  - No migration.
+- **Publisher invariants (9C-2).**
+  - Every manifest entry appended from 9C-2 onward records `assessmentRevisionId`. `assessmentPresentationRevisionId` requires it. Entries without it are exactly a pinned legacy list, `{prff01d9...375c}`, that can only shrink.
+  - For an unbound entry, the recorded revision must equal all three of:
+    - the revision declared in the lesson config;
+    - the single committed payload faithful to the artifact's quiz, extracted from the retained bytes;
+    - the artifact's own revision declaration.
+    Zero or several faithful payloads, a missing declaration, or a disagreement refuses publication (S9-D2).
+  - The recorded revision must be a deployed revision (`assessmentRevisions/{id}` exists), not necessarily the current one. An undeployed revision is always refused (S9-U2).
+  - The publisher writes only the scoped document for the entry's revision. `prff01…` maps to r1 through the legacy-r1 rule. The write is a full `.set()` under the existing self-consistency check, extended to check that the document id agrees with its fields.
+  - The stage order is unchanged: LOCAL_VERIFIED, HOSTING_DEPLOYED, HOSTED_BYTES_VERIFIED, ASSESSMENT_PRESENTATION_RECORDED (bound only), INDEX_UPDATED.
+  - Retirement and rollback act on one scoped document. The operational flag remains the global kill switch.
+- **r1 after r2 becomes current.** r1 assignments resolve to the r1 scoped document, or to the legacy document. Nothing published for r2 can change r1 resolution.
+- **r2 before an r2 AP exists.** Accommodated students on r2 assignments receive a truthful `canonicalFallback` and the canonical r2 display. This is visible in telemetry and is never silent.
+- **Adding an r2 AP.** Publishing the r2-bound revision writes only the `…__r2` document.
+- **Rollback of Slice 9 Functions.** Pre-Slice-9 code reads only the legacy document: r1 keeps working and other revisions fall back canonically. The legacy document must therefore never be rewritten or removed as part of Slice 9.
+
+#### 21.8 Fail-closed rules
+
+| Condition | Result |
+|---|---|
+| Launch item or deep-link response lacks a revision, or the revision is not in the path table | Existing retryable state; no navigation |
+| Page's declared revision differs from begin's revision | Nothing autosaved; finalize refused as non-recoverable (existing message); session unchanged |
+| Page has no declaration and no AP block, and the session is not r1 | Refused as above |
+| Scoped or legacy coverage malformed, or its read fails | Launch: canonical, no grant, telemetry. Begin: `BEGIN_VALIDATION_UNAVAILABLE` |
+| Coverage absent, retired, or for another revision | `canonicalFallback` with telemetry at launch and at a begin without a launch reference (S9-U1) |
+| Grant with invalid or forged provenance | Unchanged: `LAUNCH_REF_INVALID` or `LAUNCH_REF_EXPIRED` |
+| AP record missing, altered, or mapped to another revision | Unchanged: refused at begin, autosave and finalize |
+| Rendition not faithful to its payload, chrome incompatible, or unbound revision unknown or ambiguous | Build or publish refused |
+| Coverage for an undeployed revision | Publish refused |
+
+#### 21.9 Historical compatibility
+
+| Case | Display | Coverage source | Begin freeze | Scoring |
+|---|---|---|---|---|
+| C6 (`…__a1`, `prff01…`) | Attempt immutable. A relaunch reaches `prff01…` only through the legacy-r1 rule. No declaration, so the runtime legacy rule applies (r1 only) | Legacy unbound | `differentiated`, no AP | r1, four choices |
+| C7 (`…__a2`, `pr90f…` + `ap1fed…`) | Variant path. The AP block declares r1 | r1 scoped document or legacy bound document | `differentiated` + AP | r1 key, displayed-option narrowing |
+| Future canonical r1 | r1 page (unversioned while single-revision, rendition afterward) | none | `canonical` | r1 key |
+| Future canonical r2 | r2 rendition | r2 absent: `canonicalFallback` for accommodated students | `canonical` or `canonicalFallback` | r2 key |
+| Future r2 AP | Variant path. The AP block declares r2 | r2 scoped document, bound | `differentiated` + r2 AP | r2 key, narrowing |
+
+No attempt, AP record, presentation revision, answer key, or manifest entry is rewritten.
+
+#### 21.10 Deployment ordering and caches
+
+- **Functions before Hosting.** The 9C-1 Functions deploy (`assignmentsListForStudent`, `lmsDeepLinkResolve`, `assessmentSessionsBegin`) precedes the 9D Hosting deploy. Otherwise the new client finds no revision field and fails every launch closed.
+- **Slice 9 before r2.** Slice 9's Hosting release precedes any r2 deployment by more than the browser cache window, so cached pre-Slice-9 pages and bundles expire before any second revision exists. The live Hosting cache headers must be checked during C8. They are not configured in `firebase.json`, so Firebase defaults apply.
+- **Stable paths.** Rendition paths are stable, so browser history and bfcache restore pages that are internally consistent.
+
+#### 21.11 Implementation sequence
+
+| Sub-slice | Purpose | Key invariant | Deploy | Depends on |
+|---|---|---|---|---|
+| 9.0 | Normative reconciliation (documentation) | Documentation matches PDR-031 and current behavior | No | Owner rulings |
+| 9A | Payload authority and multi-revision tooling | Each committed revision is validated as its own authority. No artifact bytes change | No | 9.0 |
+| 9B | Declarations, renditions, variant baseline, path table, Hosting manifest | Every canonical artifact declares its revision. Renditions are faithful and deterministic. `pr90f…` and `prff01…` reproduce byte-identically | Hosting later, with 9D | 9A |
+| 9C-1 | Server read path and shared evaluator | Revision-aware coverage. Legacy-r1 rule. Revision field always present | Functions | 9.0 |
+| 9C-2 | Publisher and scoped coverage | Scoped writes only. Recorded revision. Deployed-not-current check. Pinned legacy list | No (repository tooling) | 9C-1 |
+| 9D | Client routing and runtime verification | Every assignment-associated launch lands on the frozen revision. Mismatches fail closed | Hosting, after 9C-1 | 9B, 9C-1 |
+| 9E | Staging certification C8 (18.2) | No C7 regression; live routing proven | Staging only | 9B to 9D |
+
+Every implementation sub-slice runs `npm --prefix app run verify` and the Functions test, typecheck, lint and build. Sub-slices that change data access also run `test:rules`. C7-preserving regressions are required throughout:
+- `pr90f…` rebuild and `variants:verify` with an unchanged manifest;
+- the `ap1fed…` record and review record bytes;
+- the resolver and begin matrices, including the C6 legacy-unbound path;
+- Slice 2 and Slice 5 validation;
+- best-attempt and passback suites;
+- the `staging-f53-assessment-negatives` driver tests, updated to evaluate effective coverage.
+
+#### 21.12 Earth's Layers r2, after Slice 9
+
+1. Author `earths-layers.r2.json` (balanced; passes the answer-position standard with no allowlist entry) and an r2 assessment presentation. Certify the r2 AP (section 12).
+2. Build the r1 and r2 renditions and the r2-bound variant revision. Release Hosting to staging and verify the served bytes and the path table.
+3. Deploy r2 to staging (`currentRevisionId` advances). Immediately publish the r2 coverage (S9-U2); the gap between the two is a telemetry-visible `canonicalFallback`.
+4. Prove on staging:
+   - the existing r1 assignment still displays r1 and scores against r1 (canonical and `ap1fed…` paths);
+   - a newly published assignment freezes r2 and displays r2 for canonical and accommodated students;
+   - a forced mismatched page writes nothing;
+   - C6, C7-F, the AP records, the index documents, and the assignments are unchanged.
+5. Production follows under separate authorization.
+
+#### 21.13 Out of scope for Slice 9
+
+- Earth's Layers r2 authoring.
+- D7 answer-data hardening.
+- D2 teacher-visible accommodation label (slice 10).
+- Canonical Show Your Thinking provenance (9.4).
+- Canonical instruction versioning.
+- Quiz chrome that differs between revisions.
+- Production activation.
+- Rollout beyond Earth's Layers.

@@ -14,6 +14,16 @@ This document assumes the reader is already familiar with:
 - ASSESSMENT_PIPELINE_SPECIFICATION.md
 - IDENTITY_AND_ONBOARDING_SPECIFICATION.md
 
+## F5.3 Slice 9.0 Reconciliation Notice
+
+PDR-031 (Assessment Revision Binding) and `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §38 reconcile the assessment-identity fields in this document with the implementation.
+
+- **`lessonVersion` does not exist.** It was removed from the assignment domain in commit `b294e65` (2026-07-28) and appears nowhere in Functions, Rules, or client code. The `lessonVersion` references in §3.6, §3.7, §4.5, §4.7, §5.4, §5.7, and §12 are historical. So is the Sprint 9A notice sentence "Lesson version stamping continues to apply (PDR-009)"; see the PDR-009 F5.3 Slice 9.0 Reconciliation Notice.
+- **Assignment assessment identity.** `assignments/{assignmentId}.assessmentRevisionId` is stamped by `assignmentsPublish` exactly once, at the first `draft` -> `published` transition, from the deployed `assessments/{assessmentId}.currentRevisionId`. It is immutable afterward. Sessions and attempts carry the same value. It is the only field that selects the assessment content, validation rules, and answer key for the assignment.
+- **Revision-aware coverage (planned, F5.3 Slice 9C).** Differentiated assessment coverage will also resolve by frozen revision, through revision-scoped `presentationVariants` documents. Their shape is specified in `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` §21. The existing `presentationVariants/{lessonSlug}__{variantKey}` documents remain valid under explicit legacy rules. The existing deny-all Rules block already covers every document id in the collection.
+
+This notice modifies no stored data.
+
 ## Sprint 9C Reconciliation Notice
 
 The identity portion of this document is superseded by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Apply the following while reading:
@@ -454,7 +464,7 @@ Required fields:
 - teacherId: Reference to the assigning teacher. Denormalized from the class for authorization efficiency.
 - schoolId: Denormalized from the class for administrative queries.
 - lessonSlug: The lesson slug being assigned.
-- lessonVersion: The specific version being surfaced. Freezing the version at record creation protects students from mid-window content changes.
+- lessonVersion: The specific version being surfaced. Freezing the version at record creation protects students from mid-window content changes. [Historical: this field was removed in commit `b294e65` (2026-07-28). The current frozen assessment identity is `assessmentRevisionId`, stamped once at first publication and immutable afterward (PDR-031a). It protects students from mid-window assessment changes: a later revision never alters an already-published assignment. See the F5.3 Slice 9.0 Reconciliation Notice.]
 - mode: `practice` or `classroom`. Aligns with the Practice Mode and Classroom Mode terminology already documented in CLAUDE.md. There is no `graded` mode; the `mode` field itself never carries grading information (see `classroomGrading` below, added by Sprint 30A.1, which is orthogonal to `mode`).
 - status: `draft`, `published`, `closed`, `archived`. `archived` is the terminal state that removes the record from active teacher views while preserving history so past submissions remain resolvable.
 - createdAt: For auditing.
@@ -563,7 +573,7 @@ A student has many enrollments (one per class). Enrollments carry studentId. Que
 
 ### 4.5 Assignment to Lesson
 
-An assignment references a lesson by lessonSlug plus lessonVersion. The tuple is the key. Duplicating title or content on the assignment is rejected because the lesson version is the source of truth and can always be dereferenced.
+An assignment references a lesson by lessonSlug plus lessonVersion. The tuple is the key. Duplicating title or content on the assignment is rejected because the lesson version is the source of truth and can always be dereferenced. [Current state: the assignment references its lesson by `lessonSlug` and its assessment by the frozen `assessmentRevisionId`; `lessonVersion` no longer exists. See the F5.3 Slice 9.0 Reconciliation Notice.]
 
 ### 4.6 Assignment to Class
 
@@ -1001,6 +1011,8 @@ Why: Instructional content changes. A student who took a quiz in October must se
 Risks: Retired lesson versions must be retained indefinitely. This is a storage cost, not a correctness cost.
 
 Long-term implications: Enables year-over-year comparison, curriculum change auditing, and honest analytics.
+
+Current state (F5.3 Slice 9.0, PDR-031): the freezing principle is implemented for the assessment, not the lesson as a whole. The assignment freezes `assessmentRevisionId` at first publication (`lessonVersion` was removed in commit `b294e65`). Every student display associated with the assignment must show that frozen revision's assessment content, and no lesson may receive a second deployed revision until revision-bound display (F5.3 Slice 9) is complete. Canonical instructional content is not frozen per assignment.
 
 ### 12.5 Immutable Submissions After Finalization
 

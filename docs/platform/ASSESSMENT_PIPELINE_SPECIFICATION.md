@@ -7,6 +7,8 @@
 
 **Implementation contract:** Sprint 10A F-2 introduced `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` under PDR-026 as the single engineer-facing implementation authority for the formative assessment pipeline. This specification remains authoritative for product behavior; questions of Firestore collection ownership, canonical document identifiers, callable ownership, Security Rules invariants, composite indexes, audit vocabulary, and error identifiers defer to the implementation contract.
 
+**PDR-031 amendment (2026-09-27, F5.3 Slice 9.0):** Sections 8, 11.2, and 15 are amended under Section 21 discipline by PDR-031 (Assessment Revision Binding and Revision-Bound Assessment Display). The assessment revision is frozen on the assignment when the assignment is published. Every student display associated with that assignment corresponds to the frozen revision. Revision identifiers may appear in internal lesson paths and machine-readable page data, but never as teacher-configurable values or teacher-facing UI. The existing answer-data condition in lesson pages (owner decision D7) is recorded as unresolved in Section 11.2.
+
 This document defines how a LyfeLabz formative assessment is offered, taken, saved, submitted, scored, recorded, revised, and reported on. It replaces the pre-Sprint 9A assumption that a browser can compute or claim an authoritative score, that assessment state and assessment history are the same entity, and that student mode is a UI toggle. It records the platform's commitment to server-authoritative scoring, session-attempt separation, unlimited attempts, immutable attempt history, invisible complexity, and educator restraint.
 
 The specification reads top-down. Sections 1 through 3 establish philosophy and vocabulary. Sections 4 through 12 define the assessment lifecycle. Sections 13 through 17 define the systems that support that lifecycle. Sections 18 through 21 record governance, extensibility, and operations.
@@ -215,7 +217,7 @@ An attempt is the authoritative, immutable record of a completed formative asses
 ### Attempt properties
 
 - One attempt corresponds to one successful submission by one student on one assignment in one class.
-- An attempt records the identity of the student, the identity of the class at the moment of submission, the identity of the assignment, the identifier of the activity, the internal revision identifier of the assessment at the moment of submission, the student's item-level responses, the item-level correctness, the item-level points earned, the aggregate score, the feedback that was delivered, and the relevant timestamps (see Section 13).
+- An attempt records the identity of the student, the identity of the class at the moment of submission, the identity of the assignment, the identifier of the activity, the internal revision identifier the attempt was scored against (the revision frozen on the assignment at publication, see Section 15), the student's item-level responses, the item-level correctness, the item-level points earned, the aggregate score, the feedback that was delivered, and the relevant timestamps (see Section 13).
 - An attempt is immutable once written. No actor - student, teacher, administrator, or platform - mutates a finalized attempt document. Corrections and annotations, when they exist, live adjacent to the attempt, not by mutating it.
 - There is no "Submission" entity separate from the attempt. The attempt is the authoritative record. The `submitted` state is a transient state inside the server-side submission transaction; it is never externally observable.
 
@@ -287,6 +289,8 @@ Authoritative answer keys are server-confidential.
 - Cloud Functions perform grading against the answer key. Grading is the only operation authorized to read the key.
 
 Post-submission, the server returns to the browser a specific, permitted feedback payload: the score, the item-level correctness for the items the student answered, the correct answers for those items, and the explanations for those items. The distinction is that the browser learns the correct answer after submitting, not before.
+
+**Known unresolved condition (D7, recorded 2026-09-27 under PDR-031g).** The current lesson pages do not yet meet the two rules above. Every canonical lesson page and retained differentiated artifact embeds each question's correct option index and explanation, for instant practice feedback and the post-submit reveal. Scoring is still server-authoritative against the confidential answer key, but a student can read the page data before answering. This is open owner decision D7 (`SECURITY_BACKLOG_LESSON_PAGE_ANSWER_DATA.md`). Revision-bound canonical renditions (Section 15) temporarily inherit the same condition, limited to exactly the data the existing canonical representation already carries. The condition is not waived, and the D7 fix must cover those renditions.
 
 ### 11.3 Feedback pipeline
 
@@ -398,8 +402,10 @@ Teachers never manage assessment versions.
 
 - The platform automatically creates an internal revision identifier when the assessment content changes in a way that would meaningfully affect scoring or student experience.
 - Minor editorial corrections (typo fixes, punctuation, cosmetic phrasing that does not change item meaning) do not create a new revision.
-- Revision identifiers are internal. They do not appear on any teacher-facing surface, on any student-facing surface, or in any teacher-configurable field.
-- Every attempt records the internal revision identifier of the assessment at the moment of submission. Historical attempts remain interpretable even after later revisions ship.
+- Revision identifiers are internal. They never appear in a teacher-configurable field, on a teacher-facing surface, or as UI text on any surface. As amended by PDR-031f, they may appear in internal lesson URLs and paths and in machine-readable page data used for integrity checks. They are not answer data. (The original 2026-07-12 wording, "They do not appear on any teacher-facing surface, on any student-facing surface, or in any teacher-configurable field", is superseded only as it applies to internal paths and machine-readable page data.)
+- An assignment's revision is frozen when the assignment is published (PDR-031a). A revision released later never changes the revision of an assignment already published; it applies to assignments published after it becomes current.
+- Every student display associated with an assignment (launch, Improve My Score, Google Classroom deep link, and assignment-tied practice) shows the assessment content of the assignment's frozen revision. If that cannot be established, the platform refuses rather than showing different content (PDR-031d). Exploration not tied to an assignment may show the current canonical lesson.
+- Every attempt records the internal revision identifier it was scored against: the assignment's frozen revision, recorded at the moment of submission. Historical attempts remain interpretable even after later revisions ship.
 - The Platform Administrator (see Section 16) authors and versions assessment content. Teachers do not.
 
 The revision boundary is defined by the effect of the change, not by the surface of the change. Adding an item, removing an item, changing an item's stem in a way that alters its meaning, changing the correct answer, changing the distractor set, changing the rubric, changing the number of points on an item, or changing the item ordering rule are all revision-creating changes. Fixing a typo or reflowing an explanation is not.
@@ -523,3 +529,4 @@ The specification is the single source of truth. When any subsequent document co
 ## Change Log
 
 - 2026-07-12 - Initial specification established under Sprint 9A. Ratifies session-attempt separation, server-authoritative scoring, server-confidential answer keys, unlimited-attempt formative posture, one-hour grace period, 24-hour session expiration, archived-session recovery window, removal of the Practice / Classroom toggle, one-assignment-per-class rule with automatic fan-out, five-metric teacher analytics surface, platform-owned assessment revision boundary, and Platform-Administrator-owned canonical curriculum.
+- 2026-09-27 - Amended under PDR-031 (F5.3 Slice 9.0). Section 8 and Section 15 now state publish-time revision freezing and revision-bound student display. Section 15 permits revision identifiers in internal lesson paths and machine-readable page data, never as teacher-configurable values or UI text; the original wording is quoted in place. Section 11.2 records the unresolved lesson-page answer-data condition (D7) and its temporary inheritance by revision renditions.

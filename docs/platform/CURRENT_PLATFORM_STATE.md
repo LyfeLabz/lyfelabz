@@ -148,6 +148,13 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
 - **Collections:** `assessmentSessions`, `attempts`, `attemptRollups`, `assignmentRollups`, `assessmentRevisions`, `assessmentAnswerKeys`.
 - **Server-authoritative scoring** against `assessmentAnswerKeys/{revisionId}`. Answer keys are the confidentiality boundary: Security Rules refuse **all** client reads/writes for **every** role including `platformAdministrator`; only the scorer reads them at request time. No answer key ever appears in a client artifact, callable response, URL, or audit event. No client-authoritative score field ever enters an attempt.
 - **Immutability:** attempts are immutable and ownership-stamped (student, class-at-submission, `lessonSlug`, `assessmentRevisionId`). Revisions are immutable; correcting one deploys a new `revisionOrdinal` with a paired new answer key (both deployed together); prior revisions remain readable so historical attempts stay interpretable.
+- **Revision binding (PDR-031):**
+  - `assignmentsPublish` freezes `assessmentRevisionId` on the assignment once, at first publication. It is immutable; a later revision never changes it.
+  - Sessions freeze it, autosave validates against it, finalize scores against it, and attempts record it.
+  - The client never selects a revision. Every student display associated with an assignment must show that revision's assessment content (revision-bound display: F5.3 Slice 9, specified, not yet implemented).
+  - **Gate:** no lesson may receive a second deployed revision until Slice 9 is certified. Today every lesson has exactly r1.
+  - Revision IDs may appear in internal paths and machine-readable page data, but never in teacher UI or teacher-configurable fields.
+  - Lesson pages still embed correct-answer and explanation data (open D7, `SECURITY_BACKLOG_LESSON_PAGE_ANSWER_DATA.md`).
 - **Behavior:** unlimited formative attempts by default; **submit = completion**; `Improve My Score` is offered on a less-than-perfect best score; 10/10 does not. There is **no practice/classroom mode toggle** at the pipeline level — behavior derives from auth/authz; `assignment.mode` governs routing (classroom → assessment pipeline; practice → lesson surface without the pipeline).
 - **Surfaces:** students see `My Assignments` and `My Results`; teachers see aggregate + per-assignment monitoring. Answer keys and other students' PII never enter any teacher analytics view.
 - **v2 results UX (implemented):** in the authenticated v2 lessons, after submission the results transition **scrolls/focuses to the top of the results content so the score/results header is fully visible** (`scroll-margin-top` offset + focus with `preventScroll` + `role="status"`/`aria-live`). This is present across all 49 v2 authenticated lesson artifacts. It is a **v2 (authenticated) behavior**; the public v1 artifacts retain their legacy results flow.
@@ -158,7 +165,7 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
 
 - **One canonical source, two generated outputs.** Instructional edits go into `lesson-sources/`; the deterministic build produces a **v1 public artifact** (`/lesson_<slug>.html`, preserves the public URL and legacy classroom behavior) and a **v2 authenticated artifact** (`app/lessons/lesson_<slug>.html`, no legacy classroom architecture, consumes platform identity + the certified assessment runtime). Both generated files begin with a `GENERATED FILE` notice. **Direct edits to generated artifacts are prohibited** and caught by `lessons:verify` in CI.
 - **Build/verify:** `npm --prefix app run lessons:build` / `lessons:verify` (verify rebuilds in memory and fails on drift; part of `app` verify). An instructional-equivalence contract compares normalized v1 vs v2 output. Per-lesson config lives at `app/scripts/lessonBuilder/lessons/<slug>.cjs` (50 configured).
-- **Launcher / v2 routing:** `app/src/assignments/studentList/launchOverrides.ts` maps slugs to the v2 path. **All 49 assignable slugs are now routed to `/app/lessons/`** (expanded through Sprint 28 Phase 5A). Any non-listed slug launches to the byte-identical v1 URL.
+- **Launcher / v2 routing:** `app/src/assignments/studentList/launchOverrides.ts` maps slugs to the v2 path. **All 49 assignable slugs are now routed to `/app/lessons/`** (expanded through Sprint 28 Phase 5A). Any non-listed slug launches to the byte-identical v1 URL. F5.3 Slice 9 (planned) replaces this slug-only table with a build-generated revision-to-path table keyed by the assignment's frozen `assessmentRevisionId`.
 - **Counts:** 50 public v1 lessons at root; 49 v2 authenticated artifacts.
 - **Formal curriculum scope:** **Games are excluded from the formal LyfeLabz curriculum.** Lesson closing order is Quiz → More Learning → Connections. *More Learning* holds investigations/simulations/extensions/games; *Connections* holds only related lesson cards. (Extension/simulation curriculum-membership decisions beyond this are not finalized here — do not invent them.)
 - **Present Mode** is a structurally separate instructional surface with **no Firebase SDK on the canonical instructional origin**; no LMS token/OAuth/bundle reaches it.
@@ -191,6 +198,11 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
 - Recent certified workstreams (by commit): Sprint 25 (LMS assignment publication), Sprint 26 (LMS UX hardening), Sprint 27 (student classroom lifecycle + deep links), Sprint 28 (teacher UX + v2 curriculum hardening, including the Phase 5A v2 migration and v2 results hardening), Sprint 28.5 (student + teacher workspace polish + cross-platform certification).
 - **Next:** Sprint 29 (not yet defined in this document).
 - **Persistent student differentiation:** Slices 1-6 implemented and staging-certified; Slice 7 teacher activation UI implemented but held dark (`G19_GATE_OPEN = false` in `app/src/index.ts`); the production G19 gate is not yet satisfied and differentiated delivery is disabled in production. See the differentiation routing row in §13.
+- **F5.3 assessment accessibility:**
+  - Slices 1-8 are implemented. The Earth's Layers staging certification C7 is COMPLETE and PASSING: `pr90f…` + `ap1fed…` on `assessment_earths-layers__r1`, three displayed choices.
+  - Slice 9 (revision-bound canonical assessment rendering and revision-aware coverage) is specified. Slice 9.0 (documentation, PDR-031) is complete; 9A-9E are not started.
+  - Earth's Layers r2 waits on Slice 9.
+  - Production is not activated.
 - **Production certification:** the platform is certified through the Sprint 28.5 cross-platform certification. LMS publication has been exercised against **real** Google Classroom coursework (there is no runtime test-double seam, so browser certification of the LMS path hits real Google — plan LMS cert work accordingly).
 - **Test baselines:** Functions 91 suites / 1708 tests pass; App and Rules suites certified per their sprint reports.
 
@@ -213,6 +225,8 @@ Read this document first, then route to the single strongest canonical source fo
 | Student deep links, assignment publication, resolver, publication callables | `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`; `PDR_030_LMS_ASSIGNMENT_PUBLICATION.md` |
 | Assessment sessions/attempts, ownership, answer-key custody, callables | `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`; `ASSESSMENT_PIPELINE_SPECIFICATION.md` |
 | Assessment item/answer-key/response shapes, scoring | `ASSESSMENT_SCORING_CONTRACT.md` |
+| Assessment revision binding (publish-time freeze, revision-bound display, revision-aware coverage) | PDR-031 in `LYFELABZ_PLATFORM_DECISIONS.md`; `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §38; `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` §21 |
+| Accessible assessment presentations (F5.3: reduced-choice, adapted language, AP records, C7 certification) | `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` |
 | Persistent student differentiation (reading accessibility, presentation variants, launch grants, delivery outcome) | `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (+ `DIFFERENTIATION_CURRENT_STATE_SURFACE_MAP.md`, `DIFFERENTIATION_F1_CODE_VERIFICATION.md`, `DIFFERENTIATION_STAGING_CERTIFICATION_RUNBOOK.md`, `DIFFERENTIATION_PRODUCTION_CERTIFICATION_RUNBOOK.md`). Status: Slices 1-6 implemented and staging-certified; Slice 7 (teacher activation UI) implemented but **dark** (`G19_GATE_OPEN = false`); production G19 gate **not yet satisfied**; differentiated delivery disabled in production. |
 | District security boundary, cross-district enforcement | `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` |
 | Cloud Function authority boundaries | `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` |

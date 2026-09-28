@@ -345,6 +345,22 @@ emits staging config on the staging host and byte-identical prod config elsewher
 (2) the deployed staging `app/dist/bundle.js` was a stale pre-Slice-5 build -
 fixed by rebuilding from current source and redeploying hosting to staging only.
 
+## 3c. F5.3 staging certifications (pointer)
+
+This runbook covers the F5.2 Slices 1-6 gate. The F5.3 certifications are specified and recorded in `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md`:
+
+- **C7 (Earth's Layers accessible assessment): COMPLETE, PASSING.** See addendum §18.1.
+- **C8 (Slice 9 revision-bound rendering): PLANNED, not started.** See addendum §18.2.
+
+C8 environment preconditions, in addition to the addendum steps:
+
+- Slices 9A-9D are committed by the owner.
+- The staging Functions deploy (`assignmentsListForStudent`, `lmsDeepLinkResolve`, `assessmentSessionsBegin`) precedes the staging Hosting deploy, each separately authorized and run from a clean release worktree with real `npm ci` installs.
+- No lesson has a second deployed assessment revision (PDR-031h).
+- The revision-scoped coverage write (`presentationVariants/earths-layers__reading-adapted__r1`) is a staging mutation that needs its own authorization.
+- The live Hosting cache headers are recorded.
+- Production is never touched.
+
 ## 4. Do not
 
 - Do not deploy to or mutate `lyfelabz-prod`.

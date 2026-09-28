@@ -189,6 +189,52 @@ index):
   retain the gated bytes through `generateVariantArtifact()` (add-only
   artifact plus append-only manifest entry).
 
+## Assessment revisions (current state, and F5.3 Slice 9 plan)
+
+Normative basis: PDR-031 (`docs/platform/LYFELABZ_PLATFORM_DECISIONS.md`).
+Full specification: `docs/platform/DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` §21.
+
+Current state:
+
+- Every assignable lesson has exactly one committed revision payload,
+  `platform/functions/src/scripts/assessments/<slug>.r1.json`.
+- The lesson's `<prefix>QuizQuestions` literal is the authority. The
+  payload must be faithful to it (`assessmentFidelity.cjs`,
+  `assessment-fidelity.test.js`).
+- Canonical artifacts declare no assessment revision.
+- An assignment freezes its `assessmentRevisionId` at publication. The
+  display is correct today only because one revision exists per lesson.
+- No lesson may receive a second deployed revision until Slice 9 is
+  certified (PDR-031h).
+
+Planned (Slices 9A and 9B; not implemented):
+
+- Each committed `<slug>.r<N>.json` becomes the authority for its own
+  revision. The lesson config declares which revision the unversioned page
+  renders, and the source literal must be faithful to that payload.
+- Every canonical v1 and v2 artifact embeds an inert, machine-readable
+  revision declaration. It is inserted in the canonical build path only,
+  never in the variant path, so retained variant bytes (`pr90f…`,
+  `prff01…`) do not change.
+- A lesson with more than one committed revision gets one generated v2
+  rendition per revision: the current instruction with only the quiz
+  literal regenerated from that revision's payload. Each rendition is
+  verified faithful to its payload, deterministic, and drift-checked by
+  `lessons:verify`.
+- Renditions assume compatible quiz chrome across revisions: the same item
+  count, and the same quiz section text, progress text and wiring (S9-D6).
+  A revision that needs different chrome is refused, not rendered.
+- Renditions temporarily carry the same `correct` and `explanation` data as
+  the canonical literal and nothing more. That is the open D7 condition
+  (`docs/platform/SECURITY_BACKLOG_LESSON_PAGE_ANSWER_DATA.md`); the D7 fix
+  must cover renditions.
+- Variants are gated against the canonical rendition of their own declared
+  assessment revision.
+- Canonical Show Your Thinking prompts remain unversioned; that is a
+  separate follow-up (addendum §9.4).
+- Editing a lesson's quiz literal still requires a new committed revision.
+  Fidelity is exact, and deployed revisions are immutable.
+
 ## Launcher override contract
 
 The Sprint 17 launcher URL contract is `/lesson_<slug>.html?assignment=<id>`.
@@ -200,3 +246,10 @@ non-listed slug launches to the v1 URL byte-for-byte identical to Sprint 17.
 Add a slug to the override table only after that lesson's v2 artifact has passed
 the full build, legacy-absence, instructional-equivalence, and
 runtime-integration checks.
+
+F5.3 Slice 9D (planned) replaces slug-only routing for assignment
+launches with a build-generated table keyed by lesson slug and the
+assignment's frozen `assessmentRevisionId`. The server supplies the
+revision; the client never selects it. Launches not tied to an assignment
+(anonymous or public practice, teacher preview, Present Mode) keep the
+unversioned page.

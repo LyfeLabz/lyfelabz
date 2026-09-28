@@ -341,8 +341,9 @@ The formative assessment pipeline is governed by `ASSESSMENT_PIPELINE_SPECIFICAT
 
 **Assessment revisions.**
 
-- The internal assessment revision identifier is platform-owned and platform-authored. Revision identifiers never appear on teacher-facing or student-facing surfaces.
-- Every attempt records the internal revision identifier at the moment of submission. Historical attempts remain interpretable across later revisions.
+- The internal assessment revision identifier is platform-owned and platform-authored. Revision identifiers never appear as teacher-configurable values, on teacher-facing surfaces, or as UI text. Per PDR-031f, they may appear in internal lesson paths and machine-readable page data used for integrity checks; they are not answer data.
+- An assignment's revision is frozen when the assignment is published and never changes afterward (PDR-031a). Sessions freeze it, responses are validated and scored against it, and every attempt records it at submission. Historical attempts remain interpretable across later revisions.
+- Every student display associated with an assignment corresponds to its frozen revision, failing closed when that cannot be established (PDR-031d). No lesson may receive a second deployed revision until F5.3 Slice 9 is complete (PDR-031h).
 
 Deviations from these operational standards require a Platform Decision Record amendment. Silent divergence is treated as a defect under Section 15.
 

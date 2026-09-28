@@ -576,7 +576,7 @@ Cross-cutting analytics ships submissions and audit events to BigQuery via a Fir
 
 ### 7.4 Standards Reporting
 
-Standards reporting is served by rollups keyed by `(standardCode, classId)` or `(standardCode, schoolId)`. The lesson document already carries `standards`, so the rollup can attribute submissions to standards through the frozen `lessonVersion`. The query strategy commits that standards reporting will be built on rollups, not on live submission scans.
+Standards reporting is served by rollups keyed by `(standardCode, classId)` or `(standardCode, schoolId)`. The lesson document already carries `standards`, so the rollup can attribute submissions to standards through the frozen `lessonVersion`. [F5.3 Slice 9.0: `lessonVersion` was removed in commit `b294e65`. The frozen identity available to such a rollup is the attempt's `lessonSlug` plus its `assessmentRevisionId` (PDR-031a).] The query strategy commits that standards reporting will be built on rollups, not on live submission scans.
 
 ### 7.5 Google Classroom and Canvas Integration
 

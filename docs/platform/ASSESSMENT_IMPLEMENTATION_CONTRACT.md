@@ -19,6 +19,12 @@ PDR-029 (Assignment Summary and Recipient Population Policy) ratifies two polici
 
 ---
 
+## F5.3 Slice 9.0 Reconciliation Notice
+
+PDR-031 (Assessment Revision Binding and Revision-Bound Assessment Display) ratifies that the assessment revision is frozen on the assignment when the assignment is published. The earlier §16 statement that the revision "current at the moment of submission" applies, including to sessions that submit after a mid-window revision goes live, is superseded. §6, §15, §16, §17, and §33.3 are reconciled in place, and §38 records the full reconciliation, including the superseded wording. The `lessonVersion` assignment field named in earlier text was removed from the implementation in commit `b294e65` (2026-07-28).
+
+---
+
 ## 1. Purpose
 
 The LyfeLabz certified corpus ratified the formative assessment pipeline as session-authoritative, server-scored, unlimited-attempt, and immutable (PDR-021). The rules that follow from that stance are distributed across `ASSESSMENT_PIPELINE_SPECIFICATION.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_FIRESTORE_QUERY_AND_INDEX_STRATEGY.md`, `LYFELABZ_SUBMISSION_ROLLUP_STRATEGY.md`, and `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`. This contract collapses those statements into one authoritative reference so engineers do not have to reconstruct the assessment implementation model from many partial statements.
@@ -139,6 +145,7 @@ Invariants:
 
 - Only one Live session MAY exist per `(studentId, activityId, classId, assignmentId)` tuple at a time. `assessmentSessionsBegin` MUST refuse to create a second Live session and MUST return the existing Live session's identifier.
 - A session's `assignmentId`, `classId`, `activityId`, and `assessmentRevisionId` are frozen at session creation. `assessmentSessionsAutosave` MUST NOT mutate any of these fields.
+- The session's `assessmentRevisionId` is copied from the assignment's frozen `assessmentRevisionId` (§16, PDR-031a). It is never derived from `assessments/{assessmentId}.currentRevisionId` at begin time and never accepted from the client.
 - Autosave writes are throttled server-side; the throttle interval is an operational constant, not a teacher-facing configuration.
 - No client-authoritative score, correctness marker, or explanation payload is ever accepted onto a session document. Sessions carry answers only.
 - Session documents MUST NOT contain any excerpt of the answer key.
@@ -290,6 +297,7 @@ Answer keys are the load-bearing confidentiality boundary of the pipeline.
 - The scorer MUST NOT return the answer key over the callable response before submission. The response payload MUST contain the score, item-level correctness, correct answers for items the student answered, and per-item explanations, and MUST NOT contain any answer-key material for items the student did not answer.
 - The client MUST NOT be presented with the answer key in any Firestore document, any callable response, any cached asset, any bundled JavaScript, or any URL parameter.
 - A Practice Mode surface (anonymous, unauthenticated exploration) MAY compute local right/wrong feedback against a copy of the assessment items that does not include the answer key. Any such copy MUST be limited to the item stems and permitted metadata and MUST NOT include the answer key or per-item explanations. The Practice Mode surface produces no session, no attempt, and no audit event (`ASSESSMENT_PIPELINE_SPECIFICATION.md` §4).
+- **Known unresolved condition (D7).** The current lesson pages do not meet the two rules above. Every canonical lesson page (v1 and v2) and retained differentiated artifact embeds each question's correct option index and explanation in its quiz literal. Scoring remains server-authoritative against `assessmentAnswerKeys/*`, but the page data is readable before answering. This is open owner decision D7 (`SECURITY_BACKLOG_LESSON_PAGE_ANSWER_DATA.md`). Revision-bound canonical renditions introduced by F5.3 Slice 9 temporarily inherit the same condition, limited to exactly the data needed to reproduce the existing canonical representation (PDR-031g). The condition is not waived, and the D7 fix MUST cover those renditions.
 
 ## 16. Assessment Publication Relationship
 
@@ -297,14 +305,15 @@ Assessment publication is distinct from assignment publication.
 
 - The Platform Administrator publishes an assessment (and any subsequent revision) through the deployment pipeline. Publication writes the `assessments/{assessmentId}`, `assessmentRevisions/{revisionId}`, and `assessmentAnswerKeys/{revisionId}` documents atomically at the deployment boundary.
 - A teacher publishes an assignment through `assignmentsPublish`. The publication authorizes students to attempt the assessment for that class within the window.
-- The assessment revision recorded on an attempt is the revision that was current at the moment of submission, not the revision that was current at the moment the assignment was published. A revision published mid-window applies to sessions that submit after the revision goes live, subject to the invariant in `ASSESSMENT_PIPELINE_SPECIFICATION.md` §15 that revisions are internal and never surface to teachers.
+- The assessment revision is frozen on the assignment when the assignment is published (PDR-031a). `assignmentsPublish` stamps `assignments/{assignmentId}.assessmentRevisionId` from `assessments/{assessmentId}.currentRevisionId` exactly once, on the first `draft` -> `published` transition, and refuses publication when the assessment has no deployed revision. The value is immutable for the life of the assignment. Every session begun for the assignment freezes that value (§6), and the attempt records it at submission. A revision deployed later, including mid-window, never changes the revision of an already-published assignment. It applies only to assignments published after it becomes current. Revisions remain internal and never surface to teachers (`ASSESSMENT_PIPELINE_SPECIFICATION.md` §15, PDR-026e). The superseded wording of this bullet is recorded in §38.
+- Every student display associated with the assignment corresponds to that frozen revision (PDR-031d). The rendering surfaces are outside this contract (§2), but no lesson may receive a second deployed revision until revision-bound display (F5.3 Slice 9) is implemented and certified (PDR-031h).
 - An assessment that is retired remains available for scoring against existing sessions and remains queryable through historical attempts. A retired assessment MUST NOT be referenced by a new assignment; `assignmentsCreateDraft` MUST refuse to reference a retired assessment.
 
 ## 17. Assignment Relationship
 
 The assignment is the authorization boundary for authoritative attempts. This contract does not redefine the assignment shape; it names the assignment fields the assessment pipeline reads.
 
-- `assignments/{assignmentId}.classId`, `.teacherId`, `.schoolId`, `.districtId` (denormalized under `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §10), `.lessonSlug`, `.lessonVersion`, `.mode`, `.status`, `.availableAt`, `.windowClosesAt` are the fields the assessment pipeline reads.
+- `assignments/{assignmentId}.classId`, `.teacherId`, `.schoolId`, `.districtId` (denormalized under `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §10), `.lessonSlug`, `.assessmentRevisionId` (frozen at publication, §16), `.mode`, `.status`, `.availableAt`, `.windowClosesAt` are the fields the assessment pipeline reads. The `.lessonVersion` field named in the original text no longer exists; it was removed in commit `b294e65` (2026-07-28), and assessment identity is carried by `.assessmentRevisionId` (§38).
 - The `mode` field's `classroom` value authorizes attempt production. The `practice` value is not part of the attempt pipeline; a `practice`-mode assignment does not produce sessions or attempts and MUST be refused by `assessmentSessionsBegin`. This preserves the existing Practice Mode carve-out.
 - The `status` field's `published` value authorizes new sessions. `closed` refuses new sessions but permits in-grace submissions. `draft` and `archived` refuse both.
 - One assignment per class (`ASSESSMENT_PIPELINE_SPECIFICATION.md` §12.1). Fan-out to multiple classes produces multiple assignment records, one per class. This contract does not itself perform the fan-out; the assignment publication callable does.
@@ -678,7 +687,7 @@ Every other current-status / callable pairing is a disallowed transition and MUS
 - reopening does not regenerate or replace the frozen recipient collection at `assignments/{assignmentId}/recipients/{studentId}`. The population captured at first publication remains authoritative; the roster is not re-evaluated against current class enrollment.
 - every existing `attempts/{attemptId}` document remains immutable and preserved per §7 and §14. Attempt numbering under §8 and §12 continues from the current maximum; reopening does not restart or renumber attempts and does not reclassify the current representative attempt.
 - every existing assignment summary and rollup remains readable and continues to include the historical attempts already recorded. New attempts finalized after reopening participate in aggregate recomputation under the existing representative-attempt policy (PDR-029) without erasing prior values.
-- reopening does not create a new assignment record and does not alter `assignmentId`, `classId`, `teacherId`, `schoolId`, `districtId`, `lessonSlug`, `lessonVersion`, `mode`, or any LMS / Google Classroom linkage. No metadata edit is possible through this callable.
+- reopening does not create a new assignment record and does not alter `assignmentId`, `classId`, `teacherId`, `schoolId`, `districtId`, `lessonSlug`, `assessmentRevisionId`, `mode`, or any LMS / Google Classroom linkage. No metadata edit is possible through this callable. (The original text listed `lessonVersion`, a field since removed; see §38.)
 - reopening does not touch `assessmentSessions/*`, `attempts/*`, `attemptRollups/*`, `assignmentRollups/*`, `assessmentAnswerKeys/*`, or any Google Classroom coursework.
 
 ### 33.4 Authorization
@@ -824,6 +833,42 @@ The post-quiz "Show Your Thinking" explanation is persisted with the attempt it 
 - **Historical attempts.** Attempts finalized before this reconciliation carry no `writtenResponse`; the text was never sent to the V2 pipeline. The field is never backfilled.
 - No Security Rules change, composite index, new collection, or new callable is introduced.
 
+## 38. F5.3 Slice 9.0 Reconciliation (Assessment Revision Binding)
+
+PDR-031 ratifies the revision-binding rules below. This section reconciles the contract with them. It introduces no Rules change, composite index, collection, or callable. The display and coverage requirements are implemented by F5.3 Slices 9A to 9E (`DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` §21). The revision-timing rule is current, certified behavior.
+
+### 38.1 Revision timing (supersedes the original §16 bullet)
+
+The original §16 text read: "The assessment revision recorded on an attempt is the revision that was current at the moment of submission, not the revision that was current at the moment the assignment was published. A revision published mid-window applies to sessions that submit after the revision goes live, subject to the invariant in `ASSESSMENT_PIPELINE_SPECIFICATION.md` §15 that revisions are internal and never surface to teachers."
+
+The implementation has not followed that text since commit `b294e65` (2026-07-28), and it is superseded. The canonical rule:
+
+- `assignmentsPublish` stamps `assessmentRevisionId` once, at the first publication, from the deployed `currentRevisionId` (§16).
+- The assignment's value is immutable. `assessmentSessionsBegin` refuses a client-supplied revision and freezes the assignment's value onto the session.
+- `assessmentSessionsAutosave` validates responses against the session's frozen revision.
+- `assessmentAttemptsFinalize` scores against the session's frozen revision (`ASSESSMENT_SCORING_CONTRACT.md` §12.1) and refuses a client-supplied revision.
+- The attempt records that revision at submission.
+- A later deployment changes only the revision stamped on assignments published afterward.
+
+### 38.2 Display and coverage bound to the frozen revision
+
+- Every student display associated with an assignment corresponds to its frozen revision. This includes assignment-tied practice-mode deep links. If correspondence cannot be established, the launch or submission fails closed rather than showing whatever quiz a page embeds (PDR-031d).
+- The server derives the revision from the assignment. A client may receive it to route to and verify its display, but never selects or supplies it (PDR-031c).
+- Differentiated assessment coverage resolves by lesson, instructional variant, and frozen revision (PDR-031e). A frozen revision without coverage resolves to a truthful, telemetry-visible `canonicalFallback`, both at launch and at a begin without a launch reference. Malformed coverage records, unavailable reads, and invalid provenance still fail closed.
+- Revision identifiers may appear in internal lesson paths and machine-readable page data. They are not answer data and never appear as teacher-configurable values or as ordinary teacher-facing UI (PDR-031f). §20's prohibition on exposing `assessmentRevisionId` on teacher screens is unchanged.
+
+### 38.3 Retired `lessonVersion`
+
+The `.lessonVersion` assignment field named in the original §17 and §33.3 was removed from the implementation in commit `b294e65`. Those sections now name `.assessmentRevisionId`. No `lessonVersion` field exists on any assignment, session, or attempt.
+
+### 38.4 Inherited answer-data condition
+
+See the D7 bullet added to §15. Slice 9 renditions inherit the existing condition. Slice 9 does not broaden it and does not resolve it.
+
+### 38.5 Second-revision gate
+
+No lesson may receive a second deployed assessment revision until F5.3 Slice 9 is implemented and staging-certified (PDR-031h).
+
 ## Change Log
 
 - 2026-07-12 - Initial issuance under Sprint 10A step F-2. Ratified by PDR-026.
@@ -834,3 +879,4 @@ The post-quiz "Show Your Thinking" explanation is persisted with the attempt it 
 - 2026-07-18 - Sprint 15 reconciliation. Added §35 recording the Sprint 15 `assignmentsRecipientList` callable (authorized for the owning teacher under PDR-029o; not aggregate analytics), the client-side roster grouping composition against certified reads, and the client-side per-question factual summary aggregator (silent below the `>= 3` minimum-attempt threshold; no persistent rollup introduced). No pipeline behavior is added; §35 narrows §17, §18, and §20 against the certified Sprint 15 implementation.
 - 2026-07-18 - Sprint 16 reconciliation. Added §36 recording the client-side per-render fetch deduplication on Assignment Detail, the summary-anchored group counts with a calm synchronization note on disagreement, and the targeted read-only teacher-facing refresh path. No new callable, Firestore field, custom claim, Rules relaxation, composite index, or schema change was introduced; §36 narrows §35 against the certified Sprint 16 client hardening.
 - 2026-09-25 - Sprint 30 reconciliation. Added §37 recording the unscored Show Your Thinking `writtenResponse` carried by autosave onto the session, frozen onto the attempt at finalize, and projected to the owning teacher. No scoring, Rules, index, or callable change.
+- 2026-09-27 - F5.3 Slice 9.0 reconciliation under PDR-031. Added the F5.3 Slice 9.0 Reconciliation Notice and §38. Superseded the §16 statement that the revision current at submission applies (the canonical rule is publish-time freezing, current behavior since commit `b294e65`). Reconciled §6, §15 (the D7 condition and its inheritance by Slice 9 renditions), §16, §17 and §33.3 (`lessonVersion` replaced by `assessmentRevisionId`). No Rules, index, collection, or callable change.

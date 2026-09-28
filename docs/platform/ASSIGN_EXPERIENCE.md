@@ -25,7 +25,7 @@ The assignment behavior described in this document is governed by `ASSESSMENT_PI
 - **Attempts are the authoritative record.** The word "submission" throughout this document is read forward as **attempt**. The `submitted` state remains internal to the scoring transaction and is not a teacher-visible state.
 - **Sessions are internal.** Autosaving, resuming, and expiring student sessions are platform behaviors. Teachers do not manage sessions.
 - **Practice / Classroom toggle removed.** The pre-Sprint 9A student-facing mode toggle is removed. Assignment configuration does not include a Practice / Classroom mode. Behavior derives automatically from authentication and authorization.
-- **Assessment revisions are internal.** Teachers do not select an assessment version. The platform automatically stamps every attempt with the internal revision identifier at submission time.
+- **Assessment revisions are internal.** Teachers do not select an assessment version. The platform automatically freezes the current internal revision on the assignment when it is published, and every attempt on that assignment records that revision at submission. A newer revision never changes an already-published assignment (PDR-031, reconciled 2026-09-27 under F5.3 Slice 9.0).
 
 Where this document and the specification conflict, the specification controls.
 
