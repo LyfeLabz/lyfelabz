@@ -241,7 +241,7 @@ The resolution payload contains exactly:
 
 - As implemented, the activity identifier is returned as `lessonSlug`.
 - Persistent differentiation (`DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` §7.1) adds the optional `presentation` and `launchRef`. They are present only for an accommodated student on a launch target.
-- PDR-031 and F5.3 Slice 9 (`DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` §21.5, implemented in Slice 9C-1) add `assessmentRevisionId`: the assignment's frozen assessment revision, returned for `assignmentLaunch` and `lessonPractice` targets for every student.
+- PDR-031 and F5.3 Slice 9 (`DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md` §21.5, implemented in Slice 9C-1) add `assessmentRevisionId`: the assignment's frozen assessment revision, returned for `assignmentLaunch` and `lessonPractice` targets for every student. It is omitted, never guessed, when the assignment record carries no usable revision of its lesson, and a request naming it is refused.
   - The client uses it only to route to, and later verify, the frozen revision's lesson page, including for assignment-tied practice.
   - It is not answer-key material and grants no authority. The resolver still refuses any client-supplied authority-bearing field.
 - The external deep-link URL shape (§8) is unchanged. The revision appears only in the internal lesson path the client navigates to after resolution, never in the Classroom-facing URL.

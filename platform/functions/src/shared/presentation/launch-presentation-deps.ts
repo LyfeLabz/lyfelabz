@@ -1,22 +1,21 @@
 import { Timestamp } from "firebase-admin/firestore";
 
 import { isDifferentiatedDeliveryEnabled } from "../config/differentiated-delivery-flag";
-import { launchGrantCreationDocRef } from "../firestore/typed-ref";
-import { presentationVariantIndexDocRef } from "../firestore/typed-ref";
+import {
+  launchGrantCreationDocRef,
+  presentationVariantIndexDocRef,
+  presentationVariantScopedIndexDocRef,
+} from "../firestore/typed-ref";
 import { studentAccommodationDocRef } from "../firestore/typed-ref";
 import { log } from "../logging/logger";
 import { PlatformError } from "../errors/platform-error";
-import {
-  assertActivateWriteConsistent,
-  isValidLessonSlugForVariant,
-  isValidVariantKey,
-  variantKeyForReadingLevel,
-} from "../types/presentation-variant";
+import { variantKeyForReadingLevel } from "../types/presentation-variant";
 import {
   assertLaunchGrantPairInvariant,
   computeGrantExpiryMs,
 } from "../types/launch-grant";
 import { generateGrantId } from "./launch-grant-id";
+import { readRevisionCoverageWith } from "./revision-coverage-deps";
 import {
   createLaunchPresentationResolver,
   type LaunchPresentationResolver,
@@ -52,68 +51,28 @@ async function readReading(studentId: string): Promise<ReadingResolution> {
   return { active: false };
 }
 
-// Evaluate the current-presentation index for (lessonSlug, variantKey). Absent
-// -> `absent`; `retired` status -> `retired`; `active` status is trusted only
-// after a full internal-consistency check (doc identity, path/hash/id
-// agreement) - any inconsistency, or an unknown status, is `malformed` so a
-// defect can never be delivered as differentiated. NO Hosting liveness fetch
-// occurs here (§ "no hosting fetch during student resolution"): Slice 3
-// publication already byte-verified the artifact before the index pointer
-// advanced, so runtime trusts a valid active index.
-async function readVariantIndex(
+// F5.3 Slice 9C-1: coverage for (lessonSlug, variantKey, frozen revision) is
+// classified by the ONE shared revision-aware evaluator
+// (`./revision-coverage`, wired in `./revision-coverage-deps`), the same one
+// begin uses. Its legacy-record classification is exactly the former
+// `readVariantIndex` one (charset gate -> absent; missing -> absent; retired ->
+// retired; unknown status / identity mismatch / inconsistent activate write ->
+// malformed). NO Hosting liveness fetch occurs here (§ "no hosting fetch during
+// student resolution"): publication already byte-verified the artifact before
+// the index pointer advanced, so runtime trusts a valid active record.
+function readVariantIndex(
   lessonSlug: string,
   variantKey: string,
+  assessmentRevisionId: string | undefined,
 ): Promise<VariantIndexEvaluation> {
-  // §5.1/M3 charset gate. A lessonSlug outside `^[a-z0-9-]+$` (e.g. a legacy
-  // `lesson_g7_earths-layers` slug carrying underscores) can never participate
-  // in variant publication, so no index doc can exist for it. That is a
-  // legitimate COVERAGE GAP (`absent` -> canonicalFallback, §5.2 missing-
-  // variant behavior), not an internal error: guard here so
-  // `presentationVariantIndexDocId` never throws on a non-eligible slug and a
-  // non-differentiable lesson resolves to truthful canonical fallback rather
-  // than a misclassified internal failure.
-  if (!isValidLessonSlugForVariant(lessonSlug) || !isValidVariantKey(variantKey)) {
-    return { kind: "absent" };
-  }
-  const snapshot = await presentationVariantIndexDocRef(lessonSlug, variantKey).get();
-  if (!snapshot.exists) return { kind: "absent" };
-  const data = snapshot.data();
-  if (!data) return { kind: "malformed" };
-  if (data.status === "retired") return { kind: "retired" };
-  if (data.status !== "active") return { kind: "malformed" };
-
-  // Defense-in-depth internal consistency. The doc id is derived from
-  // (lessonSlug, variantKey), so a mismatch is a data-invariant violation.
-  if (data.lessonSlug !== lessonSlug || data.variantKey !== variantKey) {
-    return { kind: "malformed" };
-  }
-  try {
-    assertActivateWriteConsistent({
-      lessonSlug: data.lessonSlug,
-      variantKey: data.variantKey,
-      currentPresentationRevisionId: data.currentPresentationRevisionId,
-      currentPath: data.currentPath,
-      contentSha256: data.contentSha256,
-      assessmentRevisionId: data.assessmentRevisionId,
-      assessmentPresentationRevisionId: data.assessmentPresentationRevisionId,
-    });
-  } catch {
-    return { kind: "malformed" };
-  }
-  return {
-    kind: "active",
-    variantKey: data.variantKey,
-    presentationRevisionId: data.currentPresentationRevisionId,
-    path: data.currentPath,
-    ...(data.assessmentPresentationRevisionId !== undefined && data.assessmentRevisionId !== undefined
-      ? {
-          assessmentBinding: {
-            assessmentRevisionId: data.assessmentRevisionId,
-            assessmentPresentationRevisionId: data.assessmentPresentationRevisionId,
-          },
-        }
-      : {}),
-  };
+  return readRevisionCoverageWith(
+    { scopedRef: presentationVariantScopedIndexDocRef, legacyRef: presentationVariantIndexDocRef },
+    {
+      lessonSlug,
+      variantKey,
+      ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
+    },
+  );
 }
 
 // Mint one server-issued launch grant and return its opaque id. The grant id

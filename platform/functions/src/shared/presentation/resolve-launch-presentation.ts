@@ -1,4 +1,5 @@
 import type { ReadingLevel } from "../types/student-accommodation";
+import type { RevisionCoverageEvaluation } from "./revision-coverage";
 
 // F5.2 §4 Op C / §8.5 / §8.6 - student presentation resolution, Persistent
 // Student Differentiation Slice 4.
@@ -53,6 +54,16 @@ import type { ReadingLevel } from "../types/student-accommodation";
 //     malformed binding is a malformed index (row 5).
 //   - Internal failure at any step -> canonical response, telemetry, NO grant.
 //     (row 8)
+//
+// F5.3 Slice 9C-1 (addendum 21.6/21.7): coverage is classified by the ONE
+// shared revision-aware evaluator (`./revision-coverage`), keyed on the
+// assignment's FROZEN assessment revision: a revision-scoped index record
+// decides alone when present; otherwise the legacy record is honored only
+// when bound to exactly the frozen revision, or, unbound, under the legacy-r1
+// rule. A legacy record for another revision, or an assignment with no usable
+// frozen revision, is `assessmentMismatch` -> truthful canonicalFallback
+// (reason `coverageAssessmentMismatch`). The malformed row keeps its certified
+// F5.2 row-5 behavior (canonicalFallback grant + defect telemetry).
 
 // Trusted accommodation resolution. `active:false` collapses both "no record"
 // and "record present but inactive" - both are EXPECTED_CANONICAL and
@@ -68,25 +79,11 @@ export type ReadingResolution =
       readonly configRevision?: number;
     };
 
-// Evaluation of the current-presentation index for one (lessonSlug,
-// variantKey). Only `"active"` (an internally-consistent, non-retired index
-// doc) can support differentiated resolution; every other state is a
-// legitimate or defect-driven fallback.
-export type VariantIndexEvaluation =
-  | { readonly kind: "absent" }
-  | { readonly kind: "retired" }
-  | { readonly kind: "malformed" }
-  | {
-      readonly kind: "active";
-      readonly variantKey: string;
-      readonly presentationRevisionId: string;
-      readonly path: string;
-      // F5.3 Slice 5: present iff the index binds an assessment presentation.
-      readonly assessmentBinding?: {
-        readonly assessmentRevisionId: string;
-        readonly assessmentPresentationRevisionId: string;
-      };
-    };
+// Coverage evaluation for one (lessonSlug, variantKey, frozen revision),
+// produced by the shared evaluator. Only `"active"` can support
+// differentiated resolution; every other state is a legitimate or
+// defect-driven fallback.
+export type VariantIndexEvaluation = RevisionCoverageEvaluation;
 
 // The server-selected differentiated pair + path returned to the calling
 // surface (§7.1). Never carries an accommodation level, status, configRevision,
@@ -200,10 +197,12 @@ export type LaunchPresentationResolverPorts = {
   readonly readReading: (studentId: string) => Promise<ReadingResolution>;
   // Server-owned operational differentiated-delivery flag (§8.6).
   readonly isDeliveryEnabled: () => Promise<boolean>;
-  // Current-presentation index evaluation for (lessonSlug, variantKey).
+  // Shared revision-aware coverage evaluation for (lessonSlug, variantKey,
+  // frozen assessmentRevisionId) (F5.3 Slice 9C-1).
   readonly readVariantIndex: (
     lessonSlug: string,
     variantKey: string,
+    assessmentRevisionId: string | undefined,
   ) => Promise<VariantIndexEvaluation>;
   // Mint one server-issued launch grant and return its opaque id.
   readonly mintGrant: (input: MintGrantInput) => Promise<string>;
@@ -266,11 +265,14 @@ export function createLaunchPresentationResolver(
   function cachedReadVariantIndex(
     lessonSlug: string,
     variantKey: string,
+    assessmentRevisionId: string | undefined,
   ): Promise<VariantIndexEvaluation> {
-    const key = `${lessonSlug}__${variantKey}`;
+    // Keyed on the frozen revision too: two assignments of one lesson frozen
+    // on different revisions resolve independently.
+    const key = `${lessonSlug}__${variantKey}__${assessmentRevisionId ?? ""}`;
     let cached = indexCache.get(key);
     if (!cached) {
-      cached = ports.readVariantIndex(lessonSlug, variantKey);
+      cached = ports.readVariantIndex(lessonSlug, variantKey, assessmentRevisionId);
       indexCache.set(key, cached);
     }
     return cached;
@@ -313,10 +315,16 @@ export function createLaunchPresentationResolver(
         return { kind: "canonicalFallback", launchRef, reason: "operationalDisable" };
       }
 
-      const index = await cachedReadVariantIndex(lessonSlug, variantKey);
+      const index = await cachedReadVariantIndex(lessonSlug, variantKey, input.assessmentRevisionId);
 
-      if (index.kind === "active" && index.assessmentBinding !== undefined &&
-          index.assessmentBinding.assessmentRevisionId !== input.assessmentRevisionId) {
+      if (
+        index.kind === "assessmentMismatch" ||
+        (index.kind === "active" && index.assessmentBinding !== undefined &&
+          index.assessmentBinding.assessmentRevisionId !== input.assessmentRevisionId)
+      ) {
+        // F5.3 Slice 9C-1: the shared evaluator found coverage only for
+        // another revision (or the assignment has no usable frozen revision).
+        // The binding comparison is kept as defense in depth.
         // F5.3 Slice 5: the bound assessment presentation maps onto a
         // different canonical revision than the assignment froze (or the
         // caller could not supply one). Never deliver a presentation whose

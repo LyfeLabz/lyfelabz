@@ -167,10 +167,12 @@ export {
 } from "./firestore/typed-ref";
 export {
   presentationVariantIndexDocRef,
+  presentationVariantScopedIndexDocRef,
 } from "./firestore/typed-ref";
 export {
   PRESENTATION_VARIANTS_COLLECTION,
   presentationVariantIndexDocId,
+  presentationVariantScopedIndexDocId,
   isValidPresentationRevisionId,
   isValidVariantKey,
   isValidLessonSlugForVariant,

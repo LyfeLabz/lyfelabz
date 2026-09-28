@@ -12,6 +12,7 @@ import {
   type AssignmentRecipientRecord,
   type LaunchPresentation,
 } from "../shared";
+import { usableFrozenAssessmentRevisionId } from "../shared/presentation/revision-coverage";
 import {
   createClassAssignmentsLoader,
   occurrenceScopeOf,
@@ -60,8 +61,9 @@ import {
 // required by the `activeStudent` surface (title, publishedAt for ordering)
 // and the assignment launcher (assignmentId, lessonSlug) cross the boundary.
 // Fields present on the persisted record but not required by Sprint 17
-// (instructions, windowClosesAt, availableAt, mode,
-// assessmentRevisionId, lmsPublicationRef) are structurally excluded.
+// (instructions, windowClosesAt, availableAt, mode, lmsPublicationRef) are
+// structurally excluded. `assessmentRevisionId` is exposed from F5.3 Slice
+// 9C-1 (below) for revision-bound launch routing.
 export type AssignmentsListForStudentItem = {
   readonly assignmentId: string;
   readonly lessonSlug: string;
@@ -79,6 +81,13 @@ export type AssignmentsListForStudentItem = {
   // routing/transport is Slice 5/6. The student never asserts either field.
   readonly presentation?: LaunchPresentation;
   readonly launchRef?: string;
+  // F5.3 Slice 9C-1 (addendum 21.5, additive): the assignment's FROZEN
+  // assessment revision, read from the assignment record and present for
+  // every student regardless of accommodation (so it discloses nothing about
+  // accommodations), including canonicalFallback. Omitted only when the record
+  // carries no usable revision of this lesson; the 9D client then fails
+  // closed. No request field can influence it. The Slice 9C-1 client ignores it.
+  readonly assessmentRevisionId?: string;
   // Reassignment model: present ONLY on the operational Current item of a
   // class + lesson with a valid Current, and only when non-empty. Lists the
   // other occurrences of that same class + lesson (canonical occurrence
@@ -145,6 +154,9 @@ const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
   "configRevision",
   "issuedAt",
   "expiresAt",
+  // F5.3 Slice 9C-1 (PDR-031c): the assessment revision is response-only and
+  // server-derived from the assignment; a client can never name one.
+  "assessmentRevisionId",
 ];
 
 function validateRequest(data: unknown): void {
@@ -461,14 +473,14 @@ async function assignmentsListForStudentHandler(
         ? rawTitle
         : record.lessonSlug;
 
+    // F5.3 Slice 9C-1: the assignment's frozen revision, when it is a usable
+    // revision of this lesson; never guessed, never the deployed current one.
+    const assessmentRevisionId = usableFrozenAssessmentRevisionId(record.lessonSlug, record.assessmentRevisionId);
     const resolution = await launchResolver.resolve({
       studentId: actor.uid,
       assignmentId: record.assignmentId,
       lessonSlug: record.lessonSlug,
-      // F5.3 Slice 5: the assignment's frozen revision (server-derived).
-      ...(typeof record.assessmentRevisionId === "string"
-        ? { assessmentRevisionId: record.assessmentRevisionId }
-        : {}),
+      ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
     });
     let presentation: LaunchPresentation | undefined;
     let launchRef: string | undefined;
@@ -487,6 +499,7 @@ async function assignmentsListForStudentHandler(
       publishedAt: timestampToMillis(record.publishedAt),
       ...(presentation !== undefined ? { presentation } : {}),
       ...(launchRef !== undefined ? { launchRef } : {}),
+      ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
       ...(relatedAssignmentIds.length > 0 ? { relatedAssignmentIds } : {}),
     });
   }

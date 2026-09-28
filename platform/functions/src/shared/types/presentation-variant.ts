@@ -96,6 +96,22 @@ export function presentationVariantIndexDocId(lessonSlug: string, variantKey: st
   return `${lessonSlug}__${variantKey}`;
 }
 
+// F5.3 Slice 9C-1 (addendum section 21.7): the revision-scoped index document
+// id `{lessonSlug}__{variantKey}__r{N}` in the same collection, where N is the
+// ordinal of the assignment's frozen `assessmentRevisionId`. Unambiguous
+// because neither component may contain "__". Read-only in 9C-1; the 9C-2
+// publisher is the only writer.
+export function presentationVariantScopedIndexDocId(
+  lessonSlug: string,
+  variantKey: string,
+  revisionOrdinal: number,
+): string {
+  if (!Number.isSafeInteger(revisionOrdinal) || revisionOrdinal < 1) {
+    throw new Error(`[presentation-variant] revision ordinal must be an integer of 1 or more, got ${String(revisionOrdinal)}`);
+  }
+  return `${presentationVariantIndexDocId(lessonSlug, variantKey)}__r${String(revisionOrdinal)}`;
+}
+
 // Canonical read shape for `presentationVariants/{lessonSlug}__{variantKey}`
 // per §5.3. `currentPath` may only ever reference an immutable artifact
 // already confirmed retrievable (the §6.8 invariant, enforced by the publish

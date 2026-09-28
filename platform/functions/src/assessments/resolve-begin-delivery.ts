@@ -58,7 +58,15 @@ export const LAUNCH_REF_EXPIRED = "LAUNCH_REF_EXPIRED";
 // whose `active` branch carries the pair for grant minting). This enforces the
 // §8.2 "must not select or freeze a presentation revision" invariant by
 // construction.
-export type BeginCoverageKind = "absent" | "retired" | "malformed" | "active";
+//
+// F5.3 Slice 9C-1: the kind is derived from the ONE shared revision-aware
+// evaluator (`shared/presentation/revision-coverage`) that launch resolution
+// also uses, keyed on the assignment's frozen assessment revision.
+// `assessmentMismatch` means coverage exists only for another revision (or
+// the assignment has no usable frozen revision): a legitimate gap for THIS
+// revision, which a no-ref begin records as a truthful canonicalFallback
+// (S9-U1), never a refusal and never a downgrade of available support.
+export type BeginCoverageKind = "absent" | "retired" | "malformed" | "assessmentMismatch" | "active";
 
 // Permissive read view of a `launchGrants/{grantId}` record. Read defensively
 // (every field `unknown`) so a malformed grant record is caught by validation
@@ -122,7 +130,7 @@ export type BeginDeliveryTelemetryEvent =
       readonly assignmentId: string;
       readonly lessonSlug: string;
       readonly variantKey: string;
-      readonly reason: "operationalDisable" | "coverageAbsent" | "coverageRetired";
+      readonly reason: "operationalDisable" | "coverageAbsent" | "coverageRetired" | "coverageAssessmentMismatch";
     }
   | {
       readonly type: "beginRequiresLaunch";
@@ -146,11 +154,13 @@ export type BeginDeliveryPorts = {
   readonly readAccommodation: (studentId: string) => Promise<ReadingResolution>;
   // Server-owned operational differentiated-delivery flag (§8.6), fail-closed.
   readonly isDeliveryEnabled: () => Promise<boolean>;
-  // Begin-time coverage classification for (lessonSlug, variantKey). Returns a
-  // KIND only; never a revision (§8.2 A->B invariant).
+  // Begin-time coverage classification for (lessonSlug, variantKey, frozen
+  // assessment revision) through the shared evaluator. Returns a KIND only;
+  // never a revision (§8.2 A->B invariant).
   readonly readCoverage: (
     lessonSlug: string,
     variantKey: string,
+    assessmentRevisionId: string,
   ) => Promise<BeginCoverageKind>;
   // Derive the logical variant key from a reading level.
   readonly variantKeyForReadingLevel: (level: ReadingLevel) => string;
@@ -355,7 +365,7 @@ async function resolveWithoutGrant(
 
   // Coverage legitimacy. This read decides ONLY whether a ref-less fallback is
   // legitimate; it never yields a revision.
-  const coverage = await ports.readCoverage(lessonSlug, variantKey);
+  const coverage = await ports.readCoverage(lessonSlug, variantKey, input.assessmentRevisionId);
   switch (coverage) {
     case "absent":
       // Legitimate coverage gap -> truthful canonicalFallback.
@@ -364,6 +374,12 @@ async function resolveWithoutGrant(
     case "retired":
       // Legitimate coverage withdrawal -> truthful canonicalFallback.
       ports.telemetry({ type: "noRefFallback", studentId, assignmentId, lessonSlug, variantKey, reason: "coverageRetired" });
+      return { deliveryOutcome: "canonicalFallback" };
+    case "assessmentMismatch":
+      // F5.3 Slice 9C-1 (S9-U1): coverage exists only for another assessment
+      // revision. A legitimate gap for this assignment's frozen revision ->
+      // truthful canonicalFallback with telemetry, exactly as launch resolves.
+      ports.telemetry({ type: "noRefFallback", studentId, assignmentId, lessonSlug, variantKey, reason: "coverageAssessmentMismatch" });
       return { deliveryOutcome: "canonicalFallback" };
     case "active":
       // THE P1 CASE. Differentiated coverage is currently available and

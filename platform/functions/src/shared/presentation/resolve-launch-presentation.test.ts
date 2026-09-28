@@ -284,7 +284,9 @@ describe("resolve-launch-presentation - server-authoritative identity", () => {
     await createLaunchPresentationResolver(h.ports).resolve(INPUT);
     // The index is read with the SERVER-derived variantKey.
     expect(variantKeyForReadingLevel).toHaveBeenCalledWith("adapted");
-    expect(h.readVariantIndex).toHaveBeenCalledWith(LESSON_SLUG, VARIANT_KEY);
+    // F5.3 Slice 9C-1: together with the assignment's frozen revision (none
+    // in this fixture), never a client value.
+    expect(h.readVariantIndex).toHaveBeenCalledWith(LESSON_SLUG, VARIANT_KEY, undefined);
   });
 });
 

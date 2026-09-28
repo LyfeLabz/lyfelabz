@@ -603,3 +603,103 @@ describe("lmsDeepLinkResolve - superseded occurrence (reassignment model)", () =
     expect(res.attemptContext).toBe("authorized");
   });
 });
+
+// F5.3 Slice 9C-1 (addendum 21.5): both assignment-associated launch targets
+// carry the assignment's FROZEN assessment revision, read from the assignment
+// record for every student (including canonicalFallback), and a client can
+// never name one.
+describe("lmsDeepLinkResolve - frozen assessment revision (F5.3 Slice 9C-1)", () => {
+  const SLUG = "earths-layers";
+  const R1 = `assessment_${SLUG}__r1`;
+  const R2 = `assessment_${SLUG}__r2`;
+
+  it("assignmentLaunch returns the frozen r1 and resolves coverage against it", async () => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(assignmentSnapshot({ lessonSlug: SLUG, assessmentRevisionId: R1 }));
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res).toEqual({
+      assignmentId: ASSIGNMENT_ID,
+      classId: CLASS_ID,
+      lessonSlug: SLUG,
+      internalTarget: "assignmentLaunch",
+      attemptContext: "authorized",
+      assessmentRevisionId: R1,
+    });
+    expect(mockLaunchResolve).toHaveBeenCalledWith({
+      studentId: STUDENT_UID,
+      assignmentId: ASSIGNMENT_ID,
+      lessonSlug: SLUG,
+      assessmentRevisionId: R1,
+    });
+  });
+
+  it("a synthetic r2 assignment returns r2, also on canonicalFallback, never another revision", async () => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(assignmentSnapshot({ lessonSlug: SLUG, assessmentRevisionId: R2 }));
+    mockLaunchResolve.mockResolvedValue({
+      kind: "canonicalFallback",
+      launchRef: "ffffffffffffffffffffffffffffffff",
+      reason: "coverageAssessmentMismatch",
+    });
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.assessmentRevisionId).toBe(R2);
+    expect(res.launchRef).toBe("ffffffffffffffffffffffffffffffff");
+    expect("presentation" in res).toBe(false);
+    expect(mockLaunchResolve.mock.calls[0][0].assessmentRevisionId).toBe(R2);
+  });
+
+  it("a differentiated r1 launch keeps its provenance and the frozen revision", async () => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(assignmentSnapshot({ lessonSlug: SLUG, assessmentRevisionId: R1 }));
+    const presentation = {
+      variantKey: "reading-adapted",
+      presentationRevisionId: "pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189",
+      path: "app/lessons/variants/lesson_earths-layers__pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189.html",
+    };
+    mockLaunchResolve.mockResolvedValue({ kind: "differentiated", launchRef: "0123456789abcdef0123456789abcdef", presentation });
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.presentation).toEqual(presentation);
+    expect(res.assessmentRevisionId).toBe(R1);
+  });
+
+  it("assignment-tied lessonPractice returns the frozen revision", async () => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(assignmentSnapshot({ lessonSlug: SLUG, assessmentRevisionId: R2, mode: "practice" }));
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("lessonPractice");
+    expect(res.assessmentRevisionId).toBe(R2);
+    expect(mockLaunchResolve.mock.calls[0][0].assessmentRevisionId).toBe(R2);
+  });
+
+  it("an informational arrival carries no revision", async () => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(assignmentSnapshot({ lessonSlug: SLUG, assessmentRevisionId: R1, status: "closed" }));
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("informational");
+    expect("assessmentRevisionId" in res).toBe(false);
+  });
+
+  it.each([
+    ["missing", undefined],
+    ["another lesson's revision", "assessment_water-cycle__r1"],
+    ["a non-canonical ordinal", `assessment_${SLUG}__r01`],
+  ])("a %s frozen revision is never guessed: omitted and not passed to coverage", async (_label, value) => {
+    setupHappyPath();
+    mockAssignmentGet.mockResolvedValue(
+      assignmentSnapshot({ lessonSlug: SLUG, ...(value !== undefined ? { assessmentRevisionId: value } : {}) }),
+    );
+    const res = await __lmsDeepLinkResolveHandler(makeRequest());
+    expect(res.internalTarget).toBe("assignmentLaunch");
+    expect("assessmentRevisionId" in res).toBe(false);
+    expect("assessmentRevisionId" in mockLaunchResolve.mock.calls[0][0]).toBe(false);
+  });
+
+  it("refuses a client-supplied assessmentRevisionId before any read", async () => {
+    setupHappyPath();
+    await expect(
+      __lmsDeepLinkResolveHandler(makeRequest({ assignmentId: ASSIGNMENT_ID, assessmentRevisionId: R2 })),
+    ).rejects.toBeInstanceOf(PlatformError);
+    expect(mockAssignmentGet).not.toHaveBeenCalled();
+    expect(mockLaunchResolve).not.toHaveBeenCalled();
+  });
+});

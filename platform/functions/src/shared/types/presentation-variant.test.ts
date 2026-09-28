@@ -3,6 +3,7 @@ import {
   isValidPresentationRevisionId,
   isValidVariantKey,
   presentationVariantIndexDocId,
+  presentationVariantScopedIndexDocId,
   variantKeyForReadingLevel,
 } from "./presentation-variant";
 
@@ -79,5 +80,20 @@ describe("assertActivateWriteConsistent", () => {
         currentPath: `app/lessons/variants/lesson_earths-layers__reading-adapted__${REV}.html`,
       }),
     ).toThrow();
+  });
+});
+
+// F5.3 Slice 9C-1: revision-scoped index document id (addendum 21.7).
+describe("presentationVariantScopedIndexDocId", () => {
+  it("appends the frozen revision ordinal to the legacy id", () => {
+    expect(presentationVariantScopedIndexDocId("earths-layers", "reading-adapted", 1)).toBe("earths-layers__reading-adapted__r1");
+    expect(presentationVariantScopedIndexDocId("earths-layers", "reading-adapted", 12)).toBe("earths-layers__reading-adapted__r12");
+  });
+  it("refuses a non-positive or non-integer ordinal and invalid components", () => {
+    for (const bad of [0, -1, 1.5, Number.NaN]) {
+      expect(() => presentationVariantScopedIndexDocId("earths-layers", "reading-adapted", bad)).toThrow();
+    }
+    expect(() => presentationVariantScopedIndexDocId("earths_layers", "reading-adapted", 1)).toThrow();
+    expect(() => presentationVariantScopedIndexDocId("earths-layers", "reading__adapted", 1)).toThrow();
   });
 });

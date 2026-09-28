@@ -7,6 +7,9 @@ const mockLaunchGrantCreationDocRef = jest.fn(() => ({ create: mockCreate }));
 
 const mockIndexGet = jest.fn();
 const mockPresentationVariantIndexDocRef = jest.fn(() => ({ get: mockIndexGet }));
+// F5.3 Slice 9C-1: revision-scoped index record (absent unless a test sets it).
+const mockScopedGet = jest.fn();
+const mockPresentationVariantScopedIndexDocRef = jest.fn(() => ({ get: mockScopedGet }));
 
 const mockAccommodationGet = jest.fn();
 const mockStudentAccommodationDocRef = jest.fn(() => ({ get: mockAccommodationGet }));
@@ -23,6 +26,7 @@ jest.mock("firebase-admin/firestore", () => ({
 jest.mock("../firestore/typed-ref", () => ({
   launchGrantCreationDocRef: mockLaunchGrantCreationDocRef,
   presentationVariantIndexDocRef: mockPresentationVariantIndexDocRef,
+  presentationVariantScopedIndexDocRef: mockPresentationVariantScopedIndexDocRef,
   studentAccommodationDocRef: mockStudentAccommodationDocRef,
 }));
 
@@ -47,6 +51,8 @@ const SHA = "a".repeat(64);
 const REVISION_ID = `pr${SHA}`;
 const PATH = `app/lessons/variants/lesson_${LESSON_SLUG}__${REVISION_ID}.html`;
 const NOW_MS = 1_700_000_000_000;
+// The assignment's frozen revision (server-derived).
+const FROZEN_R1 = `assessment_${LESSON_SLUG}__r1`;
 
 function activeIndexSnapshot(overrides: Record<string, unknown> = {}) {
   return {
@@ -67,6 +73,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockGenerateGrantId.mockReturnValue("0123456789abcdef0123456789abcdef");
   mockCreate.mockResolvedValue(undefined);
+  mockScopedGet.mockResolvedValue({ exists: false, data: () => undefined });
 });
 
 describe("launch-presentation-deps: mintGrant (§3.6)", () => {
@@ -149,9 +156,11 @@ describe("launch-presentation-deps: readVariantIndex trust (§5.3/index trust)",
   it("returns active for an internally-consistent active index", async () => {
     mockIndexGet.mockResolvedValue(activeIndexSnapshot());
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    const res = await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY);
+    const res = await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1);
     expect(res).toEqual({
       kind: "active",
+      // Unbound legacy record, frozen r1: the legacy-r1 rule (F5.3 9C-1).
+      source: "legacyUnboundR1",
       variantKey: VARIANT_KEY,
       presentationRevisionId: REVISION_ID,
       path: PATH,
@@ -161,7 +170,7 @@ describe("launch-presentation-deps: readVariantIndex trust (§5.3/index trust)",
   it("returns absent when the index doc does not exist", async () => {
     mockIndexGet.mockResolvedValue({ exists: false, data: () => undefined });
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1)).toEqual({
       kind: "absent",
     });
   });
@@ -172,7 +181,7 @@ describe("launch-presentation-deps: readVariantIndex trust (§5.3/index trust)",
     // it must resolve to a clean coverage gap, not an internal error, and must
     // not even attempt a Firestore read.
     expect(
-      await ports.readVariantIndex("lesson_g7_earths-layers", VARIANT_KEY),
+      await ports.readVariantIndex("lesson_g7_earths-layers", VARIANT_KEY, FROZEN_R1),
     ).toEqual({ kind: "absent" });
     expect(mockIndexGet).not.toHaveBeenCalled();
   });
@@ -180,7 +189,7 @@ describe("launch-presentation-deps: readVariantIndex trust (§5.3/index trust)",
   it("returns retired for a retired index", async () => {
     mockIndexGet.mockResolvedValue(activeIndexSnapshot({ status: "retired" }));
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1)).toEqual({
       kind: "retired",
     });
   });
@@ -190,7 +199,7 @@ describe("launch-presentation-deps: readVariantIndex trust (§5.3/index trust)",
       activeIndexSnapshot({ currentPath: "app/lessons/variants/tampered.html" }),
     );
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1)).toEqual({
       kind: "malformed",
     });
   });
@@ -200,7 +209,7 @@ describe("launch-presentation-deps: readVariantIndex trust (§5.3/index trust)",
       activeIndexSnapshot({ currentPresentationRevisionId: `pr${"b".repeat(64)}` }),
     );
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1)).toEqual({
       kind: "malformed",
     });
   });
@@ -208,7 +217,7 @@ describe("launch-presentation-deps: readVariantIndex trust (§5.3/index trust)",
   it("returns malformed when the doc's lessonSlug/variantKey do not match the query", async () => {
     mockIndexGet.mockResolvedValue(activeIndexSnapshot({ lessonSlug: "other" }));
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1)).toEqual({
       kind: "malformed",
     });
   });
@@ -216,7 +225,7 @@ describe("launch-presentation-deps: readVariantIndex trust (§5.3/index trust)",
   it("returns malformed for an unknown status value", async () => {
     mockIndexGet.mockResolvedValue(activeIndexSnapshot({ status: "weird" }));
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1)).toEqual({
       kind: "malformed",
     });
   });
@@ -313,8 +322,9 @@ describe("launch-presentation-deps: F5.3 Slice 5 provenance", () => {
       activeIndexSnapshot({ assessmentRevisionId: REV_R1, assessmentPresentationRevisionId: AP_ID }),
     );
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1)).toEqual({
       kind: "active",
+      source: "legacyBound",
       variantKey: VARIANT_KEY,
       presentationRevisionId: REVISION_ID,
       path: PATH,
@@ -329,7 +339,7 @@ describe("launch-presentation-deps: F5.3 Slice 5 provenance", () => {
   ])("treats %s on the index as malformed (fail closed)", async (_label, extra) => {
     mockIndexGet.mockResolvedValue(activeIndexSnapshot(extra));
     const ports = buildLaunchPresentationResolverPorts(() => NOW_MS);
-    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY)).toEqual({ kind: "malformed" });
+    expect(await ports.readVariantIndex(LESSON_SLUG, VARIANT_KEY, FROZEN_R1)).toEqual({ kind: "malformed" });
   });
 
   it("reads the accommodation configRevision for provenance, ignoring a malformed one", async () => {

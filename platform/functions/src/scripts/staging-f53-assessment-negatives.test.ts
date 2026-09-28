@@ -166,8 +166,13 @@ function makeStaging(opts: { faults?: Faults; grantExpiresAt?: Date; grantStuden
   });
   put(`assignments/${ASSIGNMENT}`, { lessonSlug: "earths-layers", assessmentRevisionId: REV_ID, classId: "class-1", status: "published" });
   put(`assessmentPresentations/${AP_ID}`, RECORD);
+  // F5.3 Slice 9C-1: a complete, internally consistent legacy record (the
+  // driver now reads EFFECTIVE coverage through the shared evaluator, which
+  // treats a partial record as malformed).
   put(`presentationVariants/earths-layers__reading-adapted`, {
+    lessonSlug: "earths-layers", variantKey: "reading-adapted",
     status: "active", currentPresentationRevisionId: PR_ID, assessmentRevisionId: REV_ID, assessmentPresentationRevisionId: AP_ID,
+    currentPath: `app/lessons/variants/lesson_earths-layers__${PR_ID}.html`, contentSha256: PR_ID.slice(2),
   });
   put(`assessmentRevisions/${REV_ID}`, REVISION);
   put("classes/class-1/assignmentsCurrent/earths-layers", { assignmentId: ASSIGNMENT });
@@ -337,5 +342,38 @@ describe("preconditions refuse before any callable", () => {
     expect(report.ok).toBe(false);
     expect(report.checks.find((c) => !c.pass)?.id).toBe(failedId);
     expect(s.ports.invokeCallable).not.toHaveBeenCalled();
+  });
+});
+
+// F5.3 Slice 9C-1: the P0 coverage precondition reads EFFECTIVE coverage for
+// the assignment's frozen revision through the shared evaluator.
+describe("effective coverage precondition (F5.3 Slice 9C-1)", () => {
+  test("a retired scoped record for the frozen revision decides alone, despite a valid legacy record", async () => {
+    const s = makeStaging();
+    s.docs.set("presentationVariants/earths-layers__reading-adapted__r1", {
+      data: {
+        lessonSlug: "earths-layers", variantKey: "reading-adapted", status: "retired", assessmentRevisionId: REV_ID,
+        currentPresentationRevisionId: PR_ID, currentPath: `app/lessons/variants/lesson_earths-layers__${PR_ID}.html`, contentSha256: PR_ID.slice(2),
+      },
+      updateTime: "2026-09-28T02:00:00.000Z",
+    });
+    const report = await runF53Negatives(ARGS(), s.ports);
+    expect(report.ok).toBe(false);
+    expect(report.checks.find((c) => !c.pass)?.id).toBe("P0-index");
+    expect(s.ports.invokeCallable).not.toHaveBeenCalled();
+  });
+
+  test("a valid bound scoped record for the frozen revision satisfies the precondition", async () => {
+    const s = makeStaging();
+    s.docs.set("presentationVariants/earths-layers__reading-adapted__r1", {
+      data: {
+        lessonSlug: "earths-layers", variantKey: "reading-adapted", status: "active", assessmentRevisionId: REV_ID,
+        assessmentPresentationRevisionId: AP_ID, currentPresentationRevisionId: PR_ID,
+        currentPath: `app/lessons/variants/lesson_earths-layers__${PR_ID}.html`, contentSha256: PR_ID.slice(2),
+      },
+      updateTime: "2026-09-28T02:00:00.000Z",
+    });
+    const report = await runF53Negatives(ARGS({ mode: "plan" }), s.ports);
+    expect(report.checks.find((c) => c.id === "P0-index")?.pass).toBe(true);
   });
 });

@@ -143,6 +143,7 @@ type AssignmentOverrides = Partial<{
   title: string;
   publishedAt: unknown;
   availableAt: unknown;
+  assessmentRevisionId: string;
 }>;
 
 function assignmentSnap(
@@ -488,7 +489,8 @@ describe("assignmentsListForStudent - projection safety", () => {
       "windowClosesAt",
       "availableAt",
       "mode",
-      "assessmentRevisionId",
+      // F5.3 Slice 9C-1: `assessmentRevisionId` is now a deliberate, additive
+      // item field (addendum 21.5), covered below; it is no longer excluded.
       "lmsPublicationRef",
       "createdAt",
     ]) {
@@ -1061,5 +1063,76 @@ describe("assignmentsListForStudent - strict Current + scheduled availability", 
       "items",
       "supersededAssignmentIds",
     ]);
+  });
+});
+
+// F5.3 Slice 9C-1 (addendum 21.5): every launchable item carries the
+// assignment's FROZEN assessment revision, for every student and every
+// delivery outcome, read from the assignment record; a client can never name
+// one, and an unusable stored value is omitted rather than guessed.
+describe("assignmentsListForStudent - frozen assessment revision (F5.3 Slice 9C-1)", () => {
+  const SLUG = "earths-layers";
+  const R1 = `assessment_${SLUG}__r1`;
+  const R2 = `assessment_${SLUG}__r2`;
+
+  test("an r1 assignment returns r1 and resolves coverage against it", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1")] });
+    seedAssignment("a1", { lessonSlug: SLUG, assessmentRevisionId: R1 });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items[0].assessmentRevisionId).toBe(R1);
+    expect(mockLaunchResolve).toHaveBeenCalledWith({
+      studentId: STUDENT_UID,
+      assignmentId: "a1",
+      lessonSlug: SLUG,
+      assessmentRevisionId: R1,
+    });
+  });
+
+  test("r1 and synthetic r2 assignments of one lesson each keep their own frozen revision", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1"), recipientDoc("a2", { classId: "class-b" })] });
+    seedAssignment("a1", { lessonSlug: SLUG, assessmentRevisionId: R1, publishedAt: { toMillis: () => 2_000 } });
+    seedAssignment("a2", { lessonSlug: SLUG, assessmentRevisionId: R2, classId: "class-b", publishedAt: { toMillis: () => 1_000 } });
+    mockLaunchResolve
+      .mockResolvedValueOnce({ kind: "expectedCanonical" })
+      .mockResolvedValueOnce({ kind: "canonicalFallback", launchRef: "f".repeat(32), reason: "coverageAssessmentMismatch" });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    const byId = Object.fromEntries(res.items.map((i) => [i.assignmentId, i]));
+    expect(byId.a1.assessmentRevisionId).toBe(R1);
+    // canonicalFallback still carries the frozen r2 for revision-bound routing.
+    expect(byId.a2.assessmentRevisionId).toBe(R2);
+    expect(byId.a2.launchRef).toBe("f".repeat(32));
+    expect("presentation" in byId.a2).toBe(false);
+  });
+
+  test("a differentiated r1 item keeps its provenance alongside the frozen revision", async () => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1")] });
+    seedAssignment("a1", { lessonSlug: SLUG, assessmentRevisionId: R1 });
+    const presentation = {
+      variantKey: "reading-adapted",
+      presentationRevisionId: "pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189",
+      path: "app/lessons/variants/lesson_earths-layers__pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189.html",
+    };
+    mockLaunchResolve.mockResolvedValue({ kind: "differentiated", launchRef: "0".repeat(32), presentation });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items[0]).toMatchObject({ presentation, launchRef: "0".repeat(32), assessmentRevisionId: R1 });
+  });
+
+  test.each([
+    ["missing", undefined],
+    ["another lesson's revision", "assessment_water-cycle__r1"],
+    ["a non-canonical ordinal", `assessment_${SLUG}__r0`],
+  ])("a %s frozen revision is omitted, never guessed", async (_label, value) => {
+    mockRecipientsGet.mockResolvedValue({ docs: [recipientDoc("a1")] });
+    seedAssignment("a1", { lessonSlug: SLUG, ...(value !== undefined ? { assessmentRevisionId: value } : {}) });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect("assessmentRevisionId" in res.items[0]).toBe(false);
+    expect("assessmentRevisionId" in mockLaunchResolve.mock.calls[0][0]).toBe(false);
+  });
+
+  test("refuses a client-supplied assessmentRevisionId", async () => {
+    await expect(
+      __assignmentsListForStudentHandler(makeRequest({ assessmentRevisionId: R2 })),
+    ).rejects.toMatchObject({ code: expect.any(String) });
+    expect(mockLaunchResolve).not.toHaveBeenCalled();
   });
 });

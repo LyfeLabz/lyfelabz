@@ -56,6 +56,7 @@ import {
   STAGING_PROJECT_ID,
 } from "./staging-cert-driver";
 import { checkAssessmentPresentationDoc } from "../shared/presentation/assessment-presentation-identity";
+import { readRevisionCoverage, type CoverageDocRead } from "../shared/presentation/revision-coverage";
 
 export const F53_DRIVER_NAME = "staging-f53-assessment-negatives";
 
@@ -370,11 +371,24 @@ export async function runF53Negatives(args: F53Args, ports: F53Ports): Promise<F
   const apCheck = checkAssessmentPresentationDoc(ap, apDoc?.data, { lessonSlug: String(a.lessonSlug), assessmentRevisionId: revisionId });
   if (!check("P0-presentation-record", apCheck.ok, apCheck.ok ? `${ap} verified against ${revisionId}` : `refused: ${apCheck.reason}`)) return done();
 
-  const index = await ports.readDoc(`presentationVariants/${String(a.lessonSlug)}__${String(g.variantKey)}`);
-  const ix = index?.data ?? {};
-  if (!check("P0-index", ix.status === "active" && ix.currentPresentationRevisionId === pr &&
-    ix.assessmentPresentationRevisionId === ap && ix.assessmentRevisionId === revisionId,
-  "active index is bound to the grant's presentation and the assignment's revision")) return done();
+  // F5.3 Slice 9C-1: the EFFECTIVE coverage for the assignment's frozen
+  // revision, through the same shared evaluator launch and begin use
+  // (revision-scoped record first, else the legacy record under its rules).
+  const readCoverageDoc = async (docPath: string): Promise<CoverageDocRead> => {
+    const doc = await ports.readDoc(docPath);
+    return doc === null ? { exists: false } : { exists: true, data: doc.data };
+  };
+  const coverage = await readRevisionCoverage(
+    {
+      readScoped: (slug, key, ordinal) => readCoverageDoc(`presentationVariants/${slug}__${key}__r${String(ordinal)}`),
+      readLegacy: (slug, key) => readCoverageDoc(`presentationVariants/${slug}__${key}`),
+    },
+    { lessonSlug: String(a.lessonSlug), variantKey: String(g.variantKey), assessmentRevisionId: revisionId },
+  );
+  if (!check("P0-index", coverage.kind === "active" && coverage.presentationRevisionId === pr &&
+    coverage.assessmentBinding?.assessmentPresentationRevisionId === ap &&
+    coverage.assessmentBinding.assessmentRevisionId === revisionId,
+  `effective coverage (${coverage.kind === "active" ? String(coverage.source) : coverage.kind}) is bound to the grant's presentation and the assignment's revision`)) return done();
 
   const revision = await ports.readDoc(`assessmentRevisions/${revisionId}`);
   let derived: F53Derived;

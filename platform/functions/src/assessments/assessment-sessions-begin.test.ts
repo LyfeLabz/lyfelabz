@@ -37,6 +37,9 @@ const mockAssignmentRecipientCreationDocRef = jest.fn(() => ({
 const mockStudentAccommodationDocRef = jest.fn(() => ({ get: mockAccommodationGet }));
 const mockLaunchGrantDocRef = jest.fn(() => ({ get: mockGrantGet }));
 const mockPresentationVariantIndexDocRef = jest.fn(() => ({ get: mockIndexGet }));
+// F5.3 Slice 9C-1: revision-scoped index record, absent unless a test sets it.
+const mockScopedIndexGet = jest.fn(() => Promise.resolve({ exists: false, data: () => undefined }));
+const mockPresentationVariantScopedIndexDocRef = jest.fn(() => ({ get: mockScopedIndexGet }));
 const mockAssessmentPresentationGet = jest.fn();
 const mockAssessmentPresentationDocRef = jest.fn(() => ({ get: mockAssessmentPresentationGet }));
 
@@ -87,6 +90,7 @@ jest.mock("../shared", () => {
     studentAccommodationDocRef: mockStudentAccommodationDocRef,
     launchGrantDocRef: mockLaunchGrantDocRef,
     presentationVariantIndexDocRef: mockPresentationVariantIndexDocRef,
+    presentationVariantScopedIndexDocRef: mockPresentationVariantScopedIndexDocRef,
     assessmentPresentationDocRef: mockAssessmentPresentationDocRef,
     isDifferentiatedDeliveryEnabled: mockIsDeliveryEnabled,
     isValidGrantId: (value: unknown) =>
@@ -192,6 +196,9 @@ const VALID_LAUNCH_REF = "0123456789abcdef0123456789abcdef";
 // classify an index as "active". The default LESSON_SLUG carries underscores
 // and therefore always resolves to a legitimate coverage gap (absent).
 const VARIANT_LESSON_SLUG = "earths-layers";
+// F5.3 Slice 9C-1: an assignment of the variant lesson freezes a revision of
+// THAT lesson's assessment (publish derives it from the lesson).
+const VARIANT_REVISION_ID = `assessment_${VARIANT_LESSON_SLUG}__r1`;
 const VARIANT_KEY = "reading-adapted";
 const REVISION_A = `pr${"a".repeat(64)}`;
 const FAR_FUTURE_MS = 9_999_999_999_999;
@@ -406,7 +413,7 @@ describe("assessmentSessionsBegin", () => {
         districtId: DISTRICT_ID,
       },
     });
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false, assessmentRevisionId: REVISION_ID });
   });
 
   it("returns the existing Live session idempotently without a second write", async () => {
@@ -416,7 +423,7 @@ describe("assessmentSessionsBegin", () => {
 
     const result = await __assessmentSessionsBeginHandler(makeRequest());
 
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID });
     expect(mockSessionCreate).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
@@ -725,7 +732,7 @@ describe("assessmentSessionsBegin", () => {
     mockSessionCreate.mockResolvedValueOnce(undefined);
     mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-r", record: {} });
     const result = await __assessmentSessionsBeginHandler(makeRequest());
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false, assessmentRevisionId: REVISION_ID });
     expect(mockAssignmentRecipientDocRef).toHaveBeenCalledWith(
       ASSIGNMENT_ID,
       STUDENT_UID,
@@ -745,7 +752,7 @@ describe("assessmentSessionsBegin", () => {
 
     const result = await __assessmentSessionsBeginHandler(makeRequest());
 
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false, assessmentRevisionId: REVISION_ID });
     expect(mockAssignmentRecipientDocRef).toHaveBeenCalledWith(
       ASSIGNMENT_ID,
       STUDENT_UID,
@@ -863,7 +870,7 @@ describe("assessmentSessionsBegin", () => {
     mockSessionGet.mockResolvedValueOnce(existingLiveSessionSnapshot());
     mockRecipientCreationSet.mockClear();
     const result = await __assessmentSessionsBeginHandler(makeRequest());
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID });
     expect(mockRecipientCreationSet).not.toHaveBeenCalled();
   });
 
@@ -1090,7 +1097,7 @@ describe("assessmentSessionsBegin", () => {
       makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
     );
 
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false, assessmentRevisionId: REVISION_ID });
     expect(mockLaunchGrantDocRef).toHaveBeenCalledWith(VALID_LAUNCH_REF);
     expect(mockSessionCreate).toHaveBeenCalledTimes(1);
     expect(mockSessionCreate).toHaveBeenCalledWith(
@@ -1215,7 +1222,7 @@ describe("assessmentSessionsBegin", () => {
 
   it("Slice 6 (T-R1): active accommodation + active coverage + enabled + no ref => BEGIN_REQUIRES_LAUNCH, no session/attempt", async () => {
     mockAssignmentGet.mockResolvedValueOnce(
-      assignmentSnapshot({ lessonSlug: VARIANT_LESSON_SLUG }),
+      assignmentSnapshot({ lessonSlug: VARIANT_LESSON_SLUG, assessmentRevisionId: VARIANT_REVISION_ID }),
     );
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
     mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
@@ -1238,7 +1245,7 @@ describe("assessmentSessionsBegin", () => {
     // load, so begin arrives with no ref. With active coverage still published
     // the server must refuse rather than record a false canonical session.
     mockAssignmentGet.mockResolvedValueOnce(
-      assignmentSnapshot({ lessonSlug: VARIANT_LESSON_SLUG }),
+      assignmentSnapshot({ lessonSlug: VARIANT_LESSON_SLUG, assessmentRevisionId: VARIANT_REVISION_ID }),
     );
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
     mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
@@ -1262,7 +1269,7 @@ describe("assessmentSessionsBegin", () => {
     const result = await __assessmentSessionsBeginHandler(
       makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
     );
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID });
     // The grant is never read; frozen fields never change on a repeated begin.
     expect(mockGrantGet).not.toHaveBeenCalled();
     expect(mockSessionCreate).not.toHaveBeenCalled();
@@ -1497,5 +1504,77 @@ describe("assessmentSessionsBegin", () => {
         expect(mockGrantGet).not.toHaveBeenCalled();
       },
     );
+  });
+
+  // F5.3 Slice 9C-1: begin returns the frozen revision, keys coverage on it
+  // through the shared evaluator, and refuses a revision of another lesson.
+  describe("F5.3 Slice 9C-1 frozen assessment revision", () => {
+    const R2 = `assessment_${VARIANT_LESSON_SLUG}__r2`;
+    const boundR1Index = () => {
+      const snap = activeIndexSnapshot(VARIANT_LESSON_SLUG);
+      return {
+        exists: true,
+        data: () => ({
+          ...snap.data(),
+          assessmentRevisionId: VARIANT_REVISION_ID,
+          assessmentPresentationRevisionId: `ap${"b".repeat(64)}`,
+        }),
+      };
+    };
+    function variantAssignment(revision: string) {
+      mockAssignmentGet.mockResolvedValueOnce(
+        assignmentSnapshot({ lessonSlug: VARIANT_LESSON_SLUG, assessmentRevisionId: revision }),
+      );
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+      mockAccommodationGet.mockReset();
+      mockAccommodationGet.mockResolvedValue(activeAccommodationSnapshot());
+    }
+
+    it("no-ref begin on a synthetic r2 assignment with only r1 coverage freezes canonicalFallback and returns r2 (S9-U1)", async () => {
+      variantAssignment(R2);
+      mockIndexGet.mockReset();
+      mockIndexGet.mockResolvedValue(boundR1Index());
+      const result = await __assessmentSessionsBeginHandler(makeRequest());
+      expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: false, assessmentRevisionId: R2 });
+      const write = mockSessionCreate.mock.calls[0][0] as Record<string, unknown>;
+      expect(write.assessmentRevisionId).toBe(R2);
+      expect(write.deliveryOutcome).toBe("canonicalFallback");
+      expect(write).not.toHaveProperty("variantKey");
+    });
+
+    it("no-ref begin on an r1 assignment with that same r1 coverage still requires a launch", async () => {
+      variantAssignment(VARIANT_REVISION_ID);
+      mockIndexGet.mockReset();
+      mockIndexGet.mockResolvedValue(boundR1Index());
+      await expect(__assessmentSessionsBeginHandler(makeRequest())).rejects.toMatchObject({ code: "BEGIN_REQUIRES_LAUNCH" });
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+    });
+
+    it("a malformed scoped record for the frozen revision refuses and never falls through to legacy", async () => {
+      variantAssignment(VARIANT_REVISION_ID);
+      mockIndexGet.mockReset();
+      mockIndexGet.mockResolvedValue(boundR1Index());
+      mockScopedIndexGet.mockResolvedValueOnce({ exists: true, data: () => ({ status: "active" }) } as never);
+      await expect(__assessmentSessionsBeginHandler(makeRequest())).rejects.toMatchObject({ code: "BEGIN_VALIDATION_UNAVAILABLE" });
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+    });
+
+    it("refuses an assignment whose frozen revision belongs to another lesson", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(
+        assignmentSnapshot({ lessonSlug: VARIANT_LESSON_SLUG, assessmentRevisionId: "assessment_water-cycle__r1" }),
+      );
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+      await expect(__assessmentSessionsBeginHandler(makeRequest())).rejects.toMatchObject({ code: "assignment-not-published" });
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+    });
+
+    it("a client-supplied assessmentRevisionId cannot override the assignment", async () => {
+      await expect(
+        __assessmentSessionsBeginHandler(makeRequest({ data: { assignmentId: ASSIGNMENT_ID, assessmentRevisionId: R2 } })),
+      ).rejects.toBeInstanceOf(PlatformError);
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+    });
   });
 });

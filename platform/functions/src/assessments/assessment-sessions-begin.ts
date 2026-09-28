@@ -25,6 +25,7 @@ import {
 } from "../assignments/assignment-recipients";
 import { isSupersededOccurrence } from "../assignments/current-occurrence-group";
 import { resolveBeginDelivery } from "./resolve-begin-delivery";
+import { frozenRevisionOrdinal } from "../shared/presentation/revision-coverage";
 import { buildBeginDeliveryPorts } from "./begin-delivery-deps";
 
 // Client-supplied request payload for assessmentSessionsBegin per
@@ -58,6 +59,12 @@ export type AssessmentSessionsBeginRequest = {
 export type AssessmentSessionsBeginResponse = {
   readonly sessionId: string;
   readonly alreadyLive: boolean;
+  // F5.3 Slice 9C-1 (addendum 21.4, additive): the session's frozen assessment
+  // revision, which is always the assignment's frozen revision (a live session
+  // whose revision differs is never returned). The 9D runtime compares it with
+  // the page's declared revision. Informational only: no request field can
+  // name a revision (see FORBIDDEN_REQUEST_KEYS).
+  readonly assessmentRevisionId: string;
 };
 
 const ASSIGNMENT_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
@@ -295,7 +302,9 @@ function deriveAssessmentIdentifiersFromAssignment(
     );
   }
   const assessmentId = parseAssessmentIdFromRevisionId(assessmentRevisionId);
-  if (assessmentId === undefined) {
+  // F5.3 Slice 9C-1: the frozen revision must be a canonical revision of THIS
+  // lesson's assessment; anything else is refused, never reinterpreted.
+  if (assessmentId === undefined || frozenRevisionOrdinal(assignment.lessonSlug, assessmentRevisionId) === undefined) {
     throw new PlatformError(
       "assignment-not-published",
       "Assignment carries a non-canonical assessmentRevisionId.",
@@ -500,7 +509,7 @@ async function assessmentSessionsBeginHandler(
           sessionId,
         }),
       );
-      return { sessionId, alreadyLive: true };
+      return { sessionId, alreadyLive: true, assessmentRevisionId: existing.assessmentRevisionId };
     }
     throw new PlatformError(
       "assessmentSessions.conflict",
@@ -602,7 +611,7 @@ async function assessmentSessionsBeginHandler(
     }),
   );
 
-  return { sessionId, alreadyLive: false };
+  return { sessionId, alreadyLive: false, assessmentRevisionId };
 }
 
 export const assessmentSessionsBegin = platformCallable(assessmentSessionsBeginHandler);

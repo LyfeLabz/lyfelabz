@@ -90,6 +90,7 @@ import {
 import {
   PRESENTATION_VARIANTS_COLLECTION,
   presentationVariantIndexDocId,
+  presentationVariantScopedIndexDocId,
   type PresentationVariantIndexActivateWrite,
   type PresentationVariantIndexDoc,
   type PresentationVariantIndexRetireWrite,
@@ -1161,6 +1162,22 @@ export function presentationVariantIndexDocRef(
   return getAdminFirestore()
     .collection(PRESENTATION_VARIANTS_COLLECTION)
     .doc(presentationVariantIndexDocId(lessonSlug, variantKey)) as DocumentReference<PresentationVariantIndexDoc>;
+}
+
+// F5.3 Slice 9C-1: read typed reference for the revision-scoped index
+// document `presentationVariants/{lessonSlug}__{variantKey}__r{N}` (addendum
+// section 21.7). Same read shape as the legacy document, with
+// `assessmentRevisionId` always present. Read-only here; no writer exists
+// until 9C-2. Covered by the existing deny-all `presentationVariants/{indexId}`
+// Rules block (Admin SDK reads only).
+export function presentationVariantScopedIndexDocRef(
+  lessonSlug: string,
+  variantKey: string,
+  revisionOrdinal: number,
+): DocumentReference<PresentationVariantIndexDoc> {
+  return getAdminFirestore()
+    .collection(PRESENTATION_VARIANTS_COLLECTION)
+    .doc(presentationVariantScopedIndexDocId(lessonSlug, variantKey, revisionOrdinal)) as DocumentReference<PresentationVariantIndexDoc>;
 }
 
 // Activate-write typed reference (publish or rollback/repoint). The publish

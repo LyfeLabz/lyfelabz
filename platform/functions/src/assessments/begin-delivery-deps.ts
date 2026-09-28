@@ -1,18 +1,17 @@
 import {
   assessmentPresentationDocRef,
-  assertActivateWriteConsistent,
   isDifferentiatedDeliveryEnabled,
   isValidGrantId,
-  isValidLessonSlugForVariant,
-  isValidVariantKey,
   launchGrantDocRef,
   log,
   presentationVariantIndexDocRef,
+  presentationVariantScopedIndexDocRef,
   studentAccommodationDocRef,
   variantKeyForReadingLevel,
 } from "../shared";
 import type { ReadingResolution } from "../shared";
 import { checkAssessmentPresentationDoc } from "../shared/presentation/assessment-presentation-identity";
+import { readRevisionCoverageWith } from "../shared/presentation/revision-coverage-deps";
 
 import {
   type BeginCoverageKind,
@@ -52,46 +51,24 @@ async function readAccommodation(studentId: string): Promise<ReadingResolution> 
   return { active: false };
 }
 
-// Begin-time coverage classification for (lessonSlug, variantKey). Mirrors the
-// Slice 4 resolver's `readVariantIndex` classification EXACTLY (charset gate ->
-// absent; missing doc -> absent; retired -> retired; unknown status / identity
-// mismatch / inconsistent activate write -> malformed; else active) but returns
-// a KIND ONLY. It is structurally incapable of returning a revision, enforcing
-// the §8.2 "must not select or freeze a presentation revision" invariant. A
-// thrown read propagates to the core, which fails closed
-// (BEGIN_VALIDATION_UNAVAILABLE, §8.3).
+// Begin-time coverage classification for (lessonSlug, variantKey, frozen
+// assessment revision). F5.3 Slice 9C-1: this is the ONE shared revision-aware
+// evaluator (`readRevisionCoverageWith`) that launch resolution also
+// uses, so begin and launch can never classify the same coverage differently.
+// Only the KIND crosses into the core: it is structurally incapable of
+// returning a revision, enforcing the §8.2 "must not select or freeze a
+// presentation revision" invariant. A thrown read propagates to the core,
+// which fails closed (BEGIN_VALIDATION_UNAVAILABLE, §8.3).
 async function readCoverage(
   lessonSlug: string,
   variantKey: string,
+  assessmentRevisionId: string,
 ): Promise<BeginCoverageKind> {
-  // A lessonSlug outside the variant charset (e.g. a legacy underscore slug)
-  // can never carry an index doc -> a legitimate coverage gap, not an error.
-  if (!isValidLessonSlugForVariant(lessonSlug) || !isValidVariantKey(variantKey)) {
-    return "absent";
-  }
-  const snapshot = await presentationVariantIndexDocRef(lessonSlug, variantKey).get();
-  if (!snapshot.exists) return "absent";
-  const data = snapshot.data();
-  if (!data) return "malformed";
-  if (data.status === "retired") return "retired";
-  if (data.status !== "active") return "malformed";
-  if (data.lessonSlug !== lessonSlug || data.variantKey !== variantKey) {
-    return "malformed";
-  }
-  try {
-    assertActivateWriteConsistent({
-      lessonSlug: data.lessonSlug,
-      variantKey: data.variantKey,
-      currentPresentationRevisionId: data.currentPresentationRevisionId,
-      currentPath: data.currentPath,
-      contentSha256: data.contentSha256,
-      assessmentRevisionId: data.assessmentRevisionId,
-      assessmentPresentationRevisionId: data.assessmentPresentationRevisionId,
-    });
-  } catch {
-    return "malformed";
-  }
-  return "active";
+  const evaluation = await readRevisionCoverageWith(
+    { scopedRef: presentationVariantScopedIndexDocRef, legacyRef: presentationVariantIndexDocRef },
+    { lessonSlug, variantKey, assessmentRevisionId },
+  );
+  return evaluation.kind;
 }
 
 // F5.3 Slice 5: verify a grant-named assessment presentation against its

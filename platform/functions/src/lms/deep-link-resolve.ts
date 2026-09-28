@@ -14,6 +14,7 @@ import {
   type EnrollmentRecord,
   type LaunchPresentation,
 } from "../shared";
+import { usableFrozenAssessmentRevisionId } from "../shared/presentation/revision-coverage";
 
 import { isCanonicalRecipient } from "../assignments/assignment-recipients";
 import { isSupersededOccurrence } from "../assignments/current-occurrence-group";
@@ -96,6 +97,13 @@ export type LmsDeepLinkResolveResponse = {
   // never asserts either field (see FORBIDDEN_REQUEST_KEYS).
   readonly presentation?: LaunchPresentation;
   readonly launchRef?: string;
+  // F5.3 Slice 9C-1 (addendum 21.5, additive): the assignment's FROZEN
+  // assessment revision, read from the assignment record, on both launch
+  // targets (`assignmentLaunch` and assignment-tied `lessonPractice`) for
+  // every student regardless of accommodation, including canonicalFallback.
+  // Absent on `informational`, and when the record carries no usable revision
+  // of this lesson (the 9D client then fails closed). Never teacher-facing UI.
+  readonly assessmentRevisionId?: string;
 };
 
 // Canonical assignment identifier grammar (identical to
@@ -136,6 +144,9 @@ const FORBIDDEN_REQUEST_KEYS: readonly string[] = [
   "configRevision",
   "issuedAt",
   "expiresAt",
+  // F5.3 Slice 9C-1 (PDR-031c): the assessment revision is response-only and
+  // server-derived from the assignment; a client can never name one.
+  "assessmentRevisionId",
 ];
 
 function isNonEmptyString(value: unknown): value is string {
@@ -391,18 +402,19 @@ async function lmsDeepLinkResolveHandler(
   // blocked by a differentiation-resolution problem.
   let presentation: LaunchPresentation | undefined;
   let launchRef: string | undefined;
+  let assessmentRevisionId: string | undefined;
   if (
     internalTarget === "assignmentLaunch" ||
     internalTarget === "lessonPractice"
   ) {
+    // F5.3 Slice 9C-1: the assignment's frozen revision, when it is a usable
+    // revision of this lesson; never guessed, never the deployed current one.
+    assessmentRevisionId = usableFrozenAssessmentRevisionId(assignment.lessonSlug, assignment.assessmentRevisionId);
     const resolution = await createRequestLaunchPresentationResolver().resolve({
       studentId: actor.uid,
       assignmentId,
       lessonSlug: assignment.lessonSlug,
-      // F5.3 Slice 5: the assignment's frozen revision (server-derived).
-      ...(typeof assignment.assessmentRevisionId === "string"
-        ? { assessmentRevisionId: assignment.assessmentRevisionId }
-        : {}),
+      ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
     });
     if (resolution.kind === "differentiated") {
       presentation = resolution.presentation;
@@ -455,6 +467,7 @@ async function lmsDeepLinkResolveHandler(
     // Additive, optional (§7.1): present only for an accommodated launch.
     ...(presentation !== undefined ? { presentation } : {}),
     ...(launchRef !== undefined ? { launchRef } : {}),
+    ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
   };
 }
 
