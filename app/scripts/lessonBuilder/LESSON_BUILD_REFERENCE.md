@@ -162,9 +162,9 @@ and then (`variantSource.cjs`):
     A lesson's own glossary term is exempt;
 - must match the full instructional-equivalence contract with zero
   exclusions;
-- must have an identical quiz, faithful to every committed
-  `<slug>.r<N>.json` payload the canonical quiz is faithful to (at least
-  one);
+- must have an identical quiz, faithful to the variant's own committed
+  assessment revision (Slice 9B: the gates run against the canonical
+  rendition of that revision);
 - must build byte-identically twice.
 
 Only an adaptable container (matched by `adaptableSelectors`, not inside
@@ -198,7 +198,7 @@ Current state:
 
 - Every assignable lesson has exactly one committed revision payload,
   `platform/functions/src/scripts/assessments/<slug>.r1.json`.
-- Canonical artifacts declare no assessment revision.
+- Every canonical artifact declares its revision (Slice 9B, below).
 - An assignment freezes its `assessmentRevisionId` at publication. The
   display is correct today only because one revision exists per lesson.
 - No lesson may receive a second deployed revision until Slice 9 is
@@ -233,26 +233,44 @@ Implemented (Slice 9A, repository tooling only):
   answer-position standard. The operator then declares it in the lesson
   config.
 
-Planned (Slice 9B; not implemented):
+Implemented (Slice 9B, build side only; nothing routes to it until 9D):
 
-- Every canonical v1 and v2 artifact embeds an inert, machine-readable
-  revision declaration. It is inserted in the canonical build path only,
-  never in the variant path, so retained variant bytes (`pr90f…`,
-  `prff01…`) do not change.
+- Every canonical v1 and v2 artifact carries one inert declaration,
+  `<script type="application/json" id="lyfelabz-assessment-revision">`
+  holding exactly `{ schemaVersion: 1, lessonSlug, assessmentRevisionId }`.
+  It is inserted immediately before the runtime script tag, only by the
+  canonical build (`index.cjs`, `assessmentRenditions.cjs`). The variant
+  path never inserts it, so retained variant bytes (`pr90f…`, `prff01…`) do
+  not change. The canonical build also fails unless the quiz is faithful to
+  the configured revision.
 - A lesson with more than one committed revision gets one generated v2
-  rendition per revision: the current instruction with only the quiz
-  literal regenerated from that revision's payload. Each rendition is
-  verified faithful to its payload, deterministic, and drift-checked by
-  `lessons:verify`.
-- Renditions assume compatible quiz chrome across revisions: the same item
-  count, and the same quiz section text, progress text and wiring (S9-D6).
-  A revision that needs different chrome is refused, not rendered.
-- Renditions temporarily carry the same `correct` and `explanation` data as
-  the canonical literal and nothing more. That is the open D7 condition
-  (`docs/platform/SECURITY_BACKLOG_LESSON_PAGE_ANSWER_DATA.md`); the D7 fix
-  must cover renditions.
-- Variants are gated against the canonical rendition of their own declared
-  assessment revision.
+  rendition per revision at
+  `app/lessons/assessment-revisions/lesson_<slug>__r<N>.html`. A rendition
+  is the current instruction, relocated for its directory, with only the
+  quiz literal regenerated from that revision's payload. It carries exactly
+  `q`, `options`, `correct` and `explanation`, the same D7 condition as the
+  canonical literal
+  (`docs/platform/SECURITY_BACKLOG_LESSON_PAGE_ANSWER_DATA.md`). Each one is
+  re-extracted and must be faithful to its payload. Renditions are
+  deterministic and drift-checked by `lessons:verify`. Single-revision
+  lessons (every lesson today) produce none.
+- Renditions assume compatible quiz chrome (S9-D6). A different item
+  count, or a literal with extra fields (for example Nature of Waves
+  `visual`), is refused, not rendered.
+- `app/lessons/assessment-revisions/revision-paths.json` maps each
+  (lesson, revision) to the page that displays exactly it: the unversioned
+  v2 page for a single-revision lesson, else the rendition. It has no
+  fallback entry. `lessons:build` writes it; `lessons:verify` fails if it
+  drifts or if the directory holds any file it does not name. The curated
+  app Hosting build ships the table and exactly the renditions it names.
+- A variant is gated against the canonical rendition of its own revision
+  (owner ruling S9-D7): its bound AP record's revision, else the variant
+  config's explicit `assessmentRevisionId`, else the legacy-r1 rule, and
+  only when the build reproduces a pinned historical artifact
+  (`LEGACY_R1_UNBOUND_REVISIONS`, exactly `prff01…`). A newly authored
+  unbound variant must declare `assessmentRevisionId`; missing provenance
+  is refused, never read as r1. Variant bytes never gain the canonical
+  declaration.
 - Canonical Show Your Thinking prompts remain unversioned; that is a
   separate follow-up (addendum §9.4).
 - Editing a lesson's quiz literal still requires a new committed revision.

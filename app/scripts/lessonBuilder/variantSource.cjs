@@ -27,7 +27,7 @@
  *   - gated against the canonical v2 build: presentation invariance
  *     (variantInvariance.cjs), the full instructional-equivalence contract
  *     with zero exclusions, quiz identity, and assessment fidelity against
- *     every committed payload the canonical quiz is faithful to;
+ *     the variant's own assessment revision;
  *   - built twice and required to be byte-identical (determinism).
  *
  * F5.3 Slice 4: when the variant config names an
@@ -37,6 +37,28 @@
  * quiz, directions, and Show Your Thinking by assessmentPresentationRender.cjs
  * (twice, byte-identical), the no-disclosure check re-runs on the final bytes,
  * and the manifest entry records the binding.
+ *
+ * F5.3 Slice 9B (addendum section 21.3, "variant baseline"): the canonical
+ * baseline is the canonical rendition of the VARIANT's assessment revision,
+ * not whichever revision the source currently represents. The variant's
+ * revision is, in order: the bound assessment presentation's revision; else
+ * the variant config's explicit `assessmentRevisionId`; else, ONLY for a
+ * historical approved artifact pinned in LEGACY_R1_UNBOUND_REVISIONS, the
+ * legacy-r1 rule (`prff01d9...375c` was authored while r1 was the only
+ * revision). An unbound build with no explicit revision whose bytes are not a
+ * pinned legacy artifact is refused: a newly authored variant never receives
+ * r1 by default (owner ruling S9-D7, 9B closure). A declared revision that
+ * disagrees with the bound presentation, or that is not committed, is
+ * refused. Variant provenance is build/publication metadata; variant HTML
+ * never gains the canonical revision declaration. When the
+ * variant's revision is the configured canonical revision the baseline is
+ * the plain canonical v2 build, byte-for-byte as before. Otherwise only the
+ * quiz literal is regenerated from the variant revision's payload
+ * (assessmentRenditions.cjs), and for the comparison only, the variant's own
+ * literal, after it is proven to be exactly that revision's quiz, is given
+ * the same generated text. The variant's delivered bytes are never
+ * normalized, and the canonical revision declaration is never inserted on
+ * this path, so retained variant bytes reproduce exactly.
  *
  * Generation hands the exact final bytes to the existing content-addressed
  * generateVariantArtifact() (Slice 2): the revision id, retained path and
@@ -56,6 +78,7 @@ const configMod = require("./config.cjs");
 const equivalence = require("./equivalence.cjs");
 const fidelity = require("./assessmentFidelity.cjs");
 const assessmentRevisions = require("./assessmentRevisions.cjs");
+const renditions = require("./assessmentRenditions.cjs");
 const identity = require("./variantIdentity.cjs");
 const manifestMod = require("./variantManifest.cjs");
 const { generateVariantArtifact, UNCERTIFIED_PREVIEW_MARKER } = require("./variantBuild.cjs");
@@ -70,6 +93,13 @@ const ASSESSMENT_PAYLOAD_DIR = path.join("platform", "functions", "src", "script
 function fail(message) {
   throw new Error(`[variant-source] ${message}`);
 }
+
+// Historical approved unbound artifacts that predate explicit variant
+// revision provenance and may only be interpreted as r1 (S9-D2, S9-D7). The
+// list is pinned and may only shrink; never add a newly authored variant.
+const LEGACY_R1_UNBOUND_REVISIONS = Object.freeze([
+  "prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c",
+]);
 
 // Neutral generated notice. Deterministic, and deliberately free of the
 // variantKey, the accommodation category, and the authored source path.
@@ -129,23 +159,80 @@ function assertContractEqual(canonicalBody, variantBody) {
   fail(`instructional contract differs from the canonical lesson (${mismatches.length} field(s)):\n${lines.join("\n")}`);
 }
 
-function assertAssessmentIdentity(slug, canonicalV2, variantHtml, assessmentPayloads) {
+// The committed revisions handed to a build, identity-checked (the repository
+// wrapper passes assessmentRevisions.revisionsForLesson output; tests pass
+// synthetic { name, payload } lists).
+function committedRevisions(slug, assessmentPayloads) {
+  const entries = [];
+  const problems = [];
+  for (const p of assessmentPayloads || []) {
+    const d = assessmentRevisions.describeRevision(p.name, p.payload);
+    problems.push(...d.problems);
+    if (d.entry !== null && d.entry.slug === slug) entries.push(d.entry);
+  }
+  problems.push(...assessmentRevisions.validateRevisionSet(entries));
+  if (problems.length > 0) fail(`committed assessment revisions are inconsistent:\n  - ${problems.join("\n  - ")}`);
+  return entries.sort((a, b) => a.revisionOrdinal - b.revisionOrdinal);
+}
+
+// The assessment revision this variant displays (see the header).
+function variantAssessmentRevision(cfg, variantKey, committed, repoRoot) {
+  const variantConfig = cfg.variants[variantKey];
+  let bound = null;
+  const apId = variantConfig.assessmentPresentationRevisionId;
+  if (apId !== undefined) {
+    const checked = assessmentPresentation.checkCertifiedPresentation(apId, { repoRoot, lessonSlug: cfg.slug });
+    if (checked.failures.length > 0 || !checked.record) {
+      fail(`assessment presentation ${apId} cannot be rendered:\n  - ${checked.failures.join("\n  - ")}`);
+    }
+    bound = checked.record.assessmentRevisionId;
+  }
+  const declared = variantConfig.assessmentRevisionId;
+  if (declared !== undefined && bound !== null && declared !== bound) {
+    fail(`variant declares ${declared} but its assessment presentation ${apId} maps to ${bound}`);
+  }
+  const id = bound || declared || assessmentRevisions.revisionIdFor(cfg.slug, 1);
+  const entry = committed.find((e) => e.assessmentRevisionId === id);
+  if (!entry) fail(`variant assessment revision ${id} is not a committed revision of "${cfg.slug}"`);
+  return { entry, basis: bound !== null ? "assessmentPresentation" : declared !== undefined ? "declared" : "legacy-r1" };
+}
+
+// The canonical v2 baseline for the variant's revision, and the variant html
+// as compared against it. See the header for the normalization rule.
+function revisionBaseline(cfg, canonicalV2, variantHtml, committed, variantRevision) {
+  const slug = cfg.slug;
+  const canonical = assessmentRevisions.resolveCanonicalRevision(cfg, committed);
+  const canonicalProblems = fidelity.checkFidelity(slug, canonical.payload, fidelity.extractCanonicalQuiz(canonicalV2, slug));
+  if (canonicalProblems.length > 0) {
+    fail(`canonical quiz is not faithful to its configured revision ${canonical.file}:\n${canonicalProblems.join("\n")}`);
+  }
+  if (variantRevision.assessmentRevisionId === canonical.assessmentRevisionId) {
+    return { baseline: canonicalV2, compared: variantHtml };
+  }
+  const rendered = renditions.renderRevisionQuiz(canonicalV2, slug, variantRevision);
+  let variantQuestions;
+  try {
+    variantQuestions = fidelity.extractCanonicalQuizRaw(variantHtml, slug).questions;
+  } catch (err) {
+    fail(err.message);
+  }
+  if (JSON.stringify(variantQuestions) !== JSON.stringify(rendered.questions)) {
+    fail(`variant quiz is not exactly ${variantRevision.assessmentRevisionId}`);
+  }
+  const literal = presentationRender.locateQuizLiteral(variantHtml);
+  const compared = variantHtml.slice(0, literal.start) + presentationRender.literalSource(rendered.questions) + variantHtml.slice(literal.end);
+  return { baseline: rendered.html, compared };
+}
+
+function assertAssessmentIdentity(slug, canonicalV2, variantHtml, variantRevision) {
   const canonicalQuiz = fidelity.extractCanonicalQuiz(canonicalV2, slug);
   const variantQuiz = fidelity.extractCanonicalQuiz(variantHtml, slug);
   if (JSON.stringify(canonicalQuiz) !== JSON.stringify(variantQuiz)) {
     fail("variant quiz differs from the canonical quiz");
   }
-  const faithful = (assessmentPayloads || []).filter(
-    (p) => fidelity.checkFidelity(slug, p.payload, canonicalQuiz).length === 0,
-  );
-  if (faithful.length === 0) {
-    fail(`no committed assessment payload is faithful to the canonical quiz for "${slug}"; a variant cannot be bound to an assessment revision`);
-  }
-  for (const p of faithful) {
-    const problems = fidelity.checkFidelity(slug, p.payload, variantQuiz);
-    if (problems.length > 0) fail(`variant quiz is not faithful to ${p.name}:\n${problems.join("\n")}`);
-  }
-  return faithful.map((p) => p.name);
+  const problems = fidelity.checkFidelity(slug, variantRevision.payload, variantQuiz);
+  if (problems.length > 0) fail(`variant quiz is not faithful to ${variantRevision.file}:\n${problems.join("\n")}`);
+  return [variantRevision.file];
 }
 
 // Pure build + gate. Inputs are bytes and an already-loaded config, so the
@@ -158,15 +245,19 @@ function buildVariantArtifact({ cfg, variantKey, canonicalSourceBytes, variantSo
   const variantConfig = cfg.variants[variantKey];
   identity.assertValidLessonSlugForVariant(cfg.slug);
 
-  const canonicalV2 = buildV2(cfg, canonicalSourceBytes, cfg.generatedNotice.v2, "canonical source");
+  const committed = committedRevisions(cfg.slug, assessmentPayloads);
+  const { entry: variantRevision, basis: revisionBasis } = variantAssessmentRevision(cfg, variantKey, committed, repoRoot);
+  const currentV2 = buildV2(cfg, canonicalSourceBytes, cfg.generatedNotice.v2, "canonical source");
   const first = renderVariant(cfg, variantSourceBytes);
   const second = renderVariant(cfg, variantSourceBytes);
   if (first.html !== second.html) fail("variant build is not deterministic");
   const variantHtml = first.html;
+  // Gates run on the canonical rendition of the variant's own revision.
+  const { baseline: canonicalV2, compared: comparedVariantHtml } = revisionBaseline(cfg, currentV2, variantHtml, committed, variantRevision);
 
   const canonicalRelocated = relocateHtml(canonicalV2).html;
   const canonicalBody = stripNotice(canonicalRelocated, cfg.generatedNotice.v2, "canonical");
-  const variantBody = stripNotice(variantHtml, neutralNotice(cfg.slug), "variant");
+  const variantBody = stripNotice(comparedVariantHtml, neutralNotice(cfg.slug), "variant");
 
   const disclosureLiterals = [variantKey, path.basename(variantConfig.source)];
   const review = invariance.assertPresentationInvariance({
@@ -179,7 +270,7 @@ function buildVariantArtifact({ cfg, variantKey, canonicalSourceBytes, variantSo
   // delivered bytes disclose nothing either.
   invariance.assertNoDisclosure(canonicalRelocated, variantHtml, disclosureLiterals);
   assertContractEqual(canonicalBody, variantBody);
-  const assessmentRevisions = assertAssessmentIdentity(cfg.slug, canonicalV2, variantHtml, assessmentPayloads);
+  const boundRevisions = assertAssessmentIdentity(cfg.slug, canonicalV2, comparedVariantHtml, variantRevision);
 
   let finalHtml = variantHtml;
   let assessmentBinding = null;
@@ -203,6 +294,12 @@ function buildVariantArtifact({ cfg, variantKey, canonicalSourceBytes, variantSo
   }
 
   const presentationRevisionId = identity.computePresentationRevisionId(finalHtml);
+  if (revisionBasis === "legacy-r1" && !LEGACY_R1_UNBOUND_REVISIONS.includes(presentationRevisionId)) {
+    fail(
+      `unbound variant "${variantKey}" builds to ${presentationRevisionId}, which is not a pinned historical legacy-r1 artifact; ` +
+        `declare its assessment revision explicitly (variants["${variantKey}"].assessmentRevisionId)`,
+    );
+  }
   return {
     lessonSlug: cfg.slug,
     variantKey,
@@ -211,7 +308,8 @@ function buildVariantArtifact({ cfg, variantKey, canonicalSourceBytes, variantSo
     presentationRevisionId,
     path: identity.variantRelativeOutputPath(cfg.slug, presentationRevisionId),
     relocatedReferences: first.rewritten,
-    assessmentRevisions,
+    assessmentRevisions: boundRevisions,
+    assessmentRevisionBasis: revisionBasis,
     assessmentBinding,
     review,
   };
@@ -354,7 +452,9 @@ function buildUncertifiedAssessmentPreview({ slug, variantKey, record, repoRoot 
   }
   if (!record || record.lessonSlug !== slug) fail(`preview: the draft record does not belong to lesson "${slug}"`);
   // The instruction-only build: every F5.2 gate, and no configured binding.
-  const { assessmentPresentationRevisionId: _bound, ...unbound } = config.variants[variantKey];
+  // Its explicit revision provenance is the draft record's revision.
+  const { assessmentPresentationRevisionId: _bound, ...rest } = config.variants[variantKey];
+  const unbound = { ...rest, assessmentRevisionId: record.assessmentRevisionId };
   const instructionCfg = { ...config, variants: { ...config.variants, [variantKey]: unbound } };
   const built = buildAuthoredVariant({ slug, variantKey, repoRoot, cfg: instructionCfg });
 
@@ -391,6 +491,7 @@ function buildUncertifiedAssessmentPreview({ slug, variantKey, record, repoRoot 
 
 module.exports = {
   ASSESSMENT_PAYLOAD_DIR,
+  LEGACY_R1_UNBOUND_REVISIONS,
   neutralNotice,
   buildVariantArtifact,
   buildAuthoredVariant,

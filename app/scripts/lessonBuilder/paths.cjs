@@ -18,6 +18,8 @@ const CANONICAL_ROOT = path.join(REPO_ROOT, "lesson-sources");
 const V1_OUTPUT_ROOT = REPO_ROOT;
 const V2_OUTPUT_ROOT = path.join(REPO_ROOT, "app", "lessons");
 const VARIANT_OUTPUT_ROOT = path.join(REPO_ROOT, "app", "lessons", "variants");
+// F5.3 Slice 9B: revision-bound canonical assessment renditions.
+const RENDITION_OUTPUT_ROOT = path.join(REPO_ROOT, "app", "lessons", "assessment-revisions");
 
 /*
  * Target-set registry (P4-3, differentiation F5.2 Slice 2).
@@ -39,6 +41,7 @@ const TARGETS = {
   v1: { root: V1_OUTPUT_ROOT, mode: "flat" },
   v2: { root: V2_OUTPUT_ROOT, mode: "nested" },
   variant: { root: VARIANT_OUTPUT_ROOT, mode: "nested" },
+  rendition: { root: RENDITION_OUTPUT_ROOT, mode: "nested" },
 };
 
 const CANONICAL_TARGET_IDS = Object.freeze(["v1", "v2"]);
@@ -97,6 +100,13 @@ function resolveOutput(target, relPath) {
         `[lesson-builder] ${target} output must not land under app/lessons/variants/ (reserved for differentiated presentation artifacts): ${relPath}`,
       );
     }
+    // Likewise the assessment-revision rendition tree (F5.3 Slice 9B) is
+    // reserved for renditions.
+    if (target !== "rendition" && isWithin(RENDITION_OUTPUT_ROOT, abs)) {
+      throw new Error(
+        `[lesson-builder] ${target} output must not land under app/lessons/assessment-revisions/ (reserved for assessment-revision renditions): ${relPath}`,
+      );
+    }
   }
   return abs;
 }
@@ -137,6 +147,7 @@ module.exports = {
   V1_OUTPUT_ROOT,
   V2_OUTPUT_ROOT,
   VARIANT_OUTPUT_ROOT,
+  RENDITION_OUTPUT_ROOT,
   TARGETS,
   CANONICAL_TARGET_IDS,
   isWithin,

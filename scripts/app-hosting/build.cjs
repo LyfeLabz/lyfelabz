@@ -14,6 +14,10 @@ const distributionRoot = path.join(repositoryRoot, 'dist');
 const defaultOutputDirectory = path.join(distributionRoot, 'app-hosting');
 const manifestPath = path.join(__dirname, 'public-files.json');
 const variantManifestRelativePath = 'app/lessons/variants/manifest.json';
+// F5.3 Slice 9B: the generated revision-to-path table. It is public (revision
+// ids and paths only, PDR-031f) and is the ONLY way an assessment-revision
+// rendition enters the artifact.
+const revisionPathTableRelativePath = 'app/lessons/assessment-revisions/revision-paths.json';
 const expectedComposedManifest = 'scripts/marketing-hosting/public-files.json';
 const virtualHostingPaths = new Set(['privacy', 'terms']);
 
@@ -145,6 +149,47 @@ function readRetainedVariantCopies(repoRoot = repositoryRoot) {
   });
 }
 
+// The revision-to-path table and exactly the renditions it names. Every entry
+// must be a (lesson, revision) of the strict grammar mapped either to that
+// lesson's unversioned v2 page or to that revision's rendition path; nothing
+// else in app/lessons/assessment-revisions/ is ever copied.
+function readAssessmentRevisionCopies(repoRoot = repositoryRoot) {
+  const absoluteTable = path.join(repoRoot, revisionPathTableRelativePath);
+  if (!fs.existsSync(absoluteTable)) return { copies: [], pageTargets: [] };
+  assertRegularSource(repoRoot, revisionPathTableRelativePath);
+  const parsed = JSON.parse(fs.readFileSync(absoluteTable, 'utf8'));
+  if (
+    !parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+    Object.keys(parsed).sort().join('|') !== 'kind|lessons|schemaVersion' ||
+    parsed.kind !== 'lyfelabz.assessmentRevisionPaths' || parsed.schemaVersion !== 1 ||
+    !parsed.lessons || typeof parsed.lessons !== 'object' || Array.isArray(parsed.lessons)
+  ) {
+    fail('revision path table must be { schemaVersion: 1, kind: "lyfelabz.assessmentRevisionPaths", lessons }');
+  }
+  const copies = [{ source: revisionPathTableRelativePath, destination: revisionPathTableRelativePath, transform: null }];
+  const pageTargets = [];
+  for (const [slug, revisions] of Object.entries(parsed.lessons)) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) fail(`invalid revision path table lesson: ${slug}`);
+    if (!revisions || typeof revisions !== 'object' || Array.isArray(revisions) || Object.keys(revisions).length === 0) {
+      fail(`revision path table lesson ${slug} must map at least one revision`);
+    }
+    for (const [revisionId, urlPath] of Object.entries(revisions)) {
+      const match = new RegExp(`^assessment_${slug}__r([1-9][0-9]*)$`).exec(revisionId);
+      if (!match) fail(`invalid revision path table revision for ${slug}: ${revisionId}`);
+      const rendition = `app/lessons/assessment-revisions/lesson_${slug}__r${match[1]}.html`;
+      const unversioned = `app/lessons/lesson_${slug}.html`;
+      if (urlPath === `/${rendition}`) {
+        copies.push({ source: rendition, destination: rendition, transform: null });
+      } else if (urlPath === `/${unversioned}`) {
+        pageTargets.push(unversioned);
+      } else {
+        fail(`revision path table maps ${revisionId} to an unexpected path: ${urlPath}`);
+      }
+    }
+  }
+  return { copies, pageTargets };
+}
+
 // The approved copy list as declared by the manifests, before any
 // source-file existence check. Build outputs such as app/dist/bundle.js
 // appear here even when they have not been built yet; collectApprovedCopies
@@ -163,6 +208,7 @@ function listApprovedCopies(repoRoot = repositoryRoot) {
   for (const relativePath of files) approved.push({ source: relativePath, destination: relativePath, transform: null });
   approved.push(...copies);
   approved.push(...readRetainedVariantCopies(repoRoot));
+  approved.push(...readAssessmentRevisionCopies(repoRoot).copies);
   return approved;
 }
 
@@ -170,6 +216,10 @@ function collectApprovedCopies(repoRoot = repositoryRoot) {
   const approved = listApprovedCopies(repoRoot);
   const seenDestinations = validateApprovedCopies(approved, repoRoot);
   if (seenDestinations.has(variantManifestRelativePath)) fail('private variant manifest must never enter the artifact');
+  // The table may only name pages the artifact actually publishes.
+  for (const target of readAssessmentRevisionCopies(repoRoot).pageTargets) {
+    if (!seenDestinations.has(target)) fail(`revision path table names an unpublished page: ${target}`);
+  }
   return approved;
 }
 
@@ -316,6 +366,7 @@ function buildApplicationArtifact(options = {}) {
     files: actual,
     outputDirectory,
     retainedVariants: approved.filter((entry) => entry.destination.startsWith('app/lessons/variants/')).length,
+    assessmentRevisionRenditions: approved.filter((entry) => /^app\/lessons\/assessment-revisions\/.*\.html$/.test(entry.destination)).length,
     dependencyValidation,
     bundleHygiene
   };
@@ -338,6 +389,7 @@ module.exports = {
   findLeakedDevelopmentPath,
   listApprovedCopies,
   readApplicationManifest,
+  readAssessmentRevisionCopies,
   readRetainedVariantCopies,
   resolveArtifactReference,
   validateCopyEntry,

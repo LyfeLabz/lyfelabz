@@ -14,6 +14,7 @@ const {
   findLeakedDevelopmentPath,
   listApprovedCopies,
   readApplicationManifest,
+  readAssessmentRevisionCopies,
   readRetainedVariantCopies,
   validateApprovedCopies,
   validateBundleHygiene,
@@ -193,6 +194,64 @@ test('retained variants are integrity checked and their private manifest is excl
   assert.throws(() => readRetainedVariantCopies(fixtureRoot), /missing input/i);
 
   assert.equal(result.files.includes('app/lessons/variants/manifest.json'), false);
+});
+
+// F5.3 Slice 9B: the revision-to-path table ships, and renditions enter the
+// artifact only when the table names them.
+function writeRevisionTable(lessons) {
+  writeFixture(
+    'app/lessons/assessment-revisions/revision-paths.json',
+    `${JSON.stringify({ schemaVersion: 1, kind: 'lyfelabz.assessmentRevisionPaths', lessons }, null, 2)}\n`,
+  );
+}
+
+test('the revision path table ships and today names no rendition', () => {
+  assert.equal(result.files.includes('app/lessons/assessment-revisions/revision-paths.json'), true);
+  assert.equal(result.assessmentRevisionRenditions, 0);
+  assert.deepEqual(result.files.filter((entry) => entry.startsWith('app/lessons/assessment-revisions/')), [
+    'app/lessons/assessment-revisions/revision-paths.json'
+  ]);
+  const shipped = JSON.parse(fs.readFileSync(path.join(outputDirectory, 'app/lessons/assessment-revisions/revision-paths.json'), 'utf8'));
+  assert.equal(Object.keys(shipped.lessons).length, 49);
+  assert.equal(readAssessmentRevisionCopies().pageTargets.length, 49);
+});
+
+test('renditions are included only through the revision path table', () => {
+  const rendition = 'app/lessons/assessment-revisions/lesson_fixture-lesson__r2.html';
+  writeFixture('app/lessons/assessment-revisions/lesson_fixture-lesson__r1.html', '<!doctype html>');
+  writeFixture(rendition, '<!doctype html>');
+  writeFixture('app/lessons/assessment-revisions/unlisted.html', '<!doctype html>');
+  writeRevisionTable({
+    'fixture-lesson': {
+      'assessment_fixture-lesson__r1': '/app/lessons/assessment-revisions/lesson_fixture-lesson__r1.html',
+      'assessment_fixture-lesson__r2': `/${rendition}`
+    },
+    'other-lesson': { 'assessment_other-lesson__r1': '/app/lessons/lesson_other-lesson.html' }
+  });
+  const { copies, pageTargets } = readAssessmentRevisionCopies(fixtureRoot);
+  assert.deepEqual(copies.map((copy) => copy.destination), [
+    'app/lessons/assessment-revisions/revision-paths.json',
+    'app/lessons/assessment-revisions/lesson_fixture-lesson__r1.html',
+    rendition
+  ]);
+  assert.deepEqual(pageTargets, ['app/lessons/lesson_other-lesson.html']);
+
+  for (const [lessons, pattern] of [
+    [{ 'fixture-lesson': { 'assessment_fixture-lesson__r2': '/app/lessons/variants/x.html' } }, /unexpected path/],
+    [{ 'fixture-lesson': { 'assessment_fixture-lesson__r2': '/app/lessons/assessment-revisions/lesson_fixture-lesson__r1.html' } }, /unexpected path/],
+    [{ 'fixture-lesson': { 'assessment_other-lesson__r1': '/app/lessons/lesson_other-lesson.html' } }, /invalid revision/],
+    [{ 'fixture-lesson': { 'assessment_fixture-lesson__r01': `/${rendition}` } }, /invalid revision/],
+    [{ '../x': { 'assessment_x__r1': '/app/lessons/lesson_x.html' } }, /invalid revision path table lesson/],
+    [{ 'fixture-lesson': {} }, /at least one revision/]
+  ]) {
+    writeRevisionTable(lessons);
+    assert.throws(() => readAssessmentRevisionCopies(fixtureRoot), pattern);
+  }
+  writeFixture('app/lessons/assessment-revisions/revision-paths.json', '{"schemaVersion":1,"kind":"other","lessons":{}}');
+  assert.throws(() => readAssessmentRevisionCopies(fixtureRoot), /revision path table must be/);
+  writeRevisionTable({ 'fixture-lesson': { 'assessment_fixture-lesson__r3': '/app/lessons/assessment-revisions/lesson_fixture-lesson__r3.html' } });
+  const missing = readAssessmentRevisionCopies(fixtureRoot).copies;
+  assert.throws(() => validateApprovedCopies(missing, fixtureRoot), /missing input/i);
 });
 
 test('required application, lesson, root, and runtime files are present', () => {

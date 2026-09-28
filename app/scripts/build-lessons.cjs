@@ -9,11 +9,18 @@
  *   node scripts/build-lessons.cjs --target=v1|v2
  *
  * --check is what the validation chain runs. It never writes files.
+ *
+ * F5.3 Slice 9B: v2 builds also write any assessment-revision renditions
+ * (multi-revision lessons only), and every build regenerates the
+ * revision-to-path table app/lessons/assessment-revisions/revision-paths.json.
+ * --check also verifies the table and that the rendition tree holds nothing
+ * else.
  */
 
 "use strict";
 
 const builder = require("./lessonBuilder/index.cjs");
+const assessmentRevisions = require("./lessonBuilder/assessmentRevisions.cjs");
 
 function parseArgs(argv) {
   const args = { check: false, only: null, target: null };
@@ -58,24 +65,36 @@ function main() {
     return;
   }
 
+  const revisionsBySlug = assessmentRevisions.loadRevisions().bySlug;
+
   if (args.check) {
     for (const slug of slugs) {
-      const res = builder.verifyLesson({ slug });
+      const res = builder.verifyLesson({ slug, revisionsBySlug });
+      const extra = res.renditions.length > 0 ? ` renditions=${res.renditions.length}` : "";
       process.stdout.write(
-        `[build-lessons] OK verify ${slug}: v1=${res.v1.sha256.slice(0, 12)} v2=${res.v2.sha256.slice(0, 12)}\n`,
+        `[build-lessons] OK verify ${slug}: v1=${res.v1.sha256.slice(0, 12)} v2=${res.v2.sha256.slice(0, 12)}${extra}\n`,
       );
     }
+    const tree = builder.verifyRenditionTree({ revisionsBySlug });
+    process.stdout.write(
+      `[build-lessons] OK verify assessment revision paths: table=${tree.sha256.slice(0, 12)} renditions=${tree.renditions}\n`,
+    );
     return;
   }
 
   for (const slug of slugs) {
     for (const target of targets) {
-      const res = builder.buildLesson({ slug, target, write: true });
+      const res = builder.buildLesson({ slug, target, write: true, revisionsBySlug });
       process.stdout.write(
         `[build-lessons] wrote ${target} for ${slug}: ${res.sha256.slice(0, 12)} -> ${res.outputPath}\n`,
       );
+      for (const r of res.renditions) {
+        process.stdout.write(`[build-lessons] wrote rendition ${r.assessmentRevisionId}: ${r.sha256.slice(0, 12)} -> ${r.path}\n`);
+      }
     }
   }
+  const table = builder.writePathTable({ revisionsBySlug });
+  process.stdout.write(`[build-lessons] wrote assessment revision paths: ${table.sha256.slice(0, 12)} -> ${table.outputPath}\n`);
 }
 
 try {

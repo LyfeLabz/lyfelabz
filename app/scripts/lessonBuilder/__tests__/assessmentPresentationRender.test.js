@@ -294,7 +294,8 @@ describe("authored-variant build integration", () => {
           adaptableSections: ["explore"],
           adaptableSelectors: ["p"],
           lockedSelectors: [],
-          ...(apId ? { assessmentPresentationRevisionId: apId } : {}),
+          // F5.3 Slice 9B closure (S9-D7): a new unbound variant states its revision explicitly.
+          ...(apId ? { assessmentPresentationRevisionId: apId } : { assessmentRevisionId: `assessment_${F.SLUG}__r1` }),
         },
       },
     };

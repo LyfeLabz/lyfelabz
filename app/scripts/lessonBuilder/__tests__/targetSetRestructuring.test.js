@@ -23,8 +23,10 @@ describe("target-set restructuring preserves canonical byte-identical output (T-
     expect(paths.CANONICAL_TARGET_IDS).toEqual(["v1", "v2"]);
   });
 
-  test("the target-set registry declares v1, v2, and the reserved variant target", () => {
-    expect(Object.keys(paths.TARGETS).sort()).toEqual(["v1", "v2", "variant"]);
+  test("the target-set registry declares v1, v2, and the reserved variant and rendition targets", () => {
+    // F5.3 Slice 9B adds the reserved assessment-revision rendition target.
+    expect(Object.keys(paths.TARGETS).sort()).toEqual(["rendition", "v1", "v2", "variant"]);
+    expect(paths.CANONICAL_TARGET_IDS).toEqual(["v1", "v2"]);
   });
 
   const slugs = builder.listConfiguredSlugs();

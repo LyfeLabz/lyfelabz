@@ -114,7 +114,15 @@ function validateVariantsShape(cfg, slug) {
     if (v.assessmentPresentationRevisionId !== undefined && !/^ap[0-9a-f]{64}$/.test(String(v.assessmentPresentationRevisionId))) {
       fail(`${at}.assessmentPresentationRevisionId must be ap<sha256>`);
     }
-    const known = new Set(["source", "adaptableSections", "adaptableSelectors", "lockedSelectors", "assessmentPresentationRevisionId"]);
+    // F5.3 Slice 9B: explicit assessment revision an unbound variant displays
+    // (variantSource.cjs). Required for a newly authored unbound variant;
+    // only pinned historical artifacts may omit it (legacy-r1, S9-D7). With a
+    // bound presentation it must agree with the presentation's revision.
+    if (v.assessmentRevisionId !== undefined) {
+      const parsed = require("./assessmentRevisions.cjs").parseRevisionId(v.assessmentRevisionId);
+      if (parsed === null || parsed.slug !== slug) fail(`${at}.assessmentRevisionId must be assessment_${slug}__r<N>`);
+    }
+    const known = new Set(["source", "adaptableSections", "adaptableSelectors", "lockedSelectors", "assessmentPresentationRevisionId", "assessmentRevisionId"]);
     for (const key of Object.keys(v)) if (!known.has(key)) fail(`${at} has unknown field "${key}"`);
   }
 }

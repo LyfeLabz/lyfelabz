@@ -97,6 +97,8 @@ function baseConfig(overrides = {}) {
         adaptableSections: ["explore"],
         adaptableSelectors: ["p", ".callout-body", ".bridge-callout"],
         lockedSelectors: [".qr-card", ".edu-note", ".chips"],
+        // F5.3 Slice 9B closure (S9-D7): new unbound variants state their revision.
+        assessmentRevisionId: `assessment_${SLUG}__r1`,
       },
     },
     ...overrides,
@@ -297,16 +299,20 @@ describe("authored variant - locked descendants inside adaptable containers", ()
 });
 
 describe("authored variant - assessment protections", () => {
-  test("refuses when no committed payload is faithful to the canonical quiz", () => {
+  test("refuses when the canonical quiz is not faithful to its configured revision, or no revision is committed", () => {
     const bad = payloads();
     bad[0].payload.items[0].stem = "Altered stem";
-    expectReject(CANONICAL, /no committed assessment payload is faithful/, { payloads: bad });
-    expectReject(CANONICAL, /no committed assessment payload is faithful/, { payloads: [] });
+    expectReject(CANONICAL, /canonical quiz is not faithful to its configured revision/, { payloads: bad });
+    expectReject(CANONICAL, /is not a committed revision|no committed assessment revision/, { payloads: [] });
   });
-  test("binds every faithful payload revision", () => {
+  // F5.3 Slice 9B: a variant binds exactly its own revision (legacy r1 here),
+  // never every payload the current quiz happens to match.
+  test("binds exactly the variant's own revision", () => {
     const p = payloads();
     const r2 = { name: `${SLUG}.r2.json`, payload: { ...p[0].payload, revisionOrdinal: 2 } };
-    expect(build(ADAPTED, { payloads: [...p, r2] }).assessmentRevisions).toEqual([`${SLUG}.r1.json`, `${SLUG}.r2.json`]);
+    expect(() => build(ADAPTED, { payloads: [...p, r2] })).toThrow(/must declare canonicalAssessmentRevisionId/);
+    const cfg = baseConfig({ canonicalAssessmentRevisionId: `assessment_${SLUG}__r2` });
+    expect(build(ADAPTED, { payloads: [...p, r2], cfg }).assessmentRevisions).toEqual([`${SLUG}.r1.json`]);
   });
 });
 
@@ -421,6 +427,7 @@ describe("authored variant - Earth's Layers canonical (in memory, no writes)", (
         adaptableSections: ["engage", "explore", "layers", "crust", "mantle-zone", "core", "explain"],
         adaptableSelectors: ["p", ".callout-body", ".bridge-callout"],
         lockedSelectors: [".edu-note", ".qr-card", ".crust-grid", ".wrapup-chips"],
+        assessmentRevisionId: "assessment_earths-layers__r1",
       },
     },
   };

@@ -384,6 +384,7 @@ function checkCanonicalRevisionFidelity(cfg, html, revisionList) {
 
 module.exports = {
   extractScriptBodies,
+  extractCanonicalQuizRaw,
   extractCanonicalQuiz,
   buildPayload,
   assertSchemaValid,

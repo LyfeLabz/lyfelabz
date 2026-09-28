@@ -355,7 +355,11 @@ function renderCertifiedAssessmentPresentation(html, { assessmentPresentationRev
 module.exports = {
   BINDING_ELEMENT_ID,
   BINDING_SCHEMA_VERSION,
+  QUIZ_LITERAL_KEYS,
   escapeHtml,
+  scriptSafeJson,
+  locateQuizLiteral,
+  literalSource,
   htmlToText,
   buildPresentationQuiz,
   readBindingBlock,
