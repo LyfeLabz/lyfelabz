@@ -1,11 +1,13 @@
 import * as crypto from "crypto";
 
 import {
+  planScopedCoverageWrite,
   publishRetainedRevision,
   retireVariant,
   type FetchHostedPort,
   type PublishInput,
   type RetainedRevision,
+  type WriteScopedCoveragePort,
 } from "./variant-publication";
 
 // F5.2 §6.8 publication state machine (Slice 3). These tests exercise the
@@ -17,6 +19,9 @@ import {
 const LESSON = "earths-layers";
 const VARIANT = "reading-adapted";
 const OPERATOR = "operator-uid";
+// F5.3 Slice 9C-2: every retained revision covers an assessment revision; the
+// state machine writes only the scoped document for it.
+const R1 = `assessment_${LESSON}__r1`;
 
 function sha256(bytes: string | Buffer): string {
   return crypto.createHash("sha256").update(bytes).digest("hex");
@@ -31,6 +36,7 @@ type ManifestEntry = {
   presentationRevisionId: string;
   path: string;
   sha256: string;
+  assessmentRevisionId: string;
 };
 
 type IndexRecord = {
@@ -40,6 +46,8 @@ type IndexRecord = {
   currentPath: string;
   contentSha256: string;
   status: "active" | "retired";
+  assessmentRevisionId: string;
+  assessmentPresentationRevisionId?: string;
   publishedBy: string;
 };
 
@@ -52,23 +60,24 @@ function makeWorld() {
   const hosted = new Map<string, string>();
   const index = new Map<string, IndexRecord>();
   const events: string[] = [];
+  const deployed = new Set<string>([R1]);
   let verifierOk = true;
 
-  function docId(lessonSlug: string, variantKey: string): string {
-    return `${lessonSlug}__${variantKey}`;
+  // The revision-scoped document id (F5.3 Slice 9C-2).
+  function docId(lessonSlug: string, variantKey: string, ordinal = 1): string {
+    return `${lessonSlug}__${variantKey}__r${String(ordinal)}`;
   }
 
   // Simulates the Slice 2 add-only build: retain immutable bytes + append the
   // manifest entry. Idempotent for identical bytes; never rewrites history.
-  function retain(lessonSlug: string, variantKey: string, bytes: string): ManifestEntry {
+  function retain(lessonSlug: string, variantKey: string, bytes: string, assessmentRevisionId = R1): ManifestEntry {
     const digest = sha256(bytes);
     const id = `pr${digest}`;
     const p = `app/lessons/variants/lesson_${lessonSlug}__${id}.html`;
     tree.set(p, bytes);
-    if (!manifest.find((e) => e.path === p)) {
-      manifest.push({ lessonSlug, variantKey, presentationRevisionId: id, path: p, sha256: digest });
-    }
-    return { lessonSlug, variantKey, presentationRevisionId: id, path: p, sha256: digest };
+    const entry = { lessonSlug, variantKey, presentationRevisionId: id, path: p, sha256: digest, assessmentRevisionId };
+    if (!manifest.find((e) => e.path === p)) manifest.push(entry);
+    return entry;
   }
 
   // Simulates `firebase deploy` publishing the committed tree to Hosting.
@@ -99,21 +108,19 @@ function makeWorld() {
     const onDisk = tree.get(m.path);
     if (onDisk === undefined) return Promise.resolve({ ok: false as const, error: `artifact missing: ${m.path}` });
     if (sha256(onDisk) !== m.sha256) return Promise.resolve({ ok: false as const, error: `artifact altered: ${m.path}` });
-    return Promise.resolve({ ok: true as const, revision: { ...m } satisfies RetainedRevision });
+    return Promise.resolve({
+      ok: true as const,
+      revision: { ...m, assessmentRevisionSource: "declared" } satisfies RetainedRevision,
+    });
   };
 
-  const writeIndexActivate = (revision: RetainedRevision, publishedBy: string) => {
+  // The scoped write port, mirroring the real transactional port: re-read and
+  // decide with the shared planner, then create, do nothing, or repoint.
+  const writeScopedCoverage: WriteScopedCoveragePort = ({ key, record, publishedBy, mode }) => {
     events.push("write");
-    index.set(docId(revision.lessonSlug, revision.variantKey), {
-      lessonSlug: revision.lessonSlug,
-      variantKey: revision.variantKey,
-      currentPresentationRevisionId: revision.presentationRevisionId,
-      currentPath: revision.path,
-      contentSha256: revision.sha256,
-      status: "active",
-      publishedBy,
-    });
-    return Promise.resolve();
+    const plan = planScopedCoverageWrite(index.get(key.docId), record, mode);
+    if (plan.ok && plan.action !== "reconcile") index.set(key.docId, { ...record, publishedBy });
+    return Promise.resolve(plan);
   };
 
   return {
@@ -128,9 +135,15 @@ function makeWorld() {
     setVerifierOk: (v: boolean) => {
       verifierOk = v;
     },
+    deployed,
     ports: {
       loadRetainedRevision,
-      writeIndexActivate,
+      writeScopedCoverage,
+      readScopedCoverage: (key: { docId: string }) => {
+        const rec = index.get(key.docId);
+        return Promise.resolve(rec === undefined ? { exists: false as const } : { exists: true as const, data: rec });
+      },
+      isAssessmentRevisionDeployed: (id: string) => Promise.resolve(deployed.has(id)),
       hashBytes,
     },
   };
@@ -211,6 +224,7 @@ describe("successful publication writes a self-consistent index from trusted man
       currentPath: a.path,
       contentSha256: a.sha256,
       status: "active",
+      assessmentRevisionId: R1,
       publishedBy: OPERATOR,
     });
     // Audit/attribution: publishedBy is present and equals the operator; the
@@ -266,7 +280,10 @@ describe("failure safety - the index never advances on any pre-index failure (su
       },
       fetchHosted: makeHostedFetch(world),
     });
-    const b = world.retain(LESSON, VARIANT, "<html>B</html>");
+    // F5.3 Slice 9C-2: B covers a synthetic deployed r2, so its publication is
+    // a genuine create (publishing over A's own revision is refused earlier).
+    world.deployed.add(`assessment_${LESSON}__r2`);
+    const b = world.retain(LESSON, VARIANT, "<html>B</html>", `assessment_${LESSON}__r2`);
 
     const result = await publishRetainedRevision(baseInput({ presentationRevisionId: b.presentationRevisionId }), {
       ...world.ports,
@@ -279,10 +296,11 @@ describe("failure safety - the index never advances on any pre-index failure (su
       expect(result.failedStage).toBe("HOSTING_DEPLOYED");
       expect(result.indexAdvanced).toBe(false);
     }
-    // Index still points at A.
+    // r1 coverage still points at A; no r2 coverage was written.
     expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(
       a.presentationRevisionId,
     );
+    expect(world.index.has(world.docId(LESSON, VARIANT, 2))).toBe(false);
   });
 
   test("fetch/network failure -> no index", async () => {
@@ -400,17 +418,17 @@ describe("failure safety - the index never advances on any pre-index failure (su
     const a = world.retain(LESSON, VARIANT, "<html>A</html>");
     world.deployToHosted();
     let attempts = 0;
-    const flaky = async (revision: RetainedRevision, publishedBy: string) => {
+    const flaky: WriteScopedCoveragePort = async (args) => {
       attempts += 1;
       if (attempts === 1) throw new Error("firestore unavailable");
-      await world.ports.writeIndexActivate(revision, publishedBy);
+      return world.ports.writeScopedCoverage(args);
     };
 
     const first = await publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), {
       ...world.ports,
       deployHosting: () => Promise.resolve({ ok: true }),
       fetchHosted: makeHostedFetch(world),
-      writeIndexActivate: flaky,
+      writeScopedCoverage: flaky,
     });
     expect(first.ok).toBe(false);
     if (!first.ok) {
@@ -424,7 +442,7 @@ describe("failure safety - the index never advances on any pre-index failure (su
       ...world.ports,
       deployHosting: () => Promise.resolve({ ok: true }),
       fetchHosted: makeHostedFetch(world),
-      writeIndexActivate: flaky,
+      writeScopedCoverage: flaky,
     });
     expect(retry.ok).toBe(true);
     expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(
@@ -482,68 +500,91 @@ describe("retry after publication failure does not rewrite history", () => {
   });
 });
 
-describe("T-E2 (index half): regenerate A -> B, index points to B, A remains retained", () => {
-  test("both revisions retained; index advances to B; A byte-identical", async () => {
+const deployAll = (world: ReturnType<typeof makeWorld>) => () => {
+  world.deployToHosted();
+  return Promise.resolve({ ok: true as const });
+};
+
+// F5.3 Slice 9C-2 owner ruling: publish is create-only; the explicit rollback
+// is the only repoint (and re-activation) of an existing scoped record.
+describe("T-E2 (index half): regenerate A -> B; publish never overwrites, rollback repoints", () => {
+  test("publishing B over current A is refused before any side effect; rollback repoints to B; A stays retained", async () => {
     const world = makeWorld();
     const a = world.retain(LESSON, VARIANT, "<html>A</html>");
     const aBytes = world.tree.get(a.path);
-
     await publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), {
       ...world.ports,
-      deployHosting: () => {
-        world.deployToHosted();
-        return Promise.resolve({ ok: true });
-      },
+      deployHosting: deployAll(world),
       fetchHosted: makeHostedFetch(world),
     });
-    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(
-      a.presentationRevisionId,
-    );
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(a.presentationRevisionId);
 
     const b = world.retain(LESSON, VARIANT, "<html>B</html>");
+    let deploys = 0;
     const pubB = await publishRetainedRevision(baseInput({ presentationRevisionId: b.presentationRevisionId }), {
       ...world.ports,
       deployHosting: () => {
-        world.deployToHosted();
+        deploys += 1;
         return Promise.resolve({ ok: true });
       },
       fetchHosted: makeHostedFetch(world),
     });
+    expect(pubB.ok).toBe(false);
+    if (!pubB.ok) {
+      expect(pubB.failedStage).toBe("LOCAL_VERIFIED");
+      expect(pubB.error).toContain("publish never overwrites it - use --op=rollback");
+    }
+    expect(deploys).toBe(0);
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(a.presentationRevisionId);
 
-    expect(pubB.ok).toBe(true);
-    // Index now points to B.
-    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(
-      b.presentationRevisionId,
-    );
-    // A remains retained, byte-identical, still manifest-listed.
+    world.deployToHosted();
+    const rollB = await publishRetainedRevision(baseInput({ presentationRevisionId: b.presentationRevisionId, mode: "rollback" }), {
+      ...world.ports,
+      deployHosting: () => Promise.resolve({ ok: true }),
+      fetchHosted: makeHostedFetch(world),
+    });
+    expect(rollB.ok).toBe(true);
+    if (rollB.ok) expect(rollB.coverage).toEqual({ docId: world.docId(LESSON, VARIANT), action: "repoint" });
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(b.presentationRevisionId);
     expect(world.tree.get(a.path)).toBe(aBytes);
     expect(world.manifest.find((e) => e.path === a.path)).toBeDefined();
-    expect(world.manifest.find((e) => e.path === b.path)).toBeDefined();
+  });
+
+  test("re-publishing the identical current revision reconciles with no rewrite", async () => {
+    const world = makeWorld();
+    const a = world.retain(LESSON, VARIANT, "<html>A</html>");
+    const run = () =>
+      publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), {
+        ...world.ports,
+        deployHosting: deployAll(world),
+        fetchHosted: makeHostedFetch(world),
+      });
+    const first = await run();
+    const before = world.index.get(world.docId(LESSON, VARIANT));
+    const second = await run();
+    expect(first.ok && first.coverage.action).toBe("create");
+    expect(second.ok && second.coverage.action).toBe("reconcile");
+    expect(world.index.get(world.docId(LESSON, VARIANT))).toBe(before);
   });
 });
 
 describe("rollback / repoint (T-P4)", () => {
-  test("rollback to a retained prior revision re-verifies liveness, repoints index, deletes nothing", async () => {
+  test("rollback to a retained prior revision re-verifies liveness, repoints the scoped record, deletes nothing", async () => {
     const world = makeWorld();
     const a = world.retain(LESSON, VARIANT, "<html>A</html>");
     const b = world.retain(LESSON, VARIANT, "<html>B</html>");
+    await publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), {
+      ...world.ports,
+      deployHosting: deployAll(world),
+      fetchHosted: makeHostedFetch(world),
+    });
+    await publishRetainedRevision(baseInput({ presentationRevisionId: b.presentationRevisionId, mode: "rollback" }), {
+      ...world.ports,
+      deployHosting: () => Promise.resolve({ ok: true }),
+      fetchHosted: makeHostedFetch(world),
+    });
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(b.presentationRevisionId);
 
-    // Publish A then B; index now on B; both live.
-    for (const rev of [a, b]) {
-      await publishRetainedRevision(baseInput({ presentationRevisionId: rev.presentationRevisionId }), {
-        ...world.ports,
-        deployHosting: () => {
-          world.deployToHosted();
-          return Promise.resolve({ ok: true });
-        },
-        fetchHosted: makeHostedFetch(world),
-      });
-    }
-    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(
-      b.presentationRevisionId,
-    );
-
-    // Roll back to A. No new deploy occurs; liveness of A is re-verified.
     let deployCalls = 0;
     const rollback = await publishRetainedRevision(
       baseInput({ presentationRevisionId: a.presentationRevisionId, mode: "rollback" }),
@@ -556,183 +597,152 @@ describe("rollback / repoint (T-P4)", () => {
         fetchHosted: makeHostedFetch(world),
       },
     );
-
     expect(rollback.ok).toBe(true);
-    expect(deployCalls).toBe(0); // rollback does not redeploy
-    // Index repointed to A; B still retained (both artifacts intact).
-    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(
-      a.presentationRevisionId,
-    );
+    expect(deployCalls).toBe(0);
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(a.presentationRevisionId);
     expect(world.tree.get(b.path)).toBe("<html>B</html>");
-    expect(world.manifest.find((e) => e.path === b.path)).toBeDefined();
   });
 
   test("rollback to a prior revision whose hosted bytes are NOT live is refused (no repoint)", async () => {
     const world = makeWorld();
     const a = world.retain(LESSON, VARIANT, "<html>A</html>");
     const b = world.retain(LESSON, VARIANT, "<html>B</html>");
-    // Only B is actually hosted; A was never deployed / was purged from host.
     world.hosted.set(b.path, "<html>B</html>");
-
     await publishRetainedRevision(baseInput({ presentationRevisionId: b.presentationRevisionId }), {
       ...world.ports,
       deployHosting: () => Promise.resolve({ ok: true }),
       fetchHosted: makeHostedFetch(world),
     });
-
     const rollback = await publishRetainedRevision(
       baseInput({ presentationRevisionId: a.presentationRevisionId, mode: "rollback" }),
       {
         ...world.ports,
         deployHosting: () => Promise.resolve({ ok: true }),
-        fetchHosted: makeHostedFetch(world), // A not in hosted -> 404
+        fetchHosted: makeHostedFetch(world),
       },
     );
     expect(rollback.ok).toBe(false);
     if (!rollback.ok) expect(rollback.failedStage).toBe("HOSTED_BYTES_VERIFIED");
-    // Index remains on B.
-    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(
-      b.presentationRevisionId,
-    );
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(b.presentationRevisionId);
+  });
+
+  test("rollback re-activates a retired scoped record; publish does not", async () => {
+    const world = makeWorld();
+    const a = world.retain(LESSON, VARIANT, "<html>A</html>");
+    world.deployToHosted();
+    world.index.set(world.docId(LESSON, VARIANT), {
+      lessonSlug: LESSON, variantKey: VARIANT, currentPresentationRevisionId: a.presentationRevisionId, currentPath: a.path,
+      contentSha256: a.sha256, status: "retired", assessmentRevisionId: R1, publishedBy: OPERATOR,
+    });
+    const deps = { ...world.ports, deployHosting: () => Promise.resolve({ ok: true as const }), fetchHosted: makeHostedFetch(world) };
+    const pub = await publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), deps);
+    expect(pub.ok).toBe(false);
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.status).toBe("retired");
+    const roll = await publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId, mode: "rollback" }), deps);
+    expect(roll.ok && roll.coverage.action).toBe("repoint");
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.status).toBe("active");
   });
 });
 
-describe("concurrent publication (P5.1 - no CAS; either valid revision may win, no invalid one can)", () => {
-  test("two valid verified revisions race; final index is one of them; unverified never wins", async () => {
+describe("concurrent publication (create-only: exactly one valid revision wins, no invalid one can)", () => {
+  test("two valid verified revisions race; exactly one creates the scoped record; the other is refused", async () => {
     const world = makeWorld();
     const a = world.retain(LESSON, VARIANT, "<html>A</html>");
     const b = world.retain(LESSON, VARIANT, "<html>B</html>");
-    world.deployToHosted(); // both A and B are live
-
+    world.deployToHosted();
+    const deps = { ...world.ports, deployHosting: () => Promise.resolve({ ok: true as const }), fetchHosted: makeHostedFetch(world) };
     const [ra, rb] = await Promise.all([
-      publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), {
-        ...world.ports,
-        deployHosting: () => Promise.resolve({ ok: true }),
-        fetchHosted: makeHostedFetch(world),
-      }),
-      publishRetainedRevision(baseInput({ presentationRevisionId: b.presentationRevisionId }), {
-        ...world.ports,
-        deployHosting: () => Promise.resolve({ ok: true }),
-        fetchHosted: makeHostedFetch(world),
-      }),
+      publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), deps),
+      publishRetainedRevision(baseInput({ presentationRevisionId: b.presentationRevisionId }), deps),
     ]);
-
-    expect(ra.ok).toBe(true);
-    expect(rb.ok).toBe(true);
+    const winners = [ra, rb].filter((r) => r.ok);
+    expect(winners).toHaveLength(1);
+    const loser = [ra, rb].find((r) => !r.ok);
+    if (loser && !loser.ok) expect(loser.failedStage).toBe("INDEX_UPDATED");
     const current = world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId;
-    expect([a.presentationRevisionId, b.presentationRevisionId]).toContain(current);
+    expect(winners[0].ok && winners[0].revision.presentationRevisionId).toBe(current);
   });
 
-  test("a concurrent UNVERIFIED revision (not hosted) never becomes current even if it writes last-ish", async () => {
+  test("a concurrent UNVERIFIED revision (not hosted) never becomes current", async () => {
     const world = makeWorld();
     const a = world.retain(LESSON, VARIANT, "<html>A</html>");
     const bad = world.retain(LESSON, VARIANT, "<html>BAD</html>");
-    world.hosted.set(a.path, "<html>A</html>"); // only A hosted
-
+    world.hosted.set(a.path, "<html>A</html>");
+    const deps = { ...world.ports, deployHosting: () => Promise.resolve({ ok: true as const }), fetchHosted: makeHostedFetch(world) };
     const [ra, rbad] = await Promise.all([
-      publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), {
-        ...world.ports,
-        deployHosting: () => Promise.resolve({ ok: true }),
-        fetchHosted: makeHostedFetch(world),
-      }),
-      publishRetainedRevision(baseInput({ presentationRevisionId: bad.presentationRevisionId }), {
-        ...world.ports,
-        deployHosting: () => Promise.resolve({ ok: true }),
-        fetchHosted: makeHostedFetch(world), // bad not hosted -> 404
-      }),
+      publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), deps),
+      publishRetainedRevision(baseInput({ presentationRevisionId: bad.presentationRevisionId }), deps),
     ]);
-
     expect(ra.ok).toBe(true);
     expect(rbad.ok).toBe(false);
-    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(
-      a.presentationRevisionId,
-    );
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.currentPresentationRevisionId).toBe(a.presentationRevisionId);
   });
 });
 
-describe("retirement (withdraws eligibility; retains history)", () => {
+describe("retirement (withdraws eligibility of one revision's scoped coverage; retains history)", () => {
   function makeRetireWorld() {
     const world = makeWorld();
-    const readIndexStatus = ({ lessonSlug, variantKey }: { lessonSlug: string; variantKey: string }) => {
-      const rec = world.index.get(world.docId(lessonSlug, variantKey));
-      if (!rec) return Promise.resolve({ exists: false as const });
-      return Promise.resolve({ exists: true as const, status: rec.status });
-    };
-    const writeIndexRetire = ({
-      lessonSlug,
-      variantKey,
-      publishedBy,
-    }: {
-      lessonSlug: string;
-      variantKey: string;
-      publishedBy: string;
-    }) => {
-      const id = world.docId(lessonSlug, variantKey);
-      const rec = world.index.get(id);
-      if (rec) world.index.set(id, { ...rec, status: "retired", publishedBy });
+    const readScopedCoverage = world.ports.readScopedCoverage;
+    const writeScopedRetire = ({ key, publishedBy }: { key: { docId: string }; publishedBy: string }) => {
+      const rec = world.index.get(key.docId);
+      if (rec) world.index.set(key.docId, { ...rec, status: "retired", publishedBy });
       return Promise.resolve();
     };
-    return { world, readIndexStatus, writeIndexRetire };
+    return { world, readScopedCoverage, writeScopedRetire };
   }
+  const retireInput = (overrides: Record<string, string> = {}) => ({
+    lessonSlug: LESSON,
+    variantKey: VARIANT,
+    assessmentRevisionId: R1,
+    publishedBy: OPERATOR,
+    ...overrides,
+  });
 
-  test("retiring an active variant flips status; artifact + manifest untouched", async () => {
-    const { world, readIndexStatus, writeIndexRetire } = makeRetireWorld();
+  test("retiring an active scoped record flips status; artifact + manifest untouched", async () => {
+    const { world, readScopedCoverage, writeScopedRetire } = makeRetireWorld();
     const a = world.retain(LESSON, VARIANT, "<html>A</html>");
     await publishRetainedRevision(baseInput({ presentationRevisionId: a.presentationRevisionId }), {
       ...world.ports,
-      deployHosting: () => {
-        world.deployToHosted();
-        return Promise.resolve({ ok: true });
-      },
+      deployHosting: deployAll(world),
       fetchHosted: makeHostedFetch(world),
     });
-
-    const result = await retireVariant(
-      { lessonSlug: LESSON, variantKey: VARIANT, publishedBy: OPERATOR },
-      { readIndexStatus, writeIndexRetire },
-    );
+    const result = await retireVariant(retireInput(), { readScopedCoverage, writeScopedRetire });
     expect(result).toEqual({ ok: true, retired: true, note: "retired" });
     expect(world.index.get(world.docId(LESSON, VARIANT))?.status).toBe("retired");
-    // Artifact + manifest entry retained.
     expect(world.tree.get(a.path)).toBe("<html>A</html>");
     expect(world.manifest.find((e) => e.path === a.path)).toBeDefined();
   });
 
-  test("retiring when no index doc exists is a safe no-op", async () => {
-    const { world, readIndexStatus, writeIndexRetire } = makeRetireWorld();
-    const result = await retireVariant(
-      { lessonSlug: LESSON, variantKey: VARIANT, publishedBy: OPERATOR },
-      { readIndexStatus, writeIndexRetire },
-    );
-    expect(result).toEqual({ ok: true, retired: false, note: "no current index; nothing to retire" });
+  test("retiring when no scoped record exists is a safe no-op", async () => {
+    const { world, readScopedCoverage, writeScopedRetire } = makeRetireWorld();
+    const result = await retireVariant(retireInput(), { readScopedCoverage, writeScopedRetire });
+    expect(result).toEqual({ ok: true, retired: false, note: "no scoped coverage; nothing to retire" });
     expect(world.index.size).toBe(0);
   });
 
-  test("retiring an already-retired variant is idempotent", async () => {
-    const { world, readIndexStatus, writeIndexRetire } = makeRetireWorld();
+  test("retiring an already-retired scoped record is idempotent", async () => {
+    const { world, readScopedCoverage, writeScopedRetire } = makeRetireWorld();
     const a = world.retain(LESSON, VARIANT, "<html>A</html>");
     world.index.set(world.docId(LESSON, VARIANT), {
-      lessonSlug: LESSON,
-      variantKey: VARIANT,
-      currentPresentationRevisionId: a.presentationRevisionId,
-      currentPath: a.path,
-      contentSha256: a.sha256,
-      status: "retired",
-      publishedBy: OPERATOR,
+      lessonSlug: LESSON, variantKey: VARIANT, currentPresentationRevisionId: a.presentationRevisionId, currentPath: a.path,
+      contentSha256: a.sha256, status: "retired", assessmentRevisionId: R1, publishedBy: OPERATOR,
     });
-    const result = await retireVariant(
-      { lessonSlug: LESSON, variantKey: VARIANT, publishedBy: OPERATOR },
-      { readIndexStatus, writeIndexRetire },
-    );
+    const result = await retireVariant(retireInput(), { readScopedCoverage, writeScopedRetire });
     expect(result).toEqual({ ok: true, retired: false, note: "already retired" });
   });
 
-  test("retirement requires server-owned attribution", async () => {
-    const { readIndexStatus, writeIndexRetire } = makeRetireWorld();
-    const result = await retireVariant(
-      { lessonSlug: LESSON, variantKey: VARIANT, publishedBy: "" },
-      { readIndexStatus, writeIndexRetire },
-    );
-    expect(result.ok).toBe(false);
+  test("retirement requires attribution and a revision of this lesson, and refuses a record of another identity", async () => {
+    const { world, readScopedCoverage, writeScopedRetire } = makeRetireWorld();
+    expect((await retireVariant(retireInput({ publishedBy: "" }), { readScopedCoverage, writeScopedRetire })).ok).toBe(false);
+    for (const bad of ["assessment_water-cycle__r1", `assessment_${LESSON}__r0`, "r1"]) {
+      expect((await retireVariant(retireInput({ assessmentRevisionId: bad }), { readScopedCoverage, writeScopedRetire })).ok).toBe(false);
+    }
+    world.index.set(world.docId(LESSON, VARIANT), {
+      lessonSlug: LESSON, variantKey: VARIANT, currentPresentationRevisionId: "x", currentPath: "x",
+      contentSha256: "x", status: "active", assessmentRevisionId: `assessment_${LESSON}__r2`, publishedBy: OPERATOR,
+    });
+    const refused = await retireVariant(retireInput(), { readScopedCoverage, writeScopedRetire });
+    expect(refused.ok).toBe(false);
+    expect(world.index.get(world.docId(LESSON, VARIANT))?.status).toBe("active");
   });
 });

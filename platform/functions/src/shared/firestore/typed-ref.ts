@@ -91,9 +91,9 @@ import {
   PRESENTATION_VARIANTS_COLLECTION,
   presentationVariantIndexDocId,
   presentationVariantScopedIndexDocId,
-  type PresentationVariantIndexActivateWrite,
   type PresentationVariantIndexDoc,
-  type PresentationVariantIndexRetireWrite,
+  type PresentationVariantScopedIndexActivateWrite,
+  type PresentationVariantScopedIndexRetireWrite,
 } from "../types/presentation-variant";
 import {
   LAUNCH_GRANTS_COLLECTION,
@@ -1180,36 +1180,36 @@ export function presentationVariantScopedIndexDocRef(
     .doc(presentationVariantScopedIndexDocId(lessonSlug, variantKey, revisionOrdinal)) as DocumentReference<PresentationVariantIndexDoc>;
 }
 
-// Activate-write typed reference (publish or rollback/repoint). The publish
-// tooling uses this with `.set()` to point the index at a retained,
-// liveness-confirmed revision and force `status:"active"`. Per P5.1 there is
-// NO compare-and-set: concurrent publishes of two valid, verified revisions
-// may race and either may end current; an unverified revision can never win
-// because the write is only reached after the step-8 liveness gate.
-export function presentationVariantIndexActivateDocRef(
+// F5.3 Slice 9C-2: write typed references for the revision-scoped index
+// document ONLY. The legacy unscoped `presentationVariants/{lessonSlug}__{variantKey}`
+// document has no write reference any more: it is read-only compatibility
+// state and is never written again (addendum 21.7), so a legacy write is not
+// expressible through the typed-ref layer. The publisher uses the activate
+// reference inside a transaction (create-only publish; explicit rollback
+// repoint) and the retire reference with `.update()` for an explicit,
+// revision-named retirement.
+export function presentationVariantScopedIndexActivateDocRef(
   lessonSlug: string,
   variantKey: string,
-): DocumentReference<PresentationVariantIndexActivateWrite> {
+  revisionOrdinal: number,
+): DocumentReference<PresentationVariantScopedIndexActivateWrite> {
   return getAdminFirestore()
     .collection(PRESENTATION_VARIANTS_COLLECTION)
     .doc(
-      presentationVariantIndexDocId(lessonSlug, variantKey),
-    ) as DocumentReference<PresentationVariantIndexActivateWrite>;
+      presentationVariantScopedIndexDocId(lessonSlug, variantKey, revisionOrdinal),
+    ) as DocumentReference<PresentationVariantScopedIndexActivateWrite>;
 }
 
-// Retire-write typed reference. The publish tooling uses this with
-// `.update()` to flip `status` to `"retired"`, withdrawing the variant from
-// new differentiated resolution. The current pointer/hash are left in place
-// and neither the artifact nor its manifest entry is ever touched.
-export function presentationVariantIndexRetireDocRef(
+export function presentationVariantScopedIndexRetireDocRef(
   lessonSlug: string,
   variantKey: string,
-): DocumentReference<PresentationVariantIndexRetireWrite> {
+  revisionOrdinal: number,
+): DocumentReference<PresentationVariantScopedIndexRetireWrite> {
   return getAdminFirestore()
     .collection(PRESENTATION_VARIANTS_COLLECTION)
     .doc(
-      presentationVariantIndexDocId(lessonSlug, variantKey),
-    ) as DocumentReference<PresentationVariantIndexRetireWrite>;
+      presentationVariantScopedIndexDocId(lessonSlug, variantKey, revisionOrdinal),
+    ) as DocumentReference<PresentationVariantScopedIndexRetireWrite>;
 }
 
 // -------------------- Launch grant references --------------------

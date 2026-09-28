@@ -842,10 +842,17 @@ function loadReview(assessmentPresentationRevisionId, { repoRoot = paths.REPO_RO
 function verifyManifestBinding(entry, { repoRoot = paths.REPO_ROOT } = {}) {
   const hasRev = entry.assessmentRevisionId !== undefined;
   const hasAp = entry.assessmentPresentationRevisionId !== undefined;
-  if (!hasRev && !hasAp) return [];
   const where = `manifest entry ${entry.path}`;
-  if (hasRev !== hasAp) {
-    return [`${where}: assessmentRevisionId and assessmentPresentationRevisionId must be present together`];
+  // F5.3 Slice 9C-2: an unbound entry may record its revision alone; an
+  // assessment presentation always requires one.
+  if (!hasAp) {
+    if (hasRev && (typeof entry.assessmentRevisionId !== "string" || !REVISION_ID_PATTERN.test(entry.assessmentRevisionId))) {
+      return [`${where}: assessmentRevisionId must be assessment_<slug>__r<N>`];
+    }
+    return [];
+  }
+  if (!hasRev) {
+    return [`${where}: assessmentPresentationRevisionId requires assessmentRevisionId`];
   }
   const apId = entry.assessmentPresentationRevisionId;
   if (typeof apId !== "string" || !AP_ID_PATTERN.test(apId)) {

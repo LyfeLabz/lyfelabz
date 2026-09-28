@@ -28,6 +28,30 @@
  * current, and both artifacts remain retained. An UNVERIFIED revision can
  * never win because the index write is gated by liveness.
  *
+ * F5.3 SLICE 9C-2 (addendum 21.7; owner rulings 2026-09-28)
+ * ---------------------------------------------------------
+ * Coverage is revision-scoped. The ONLY document written is
+ * `presentationVariants/{lessonSlug}__{variantKey}__r{N}` for the assessment
+ * revision the retained revision covers; the legacy unscoped document is
+ * read-only compatibility state and is never written (there is no port for
+ * it). The covered revision comes from the loader's provenance (certified AP
+ * record, else the manifest's explicit `assessmentRevisionId`, else the
+ * pinned legacy-r1 artifact) and must be a DEPLOYED revision, not
+ * necessarily the lesson's current one.
+ *   - `publish` is create-only: it creates the scoped record, or reconciles
+ *     an identical one with no write; any other existing record is refused
+ *     (never overwritten). This supersedes the P5.1 "last publish wins"
+ *     pointer race for new publications.
+ *   - `rollback` is the explicit repoint: it may repoint (or re-activate) the
+ *     scoped record of the SAME lesson, variant key, and revision to another
+ *     retained, live revision.
+ *   - `retire` names the revision explicitly and flips only that scoped record.
+ * Everything knowable locally (provenance, self-consistency, agreement with
+ * the shared 9C-1 read evaluator, deployment, and a preflight read of the
+ * existing scoped record) is checked at LOCAL_VERIFIED, before any Hosting
+ * or Firestore side effect. The final write re-checks the existing record
+ * transactionally.
+ *
  * FAILURE / RETENTION
  * -------------------
  * The machine never deletes an artifact or a manifest entry. A publication
@@ -37,10 +61,11 @@
  */
 
 import {
-  assertActivateWriteConsistent,
-  type PresentationVariantStatus,
+  assertScopedActivateWriteConsistent,
+  presentationVariantScopedIndexDocId,
 } from "../shared/types/presentation-variant";
 import { canonicalJson } from "../shared/types/assessment-presentation";
+import { evaluateScopedRecord, frozenRevisionOrdinal } from "../shared/presentation/revision-coverage";
 
 export type PublicationStage =
   | "LOCAL_VERIFIED"
@@ -75,6 +100,33 @@ export type RetainedRevision = {
   // F5.3 Slice 5: present iff the manifest entry binds an assessment
   // presentation. Absent keeps the F5.2 meaning.
   readonly assessmentBinding?: RetainedAssessmentBinding;
+  // F5.3 Slice 9C-2: the assessment revision this revision covers, resolved by
+  // the loader under S9-D7, and how it was established.
+  readonly assessmentRevisionId: string;
+  readonly assessmentRevisionSource: "assessmentPresentation" | "declared" | "legacyR1";
+};
+
+// F5.3 Slice 9C-2: the protected content of a scoped coverage record (the
+// written document adds only `updatedAt` and `publishedBy` attribution).
+export type ScopedCoverageRecord = {
+  readonly lessonSlug: string;
+  readonly variantKey: string;
+  readonly currentPresentationRevisionId: string;
+  readonly currentPath: string;
+  readonly contentSha256: string;
+  readonly status: "active";
+  readonly assessmentRevisionId: string;
+  readonly assessmentPresentationRevisionId?: string;
+};
+
+export type ScopedCoverageWriteAction = "create" | "reconcile" | "repoint";
+
+// F5.3 Slice 9C-2: the identity of one scoped coverage document.
+export type ScopedCoverageKey = {
+  readonly docId: string;
+  readonly lessonSlug: string;
+  readonly variantKey: string;
+  readonly revisionOrdinal: number;
 };
 
 export type PublicationMode = "publish" | "rollback";
@@ -121,19 +173,31 @@ export type FetchHostedPort = (relPath: string) => Promise<HostedFetchResult>;
 // produced the manifest sha256).
 export type HashBytesPort = (bytes: Buffer | Uint8Array | string) => string;
 
-// Writes the index pointer to the verified revision with status "active"
-// (§6.8 step 9). Server-owned attribution is passed through, never accepted
-// from a client.
-export type WriteIndexActivatePort = (
-  revision: RetainedRevision,
-  publishedBy: string,
-) => Promise<void>;
+// F5.3 Slice 9C-2: reads the scoped coverage document by id (preflight, and
+// retirement), or reports it absent.
+export type ReadScopedCoveragePort = (key: ScopedCoverageKey) => Promise<
+  { readonly exists: false } | { readonly exists: true; readonly data: unknown }
+>;
+
+// F5.3 Slice 9C-2: the single coverage write (§6.8 step 9). The real port runs
+// a transaction: read the scoped document, decide with
+// `planScopedCoverageWrite`, then create, do nothing, or (rollback only)
+// repoint. Server-owned attribution is passed through, never client input.
+export type WriteScopedCoveragePort = (args: {
+  readonly key: ScopedCoverageKey;
+  readonly record: ScopedCoverageRecord;
+  readonly publishedBy: string;
+  readonly mode: PublicationMode;
+}) => Promise<
+  { readonly ok: true; readonly action: ScopedCoverageWriteAction } | { readonly ok: false; readonly error: string }
+>;
+
+// F5.3 Slice 9C-2: whether an assessment revision is DEPLOYED
+// (`assessmentRevisions/{id}` exists with this identity). Not whether it is
+// the lesson's current revision (S9-U2).
+export type IsAssessmentRevisionDeployedPort = (assessmentRevisionId: string) => Promise<boolean>;
 
 export type LogPort = (message: string) => void;
-
-// F5.3 Slice 5: the lesson's currently deployed canonical assessment revision
-// (`assessments/assessment_<slug>.currentRevisionId`), or null when none.
-export type ReadDeployedAssessmentRevisionPort = (lessonSlug: string) => Promise<string | null>;
 
 // F5.3 Slice 5: create `assessmentPresentations/{id}` with exactly `record`,
 // or verify an existing document is identical (never update or delete).
@@ -147,10 +211,11 @@ export type PublishDeps = {
   readonly deployHosting: DeployHostingPort;
   readonly fetchHosted: FetchHostedPort;
   readonly hashBytes: HashBytesPort;
-  readonly writeIndexActivate: WriteIndexActivatePort;
-  // Required only for a bound revision; a bound revision without them fails
+  readonly isAssessmentRevisionDeployed: IsAssessmentRevisionDeployedPort;
+  readonly readScopedCoverage: ReadScopedCoveragePort;
+  readonly writeScopedCoverage: WriteScopedCoveragePort;
+  // Required only for a bound revision; a bound revision without it fails
   // closed at LOCAL_VERIFIED.
-  readonly readDeployedAssessmentRevision?: ReadDeployedAssessmentRevisionPort;
   readonly ensureAssessmentPresentation?: EnsureAssessmentPresentationPort;
   readonly log?: LogPort;
 };
@@ -170,6 +235,8 @@ export type PublishResult =
       readonly revision: RetainedRevision;
       readonly stagesCompleted: readonly PublicationStage[];
       readonly indexAdvanced: true;
+      // F5.3 Slice 9C-2: the scoped document written and what happened to it.
+      readonly coverage: { readonly docId: string; readonly action: ScopedCoverageWriteAction };
     }
   | {
       readonly ok: false;
@@ -246,13 +313,18 @@ function verifyHostedBytes(
 // for the index-last guarantee.
 // F5.3 Slice 5: every check a bound revision must pass before any Hosting or
 // Firestore side effect. Returns an error message, or null when publishable.
-async function verifyBindingForPublication(
+// (Synchronous since F5.3 Slice 9C-2: the deployed check applies to every
+// revision and runs in the machine.)
+function verifyBindingForPublication(
   binding: RetainedAssessmentBinding,
   revision: RetainedRevision,
   deps: PublishDeps,
-): Promise<string | null> {
-  if (deps.readDeployedAssessmentRevision === undefined || deps.ensureAssessmentPresentation === undefined) {
+): string | null {
+  if (deps.ensureAssessmentPresentation === undefined) {
     return "a revision bound to an assessment presentation needs the assessment-presentation publication ports";
+  }
+  if (binding.assessmentRevisionId !== revision.assessmentRevisionId) {
+    return `manifest binding maps to ${binding.assessmentRevisionId}, but the revision's provenance is ${revision.assessmentRevisionId}`;
   }
   let actualId: string;
   try {
@@ -269,16 +341,106 @@ async function verifyBindingForPublication(
   if (binding.record.assessmentRevisionId !== binding.assessmentRevisionId) {
     return `assessment presentation maps to ${String(binding.record.assessmentRevisionId)}, not ${binding.assessmentRevisionId}`;
   }
-  let deployed: string | null;
-  try {
-    deployed = await deps.readDeployedAssessmentRevision(revision.lessonSlug);
-  } catch (err) {
-    return `could not read the deployed assessment revision: ${(err as Error).message}`;
-  }
-  if (deployed !== binding.assessmentRevisionId) {
-    return `bound assessment revision ${binding.assessmentRevisionId} is not the deployed current revision (${String(deployed)})`;
-  }
   return null;
+}
+
+// F5.3 Slice 9C-2: whether an `assessmentRevisions/{id}` document proves the
+// revision is deployed with exactly this identity (pure; the CLI reads it).
+export function isDeployedRevisionRecord(assessmentRevisionId: string, data: unknown): boolean {
+  const match = /^assessment_([a-z0-9]+(?:-[a-z0-9]+)*)__r([1-9][0-9]*)$/.exec(assessmentRevisionId);
+  if (match === null || data === null || typeof data !== "object") return false;
+  const doc = data as Record<string, unknown>;
+  return (
+    doc.assessmentId === `assessment_${match[1]}` &&
+    doc.activityId === match[1] &&
+    doc.revisionOrdinal === Number(match[2])
+  );
+}
+
+// F5.3 Slice 9C-2: the scoped document id and exact record a retained revision
+// publishes. Throws when the revision's identity cannot form one.
+export function scopedCoverageFor(revision: RetainedRevision): { readonly key: ScopedCoverageKey; readonly record: ScopedCoverageRecord } {
+  const ordinal = frozenRevisionOrdinal(revision.lessonSlug, revision.assessmentRevisionId);
+  if (ordinal === undefined) {
+    throw new Error(`assessment revision ${String(revision.assessmentRevisionId)} is not a revision of assessment_${revision.lessonSlug}`);
+  }
+  const apId = revision.assessmentBinding?.assessmentPresentationRevisionId;
+  const record: ScopedCoverageRecord = {
+    lessonSlug: revision.lessonSlug,
+    variantKey: revision.variantKey,
+    currentPresentationRevisionId: revision.presentationRevisionId,
+    currentPath: revision.path,
+    contentSha256: revision.sha256,
+    status: "active",
+    assessmentRevisionId: revision.assessmentRevisionId,
+    ...(apId !== undefined ? { assessmentPresentationRevisionId: apId } : {}),
+  };
+  const docId = presentationVariantScopedIndexDocId(revision.lessonSlug, revision.variantKey, ordinal);
+  assertScopedActivateWriteConsistent(docId, record);
+  return {
+    key: { docId, lessonSlug: revision.lessonSlug, variantKey: revision.variantKey, revisionOrdinal: ordinal },
+    record,
+  };
+}
+
+// F5.3 Slice 9C-2: the record must read back through the SHARED 9C-1
+// evaluator as active coverage of exactly this pair and binding, so writes
+// and reads cannot drift. Returns an error or null.
+export function verifyReadBackAgreement(record: ScopedCoverageRecord): string | null {
+  const read = evaluateScopedRecord(record, record.lessonSlug, record.variantKey, record.assessmentRevisionId);
+  const apId = record.assessmentPresentationRevisionId;
+  const agrees =
+    read.kind === "active" &&
+    read.presentationRevisionId === record.currentPresentationRevisionId &&
+    read.path === record.currentPath &&
+    (apId === undefined
+      ? read.assessmentBinding === undefined
+      : read.assessmentBinding?.assessmentPresentationRevisionId === apId &&
+        read.assessmentBinding.assessmentRevisionId === record.assessmentRevisionId);
+  return agrees ? null : `the scoped record would not read back as this coverage (${read.kind}); refusing to write it`;
+}
+
+function sameCoverage(existing: Record<string, unknown>, record: ScopedCoverageRecord): boolean {
+  return (
+    existing.status === "active" &&
+    existing.lessonSlug === record.lessonSlug &&
+    existing.variantKey === record.variantKey &&
+    existing.currentPresentationRevisionId === record.currentPresentationRevisionId &&
+    existing.currentPath === record.currentPath &&
+    existing.contentSha256 === record.contentSha256 &&
+    existing.assessmentRevisionId === record.assessmentRevisionId &&
+    existing.assessmentPresentationRevisionId === record.assessmentPresentationRevisionId
+  );
+}
+
+// F5.3 Slice 9C-2: the one decision for a scoped coverage write, shared by the
+// preflight and the real transactional port (owner ruling: create-only
+// publish; explicit rollback repoint).
+export function planScopedCoverageWrite(
+  existing: unknown,
+  record: ScopedCoverageRecord,
+  mode: PublicationMode,
+): { readonly ok: true; readonly action: ScopedCoverageWriteAction } | { readonly ok: false; readonly error: string } {
+  if (existing === undefined) return { ok: true, action: "create" };
+  if (existing === null || typeof existing !== "object" || Array.isArray(existing)) {
+    return { ok: false, error: "the existing scoped coverage record is not an object; refusing to overwrite it" };
+  }
+  const doc = existing as Record<string, unknown>;
+  if (
+    doc.lessonSlug !== record.lessonSlug ||
+    doc.variantKey !== record.variantKey ||
+    doc.assessmentRevisionId !== record.assessmentRevisionId
+  ) {
+    return { ok: false, error: "the existing scoped coverage record names another lesson, variant key, or assessment revision; refusing to overwrite it" };
+  }
+  if (sameCoverage(doc, record)) return { ok: true, action: "reconcile" };
+  if (mode === "rollback") return { ok: true, action: "repoint" };
+  return {
+    ok: false,
+    error:
+      `the scoped coverage record already exists with different coverage (${String(doc.currentPresentationRevisionId)}, ` +
+      `status ${String(doc.status)}); publish never overwrites it - use --op=rollback to repoint or re-activate`,
+  };
 }
 
 // F5.3 Slice 5: pure reconciliation of a retained revision's assessment
@@ -296,7 +458,9 @@ export function reconcileAssessmentBinding(args: {
   readonly certification: { readonly record: unknown; readonly failures: readonly string[] } | null;
 }): { readonly ok: true; readonly binding?: RetainedAssessmentBinding } | { readonly ok: false; readonly error: string } {
   const { entry, artifactBindingBlock, certification } = args;
-  const bound = entry.assessmentPresentationRevisionId !== undefined || entry.assessmentRevisionId !== undefined;
+  // F5.3 Slice 9C-2: an entry is bound iff it names an assessment
+  // presentation; an unbound entry may record its revision alone.
+  const bound = entry.assessmentPresentationRevisionId !== undefined;
   if (!bound) {
     if (artifactBindingBlock !== null && artifactBindingBlock !== undefined) {
       return { ok: false, error: "the artifact carries an assessment-presentation binding but its manifest entry is unbound" };
@@ -307,7 +471,7 @@ export function reconcileAssessmentBinding(args: {
     typeof entry.assessmentPresentationRevisionId !== "string" ||
     typeof entry.assessmentRevisionId !== "string"
   ) {
-    return { ok: false, error: "the manifest entry carries half an assessment-presentation binding" };
+    return { ok: false, error: "the manifest entry names an assessment presentation without its assessment revision" };
   }
   if (certification === null || certification.failures.length > 0 || certification.record === null) {
     const detail = certification ? certification.failures.join("; ") : "no certification result";
@@ -389,44 +553,47 @@ export async function publishRetainedRevision(
     };
   }
   const revision = loaded.revision;
+  const localFail = (error: string): PublishResult => {
+    log(`[publish] LOCAL_VERIFIED failed: ${error}`);
+    return { ok: false, failedStage: "LOCAL_VERIFIED", error, stagesCompleted, indexAdvanced: false };
+  };
+  // Defense in depth: even though every value came from the trusted manifest
+  // and provenance, refuse to proceed unless the scoped record we would write
+  // is self-consistent (including its document id) and reads back through the
+  // shared evaluator as exactly this coverage.
+  let coverage: { readonly key: ScopedCoverageKey; readonly record: ScopedCoverageRecord };
   try {
-    // Defense in depth: even though every value came from the trusted
-    // manifest, refuse to proceed if the pointer we would write is not
-    // internally self-consistent (path/hash/id disagreement).
-    assertActivateWriteConsistent({
-      lessonSlug: revision.lessonSlug,
-      variantKey: revision.variantKey,
-      currentPresentationRevisionId: revision.presentationRevisionId,
-      currentPath: revision.path,
-      contentSha256: revision.sha256,
-      assessmentRevisionId: revision.assessmentBinding?.assessmentRevisionId,
-      assessmentPresentationRevisionId: revision.assessmentBinding?.assessmentPresentationRevisionId,
-    });
+    coverage = scopedCoverageFor(revision);
   } catch (err) {
-    const error = (err as Error).message;
-    log(`[publish] LOCAL_VERIFIED failed (self-consistency): ${error}`);
-    return {
-      ok: false,
-      failedStage: "LOCAL_VERIFIED",
-      error,
-      stagesCompleted,
-      indexAdvanced: false,
-    };
+    return localFail(`self-consistency: ${(err as Error).message}`);
   }
+  const readBack = verifyReadBackAgreement(coverage.record);
+  if (readBack !== null) return localFail(readBack);
   const binding = revision.assessmentBinding;
   if (binding !== undefined) {
-    const bindingError = await verifyBindingForPublication(binding, revision, deps);
-    if (bindingError !== null) {
-      log(`[publish] LOCAL_VERIFIED failed (assessment presentation): ${bindingError}`);
-      return {
-        ok: false,
-        failedStage: "LOCAL_VERIFIED",
-        error: bindingError,
-        stagesCompleted,
-        indexAdvanced: false,
-      };
-    }
+    const bindingError = verifyBindingForPublication(binding, revision, deps);
+    if (bindingError !== null) return localFail(`assessment presentation: ${bindingError}`);
   }
+  // S9-U2: coverage only for a DEPLOYED revision (not necessarily current).
+  let deployed: boolean;
+  try {
+    deployed = await deps.isAssessmentRevisionDeployed(revision.assessmentRevisionId);
+  } catch (err) {
+    return localFail(`could not read whether ${revision.assessmentRevisionId} is deployed: ${(err as Error).message}`);
+  }
+  if (!deployed) {
+    return localFail(`assessment revision ${revision.assessmentRevisionId} is not deployed; coverage is never published for an undeployed revision`);
+  }
+  // Preflight the existing scoped record so a refusal happens before any
+  // Hosting or Firestore side effect (re-checked transactionally at the write).
+  let existing: Awaited<ReturnType<ReadScopedCoveragePort>>;
+  try {
+    existing = await deps.readScopedCoverage(coverage.key);
+  } catch (err) {
+    return localFail(`could not read ${coverage.key.docId}: ${(err as Error).message}`);
+  }
+  const plan = planScopedCoverageWrite(existing.exists ? existing.data : undefined, coverage.record, input.mode);
+  if (!plan.ok) return localFail(`${coverage.key.docId}: ${plan.error}`);
   stagesCompleted.push("LOCAL_VERIFIED");
   log(`[publish] LOCAL_VERIFIED ok: ${revision.path}`);
 
@@ -495,23 +662,32 @@ export async function publishRetainedRevision(
   }
 
   // -------- Stage 4: INDEX_UPDATED (step 9, ALWAYS LAST) -------------------
-  // The one and only index-write call site. Reached only because every stage
-  // above returned ok, i.e. liveness passed.
+  // The one and only coverage-write call site, and it writes ONLY the scoped
+  // document. Reached only because every stage above returned ok, i.e.
+  // liveness passed.
+  let written: Awaited<ReturnType<WriteScopedCoveragePort>>;
   try {
-    await deps.writeIndexActivate(revision, input.publishedBy.trim());
+    written = await deps.writeScopedCoverage({
+      key: coverage.key,
+      record: coverage.record,
+      publishedBy: input.publishedBy.trim(),
+      mode: input.mode,
+    });
   } catch (err) {
-    const error = (err as Error).message;
-    log(`[publish] INDEX_UPDATED failed: ${error} (prior index pointer remains current; retry the index update)`);
+    written = { ok: false, error: (err as Error).message };
+  }
+  if (!written.ok) {
+    log(`[publish] INDEX_UPDATED failed: ${written.error} (the scoped record is unchanged; retry after resolving)`);
     return {
       ok: false,
       failedStage: "INDEX_UPDATED",
-      error,
+      error: written.error,
       stagesCompleted,
       indexAdvanced: false,
     };
   }
   stagesCompleted.push("INDEX_UPDATED");
-  log(`[publish] INDEX_UPDATED ok: current pointer now ${revision.presentationRevisionId}`);
+  log(`[publish] INDEX_UPDATED ok: ${coverage.key.docId} ${written.action} -> ${revision.presentationRevisionId}`);
 
   return {
     ok: true,
@@ -519,34 +695,29 @@ export async function publishRetainedRevision(
     revision,
     stagesCompleted,
     indexAdvanced: true,
+    coverage: { docId: coverage.key.docId, action: written.action },
   };
 }
 
 // ------------------------------- Retirement --------------------------------
 
-export type ReadIndexStatusPort = (args: {
-  readonly lessonSlug: string;
-  readonly variantKey: string;
-}) => Promise<
-  | { readonly exists: false }
-  | { readonly exists: true; readonly status: PresentationVariantStatus }
->;
-
-export type WriteIndexRetirePort = (args: {
-  readonly lessonSlug: string;
-  readonly variantKey: string;
+// F5.3 Slice 9C-2: retirement names the assessment revision and flips only
+// that scoped record; the legacy record is never written.
+export type WriteScopedRetirePort = (args: {
+  readonly key: ScopedCoverageKey;
   readonly publishedBy: string;
 }) => Promise<void>;
 
 export type RetireDeps = {
-  readonly readIndexStatus: ReadIndexStatusPort;
-  readonly writeIndexRetire: WriteIndexRetirePort;
+  readonly readScopedCoverage: ReadScopedCoveragePort;
+  readonly writeScopedRetire: WriteScopedRetirePort;
   readonly log?: LogPort;
 };
 
 export type RetireInput = {
   readonly lessonSlug: string;
   readonly variantKey: string;
+  readonly assessmentRevisionId: string;
   readonly publishedBy: string;
 };
 
@@ -554,32 +725,52 @@ export type RetireResult =
   | { readonly ok: true; readonly retired: boolean; readonly note: string }
   | { readonly ok: false; readonly error: string };
 
-// Retire the logical variant: flip the index status to "retired" so it is no
-// longer eligible for new differentiated resolution. Historical retention is
-// untouched - the artifact file and its manifest entry remain, and prior
-// attempts keep their frozen ids. Retirement needs no liveness check (it
-// withdraws rather than points to content) and never deletes anything.
+// Retire the scoped coverage of one assessment revision: flip its status to
+// "retired" so it is no longer eligible for new differentiated resolution of
+// that revision (a retired scoped record decides alone; it never falls
+// through to the legacy record). Historical retention is untouched - the
+// artifact and its manifest entry remain, and prior attempts keep their frozen
+// ids. Retirement needs no liveness check and never deletes anything.
 export async function retireVariant(input: RetireInput, deps: RetireDeps): Promise<RetireResult> {
   const log: LogPort = deps.log ?? (() => undefined);
   if (typeof input.publishedBy !== "string" || input.publishedBy.trim().length === 0) {
     return { ok: false, error: "publishedBy (server-owned operator attribution) is required" };
   }
-
-  const current = await deps.readIndexStatus({ lessonSlug: input.lessonSlug, variantKey: input.variantKey });
-  if (!current.exists) {
-    log("[retire] no current index doc; nothing to retire (already unavailable for differentiated resolution)");
-    return { ok: true, retired: false, note: "no current index; nothing to retire" };
+  const ordinal = frozenRevisionOrdinal(input.lessonSlug, input.assessmentRevisionId);
+  let key: ScopedCoverageKey;
+  try {
+    if (ordinal === undefined) throw new Error(`assessment revision ${String(input.assessmentRevisionId)} is not a revision of assessment_${input.lessonSlug}`);
+    key = {
+      docId: presentationVariantScopedIndexDocId(input.lessonSlug, input.variantKey, ordinal),
+      lessonSlug: input.lessonSlug,
+      variantKey: input.variantKey,
+      revisionOrdinal: ordinal,
+    };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
   }
-  if (current.status === "retired") {
-    log("[retire] index already retired; no-op");
+  const docId = key.docId;
+
+  const current = await deps.readScopedCoverage(key);
+  if (!current.exists) {
+    log(`[retire] no ${docId}; nothing to retire (already unavailable for differentiated resolution of ${input.assessmentRevisionId})`);
+    return { ok: true, retired: false, note: "no scoped coverage; nothing to retire" };
+  }
+  const doc = current.data !== null && typeof current.data === "object" ? (current.data as Record<string, unknown>) : null;
+  if (
+    doc === null ||
+    doc.lessonSlug !== input.lessonSlug ||
+    doc.variantKey !== input.variantKey ||
+    doc.assessmentRevisionId !== input.assessmentRevisionId
+  ) {
+    return { ok: false, error: `${docId} does not record this lesson, variant key, and assessment revision; refusing to write it` };
+  }
+  if (doc.status === "retired") {
+    log(`[retire] ${docId} already retired; no-op`);
     return { ok: true, retired: false, note: "already retired" };
   }
 
-  await deps.writeIndexRetire({
-    lessonSlug: input.lessonSlug,
-    variantKey: input.variantKey,
-    publishedBy: input.publishedBy.trim(),
-  });
-  log("[retire] index status set to retired; artifact and manifest entry retained");
+  await deps.writeScopedRetire({ key, publishedBy: input.publishedBy.trim() });
+  log(`[retire] ${docId} status set to retired; artifact and manifest entry retained`);
   return { ok: true, retired: true, note: "retired" };
 }

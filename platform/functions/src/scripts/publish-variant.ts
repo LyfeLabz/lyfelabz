@@ -96,6 +96,10 @@ export type CliArgs = {
   readonly publishedBy: string;
   readonly hostingOrigin: string | null;
   readonly iKnowProduction: boolean;
+  // F5.3 Slice 9C-2: the assessment revision whose scoped coverage a retire
+  // withdraws. Required for (and only accepted by) --op=retire; publish and
+  // rollback derive the revision from the retained revision's provenance.
+  readonly assessmentRevisionId: string | null;
   // Explicit, operator-supplied project id. Required for the staging and
   // production targets and must equal STAGING_PROJECT_ID / PRODUCTION_PROJECT_ID
   // respectively; the double lock (explicit intent + literal guard) means a
@@ -125,6 +129,7 @@ export type ArgParseResult =
 const USAGE =
   "Usage: publish-variant --lesson=<slug> --variant=<variantKey> " +
   "[--op=publish|rollback|retire] [--revision=<presentationRevisionId>] " +
+  "[--assessment-revision=<assessment_<slug>__r<N>> (retire only)] " +
   "[--published-by=<operator>] [--hosting-origin=<https://...>] " +
   "[--target=emulator|staging|production] [--project=<projectId>] " +
   "[--i-know=production]";
@@ -142,6 +147,7 @@ export function parseArgs(
   let hostingOrigin: string | null = null;
   let iKnowProduction = false;
   let project: string | null = null;
+  let assessmentRevisionId: string | null = null;
 
   for (const raw of argv) {
     if (raw === "--help" || raw === "-h") {
@@ -180,6 +186,9 @@ export function parseArgs(
       case "revision":
         presentationRevisionId = value.length > 0 ? value : null;
         break;
+      case "assessment-revision":
+        assessmentRevisionId = value.length > 0 ? value : null;
+        break;
       case "published-by":
         publishedBy = value;
         break;
@@ -215,6 +224,14 @@ export function parseArgs(
   if ((op === "publish" || op === "rollback") && presentationRevisionId === null) {
     return { ok: false, message: `--revision is required for --op=${op}` };
   }
+  // F5.3 Slice 9C-2: retirement names the assessment revision whose scoped
+  // coverage it withdraws; publish/rollback never accept one from the operator.
+  if (op === "retire" && assessmentRevisionId === null) {
+    return { ok: false, message: "--assessment-revision=assessment_<slug>__r<N> is required for --op=retire" };
+  }
+  if (op !== "retire" && assessmentRevisionId !== null) {
+    return { ok: false, message: `--assessment-revision is only accepted for --op=retire; --op=${op} derives the revision from the retained revision's provenance` };
+  }
 
   return {
     ok: true,
@@ -228,6 +245,7 @@ export function parseArgs(
       hostingOrigin,
       iKnowProduction,
       project,
+      assessmentRevisionId,
     },
   };
 }
@@ -452,6 +470,7 @@ export async function main(argv: readonly string[], deps: CliDeps): Promise<numb
       const result = await deps.retire({
         lessonSlug: args.lessonSlug,
         variantKey: args.variantKey,
+        assessmentRevisionId: args.assessmentRevisionId as string,
         publishedBy: args.publishedBy,
       });
       if (!result.ok) {
@@ -459,7 +478,7 @@ export async function main(argv: readonly string[], deps: CliDeps): Promise<numb
         return 1;
       }
       deps.log(
-        `retired variant=${args.lessonSlug}__${args.variantKey} ` +
+        `retired variant=${args.lessonSlug}__${args.variantKey} revision=${String(args.assessmentRevisionId)} ` +
           `changed=${String(result.retired)} (${result.note}) target=${args.target}`,
       );
       return 0;
@@ -485,6 +504,7 @@ export async function main(argv: readonly string[], deps: CliDeps): Promise<numb
     deps.log(
       `${args.op} ok: variant=${result.revision.lessonSlug}__${result.revision.variantKey} ` +
         `revision=${result.revision.presentationRevisionId} ` +
+        `coverage=${result.coverage.docId}:${result.coverage.action} ` +
         `stages=${result.stagesCompleted.join(">")} target=${args.target}`,
     );
     return 0;
@@ -549,24 +569,27 @@ import { FieldValue } from "firebase-admin/firestore";
 import { bindAdminProjectReal } from "./admin-project-binding";
 
 import {
+  isDeployedRevisionRecord,
+  planScopedCoverageWrite,
   publishRetainedRevision,
   reconcileAssessmentBinding,
   retireVariant,
   type EnsureAssessmentPresentationPort,
+  type IsAssessmentRevisionDeployedPort,
   type LoadRetainedRevisionPort,
   type FetchHostedPort,
   type HashBytesPort,
-  type ReadDeployedAssessmentRevisionPort,
+  type ReadScopedCoveragePort,
+  type WriteScopedCoveragePort,
 } from "../variants/variant-publication";
 import {
-  assessmentDocRef,
   assessmentPresentationDocRef,
-  presentationVariantIndexActivateDocRef,
-  presentationVariantIndexDocRef,
-  presentationVariantIndexRetireDocRef,
+  assessmentRevisionDocRef,
+  presentationVariantScopedIndexActivateDocRef,
+  presentationVariantScopedIndexDocRef,
+  presentationVariantScopedIndexRetireDocRef,
 } from "../shared/firestore/typed-ref";
 import { runFirestoreTransaction } from "../shared/firestore/transaction";
-import { assessmentIdForLessonSlug } from "../shared/assessment-identifiers";
 import {
   canonicalJson,
   type AssessmentPresentationRecord,
@@ -644,6 +667,22 @@ export function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevision
     if (!reconciled.ok) {
       return Promise.resolve({ ok: false as const, error: reconciled.error });
     }
+    // F5.3 Slice 9C-2: the assessment revision this artifact covers, under
+    // S9-D7 (certified AP, else the entry's explicit revision, else the pinned
+    // legacy-r1 artifact), proven against the exact retained bytes by the ONE
+    // build-side implementation.
+    let provenance: ProvenanceResult;
+    try {
+      const provenanceMod = req(
+        path.join(repoRoot, "app", "scripts", "lessonBuilder", "variantPublicationProvenance.cjs"),
+      ) as { resolvePublicationProvenance: (a: { entry: unknown; artifactBytes: Buffer; repoRoot: string }) => ProvenanceResult };
+      provenance = provenanceMod.resolvePublicationProvenance({ entry: match, artifactBytes: onDisk, repoRoot });
+    } catch (err) {
+      provenance = { ok: false, error: `could not resolve assessment-revision provenance: ${(err as Error).message}` };
+    }
+    if (!provenance.ok) {
+      return Promise.resolve({ ok: false as const, error: provenance.error });
+    }
     return Promise.resolve({
       ok: true as const,
       revision: {
@@ -653,12 +692,18 @@ export function makeLoadRetainedRevision(repoRoot: string): LoadRetainedRevision
         path: match.path,
         sha256: match.sha256,
         ...(reconciled.binding !== undefined ? { assessmentBinding: reconciled.binding } : {}),
+        assessmentRevisionId: provenance.assessmentRevisionId,
+        assessmentRevisionSource: provenance.source,
       },
     });
   };
 }
 
 const ASSESSMENT_BINDING_ELEMENT = 'id="lyfelabz-assessment-presentation"';
+
+type ProvenanceResult =
+  | { readonly ok: true; readonly assessmentRevisionId: string; readonly source: "assessmentPresentation" | "declared" | "legacyR1" }
+  | { readonly ok: false; readonly error: string };
 
 function reconcileRetainedBinding(
   repoRoot: string,
@@ -671,7 +716,8 @@ function reconcileRetainedBinding(
   artifactBytes: Buffer,
 ): ReturnType<typeof reconcileAssessmentBinding> {
   const text = artifactBytes.toString("utf8");
-  const bound = entry.assessmentPresentationRevisionId !== undefined || entry.assessmentRevisionId !== undefined;
+  // F5.3 Slice 9C-2: bound iff the entry names an assessment presentation.
+  const bound = entry.assessmentPresentationRevisionId !== undefined;
   if (!bound) {
     // Unbound (F5.2) revision: needs no build tooling beyond the manifest.
     return reconcileAssessmentBinding({
@@ -713,12 +759,38 @@ function reconcileRetainedBinding(
 // ./admin-project-binding for the precedence argument.
 export { bindAdminProjectReal };
 
-// F5.3 Slice 5 publication ports (Admin SDK, bound to the validated project).
-const readDeployedAssessmentRevision: ReadDeployedAssessmentRevisionPort = async (lessonSlug) => {
-  const snap = await assessmentDocRef(assessmentIdForLessonSlug(lessonSlug)).get();
-  const current = snap.exists ? snap.data()?.currentRevisionId : undefined;
-  return typeof current === "string" ? current : null;
+// F5.3 Slice 9C-2 publication ports (Admin SDK, bound to the validated project).
+// Deployed means `assessmentRevisions/{id}` exists with exactly this identity;
+// it need not be the lesson's current revision (S9-U2).
+const isAssessmentRevisionDeployed: IsAssessmentRevisionDeployedPort = async (assessmentRevisionId) => {
+  const snap = await assessmentRevisionDocRef(assessmentRevisionId).get();
+  return snap.exists && isDeployedRevisionRecord(assessmentRevisionId, snap.data());
 };
+
+const readScopedCoverage: ReadScopedCoveragePort = async (key) => {
+  const snap = await presentationVariantScopedIndexDocRef(key.lessonSlug, key.variantKey, key.revisionOrdinal).get();
+  return snap.exists ? { exists: true, data: snap.data() } : { exists: false };
+};
+
+// The ONE coverage write: only the scoped document, inside a transaction that
+// re-reads it and applies `planScopedCoverageWrite` (create-only publish;
+// explicit rollback repoint). The legacy unscoped document has no write
+// reference and is never touched.
+const writeScopedCoverage: WriteScopedCoveragePort = ({ key, record, publishedBy, mode }) =>
+  runFirestoreTransaction(async (tx) => {
+    const ref = presentationVariantScopedIndexActivateDocRef(key.lessonSlug, key.variantKey, key.revisionOrdinal);
+    if (ref.id !== key.docId) {
+      return { ok: false as const, error: `scoped document id ${ref.id} does not agree with ${key.docId}` };
+    }
+    const snap = await tx.get(ref);
+    const plan = planScopedCoverageWrite(snap.exists ? snap.data() : undefined, record, mode);
+    if (!plan.ok) return plan;
+    if (plan.action === "reconcile") return plan;
+    const write = { ...record, updatedAt: FieldValue.serverTimestamp(), publishedBy };
+    if (plan.action === "create") tx.create(ref, write);
+    else tx.set(ref, write);
+    return plan;
+  });
 
 // Create-or-verify-equal inside a transaction: an existing document must be
 // byte-for-byte the same canonical content; it is never updated or deleted.
@@ -811,42 +883,19 @@ if (require.main === module) {
         deployHosting,
         fetchHosted: makeFetchHosted(context.fetchOrigin),
         hashBytes,
-        readDeployedAssessmentRevision,
+        isAssessmentRevisionDeployed,
+        readScopedCoverage,
+        writeScopedCoverage,
         ensureAssessmentPresentation,
-        writeIndexActivate: async (revision, publishedBy) => {
-          // Full `.set()`: a bound revision writes its binding; repointing to
-          // an unbound revision removes any previous binding.
-          await presentationVariantIndexActivateDocRef(revision.lessonSlug, revision.variantKey).set({
-            lessonSlug: revision.lessonSlug,
-            variantKey: revision.variantKey,
-            currentPresentationRevisionId: revision.presentationRevisionId,
-            currentPath: revision.path,
-            contentSha256: revision.sha256,
-            status: "active",
-            updatedAt: FieldValue.serverTimestamp(),
-            publishedBy,
-            ...(revision.assessmentBinding !== undefined
-              ? {
-                  assessmentRevisionId: revision.assessmentBinding.assessmentRevisionId,
-                  assessmentPresentationRevisionId: revision.assessmentBinding.assessmentPresentationRevisionId,
-                }
-              : {}),
-          });
-        },
         log: (m) => process.stdout.write(`${m}\n`),
       });
     },
 
     retire: (input) =>
       retireVariant(input, {
-        readIndexStatus: async ({ lessonSlug, variantKey }) => {
-          const snap = await presentationVariantIndexDocRef(lessonSlug, variantKey).get();
-          if (!snap.exists) return { exists: false };
-          const data = snap.data();
-          return { exists: true, status: data?.status ?? "active" };
-        },
-        writeIndexRetire: async ({ lessonSlug, variantKey, publishedBy }) => {
-          await presentationVariantIndexRetireDocRef(lessonSlug, variantKey).update({
+        readScopedCoverage,
+        writeScopedRetire: async ({ key, publishedBy }) => {
+          await presentationVariantScopedIndexRetireDocRef(key.lessonSlug, key.variantKey, key.revisionOrdinal).update({
             status: "retired",
             updatedAt: FieldValue.serverTimestamp(),
             publishedBy,

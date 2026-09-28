@@ -33,6 +33,8 @@ describe("retention across regeneration + verifier gate (T-E2 / T-E4)", () => {
     const repoRoot = freshRepo();
     try {
       const a = generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: "<!doctype html><title>A</title>",
@@ -42,6 +44,8 @@ describe("retention across regeneration + verifier gate (T-E2 / T-E4)", () => {
       const aBytes = fs.readFileSync(path.join(repoRoot, a.path));
 
       const b = generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: "<!doctype html><title>B</title>",
@@ -70,6 +74,8 @@ describe("retention across regeneration + verifier gate (T-E2 / T-E4)", () => {
     const repoRoot = freshRepo();
     try {
       const a = generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: "<!doctype html><title>A</title>",

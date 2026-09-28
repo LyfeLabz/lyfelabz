@@ -356,7 +356,8 @@ describe("authored variant - generation and drift detection (temp repository)", 
     expect(fs.readFileSync(path.join(repoRoot, r.path), "utf8")).toBe(r.bytes);
     const entries = manifestMod.readManifest(repoRoot);
     expect(entries).toEqual([
-      { lessonSlug: SLUG, variantKey: KEY, presentationRevisionId: r.presentationRevisionId, path: r.path, sha256: r.sha256, publishedAt: PUBLISHED_AT },
+      // F5.3 Slice 9C-2: the entry records the variant's explicit revision.
+      { lessonSlug: SLUG, variantKey: KEY, presentationRevisionId: r.presentationRevisionId, path: r.path, sha256: r.sha256, publishedAt: PUBLISHED_AT, assessmentRevisionId: `assessment_${SLUG}__r1` },
     ]);
     expect(manifestMod.verifyRetention({ repoRoot }).ok).toBe(true);
     const again = variantSource.generateAuthoredVariant({ slug: SLUG, variantKey: KEY, publishedAt: "2027-01-01T00:00:00.000Z", repoRoot, cfg });

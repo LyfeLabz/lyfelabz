@@ -10,6 +10,7 @@ import {
   type PublishDeps,
   type PublishInput,
   type RetainedRevision,
+  type ScopedCoverageRecord,
 } from "../variants/variant-publication";
 
 // F5.3 Slice 5 - publication of a revision bound to an assessment
@@ -56,13 +57,16 @@ function revision(binding: "bound" | "unbound" = "bound", rec = record()): Retai
     ...(binding === "bound"
       ? { assessmentBinding: { assessmentRevisionId: REVISION_ID, assessmentPresentationRevisionId: apIdOf(rec), record: rec } }
       : {}),
+    // F5.3 Slice 9C-2: the covered revision and its provenance.
+    assessmentRevisionId: REVISION_ID,
+    assessmentRevisionSource: binding === "bound" ? "assessmentPresentation" : "declared",
   };
 }
 
 function harness(rev: RetainedRevision, overrides: Partial<PublishDeps> = {}) {
   const calls: string[] = [];
   const ensured: Array<{ apId: string; record: unknown }> = [];
-  const indexWrites: RetainedRevision[] = [];
+  const indexWrites: ScopedCoverageRecord[] = [];
   const deps: PublishDeps = {
     loadRetainedRevision: () => Promise.resolve({ ok: true, revision: rev }),
     deployHosting: () => {
@@ -74,19 +78,23 @@ function harness(rev: RetainedRevision, overrides: Partial<PublishDeps> = {}) {
       return Promise.resolve({ ok: true, status: 200, redirected: false, bytes: Buffer.from(ARTIFACT) });
     },
     hashBytes,
-    readDeployedAssessmentRevision: () => {
-      calls.push("readDeployed");
-      return Promise.resolve(REVISION_ID);
+    isAssessmentRevisionDeployed: () => {
+      calls.push("deployedCheck");
+      return Promise.resolve(true);
+    },
+    readScopedCoverage: () => {
+      calls.push("readScoped");
+      return Promise.resolve({ exists: false });
     },
     ensureAssessmentPresentation: (apId, rec) => {
       calls.push("ensure");
       ensured.push({ apId, record: rec });
       return Promise.resolve({ ok: true, created: true });
     },
-    writeIndexActivate: (r) => {
+    writeScopedCoverage: ({ record: r }) => {
       calls.push("index");
       indexWrites.push(r);
-      return Promise.resolve();
+      return Promise.resolve({ ok: true, action: "create" });
     },
     ...overrides,
   };
@@ -107,9 +115,9 @@ describe("publishing a revision bound to an assessment presentation", () => {
       "ASSESSMENT_PRESENTATION_RECORDED",
       "INDEX_UPDATED",
     ]);
-    expect(h.calls).toEqual(["readDeployed", "deploy", "fetch", "ensure", "index"]);
+    expect(h.calls).toEqual(["deployedCheck", "readScoped", "deploy", "fetch", "ensure", "index"]);
     expect(h.ensured).toEqual([{ apId: apIdOf(record()), record: record() }]);
-    expect(h.indexWrites[0].assessmentBinding).toMatchObject({
+    expect(h.indexWrites[0]).toMatchObject({
       assessmentRevisionId: REVISION_ID,
       assessmentPresentationRevisionId: apIdOf(record()),
     });
@@ -126,18 +134,28 @@ describe("publishing a revision bound to an assessment presentation", () => {
     const h = harness(revision());
     const result = await publishRetainedRevision({ ...INPUT, mode: "rollback" }, h.deps);
     expect(result.ok).toBe(true);
-    expect(h.calls).toEqual(["readDeployed", "fetch", "ensure", "index"]);
+    expect(h.calls).toEqual(["deployedCheck", "readScoped", "fetch", "ensure", "index"]);
   });
 
-  it("keeps legacy instruction-only publication unchanged (no presentation stage, no binding)", async () => {
-    const h = harness(revision("unbound"), {
-      readDeployedAssessmentRevision: undefined,
-      ensureAssessmentPresentation: undefined,
-    });
+  it("publishes unbound instruction-only coverage with its recorded revision (no presentation stage, no binding)", async () => {
+    const h = harness(revision("unbound"), { ensureAssessmentPresentation: undefined });
     const result = await publishRetainedRevision(INPUT, h.deps);
     expect(result.ok).toBe(true);
     expect(result.stagesCompleted).toEqual(["LOCAL_VERIFIED", "HOSTING_DEPLOYED", "HOSTED_BYTES_VERIFIED", "INDEX_UPDATED"]);
-    expect(h.indexWrites[0].assessmentBinding).toBeUndefined();
+    expect(h.indexWrites[0].assessmentRevisionId).toBe(REVISION_ID);
+    expect(h.indexWrites[0]).not.toHaveProperty("assessmentPresentationRevisionId");
+  });
+
+  it("accepts a deployed revision that is not the lesson's current revision (S9-U2)", async () => {
+    const seen: string[] = [];
+    const h = harness(revision(), {
+      isAssessmentRevisionDeployed: (id) => {
+        seen.push(id);
+        return Promise.resolve(true);
+      },
+    });
+    expect((await publishRetainedRevision(INPUT, h.deps)).ok).toBe(true);
+    expect(seen).toEqual([REVISION_ID]);
   });
 
   it.each([
@@ -155,18 +173,18 @@ describe("publishing a revision bound to an assessment presentation", () => {
       const rec = record({ assessmentRevisionId: `assessment_${LESSON}__r2` });
       return harness(revision("bound", rec));
     }, `maps to assessment_${LESSON}__r2, not ${REVISION_ID}`],
-    ["the bound revision is not the deployed current revision", () =>
-      harness(revision(), { readDeployedAssessmentRevision: () => Promise.resolve(`assessment_${LESSON}__r2`) }),
-    "is not the deployed current revision"],
-    ["the lesson has no deployed assessment", () =>
-      harness(revision(), { readDeployedAssessmentRevision: () => Promise.resolve(null) }),
-    "is not the deployed current revision (null)"],
+    ["the covered revision is committed but not deployed", () =>
+      harness(revision(), { isAssessmentRevisionDeployed: () => Promise.resolve(false) }),
+    "is not deployed; coverage is never published for an undeployed revision"],
+    ["the deployed check cannot be read", () =>
+      harness(revision(), { isAssessmentRevisionDeployed: () => Promise.reject(new Error("unavailable")) }),
+    "could not read whether"],
   ])("refuses at LOCAL_VERIFIED, before any side effect, when %s", async (_label, make, message) => {
     const h = make();
     const result = await publishRetainedRevision(INPUT, h.deps);
     expect(result).toMatchObject({ ok: false, failedStage: "LOCAL_VERIFIED", indexAdvanced: false });
     expect((result as { error: string }).error).toContain(message);
-    expect(h.calls.filter((c) => c !== "readDeployed")).toEqual([]);
+    expect(h.calls.filter((c) => c !== "deployedCheck" && c !== "readScoped")).toEqual([]);
   });
 
   it("refuses a malformed binding shape at the self-consistency check", async () => {
@@ -222,9 +240,14 @@ describe("reconcileAssessmentBinding (manifest vs artifact vs certified record)"
     expect(reconcileAssessmentBinding({ entry: { lessonSlug: LESSON }, artifactBindingBlock: null, certification: null })).toEqual({ ok: true });
   });
 
+  it("accepts a new unbound entry that records its revision alone (F5.3 Slice 9C-2)", () => {
+    expect(reconcileAssessmentBinding({ entry: { lessonSlug: LESSON, assessmentRevisionId: REVISION_ID }, artifactBindingBlock: null, certification: null })).toEqual({ ok: true });
+  });
+
   it.each([
     ["an unbound entry whose artifact carries a binding", { entry: { lessonSlug: LESSON }, artifactBindingBlock: {}, certification: null }, "manifest entry is unbound"],
-    ["half a binding", { entry: { lessonSlug: LESSON, assessmentPresentationRevisionId: apId }, artifactBindingBlock: block, certification: certified }, "half an assessment-presentation binding"],
+    ["a presentation without its revision", { entry: { lessonSlug: LESSON, assessmentPresentationRevisionId: apId }, artifactBindingBlock: block, certification: certified }, "without its assessment revision"],
+    ["a revision-only (unbound) entry whose artifact carries a binding", { entry: { lessonSlug: LESSON, assessmentRevisionId: REVISION_ID }, artifactBindingBlock: block, certification: null }, "manifest entry is unbound"],
     ["a missing record", { entry, artifactBindingBlock: block, certification: { record: null, failures: [`bound assessment presentation ${apId} is not retained`] } }, "is not retained"],
     ["an unapproved certification", { entry, artifactBindingBlock: block, certification: { record: rec, failures: [`bound presentation ${apId} is not approved`] } }, "is not approved"],
     ["a bad record hash", { entry, artifactBindingBlock: block, certification: { record: rec, failures: ["content hashes to apX, not apY"] } }, "content hashes to"],
@@ -252,5 +275,22 @@ describe("real retained-revision loader", () => {
     const rev = (result as { revision: RetainedRevision }).revision;
     expect(rev.sha256).toBe("ff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c");
     expect(rev.assessmentBinding).toBeUndefined();
+    // F5.3 Slice 9C-2: only through the pinned legacy-r1 rule.
+    expect(rev.assessmentRevisionId).toBe("assessment_earths-layers__r1");
+    expect(rev.assessmentRevisionSource).toBe("legacyR1");
+  });
+
+  it("loads the certified pr90f... revision with r1 provenance from ap1fed... (F5.3 Slice 9C-2)", async () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..", "..");
+    const result = await makeLoadRetainedRevision(repoRoot)({
+      lessonSlug: "earths-layers",
+      variantKey: "reading-adapted",
+      presentationRevisionId: "pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189",
+    });
+    expect(result.ok).toBe(true);
+    const rev = (result as { revision: RetainedRevision }).revision;
+    expect(rev.assessmentRevisionId).toBe("assessment_earths-layers__r1");
+    expect(rev.assessmentRevisionSource).toBe("assessmentPresentation");
+    expect(rev.assessmentBinding?.assessmentPresentationRevisionId).toBe("ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25");
   });
 });

@@ -97,9 +97,8 @@ function fail(message) {
 // Historical approved unbound artifacts that predate explicit variant
 // revision provenance and may only be interpreted as r1 (S9-D2, S9-D7). The
 // list is pinned and may only shrink; never add a newly authored variant.
-const LEGACY_R1_UNBOUND_REVISIONS = Object.freeze([
-  "prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c",
-]);
+// Defined once, with the manifest that enforces it (variantManifest.cjs).
+const LEGACY_R1_UNBOUND_REVISIONS = manifestMod.LEGACY_R1_UNBOUND_REVISIONS;
 
 // Neutral generated notice. Deterministic, and deliberately free of the
 // variantKey, the accommodation category, and the authored source path.
@@ -310,6 +309,9 @@ function buildVariantArtifact({ cfg, variantKey, canonicalSourceBytes, variantSo
     relocatedReferences: first.rewritten,
     assessmentRevisions: boundRevisions,
     assessmentRevisionBasis: revisionBasis,
+    // F5.3 Slice 9C-2: the revision a manifest entry records (absent only for
+    // a pinned legacy-r1 artifact).
+    recordedAssessmentRevisionId: revisionBasis === "legacy-r1" ? undefined : variantRevision.assessmentRevisionId,
     assessmentBinding,
     review,
   };
@@ -362,7 +364,9 @@ function generateAuthoredVariant({ slug, variantKey, publishedAt, repoRoot = pat
     publishedAt,
     repoRoot,
     write,
-    assessmentBinding: built.assessmentBinding,
+    assessmentBinding:
+      built.assessmentBinding ||
+      (built.recordedAssessmentRevisionId !== undefined ? { assessmentRevisionId: built.recordedAssessmentRevisionId } : null),
   });
   if (result.presentationRevisionId !== built.presentationRevisionId) {
     fail("generated revision id does not match the gated build");
@@ -392,7 +396,7 @@ function checkAuthoredVariants({ repoRoot = paths.REPO_ROOT, configs = null } = 
             e.lessonSlug === cfg.slug &&
             e.variantKey === variantKey &&
             e.presentationRevisionId === built.presentationRevisionId &&
-            e.assessmentRevisionId === binding.assessmentRevisionId &&
+            e.assessmentRevisionId === built.recordedAssessmentRevisionId &&
             e.assessmentPresentationRevisionId === binding.assessmentPresentationRevisionId,
         );
         if (!retained) {

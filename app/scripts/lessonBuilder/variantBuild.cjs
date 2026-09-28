@@ -103,9 +103,13 @@ function generateVariantArtifact({
   const entry = { lessonSlug, variantKey, presentationRevisionId, path: relPath, sha256, publishedAt };
   // F5.3 Slice 4: an artifact rendered from a certified assessment
   // presentation records its binding in the append-only manifest entry.
+  // F5.3 Slice 9C-2: an unbound artifact with explicit provenance records its
+  // assessment revision alone.
   if (assessmentBinding !== null) {
     entry.assessmentRevisionId = assessmentBinding.assessmentRevisionId;
-    entry.assessmentPresentationRevisionId = assessmentBinding.assessmentPresentationRevisionId;
+    if (assessmentBinding.assessmentPresentationRevisionId !== undefined) {
+      entry.assessmentPresentationRevisionId = assessmentBinding.assessmentPresentationRevisionId;
+    }
   }
   const { appended } = write ? manifestMod.appendEntry(entry, { repoRoot }) : { appended: false };
 

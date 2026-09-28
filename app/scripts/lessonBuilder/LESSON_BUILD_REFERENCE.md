@@ -189,6 +189,14 @@ index):
   retain the gated bytes through `generateVariantArtifact()` (add-only
   artifact plus append-only manifest entry).
 
+F5.3 Slice 9C-2: every new manifest entry records the assessment revision it
+covers (`assessmentRevisionId`, alone for an unbound variant, together with
+`assessmentPresentationRevisionId` when bound). Only the pinned historical
+`LEGACY_R1_UNBOUND_REVISIONS` (`variantManifest.cjs`) may lack it.
+Publication proves the revision from the retained bytes
+(`variantPublicationProvenance.cjs`) and writes only the revision-scoped
+coverage document.
+
 ## Assessment revisions (current state, and F5.3 Slice 9 plan)
 
 Normative basis: PDR-031 (`docs/platform/LYFELABZ_PLATFORM_DECISIONS.md`).

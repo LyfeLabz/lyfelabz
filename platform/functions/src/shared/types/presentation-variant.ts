@@ -237,3 +237,65 @@ export function assertActivateWriteConsistent(write: {
 }
 
 const ASSESSMENT_PRESENTATION_REVISION_ID_RE = /^ap[0-9a-f]{64}$/;
+
+// F5.3 Slice 9C-2 (addendum 21.7): write shape for the revision-scoped index
+// document `presentationVariants/{lessonSlug}__{variantKey}__r{N}`. The ONLY
+// coverage document the publisher writes; the legacy unscoped document is
+// read-only compatibility state and is never written again. The document
+// always records the assessment revision it covers; it is bound iff it also
+// names an assessment presentation.
+export type PresentationVariantScopedIndexActivateWrite = {
+  readonly lessonSlug: string;
+  readonly variantKey: string;
+  readonly currentPresentationRevisionId: string;
+  readonly currentPath: string;
+  readonly contentSha256: string;
+  readonly status: "active";
+  readonly assessmentRevisionId: string;
+  readonly assessmentPresentationRevisionId?: string;
+  readonly updatedAt: FieldValue;
+  readonly publishedBy: string;
+};
+
+export type PresentationVariantScopedIndexRetireWrite = PresentationVariantIndexRetireWrite;
+
+// Self-consistency of a scoped activate write, including agreement between the
+// document id it will be written to and its own fields. Throws on any
+// disagreement so an inconsistent scoped record can never be written.
+export function assertScopedActivateWriteConsistent(
+  docId: string,
+  write: {
+    readonly lessonSlug: string;
+    readonly variantKey: string;
+    readonly currentPresentationRevisionId: string;
+    readonly currentPath: string;
+    readonly contentSha256: string;
+    readonly assessmentRevisionId: unknown;
+    readonly assessmentPresentationRevisionId?: unknown;
+  },
+): void {
+  const revisionRe = new RegExp(`^assessment_${write.lessonSlug}__r([1-9][0-9]*)$`);
+  const match = typeof write.assessmentRevisionId === "string" ? revisionRe.exec(write.assessmentRevisionId) : null;
+  if (!isValidLessonSlugForVariant(write.lessonSlug) || match === null) {
+    throw new Error(`[presentation-variant] scoped coverage must record a revision of assessment_${write.lessonSlug}`);
+  }
+  const ordinal = Number(match[1]);
+  if (docId !== presentationVariantScopedIndexDocId(write.lessonSlug, write.variantKey, ordinal)) {
+    throw new Error(`[presentation-variant] scoped document id "${docId}" does not agree with its lesson, variant key, and assessment revision`);
+  }
+  assertActivateWriteConsistent({
+    lessonSlug: write.lessonSlug,
+    variantKey: write.variantKey,
+    currentPresentationRevisionId: write.currentPresentationRevisionId,
+    currentPath: write.currentPath,
+    contentSha256: write.contentSha256,
+    // Bound iff it names an assessment presentation (the revision is always
+    // present on a scoped record).
+    ...(write.assessmentPresentationRevisionId !== undefined
+      ? {
+          assessmentRevisionId: write.assessmentRevisionId,
+          assessmentPresentationRevisionId: write.assessmentPresentationRevisionId,
+        }
+      : {}),
+  });
+}

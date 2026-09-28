@@ -18,6 +18,7 @@ const paths = require("./paths.cjs");
 const { sha256Hex } = require("./hash.cjs");
 const identity = require("./variantIdentity.cjs");
 const assessmentPresentation = require("./assessmentPresentation.cjs");
+const revisions = require("./assessmentRevisions.cjs");
 
 const MANIFEST_FIELDS = ["lessonSlug", "variantKey", "presentationRevisionId", "path", "sha256", "publishedAt"];
 
@@ -28,6 +29,16 @@ const MANIFEST_FIELDS = ["lessonSlug", "variantKey", "presentationRevisionId", "
 // exactly one retained, certified assessment presentation of exactly one
 // canonical assessment revision (verified by verifyRetention).
 const OPTIONAL_BINDING_FIELDS = ["assessmentRevisionId", "assessmentPresentationRevisionId"];
+
+// F5.3 Slice 9C-2 (addendum 21.7, S9-D7): every entry appended from 9C-2 on
+// records the assessment revision it covers. `assessmentRevisionId` may appear
+// alone (an unbound variant); `assessmentPresentationRevisionId` requires it.
+// The ONLY entries allowed without a recorded revision are these historical
+// approved artifacts, interpreted under the legacy-r1 rule. The list is
+// pinned and may only shrink; never add a newly authored variant.
+const LEGACY_R1_UNBOUND_REVISIONS = Object.freeze([
+  "prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c",
+]);
 
 function fail(message) {
   throw new Error(`[variant-manifest] ${message}`);
@@ -107,18 +118,28 @@ function validateEntryShape(entry) {
       fail(`manifest entry has unknown field "${key}" (path: ${entry.path})`);
     }
   }
-  const bound = OPTIONAL_BINDING_FIELDS.filter((f) => entry[f] !== undefined);
-  if (bound.length === 1) {
-    fail(`manifest entry must carry assessmentRevisionId and assessmentPresentationRevisionId together (path: ${entry.path})`);
+  if (entry.assessmentPresentationRevisionId !== undefined && entry.assessmentRevisionId === undefined) {
+    fail(`manifest entry assessmentPresentationRevisionId requires assessmentRevisionId (path: ${entry.path})`);
   }
-  if (bound.length === 2) {
+  if (entry.assessmentPresentationRevisionId !== undefined) {
     if (typeof entry.assessmentPresentationRevisionId !== "string" || !assessmentPresentation.AP_ID_PATTERN.test(entry.assessmentPresentationRevisionId)) {
       fail(`manifest entry assessmentPresentationRevisionId must be ap<sha256> (path: ${entry.path})`);
     }
-    if (typeof entry.assessmentRevisionId !== "string" || entry.assessmentRevisionId !== entry.assessmentRevisionId.trim() || !entry.assessmentRevisionId.startsWith(`assessment_${entry.lessonSlug}__r`)) {
+  }
+  if (entry.assessmentRevisionId !== undefined) {
+    const parsed = revisions.parseRevisionId(entry.assessmentRevisionId);
+    if (parsed === null || parsed.slug !== entry.lessonSlug) {
       fail(`manifest entry assessmentRevisionId must be a revision of assessment_${entry.lessonSlug} (path: ${entry.path})`);
     }
   }
+}
+
+// F5.3 Slice 9C-2: an entry without a recorded revision must be a pinned
+// historical legacy-r1 artifact.
+function unrecordedRevisionFailure(entry) {
+  if (entry.assessmentRevisionId !== undefined) return null;
+  if (LEGACY_R1_UNBOUND_REVISIONS.includes(entry.presentationRevisionId)) return null;
+  return `manifest entry ${entry.path} records no assessmentRevisionId and is not a pinned historical legacy-r1 artifact`;
 }
 
 function sameEntry(a, b) {
@@ -148,6 +169,11 @@ function appendEntry(entry, { repoRoot = paths.REPO_ROOT } = {}) {
       `refusing to alter existing manifest entry at path "${entry.path}" ` +
         "(immutability violation: an existing entry with this identity does not match the requested entry)",
     );
+  }
+  // F5.3 Slice 9C-2: a NEW entry must record its assessment revision (the
+  // pinned legacy artifacts already exist and are handled as duplicates above).
+  if (entry.assessmentRevisionId === undefined) {
+    fail(`refusing to append ${entry.path} without an assessmentRevisionId: every new entry records the assessment revision it covers (F5.3 Slice 9C-2)`);
   }
   const next = entries.concat([entry]);
   fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
@@ -245,6 +271,11 @@ function verifyRetention({ repoRoot = paths.REPO_ROOT } = {}) {
     // F5.3 Slice 3: a bound entry must name a retained, valid, approved
     // assessment presentation of the same lesson and assessment revision.
     failures.push(...assessmentPresentation.verifyManifestBinding(entry, { repoRoot }));
+    // Whether the recorded revision is committed, deployed, and actually
+    // rendered by the artifact is proven at publication
+    // (variantPublicationProvenance.cjs); retention checks the record itself.
+    const unrecorded = unrecordedRevisionFailure(entry);
+    if (unrecorded !== null) failures.push(unrecorded);
   }
 
   if (fs.existsSync(variantsRoot)) {
@@ -265,6 +296,7 @@ function verifyRetention({ repoRoot = paths.REPO_ROOT } = {}) {
 module.exports = {
   MANIFEST_FIELDS,
   OPTIONAL_BINDING_FIELDS,
+  LEGACY_R1_UNBOUND_REVISIONS,
   resolveVariantsRoot,
   resolveManifestPath,
   readManifest,

@@ -482,11 +482,16 @@ describe("variant manifest binding", () => {
     expect(manifestMod.verifyRetention({}).ok).toBe(true);
   });
 
-  test("an unbound entry keeps its F5.2 meaning and verifies", () => {
+  test("an unbound entry records its revision alone and verifies; a new revisionless entry is refused (F5.3 Slice 9C-2)", () => {
+    const refused = repo();
+    expect(() => manifestMod.appendEntry(variantEntry(refused), { repoRoot: refused })).toThrow("without an assessmentRevisionId");
+    expect(manifestMod.readManifest(refused)).toEqual([]);
     const root = repo();
-    manifestMod.appendEntry(variantEntry(root), { repoRoot: root });
+    manifestMod.appendEntry(variantEntry(root, { assessmentRevisionId: REVISION_ID }), { repoRoot: root });
     expect(manifestMod.verifyRetention({ repoRoot: root })).toEqual({ ok: true, failures: [] });
-    expect(manifestMod.serializeManifest(manifestMod.readManifest(root))).not.toContain("assessmentPresentationRevisionId");
+    const text = manifestMod.serializeManifest(manifestMod.readManifest(root));
+    expect(text).toContain(`"assessmentRevisionId": "${REVISION_ID}"`);
+    expect(text).not.toContain("assessmentPresentationRevisionId");
   });
 
   function boundRepo(reviewMutate) {
@@ -541,7 +546,9 @@ describe("variant manifest binding", () => {
 
   test("half a binding, a malformed id, an unknown field, or another lesson's revision is refused at append", () => {
     const root = repo();
-    expect(() => manifestMod.appendEntry(variantEntry(root, { assessmentRevisionId: REVISION_ID }), { repoRoot: root })).toThrow("must carry assessmentRevisionId and assessmentPresentationRevisionId together");
+    // F5.3 Slice 9C-2: a revision alone is a valid unbound entry; a
+    // presentation without its revision is refused.
+    expect(() => manifestMod.appendEntry(variantEntry(root, { assessmentPresentationRevisionId: `ap${"d".repeat(64)}` }), { repoRoot: root })).toThrow("requires assessmentRevisionId");
     expect(() => manifestMod.appendEntry(variantEntry(root, { assessmentRevisionId: REVISION_ID, assessmentPresentationRevisionId: "ap123" }), { repoRoot: root })).toThrow("must be ap<sha256>");
     expect(() => manifestMod.appendEntry(variantEntry(root, { choiceCount: 3 }), { repoRoot: root })).toThrow('unknown field "choiceCount"');
     expect(() => manifestMod.appendEntry(variantEntry(root, { assessmentRevisionId: "assessment_other__r1", assessmentPresentationRevisionId: `ap${"d".repeat(64)}` }), { repoRoot: root })).toThrow(`must be a revision of assessment_${SLUG}`);

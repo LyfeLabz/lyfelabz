@@ -54,6 +54,8 @@ describe("retention manifest is excluded from Firebase Hosting (Slice 2 carry-fo
     try {
       fs.copyFileSync(path.join(REPO_ROOT, "firebase.json"), path.join(tmpRoot, "firebase.json"));
       const built = generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: "<!doctype html><title>fixture</title>",

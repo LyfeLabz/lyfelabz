@@ -23,7 +23,8 @@ function makeEntry({ lessonSlug = "earths-layers", variantKey = "reading-adapted
   const presentationRevisionId = identity.computePresentationRevisionId(bytes);
   const sha256 = presentationRevisionId.slice(2);
   const relPath = identity.variantRelativeOutputPath(lessonSlug, presentationRevisionId);
-  const entry = { lessonSlug, variantKey, presentationRevisionId, path: relPath, sha256, publishedAt };
+  // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+  const entry = { lessonSlug, variantKey, presentationRevisionId, path: relPath, sha256, publishedAt, assessmentRevisionId: `assessment_${lessonSlug}__r1` };
   // The artifact bytes ride along for the fixture helpers only. Non-enumerable,
   // so they are never presented to appendEntry as a manifest field (the entry
   // field set is closed since F5.3 Slice 3).
@@ -76,6 +77,7 @@ describe("manifest read/append (append-only ledger)", () => {
       "path",
       "sha256",
       "publishedAt",
+      "assessmentRevisionId",
     ]);
   });
 

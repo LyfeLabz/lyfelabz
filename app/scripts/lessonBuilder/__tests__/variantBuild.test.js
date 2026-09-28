@@ -37,6 +37,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
 
   test("T-D1: two clean generations of identical inputs produce byte-identical artifacts and identical revision IDs", () => {
     const r1 = generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_A,
@@ -47,6 +49,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
     const repoRoot2 = mkTmpRepo();
     try {
       const r2 = generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: FIXTURE_A,
@@ -64,6 +68,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
 
   test("T-D1b: regenerating the same revision in the same repo is an idempotent no-op, not a second file/entry", () => {
     const first = generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_A,
@@ -74,6 +80,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
     expect(first.appended).toBe(true);
 
     const second = generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_A,
@@ -90,6 +98,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
 
   test("T-D2: different final bytes produce a different revision ID and a different path", () => {
     const a = generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_A,
@@ -97,6 +107,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
       repoRoot,
     });
     const b = generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_B,
@@ -111,6 +123,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
   test("T-D3: identity is derived from final bytes, not source metadata or pre-transform inputs", () => {
     expect(() =>
       generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: { notActualBytes: true },
@@ -132,6 +146,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
 
     expect(() =>
       generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: FIXTURE_A,
@@ -144,6 +160,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
   test("publishedAt is required explicitly - no implicit wall-clock default", () => {
     expect(() =>
       generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: FIXTURE_A,
@@ -155,6 +173,8 @@ describe("generateVariantArtifact - determinism and identity (suite D)", () => {
   test("rejects an invalid lessonSlug at the publication boundary (canonical build behavior is unaffected by this rejection)", () => {
     expect(() =>
       generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths_layers",
         variantKey: "reading-adapted",
         bytes: FIXTURE_A,
@@ -178,6 +198,8 @@ describe("retention across regeneration (T-E1) and manifest-listed protection (T
 
   test("T-E1: revision A remains present and unchanged when revision B is generated", () => {
     const a = generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_A,
@@ -185,6 +207,8 @@ describe("retention across regeneration (T-E1) and manifest-listed protection (T
       repoRoot,
     });
     const b = generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_B,
@@ -202,6 +226,8 @@ describe("retention across regeneration (T-E1) and manifest-listed protection (T
 
   test("T-P5: generation refuses to proceed if the variants directory was destructively cleared underneath the manifest", () => {
     const a = generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_A,
@@ -217,6 +243,8 @@ describe("retention across regeneration (T-E1) and manifest-listed protection (T
 
     expect(() =>
       generateVariantArtifact({
+        // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+        assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
         lessonSlug: "earths-layers",
         variantKey: "reading-adapted",
         bytes: FIXTURE_B,
@@ -234,6 +262,8 @@ describe("retention across regeneration (T-E1) and manifest-listed protection (T
 
   test("T-P5b: the M7 guard itself refuses a destructive clear of the retained variants directory", () => {
     generateVariantArtifact({
+      // F5.3 Slice 9C-2: every new manifest entry records its assessment revision.
+      assessmentBinding: { assessmentRevisionId: "assessment_earths-layers__r1" },
       lessonSlug: "earths-layers",
       variantKey: "reading-adapted",
       bytes: FIXTURE_A,

@@ -37,9 +37,12 @@ function okPublish(input: PublishInput): PublishResult {
       presentationRevisionId: input.presentationRevisionId,
       path: `app/lessons/variants/lesson_${input.lessonSlug}__${input.presentationRevisionId}.html`,
       sha256: "a".repeat(64),
+      assessmentRevisionId: `assessment_${input.lessonSlug}__r1`,
+      assessmentRevisionSource: "declared",
     },
     stagesCompleted: ["LOCAL_VERIFIED", "HOSTING_DEPLOYED", "HOSTED_BYTES_VERIFIED", "INDEX_UPDATED"],
     indexAdvanced: true,
+    coverage: { docId: `${input.lessonSlug}__${input.variantKey}__r1`, action: "create" },
   };
 }
 
@@ -110,15 +113,27 @@ describe("parseArgs", () => {
     if (!r.ok) expect(r.message).toContain("--revision is required for --op=publish");
   });
 
-  test("retire does not require --revision", () => {
+  test("retire does not require --revision but names the assessment revision (F5.3 Slice 9C-2)", () => {
     const r = parseArgs([
       "--op=retire",
       "--lesson=earths-layers",
       "--variant=reading-adapted",
       "--published-by=op",
+      "--assessment-revision=assessment_earths-layers__r1",
     ]);
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.args.op).toBe("retire");
+    if (r.ok) expect(r.args).toMatchObject({ op: "retire", assessmentRevisionId: "assessment_earths-layers__r1" });
+    const missing = parseArgs(["--op=retire", "--lesson=earths-layers", "--variant=reading-adapted", "--published-by=op"]);
+    expect(missing.ok).toBe(false);
+    if (!missing.ok) expect(missing.message).toContain("--assessment-revision=assessment_<slug>__r<N> is required for --op=retire");
+  });
+
+  test("publish and rollback refuse an operator-supplied assessment revision (derived from provenance)", () => {
+    for (const op of ["publish", "rollback"]) {
+      const r = parseArgs([`--op=${op}`, "--lesson=earths-layers", "--variant=reading-adapted", "--published-by=op", `--revision=${REV}`, "--assessment-revision=assessment_earths-layers__r1"]);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.message).toContain("only accepted for --op=retire");
+    }
   });
 
   test("requires attribution via --published-by or LYFELABZ_PUBLISH_OPERATOR", () => {
@@ -180,6 +195,7 @@ describe("ensureTargetSafe", () => {
     hostingOrigin: "https://app.lyfelabz.com",
     iKnowProduction: true,
     project: PRODUCTION_PROJECT_ID,
+    assessmentRevisionId: null,
   };
 
   test("emulator target is always safe", () => {
@@ -247,6 +263,7 @@ describe("ensureStagingTargetSafe (fail-closed, alias-name never trusted)", () =
     hostingOrigin: `https://${STAGING_PROJECT_ID}.web.app`,
     iKnowProduction: false,
     project: STAGING_PROJECT_ID,
+    assessmentRevisionId: null,
   };
   const okEnv: NodeJS.ProcessEnv = { GOOGLE_APPLICATION_CREDENTIALS: "/staging-creds.json" };
 
@@ -457,12 +474,12 @@ describe("main routing and exit codes", () => {
   test("retire routes to the retire seam", async () => {
     const deps = makeDeps();
     const code = await main(
-      ["--op=retire", "--lesson=earths-layers", "--variant=reading-adapted", "--published-by=op"],
+      ["--op=retire", "--lesson=earths-layers", "--variant=reading-adapted", "--published-by=op", "--assessment-revision=assessment_earths-layers__r1"],
       deps,
     );
     expect(code).toBe(0);
     expect(deps.retireCalls).toEqual([
-      { lessonSlug: "earths-layers", variantKey: "reading-adapted", publishedBy: "op" },
+      { lessonSlug: "earths-layers", variantKey: "reading-adapted", assessmentRevisionId: "assessment_earths-layers__r1", publishedBy: "op" },
     ]);
     expect(deps.publishCalls).toHaveLength(0);
   });
@@ -472,7 +489,7 @@ describe("main routing and exit codes", () => {
       retire: () => Promise.resolve<RetireResult>({ ok: false, error: "boom" }),
     });
     const code = await main(
-      ["--op=retire", "--lesson=earths-layers", "--variant=reading-adapted", "--published-by=op"],
+      ["--op=retire", "--lesson=earths-layers", "--variant=reading-adapted", "--published-by=op", "--assessment-revision=assessment_earths-layers__r1"],
       deps,
     );
     expect(code).toBe(1);
@@ -490,6 +507,7 @@ describe("production target binding (fail-closed; ambient project resolution nev
     hostingOrigin: "https://app.lyfelabz.com",
     iKnowProduction: true,
     project: PRODUCTION_PROJECT_ID,
+    assessmentRevisionId: null,
   };
   const okEnv = { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json" };
 
@@ -690,7 +708,7 @@ describe("main binds the Admin SDK and the liveness origin to the validated targ
   test("production retire binds lyfelabz-prod before retiring", async () => {
     const deps = makeDeps({ env: { GOOGLE_APPLICATION_CREDENTIALS: "/creds.json" } });
     const argv = [
-      "--op=retire",
+      "--op=retire", "--assessment-revision=assessment_earths-layers__r1",
       "--target=production",
       "--i-know=production",
       "--project=lyfelabz-prod",
