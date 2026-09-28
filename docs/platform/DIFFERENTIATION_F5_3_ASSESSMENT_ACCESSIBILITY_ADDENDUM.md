@@ -501,6 +501,22 @@ On `lyfelabz-staging`, with the same controlled pair and a fresh Earth's Layers 
    - the quiz shows three choices with adapted wording.
 3. The first answer creates a session that freezes both ids.
 4. **Negative test (driver):** autosave of the omitted distractor's `optionId` is rejected; an unknown `optionId` is rejected.
+
+   **Driver (C7-E):** `platform/functions/src/scripts/staging-f53-assessment-negatives.ts`, reusable for any bound lesson.
+   - **Staging only.** It requires the literal `--project=lyfelabz-staging`, refuses a conflicting `GCLOUD_PROJECT` or `GOOGLE_CLOUD_PROJECT` and any emulator variable before network activity, calls only the staging `callableUrl`, and has no production flag.
+   - **Authentication.** It reuses the certified staging token path (`createAstra004StagingIdToken`): the ADC principal needs `roles/iam.serviceAccountTokenCreator` on `lyfelabz-staging@appspot.gserviceaccount.com`, and `STAGING_WEB_API_KEY` is supplied at runtime. Signing in with the custom token updates the student's Auth last-sign-in metadata. Tokens and the launch reference are redacted from output.
+   - **Plan mode (default).** Firestore reads only: it verifies the grant (owner, assignment, differentiated provenance, more than 10 minutes left), the assignment's frozen revision, the AP document (with the server's `checkAssessmentPresentationDoc`) and the bound index, then derives the omitted and unknown option from the verified record and the deployed revision, and prints every planned request. It never mints a token or calls a callable.
+   - **`--execute`.** Runs, in order:
+     - begin with forged provenance and no `launchRef` (refused);
+     - E1: begin with the student's grant, then one autosave of the item's first displayed option; the session must freeze the grant's `presentationRevisionId`, `assessmentPresentationRevisionId` and `accommodationConfigRevision`, plus the assignment's revision;
+     - E2: autosave of the omitted distractor (`assessmentSessions.invalidResponses`);
+     - E3: autosave of an unknown option (same code);
+     - E4: autosave and begin with `assessmentPresentationRevisionId`, `displayedOptions` or `displayedOptionIds` (`assessmentSessions.invalidRequest`);
+     - E5: finalize with forged provenance (`assessmentAttempts.invalidRequest`).
+
+     Every finalize request also carries a malformed idempotency key, so no request the driver builds can score, create an attempt or delete the session.
+   - **Expected live mutations:** one session created by E1 and one stored response (an existing live session is kept as the baseline, never overwritten), and the Auth sign-in metadata. Nothing else.
+   - **Pass criteria.** After every refusal the session's update time and responses must be unchanged. At the end the student's attempts, the assignment's passbacks, the Current Assignment pointer and the student's launch grants must be exactly as before, with one live session left for submission (C7-F). Exit 0 means every check passed.
 5. **Submit:**
    - the attempt records both ids and `r1`;
    - an independent rescore against the r1 key matches;
