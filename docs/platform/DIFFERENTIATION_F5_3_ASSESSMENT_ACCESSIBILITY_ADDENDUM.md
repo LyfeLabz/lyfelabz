@@ -2,7 +2,7 @@
 
 ## F5.3 Addendum: Accessible Assessment Presentations
 
-**Status:** Specification addendum to `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (F5.2). Owner-approved with decisions D1-D8 (section "Owner decisions"). **Slices 1-4 implemented** (answer-position quality gate; server response validation; immutable assessment-presentation records, certification records, manifest binding, and the `assessmentPresentations` deny-all Rules block; build-time rendering of a certified presentation into a lesson artifact and canonical-option-identity mapping in the browser runtime; publication, resolution, and provenance propagation through index, grant, session, and attempt, with displayed-option validation). The owner's Slice 5 covers the table's slices 5 and 6. **Slices 6A and 6B implemented** (owner-review tooling; the Earth's Layers presentation `ap1fed478c...02c25`, owner-certified, retained, bound, and rendered into the new retained revision `pr90f52136...2189`; see slices 6A and 7 in section 20). Staging publication and C7 (slice 8) and later not started. No canonical lesson or assessment content has changed. Where this addendum and F5.2 conflict, this addendum governs for assessment presentation only; every F5.2 contract not named in section 16 is unchanged.
+**Status:** Specification addendum to `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (F5.2). Owner-approved with decisions D1-D8 (section "Owner decisions"). **Slices 1-4 implemented** (answer-position quality gate; server response validation; immutable assessment-presentation records, certification records, manifest binding, and the `assessmentPresentations` deny-all Rules block; build-time rendering of a certified presentation into a lesson artifact and canonical-option-identity mapping in the browser runtime; publication, resolution, and provenance propagation through index, grant, session, and attempt, with displayed-option validation). The owner's Slice 5 covers the table's slices 5 and 6. **Slices 6A and 6B implemented** (owner-review tooling; the Earth's Layers presentation `ap1fed478c...02c25`, owner-certified, retained, bound, and rendered into the new retained revision `pr90f52136...2189`; see slices 6A and 7 in section 20). **Slice 8 (staging certification C7-A to C7-F) is COMPLETE and PASSING for Earth's Layers** (2026-09-28; section 18.1). Slices 9 and 10 and production are not started. No canonical lesson or assessment content has changed. Where this addendum and F5.2 conflict, this addendum governs for assessment presentation only; every F5.2 contract not named in section 16 is unchanged.
 
 **Evidence base:** repository HEAD `176fe27`; staging certification C4-C6 (2026-09-27); a read-only audit of all 49 committed assessment payloads.
 
@@ -525,6 +525,91 @@ On `lyfelabz-staging`, with the same controlled pair and a fresh Earth's Layers 
 7. Best score over the mixed attempts equals the maximum `percentage`; there is no passback on the unlinked class.
 8. Production is untouched.
 
+### 18.1 C7 certification record: Earth's Layers (COMPLETE, PASSING)
+
+**Result: F5.3 Earth's Layers staging certification C7-A through C7-F is COMPLETE and PASSING** (`lyfelabz-staging`, 2026-09-27 23:25Z to 2026-09-28 00:57Z). Production was neither read nor changed.
+
+**Certified configuration**
+
+| Field | Value |
+|---|---|
+| Canonical assessment revision | `assessment_earths-layers__r1` (unchanged; all 49 canonical payloads and answer keys unchanged) |
+| Differentiated instructional presentation | `pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189` |
+| Assessment presentation | `ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25` (owner-certified; review record `lesson-sources/variants/reviews/<id>.json`) |
+| Traits | language `adapted`, 3 displayed choices |
+| Accommodation `configRevision` used | `1` (test student, Reading Accessibility active, level adapted) |
+| Release commit (C7-A, C7-B) | `06a46ca` (clean detached worktree, real `npm ci` installs) |
+| Driver commit (C7-E) | `cbe0225b832edaa04d6f47ca0dfcef1e466d2535` (clean detached worktree) |
+
+**Evidence by step**
+
+- **C7-A (infrastructure).** Staging was verified read-only to be running `176fe27`. From the clean `06a46ca` worktree:
+  - Firestore Rules only (`firestore:rules`): the active ruleset is byte-identical to `06a46ca` and includes the `assessmentPresentations/{id}` deny-all block. Unauthenticated get and list return 403. Indexes and TTL are unchanged.
+  - Exactly the five F5.3 Functions (`assignmentsListForStudent`, `lmsDeepLinkResolve`, `assessmentSessionsBegin`, `assessmentSessionsAutosave`, `assessmentAttemptsFinalize`): each deployed source archive is identical to `06a46ca`. The other 65 Functions were not redeployed, and the Classroom secret binding on finalize was retained.
+  - Hosting was not deployed in this step.
+- **C7-B (publication).** `publish-variant --target=staging` ran from the same worktree through LOCAL_VERIFIED, HOSTING_DEPLOYED (Hosting version `ec2f3373c0bd596c`), HOSTED_BYTES_VERIFIED, ASSESSMENT_PRESENTATION_RECORDED (created) and INDEX_UPDATED.
+  - The hosted `pr90f…` bytes hash to their id, and the runtime bundle matches the release.
+  - Every repository-backed served file equals `06a46ca`; no uncommitted owner work was served.
+  - `assessmentPresentations/ap1fed…` hashes to its id and is byte-equal to the retained record.
+  - The index `presentationVariants/earths-layers__reading-adapted` is active and bound to `pr90f…`, `ap1fed…` and r1.
+  - Historical `prff01d9…375c` remained served, byte-identical and retained.
+- **C7-C (fresh launch).** After the last `prff01` grant expired, the student launched Earth's Layers through My Science.
+  - `assignmentsListForStudent` issued a new differentiated grant: `reading-adapted`, `pr90f…`, `ap1fed…`, `accommodationConfigRevision: 1`, a 6-hour TTL, and the correct student, assignment and lesson.
+  - r1 is established by the assignment's frozen revision, the index binding and the AP record.
+  - No session or attempt was created by launching.
+- **C7-D (browser rendering; owner observation plus served-byte checks).**
+  - The adapted instruction rendered normally, with no fallback.
+  - The quiz showed 10 items, each with exactly 3 choices, and the approved q2 (Differentiation / Convection currents / Erosion), q4 ("It is a liquid layer made of iron and nickel") and q9 wording.
+  - The adapted Show Your Thinking prompt appeared.
+  - No fourth option, omission rationale, or reviewer or certification metadata was present.
+  - The binding block names r1 and `ap1fed…`, and its canonical option ids match the certified display order (`BCD BAD ACB ACB BAC BAC BAC BDA ABD CDB`).
+- **C7-E (adversarial; staging-locked driver `staging-f53-assessment-negatives.ts` at `cbe0225`).**
+  - 44/44 driver checks passed, and 17/17 adversarial calls were refused with the exact expected code:
+    - 7 forged begin fields (`assessmentSessions.invalidRequest`, with the session count still 0);
+    - the canonical but omitted q1 option `A` and the unknown q1 option `Z` (`assessmentSessions.invalidResponses`);
+    - 3 autosave provenance forgeries (`assessmentSessions.invalidRequest`);
+    - 5 finalize provenance forgeries (`assessmentAttempts.invalidRequest`, each with the malformed idempotency-key backstop).
+  - The legitimate session `a-earths-layers-uwxg1a0yiyq4ts5ctejs-kpckdzwx0hyhvc-ubjz9g7iq35q__NmxK5iDDdhcXYbOECyOFHu26AOb2__1` froze r1, `differentiated`, `reading-adapted`, `pr90f…`, `ap1fed…` and `accommodationConfigRevision: 1`.
+  - No refusal changed the session (same update time and responses). No attempt, passback, launch grant or Current Assignment change occurred.
+  - After C7-E the session held only q1 = `B`, chosen by display order and never by correctness.
+- **C7-F (normal completion in the real browser).**
+  - The page reused the same session, and its autosave replaced the placeholder with 10 displayed-option responses (q1 C, q2 A, q3 C, q4 A, q5 A, q6 B, q7 B, q8 A, q9 D, q10 B); no omitted option was submitted.
+  - One browser submit created exactly one new attempt: `a-earths-layers-uwxg1a0yiyq4ts5ctejs-kpckdzwx0hyhvc-ubjz9g7iq35q__NmxK5iDDdhcXYbOECyOFHu26AOb2__a2`, attempt number 2.
+  - Score 4/10 = 40% (maximum 10, 1 point per item), shown in the browser. An independent rescore against the deployed r1 key also gave 4/10.
+  - The attempt retains `reading-adapted`, `pr90f…`, `ap1fed…`, `accommodationConfigRevision: 1` and r1.
+  - The session was consumed at finalize.
+  - The product's `selectHighestCompletedAttempt` selects `a2` (40%) over C6 (2/10, 20%).
+  - The written response persisted on `a2` only.
+  - Nothing reached Classroom (no link, no passbacks). The Current Assignment pointer, the AP record, the index and the assignment were unchanged.
+  - Submitted Show Your Thinking text (certification test content): "First is the crust at the surface. Then comes the mantle, the outer and then inner core." It does **not** contain the requested word `convection` and does not follow the prompt. C7-F certifies only that the student's text was captured and stored, not its quality or its compliance with the prompt.
+
+**Historical distinction (preserved).** C6 (`…__a1`) is differentiated instruction with the canonical four-choice r1 assessment. It uses `prff01d9…375c` and has no `assessmentPresentationRevisionId` or `accommodationConfigRevision`, and it is unchanged by C7. C7-F (`…__a2`) is differentiated instruction with the certified three-choice presentation, using `pr90f…` and `ap1fed…`. Both are scored against the same r1 key.
+
+**What C7 certifies:**
+- revision-bound differentiated assessment presentation, with adapted language and three displayed choices;
+- authoritative server validation of displayed options, including rejection of omitted and unknown choices;
+- rejection of client-forged presentation provenance at begin, autosave and finalize;
+- canonical scoring against the frozen r1;
+- attempt provenance;
+- normal browser submission;
+- compatibility with cumulative attempts and best performance;
+- storage of the Show Your Thinking text;
+- no unintended Classroom, passback or Current Assignment change.
+
+**What C7 does not certify:**
+- psychometric equivalence of the three-choice and four-choice forms (section 15: same scale by policy, D1);
+- semantic grading of Show Your Thinking;
+- anything outside Earth's Layers.
+
+**Not part of this certification (remaining work):**
+- revision-bound canonical assessment rendering and Earth's Layers r2 (slice 9; section 17.3);
+- D2 teacher-visible neutral accommodation label (slice 10);
+- D7 lesson-page answer-data hardening;
+- rollout beyond Earth's Layers;
+- production activation and certification (section 19).
+
+The staging differentiated-delivery flag remains `true` by owner decision D8. Production differentiated delivery is outside this certification.
+
 ---
 
 ### 19. Production implications
@@ -553,7 +638,7 @@ Production is paused at C3 with `prff01d9...375c` published. Whether production 
 | 6 | **Implemented (with 5).** Resolver, grant, begin, autosave, finalize: frozen fields, `coverageAssessmentMismatch`, displayed-set validation, server-side identity re-derivation (`assessment-presentation-identity.ts`) | `resolve-launch-presentation.ts`, `launch-presentation-deps.ts`, `resolve-begin-delivery.ts`, `begin-delivery-deps.ts`, begin, autosave, finalize, `response-validation.ts`, shared types |
 | 6A | **Implemented, stopped at owner review.** Review tooling (`assessmentPresentationReview.cjs`, `scripts/assessment-presentation-review.cjs`, `npm --prefix app run assessments:review`): validate a draft, compute and verify its `ap` id and canonical bytes, render an owner-review packet, and render an uncertified local preview (`variantSource.buildUncertifiedAssessmentPreview`: every F5.2 gate, the pure renderer twice, the no-disclosure check; the output is marked, and `generateVariantArtifact` refuses marked bytes). Output goes only to the gitignored `app/dist/assessment-preview/` (refused by the Hosting build) or outside the repository. Draft authored at `lesson-sources/variants/earths-layers.reading-adapted.assessment.json` with authoring notes beside it (`.assessment.notes.json`: per-item correct-meaning and retained-distractor misconception claims, Show Your Thinking evidence comparison, unchanged-text reasons; not part of the identity, never served). No retained record, review record, config binding, artifact, or manifest entry | `app/scripts/lessonBuilder`, `app/scripts`, `lesson-sources/variants/` |
 | 7 | **Implemented as Slice 6B (repository only).** Owner-certified `ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25` (review record `lesson-sources/variants/reviews/<id>.json`, reviewer role `owner`, opaque reviewer id); retained record `platform/functions/src/scripts/assessment-presentations/<id>.json`; bound in `earths-layers.cjs` (`variants["reading-adapted"].assessmentPresentationRevisionId`); new retained revision `pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189` with an appended manifest entry carrying the binding. `prff01d9...375c` and its manifest entry are unchanged. Nothing was published: no Firestore, index, or Hosting write was performed (that is slice 8) | `lesson-sources/variants/`, `platform/functions/src/scripts/assessment-presentations/`, `earths-layers.cjs`, `app/lessons/variants/` |
-| 8 | Staging C7 certification | staging only |
+| 8 | **COMPLETE, PASSING (Earth's Layers, 2026-09-28).** Staging C7-A through C7-F; record in section 18.1 | staging only |
 | 9 | Later: canonical presentation records (revision-bound canonical quiz; canonical Show Your Thinking provenance), then Earth's Layers r2 | builder, runtime, payloads |
 | 10 | Optional: teacher provenance label (D2) | teacher attempt detail |
 
@@ -583,4 +668,4 @@ Production is paused at C3 with `prff01d9...375c` published. Whether production 
 | D5 | Earth's Layers r2 timing | After slice 9; no cutover workaround |
 | D6 | Production C4-C6 on `prff01d9...375c` now, or wait for F5.3 | Owner call |
 | D7 | Removing client-side correct-answer data from lesson pages (14.3) | Separate backlog item |
-| D8 | Staging delivery flag, currently `true` since C5 | Set false until C7, or leave for continued testing |
+| D8 | Staging delivery flag, currently `true` since C5 | Set false until C7, or leave for continued testing. **Decided:** left `true`; C7 ran with it on (section 18.1) |
