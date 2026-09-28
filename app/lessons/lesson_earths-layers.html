@@ -716,7 +716,7 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
-<script type="application/json" id="lyfelabz-assessment-revision">{"schemaVersion":1,"lessonSlug":"earths-layers","assessmentRevisionId":"assessment_earths-layers__r1"}</script>
+<script type="application/json" id="lyfelabz-assessment-revision">{"schemaVersion":1,"lessonSlug":"earths-layers","assessmentRevisionId":"assessment_earths-layers__r2"}</script>
 <script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
 </head>
 <body>
@@ -1882,99 +1882,114 @@ var elQuizState = { selected: [], submitted: false };
 
 var elQuizQuestions = [
   {
-    q: "How many main layers is Earth divided into?",
-    options: ["Two", "Three", "Four", "Six"],
-    correct: 2,
-    explanation: "Earth is divided into four main layers: the crust, the mantle, the outer core, and the inner core."
-  },
-  {
-    q: "While Earth was molten, heavy metals like iron and nickel sank to the center. What is this sorting process called?",
-    options: ["Convection", "Differentiation", "Transmission", "Erosion"],
-    correct: 1,
-    explanation: "Differentiation is the process in which a molten Earth separated into layers by density. Heavy metals sank to form the core, while lighter materials rose to form the mantle and crust."
-  },
-  {
-    q: "Why did the densest materials end up at Earth's center?",
+    q: "While Earth was molten, iron and nickel sank to the center in a process called differentiation. Why did these metals sink?",
     options: [
-      "Dense materials are pulled by the magnetic field",
-      "Dense materials sink below less dense materials",
-      "Dense materials are always the hottest",
-      "Dense materials float to the top"
+      "They were the hottest materials in the young Earth",
+      "They were more dense than the materials around them",
+      "Earth's magnetic field pulled them toward the center",
+      "They cooled and hardened before the other materials"
     ],
     correct: 1,
-    explanation: "Density decides the order. When materials could move freely in the molten Earth, the densest materials sank deepest and the least dense rose to the surface."
+    explanation: "Differentiation sorted the molten Earth by density. Iron and nickel were more dense than the other materials, so they sank to the center and formed the core, while lighter materials rose to form the mantle and crust."
+  },
+  {
+    q: "Starting at the surface, which list shows Earth's four main layers in order?",
+    options: [
+      "Crust, outer core, mantle, inner core",
+      "Mantle, crust, outer core, inner core",
+      "Crust, mantle, inner core, outer core",
+      "Crust, mantle, outer core, inner core"
+    ],
+    correct: 3,
+    explanation: "From the surface to the center, the four main layers are the crust, the mantle, the outer core, and the inner core. Each layer is deeper, hotter, and more dense than the one above it."
   },
   {
     q: "Which statement best describes the crust?",
     options: [
-      "It is the thickest and most dense layer",
-      "It is a thin, brittle layer and the least dense",
+      "It is a thin layer of brittle rock and the least dense layer",
+      "It is a thick layer of hot rock that slowly flows",
       "It is a liquid layer made of iron and nickel",
-      "It is the layer that creates Earth's magnetic field"
-    ],
-    correct: 1,
-    explanation: "The crust is the thin, brittle outer layer, only 4 to 25 miles thick. It is the least dense layer and is the one we live on."
-  },
-  {
-    q: "A geologist compares a sample of oceanic crust to a sample of continental crust. Which is true?",
-    options: [
-      "Oceanic crust is thicker and less dense",
-      "Oceanic crust is thinner, younger, and more dense",
-      "Continental crust is thinner and made of basalt",
-      "Both types of crust are exactly the same"
-    ],
-    correct: 1,
-    explanation: "Oceanic crust is made of basalt, averages about 4 miles thick, and is younger and more dense. Continental crust is made of granite, averages about 25 miles thick, and is older and less dense."
-  },
-  {
-    q: "The mantle is solid rock, yet it slowly flows. Why does this matter for the surface?",
-    options: [
-      "The flowing mantle moves the plates above it",
-      "The flowing mantle turns the crust into liquid",
-      "The flowing mantle stops earthquakes from happening",
-      "The flowing mantle has no effect on the surface"
+      "It is a solid ball of metal and the densest layer"
     ],
     correct: 0,
-    explanation: "The mantle flows slowly because of temperature differences. The movement of the mantle creates the movement of Earth's plates, which is what changes the surface."
+    explanation: "The crust is the thin outer layer, only about 4 to 25 miles thick. It is made of brittle rock that breaks easily, and it is the least dense layer. The other choices describe the mantle, the outer core, and the inner core."
   },
   {
-    q: "Which layer flows like soft plastic and is responsible for convection currents?",
-    options: ["The lithosphere", "The asthenosphere", "The inner core", "The oceanic crust"],
-    correct: 1,
-    explanation: "The asthenosphere is the region of the upper mantle that flows, a quality called plastic behavior. It is responsible for convection currents."
-  },
-  {
-    q: "What drives the convection currents inside Earth's mantle?",
+    q: "Where oceanic crust meets continental crust, one usually sinks beneath the other. Which crust sinks, and why?",
     options: [
-      "Energy and heat from Earth's interior",
-      "The pull of the Moon's gravity",
-      "Wind blowing across the surface",
-      "The spinning of the inner core only"
+      "Continental crust, because it is thicker",
+      "Oceanic crust, because it is less dense",
+      "Oceanic crust, because it is more dense",
+      "Continental crust, because it is more dense"
+    ],
+    correct: 2,
+    explanation: "Oceanic crust is more dense than continental crust. The density rule still applies: where the two meet, the denser oceanic crust tends to sink beneath the lighter continental crust."
+  },
+  {
+    q: "Which statement best describes the rock in Earth's mantle?",
+    options: [
+      "It is melted rock, or magma, that moves like a liquid",
+      "It is solid rock that can slowly flow",
+      "It is solid rock that stays perfectly still",
+      "It is liquid metal that creates Earth's magnetic field"
+    ],
+    correct: 1,
+    explanation: "The mantle is solid rock, not liquid magma. Heat and temperature differences let this solid rock flow very slowly, like toothpaste squeezed through a tube. The liquid metal layer is the outer core."
+  },
+  {
+    q: "Which statement correctly compares the lithosphere and the asthenosphere?",
+    options: [
+      "The lithosphere is rigid and broken into plates, and the asthenosphere below it slowly flows",
+      "The asthenosphere is rigid and broken into plates, and the lithosphere below it slowly flows",
+      "The lithosphere is the whole mantle, and the asthenosphere is the crust above it",
+      "The lithosphere is the crust, and the asthenosphere is the liquid outer core"
     ],
     correct: 0,
-    explanation: "Energy from Earth's interior heats the rock. Hot rock rises, cools, and sinks in a loop called a convection current, which cycles the mantle and moves the crust."
+    explanation: "The lithosphere is the rigid outer section made of the crust and the upper mantle, and it is broken into plates. The asthenosphere lies just below it in the upper mantle and slowly flows, a quality called plastic behavior."
   },
   {
-    q: "Plates usually slide smoothly, but sometimes they get stuck and pressure builds. When the pressure is suddenly released, what happens?",
+    q: "In a mantle convection current, why does hot rock rise?",
     options: [
-      "Earth's magnetic field reverses",
-      "The energy is released as an earthquake in the crust",
-      "The inner core melts",
-      "A new continent instantly forms"
+      "It is more dense than the cooler rock above it",
+      "It has melted into liquid magma that bubbles up",
+      "Earth's magnetic field pushes it toward the surface",
+      "It is less dense than the cooler rock above it"
     ],
-    correct: 1,
-    explanation: "When stuck plates finally slip, the built-up pressure is released as energy that shakes the crust. That shaking is an earthquake."
+    correct: 3,
+    explanation: "Hot rock near the bottom of the mantle is less dense than the cooler rock above it, so it rises. Near the top it cools, becomes more dense, and sinks again. This loop is a convection current."
   },
   {
-    q: "Which statement best explains how Earth's internal structure causes changes at the surface?",
+    q: "The inner core is even hotter than the outer core. Why is the inner core solid while the outer core is liquid?",
     options: [
-      "Surface changes happen only because of weather, not the interior",
-      "Heat drives convection in the mantle, which moves plates and produces earthquakes and volcanoes",
-      "The crust moves on its own with no connection to deeper layers",
-      "Earthquakes and volcanoes are caused by the magnetic field"
+      "It is made of rock instead of metal",
+      "It is less dense than the outer core",
+      "Pressure from the layers above keeps its metal from melting",
+      "Earth's magnetic field holds its metal in place"
+    ],
+    correct: 2,
+    explanation: "Both parts of the core are iron and nickel. The inner core is hotter, but the crushing pressure from every layer above squeezes its metal so tightly that it cannot become liquid."
+  },
+  {
+    q: "Two plates are stuck, and pressure builds along their edges. What happens when the plates suddenly slip?",
+    options: [
+      "Released energy shakes the crust as an earthquake",
+      "Magma rises at that spot and erupts from a new volcano",
+      "The plates melt together and stop moving",
+      "Earth's magnetic field suddenly reverses"
+    ],
+    correct: 0,
+    explanation: "When stuck plates suddenly slip, the pressure that built up is released as energy. That energy shakes the crust, and the shaking is an earthquake."
+  },
+  {
+    q: "Which sequence best explains how Earth's internal structure causes earthquakes and volcanoes at the surface?",
+    options: [
+      "Plates move on their own first, their motion heats the mantle, and the hot mantle causes earthquakes and volcanoes",
+      "Heat drives convection in the mantle, the mantle moves the plates, and moving plates cause earthquakes and volcanoes",
+      "Heat melts the whole mantle into magma, and the magma causes earthquakes and volcanoes",
+      "Earth's magnetic field moves the plates, and moving plates cause earthquakes and volcanoes"
     ],
     correct: 1,
-    explanation: "Heat deep inside Earth drives convection currents in the mantle. That flow moves the plates, and the shifting plates produce earthquakes and volcanoes at the surface. Internal structure and energy explain surface change."
+    explanation: "Heat inside Earth makes hot rock less dense, which drives convection currents in the mantle. The flowing mantle drags the plates, and moving plates produce earthquakes and volcanoes at the surface."
   }
 ];
 

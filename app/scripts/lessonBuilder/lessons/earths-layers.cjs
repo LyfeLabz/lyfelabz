@@ -29,11 +29,10 @@ module.exports = {
   canonicalSource: "lesson-sources/lesson_earths-layers.html",
   // F5.3 Slice 9A: the committed assessment revision the unversioned
   // canonical pages render. Required because r1 and r2 are both committed.
-  // Earth's Layers r2 Stage A (addendum 21.12): the unversioned pages stay r1
-  // while the r1 and r2 renditions and the revision-path table ship, so a
-  // browser still holding an older bundle keeps reaching r1. Stage B switches
-  // this to assessment_earths-layers__r2 together with the source quiz literal.
-  canonicalAssessmentRevisionId: "assessment_earths-layers__r1",
+  // Earth's Layers r2 Stage B (addendum 21.12): r2 is the current canonical
+  // revision; the unversioned pages display r2. r1 stays committed and is
+  // displayed only through its revision rendition.
+  canonicalAssessmentRevisionId: "assessment_earths-layers__r2",
   outputs: {
     v1: "lesson_earths-layers.html",
     v2: "app/lessons/lesson_earths-layers.html",
