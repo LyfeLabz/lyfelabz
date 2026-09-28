@@ -254,6 +254,94 @@ function mapSelectionsForBinding(
   return out;
 }
 
+// F5.3 Slice 9D (addendum 21.4): the assessment revision a page DISPLAYS.
+//
+// A canonical page (and every rendition) declares it in the inert
+//   <script type="application/json" id="lyfelabz-assessment-revision">
+//   {"schemaVersion":1,"lessonSlug":"...","assessmentRevisionId":"..."}
+// block (F5.3 Slice 9B). An AP-bound variant declares it in the root of its
+// existing `lyfelabz-assessment-presentation` block. If both exist they must
+// agree. A page with neither is a legacy pre-Slice-9 artifact (retained
+// prff01d9...375c, or a canonical page cached from before 9B), which was
+// built while r1 was the only revision; it is accepted ONLY when the server's
+// frozen revision is r1 (a repository test proves every retained
+// no-declaration artifact displays r1). Nothing here is authoritative: the
+// server's revision decides, and this only verifies the page against it.
+const REVISION_DECLARATION_ELEMENT_ID = "lyfelabz-assessment-revision";
+const FROZEN_REVISION_RE = /^assessment_([a-z0-9]+(?:-[a-z0-9]+)*)__r([1-9][0-9]*)$/;
+
+type PageAssessmentRevision =
+  | { readonly kind: "none" }
+  | { readonly kind: "declared"; readonly lessonSlug: string; readonly assessmentRevisionId: string }
+  | { readonly kind: "malformed"; readonly reason: string };
+
+function jsonBlock(doc: Document, id: string): { readonly present: false } | { readonly present: true; readonly value: unknown; readonly error?: string } {
+  const matches = typeof doc.querySelectorAll === "function" ? doc.querySelectorAll(`[id="${id}"]`).length : 0;
+  const el = doc.getElementById(id);
+  if (el === null) return { present: false };
+  if (matches > 1) return { present: true, value: null, error: `more than one ${id} block` };
+  if (el.tagName !== "SCRIPT" || el.getAttribute("type") !== "application/json") {
+    return { present: true, value: null, error: `${id} is not a JSON script block` };
+  }
+  try {
+    return { present: true, value: JSON.parse(el.textContent ?? "") as unknown };
+  } catch {
+    return { present: true, value: null, error: `${id} is not valid JSON` };
+  }
+}
+
+function identityOf(value: unknown, closed: boolean): { readonly lessonSlug: string; readonly assessmentRevisionId: string } | null {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
+  const root = value as Record<string, unknown>;
+  if (root.schemaVersion !== 1) return null;
+  if (closed && Object.keys(root).sort().join("|") !== "assessmentRevisionId|lessonSlug|schemaVersion") return null;
+  const { lessonSlug, assessmentRevisionId } = root;
+  if (typeof lessonSlug !== "string" || typeof assessmentRevisionId !== "string") return null;
+  const match = FROZEN_REVISION_RE.exec(assessmentRevisionId);
+  if (match === null || match[1] !== lessonSlug) return null;
+  return { lessonSlug, assessmentRevisionId };
+}
+
+function readPageAssessmentRevision(doc: Document | undefined): PageAssessmentRevision {
+  if (!doc || typeof doc.getElementById !== "function") return { kind: "none" };
+  const declaration = jsonBlock(doc, REVISION_DECLARATION_ELEMENT_ID);
+  const binding = jsonBlock(doc, PRESENTATION_BINDING_ELEMENT_ID);
+  const found: Array<{ readonly lessonSlug: string; readonly assessmentRevisionId: string }> = [];
+  for (const [block, closed, label] of [
+    [declaration, true, "assessment revision declaration"],
+    [binding, false, "assessment presentation binding"],
+  ] as const) {
+    if (!block.present) continue;
+    if (block.error !== undefined) return { kind: "malformed", reason: block.error };
+    const identity = identityOf(block.value, closed);
+    if (identity === null) return { kind: "malformed", reason: `${label} does not name a lesson and an assessment revision of it` };
+    found.push(identity);
+  }
+  if (found.length === 0) return { kind: "none" };
+  if (found.length === 2 && (found[0]!.lessonSlug !== found[1]!.lessonSlug || found[0]!.assessmentRevisionId !== found[1]!.assessmentRevisionId)) {
+    return { kind: "malformed", reason: "the page declares two different assessment revisions" };
+  }
+  return { kind: "declared", ...found[0]! };
+}
+
+// Pure comparison of the page with the server's frozen revision.
+function verifyPageAssessmentRevision(
+  page: PageAssessmentRevision,
+  serverAssessmentRevisionId: string | undefined,
+): { readonly ok: true } | { readonly ok: false; readonly reason: string } {
+  const server = typeof serverAssessmentRevisionId === "string" ? FROZEN_REVISION_RE.exec(serverAssessmentRevisionId) : null;
+  if (server === null) return { ok: false, reason: "the session carries no usable assessment revision" };
+  if (page.kind === "malformed") return { ok: false, reason: page.reason };
+  if (page.kind === "none") {
+    // Legacy pre-Slice-9 page: r1 only (never a guess of which revision to show).
+    return server[2] === "1" ? { ok: true } : { ok: false, reason: "a page without a revision declaration can only display r1" };
+  }
+  if (page.lessonSlug !== server[1] || page.assessmentRevisionId !== serverAssessmentRevisionId) {
+    return { ok: false, reason: "the page displays another assessment revision than the session" };
+  }
+  return { ok: true };
+}
+
 function documentOf(win: Window): Document | undefined {
   try {
     return win.document;
@@ -615,7 +703,18 @@ function createBackedCallables(functions: Functions): RuntimeCallables {
       if (typeof sessionId !== "string" || sessionId.length === 0) {
         throw new Error("begin returned an invalid sessionId");
       }
-      return { sessionId, alreadyLive: data.alreadyLive === true };
+      // F5.3 Slice 9C-1/9D: the session's frozen revision (server authority),
+      // used only to verify the page. Absent or non-string -> undefined, which
+      // the integrity gate refuses.
+      const assessmentRevisionId =
+        typeof data.assessmentRevisionId === "string" && data.assessmentRevisionId.length > 0
+          ? data.assessmentRevisionId
+          : undefined;
+      return {
+        sessionId,
+        alreadyLive: data.alreadyLive === true,
+        ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
+      };
     },
     autosave: async (sessionId, responses, writtenResponse) => {
       const res = await autosave(
@@ -762,6 +861,10 @@ async function bootstrap(win: Window): Promise<void> {
     launchRef,
     callables,
     env: { randomId: randomIdempotencyKey },
+    // F5.3 Slice 9D: read at begin time (the deferred runtime runs after the
+    // document is parsed), before any response can be sent.
+    verifyAssessmentRevision: (serverRevision) =>
+      verifyPageAssessmentRevision(readPageAssessmentRevision(documentOf(win)), serverRevision),
   });
   attachRuntimeAdapter(runtimeWin, runtime);
 }
@@ -772,6 +875,9 @@ export const __internal = {
   installLessonQuiz,
   readPresentationBinding,
   mapSelectionsForBinding,
+  readPageAssessmentRevision,
+  verifyPageAssessmentRevision,
+  REVISION_DECLARATION_ELEMENT_ID,
   PRESENTATION_BINDING_ELEMENT_ID,
   PRESENTATION_UNAVAILABLE_MESSAGE,
   normalizeWrittenResponse,

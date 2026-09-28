@@ -351,6 +351,8 @@ describe("revision-to-path table", () => {
     const b = N.serializePathTable(builder.buildPathTable());
     expect(a).toBe(b);
     expect(read(N.PATH_TABLE_FILE)).toBe(a);
+    // F5.3 Slice 9D: the client bundles a byte-identical copy.
+    expect(read(N.CLIENT_PATH_TABLE_FILE)).toBe(a);
   });
 
   test("every single-revision lesson maps r1 to its unversioned v2 page", () => {

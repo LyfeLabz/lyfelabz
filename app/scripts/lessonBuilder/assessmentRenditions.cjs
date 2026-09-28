@@ -53,6 +53,11 @@ const DECLARATION_KEYS = Object.freeze(["assessmentRevisionId", "lessonSlug", "s
 const RUNTIME_SCRIPT_TAG = '<script defer src="/assets/lyfelabz-assessment-runtime.js"></script>';
 const RENDITION_DIR = "app/lessons/assessment-revisions";
 const PATH_TABLE_FILE = `${RENDITION_DIR}/revision-paths.json`;
+// F5.3 Slice 9D: the byte-identical copy the student client bundles (the
+// curriculum-manifest pattern: generated into app/src, drift-checked by
+// lessons:verify, never served on its own; app/src is a forbidden Hosting
+// destination). The served table above is unchanged.
+const CLIENT_PATH_TABLE_FILE = "app/src/assignments/studentList/assessment-revision-paths.json";
 const PATH_TABLE_KIND = "lyfelabz.assessmentRevisionPaths";
 const PATH_TABLE_SCHEMA_VERSION = 1;
 const RENDITION_FILE_PATTERN = /^lesson_([a-z0-9]+(?:-[a-z0-9]+)*)__r([1-9][0-9]*)\.html$/;
@@ -286,6 +291,7 @@ module.exports = {
   RUNTIME_SCRIPT_TAG,
   RENDITION_DIR,
   PATH_TABLE_FILE,
+  CLIENT_PATH_TABLE_FILE,
   PATH_TABLE_KIND,
   declarationFor,
   declarationHtml,

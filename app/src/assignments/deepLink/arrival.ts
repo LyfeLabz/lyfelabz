@@ -157,6 +157,10 @@ async function handleResolution(
       ...(resolution.launchRef !== undefined
         ? { launchRef: resolution.launchRef }
         : {}),
+      // F5.3 Slice 9D: the server-derived frozen revision selects the page.
+      ...(resolution.assessmentRevisionId !== undefined
+        ? { assessmentRevisionId: resolution.assessmentRevisionId }
+        : {}),
     });
     if (plan !== null) {
       await executeLaunch(plan, launchExecuteDeps(deps));
@@ -175,6 +179,7 @@ async function handleResolution(
     const plan = planPracticeLaunch(
       resolution.lessonSlug,
       resolution.presentation,
+      resolution.assessmentRevisionId,
     );
     if (plan !== null) {
       await executeLaunch(plan, launchExecuteDeps(deps));

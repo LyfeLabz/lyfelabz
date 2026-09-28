@@ -33,6 +33,8 @@ const mkItem = (
     title: "What Is Life?",
     status: "published" as const,
     publishedAt: 1,
+    // F5.3 Slice 9D: the server-derived frozen revision selects the page.
+    assessmentRevisionId: "assessment_what-is-life__r1",
     ...over,
   });
 
@@ -279,7 +281,7 @@ describe("executeLaunch - navigation + failure fallback (F5.2 §7.3, T-Q1)", () 
 
 describe("planPracticeLaunch (F5.2 §9)", () => {
   test("canonical practice routes to the base path with no assignment query and no launchRef", () => {
-    const plan = planPracticeLaunch("what-is-life");
+    const plan = planPracticeLaunch("what-is-life", undefined, "assessment_what-is-life__r1");
     expect(plan).toEqual({
       primaryUrl: "/app/lessons/lesson_what-is-life.html",
       canonicalUrl: "/app/lessons/lesson_what-is-life.html",
@@ -289,7 +291,7 @@ describe("planPracticeLaunch (F5.2 §9)", () => {
   });
 
   test("differentiated practice routes to the adapted artifact, still no query or launchRef", () => {
-    const plan = planPracticeLaunch("what-is-life", { path: SAFE_PATH });
+    const plan = planPracticeLaunch("what-is-life", { path: SAFE_PATH }, "assessment_what-is-life__r1");
     expect(plan?.differentiated).toBe(true);
     expect(plan?.primaryUrl).toBe(`/${SAFE_PATH}`);
     expect(plan?.primaryUrl).not.toContain("launchRef");
@@ -299,7 +301,7 @@ describe("planPracticeLaunch (F5.2 §9)", () => {
   test("unsafe practice path falls back to canonical practice base", () => {
     const plan = planPracticeLaunch("what-is-life", {
       path: "https://evil.example/x.html",
-    });
+    }, "assessment_what-is-life__r1");
     expect(plan?.differentiated).toBe(false);
     expect(plan?.differentiatedRejected).toBe(true);
     expect(plan?.primaryUrl).toBe("/app/lessons/lesson_what-is-life.html");

@@ -214,3 +214,23 @@ describe("synthetic committed r2 (temporary repository)", () => {
     expect(res.error).toContain("has no canonical page");
   });
 });
+
+// F5.3 Slice 9D (addendum 21.4 "Legacy pages"): the runtime accepts a page with
+// neither a revision declaration nor an assessment-presentation block ONLY for
+// an r1 session. This proves every such retained artifact displays exactly r1.
+describe("retained artifacts without any revision declaration display r1", () => {
+  test("every retained no-declaration artifact is pinned legacy and faithful to r1 only", () => {
+    const undeclared = manifest.filter((e) => {
+      const html = fs.readFileSync(path.join(ROOT, e.path), "utf8");
+      return N.readDeclaration(html) === null && render.readBindingBlock(html) === null;
+    });
+    expect(undeclared.map((e) => e.presentationRevisionId)).toEqual([PRFF01]);
+    for (const e of undeclared) {
+      expect(manifestMod.LEGACY_R1_UNBOUND_REVISIONS).toContain(e.presentationRevisionId);
+      expect(P.resolvePublicationProvenance({ entry: e, artifactBytes: fs.readFileSync(path.join(ROOT, e.path)) })).toMatchObject({
+        ok: true,
+        assessmentRevisionId: `assessment_${e.lessonSlug}__r1`,
+      });
+    }
+  });
+});

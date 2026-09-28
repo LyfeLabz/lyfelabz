@@ -1,5 +1,9 @@
 "use strict";
 (() => {
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+
   // node_modules/@firebase/util/dist/index.esm2017.js
   var stringToByteArray$1 = function(str) {
     const out = [];
@@ -7817,6 +7821,15 @@
 
   // src/runtime/orchestrator.ts
   var IDEMPOTENCY_KEY_MAX_LENGTH = 128;
+  var ASSESSMENT_REVISION_MISMATCH_MESSAGE = "This assignment needs to be opened again, so your answers were not submitted. Go back to My Science and open the assignment again.";
+  var AssessmentRevisionIntegrityError = class extends Error {
+    constructor(reason) {
+      super(ASSESSMENT_REVISION_MISMATCH_MESSAGE);
+      __publicField(this, "reason");
+      this.name = "AssessmentRevisionIntegrityError";
+      this.reason = reason;
+    }
+  };
   function truncateIdempotencyKey(raw) {
     if (raw.length <= IDEMPOTENCY_KEY_MAX_LENGTH) return raw;
     return raw.slice(0, IDEMPOTENCY_KEY_MAX_LENGTH);
@@ -7854,6 +7867,7 @@
     let finalizeIdempotencyKey = null;
     let finalizePromise = null;
     let finalizedState = null;
+    let integrityError = null;
     function guardActive() {
       if (destroyed) {
         throw new Error("assessment runtime has been destroyed");
@@ -7862,13 +7876,13 @@
         throw new Error("assessment runtime is inert without assignment context");
       }
       if (mode === "error") {
-        throw new Error("assessment runtime is in an error state");
+        throw integrityError ?? new Error("assessment runtime is in an error state");
       }
     }
     async function ensureBegun() {
       if (mode === "active" || mode === "finalized") return;
       if (mode === "error") {
-        throw new Error("assessment runtime is in an error state");
+        throw integrityError ?? new Error("assessment runtime is in an error state");
       }
       if (assignmentId === null) return;
       if (beginPromise !== null) {
@@ -7882,9 +7896,20 @@
           if (!isNonEmptyString(outcome.sessionId)) {
             throw new Error("callable returned an empty sessionId");
           }
+          if (input.verifyAssessmentRevision !== void 0) {
+            const verdict = input.verifyAssessmentRevision(
+              isNonEmptyString(outcome.assessmentRevisionId) ? outcome.assessmentRevisionId : void 0
+            );
+            if (!verdict.ok) {
+              integrityError = new AssessmentRevisionIntegrityError(verdict.reason);
+              mode = "error";
+              throw integrityError;
+            }
+          }
           sessionId = outcome.sessionId;
           mode = "active";
         } catch (err) {
+          if (err instanceof AssessmentRevisionIntegrityError) throw err;
           if (!destroyed) {
             if (!isRecoverable(err)) {
               mode = "error";
@@ -7901,7 +7926,7 @@
       if (assignmentId === null) return;
       if (mode === "finalized") return;
       if (mode === "error") {
-        throw new Error("assessment runtime is in an error state");
+        throw integrityError ?? new Error("assessment runtime is in an error state");
       }
       await ensureBegun();
     }
@@ -7948,7 +7973,7 @@
         throw new Error("assessment runtime is inert without assignment context");
       }
       if (mode === "error") {
-        throw new Error("assessment runtime is in an error state");
+        throw integrityError ?? new Error("assessment runtime is in an error state");
       }
       if (finalizedState !== null) {
         return finalizedState.result;
@@ -8167,6 +8192,66 @@
       out.push({ itemId: item.itemId, response: item.optionIds[idx] });
     }
     return out;
+  }
+  var REVISION_DECLARATION_ELEMENT_ID = "lyfelabz-assessment-revision";
+  var FROZEN_REVISION_RE = /^assessment_([a-z0-9]+(?:-[a-z0-9]+)*)__r([1-9][0-9]*)$/;
+  function jsonBlock(doc, id) {
+    const matches = typeof doc.querySelectorAll === "function" ? doc.querySelectorAll(`[id="${id}"]`).length : 0;
+    const el = doc.getElementById(id);
+    if (el === null) return { present: false };
+    if (matches > 1) return { present: true, value: null, error: `more than one ${id} block` };
+    if (el.tagName !== "SCRIPT" || el.getAttribute("type") !== "application/json") {
+      return { present: true, value: null, error: `${id} is not a JSON script block` };
+    }
+    try {
+      return { present: true, value: JSON.parse(el.textContent ?? "") };
+    } catch {
+      return { present: true, value: null, error: `${id} is not valid JSON` };
+    }
+  }
+  function identityOf(value, closed) {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
+    const root = value;
+    if (root.schemaVersion !== 1) return null;
+    if (closed && Object.keys(root).sort().join("|") !== "assessmentRevisionId|lessonSlug|schemaVersion") return null;
+    const { lessonSlug, assessmentRevisionId } = root;
+    if (typeof lessonSlug !== "string" || typeof assessmentRevisionId !== "string") return null;
+    const match = FROZEN_REVISION_RE.exec(assessmentRevisionId);
+    if (match === null || match[1] !== lessonSlug) return null;
+    return { lessonSlug, assessmentRevisionId };
+  }
+  function readPageAssessmentRevision(doc) {
+    if (!doc || typeof doc.getElementById !== "function") return { kind: "none" };
+    const declaration = jsonBlock(doc, REVISION_DECLARATION_ELEMENT_ID);
+    const binding = jsonBlock(doc, PRESENTATION_BINDING_ELEMENT_ID);
+    const found = [];
+    for (const [block, closed, label] of [
+      [declaration, true, "assessment revision declaration"],
+      [binding, false, "assessment presentation binding"]
+    ]) {
+      if (!block.present) continue;
+      if (block.error !== void 0) return { kind: "malformed", reason: block.error };
+      const identity = identityOf(block.value, closed);
+      if (identity === null) return { kind: "malformed", reason: `${label} does not name a lesson and an assessment revision of it` };
+      found.push(identity);
+    }
+    if (found.length === 0) return { kind: "none" };
+    if (found.length === 2 && (found[0].lessonSlug !== found[1].lessonSlug || found[0].assessmentRevisionId !== found[1].assessmentRevisionId)) {
+      return { kind: "malformed", reason: "the page declares two different assessment revisions" };
+    }
+    return { kind: "declared", ...found[0] };
+  }
+  function verifyPageAssessmentRevision(page, serverAssessmentRevisionId) {
+    const server = typeof serverAssessmentRevisionId === "string" ? FROZEN_REVISION_RE.exec(serverAssessmentRevisionId) : null;
+    if (server === null) return { ok: false, reason: "the session carries no usable assessment revision" };
+    if (page.kind === "malformed") return { ok: false, reason: page.reason };
+    if (page.kind === "none") {
+      return server[2] === "1" ? { ok: true } : { ok: false, reason: "a page without a revision declaration can only display r1" };
+    }
+    if (page.lessonSlug !== server[1] || page.assessmentRevisionId !== serverAssessmentRevisionId) {
+      return { ok: false, reason: "the page displays another assessment revision than the session" };
+    }
+    return { ok: true };
   }
   function documentOf(win) {
     try {
@@ -8432,7 +8517,12 @@
         if (typeof sessionId !== "string" || sessionId.length === 0) {
           throw new Error("begin returned an invalid sessionId");
         }
-        return { sessionId, alreadyLive: data.alreadyLive === true };
+        const assessmentRevisionId = typeof data.assessmentRevisionId === "string" && data.assessmentRevisionId.length > 0 ? data.assessmentRevisionId : void 0;
+        return {
+          sessionId,
+          alreadyLive: data.alreadyLive === true,
+          ...assessmentRevisionId !== void 0 ? { assessmentRevisionId } : {}
+        };
       },
       autosave: async (sessionId, responses, writtenResponse) => {
         const res = await autosave(
@@ -8550,7 +8640,10 @@
       assignmentId,
       launchRef,
       callables,
-      env: { randomId: randomIdempotencyKey }
+      env: { randomId: randomIdempotencyKey },
+      // F5.3 Slice 9D: read at begin time (the deferred runtime runs after the
+      // document is parsed), before any response can be sent.
+      verifyAssessmentRevision: (serverRevision) => verifyPageAssessmentRevision(readPageAssessmentRevision(documentOf(win)), serverRevision)
     });
     attachRuntimeAdapter(runtimeWin, runtime);
   }
@@ -8558,6 +8651,9 @@
     installLessonQuiz,
     readPresentationBinding,
     mapSelectionsForBinding,
+    readPageAssessmentRevision,
+    verifyPageAssessmentRevision,
+    REVISION_DECLARATION_ELEMENT_ID,
     PRESENTATION_BINDING_ELEMENT_ID,
     PRESENTATION_UNAVAILABLE_MESSAGE,
     normalizeWrittenResponse,

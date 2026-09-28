@@ -71,6 +71,10 @@ function parseResolution(raw: unknown): DeepLinkResolution {
   const launchRef = isNonEmptyString(record.launchRef)
     ? record.launchRef
     : undefined;
+  // F5.3 Slice 9D: the server-derived frozen revision, transported verbatim.
+  const assessmentRevisionId = isNonEmptyString(record.assessmentRevisionId)
+    ? record.assessmentRevisionId
+    : undefined;
   return Object.freeze({
     assignmentId,
     classId,
@@ -79,6 +83,7 @@ function parseResolution(raw: unknown): DeepLinkResolution {
     attemptContext: attemptContext as DeepLinkAttemptContext,
     ...(presentation !== undefined ? { presentation } : {}),
     ...(launchRef !== undefined ? { launchRef } : {}),
+    ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
   });
 }
 

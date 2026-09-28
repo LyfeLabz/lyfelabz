@@ -45,6 +45,11 @@ export type AssignmentsListForStudentItem = {
   // asserts either field; server responses are authoritative.
   readonly presentation?: LaunchPresentation;
   readonly launchRef?: string;
+  // F5.3 Slice 9C-1/9D: the assignment's FROZEN assessment revision, derived by
+  // the server from the assignment. The client routes to the canonical page of
+  // exactly this revision and never chooses one; an item without it cannot be
+  // launched (fail closed).
+  readonly assessmentRevisionId?: string;
   // Reassignment model (server-authoritative): present only on the Current
   // item of a class + lesson with a valid Current. Other occurrences of that
   // class + lesson whose attempts belong to this tile's cumulative best,

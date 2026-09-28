@@ -1,4 +1,5 @@
 import type {
+  AssessmentRevisionVerifier,
   AttemptSummary,
   FinalizeResult,
   RuntimeCallables,
@@ -71,7 +72,28 @@ export type CreateAssessmentRuntimeInput = {
   readonly launchRef?: string | null;
   readonly callables: RuntimeCallables;
   readonly env: RuntimeEnv;
+  // F5.3 Slice 9D (addendum 21.4): the page-revision integrity check. When
+  // supplied, begin's frozen revision must match the page before the session
+  // becomes active; on a mismatch the runtime enters the non-recoverable error
+  // state and NOTHING is autosaved or finalized (S9-U3). The server revision
+  // is authority; page metadata only verifies it.
+  readonly verifyAssessmentRevision?: AssessmentRevisionVerifier;
 };
+
+// F5.3 Slice 9D: the page does not display the assignment's frozen assessment
+// revision. Non-recoverable for this page load; recovery is a fresh launch.
+// The message is student-facing and carries no internal identifiers.
+export const ASSESSMENT_REVISION_MISMATCH_MESSAGE =
+  "This assignment needs to be opened again, so your answers were not submitted. Go back to My Science and open the assignment again.";
+
+export class AssessmentRevisionIntegrityError extends Error {
+  readonly reason: string;
+  constructor(reason: string) {
+    super(ASSESSMENT_REVISION_MISMATCH_MESSAGE);
+    this.name = "AssessmentRevisionIntegrityError";
+    this.reason = reason;
+  }
+}
 
 function truncateIdempotencyKey(raw: string): string {
   if (raw.length <= IDEMPOTENCY_KEY_MAX_LENGTH) return raw;
@@ -129,6 +151,7 @@ export function createAssessmentRuntime(
   let finalizeIdempotencyKey: string | null = null;
   let finalizePromise: Promise<FinalizeResult> | null = null;
   let finalizedState: FinalizedState | null = null;
+  let integrityError: AssessmentRevisionIntegrityError | null = null;
 
   function guardActive(): void {
     if (destroyed) {
@@ -138,14 +161,14 @@ export function createAssessmentRuntime(
       throw new Error("assessment runtime is inert without assignment context");
     }
     if (mode === "error") {
-      throw new Error("assessment runtime is in an error state");
+      throw integrityError ?? new Error("assessment runtime is in an error state");
     }
   }
 
   async function ensureBegun(): Promise<void> {
     if (mode === "active" || mode === "finalized") return;
     if (mode === "error") {
-      throw new Error("assessment runtime is in an error state");
+      throw integrityError ?? new Error("assessment runtime is in an error state");
     }
     if (assignmentId === null) return;
     if (beginPromise !== null) {
@@ -159,9 +182,23 @@ export function createAssessmentRuntime(
         if (!isNonEmptyString(outcome.sessionId)) {
           throw new Error("callable returned an empty sessionId");
         }
+        // F5.3 Slice 9D: the integrity gate runs BEFORE the session becomes
+        // active, so no autosave or finalize can be sent for a page that does
+        // not display the frozen revision.
+        if (input.verifyAssessmentRevision !== undefined) {
+          const verdict = input.verifyAssessmentRevision(
+            isNonEmptyString(outcome.assessmentRevisionId) ? outcome.assessmentRevisionId : undefined,
+          );
+          if (!verdict.ok) {
+            integrityError = new AssessmentRevisionIntegrityError(verdict.reason);
+            mode = "error";
+            throw integrityError;
+          }
+        }
         sessionId = outcome.sessionId;
         mode = "active";
       } catch (err) {
+        if (err instanceof AssessmentRevisionIntegrityError) throw err;
         if (!destroyed) {
           if (!isRecoverable(err)) {
             mode = "error";
@@ -179,7 +216,7 @@ export function createAssessmentRuntime(
     if (assignmentId === null) return;
     if (mode === "finalized") return;
     if (mode === "error") {
-      throw new Error("assessment runtime is in an error state");
+      throw integrityError ?? new Error("assessment runtime is in an error state");
     }
     await ensureBegun();
   }
@@ -237,7 +274,7 @@ export function createAssessmentRuntime(
       throw new Error("assessment runtime is inert without assignment context");
     }
     if (mode === "error") {
-      throw new Error("assessment runtime is in an error state");
+      throw integrityError ?? new Error("assessment runtime is in an error state");
     }
     if (finalizedState !== null) {
       return finalizedState.result;

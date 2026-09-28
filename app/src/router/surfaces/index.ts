@@ -41,6 +41,7 @@ import {
   planAssignmentLaunch,
   type LaunchPlan,
 } from "../../assignments/studentList/launchRouting";
+import { buildLessonBasePath } from "../../assignments/studentList/launch";
 import type {
   StudentAttemptSummary,
   StudentResultsListCallable,
@@ -1474,7 +1475,11 @@ function buildMyScienceItems(
     // is unresolvable (malformed slug); drop it rather than render a dead
     // control (fail closed).
     const launchPlan = planAssignmentLaunch(item);
-    if (launchPlan === null) continue;
+    // A malformed slug is still dropped (no control is ever rendered for it).
+    // F5.3 Slice 9D: an item whose frozen assessment revision is missing or has
+    // no page stays VISIBLE (work is never hidden) but renders no launch action:
+    // the launch fails closed and never falls back to another revision's page.
+    if (launchPlan === null && buildLessonBasePath(item.lessonSlug) === null) continue;
     const represented = [item.assignmentId, ...(item.relatedAssignmentIds ?? [])];
     for (const id of represented) seen.add(id);
     const unit = getUnitBySlug(item.lessonSlug);

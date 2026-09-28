@@ -1,4 +1,4 @@
-import { buildAssignmentLaunchUrl, buildLessonBasePath } from "./launch";
+import { buildAssignmentLaunchUrl, buildRevisionBoundLessonPath } from "./launch";
 import type { AssignmentsListForStudentItem } from "./types";
 
 // F5.2 §7.3 - Persistent Student Differentiation Slice 5: the single client
@@ -164,13 +164,19 @@ export function planAssignmentLaunch(
 // transported and no `?assignment=` is added - the lesson opens in standalone
 // practice mode. A differentiated presentation still routes the student to the
 // adapted artifact (with the same probe/fallback), because practice re-resolves
-// current configuration on every launch. Returns null iff the canonical base
-// path is unresolvable.
+// current configuration on every launch.
+//
+// F5.3 Slice 9D (S9-D3): deep-link practice is assignment-associated, so its
+// canonical page is the page of the assignment's FROZEN revision. Returns null
+// (fail closed) when the revision is missing or unmapped, or the slug is
+// malformed. Practice not tied to an assignment (curriculum preview, public
+// pages) does not use this helper and keeps the unversioned page.
 export function planPracticeLaunch(
   lessonSlug: string,
-  presentation?: { readonly path: string },
+  presentation: { readonly path: string } | undefined,
+  assessmentRevisionId: string | undefined,
 ): LaunchPlan | null {
-  const canonicalUrl = buildLessonBasePath(lessonSlug);
+  const canonicalUrl = buildRevisionBoundLessonPath(lessonSlug, assessmentRevisionId);
   if (canonicalUrl === null) return null;
 
   if (presentation !== undefined) {

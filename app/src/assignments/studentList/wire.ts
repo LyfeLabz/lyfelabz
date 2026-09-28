@@ -79,6 +79,10 @@ export function parseAssignmentsListForStudentItem(
   const launchRef = isNonEmptyString(record.launchRef)
     ? record.launchRef
     : undefined;
+  // F5.3 Slice 9D: the server-derived frozen revision, transported verbatim.
+  const assessmentRevisionId = isNonEmptyString(record.assessmentRevisionId)
+    ? record.assessmentRevisionId
+    : undefined;
   // Reassignment model: server-listed related occurrences. Parsed
   // defensively like the superseded list below; a malformed value only ever
   // narrows the tile's history, never changes which item is operational.
@@ -93,6 +97,7 @@ export function parseAssignmentsListForStudentItem(
     publishedAt,
     ...(presentation !== undefined ? { presentation } : {}),
     ...(launchRef !== undefined ? { launchRef } : {}),
+    ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
     ...(relatedAssignmentIds !== undefined && relatedAssignmentIds.length > 0
       ? { relatedAssignmentIds }
       : {}),

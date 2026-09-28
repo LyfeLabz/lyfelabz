@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "kind": "lyfelabz.assessmentRevisionPaths",
+  "lessons": {
+    "biological-evolution": {
+      "assessment_biological-evolution__r1": "/app/lessons/lesson_biological-evolution.html"
+    },
+    "body-systems": {
+      "assessment_body-systems__r1": "/app/lessons/lesson_body-systems.html"
+    },
+    "carbon-cycle": {
+      "assessment_carbon-cycle__r1": "/app/lessons/lesson_carbon-cycle.html"
+    },
+    "cell-types": {
+      "assessment_cell-types__r1": "/app/lessons/lesson_cell-types.html"
+    },
+    "chemical-reactions": {
+      "assessment_chemical-reactions__r1": "/app/lessons/lesson_chemical-reactions.html"
+    },
+    "choosing-materials": {
+      "assessment_choosing-materials__r1": "/app/lessons/lesson_choosing-materials.html"
+    },
+    "communication-systems": {
+      "assessment_communication-systems__r1": "/app/lessons/lesson_communication-systems.html"
+    },
+    "conducting-experiments": {
+      "assessment_conducting-experiments__r1": "/app/lessons/lesson_conducting-experiments.html"
+    },
+    "continental-drift": {
+      "assessment_continental-drift__r1": "/app/lessons/lesson_continental-drift.html"
+    },
+    "design-tradeoffs": {
+      "assessment_design-tradeoffs__r1": "/app/lessons/lesson_design-tradeoffs.html"
+    },
+    "designing-to-scale": {
+      "assessment_designing-to-scale__r1": "/app/lessons/lesson_designing-to-scale.html"
+    },
+    "digital-signals": {
+      "assessment_digital-signals__r1": "/app/lessons/lesson_digital-signals.html"
+    },
+    "earthquakes": {
+      "assessment_earthquakes__r1": "/app/lessons/lesson_earthquakes.html"
+    },
+    "earths-layers": {
+      "assessment_earths-layers__r1": "/app/lessons/lesson_earths-layers.html"
+    },
+    "earths-place-in-the-universe": {
+      "assessment_earths-place-in-the-universe__r1": "/app/lessons/lesson_earths-place-in-the-universe.html"
+    },
+    "eclipses": {
+      "assessment_eclipses__r1": "/app/lessons/lesson_eclipses.html"
+    },
+    "ecosystem-stability": {
+      "assessment_ecosystem-stability__r1": "/app/lessons/lesson_ecosystem-stability.html"
+    },
+    "energy-flow": {
+      "assessment_energy-flow__r1": "/app/lessons/lesson_energy-flow.html"
+    },
+    "energy-transfer": {
+      "assessment_energy-transfer__r1": "/app/lessons/lesson_energy-transfer.html"
+    },
+    "engineering-design": {
+      "assessment_engineering-design__r1": "/app/lessons/lesson_engineering-design.html"
+    },
+    "engineering-systems": {
+      "assessment_engineering-systems__r1": "/app/lessons/lesson_engineering-systems.html"
+    },
+    "forms-of-energy": {
+      "assessment_forms-of-energy__r1": "/app/lessons/lesson_forms-of-energy.html"
+    },
+    "gravity": {
+      "assessment_gravity__r1": "/app/lessons/lesson_gravity.html"
+    },
+    "heat-transfer": {
+      "assessment_heat-transfer__r1": "/app/lessons/lesson_heat-transfer.html"
+    },
+    "hotspot-volcanoes": {
+      "assessment_hotspot-volcanoes__r1": "/app/lessons/lesson_hotspot-volcanoes.html"
+    },
+    "human-impacts": {
+      "assessment_human-impacts__r1": "/app/lessons/lesson_human-impacts.html"
+    },
+    "innovation-and-sustainability": {
+      "assessment_innovation-and-sustainability__r1": "/app/lessons/lesson_innovation-and-sustainability.html"
+    },
+    "introduction-to-electricity": {
+      "assessment_introduction-to-electricity__r1": "/app/lessons/lesson_introduction-to-electricity.html"
+    },
+    "layers-of-time": {
+      "assessment_layers-of-time__r1": "/app/lessons/lesson_layers-of-time.html"
+    },
+    "measuring-matter": {
+      "assessment_measuring-matter__r1": "/app/lessons/lesson_measuring-matter.html"
+    },
+    "nature-of-waves": {
+      "assessment_nature-of-waves__r1": "/app/lessons/lesson_nature-of-waves.html"
+    },
+    "organelles": {
+      "assessment_organelles__r1": "/app/lessons/lesson_organelles.html"
+    },
+    "parts-of-an-ecosystem": {
+      "assessment_parts-of-an-ecosystem__r1": "/app/lessons/lesson_parts-of-an-ecosystem.html"
+    },
+    "phases-of-the-moon": {
+      "assessment_phases-of-the-moon__r1": "/app/lessons/lesson_phases-of-the-moon.html"
+    },
+    "photosynthesis": {
+      "assessment_photosynthesis__r1": "/app/lessons/lesson_photosynthesis.html"
+    },
+    "physical-properties": {
+      "assessment_physical-properties__r1": "/app/lessons/lesson_physical-properties.html"
+    },
+    "plate-tectonics": {
+      "assessment_plate-tectonics__r1": "/app/lessons/lesson_plate-tectonics.html"
+    },
+    "pure-substances-and-mixtures": {
+      "assessment_pure-substances-and-mixtures__r1": "/app/lessons/lesson_pure-substances-and-mixtures.html"
+    },
+    "renewable-and-nonrenewable-resources": {
+      "assessment_renewable-and-nonrenewable-resources__r1": "/app/lessons/lesson_renewable-and-nonrenewable-resources.html"
+    },
+    "reproductive-success": {
+      "assessment_reproductive-success__r1": "/app/lessons/lesson_reproductive-success.html"
+    },
+    "structural-systems": {
+      "assessment_structural-systems__r1": "/app/lessons/lesson_structural-systems.html"
+    },
+    "sun-earth-moon": {
+      "assessment_sun-earth-moon__r1": "/app/lessons/lesson_sun-earth-moon.html"
+    },
+    "technology-and-society": {
+      "assessment_technology-and-society__r1": "/app/lessons/lesson_technology-and-society.html"
+    },
+    "transportation-systems": {
+      "assessment_transportation-systems__r1": "/app/lessons/lesson_transportation-systems.html"
+    },
+    "types-of-volcanoes": {
+      "assessment_types-of-volcanoes__r1": "/app/lessons/lesson_types-of-volcanoes.html"
+    },
+    "water-cycle": {
+      "assessment_water-cycle__r1": "/app/lessons/lesson_water-cycle.html"
+    },
+    "wave-behavior": {
+      "assessment_wave-behavior__r1": "/app/lessons/lesson_wave-behavior.html"
+    },
+    "weathering-and-erosion": {
+      "assessment_weathering-and-erosion__r1": "/app/lessons/lesson_weathering-and-erosion.html"
+    },
+    "what-is-life": {
+      "assessment_what-is-life__r1": "/app/lessons/lesson_what-is-life.html"
+    }
+  }
+}

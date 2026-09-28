@@ -42,6 +42,10 @@ export type DeepLinkResolution = {
   // authoritative and the client only routes/transports.
   readonly presentation?: DeepLinkPresentation;
   readonly launchRef?: string;
+  // F5.3 Slice 9C-1/9D: the assignment's FROZEN assessment revision (present on
+  // both launch targets). The client routes to exactly this revision's page and
+  // never chooses one; a launch target without it fails closed.
+  readonly assessmentRevisionId?: string;
 };
 
 // Injected callable seam. The arrival surface never imports firebase/*

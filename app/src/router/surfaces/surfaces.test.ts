@@ -1140,6 +1140,8 @@ const okItem = (over: Record<string, unknown> = {}) =>
     title: "What is life? - Check for Understanding",
     status: "published" as const,
     publishedAt: 1_700_000_000_000,
+    // F5.3 Slice 9C-1/9D: the server returns the assignment's frozen revision.
+    assessmentRevisionId: `assessment_${typeof over.lessonSlug === "string" ? over.lessonSlug : "what-is-life"}__r1`,
     ...over,
   }) as const;
 

@@ -9,11 +9,12 @@
 import { renderDeepLinkArrival } from "./arrival";
 import type { DeepLinkResolution } from "./types";
 
-// After Sprint 28 Phase 5A.1, every assignable lesson is v2-overridden, so a
-// non-overridden slug is needed to exercise the v1 root-path launch assertions
-// below. ragebaiting is a real but gated (non-surfaceable) lesson that is
-// intentionally absent from LESSON_LAUNCH_OVERRIDES, so it stays on the v1 path.
-const SLUG = "ragebaiting";
+// F5.3 Slice 9D: launch targets route to the canonical page of the
+// assignment's FROZEN revision (server-derived, from the resolution), via the
+// build-generated revision-path table.
+const SLUG = "what-is-life";
+const R1 = `assessment_${SLUG}__r1`;
+const PAGE = `/app/lessons/lesson_${SLUG}.html`;
 const ASSIGNMENT_ID = "assign-1";
 
 function makeMount(): HTMLElement {
@@ -29,6 +30,7 @@ function resolution(over: Partial<DeepLinkResolution> = {}): DeepLinkResolution 
     lessonSlug: SLUG,
     internalTarget: "assignmentLaunch",
     attemptContext: "authorized",
+    assessmentRevisionId: R1,
     ...over,
   });
 }
@@ -55,7 +57,7 @@ describe("renderDeepLinkArrival - silent handoff", () => {
     await renderDeepLinkArrival(mount, deps);
     expect(deps.navigate).toHaveBeenCalledTimes(1);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `/lesson_${SLUG}.html?assignment=${ASSIGNMENT_ID}`,
+      `${PAGE}?assignment=${ASSIGNMENT_ID}`,
     );
     expect(deps.onGoToMyAssignments).not.toHaveBeenCalled();
   });
@@ -71,7 +73,7 @@ describe("renderDeepLinkArrival - silent handoff", () => {
       ),
     });
     await renderDeepLinkArrival(mount, deps);
-    expect(deps.navigate).toHaveBeenCalledWith(`/lesson_${SLUG}.html`);
+    expect(deps.navigate).toHaveBeenCalledWith(`${PAGE}`);
   });
 });
 
@@ -106,7 +108,7 @@ describe("renderDeepLinkArrival - differentiated routing", () => {
     });
     await renderDeepLinkArrival(mount, deps);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `/lesson_${SLUG}.html?assignment=${ASSIGNMENT_ID}&launchRef=${REF}`,
+      `${PAGE}?assignment=${ASSIGNMENT_ID}&launchRef=${REF}`,
     );
   });
 
@@ -121,7 +123,7 @@ describe("renderDeepLinkArrival - differentiated routing", () => {
     await renderDeepLinkArrival(mount, deps);
     expect(onVariantLoadFailure).toHaveBeenCalledTimes(1);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `/lesson_${SLUG}.html?assignment=${ASSIGNMENT_ID}`,
+      `${PAGE}?assignment=${ASSIGNMENT_ID}`,
     );
     // The differentiated URL and the launchRef were never navigated.
     const navd = (deps.navigate as jest.Mock).mock.calls[0][0] as string;
@@ -266,7 +268,7 @@ describe("renderDeepLinkArrival - retry", () => {
     await Promise.resolve();
     expect(resolve).toHaveBeenCalledTimes(2);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `/lesson_${SLUG}.html?assignment=${ASSIGNMENT_ID}`,
+      `${PAGE}?assignment=${ASSIGNMENT_ID}`,
     );
   });
 });

@@ -1,5 +1,6 @@
 import type { AssignmentsListForStudentItem } from "./types";
 import { LESSON_LAUNCH_OVERRIDES } from "./launchOverrides";
+import { resolveAssessmentRevisionPath } from "./revisionPaths";
 
 // Sprint 17 Slice 4: assignment launcher URL builder.
 //
@@ -47,6 +48,12 @@ export function buildLessonBasePath(lessonSlug: string): string | null {
 // `assignmentsListForStudent`. Every field is re-checked here so a
 // malformed item (already dropped by parseAssignmentsListForStudentItem
 // in wire.ts) cannot slip through a code path that bypassed the parser.
+//
+// F5.3 Slice 9D (addendum 21.5): the base path is the canonical page of the
+// assignment's FROZEN assessment revision, from the build-generated
+// revision-path table. Returns null (fail closed: no navigation) when the item
+// carries no usable revision or the exact (lesson, revision) pair has no page;
+// it never falls back to the unversioned or current lesson page.
 export function buildAssignmentLaunchUrl(
   item: AssignmentsListForStudentItem,
 ): string | null {
@@ -54,10 +61,21 @@ export function buildAssignmentLaunchUrl(
   if (typeof assignmentId !== "string" || assignmentId.length === 0) {
     return null;
   }
-  const basePath = buildLessonBasePath(lessonSlug);
+  const basePath = buildRevisionBoundLessonPath(lessonSlug, item.assessmentRevisionId);
   if (basePath === null) return null;
   // encodeURIComponent covers every reserved URL character including
   // `&`, `?`, `#`, `=`, and `/`; the assignmentId is treated as opaque.
   const encoded = encodeURIComponent(assignmentId);
   return `${basePath}?assignment=${encoded}`;
+}
+
+// F5.3 Slice 9D: the practice-mode (no `?assignment=`) canonical page of an
+// assignment's frozen revision, for assignment-associated practice. Null when
+// the revision is missing or unmapped (fail closed).
+export function buildRevisionBoundLessonPath(
+  lessonSlug: string,
+  assessmentRevisionId: unknown,
+): string | null {
+  if (typeof lessonSlug !== "string" || !LESSON_SLUG_PATTERN.test(lessonSlug)) return null;
+  return resolveAssessmentRevisionPath(lessonSlug, assessmentRevisionId);
 }

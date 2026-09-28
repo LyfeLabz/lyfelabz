@@ -296,9 +296,13 @@ Add a slug to the override table only after that lesson's v2 artifact has passed
 the full build, legacy-absence, instructional-equivalence, and
 runtime-integration checks.
 
-F5.3 Slice 9D (planned) replaces slug-only routing for assignment
-launches with a build-generated table keyed by lesson slug and the
-assignment's frozen `assessmentRevisionId`. The server supplies the
+F5.3 Slice 9D (implemented) replaces slug-only routing for assignment
+launches with the build-generated table keyed by lesson slug and the
+assignment's frozen `assessmentRevisionId`. The client bundles the table's
+byte-identical copy at
+`app/src/assignments/studentList/assessment-revision-paths.json`, which
+`lessons:build` writes and `lessons:verify` drift-checks. The override
+table still serves launches that are not tied to an assignment. The server supplies the
 revision; the client never selects it. Launches not tied to an assignment
 (anonymous or public practice, teacher preview, Present Mode) keep the
 unversioned page.

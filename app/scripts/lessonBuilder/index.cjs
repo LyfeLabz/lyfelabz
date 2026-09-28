@@ -192,11 +192,17 @@ function pathTableAbs() {
   return renditionAbs(renditions.PATH_TABLE_FILE);
 }
 
+function clientPathTableAbs() {
+  return path.join(paths.REPO_ROOT, renditions.CLIENT_PATH_TABLE_FILE);
+}
+
 function writePathTable(options = {}) {
   const bytes = renditions.serializePathTable(buildPathTable(options));
   const abs = pathTableAbs();
   fs.mkdirSync(path.dirname(abs), { recursive: true });
   writeAtomically(abs, bytes);
+  // F5.3 Slice 9D: the client's bundled copy, byte-identical.
+  writeAtomically(clientPathTableAbs(), bytes);
   return { outputPath: abs, sha256: sha256(bytes) };
 }
 
@@ -209,6 +215,13 @@ function verifyRenditionTree(options = {}) {
   if (!fs.existsSync(abs) || fs.readFileSync(abs, "utf8") !== expectedTable) {
     throw new Error(
       `[lesson-verify] ${renditions.PATH_TABLE_FILE} is missing or drifts from the committed revisions. ` +
+        "Regenerate with `npm --prefix app run lessons:build`.",
+    );
+  }
+  const clientAbs = clientPathTableAbs();
+  if (!fs.existsSync(clientAbs) || fs.readFileSync(clientAbs, "utf8") !== expectedTable) {
+    throw new Error(
+      `[lesson-verify] ${renditions.CLIENT_PATH_TABLE_FILE} is missing or drifts from ${renditions.PATH_TABLE_FILE}. ` +
         "Regenerate with `npm --prefix app run lessons:build`.",
     );
   }

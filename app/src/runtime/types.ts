@@ -59,7 +59,19 @@ export type AttemptSummary = {
 export type BeginCallable = (
   assignmentId: string,
   launchRef?: string,
-) => Promise<{ readonly sessionId: string; readonly alreadyLive: boolean }>;
+) => Promise<{
+  readonly sessionId: string;
+  readonly alreadyLive: boolean;
+  // F5.3 Slice 9C-1/9D: the session's frozen assessment revision (server
+  // authority). The runtime verifies the page against it; it never selects one.
+  readonly assessmentRevisionId?: string;
+}>;
+
+// F5.3 Slice 9D: verifies that the page displays exactly the server's frozen
+// revision. Receives begin's revision (undefined when begin omitted it).
+export type AssessmentRevisionVerifier = (
+  serverAssessmentRevisionId: string | undefined,
+) => { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
 // Sprint 30 Show Your Thinking: `writtenResponse` is the optional, unscored
 // written explanation. It travels beside `responses` (never inside it) and is
