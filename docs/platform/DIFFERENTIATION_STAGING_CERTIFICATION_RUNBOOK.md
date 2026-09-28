@@ -350,7 +350,7 @@ fixed by rebuilding from current source and redeploying hosting to staging only.
 This runbook covers the F5.2 Slices 1-6 gate. The F5.3 certifications are specified and recorded in `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md`:
 
 - **C7 (Earth's Layers accessible assessment): COMPLETE, PASSING.** See addendum §18.1.
-- **C8 (Slice 9 revision-bound rendering): PLANNED, not started.** See addendum §18.2.
+- **C8 (Slice 9 revision-bound rendering): COMPLETE, PASSING.** See addendum §18.3 (record), §18.2 (the authoritative sequence) and §3d below (operational amendments).
 
 C8 environment preconditions, in addition to the addendum steps:
 
@@ -360,6 +360,31 @@ C8 environment preconditions, in addition to the addendum steps:
 - The revision-scoped coverage write (`presentationVariants/earths-layers__reading-adapted__r1`) is a staging mutation that needs its own authorization.
 - The live Hosting cache headers are recorded.
 - Production is never touched.
+
+## 3d. Slice 9 operational amendments (F5.3 9C-2, 9D; reference for C8)
+
+These amend §2 and §3 for revision-scoped coverage. Where they differ, this section governs; the C8 order itself is addendum §18.2.
+
+- **Scoped writes only.** `publish-variant` writes only `presentationVariants/{lessonSlug}__{variantKey}__r{N}`, for the assessment revision the retained revision covers.
+  - The legacy unscoped document is read-only compatibility state and is never written or migrated.
+  - The §2 description "INDEX_UPDATED" now means the scoped create or repoint.
+  - The §3 fixture history ("index points to B") describes pre-Slice-9 pointer semantics.
+- **Publish is create-only (S9-D9).** `--op=publish` creates the scoped record, or reconciles an identical one without writing. Any other existing record is refused before any side effect.
+  - A staging `--op=publish` also runs `firebase deploy --only hosting --project lyfelabz-staging` (HOSTING_DEPLOYED) from the current working directory, so run it from the release worktree root.
+- **Rollback is the explicit repoint.** `--op=rollback --revision=<retained pr>` repoints or re-activates the scoped record of the same lesson, variant and assessment revision. It needs hosted-byte liveness and never redeploys. It is used only under an owner ruling.
+- **Retire names the revision.** `--op=retire --assessment-revision=assessment_<slug>__r<N>` flips only that scoped record. A retired scoped record never falls through to the legacy one.
+- **C8 Functions deploy (exactly three).** Run from the release worktree root:
+  ```
+  firebase deploy --only functions:assignmentsListForStudent,functions:lmsDeepLinkResolve,functions:assessmentSessionsBegin --project lyfelabz-staging
+  ```
+  - Never a full `--only functions`, which would redeploy every function, including finalize and its Classroom secret binding.
+  - These Functions must be live before any 9D Hosting release: the 9D client refuses launches, and the 9D runtime refuses to send responses, without the server's frozen `assessmentRevisionId`.
+- **Staging `.env`.** Copy only the git-ignored `platform/functions/.env.lyfelabz-staging` (non-secret Classroom params) into the release worktree. `.env.lyfelabz-prod` is never copied or used.
+- **Credentials.** Owner ADC (`gcloud auth application-default login`, account with the staging token-creator grant), quota project `lyfelabz-staging`. The staging publisher requires `GOOGLE_APPLICATION_CREDENTIALS`, set to that ADC file (`$HOME/.config/gcloud/application_default_credentials.json`). A service-account key file is not required.
+- **Driver invocations (demonstrated in C8).** The staging drivers need the non-secret web key in `STAGING_WEB_API_KEY`, extracted from `assets/lyfelabz-firebase-config.js` with the driver's `extractAstra004StagingWebApiKey`. Then, for example, run `node platform/functions/lib/scripts/staging-cert-driver.js flag --set=false --project=lyfelabz-staging` from the release worktree with `GOOGLE_APPLICATION_CREDENTIALS` as above and both `GCLOUD_PROJECT` and `GOOGLE_CLOUD_PROJECT` set to `lyfelabz-staging`.
+- **Browser cache after a Hosting release (observed in C8).** Hosting serves lesson pages, the bundle, the runtime and the path table with `max-age=3600`. A browser that loaded the app before the release can keep running the old bundle for up to an hour, and a hard reload did not always refresh it. Before observing behavior, confirm that the served bundle size (resource timing `encodedBodySize`) equals the release. If it does not, refetch the bundle, runtime assets and config with `cache: "reload"` (or clear site data), then reload.
+- **Flag and live sessions.** A session freezes its delivery at its first begin and is reused until it is finalized. Finalize (or confirm there is no) live session before changing the delivery flag, or the next launch reuses the old delivery.
+- **Synthetic fixture under 9D.** `staging-cert-assignment` (lesson `staging-cert-fixture`) has no canonical page in the revision-path table. Under 9D its My Science card shows with no launch action. This is expected fail-closed behavior; the headless drivers are unaffected.
 
 ## 4. Do not
 

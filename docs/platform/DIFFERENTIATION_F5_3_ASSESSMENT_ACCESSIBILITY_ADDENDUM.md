@@ -627,30 +627,163 @@ On `lyfelabz-staging`, with the same controlled pair and a fresh Earth's Layers 
 
 The staging differentiated-delivery flag remains `true` by owner decision D8. Production differentiated delivery is outside this certification.
 
-### 18.2 C8 staging certification plan: Slice 9 (PLANNED, not started)
+### 18.2 C8 staging certification plan: Slice 9 (authoritative sequence)
 
-C8 runs on `lyfelabz-staging` after Slices 9A to 9D are implemented, owner-reviewed and committed, and deployed to staging from a clean release worktree under separate authorization. No lesson has a second deployed revision during C8 (PDR-031h). The multi-revision behavior (r1 and r2 together) is proven by the emulator and unit suites of 9A to 9D. It is proven live only in the later r2 sequence (section 21.12).
+C8 runs on `lyfelabz-staging` from the committed Slice 9 release (9A to 9D, HEAD `0b10b2e`), from a clean detached release worktree. No lesson has a second deployed revision during C8 (PDR-031h). The multi-revision behavior (r1 and r2 together) is proven by the unit and integration suites of 9A to 9D and live only in the later r2 sequence (section 21.12). Operational details (commands, credentials, the staging `.env`) are in `DIFFERENTIATION_STAGING_CERTIFICATION_RUNBOOK.md` §3d; this section is the one authoritative C8 order.
 
-1. **Regression of C7 (r1).** Re-run C7-C, C7-D and C7-E against the existing Earth's Layers r1 assignment:
-   - the differentiated grant still binds `pr90f…`, `ap1fed…` and `accommodationConfigRevision`;
-   - the page shows three choices;
-   - the staging-locked driver still passes every check;
-   - a normal browser submission scores against r1.
-2. **Canonical r1 launch.** A canonical student launches through My Science and through the Google Classroom deep link.
-   - Both land on the r1 canonical page, which declares r1.
-   - Begin returns r1, and the runtime verification passes.
-3. **Assignment-tied practice.** A practice-mode assignment deep link routes to its frozen revision's page.
-4. **Forced mismatch (negative).** The page's revision declaration is altered in the browser for an r1 assignment.
-   - No autosave is sent.
-   - Finalize is refused as non-recoverable with the existing message.
-   - The session's responses and update time are unchanged.
-5. **Revision-scoped coverage (separately authorized staging write).** The publisher repoints retained `pr90f…` into `presentationVariants/earths-layers__reading-adapted__r1` after re-confirming liveness.
-   - Resolution then uses the scoped document.
-   - The legacy document `presentationVariants/earths-layers__reading-adapted` is left unchanged.
-6. **History unchanged.**
-   - C6 `…__a1` and C7-F `…__a2`, the AP record `ap1fed…`, the assignment, and the Current Assignment pointer are identical before and after.
-   - There is no passback.
-   - Production is untouched.
+Owner decisions (2026-09-28):
+- **C8-D1.** Full live scope: a new differentiated attempt `a3` and a `canonicalFallback` attempt `a4`, with the forced runtime mismatch performed on the `canonicalFallback` page before `a4` completes. Attempts are cumulative and are never rolled back.
+- **C8-D2.** No practice fixture is created. Assignment-tied practice relies on the committed 9C-1 `lessonPractice` server tests and the 9D synthetic r1/r2 routing tests; live practice certification is deferred to the r2 sequence.
+- **C8-D3.** The first scoped record is created with `--op=publish --published-by=lyfelabz-owner-c8` (the publisher's second, identical Hosting deploy is approved). If the scoped record already exists, stop and report it; never repoint it.
+
+Sequence:
+1. **Release worktree.** A clean detached worktree at the release commit, which must equal `origin/main`. Real `npm ci` installs. Copy only `platform/functions/.env.lyfelabz-staging`.
+2. **Gates and protected bytes.**
+   - `npm --prefix app run verify`, the app build, the curated Hosting build and its tests.
+   - The Functions test, typecheck, lint and build.
+   - `pr90f…` and `prff01…` hash to their ids; the `ap1fed…` record and review record are unchanged.
+   - No r2 exists. The artifact carries the path table, the bundled client copy, the gated runtime and the canonical declarations, and no private or source files.
+3. **Pre-state snapshot (read-only).** The flag, assignment, Current pointer, accommodation, legacy and scoped coverage (the scoped r1 record must be absent), the AP record, r1 deployment, attempts `a1` and `a2`, sessions, passbacks, Function update times and the Hosting release. Stop on material drift from C7.
+4. **Functions.** Deploy exactly `assignmentsListForStudent`, `lmsDeepLinkResolve` and `assessmentSessionsBegin` (the only deployed Functions whose code changed since C7). No autosave, finalize, Rules, indexes, Storage or Hosting. Verify that only those three changed.
+5. **Server contract under the old client.** With the C7 Hosting still live, My Science for the test student returns `assessmentRevisionId: assessment_earths-layers__r1` together with `pr90f…` and a launchRef (legacy-bound coverage). Stop if the field is missing.
+6. **9D Hosting.** A curated release of the default staging site (`firebase deploy --only hosting`); the predeploy builds run. Functions must already be live (21.10).
+7. **Served bytes.**
+   - The path table is served and equals the release.
+   - The runtime asset and the bundle match the release.
+   - The v1 and v2 Earth's Layers pages declare r1.
+   - `pr90f…` and `prff01…` are served and hash to their ids.
+   - The variant manifest is not served.
+   - Record the cache headers.
+8. **Scoped coverage.** After re-reading that `…__r1` is still absent, `publish-variant --op=publish` creates `presentationVariants/earths-layers__reading-adapted__r1` for retained `pr90f…`:
+   - LOCAL_VERIFIED: r1 from the certified AP; deployed; preflight absent, so create;
+   - HOSTING_DEPLOYED: redeploys the identical build;
+   - HOSTED_BYTES_VERIFIED;
+   - ASSESSMENT_PRESENTATION_RECORDED: identical;
+   - INDEX_UPDATED: scoped create.
+   The legacy document is not written.
+9. **Coverage state.** The scoped record is exact. The legacy record, the AP record and every other `presentationVariants` document are unchanged. From here the scoped record alone decides r1 coverage.
+10. **Differentiated acceptance (`a3`).**
+    - A My Science launch reaches retained `pr90f…`, shows 10 items with 3 choices each, and binds r1 and `ap1fed…`; the runtime check passes.
+    - The staging-locked negatives driver is re-run (C7-E scope) against the new grant.
+    - The student then reopens through `/app/a/{assignmentId}` (no Classroom link is added) and submits: `a3` is r1, `differentiated`, `pr90f…`, `ap1fed…`, cfg 1.
+11. **Runtime integrity and `canonicalFallback` (`a4`).**
+    - With the differentiated session consumed, set the delivery flag to false.
+    - A fresh My Science launch reaches the canonical r1 page (declares r1, four choices).
+    - Before the first answer, the page's in-memory `lyfelabz-assessment-revision` block is changed to r2. Begin may run, but no autosave and no finalize is sent, the student sees the reopen message, and no attempt is created.
+    - A normal reload completes `a4`: r1, `canonicalFallback`, no pair. (Performed in C8 as a fresh My Science open, the recovery the reopen message tells the student to use; see 18.3.)
+    - The flag is restored to true and verified.
+12. **History and provenance.**
+    - `a1`, `a2`, the legacy record, the AP record and review file, the assignment, the Current pointer, and the `prff01…` and `pr90f…` bytes are unchanged.
+    - Only the scoped record, `a3`, `a4`, and grants, sessions and audit events were added.
+    - No r2, no passback; only the three Functions changed; production untouched.
+13. **Final snapshot.**
+
+Superseded wording (C8 preparation, 2026-09-28). The earlier plan read: step 1 "Regression of C7 (r1)"; step 2 "A canonical student launches through My Science and through the Google Classroom deep link"; step 3 "A practice-mode assignment deep link routes to its frozen revision's page"; step 4 "Forced mismatch"; step 5 "The publisher repoints retained `pr90f…` into `presentationVariants/earths-layers__reading-adapted__r1` after re-confirming liveness"; step 6 "History unchanged". It was superseded because:
+- S9-D9 makes a first scoped write a create-only `--op=publish`, not a repoint;
+- the only recipient is accommodated, so the canonical page is reached through `canonicalFallback`;
+- the test assignment has no Classroom link, and `/app/a/{assignmentId}` exercises the same resolver without one;
+- no practice assignment exists (C8-D2);
+- the plan did not state the Functions-before-Hosting order.
+
+### 18.3 C8 certification record: Slice 9 (COMPLETE, PASSING)
+
+**Result: F5.3 Slice 9 staging certification C8 (section 18.2, steps 1 to 13) is COMPLETE and PASSING** (`lyfelabz-staging`, 2026-09-28 15:41Z to 15:56Z). Production was neither read nor changed, apart from read-only release and Function metadata listings that confirm nothing changed there.
+
+**Release**
+
+| Field | Value |
+|---|---|
+| Release commit | `0b10b2e` (= `origin/main`), clean detached worktree `lyfelabz-c8-release`, real `npm ci` installs, only `.env.lyfelabz-staging` copied |
+| Functions deployed | `assessmentSessionsBegin` 15:41:10.909Z, `lmsDeepLinkResolve` 15:41:11.249Z, `assignmentsListForStudent` 15:41:11.319Z; the other 67 of 70 unchanged |
+| 9D Hosting release | version `469d38baef9e34b6`, 15:45:45.352Z |
+| Publisher Hosting release | version `b292073a482b032b`, 15:48:00.579Z (file list identical to `469d38…`) |
+| Scoped record | `presentationVariants/earths-layers__reading-adapted__r1`, created 15:48:02.211Z, `publishedBy: lyfelabz-owner-c8` |
+
+**Evidence by step**
+
+- **Gates (step 2).**
+  - App verify: 133 suites and 3713 tests; 49 lessons; path table, variants and assessments verified.
+  - The app build, the curated Hosting build (225 files) and its tests passed, as did the Functions checks (156 suites and 4055 tests, typecheck, lint, build).
+  - `pr90f…` and `prff01…` hash to their ids.
+  - The `ap1fed…` review record SHA-256 is `4670e199…75a6`, unchanged.
+  - No r2 exists.
+- **Pre-state (step 3).** Identical to the C8 preparation snapshot and consistent with C7:
+  - the flag is true;
+  - the assignment is frozen r1, and Current targets it;
+  - accommodation cfg 1;
+  - the legacy record is bound `pr90f…` + `ap1fed…` + r1, and the scoped record is absent;
+  - attempts `a1` and `a2` exist, with no sessions and 0 passbacks;
+  - Hosting is `ec2f3373c0bd596c`.
+- **Server contract under the C7 client (step 5).** `assignmentsListForStudent`, called as the test student, returned `assessmentRevisionId: assessment_earths-layers__r1` with `pr90f…` and a launchRef. The C7 client launched normally.
+- **Served bytes (step 7).**
+  - All 218 served files equal the release artifact. The Firebase CLI count of 218 against 225 built is the 7 `blog/**` and `wonderbox/**` files ignored by `firebase.json`.
+  - Against C7, the only added path is `/app/lessons/assessment-revisions/revision-paths.json`, and it equals the bundled client copy.
+  - The runtime asset carries the gate.
+  - v1 and v2 Earth's Layers declare r1.
+  - `pr90f…` and `prff01…` are served, hashing to their ids.
+  - The variant manifest, `app/src`, scripts, `.env` files and the client table copy return 404.
+  - Cache headers: `cache-control: max-age=3600` on the lesson pages, bundle, runtime and path table.
+- **Scoped publish (step 8).** The scoped record was re-read as absent, then `--op=publish` passed every stage:
+  - ASSESSMENT_PRESENTATION_RECORDED reported "already identical";
+  - INDEX_UPDATED was `earths-layers__reading-adapted__r1 create`;
+  - the legacy document, the AP record and the other `presentationVariants` documents are unchanged.
+- **Differentiated acceptance (step 10).**
+  - A My Science launch reached `pr90f…` with query keys `assignment` and `launchRef` only. It showed 10 items with 3 choices each, bound r1 + `ap1fed…`, in display order `BCD BAD ACB ACB BAC BAC BAC BDA ABD CDB`.
+  - The negatives driver at `0b10b2e` passed 8/8 in plan (`P0-index`: effective coverage, scoped) and 44/44 in execute:
+    - the omitted `A` and the unknown `Z` were refused with `assessmentSessions.invalidResponses`;
+    - every provenance forgery was refused;
+    - no refusal changed the session, attempts, passbacks, Current or grants.
+  - `/app/a/{assignmentId}` auto-navigated to the same `pr90f…` URL, and the runtime went active. As the student, `assessmentSessionsBegin` returned `alreadyLive: true` with r1, and `lmsDeepLinkResolve` returned `pr90f…`, a launchRef and r1.
+  - Browser submit created **`a3`** (attempt 3):
+    - r1, `differentiated`, `reading-adapted`, `pr90f…`, `ap1fed…`, cfg 1;
+    - **3/10 (30%)**, submitted 15:53:24.676Z;
+    - the session was consumed, and Current is unchanged.
+- **Runtime integrity and `canonicalFallback` (step 11).**
+  - The flag was set to false at 15:53:56Z. `assignmentsListForStudent` then returned a launchRef with no `presentation`, bound to r1.
+  - A fresh My Science launch reached `/app/lessons/lesson_earths-layers.html` (`assignment`, `launchRef`), declaring r1, with 4 choices.
+  - **Forced mismatch.** Before the first answer, only the in-memory declaration was changed to r2; no Firestore, artifact or deployed file was touched.
+    - The first click ran begin (200), which created the `canonicalFallback` r1 session (15:54:24.784Z, no `responses` field).
+    - The runtime entered its error state, and no autosave was sent.
+    - Completing the quiz and pressing Submit sent no finalize and showed: "This assignment needs to be opened again, so your answers were not submitted. Go back to My Science and open the assignment again."
+    - Attempts remained `a1`–`a3`.
+  - **Recovery.** Following that message, a fresh My Science open reused the live session, passed the gate, autosaved and finalized **`a4`** (attempt 4):
+    - r1, `canonicalFallback`, with no variant, presentation, AP or cfg fields;
+    - **2/10 (20%)**, submitted 15:55:26.068Z.
+    - Its written response is the recovery text, not the text typed on the mismatched page.
+  - The flag was restored to true at 15:55:39Z and verified.
+- **History and provenance (step 12).**
+  - Unchanged: `a1` and `a2` (update times identical), the legacy record, the AP record (hashes to its id, equals the retained record), the review record, the assignment, Current, accommodation, and the `pr90f…`/`prff01…` repository and hosted bytes.
+  - Added:
+    - the scoped record;
+    - `a3` and `a4`;
+    - 10 launch grants: 7 differentiated `pr90f…`/`ap1fed…`, and 3 `canonicalFallback`, all from the test student's list and resolve calls;
+    - the corresponding audit events (not enumerated).
+  - No live session remains.
+  - No r2 or r3 exists (`currentRevisionId` r1). There are 0 passbacks.
+  - Only the three Functions changed.
+  - The latest production Hosting release (2026-09-27 12:27Z) and the latest production Function update time predate C8.
+- **Best attempt.** My Science shows "40% · 4/10, 4 attempts": `a2` remains the best attempt.
+
+**Findings recorded (non-blocking)**
+
+- **Browser cache after a Hosting release.** The first My Science load after the 9D release ran the cached pre-9D bundle (encoded 238404 bytes vs 239350) under `max-age=3600`. A hard reload in the pane did not refresh it; a `cache: "reload"` fetch of the bundle, runtime assets and config did. This confirms section 21.10: Slice 9 Hosting must precede any r2 deployment by more than the cache window, and certification browsers must confirm the served bundle before observing behavior.
+- **Local score beside a refused submit.** The lesson's existing results reveal is local and precedes finalize (the shared v2 quiz pattern). On the mismatched page it displayed "2/10" above the "Could not submit" message. Nothing was recorded, and the message is correct; whether the local score should be suppressed when a submission is refused is an owner UX decision, outside Slice 9.
+- **Practice (C8-D2).** No practice assignment exists, and none was created. Assignment-tied practice routing is covered only by the 9C-1 `lessonPractice` server tests and the 9D synthetic r1/r2 routing tests. Live practice certification moves to the r2 sequence (section 21.12).
+
+**What C8 certifies (r1 only, one deployed revision):**
+- the server's frozen revision on the list, the deep link and begin;
+- revision-scoped coverage publication (create-only) and its precedence over the legacy record;
+- client routing from the bundled path table for differentiated, `canonicalFallback` and deep-link launches;
+- the runtime gate refusing every response when the page's revision disagrees with the session, and recovery through a fresh launch;
+- no regression of C6 or C7.
+
+**What C8 does not certify:**
+- live multi-revision behavior (r1 and r2 together), which is proven only by the unit and integration suites until section 21.12;
+- live assignment-tied practice;
+- anything outside Earth's Layers;
+- production.
+
+The staging differentiated-delivery flag remains `true` (D8).
 
 ---
 
@@ -688,7 +821,7 @@ Production is paused at C3 with `prff01d9...375c` published. Whether production 
 | 9C-1 | Server read path and shared revision-aware coverage evaluator | resolver, begin, list, deep-link resolve |
 | 9C-2 | Publisher and revision-scoped coverage | `publish-variant.ts`, `variant-publication.ts`, manifest |
 | 9D | Client routing and runtime verification | launcher, deep-link arrival, assessment runtime |
-| 9E | Staging certification C8 (18.2) | staging only |
+| 9E | Staging certification C8 (18.2; COMPLETE, PASSING, 18.3) | staging only |
 | 10 | Optional: teacher provenance label (D2) | teacher attempt detail |
 
 **Test and certification gates:**
@@ -931,7 +1064,7 @@ No attempt, AP record, presentation revision, answer key, or manifest entry is r
 | 9C-1 | Server read path and shared evaluator | Revision-aware coverage. Legacy-r1 rule. Revision field always present | Functions | 9.0 |
 | 9C-2 | Publisher and scoped coverage | Scoped writes only. Recorded revision. Deployed-not-current check. Pinned legacy list | No (repository tooling) | 9C-1 |
 | 9D | Client routing and runtime verification | Every assignment-associated launch lands on the frozen revision. Mismatches fail closed | Hosting, after 9C-1 | 9B, 9C-1 |
-| 9E | Staging certification C8 (18.2) | No C7 regression; live routing proven | Staging only | 9B to 9D |
+| 9E | Staging certification C8 (18.2; COMPLETE, PASSING, 18.3) | No C7 regression; live routing proven | Staging only | 9B to 9D |
 
 Every implementation sub-slice runs `npm --prefix app run verify` and the Functions test, typecheck, lint and build. Sub-slices that change data access also run `test:rules`. C7-preserving regressions are required throughout:
 - `pr90f…` rebuild and `variants:verify` with an unchanged manifest;

@@ -7,6 +7,13 @@ production or staging action. It defines what must be proven, what evidence is
 sufficient, which steps are read-only, and which steps are mutations that
 require explicit, separate human authorization from Chris before they may run.
 
+> **Notice (F5.3 Slice 9, 2026-09-28).** This runbook predates F5.3 Slice 9
+> (revision-bound assessment display, revision-scoped coverage, and the 9D
+> client). Its publication, coverage-index, deploy-set, and routing steps must
+> be reconciled with `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md`
+> §21 and the staging runbook §3d before any production activation. No
+> production action is authorized by this notice.
+
 Authoritative contract: `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md`
 (hereafter F5.2). This runbook never overrides F5.2; where they appear to
 differ, F5.2 wins and the divergence is a defect in this runbook.
