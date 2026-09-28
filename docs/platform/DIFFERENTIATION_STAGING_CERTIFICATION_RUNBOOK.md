@@ -350,7 +350,7 @@ fixed by rebuilding from current source and redeploying hosting to staging only.
 This runbook covers the F5.2 Slices 1-6 gate. The F5.3 certifications are specified and recorded in `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md`:
 
 - **C7 (Earth's Layers accessible assessment): COMPLETE, PASSING.** See addendum §18.1.
-- **Earth's Layers r2: local certification COMPLETE; staging Stages A and B PREPARED, NOT EXECUTED.** See §3e and addendum §21.12.
+- **Earth's Layers r2: Stage A COMPLETE, PASSING (2026-09-28, Hosting `980e784622c62aba` at 23:05:22.741Z, r2 data deployed); Stage B PREPARED, NOT EXECUTED, not before 2026-09-29T00:05:22.741Z.** See §3e and the addendum §21.12 record.
 - **C8 (Slice 9 revision-bound rendering): COMPLETE, PASSING.** See addendum §18.3 (record), §18.2 (the authoritative sequence) and §3d below (operational amendments).
 
 C8 environment preconditions, in addition to the addendum steps:
@@ -387,7 +387,7 @@ These amend §2 and §3 for revision-scoped coverage. Where they differ, this se
 - **Flag and live sessions.** A session freezes its delivery at its first begin and is reused until it is finalized. Finalize (or confirm there is no) live session before changing the delivery flag, or the next launch reuses the old delivery.
 - **Synthetic fixture under 9D.** `staging-cert-assignment` (lesson `staging-cert-fixture`) has no canonical page in the revision-path table. Under 9D its My Science card shows with no launch action. This is expected fail-closed behavior; the headless drivers are unaffected.
 
-## 3e. Earth's Layers r2: two-stage staging release (PREPARED, NOT EXECUTED)
+## 3e. Earth's Layers r2: two-stage staging release (Stage A COMPLETE; Stage B PREPARED, NOT EXECUTED)
 
 Owner ruling R2-D6 (addendum §21.12). Each stage is its own owner-approved execution prompt. Nothing here authorizes a deploy, publish, Firestore write, or flag change.
 
@@ -405,6 +405,9 @@ Owner ruling R2-D6 (addendum §21.12). Each stage is its own owner-approved exec
 - **Why Stage A first.** A browser still holding a pre-Stage-A bundle routes an r1 assignment to the unversioned page. In Stage A that page still displays r1, so the stale bundle is harmless.
 
 ### Stage A
+
+**Executed 2026-09-28: COMPLETE, PASSING.** Record in addendum §21.12. Release `8b6773a`, Hosting `980e784622c62aba` released 2026-09-28T23:05:22.741Z, and r2 deployed by `--assessment-revision` (`state=advance`, `writes=3`).
+
 
 1. **Preconditions.** The owner has committed and pushed the Stage A state. The staging flag is true. The C8 state is intact.
 2. **Release worktree.** Create a clean detached worktree at the Stage A commit, which must equal `origin/main`.

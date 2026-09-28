@@ -152,7 +152,7 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
   - `assignmentsPublish` freezes `assessmentRevisionId` on the assignment once, at first publication. It is immutable; a later revision never changes it.
   - Sessions freeze it, autosave validates against it, finalize scores against it, and attempts record it.
   - The client never selects a revision. Every student display associated with an assignment must show that revision's assessment content (revision-bound display: F5.3 Slice 9, implemented and staging-certified by C8; not in production).
-  - **Gate:** Slice 9 is staging-certified (C8). A second deployed revision still follows only the Earth's Layers r2 sequence (addendum §21.12), and never in production before Slice 9 is released there. Deployed today: every lesson has exactly r1. Repository: Earth's Layers also commits an undeployed r2; release Stage A keeps r1 as its declared canonical revision, and Stage B declares r2 (addendum §21.12).
+  - **Gate:** Slice 9 is staging-certified (C8). A second deployed revision still follows only the Earth's Layers r2 sequence (addendum §21.12), and never in production before Slice 9 is released there. Deployed today: in production every lesson has exactly r1; on staging Earth's Layers also has r2 deployed and current as assessment data (Stage A, 2026-09-28), while its pages and existing assignment stay r1. Repository: Earth's Layers also commits an undeployed r2; release Stage A keeps r1 as its declared canonical revision, and Stage B declares r2 (addendum §21.12).
   - Revision IDs may appear in internal paths and machine-readable page data, but never in teacher UI or teacher-configurable fields.
   - Lesson pages still embed correct-answer and explanation data (open D7, `SECURITY_BACKLOG_LESSON_PAGE_ANSWER_DATA.md`).
 - **Behavior:** unlimited formative attempts by default; **submit = completion**; `Improve My Score` is offered on a less-than-perfect best score; 10/10 does not. There is **no practice/classroom mode toggle** at the pipeline level — behavior derives from auth/authz; `assignment.mode` governs routing (classroom → assessment pipeline; practice → lesson surface without the pipeline).
@@ -204,7 +204,8 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
   - Earth's Layers r2 is authored, owner-approved and locally certified, and not deployed (addendum §21.12):
     - canonical r2 plus the certified adapted r2 presentation `ap515838…`, rendered into retained `pr6b7c…`;
     - the repository is in release Stage A;
-    - the staging Stage A and Stage B procedure is prepared, not executed (staging runbook §3e);
+    - staging Stage A is complete (2026-09-28): Hosting `980e784622c62aba` serves the r1 and r2 renditions and `pr6b7c…`; `assessment_earths-layers__r2` is deployed and current on staging; the ordinary pages and the existing assignment stay r1; no r2 coverage or assignment exists;
+    - Stage B is prepared, not executed, and not before 2026-09-29T00:05:22.741Z (staging runbook §3e); production has none of this;
     - the r1 assignment, `ap1fed…`, `pr90f…` and `prff01…` are unchanged.
   - Production is not activated.
 - **Production certification:** the platform is certified through the Sprint 28.5 cross-platform certification. LMS publication has been exercised against **real** Google Classroom coursework (there is no runtime test-double seam, so browser certification of the LMS path hits real Google — plan LMS cert work accordingly).
