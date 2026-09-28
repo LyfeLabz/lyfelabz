@@ -2,7 +2,8 @@
  * Staging assessment deployment for any committed lesson payload.
  *
  *   node lib/scripts/deploy-assessment-staging.js \
- *     --project=lyfelabz-staging --lesson=<slug> [--apply]
+ *     --project=lyfelabz-staging --lesson=<slug> \
+ *     [--assessment-revision=assessment_<slug>__r<N>] [--apply]
  *
  * Generalizes the ASTRA-004 what-is-life staging deployer (which is now a thin
  * wrapper over this module) without widening its safety posture:
@@ -17,16 +18,30 @@
  *     `scripts/assessments/<slug>.r<N>.json`. Unknown, malformed, or ambiguous
  *     lessons (zero candidates, several revisions, or any other file claiming
  *     the slug) are refused before any credential or network access.
+ *   - Earth's Layers r2 (owner ruling R2-D5): `--assessment-revision=` names
+ *     the one committed revision to deploy, as the repository's revision id
+ *     `assessment_<slug>__r<N>` of the same lesson. It is required when the
+ *     lesson commits several revisions; there is no "latest" or "current"
+ *     default and no fallback. Without it, a single-revision lesson resolves
+ *     exactly as before. A malformed or cross-lesson id is refused while
+ *     parsing, and an uncommitted one while resolving, both before any
+ *     credential or network access.
  *   - The payload is planned by the certified `planAssessmentRevision`, its
  *     identity is asserted against the slug and file revision, and it is
- *     checked for fidelity against the canonical quiz in
- *     `lesson-sources/lesson_<slug>.html` (the one shared
+ *     checked for fidelity against the page that displays exactly that
+ *     revision in the committed revision-path table: the canonical quiz in
+ *     `lesson-sources/lesson_<slug>.html` when the table maps the revision to
+ *     the unversioned page (a single-revision lesson), else the revision's
+ *     rendition under `app/lessons/assessment-revisions/` (the one shared
  *     `assessmentFidelity.cjs` implementation), all locally.
  *   - Only the three canonical documents are read. Dry-run is the default and
  *     performs zero writes; `--apply` is required before the certified
  *     `deployAssessmentRevision` transaction runs, and only after an all-absent
- *     preflight. Equal existing documents are a zero-write no-op; partial or
- *     incompatible state fails closed. Revisions are never replaced.
+ *     preflight, or (for a later revision) a preflight in which the lesson's
+ *     parent assessment is at a lower revision of the same assessment and the
+ *     selected revision and answer key are both absent. Equal existing
+ *     documents are a zero-write no-op; any other partial or incompatible
+ *     state fails closed. Revisions are never replaced.
  */
 
 import * as fs from "fs";
@@ -54,6 +69,8 @@ import {
 } from "../assessments/assessment-deployment";
 import {
   assessmentIdForLessonSlug,
+  parseAssessmentIdFromRevisionId,
+  parseRevisionOrdinalFromRevisionId,
   revisionIdForOrdinal,
 } from "../shared/assessment-identifiers";
 import {
@@ -96,12 +113,20 @@ const EMULATOR_ENV_KEYS = [
 ] as const;
 
 const USAGE =
-  "Usage: deploy-assessment-staging --project=lyfelabz-staging --lesson=<slug> [--apply]";
+  "Usage: deploy-assessment-staging --project=lyfelabz-staging --lesson=<slug> " +
+  "[--assessment-revision=assessment_<slug>__r<N>] [--apply]";
+
+// The repository's assessment revision identifier, strict: a kebab-case slug
+// and a canonical (no leading zero) positive ordinal.
+const ASSESSMENT_REVISION_ID_PATTERN = /^assessment_([a-z0-9]+(?:-[a-z0-9]+)*)__r([1-9][0-9]*)$/;
 
 export type CliArgs = {
   readonly project: string;
   readonly lesson: string;
   readonly apply: boolean;
+  // The explicitly selected revision (`assessment_<lesson>__r<N>`), or null
+  // when none was named (accepted only for a single-revision lesson).
+  readonly assessmentRevisionId: string | null;
 };
 
 export type ParseResult =
@@ -134,11 +159,20 @@ export type CliRuntime = {
 
 export type CliDeps = {
   readonly acquireImpersonatedCredential: () => Promise<Impersonated>;
-  // Throws LessonResolutionError for an unknown or ambiguous lesson.
-  readonly resolveLessonPayload: (slug: string) => ResolvedLessonPayload;
-  // Throws when the payload does not exactly transcribe the canonical quiz or
-  // the canonical source is missing.
-  readonly verifyFidelity: (slug: string, payload: unknown) => FidelityReport;
+  // Throws LessonResolutionError for an unknown or ambiguous lesson, or for a
+  // requested revision ordinal that is not committed. `requestedOrdinal` is
+  // null when the operator named no revision.
+  readonly resolveLessonPayload: (
+    slug: string,
+    requestedOrdinal: number | null,
+  ) => ResolvedLessonPayload;
+  // Throws when the payload does not exactly transcribe the quiz of the page
+  // that displays `assessmentRevisionId`, or that page is missing.
+  readonly verifyFidelity: (
+    slug: string,
+    payload: unknown,
+    assessmentRevisionId: string,
+  ) => FidelityReport;
   readonly initializeRuntime: (
     credential: Impersonated,
   ) => Promise<CliRuntime>;
@@ -306,6 +340,7 @@ export function initializeDirectStagingRuntime(
 export function parseArgs(argv: readonly string[]): ParseResult {
   let project: string | undefined;
   let lesson: string | undefined;
+  let assessmentRevisionId: string | undefined;
   let apply = false;
 
   for (const raw of argv) {
@@ -331,6 +366,13 @@ export function parseArgs(argv: readonly string[]): ParseResult {
       lesson = raw.slice("--lesson=".length);
       continue;
     }
+    if (raw.startsWith("--assessment-revision=")) {
+      if (assessmentRevisionId !== undefined) {
+        return { ok: false, message: "--assessment-revision may be supplied only once" };
+      }
+      assessmentRevisionId = raw.slice("--assessment-revision=".length);
+      continue;
+    }
     return { ok: false, message: `unknown argument: ${raw}` };
   }
 
@@ -346,7 +388,29 @@ export function parseArgs(argv: readonly string[]): ParseResult {
       message: `refusing malformed lesson slug ${JSON.stringify(lesson)}: expected lowercase kebab-case`,
     };
   }
-  return { ok: true, args: { project, lesson, apply } };
+  if (assessmentRevisionId !== undefined) {
+    const match = ASSESSMENT_REVISION_ID_PATTERN.exec(assessmentRevisionId);
+    if (match === null) {
+      return {
+        ok: false,
+        message:
+          `refusing malformed --assessment-revision ${JSON.stringify(assessmentRevisionId)}: ` +
+          `expected assessment_${lesson}__r<N>`,
+      };
+    }
+    if (match[1] !== lesson) {
+      return {
+        ok: false,
+        message:
+          `refusing --assessment-revision ${assessmentRevisionId}: it belongs to lesson ` +
+          `'${match[1]}', not '${lesson}'`,
+      };
+    }
+  }
+  return {
+    ok: true,
+    args: { project, lesson, apply, assessmentRevisionId: assessmentRevisionId ?? null },
+  };
 }
 
 export function ensureStagingSafe(
@@ -385,14 +449,17 @@ export function ensureStagingSafe(
 
 // Resolves `slug` to exactly one committed payload file. The listing is the
 // complete committed payload directory; any file whose name claims the slug
-// but is not the strict `<slug>.r<N>.json` form, or more than one revision,
-// is ambiguous and refused rather than guessed.
+// but is not the strict `<slug>.r<N>.json` form is ambiguous and refused
+// rather than guessed. With `requestedOrdinal`, exactly that committed
+// revision is returned or the request is refused; without it, a lesson with
+// more than one committed revision is refused (never "latest" or "current").
 export function resolveCommittedLessonPayload(
   slug: string,
   io: {
     readonly listPayloadFiles: () => readonly string[];
     readonly readPayloadFile: (fileName: string) => string;
   },
+  requestedOrdinal: number | null = null,
 ): ResolvedLessonPayload {
   if (slug.length > MAX_LESSON_SLUG_LENGTH || !LESSON_SLUG_PATTERN.test(slug)) {
     throw new LessonResolutionError(`malformed lesson slug ${JSON.stringify(slug)}`);
@@ -410,13 +477,38 @@ export function resolveCommittedLessonPayload(
       ? [{ fileName, revisionOrdinal: Number(match[2]) }]
       : [];
   });
-  if (claiming.length !== 1 || candidates.length !== 1) {
+  if (candidates.length !== claiming.length) {
     throw new LessonResolutionError(
-      `ambiguous lesson '${slug}': expected exactly one committed ${slug}.r<N>.json, found [${claiming.join(", ")}]`,
+      `ambiguous lesson '${slug}': expected only committed ${slug}.r<N>.json files, found [${claiming.join(", ")}]`,
     );
   }
+  if (
+    requestedOrdinal !== null &&
+    (!Number.isSafeInteger(requestedOrdinal) || requestedOrdinal < 1)
+  ) {
+    throw new LessonResolutionError(`malformed requested revision ordinal ${String(requestedOrdinal)}`);
+  }
+  let selected: { readonly fileName: string; readonly revisionOrdinal: number };
+  if (requestedOrdinal === null) {
+    if (candidates.length !== 1) {
+      throw new LessonResolutionError(
+        `ambiguous lesson '${slug}': expected exactly one committed ${slug}.r<N>.json, found [${claiming.join(", ")}]; ` +
+          `name the revision to deploy with --assessment-revision=assessment_${slug}__r<N>`,
+      );
+    }
+    selected = candidates[0];
+  } else {
+    const match = candidates.filter((c) => c.revisionOrdinal === requestedOrdinal);
+    if (match.length !== 1) {
+      throw new LessonResolutionError(
+        `revision assessment_${slug}__r${String(requestedOrdinal)} is not a committed revision of '${slug}' ` +
+          `(committed: [${claiming.join(", ")}])`,
+      );
+    }
+    selected = match[0];
+  }
 
-  const [{ fileName, revisionOrdinal }] = candidates;
+  const { fileName, revisionOrdinal } = selected;
   let payload: unknown;
   try {
     payload = JSON.parse(io.readPayloadFile(fileName));
@@ -521,7 +613,29 @@ function matchesImmutable(
   return isDeepEqual(withoutTimestamp, expectedWithoutTimestamp);
 }
 
-type ExistingState = "absent" | "canonical" | "conflict";
+// "advance" (Earth's Layers r2, R2-D5): the parent assessment is this
+// lesson's, its currentRevisionId is a LOWER revision of the same assessment,
+// and the selected revision and its answer key are both absent. This is
+// exactly the state the certified deployAssessmentRevision transaction
+// accepts for a later revision (it re-checks activityId and the strictly
+// increasing ordinal inside the transaction); every other partial state is a
+// conflict.
+type ExistingState = "absent" | "advance" | "canonical" | "conflict";
+
+function isLowerRevisionOfSameAssessment(
+  parent: Readonly<Record<string, unknown>>,
+  plan: AssessmentDeploymentPlan,
+): boolean {
+  const current = parent.currentRevisionId;
+  if (typeof current !== "string") return false;
+  const ordinal = parseRevisionOrdinalFromRevisionId(current);
+  return (
+    ordinal !== undefined &&
+    parseAssessmentIdFromRevisionId(current) === plan.assessmentId &&
+    current === revisionIdForOrdinal(plan.assessmentId, ordinal) &&
+    ordinal < plan.input.revisionOrdinal
+  );
+}
 
 export function classifyExistingState(
   observations: readonly DocumentObservation[],
@@ -529,6 +643,18 @@ export function classifyExistingState(
 ): ExistingState {
   if (observations.length !== 3) return "conflict";
   if (observations.every((observation) => !observation.exists)) return "absent";
+  const [parent, revisionDoc, answerKeyDoc] = observations;
+  if (
+    parent.exists &&
+    parent.data !== undefined &&
+    !revisionDoc.exists &&
+    !answerKeyDoc.exists &&
+    parent.data.assessmentId === plan.assessmentId &&
+    parent.data.activityId === plan.input.activityId &&
+    isLowerRevisionOfSameAssessment(parent.data, plan)
+  ) {
+    return "advance";
+  }
   if (observations.some((observation) => !observation.exists || !observation.data)) {
     return "conflict";
   }
@@ -572,9 +698,22 @@ export async function main(
 
   // Everything below up to credential acquisition is local: an unknown,
   // ambiguous, invalid, or unfaithful payload never reaches IAM or Firestore.
+  const requestedOrdinal =
+    parsed.args.assessmentRevisionId === null
+      ? null
+      : parseRevisionOrdinalFromRevisionId(parsed.args.assessmentRevisionId) ?? null;
+  if (parsed.args.assessmentRevisionId !== null && requestedOrdinal === null) {
+    deps.logError("refusing lesson: malformed --assessment-revision");
+    return 2;
+  }
   let resolved: ResolvedLessonPayload;
   try {
-    resolved = deps.resolveLessonPayload(parsed.args.lesson);
+    resolved = deps.resolveLessonPayload(parsed.args.lesson, requestedOrdinal);
+    if (requestedOrdinal !== null && resolved.revisionOrdinal !== requestedOrdinal) {
+      throw new LessonResolutionError(
+        `resolved ${resolved.fileName}, not the requested ${String(parsed.args.assessmentRevisionId)}`,
+      );
+    }
   } catch (err) {
     deps.logError(
       err instanceof LessonResolutionError
@@ -589,7 +728,7 @@ export async function main(
   try {
     plan = planAssessmentRevision(resolved.payload);
     assertLessonPlanIdentity(plan, resolved);
-    fidelity = deps.verifyFidelity(resolved.slug, resolved.payload);
+    fidelity = deps.verifyFidelity(resolved.slug, resolved.payload, plan.revisionId);
     if (fidelity.canonicalQuestionCount !== plan.revisionWrite.items.length) {
       throw new Error("canonical question count does not match the planned revision");
     }
@@ -631,7 +770,8 @@ export async function main(
     `lesson=${resolved.slug} file=${resolved.fileName} ` +
     `assessment=${plan.assessmentId} revision=${plan.revisionId} ` +
     `items=${String(plan.revisionWrite.items.length)} ` +
-    `answerKeyItems=${String(plan.answerKeyWrite.items.length)} fidelity=exact`;
+    `answerKeyItems=${String(plan.answerKeyWrite.items.length)} fidelity=exact ` +
+    `selection=${parsed.args.assessmentRevisionId === null ? "single-revision" : "explicit"}`;
 
   const state = classifyExistingState(observations, plan);
   if (state === "conflict") {
@@ -644,8 +784,12 @@ export async function main(
     deps.log(`no-op ${summary} state=canonical writes=0 target=staging`);
     return 0;
   }
+  const stateLabel =
+    state === "advance"
+      ? `state=advance from=${String((observations[0].data ?? {}).currentRevisionId)}`
+      : "state=absent";
   if (!parsed.args.apply) {
-    deps.log(`dry-run ok ${summary} state=absent writes=0 target=staging`);
+    deps.log(`dry-run ok ${summary} ${stateLabel} writes=0 target=staging`);
     return 0;
   }
 
@@ -676,11 +820,15 @@ export function makeRepositoryLessonResolver(
   repoRoot: string,
 ): CliDeps["resolveLessonPayload"] {
   const directory = committedPayloadDirectory(repoRoot);
-  return (slug) =>
-    resolveCommittedLessonPayload(slug, {
-      listPayloadFiles: () => fs.readdirSync(directory),
-      readPayloadFile: (fileName) => fs.readFileSync(path.join(directory, fileName), "utf8"),
-    });
+  return (slug, requestedOrdinal) =>
+    resolveCommittedLessonPayload(
+      slug,
+      {
+        listPayloadFiles: () => fs.readdirSync(directory),
+        readPayloadFile: (fileName) => fs.readFileSync(path.join(directory, fileName), "utf8"),
+      },
+      requestedOrdinal,
+    );
 }
 
 type AssessmentFidelityModule = {
@@ -695,6 +843,45 @@ type AssessmentFidelityModule = {
   ) => readonly string[];
 };
 
+// The committed F5.3 Slice 9B revision-path table (a build output drift-
+// checked by `lessons:verify`), relative to the repository root.
+export const REVISION_PATH_TABLE_FILE = path.join("app", "lessons", "assessment-revisions", "revision-paths.json");
+
+// The repository file whose quiz students see for exactly this revision, per
+// the committed revision-path table: the canonical source when the table maps
+// the revision to the unversioned page (a single-revision lesson), else the
+// revision's rendition. No entry, or an unexpected path, fails closed.
+export function revisionDisplaySource(
+  repoRoot: string,
+  slug: string,
+  assessmentRevisionId: string,
+): string {
+  const tablePath = path.join(repoRoot, REVISION_PATH_TABLE_FILE);
+  if (!fs.existsSync(tablePath)) {
+    throw new Error(`committed revision-path table ${REVISION_PATH_TABLE_FILE} not found`);
+  }
+  const table = JSON.parse(fs.readFileSync(tablePath, "utf8")) as {
+    readonly lessons?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+  };
+  const revisions = table.lessons !== undefined && Object.prototype.hasOwnProperty.call(table.lessons, slug)
+    ? table.lessons[slug]
+    : undefined;
+  const page = revisions !== undefined && Object.prototype.hasOwnProperty.call(revisions, assessmentRevisionId)
+    ? revisions[assessmentRevisionId]
+    : undefined;
+  if (typeof page !== "string") {
+    throw new Error(`the committed revision-path table has no page for ${assessmentRevisionId}`);
+  }
+  const ordinal = parseRevisionOrdinalFromRevisionId(assessmentRevisionId);
+  if (page === `/app/lessons/lesson_${slug}.html`) {
+    return path.join("lesson-sources", `lesson_${slug}.html`);
+  }
+  if (ordinal !== undefined && page === `/app/lessons/assessment-revisions/lesson_${slug}__r${String(ordinal)}.html`) {
+    return page.slice(1);
+  }
+  throw new Error(`the committed revision-path table maps ${assessmentRevisionId} to an unexpected page ${page}`);
+}
+
 // Reuses the ONE canonical fidelity implementation (Sprint 28 Phase 5B
 // assessmentFidelity.cjs, which the app fidelity suite also runs) through
 // createRequire, as publish-variant does for variantManifest.cjs. It lives in
@@ -703,10 +890,15 @@ type AssessmentFidelityModule = {
 export function makeRepositoryFidelityVerifier(
   repoRoot: string,
 ): CliDeps["verifyFidelity"] {
-  return (slug, payload) => {
-    const sourcePath = path.join(repoRoot, "lesson-sources", `lesson_${slug}.html`);
+  return (slug, payload, assessmentRevisionId) => {
+    const sourceRel = revisionDisplaySource(repoRoot, slug, assessmentRevisionId);
+    const sourcePath = path.join(repoRoot, sourceRel);
     if (!fs.existsSync(sourcePath)) {
-      throw new Error(`canonical lesson source lesson-sources/lesson_${slug}.html not found`);
+      throw new Error(
+        sourceRel.startsWith("lesson-sources")
+          ? `canonical lesson source lesson-sources/lesson_${slug}.html not found`
+          : `revision page ${sourceRel} not found`,
+      );
     }
     const req = createRequire(__filename);
     const fidelity = req(

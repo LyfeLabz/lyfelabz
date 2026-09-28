@@ -7,9 +7,10 @@
 /*
  * F5.3 Slice 9C-2 - assessment-revision provenance of a retained variant for
  * publication (S9-D7). Real retained Earth's Layers artifacts prove the
- * certified paths; a temporary repository holding a SYNTHETIC committed r2
- * (payload + revision-path table) proves the multi-revision paths. Nothing is
- * written to the repository.
+ * certified paths, including against the real committed r2; a temporary
+ * repository holding a SYNTHETIC committed r2 (payload + revision-path table)
+ * proves the generic multi-revision paths. Nothing is written to the
+ * repository.
  */
 
 const fs = require("fs");
@@ -161,9 +162,46 @@ describe("certified Earth's Layers artifacts (real repository)", () => {
 
   test("a revision that is not committed, or of another lesson, is refused", () => {
     const bytes = Buffer.from(bytesOf(PRFF01).toString("utf8") + "\n<!-- x -->");
-    expect(P.resolvePublicationProvenance({ entry: newEntry(bytes, { assessmentRevisionId: R2 }), artifactBytes: bytes }).error).toContain("is not a committed assessment revision");
+    expect(P.resolvePublicationProvenance({ entry: newEntry(bytes, { assessmentRevisionId: `assessment_${EL}__r3` }), artifactBytes: bytes }).error).toContain("is not a committed assessment revision");
     const malformed = newEntry(bytes, { assessmentRevisionId: "assessment_water-cycle__r1" });
     expect(P.resolvePublicationProvenance({ entry: malformed, artifactBytes: bytes }).error).toContain("must be a revision of assessment_earths-layers");
+  });
+});
+
+describe("the real committed Earth's Layers r2 (real repository)", () => {
+  test("r1 content can never be recorded as coverage for the real r2", () => {
+    // Unbound r1 bytes claiming r2: the quiz is faithful to r1 only.
+    const bytes = Buffer.from(bytesOf(PRFF01).toString("utf8") + "\n<!-- x -->");
+    const unbound = P.resolvePublicationProvenance({ entry: newEntry(bytes, { assessmentRevisionId: R2 }), artifactBytes: bytes });
+    expect(unbound.ok).toBe(false);
+    expect(unbound.error).toContain(`faithful to [${R1}], not exactly ${R2}`);
+    // The r1-bound ap1fed... presentation can never satisfy r2.
+    const bound = P.resolvePublicationProvenance({ entry: { ...entryOf(PR90F), assessmentRevisionId: R2 }, artifactBytes: bytesOf(PR90F) });
+    expect(bound.ok).toBe(false);
+    expect(bound.error).toContain(`records ${R2} but its assessment presentation maps to ${R1}`);
+  });
+
+  test("the retained r1 artifacts still prove r1 with r2 committed", () => {
+    for (const pr of [PR90F, PRFF01]) {
+      expect(P.resolvePublicationProvenance({ entry: entryOf(pr), artifactBytes: bytesOf(pr) })).toMatchObject({ ok: true, assessmentRevisionId: R1 });
+    }
+  });
+
+  test("retained pr6b7c... proves r2 through the certified ap515838... and can never masquerade as r1", () => {
+    const PR6B7C = "pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948";
+    const AP5158 = "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903";
+    expect(entryOf(PR6B7C)).toMatchObject({ assessmentRevisionId: R2, assessmentPresentationRevisionId: AP5158 });
+    expect(P.resolvePublicationProvenance({ entry: entryOf(PR6B7C), artifactBytes: bytesOf(PR6B7C) })).toEqual({
+      ok: true,
+      assessmentRevisionId: R2,
+      source: "assessmentPresentation",
+    });
+    const asR1 = P.resolvePublicationProvenance({ entry: { ...entryOf(PR6B7C), assessmentRevisionId: R1 }, artifactBytes: bytesOf(PR6B7C) });
+    expect(asR1.ok).toBe(false);
+    expect(asR1.error).toContain(`records ${R1} but its assessment presentation maps to ${R2}`);
+    // Claiming the r1 presentation for the r2 bytes is refused too.
+    const swapped = P.resolvePublicationProvenance({ entry: { ...entryOf(PR6B7C), assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED }, artifactBytes: bytesOf(PR6B7C) });
+    expect(swapped.ok).toBe(false);
   });
 });
 

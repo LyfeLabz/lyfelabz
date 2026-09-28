@@ -27,6 +27,13 @@ Regenerate: npm --prefix app run lessons:build -- --only=earths-layers --target=
 module.exports = {
   slug: "earths-layers",
   canonicalSource: "lesson-sources/lesson_earths-layers.html",
+  // F5.3 Slice 9A: the committed assessment revision the unversioned
+  // canonical pages render. Required because r1 and r2 are both committed.
+  // Earth's Layers r2 Stage A (addendum 21.12): the unversioned pages stay r1
+  // while the r1 and r2 renditions and the revision-path table ship, so a
+  // browser still holding an older bundle keeps reaching r1. Stage B switches
+  // this to assessment_earths-layers__r2 together with the source quiz literal.
+  canonicalAssessmentRevisionId: "assessment_earths-layers__r1",
   outputs: {
     v1: "lesson_earths-layers.html",
     v2: "app/lessons/lesson_earths-layers.html",
@@ -170,11 +177,12 @@ module.exports = {
       adaptableSelectors: ["p", ".callout-body", ".bridge-callout"],
       lockedSelectors: [".edu-note", ".qr-card", ".crust-grid", ".wrapup-chips"],
       // F5.3: owner-certified accessible assessment presentation (adapted
-      // language, three choices) for assessment_earths-layers__r1. Record:
+      // language, three choices) for assessment_earths-layers__r2. Record:
       // platform/functions/src/scripts/assessment-presentations/<id>.json;
-      // review: lesson-sources/variants/reviews/<id>.json. The earlier
-      // unbound revision prff01d9...375c stays retained and immutable.
-      assessmentPresentationRevisionId: "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25",
+      // review: lesson-sources/variants/reviews/<id>.json. The r1-bound
+      // revision pr90f52...2189 (ap1fed478c...02c25) and the earlier unbound
+      // revision prff01d9...375c stay retained and immutable.
+      assessmentPresentationRevisionId: "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903",
     },
   },
 };

@@ -78,12 +78,14 @@ describe("buildAssignmentLaunchUrl", () => {
     expect(url).toMatch(/^\/app\/lessons\/lesson_/);
   });
 
-  // Sprint 18: Earth's Layers pilot uses the generated v2 artifact.
-  test("Earth's Layers pilot resolves to the v2 artifact path", () => {
+  // Sprint 18: Earth's Layers pilot uses the generated v2 artifact. Since the
+  // Earth's Layers r2 authoring pass it has two committed revisions, so an
+  // assignment frozen at r1 opens the r1 revision rendition.
+  test("Earth's Layers resolves to the v2 rendition of the assignment's frozen revision", () => {
     const url = buildAssignmentLaunchUrl(
       mkItem({ lessonSlug: "earths-layers", assignmentId: "asg-42" }),
     );
-    expect(url).toBe("/app/lessons/lesson_earths-layers.html?assignment=asg-42");
+    expect(url).toBe("/app/lessons/assessment-revisions/lesson_earths-layers__r1.html?assignment=asg-42");
   });
 
   test("a lesson with no page in the revision-path table has no launch URL (no v1 or current fallback)", () => {
@@ -112,9 +114,15 @@ describe("revision-bound canonical routing (F5.3 Slice 9D)", () => {
     },
   };
 
-  test("an r1 assignment routes to the exact r1 page from the committed table", () => {
+  test("with the real r2 current, an r1 assignment routes to the exact r1 rendition, never the current page", () => {
     expect(buildAssignmentLaunchUrl(mkItem({ lessonSlug: EL, assessmentRevisionId: R1, assignmentId: "a1" }))).toBe(
-      "/app/lessons/lesson_earths-layers.html?assignment=a1",
+      "/app/lessons/assessment-revisions/lesson_earths-layers__r1.html?assignment=a1",
+    );
+  });
+
+  test("an r2 assignment routes to the exact r2 rendition from the committed table", () => {
+    expect(buildAssignmentLaunchUrl(mkItem({ lessonSlug: EL, assessmentRevisionId: R2, assignmentId: "a2" }))).toBe(
+      "/app/lessons/assessment-revisions/lesson_earths-layers__r2.html?assignment=a2",
     );
   });
 
@@ -125,7 +133,7 @@ describe("revision-bound canonical routing (F5.3 Slice 9D)", () => {
 
   test.each([
     ["a missing revision", undefined],
-    ["an unmapped revision", R2],
+    ["an unmapped revision", `assessment_${EL}__r3`],
     ["a malformed revision", `assessment_${EL}__r01`],
     ["another lesson's revision", "assessment_water-cycle__r1"],
     ["a non-string revision", 1],
@@ -148,9 +156,13 @@ describe("revision-bound canonical routing (F5.3 Slice 9D)", () => {
     expect([...new URLSearchParams(url.split("?")[1]).keys()]).toEqual(["assignment"]);
   });
 
-  test("the bundled table is the committed 9B table for every configured lesson (r1 -> unversioned v2 page)", () => {
-    for (const slug of ["what-is-life", "earths-layers", "nature-of-waves", "conducting-experiments"]) {
+  test("the bundled table is the committed 9B table (single-revision r1 -> unversioned v2 page; Earth's Layers -> renditions)", () => {
+    for (const slug of ["what-is-life", "nature-of-waves", "conducting-experiments"]) {
       expect(buildRevisionBoundLessonPath(slug, `assessment_${slug}__r1`)).toBe(`/app/lessons/lesson_${slug}.html`);
     }
+    expect(buildRevisionBoundLessonPath(EL, R1)).toBe(`/app/lessons/assessment-revisions/lesson_${EL}__r1.html`);
+    expect(buildRevisionBoundLessonPath(EL, R2)).toBe(`/app/lessons/assessment-revisions/lesson_${EL}__r2.html`);
+    // No revision maps to the unversioned (current) Earth's Layers page.
+    expect(buildRevisionBoundLessonPath(EL, `assessment_${EL}__r3`)).toBeNull();
   });
 });

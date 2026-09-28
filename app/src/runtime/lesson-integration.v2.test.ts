@@ -25,6 +25,21 @@ const V2_LESSON_PATH = path.resolve(
   "../../../app/lessons/lesson_earths-layers.html",
 );
 
+// The page's own revision declaration names the assessment revision it
+// displays (r1 in release Stage A, r2 in Stage B); its committed payload is
+// the answer key the local scoring UI reproduces.
+function correctOptionIdsOf(lessonPath: string): string[] {
+  const html = fs.readFileSync(lessonPath, "utf8");
+  const m = /<script type="application\/json" id="lyfelabz-assessment-revision">([^<]*)<\/script>/.exec(html);
+  if (m === null) throw new Error("the lesson page declares no assessment revision");
+  const revisionId = (JSON.parse(m[1]) as { assessmentRevisionId: string }).assessmentRevisionId;
+  const ordinal = /__r([1-9][0-9]*)$/.exec(revisionId)![1];
+  const payload = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, `../../../platform/functions/src/scripts/assessments/earths-layers.r${ordinal}.json`), "utf8"),
+  ) as { items: { correctOptionId: string }[] };
+  return payload.items.map((item) => item.correctOptionId);
+}
+
 const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 
 type Env = {
@@ -184,7 +199,7 @@ function answerAll(correct: boolean): void {
   const w = window as unknown as {
     elSelectAnswer: (qi: number, chosenIndex: number) => void;
   };
-  const correctIdx = [2, 1, 1, 1, 1, 0, 1, 0, 1, 1];
+  const correctIdx = correctOptionIdsOf(V2_LESSON_PATH).map((letter) => "ABCD".indexOf(letter));
   for (let qi = 0; qi < 10; qi++) {
     w.elSelectAnswer(qi, correct ? correctIdx[qi]! : (correctIdx[qi]! + 1) % 4);
   }

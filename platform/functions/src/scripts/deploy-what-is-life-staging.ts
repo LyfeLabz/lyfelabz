@@ -104,8 +104,8 @@ export async function main(
 function pinCanonicalRevision(deps: CliDeps): CliDeps {
   return {
     ...deps,
-    resolveLessonPayload: (slug) => {
-      const resolved = deps.resolveLessonPayload(slug);
+    resolveLessonPayload: (slug, requestedOrdinal) => {
+      const resolved = deps.resolveLessonPayload(slug, requestedOrdinal);
       if (
         resolved.slug !== CANONICAL_ACTIVITY_ID ||
         resolved.revisionOrdinal !== CANONICAL_REVISION_ORDINAL

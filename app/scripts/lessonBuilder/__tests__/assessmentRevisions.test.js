@@ -12,8 +12,12 @@
  * name, lesson slug, assessment id, revision id, ordinal) is checked and
  * fails closed on disagreement, that the canonical lesson resolves to exactly
  * one configured revision, and that the answer-position debt register never
- * covers a later revision. Every r2 here is a synthetic fixture held in
- * memory or in a temporary directory; nothing is written to the repository.
+ * covers a later revision. Synthetic revisions are held in memory or in a
+ * temporary directory; nothing is written to the repository.
+ *
+ * Earth's Layers r2 (authored 2026-09-28) is the first real second revision:
+ * the repository-state tests below prove the real r1 + r2 pair, and that
+ * every other lesson is still a single r1.
  */
 
 const fs = require("fs");
@@ -30,9 +34,11 @@ const ROOT = path.resolve(__dirname, "..", "..", "..", "..");
 const PAYLOAD_DIR = R.payloadDirectory(ROOT);
 const EL = "earths-layers";
 
-function realPayload(slug = EL) {
-  return JSON.parse(fs.readFileSync(path.join(PAYLOAD_DIR, `${slug}.r1.json`), "utf8"));
+function realPayload(slug = EL, ordinal = 1) {
+  return JSON.parse(fs.readFileSync(path.join(PAYLOAD_DIR, `${slug}.r${ordinal}.json`), "utf8"));
 }
+const EL_R1 = "assessment_earths-layers__r1";
+const EL_R2 = "assessment_earths-layers__r2";
 
 // A synthetic, internally consistent later revision: the r1 content with its
 // correct answers moved so the quiz content genuinely differs.
@@ -107,14 +113,29 @@ describe("identifier grammar", () => {
 });
 
 describe("identity of one committed payload", () => {
-  test("every existing r1 payload validates", () => {
+  test("every committed payload validates: 49 r1 payloads plus the real Earth's Layers r2", () => {
     const { revisions, failures } = R.discoverRevisions({ repoRoot: ROOT });
     expect(failures).toEqual([]);
-    expect(revisions).toHaveLength(49);
+    expect(revisions).toHaveLength(50);
+    expect(revisions.filter((e) => e.revisionOrdinal !== 1).map((e) => e.file)).toEqual(["earths-layers.r2.json"]);
+    expect(revisions.filter((e) => e.revisionOrdinal === 1)).toHaveLength(49);
     for (const e of revisions) {
-      expect(e.revisionOrdinal).toBe(1);
       expect(R.describeRevision(e.file, e.payload).problems).toEqual([]);
     }
+  });
+
+  test("the real Earth's Layers r2 is a distinct revision with the same shape and scoring scale as r1", () => {
+    const r1 = realPayload(EL, 1);
+    const r2 = realPayload(EL, 2);
+    expect(entry("earths-layers.r2.json", r2)).toMatchObject({ slug: EL, revisionOrdinal: 2, assessmentRevisionId: EL_R2 });
+    expect(r2.items.map((it) => it.itemId)).toEqual(r1.items.map((it) => it.itemId));
+    for (const it of r2.items) {
+      expect(it.itemType).toBe("singleChoice");
+      expect(it.points).toBe(1);
+      expect(it.options.map((o) => o.optionId)).toEqual(["A", "B", "C", "D"]);
+    }
+    // Real content change, not a relabel: every stem differs from r1.
+    r2.items.forEach((it, i) => expect(it.stem).not.toBe(r1.items[i].stem));
   });
 
   test("an internally consistent synthetic r2 is accepted", () => {
@@ -229,7 +250,8 @@ describe("directory discovery", () => {
 
   test("findRevision returns only committed revisions", () => {
     expect(R.findRevision("assessment_earths-layers__r1", { repoRoot: ROOT }).file).toBe("earths-layers.r1.json");
-    expect(R.findRevision("assessment_earths-layers__r2", { repoRoot: ROOT })).toBeNull();
+    expect(R.findRevision(EL_R2, { repoRoot: ROOT }).file).toBe("earths-layers.r2.json");
+    expect(R.findRevision("assessment_earths-layers__r3", { repoRoot: ROOT })).toBeNull();
     expect(R.findRevision("assessment_earths-layers__r01", { repoRoot: ROOT })).toBeNull();
   });
 });
@@ -239,13 +261,23 @@ describe("canonical revision resolution", () => {
   const r1 = () => entry("earths-layers.r1.json", realPayload());
   const r2 = () => entry("earths-layers.r2.json", syntheticRevision(2));
 
-  test("a single committed r1 resolves without any config declaration (every lesson today)", () => {
-    expect(R.resolveCanonicalRevision(cfg(), [r1()]).assessmentRevisionId).toBe("assessment_earths-layers__r1");
-    for (const slug of configMod.listConfiguredSlugs()) {
+  test("a single committed r1 resolves without any config declaration (every lesson but Earth's Layers)", () => {
+    expect(R.resolveCanonicalRevision(cfg(), [r1()]).assessmentRevisionId).toBe(EL_R1);
+    for (const slug of configMod.listConfiguredSlugs().filter((s) => s !== EL)) {
       const c = configMod.loadConfig(slug);
       expect(c.canonicalAssessmentRevisionId).toBeUndefined();
       expect(R.resolveCanonicalRevision(c, R.revisionsForLesson(slug, { repoRoot: ROOT })).revisionOrdinal).toBe(1);
     }
+  });
+
+  test("the real Earth's Layers config declares r1 (Stage A) or r2 (Stage B), which resolves among its committed r1 and r2", () => {
+    const c = configMod.loadConfig(EL);
+    const committed = R.revisionsForLesson(EL, { repoRoot: ROOT });
+    expect(committed.map((e) => e.assessmentRevisionId)).toEqual([EL_R1, EL_R2]);
+    expect([EL_R1, EL_R2]).toContain(c.canonicalAssessmentRevisionId);
+    expect(R.resolveCanonicalRevision(c, committed).assessmentRevisionId).toBe(c.canonicalAssessmentRevisionId);
+    const { canonicalAssessmentRevisionId: _declared, ...undeclared } = c;
+    expect(() => R.resolveCanonicalRevision(undeclared, committed)).toThrow("must declare canonicalAssessmentRevisionId");
   });
 
   test("several committed revisions without a declaration are ambiguous and fail closed", () => {
@@ -282,30 +314,39 @@ describe("canonical revision resolution", () => {
 describe("canonical source fidelity against the configured revision", () => {
   const html = fs.readFileSync(path.join(ROOT, "lesson-sources", `lesson_${EL}.html`), "utf8");
   const base = configMod.loadConfig(EL);
-  const both = () => [entry("earths-layers.r1.json", realPayload()), entry("earths-layers.r2.json", syntheticRevision(2))];
+  const both = () => [entry("earths-layers.r1.json", realPayload(EL, 1)), entry("earths-layers.r2.json", realPayload(EL, 2))];
+  // The verbatim r2 literal lives in the authored variant source (both release
+  // stages); the Stage B canonical source is the real source carrying it.
+  const render = require("../assessmentPresentationRender.cjs");
+  const literalOf = (h) => { const l = render.locateQuizLiteral(h); return h.slice(l.start, l.end); };
+  const withLiteral = (h, lit) => { const l = render.locateQuizLiteral(h); return h.slice(0, l.start) + lit + h.slice(l.end); };
+  const r2Html = withLiteral(html, literalOf(fs.readFileSync(path.join(ROOT, base.variants["reading-adapted"].source), "utf8")));
+  const otherRevision = base.canonicalAssessmentRevisionId === EL_R1 ? EL_R2 : EL_R1;
 
   test("the source is proven faithful to the revision the config declares", () => {
-    const r = F.checkCanonicalRevisionFidelity({ ...base, canonicalAssessmentRevisionId: "assessment_earths-layers__r1" }, html, both());
-    expect(r.revision.file).toBe("earths-layers.r1.json");
+    const r = F.checkCanonicalRevisionFidelity(base, html, both());
+    expect(r.revision.assessmentRevisionId).toBe(base.canonicalAssessmentRevisionId);
     expect(r.problems).toEqual([]);
   });
 
   test("declaring a revision the source does not transcribe is a fidelity failure", () => {
-    const r = F.checkCanonicalRevisionFidelity({ ...base, canonicalAssessmentRevisionId: "assessment_earths-layers__r2" }, html, both());
-    expect(r.revision.file).toBe("earths-layers.r2.json");
+    const r = F.checkCanonicalRevisionFidelity({ ...base, canonicalAssessmentRevisionId: otherRevision }, html, both());
+    expect(r.revision.assessmentRevisionId).toBe(otherRevision);
     expect(r.problems.join("\n")).toContain("correct answer mismatch");
   });
 
   test("an undeclared multi-revision lesson cannot be checked and fails closed", () => {
-    expect(() => F.checkCanonicalRevisionFidelity(base, html, both())).toThrow("must declare canonicalAssessmentRevisionId");
+    const { canonicalAssessmentRevisionId: _declared, ...undeclared } = base;
+    expect(() => F.checkCanonicalRevisionFidelity(undeclared, html, both())).toThrow("must declare canonicalAssessmentRevisionId");
   });
 
   test("buildPayload needs an explicit ordinal and stamps it", () => {
-    const quiz = F.extractCanonicalQuiz(html, EL);
+    const quiz = F.extractCanonicalQuiz(r2Html, EL);
     expect(() => F.buildPayload(EL, quiz, "x")).toThrow("explicit revision ordinal");
     expect(() => F.buildPayload(EL, quiz, "x", 0)).toThrow("explicit revision ordinal");
     expect(F.buildPayload(EL, quiz, "x", 2).revisionOrdinal).toBe(2);
-    expect(F.buildPayload(EL, quiz, realPayload().publishedBy, 1)).toEqual(realPayload());
+    // The authoring CLI's transform reproduces the committed r2 exactly.
+    expect(F.buildPayload(EL, quiz, realPayload(EL, 2).publishedBy, 2)).toEqual(realPayload(EL, 2));
   });
 });
 
@@ -377,12 +418,23 @@ describe("answer-position quality is per revision", () => {
     }
   });
 
-  test("today's audit is unchanged: 49 r1 payloads, 14 recorded debts, no failures", () => {
+  test("today's audit: 49 r1 payloads and the real Earth's Layers r2, 14 recorded r1 debts, no failures", () => {
     const result = Q.verifyRepository();
     expect(result.failures).toEqual([]);
-    expect(result.audit).toHaveLength(49);
-    expect(result.audit.every((a) => a.file.endsWith(".r1.json"))).toBe(true);
+    expect(result.audit).toHaveLength(50);
+    expect(result.audit.filter((a) => !a.file.endsWith(".r1.json")).map((a) => a.file)).toEqual(["earths-layers.r2.json"]);
     expect(new Set(result.debt.map((d) => d.split(":")[0])).size).toBe(14);
+    expect(result.debt.some((d) => d.startsWith("earths-layers.r2.json"))).toBe(false);
+  });
+
+  test("the real Earth's Layers r2 meets the answer-position target with no allowlist entry", () => {
+    const r2 = Q.evaluatePayload(realPayload(EL, 2));
+    expect(r2.hard).toEqual([]);
+    expect(r2.warnings).toEqual([]);
+    expect(r2.spread).toBeLessThanOrEqual(1);
+    expect(r2.counts.every((c) => c > 0)).toBe(true);
+    // r1 keeps its recorded, frozen debt; r2 never inherits or clears it.
+    expect(Q.evaluatePayload(realPayload(EL, 1)).hard.length).toBeGreaterThan(0);
   });
 });
 
@@ -406,8 +458,8 @@ describe("variant payload loading", () => {
     }
   });
 
-  test("the real Earth's Layers lesson still loads exactly r1", () => {
-    expect(variantSource.loadAssessmentPayloads(EL).map((p) => p.name)).toEqual(["earths-layers.r1.json"]);
+  test("the real Earth's Layers lesson loads exactly its committed r1 and r2, in order", () => {
+    expect(variantSource.loadAssessmentPayloads(EL).map((p) => p.name)).toEqual(["earths-layers.r1.json", "earths-layers.r2.json"]);
   });
 });
 

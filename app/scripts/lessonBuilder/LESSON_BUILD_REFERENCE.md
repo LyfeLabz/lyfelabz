@@ -204,13 +204,21 @@ Full specification: `docs/platform/DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY
 
 Current state:
 
-- Every assignable lesson has exactly one committed revision payload,
-  `platform/functions/src/scripts/assessments/<slug>.r1.json`.
+- Every assignable lesson commits
+  `platform/functions/src/scripts/assessments/<slug>.r1.json`. Earth's
+  Layers also commits `earths-layers.r2.json` (not deployed), so it has r1
+  and r2 renditions and must declare `canonicalAssessmentRevisionId`. In
+  release Stage A that is r1 (its unversioned pages still display r1); Stage
+  B switches the declaration and the source quiz literal to r2 (addendum
+  §21.12).
 - Every canonical artifact declares its revision (Slice 9B, below).
-- An assignment freezes its `assessmentRevisionId` at publication. The
-  display is correct today only because one revision exists per lesson.
-- No lesson may receive a second deployed revision until Slice 9 is
-  certified (PDR-031h).
+- An assignment freezes its `assessmentRevisionId` at publication, and
+  assignment launches route to that revision's page (Slice 9D).
+- Slice 9 is staging-certified (C8). A second deployed revision follows
+  the Earth's Layers r2 sequence (addendum §21.12).
+- A variant's quiz literal must be a verbatim copy of the canonical
+  literal of its revision; a regenerated literal fails the script-block
+  invariance gate.
 
 Implemented (Slice 9A, repository tooling only):
 

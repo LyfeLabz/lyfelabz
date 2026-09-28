@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "assessmentPresentationRevisionId": "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903",
+  "reviewer": {
+    "role": "owner",
+    "reviewerId": "lyfelabz-owner"
+  },
+  "reviewedAt": "2026-09-28T16:47:58.379Z",
+  "determination": "approved",
+  "criteria": {
+    "scientificAccuracy": {
+      "result": "pass",
+      "notes": "Science certified for assessment_earths-layers__r2 (ruling R2-D1 approves the canonical r2 questions): differentiation by density, layer order, the brittle least-dense crust, denser oceanic crust sinking beneath continental crust, the solid but slowly flowing mantle, the rigid plate-forming lithosphere over the slowly flowing asthenosphere, convection from density differences, the inner core kept solid by pressure, earthquakes from released energy, and the heat to convection to plate motion to surface-change chain."
+    },
+    "standardAndLearningTargetPreserved": {
+      "result": "pass",
+      "notes": "Same standard (7.MS-ESS2-2, ruling R2-D4) and learning targets as assessment_earths-layers__r2."
+    },
+    "cognitiveDemandPreserved": {
+      "result": "pass",
+      "notes": "Same cognitive demand and rigor per item; three displayed choices is the accepted accommodation (D1)."
+    },
+    "correctAnswerEquivalence": {
+      "result": "pass",
+      "notes": "Every adapted correct choice keeps the canonical r2 correct meaning; the canonical correct option is displayed on every item."
+    },
+    "distractorMisconceptionEquivalence": {
+      "result": "pass",
+      "notes": "Retained distractors keep the meaningful misconceptions recorded in the review packet, including the liquid-mantle, reversed-density, and swapped-layer misconceptions."
+    },
+    "omittedDistractorAppropriate": {
+      "result": "pass",
+      "notes": "Each item omits exactly one canonical distractor with a recorded rationale, approved as presented (R2-D2)."
+    },
+    "noAnswerCueing": {
+      "result": "pass",
+      "notes": "No answer cueing. Automated review: 0 hard findings and 0 warnings as displayed; display positions BACBCABACB (A3 B4 C3). The 17 strings kept identical to canonical have approved reasons."
+    },
+    "showYourThinkingEquivalence": {
+      "result": "pass",
+      "notes": "Adapted prompt, model answer, and required term (convection) carried over from the certified r1 form (ruling R2-D3); the canonical Show Your Thinking is unchanged, so evidence equivalence holds."
+    },
+    "explanationEquivalence": {
+      "result": "pass",
+      "notes": "Adapted feedback preserves the meaning of each canonical r2 explanation."
+    }
+  },
+  "items": [
+    {
+      "itemId": "q1",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q2",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q3",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q4",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q5",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q6",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q7",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q8",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q9",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    },
+    {
+      "itemId": "q10",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Earth's Layers r2 owner review packet, ruling R2-D2)."
+    }
+  ]
+}

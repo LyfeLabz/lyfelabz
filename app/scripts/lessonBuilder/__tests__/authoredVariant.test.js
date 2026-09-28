@@ -428,7 +428,10 @@ describe("authored variant - Earth's Layers canonical (in memory, no writes)", (
         adaptableSections: ["engage", "explore", "layers", "crust", "mantle-zone", "core", "explain"],
         adaptableSelectors: ["p", ".callout-body", ".bridge-callout"],
         lockedSelectors: [".edu-note", ".qr-card", ".crust-grid", ".wrapup-chips"],
-        assessmentRevisionId: "assessment_earths-layers__r1",
+        // A new unbound variant of today's canonical source declares the
+        // revision that source transcribes: the configured canonical revision
+        // (r1 in release Stage A, r2 in Stage B; S9-D7 explicit provenance).
+        assessmentRevisionId: elBase.canonicalAssessmentRevisionId,
       },
     },
   };
@@ -439,9 +442,9 @@ describe("authored variant - Earth's Layers canonical (in memory, no writes)", (
       cfg: elCfg, variantKey: KEY, canonicalSourceBytes: elSource, variantSourceBytes: src, assessmentPayloads: elPayloads,
     });
 
-  test("the unadapted canonical source passes every gate and binds r1", () => {
+  test("the unadapted canonical source passes every gate and binds its declared revision", () => {
     const r = elBuild(elSource);
-    expect(r.assessmentRevisions).toEqual(["earths-layers.r1.json"]);
+    expect(r.assessmentRevisions).toEqual([`${elBase.canonicalAssessmentRevisionId.replace("assessment_", "").replace("__", ".")}.json`]);
     expect(r.relocatedReferences.length).toBeGreaterThan(0);
   });
 

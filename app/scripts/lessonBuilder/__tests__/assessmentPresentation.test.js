@@ -405,17 +405,23 @@ describe("retained record files", () => {
     expect(failures).toContain("unexpected file");
   });
 
-  test("the repository retains exactly the owner-certified Earth's Layers presentation, and it verifies cleanly", () => {
-    // F5.3 Slice 6B: the first real retained record. Records are add-only.
+  test("the repository retains exactly the owner-certified Earth's Layers r1 and r2 presentations, and they verify cleanly", () => {
+    // F5.3 Slice 6B: the first real retained record (r1). Earth's Layers r2
+    // added the second. Records are add-only.
+    const EARTHS_LAYERS_R2_AP = "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903";
     const result = AP.verifyRetainedRecords();
     expect(result.ok).toBe(true);
-    expect(result.count).toBe(1);
-    expect(fs.readdirSync(AP.retainedRecordDir())).toEqual([`${EARTHS_LAYERS_AP}.json`]);
-    const checked = AP.checkCertifiedPresentation(EARTHS_LAYERS_AP, {
-      lessonSlug: "earths-layers",
-      assessmentRevisionId: "assessment_earths-layers__r1",
-    });
-    expect(checked.failures).toEqual([]);
+    expect(result.count).toBe(2);
+    expect(fs.readdirSync(AP.retainedRecordDir()).sort()).toEqual([`${EARTHS_LAYERS_AP}.json`, `${EARTHS_LAYERS_R2_AP}.json`]);
+    for (const [apId, own, other] of [
+      [EARTHS_LAYERS_AP, "assessment_earths-layers__r1", "assessment_earths-layers__r2"],
+      [EARTHS_LAYERS_R2_AP, "assessment_earths-layers__r2", "assessment_earths-layers__r1"],
+    ]) {
+      expect(AP.checkCertifiedPresentation(apId, { lessonSlug: "earths-layers", assessmentRevisionId: own }).failures).toEqual([]);
+      expect(AP.checkCertifiedPresentation(apId, { lessonSlug: "earths-layers", assessmentRevisionId: other }).failures).toEqual([
+        `bound presentation maps to ${own}, not ${other}`,
+      ]);
+    }
   });
 });
 

@@ -4,7 +4,8 @@
 //
 // Everything here is in memory: the pure evaluator reads a fake store, and the
 // real pure launch resolver and begin cores are driven through ports that call
-// the same evaluator. Every r2 is synthetic. No Firestore, no writes.
+// the same evaluator. Every r2 is synthetic except the final suite, which uses
+// the real retained Earth's Layers r2 presentation. No Firestore, no writes.
 
 import * as fs from "fs";
 import * as path from "path";
@@ -411,4 +412,69 @@ describe("launch and no-ref begin always agree (one evaluator)", () => {
       expect(await beginCode(harness(docs).begin(rev))).toBe(expected[key]);
     },
   );
+});
+
+// Earth's Layers r2 (2026-09-28): the REAL retained r2 presentation pr6b7c...
+// bound to the owner-certified ap515838... can later be published as scoped r2
+// coverage beside the certified r1 coverage (C8 scoped pr90f.../ap1fed...,
+// plus the staging legacy record) without changing any r1 resolution.
+describe("real Earth's Layers r2 coverage beside r1 (pr6b7c... + ap515838...)", () => {
+  const PR6B7C = "pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948";
+  const AP5158 = "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903";
+  const AP5158_RECORD: unknown = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "..", "..", "scripts", "assessment-presentations", `${AP5158}.json`), "utf8"),
+  );
+  const SCOPED_R1 = indexDoc(PR90F, { assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
+  const SCOPED_R2 = indexDoc(PR6B7C, { assessmentRevisionId: R2, assessmentPresentationRevisionId: AP5158 });
+  const records = { [AP1FED]: AP1FED_RECORD, [AP5158]: AP5158_RECORD };
+  const withoutR2 = { [LEGACY_ID]: LEGACY_BOUND_R1, [SCOPED_R1_ID]: SCOPED_R1 };
+  const withR2 = { ...withoutR2, [SCOPED_R2_ID]: SCOPED_R2 };
+
+  it("the retained r2 record verifies for r2 only", () => {
+    expect(checkAssessmentPresentationDoc(AP5158, AP5158_RECORD, { lessonSlug: SLUG, assessmentRevisionId: R2 })).toMatchObject({ ok: true });
+    expect(checkAssessmentPresentationDoc(AP5158, AP5158_RECORD, { lessonSlug: SLUG, assessmentRevisionId: R1 })).toEqual({ ok: false, reason: "assessmentRevisionMismatch" });
+  });
+
+  it("scoped r2 coverage resolves an r2 assignment to pr6b7c.../ap515838... and begins differentiated for r2", async () => {
+    const h = harness(withR2, { apRecords: records });
+    expect(await h.resolve(R2)).toMatchObject({ kind: "differentiated", presentation: { presentationRevisionId: PR6B7C } });
+    expect(h.minted[0]).toMatchObject({ outcomeAtIssuance: "differentiated", presentationRevisionId: PR6B7C, assessmentPresentationRevisionId: AP5158 });
+    h.useGrantFrom(h.minted[0]);
+    expect(await h.begin(R2, GRANT_ID)).toEqual({
+      deliveryOutcome: "differentiated",
+      variantKey: KEY,
+      presentationRevisionId: PR6B7C,
+      assessmentPresentationRevisionId: AP5158,
+      accommodationConfigRevision: 1,
+    });
+  });
+
+  it("adding scoped r2 coverage leaves r1 resolution byte-for-byte unchanged", async () => {
+    const before = harness(withoutR2, { apRecords: records });
+    const after = harness(withR2, { apRecords: records });
+    expect(await after.resolve(R1)).toEqual(await before.resolve(R1));
+    expect(after.minted).toEqual(before.minted);
+    expect(after.minted[0]).toMatchObject({ presentationRevisionId: PR90F, assessmentPresentationRevisionId: AP1FED });
+    expect(after.readsLog).toEqual([SCOPED_R1_ID]);
+  });
+
+  it("the r2 grant is refused for an r1 session, and the r1 grant for an r2 session", async () => {
+    const r2 = harness(withR2, { apRecords: records });
+    await r2.resolve(R2);
+    r2.useGrantFrom(r2.minted[0]);
+    expect(await beginCode(r2.begin(R1, GRANT_ID))).toBe("refused:LAUNCH_REF_INVALID");
+    const r1 = harness(withR2, { apRecords: records });
+    await r1.resolve(R1);
+    r1.useGrantFrom(r1.minted[0]);
+    expect(await beginCode(r1.begin(R2, GRANT_ID))).toBe("refused:LAUNCH_REF_INVALID");
+  });
+
+  it("before r2 coverage is published, an r2 assignment is a truthful canonicalFallback; an unknown r3 never resolves", async () => {
+    const h = harness(withoutR2, { apRecords: records });
+    expect(await h.resolve(R2)).toMatchObject({ kind: "canonicalFallback", reason: "coverageAssessmentMismatch" });
+    expect(h.minted).toEqual([{ outcomeAtIssuance: "canonicalFallback", studentId: STUDENT, assignmentId: ASSIGNMENT, lessonSlug: SLUG }]);
+    const r3 = harness(withR2, { apRecords: records });
+    expect(await r3.resolve(`assessment_${SLUG}__r3`)).toMatchObject({ kind: "canonicalFallback" });
+    expect(r3.minted[0]).not.toHaveProperty("presentationRevisionId");
+  });
 });

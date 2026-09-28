@@ -80,17 +80,36 @@ describe("page revision vs the server's frozen revision", () => {
 
 describe("the real committed Earth's Layers artifacts", () => {
   const artifact = (rel: string) => new DOMParser().parseFromString(fs.readFileSync(path.join(REPO, rel), "utf8"), "text/html");
-  test("the canonical v2 and v1 pages verify for r1 only", () => {
+  test("the canonical v2 and v1 pages verify only for the configured current revision (r1 in Stage A, r2 in Stage B)", () => {
+    const config = fs.readFileSync(path.join(REPO, "app/scripts/lessonBuilder/lessons/earths-layers.cjs"), "utf8");
+    const current = /canonicalAssessmentRevisionId: "(assessment_earths-layers__r[12])"/.exec(config)![1];
+    const other = current === R1 ? R2 : R1;
     for (const rel of ["app/lessons/lesson_earths-layers.html", "lesson_earths-layers.html"]) {
-      expect(verify(read(artifact(rel)), R1)).toEqual({ ok: true });
-      expect(verify(read(artifact(rel)), R2).ok).toBe(false);
+      expect(verify(read(artifact(rel)), current)).toEqual({ ok: true });
+      expect(verify(read(artifact(rel)), other).ok).toBe(false);
     }
+  });
+
+  test("the real r1 and r2 renditions each verify only for their own revision", () => {
+    const r1 = artifact("app/lessons/assessment-revisions/lesson_earths-layers__r1.html");
+    const r2 = artifact("app/lessons/assessment-revisions/lesson_earths-layers__r2.html");
+    expect(verify(read(r1), R1)).toEqual({ ok: true });
+    expect(verify(read(r1), R2).ok).toBe(false);
+    expect(verify(read(r2), R2)).toEqual({ ok: true });
+    expect(verify(read(r2), R1).ok).toBe(false);
   });
   test("pr90f... (AP-bound, no canonical declaration) verifies for r1 only", () => {
     const doc = artifact("app/lessons/variants/lesson_earths-layers__pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189.html");
     expect(read(doc)).toEqual({ kind: "declared", lessonSlug: EL, assessmentRevisionId: R1 });
     expect(verify(read(doc), R2).ok).toBe(false);
   });
+  test("retained pr6b7c... (AP-bound to r2 via ap515838..., no canonical declaration) verifies for r2 only", () => {
+    const doc = artifact("app/lessons/variants/lesson_earths-layers__pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948.html");
+    expect(read(doc)).toEqual({ kind: "declared", lessonSlug: EL, assessmentRevisionId: R2 });
+    expect(verify(read(doc), R2)).toEqual({ ok: true });
+    expect(verify(read(doc), R1).ok).toBe(false);
+  });
+
   test("historical prff01... (no declaration, no AP block) is accepted only for r1", () => {
     const doc = artifact("app/lessons/variants/lesson_earths-layers__prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c.html");
     expect(read(doc)).toEqual({ kind: "none" });

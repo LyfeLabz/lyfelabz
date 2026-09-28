@@ -1,0 +1,269 @@
+{
+  "activityId": "earths-layers",
+  "revisionOrdinal": 2,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "earths-layers-r2-authoring",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "While Earth was molten, iron and nickel sank to the center in a process called differentiation. Why did these metals sink?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "They were the hottest materials in the young Earth"
+        },
+        {
+          "optionId": "B",
+          "text": "They were more dense than the materials around them"
+        },
+        {
+          "optionId": "C",
+          "text": "Earth's magnetic field pulled them toward the center"
+        },
+        {
+          "optionId": "D",
+          "text": "They cooled and hardened before the other materials"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Differentiation sorted the molten Earth by density. Iron and nickel were more dense than the other materials, so they sank to the center and formed the core, while lighter materials rose to form the mantle and crust."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Starting at the surface, which list shows Earth's four main layers in order?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Crust, outer core, mantle, inner core"
+        },
+        {
+          "optionId": "B",
+          "text": "Mantle, crust, outer core, inner core"
+        },
+        {
+          "optionId": "C",
+          "text": "Crust, mantle, inner core, outer core"
+        },
+        {
+          "optionId": "D",
+          "text": "Crust, mantle, outer core, inner core"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "From the surface to the center, the four main layers are the crust, the mantle, the outer core, and the inner core. Each layer is deeper, hotter, and more dense than the one above it."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes the crust?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It is a thin layer of brittle rock and the least dense layer"
+        },
+        {
+          "optionId": "B",
+          "text": "It is a thick layer of hot rock that slowly flows"
+        },
+        {
+          "optionId": "C",
+          "text": "It is a liquid layer made of iron and nickel"
+        },
+        {
+          "optionId": "D",
+          "text": "It is a solid ball of metal and the densest layer"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The crust is the thin outer layer, only about 4 to 25 miles thick. It is made of brittle rock that breaks easily, and it is the least dense layer. The other choices describe the mantle, the outer core, and the inner core."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Where oceanic crust meets continental crust, one usually sinks beneath the other. Which crust sinks, and why?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Continental crust, because it is thicker"
+        },
+        {
+          "optionId": "B",
+          "text": "Oceanic crust, because it is less dense"
+        },
+        {
+          "optionId": "C",
+          "text": "Oceanic crust, because it is more dense"
+        },
+        {
+          "optionId": "D",
+          "text": "Continental crust, because it is more dense"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Oceanic crust is more dense than continental crust. The density rule still applies: where the two meet, the denser oceanic crust tends to sink beneath the lighter continental crust."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Which statement best describes the rock in Earth's mantle?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It is melted rock, or magma, that moves like a liquid"
+        },
+        {
+          "optionId": "B",
+          "text": "It is solid rock that can slowly flow"
+        },
+        {
+          "optionId": "C",
+          "text": "It is solid rock that stays perfectly still"
+        },
+        {
+          "optionId": "D",
+          "text": "It is liquid metal that creates Earth's magnetic field"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The mantle is solid rock, not liquid magma. Heat and temperature differences let this solid rock flow very slowly, like toothpaste squeezed through a tube. The liquid metal layer is the outer core."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Which statement correctly compares the lithosphere and the asthenosphere?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The lithosphere is rigid and broken into plates, and the asthenosphere below it slowly flows"
+        },
+        {
+          "optionId": "B",
+          "text": "The asthenosphere is rigid and broken into plates, and the lithosphere below it slowly flows"
+        },
+        {
+          "optionId": "C",
+          "text": "The lithosphere is the whole mantle, and the asthenosphere is the crust above it"
+        },
+        {
+          "optionId": "D",
+          "text": "The lithosphere is the crust, and the asthenosphere is the liquid outer core"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "The lithosphere is the rigid outer section made of the crust and the upper mantle, and it is broken into plates. The asthenosphere lies just below it in the upper mantle and slowly flows, a quality called plastic behavior."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "In a mantle convection current, why does hot rock rise?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It is more dense than the cooler rock above it"
+        },
+        {
+          "optionId": "B",
+          "text": "It has melted into liquid magma that bubbles up"
+        },
+        {
+          "optionId": "C",
+          "text": "Earth's magnetic field pushes it toward the surface"
+        },
+        {
+          "optionId": "D",
+          "text": "It is less dense than the cooler rock above it"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Hot rock near the bottom of the mantle is less dense than the cooler rock above it, so it rises. Near the top it cools, becomes more dense, and sinks again. This loop is a convection current."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "The inner core is even hotter than the outer core. Why is the inner core solid while the outer core is liquid?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It is made of rock instead of metal"
+        },
+        {
+          "optionId": "B",
+          "text": "It is less dense than the outer core"
+        },
+        {
+          "optionId": "C",
+          "text": "Pressure from the layers above keeps its metal from melting"
+        },
+        {
+          "optionId": "D",
+          "text": "Earth's magnetic field holds its metal in place"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Both parts of the core are iron and nickel. The inner core is hotter, but the crushing pressure from every layer above squeezes its metal so tightly that it cannot become liquid."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "Two plates are stuck, and pressure builds along their edges. What happens when the plates suddenly slip?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Released energy shakes the crust as an earthquake"
+        },
+        {
+          "optionId": "B",
+          "text": "Magma rises at that spot and erupts from a new volcano"
+        },
+        {
+          "optionId": "C",
+          "text": "The plates melt together and stop moving"
+        },
+        {
+          "optionId": "D",
+          "text": "Earth's magnetic field suddenly reverses"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "When stuck plates suddenly slip, the pressure that built up is released as energy. That energy shakes the crust, and the shaking is an earthquake."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "Which sequence best explains how Earth's internal structure causes earthquakes and volcanoes at the surface?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Plates move on their own first, their motion heats the mantle, and the hot mantle causes earthquakes and volcanoes"
+        },
+        {
+          "optionId": "B",
+          "text": "Heat drives convection in the mantle, the mantle moves the plates, and moving plates cause earthquakes and volcanoes"
+        },
+        {
+          "optionId": "C",
+          "text": "Heat melts the whole mantle into magma, and the magma causes earthquakes and volcanoes"
+        },
+        {
+          "optionId": "D",
+          "text": "Earth's magnetic field moves the plates, and moving plates cause earthquakes and volcanoes"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Heat inside Earth makes hot rock less dense, which drives convection currents in the mantle. The flowing mantle drags the plates, and moving plates produce earthquakes and volcanoes at the surface."
+    }
+  ]
+}

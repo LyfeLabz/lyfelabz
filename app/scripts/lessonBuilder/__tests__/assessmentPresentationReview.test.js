@@ -278,16 +278,50 @@ describe("uncertified preview cannot enter retention", () => {
   });
 });
 
+// Since the Earth's Layers r2 authoring pass the draft at the fixed path is
+// the r2 presentation, owner-certified as ap515838... (ruling R2-D2) and
+// retained. The certified r1 presentation ap1fed... lives on as its retained
+// record (byte-equal to the earlier r1 draft) and review record; the earlier
+// r1 authoring notes are working material recoverable from Git (addendum
+// 21.12).
 describe("the Earth's Layers draft (real content, read only)", () => {
   const DRAFT = path.join(paths.REPO_ROOT, "lesson-sources", "variants", "earths-layers.reading-adapted.assessment.json");
+  const AP1FED = "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25";
+  const R1 = "assessment_earths-layers__r1";
+  const R2 = "assessment_earths-layers__r2";
   const a = REV.analyzeDraft(DRAFT);
   const payload = a.canonicalPayload;
+  const ap1fed = JSON.parse(fs.readFileSync(path.join(paths.REPO_ROOT, "platform", "functions", "src", "scripts", "assessment-presentations", `${AP1FED}.json`), "utf8"));
 
   test("passes every automated check with notes", () => {
     expect(a.hardFailures).toEqual([]);
+    expect(a.warnings).toEqual([]);
     expect(a.ok).toBe(true);
-    expect(a.record.assessmentRevisionId).toBe("assessment_earths-layers__r1");
+    expect(a.record.assessmentRevisionId).toBe(R2);
     expect(a.record.traits).toEqual({ language: "adapted", choiceCount: 3 });
+  });
+
+  test("is exactly the owner-certified, retained ap515838...", () => {
+    expect(a.assessmentPresentationRevisionId).toBe("ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903");
+    const retained = fs.readFileSync(path.join(AP.retainedRecordDir(), `${a.assessmentPresentationRevisionId}.json`), "utf8");
+    expect(retained).toBe(a.canonicalBytes);
+    const review = AP.loadReview(a.assessmentPresentationRevisionId);
+    expect(review).toMatchObject({ determination: "approved", reviewer: { role: "owner", reviewerId: "lyfelabz-owner" } });
+    expect(AP.validateReview(review, a.record, a.assessmentPresentationRevisionId)).toMatchObject({ ok: true, approved: true });
+  });
+
+  test("is a new presentation, distinct from the certified r1 ap1fed..., which stays retained and unchanged", () => {
+    expect(a.assessmentPresentationRevisionId).not.toBe(AP1FED);
+    expect(AP.assessmentPresentationRevisionIdFor(ap1fed)).toBe(AP1FED);
+    expect(ap1fed.assessmentRevisionId).toBe(R1);
+  });
+
+  test("the r2 presentation cannot map onto r1, and the r1 presentation cannot map onto r2", () => {
+    const r1Payload = AP.loadCanonicalPayload(R1);
+    const r2Payload = AP.loadCanonicalPayload(R2);
+    expect(AP.validateAssessmentPresentation(a.record, r1Payload).failures.length).toBeGreaterThan(0);
+    expect(AP.validateAssessmentPresentation(ap1fed, r2Payload).failures.length).toBeGreaterThan(0);
+    expect(AP.validateAssessmentPresentation(ap1fed, r1Payload).failures).toEqual([]);
   });
 
   test("keeps the canonical correct option and omits exactly one distractor on every item", () => {
@@ -313,15 +347,25 @@ describe("the Earth's Layers draft (real content, read only)", () => {
     ]);
   });
 
-  test("the uncertified preview builds on the retained instruction presentation, deterministically, without leaking review content", () => {
+  test("the certified r2 presentation previews deterministically without leaking review content, and its unmarked bytes are exactly retained pr6b7c...", () => {
     const p1 = variantSource.buildUncertifiedAssessmentPreview({ slug: "earths-layers", variantKey: "reading-adapted", record: a.record });
     const p2 = variantSource.buildUncertifiedAssessmentPreview({ slug: "earths-layers", variantKey: "reading-adapted", record: a.record });
     expect(p1.html).toBe(p2.html);
-    expect(p1.instructionPresentationRevisionId).toBe("prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c");
     expect(p1.assessmentPresentationRevisionId).toBe(a.assessmentPresentationRevisionId);
+    expect(p1.projectedPresentationRevisionId).toBe("pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948");
     expect(p1.html).toContain(UNCERTIFIED_PREVIEW_MARKER);
+    expect(R.readBindingBlock(p1.html)).toMatchObject({ lessonSlug: "earths-layers", assessmentRevisionId: R2, assessmentPresentationRevisionId: a.assessmentPresentationRevisionId });
     expect(R.readBindingBlock(p1.html).items.map((it) => it.optionIds.length)).toEqual(new Array(10).fill(3));
     for (const it of a.record.items) expect(p1.html).not.toContain(R.escapeHtml(it.omittedOptions[0].rationale));
     expect(p1.html).not.toMatch(/reading-adapted|REVIEW-ONLY|distractorMisconceptions/);
   });
+
+  test("the retained r1 presentation cannot be re-rendered from the authored variant source, which now carries the r2 quiz", () => {
+    // pr90f... stays retained and immutable; its byte reproduction is proven
+    // from the historical r1 variant source (assessmentRenditions.test.js).
+    expect(() => variantSource.buildUncertifiedAssessmentPreview({ slug: "earths-layers", variantKey: "reading-adapted", record: ap1fed })).toThrow(
+      /script blocks are not byte-identical to the canonical lesson|variant quiz is not exactly assessment_earths-layers__r1/,
+    );
+  });
+
 });

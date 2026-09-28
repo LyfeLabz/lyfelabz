@@ -2,91 +2,91 @@
   "schemaVersion": 1,
   "kind": "lyfelabz.assessmentPresentationAuthoringNotes",
   "lessonSlug": "earths-layers",
-  "assessmentRevisionId": "assessment_earths-layers__r1",
+  "assessmentRevisionId": "assessment_earths-layers__r2",
   "items": [
     {
       "itemId": "q1",
-      "correctMeaning": "Both say Earth has four main layers. Only the stem wording changes (\"is divided into\" becomes \"have\"); the correct option text is unchanged.",
+      "correctMeaning": "Both say iron and nickel sank because they were more dense than the other materials. Canonical \"than the materials around them\" becomes \"than the other materials\"; the meaning is unchanged. The adapted stem glosses \"molten\" and splits one sentence into four.",
       "distractorMisconceptions": {
-        "B": "Treats the core as one layer (crust, mantle, core) and misses its split into a liquid outer core and a solid inner core.",
-        "D": "Counts subdivisions the lesson also names (lithosphere, asthenosphere, oceanic and continental crust) as separate main layers."
+        "A": "Confuses temperature with density: assumes the hottest materials must be the ones that sink.",
+        "C": "Thinks iron and nickel went to the center because they are magnetic, confusing the magnetic field with density as the cause of sorting."
       }
     },
     {
       "itemId": "q2",
-      "correctMeaning": "Both name differentiation as the process in which heavy metals sank to the center while Earth was molten. The stem adds a plain-language gloss of \"molten\" and splits one sentence into two; the option text is unchanged.",
+      "correctMeaning": "Identical correct option: crust, mantle, outer core, inner core. The stem splits the direction (surface to center) into its own short sentence.",
       "distractorMisconceptions": {
-        "A": "Confuses density sorting during Earth's formation with convection currents, the ongoing density-driven circulation in the mantle. The choice uses the lesson's own vocabulary term (Convection Current), which keeps the lure as strong as the canonical \"Convection\".",
-        "D": "Confuses sorting inside the young Earth by density with erosion, a familiar process that moves and sorts material (sediment) at the surface. Students who know that heavier sediment settles first may apply that surface idea to Earth's interior."
+        "A": "Places the liquid outer core above the mantle (knows the crust is on top but not where the mantle sits).",
+        "C": "Swaps the two core layers, the common error of thinking the liquid layer is at the very center."
       }
     },
     {
       "itemId": "q3",
-      "correctMeaning": "Identical wording: dense materials sink below less dense materials.",
+      "correctMeaning": "Both describe the crust as thin, brittle rock and the least dense layer. \"A thin layer of brittle rock and the least dense layer\" becomes \"thin, brittle rock and the least dense layer\".",
       "distractorMisconceptions": {
-        "A": "Thinks iron and nickel went to the center because they are magnetic, confusing the magnetic field with density as the cause of sorting.",
-        "C": "Confuses temperature with density: assumes the hottest materials are the densest because the core is both hot and dense."
-      }
-    },
-    {
-      "itemId": "q4",
-      "correctMeaning": "Identical wording: the crust is a thin, brittle layer and the least dense.",
-      "distractorMisconceptions": {
-        "A": "Reverses the depth trend: gives the crust the thickness and density of the deeper layers.",
+        "B": "Gives the crust the mantle's properties (thick, hot, slowly flowing).",
         "C": "Gives the crust the outer core's liquid iron and nickel, confusing layer composition and state."
       }
     },
     {
-      "itemId": "q5",
-      "correctMeaning": "Identical wording: oceanic crust is thinner, younger, and more dense.",
+      "itemId": "q4",
+      "correctMeaning": "Identical correct option: oceanic crust sinks because it is more dense. The stem splits one long sentence into three short ones.",
       "distractorMisconceptions": {
-        "A": "Reverses oceanic crust's thickness and density (thinks ocean crust is the thick, light type).",
-        "C": "Swaps the two crust types: gives continental crust the thinness, youth, and basalt of oceanic crust. \"Younger\" is added so the swap mirrors the correct choice; it is the same misconception."
+        "A": "Thinks thicker crust is heavier and sinks, confusing thickness with density.",
+        "B": "Knows oceanic crust sinks but reverses the density relationship, so the answer cannot be chosen from the crust name alone."
+      }
+    },
+    {
+      "itemId": "q5",
+      "correctMeaning": "Identical correct option: solid rock that can slowly flow. The stem changes only \"statement\" to \"sentence\".",
+      "distractorMisconceptions": {
+        "A": "The core misconception that the mantle is a layer of liquid magma.",
+        "C": "Thinks solid rock cannot move at all, so misses that the solid mantle slowly flows."
       }
     },
     {
       "itemId": "q6",
-      "correctMeaning": "Canonical: the flowing mantle moves the plates above it. Adapted: it (the slowly flowing mantle named in the stem) moves the plates above it. Same meaning; every choice now uses \"It\" so no choice repeats the stem.",
+      "correctMeaning": "Both say the lithosphere is rigid (stiff) and broken into plates and the asthenosphere below it slowly flows. \"Rigid\" becomes \"stiff\", the lesson's own gloss for rigid, and each option is split into two short sentences.",
       "distractorMisconceptions": {
-        "B": "Believes a flowing mantle must be liquid or melted and melts the crust (the key solid-that-flows misconception).",
-        "C": "Reverses the effect: thinks mantle flow calms the surface and stops earthquakes instead of moving the plates that cause them."
+        "B": "Swaps the two zones: puts the flowing layer on top and the plates below.",
+        "C": "Confuses the lithosphere and asthenosphere with the mantle and crust (mixes up the compositional and mechanical layer names)."
       }
     },
     {
       "itemId": "q7",
-      "correctMeaning": "Identical wording: the asthenosphere. The stem keeps the approved Grade 7 framing \"responsible for convection currents\" (C6) and is split into three short sentences.",
+      "correctMeaning": "Identical correct option: hot rock is less dense than the cooler rock above it.",
       "distractorMisconceptions": {
-        "A": "Confuses the rigid lithosphere with the asthenosphere below it; the two are taught as a pair.",
-        "C": "Links convection to the hottest, deepest layer, confusing the heat source with the layer that flows."
+        "A": "Reverses the density relationship that drives convection.",
+        "B": "Thinks hot rock rises because it has melted into magma, the liquid-mantle misconception."
       }
     },
     {
       "itemId": "q8",
-      "correctMeaning": "Canonical: energy and heat from Earth's interior. Adapted: heat energy from deep inside Earth. Same cause. \"Drives\" becomes \"causes\" in the stem, and \"Earth\" is no longer in the stem, so the correct choice no longer echoes it.",
+      "correctMeaning": "Both say pressure from the layers above keeps the inner core's metal from melting. \"From the layers above\" is shortened to \"from above\"; the pressure cause is unchanged.",
       "distractorMisconceptions": {
-        "B": "Attributes mantle motion to an outside force, by analogy with the Moon's gravity causing tides.",
-        "D": "Names a motion inside Earth instead of heat as the driver, confusing the core's role as a heat source with spinning. \"Only\" is kept from canonical so the choice keeps its meaning."
+        "B": "Uses a density explanation for the state of matter (and reverses the depth trend).",
+        "D": "Credits the magnetic field, which the lesson ties to the core, with holding the metal solid."
       }
     },
     {
       "itemId": "q9",
-      "correctMeaning": "Canonical: the energy is released as an earthquake in the crust. Adapted: energy shakes the crust as an earthquake. Both say the released energy produces an earthquake in the crust. The stem already says the pressure is released, so the choice no longer repeats \"released\" (a canonical stem echo), and it is no longer much longer than the distractors.",
+      "correctMeaning": "Identical correct option: released energy shakes the crust as an earthquake. The stem splits one sentence into three.",
       "distractorMisconceptions": {
-        "A": "Thinks the energy released when stuck plates slip goes into Earth's magnetic field and flips it, instead of shaking the crust. It mixes up two ideas taught in the same lesson (earthquake energy and the magnetic field) and misplaces where the released energy goes.",
-        "D": "Confuses the timescale: expects a sudden release to build new land at once instead of shaking the crust."
+        "B": "Confuses an earthquake with a volcanic eruption, both surface events caused by plate motion.",
+        "C": "Thinks stuck plates fuse and stop instead of releasing energy when they slip."
       }
     },
     {
       "itemId": "q10",
-      "correctMeaning": "Canonical: heat drives convection in the mantle, which moves plates and produces earthquakes and volcanoes. Adapted: the same chain, with \"produces\" replaced by \"causes\". Same meaning and same four links.",
+      "correctMeaning": "Both give the chain heat, mantle convection, plate motion, then earthquakes and volcanoes. Each option is split into short sentences; \"internal structure\" becomes \"inner layers\" in the stem.",
       "distractorMisconceptions": {
-        "C": "Knows the crust moves but does not connect that motion to heat and convection in the deeper layers.",
-        "D": "Picks a real feature of Earth's interior (the magnetic field made in the core) as the wrong cause of earthquakes and volcanoes."
+        "A": "Reverses cause and effect: plate motion heats the mantle instead of mantle convection moving the plates.",
+        "C": "The liquid-mantle misconception: heat melts the whole mantle into magma that directly causes surface events."
       }
     }
   ],
   "showYourThinking": {
-    "evidenceComparison": "Both prompts ask for the same evidence: one or two sentences that explain, in order, the causal steps from the hot core to earthquakes and volcanoes at the surface, not a list of layers, using the word convection. The adapted prompt splits the canonical two sentences into five short ones and replaces \"layered inner structure ends up causing\" with \"inner layers cause\". It adds no step and removes none. The adapted model answer states the same chain as the canonical model (hot core, mantle convection, plate motion, surface change) and ends with the same success check. Its ending follows the lesson: stuck plates build pressure and suddenly slip, causing earthquakes, and in some places where plates meet or pull apart, rock below melts into magma that can erupt from volcanoes (not at every boundary). It also names density (hot rock is less dense and rises, cooler rock is more dense and sinks), which the canonical model implies with \"rising and sinking material\" and which the lesson's Convection Current KEY IDEA teaches. The success check does not add density as a requirement. Reviewer decision: whether naming density in the model answer is acceptable.",
+    "evidenceComparison": "The adapted prompt and model answer are carried over unchanged from the owner-certified r1 presentation ap1fed..., because the canonical Show Your Thinking prompt and model answer did not change in the r2 authoring pass (canonical Show Your Thinking is lesson content, not part of the assessment revision; addendum 9.4). Both prompts ask for the same evidence: one or two sentences that explain, in order, the causal steps from the hot core to earthquakes and volcanoes at the surface, not a list of layers, using the word convection. The adapted prompt splits the canonical two sentences into five short ones and replaces \"layered inner structure ends up causing\" with \"inner layers cause\". It adds no step and removes none. The adapted model answer states the same chain as the canonical model (hot core, mantle convection, plate motion, surface change) and ends with the same success check. Its ending follows the lesson: stuck plates build pressure and suddenly slip, causing earthquakes, and in some places where plates meet or pull apart, rock below melts into magma that can erupt from volcanoes (not at every boundary). It also names density (hot rock is less dense and rises, cooler rock is more dense and sinks), which the canonical model implies with \"rising and sinking material\" and which the lesson's Convection Current KEY IDEA teaches. The success check does not add density as a requirement. Reviewer decision: whether naming density in the model answer is acceptable.",
     "causalChain": [
       {
         "step": "Heat from the core",
@@ -124,23 +124,22 @@
     ]
   },
   "unchanged": {
-    "q1.option:B": "Single number word; no simpler form.",
-    "q1.option:C": "Single number word; no simpler form.",
-    "q1.option:D": "Single number word; no simpler form.",
-    "q2.option:B": "Scientific term being assessed; renaming it would change what is assessed.",
-    "q2.option:D": "Scientific term taught in earlier units; renaming it would change the distractor.",
-    "q3.stem": "Already one short question that uses the key term \"densest\".",
-    "q3.option:A": "Already short, plain wording; the assessed meaning is carried by this exact text.",
-    "q3.option:B": "Already short, plain wording; the assessed meaning is carried by this exact text.",
-    "q3.option:C": "Already short, plain wording; the assessed meaning is carried by this exact text. \"Always\" is kept so the misconception keeps its canonical meaning.",
-    "q4.option:A": "Already short, plain wording; the assessed meaning is carried by this exact text.",
-    "q4.option:B": "Already short, plain wording; the assessed meaning is carried by this exact text. \"Brittle\" is lesson vocabulary.",
-    "q4.option:C": "Already short, plain wording; the assessed meaning is carried by this exact text. Owner-preferred wording: it centers the outer core's composition and state.",
-    "q5.option:A": "Already short, plain wording; the assessed meaning is carried by this exact text.",
-    "q5.option:B": "Already short, plain wording; the assessed meaning is carried by this exact text.",
-    "q7.option:A": "Assessed layer name.",
-    "q7.option:B": "Assessed layer name.",
-    "q7.option:C": "Assessed layer name.",
-    "q8.option:B": "Already short, plain wording; the assessed meaning is carried by this exact text."
+    "q2.option:A": "A list of the four layer names; no simpler form, and the layer names are the assessed content.",
+    "q2.option:C": "A list of the four layer names; no simpler form, and the layer names are the assessed content.",
+    "q2.option:D": "A list of the four layer names; no simpler form, and the layer names are the assessed content.",
+    "q3.option:C": "Already short, plain wording; \"iron and nickel\" is the outer-core composition the distractor depends on.",
+    "q4.option:A": "Already short, plain wording in the same crust-plus-reason form as the other choices.",
+    "q4.option:B": "Already short, plain wording in the same crust-plus-reason form as the other choices; \"dense\" is lesson vocabulary.",
+    "q4.option:C": "Already short, plain wording in the same crust-plus-reason form as the other choices; \"dense\" is lesson vocabulary.",
+    "q5.option:A": "Already short, plain wording; \"magma\" is glossed in place and names the misconception.",
+    "q5.option:B": "Already short, plain wording; the assessed meaning (solid rock that flows) is carried by this exact text.",
+    "q5.option:C": "Already short, plain wording; it mirrors the correct choice so only the flow idea differs.",
+    "q7.option:A": "Already short, plain wording; it mirrors the correct choice so only the density direction differs.",
+    "q7.option:D": "Already short, plain wording; the assessed density relationship is carried by this exact text.",
+    "q8.option:B": "Already short, plain wording; \"dense\" is lesson vocabulary.",
+    "q8.option:D": "Already short, plain wording.",
+    "q8.feedback": "The canonical explanation was already three short sentences of plain wording; only its punctuation differs.",
+    "q9.option:A": "Already short, plain wording; \"earthquake\" is the assessed outcome.",
+    "q9.option:C": "Already short, plain wording."
   }
 }

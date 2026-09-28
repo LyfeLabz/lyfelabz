@@ -42,7 +42,8 @@
       "assessment_earthquakes__r1": "/app/lessons/lesson_earthquakes.html"
     },
     "earths-layers": {
-      "assessment_earths-layers__r1": "/app/lessons/lesson_earths-layers.html"
+      "assessment_earths-layers__r1": "/app/lessons/assessment-revisions/lesson_earths-layers__r1.html",
+      "assessment_earths-layers__r2": "/app/lessons/assessment-revisions/lesson_earths-layers__r2.html"
     },
     "earths-place-in-the-universe": {
       "assessment_earths-place-in-the-universe__r1": "/app/lessons/lesson_earths-place-in-the-universe.html"

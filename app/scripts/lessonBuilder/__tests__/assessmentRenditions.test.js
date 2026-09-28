@@ -8,11 +8,18 @@
  * F5.3 Slice 9B - canonical revision declarations, revision-bound renditions,
  * the variant baseline, and the revision-to-path table.
  *
- * Multi-revision behavior is proven with a SYNTHETIC Earth's Layers r2 held
- * in memory (no payload, source, config, or artifact is written). The
- * synthetic "current r2" source is the real canonical source with only its
- * quiz literal replaced by r2's literal, as a real r2 authoring pass would
- * leave it.
+ * Multi-revision behavior is proven with the REAL Earth's Layers pair: the
+ * committed r1 and r2 (authored and owner-approved 2026-09-28), the retained
+ * r1 presentations (prff01..., pr90f... + ap1fed...) and the retained r2
+ * presentation (pr6b7c... + ap515838...).
+ *
+ * The repository moves through two release states (addendum 21.12): Stage A
+ * declares r1 as the canonical current revision, Stage B declares r2. Every
+ * test here holds in BOTH states. Each state's canonical source is rebuilt in
+ * memory from two immutable byte anchors: the verbatim r1 quiz literal carried
+ * by retained prff01... (an unbound variant whose literal is the canonical
+ * r1 literal) and the verbatim r2 literal carried by the authored variant
+ * source. Nothing here writes a payload, source, config, or artifact.
  */
 
 const crypto = require("crypto");
@@ -31,7 +38,9 @@ const ROOT = paths.REPO_ROOT;
 const EL = "earths-layers";
 const PR90F = "pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189";
 const PRFF01 = "prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c";
+const PR6B7C = "pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948";
 const AP1FED = "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25";
+const AP5158 = "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903";
 const R1 = "assessment_earths-layers__r1";
 const R2 = "assessment_earths-layers__r2";
 
@@ -41,22 +50,8 @@ const read = (rel) => fs.readFileSync(path.join(ROOT, rel), "utf8");
 const elCfg = configMod.loadConfig(EL);
 const elSource = read(elCfg.canonicalSource);
 const r1Payload = JSON.parse(read(`platform/functions/src/scripts/assessments/${EL}.r1.json`));
-
-// A synthetic r2 whose correct answers moved, so its quiz genuinely differs.
-function r2Payload() {
-  const p = JSON.parse(JSON.stringify(r1Payload));
-  p.revisionOrdinal = 2;
-  p.publishedBy = "slice-9b-synthetic-fixture";
-  p.items.forEach((item, i) => {
-    const target = item.options[(i + 1) % item.options.length];
-    const current = item.options.find((o) => o.optionId === item.correctOptionId);
-    const text = target.text;
-    target.text = current.text;
-    current.text = text;
-    item.correctOptionId = target.optionId;
-  });
-  return p;
-}
+// The real, committed r2 (a fresh copy per call, so a test may mutate it).
+const r2Payload = () => JSON.parse(read(`platform/functions/src/scripts/assessments/${EL}.r2.json`));
 
 function entry(file, payload) {
   const d = R.describeRevision(file, payload);
@@ -67,21 +62,73 @@ const e1 = () => entry(`${EL}.r1.json`, r1Payload);
 const e2 = () => entry(`${EL}.r2.json`, r2Payload());
 const bySlug = (list) => new Map([[EL, list]]);
 
-// The canonical source after a (synthetic) r2 authoring pass.
-function sourceAt(e) {
-  const literal = render.locateQuizLiteral(elSource);
-  return elSource.slice(0, literal.start) + render.literalSource(N.questionsForPayload(EL, e.payload)) + elSource.slice(literal.end);
-}
+// Quiz literal bytes of a page, and a page with its literal replaced.
+const literalOf = (html) => {
+  const l = render.locateQuizLiteral(html);
+  return html.slice(l.start, l.end);
+};
+const withLiteral = (html, literal) => {
+  const l = render.locateQuizLiteral(html);
+  return html.slice(0, l.start) + literal + html.slice(l.end);
+};
+// The two immutable literal anchors (see the header). A variant's literal
+// must be a byte copy of the canonical one, so a regenerated literal would not
+// do.
+const variantBytes = read(elCfg.variants["reading-adapted"].source);
+const R1_LITERAL = literalOf(read(`app/lessons/variants/lesson_${EL}__${PRFF01}.html`));
+const R2_LITERAL = literalOf(variantBytes);
+// Stage A (r1 current) and Stage B (r2 current) canonical sources.
+const r1CurrentSource = () => withLiteral(elSource, R1_LITERAL);
+const r2CurrentSource = () => withLiteral(elSource, R2_LITERAL);
+// The authored variant source as it stood for pr90f... and prff01...
+const r1VariantSource = () => withLiteral(variantBytes, R1_LITERAL);
 const cfgAt = (id) => ({ ...elCfg, canonicalAssessmentRevisionId: id });
+const stageSource = (id) => (id === R1 ? r1CurrentSource() : r2CurrentSource());
+const CURRENT = elCfg.canonicalAssessmentRevisionId;
+const undeclared = (cfg) => {
+  const { canonicalAssessmentRevisionId: _declared, ...rest } = cfg;
+  return rest;
+};
+
+describe("the real Earth's Layers r1 + r2 pair", () => {
+  test("the config declares r1 (Stage A) or r2 (Stage B), and the source is exactly that stage's source", () => {
+    expect([R1, R2]).toContain(CURRENT);
+    expect(R.revisionsForLesson(EL).map((e) => e.assessmentRevisionId)).toEqual([R1, R2]);
+    expect(elSource).toBe(stageSource(CURRENT));
+    const quiz = F.extractCanonicalQuiz(elSource, EL);
+    const [current, other] = CURRENT === R1 ? [r1Payload, r2Payload()] : [r2Payload(), r1Payload];
+    expect(F.checkFidelity(EL, current, quiz)).toEqual([]);
+    expect(F.checkFidelity(EL, other, quiz).length).toBeGreaterThan(0);
+  });
+
+  test("the two literal anchors are exactly r1 and exactly r2", () => {
+    const quiz = (literal) => F.extractCanonicalQuiz(withLiteral(elSource, literal), EL);
+    expect(F.checkFidelity(EL, r1Payload, quiz(R1_LITERAL))).toEqual([]);
+    expect(F.checkFidelity(EL, r2Payload(), quiz(R2_LITERAL))).toEqual([]);
+  });
+
+  test("r1 is byte-unchanged (immutable baseline)", () => {
+    expect(sha256(fs.readFileSync(path.join(ROOT, `platform/functions/src/scripts/assessments/${EL}.r1.json`)))).toBe("1ecb141a629aedb414190892995a6e4a4d0e8114622b56a966aac2f0c26474b3");
+  });
+
+  test("the committed r1 rendition displays exactly the quiz the r1-current canonical page displayed", () => {
+    const r1Rendition = read("app/lessons/assessment-revisions/lesson_earths-layers__r1.html");
+    const whileR1Current = builder.buildAllTargets(cfgAt(R1), r1CurrentSource(), bySlug([e1()]));
+    expect(F.extractCanonicalQuiz(r1Rendition, EL)).toEqual(F.extractCanonicalQuiz(whileR1Current.v2.bytes, EL));
+    expect(N.readDeclaration(r1Rendition).assessmentRevisionId).toBe(R1);
+  });
+});
 
 describe("canonical revision declaration", () => {
   test("every committed canonical v1 and v2 artifact declares exactly its configured revision", () => {
     for (const slug of configMod.listConfiguredSlugs()) {
       const cfg = configMod.loadConfig(slug);
+      const configured = cfg.canonicalAssessmentRevisionId || `assessment_${slug}__r1`;
+      expect(configured).toBe(slug === EL ? CURRENT : `assessment_${slug}__r1`);
       for (const target of ["v1", "v2"]) {
         const html = read(cfg.outputs[target]);
-        expect(N.readDeclaration(html)).toEqual({ schemaVersion: 1, lessonSlug: slug, assessmentRevisionId: `assessment_${slug}__r1` });
-        const block = N.declarationHtml(N.declarationFor(slug, `assessment_${slug}__r1`));
+        expect(N.readDeclaration(html)).toEqual({ schemaVersion: 1, lessonSlug: slug, assessmentRevisionId: configured });
+        const block = N.declarationHtml(N.declarationFor(slug, configured));
         expect(html.indexOf(`${block}\n${N.RUNTIME_SCRIPT_TAG}`)).toBeGreaterThan(-1);
       }
     }
@@ -116,30 +163,49 @@ describe("canonical revision declaration", () => {
   });
 
   test("a missing, malformed, or uncommitted configured revision fails the canonical build", () => {
-    expect(() => builder.buildAllTargets(elCfg, elSource, bySlug([e1(), e2()]))).toThrow("must declare canonicalAssessmentRevisionId");
+    expect(() => builder.buildAllTargets(undeclared(elCfg), elSource, bySlug([e1(), e2()]))).toThrow("must declare canonicalAssessmentRevisionId");
     expect(() => builder.buildAllTargets(cfgAt("assessment_earths-layers__r3"), elSource, bySlug([e1(), e2()]))).toThrow("is not a committed revision");
     expect(() => builder.buildAllTargets(cfgAt("assessment_earths-layers__rx"), elSource, bySlug([e1()]))).toThrow("must be assessment_<slug>__r<N>");
-    expect(() => builder.buildAllTargets(elCfg, elSource, bySlug([]))).toThrow("no committed assessment revision");
+    expect(() => builder.buildAllTargets(undeclared(elCfg), elSource, bySlug([]))).toThrow("no committed assessment revision");
   });
 
   test("the canonical build fails when the source is not faithful to the configured revision", () => {
-    expect(() => builder.buildAllTargets(cfgAt(R2), elSource, bySlug([e1(), e2()]))).toThrow("not faithful to its configured revision earths-layers.r2.json");
-    expect(() => builder.buildAllTargets(cfgAt(R1), sourceAt(e2()), bySlug([e1(), e2()]))).toThrow("not faithful to its configured revision earths-layers.r1.json");
+    expect(() => builder.buildAllTargets(cfgAt(R2), r1CurrentSource(), bySlug([e1(), e2()]))).toThrow("not faithful to its configured revision earths-layers.r2.json");
+    expect(() => builder.buildAllTargets(cfgAt(R1), r2CurrentSource(), bySlug([e1(), e2()]))).toThrow("not faithful to its configured revision earths-layers.r1.json");
   });
 
   test("retained variant bytes never carry the canonical declaration", () => {
-    for (const id of [PR90F, PRFF01]) {
+    for (const id of [PR90F, PRFF01, PR6B7C]) {
       expect(N.readDeclaration(read(`app/lessons/variants/lesson_${EL}__${id}.html`))).toBeNull();
     }
   });
 });
 
-describe("revision-bound renditions (synthetic r1 + r2)", () => {
-  const built = builder.buildAllTargets(cfgAt(R2), sourceAt(e2()), bySlug([e1(), e2()]));
+describe("revision-bound renditions (real r1 + r2)", () => {
+  const built = builder.buildAllTargets(elCfg, elSource, bySlug([e1(), e2()]));
 
   test("the unversioned pages declare the configured current revision", () => {
-    expect(N.readDeclaration(built.v1.bytes).assessmentRevisionId).toBe(R2);
-    expect(N.readDeclaration(built.v2.bytes).assessmentRevisionId).toBe(R2);
+    expect(N.readDeclaration(built.v1.bytes).assessmentRevisionId).toBe(CURRENT);
+    expect(N.readDeclaration(built.v2.bytes).assessmentRevisionId).toBe(CURRENT);
+  });
+
+  test("Stage A and Stage B ship identical renditions and table; only the unversioned pages differ", () => {
+    const stageA = builder.buildAllTargets(cfgAt(R1), r1CurrentSource(), bySlug([e1(), e2()]));
+    const stageB = builder.buildAllTargets(cfgAt(R2), r2CurrentSource(), bySlug([e1(), e2()]));
+    expect(stageA.renditions.map((r) => r.bytes)).toEqual(stageB.renditions.map((r) => r.bytes));
+    expect(N.serializePathTable(N.buildRevisionPathTable([cfgAt(R1)], bySlug([e1(), e2()])))).toBe(
+      N.serializePathTable(N.buildRevisionPathTable([cfgAt(R2)], bySlug([e1(), e2()]))),
+    );
+    expect(N.readDeclaration(stageA.v2.bytes).assessmentRevisionId).toBe(R1);
+    expect(N.readDeclaration(stageB.v2.bytes).assessmentRevisionId).toBe(R2);
+    expect(F.checkFidelity(EL, r1Payload, F.extractCanonicalQuiz(stageA.v2.bytes, EL))).toEqual([]);
+    expect(F.checkFidelity(EL, r2Payload(), F.extractCanonicalQuiz(stageB.v2.bytes, EL))).toEqual([]);
+  });
+
+  test("the build is exactly the committed pages and renditions", () => {
+    expect(built.v1.bytes).toBe(read(elCfg.outputs.v1));
+    expect(built.v2.bytes).toBe(read(elCfg.outputs.v2));
+    for (const r of built.renditions) expect(r.bytes).toBe(read(r.path));
   });
 
   test("one rendition per committed revision, at distinct revision paths", () => {
@@ -171,14 +237,16 @@ describe("revision-bound renditions (synthetic r1 + r2)", () => {
   });
 
   test("the rebuild is byte-identical and independent of revision discovery order", () => {
-    const again = builder.buildAllTargets(cfgAt(R2), sourceAt(e2()), bySlug([e1(), e2()]));
+    const again = builder.buildAllTargets(elCfg, elSource, bySlug([e2(), e1()].sort((a, b) => a.revisionOrdinal - b.revisionOrdinal)));
     expect(again.renditions.map((r) => r.bytes)).toEqual(built.renditions.map((r) => r.bytes));
     expect(again.v2.bytes).toBe(built.v2.bytes);
   });
 
   test("the historical r1 rendition is unchanged whichever revision is current", () => {
-    const whileR1Current = builder.buildAllTargets(cfgAt(R1), elSource, bySlug([e1(), e2()]));
-    expect(whileR1Current.renditions.map((r) => r.bytes)).toEqual(built.renditions.map((r) => r.bytes));
+    for (const id of [R1, R2]) {
+      const atStage = builder.buildAllTargets(cfgAt(id), stageSource(id), bySlug([e1(), e2()]));
+      expect(atStage.renditions.map((r) => r.bytes)).toEqual(built.renditions.map((r) => r.bytes));
+    }
   });
 
   test("a revision can never be rendered with another lesson's or revision's content", () => {
@@ -204,19 +272,23 @@ describe("revision-bound renditions (synthetic r1 + r2)", () => {
   });
 
   test("a single-revision lesson produces no rendition", () => {
-    const single = builder.buildAllTargets(elCfg, elSource, bySlug([e1()]));
+    const wc = configMod.loadConfig("water-cycle");
+    const single = builder.buildAllTargets(wc, read(wc.canonicalSource), new Map([["water-cycle", R.revisionsForLesson("water-cycle")]]));
     expect(single.renditions).toEqual([]);
-    expect(single.v2.bytes).toBe(read(elCfg.outputs.v2));
-    expect(single.v1.bytes).toBe(read(elCfg.outputs.v1));
+    expect(single.v2.bytes).toBe(read(wc.outputs.v2));
+    expect(single.v1.bytes).toBe(read(wc.outputs.v1));
   });
 });
 
 describe("variant baseline", () => {
-  const variantBytes = read(elCfg.variants["reading-adapted"].source);
-  const unbound = (cfg, extra = {}) => {
-    const { assessmentPresentationRevisionId: _ap, ...v } = cfg.variants["reading-adapted"];
-    return { ...cfg, variants: { "reading-adapted": { ...v, ...extra } } };
-  };
+  const baseVariant = (() => {
+    const { assessmentPresentationRevisionId: _ap, assessmentRevisionId: _rev, ...v } = elCfg.variants["reading-adapted"];
+    return v;
+  })();
+  const withVariant = (base, extra) => ({ ...base, variants: { "reading-adapted": { ...baseVariant, ...extra } } });
+  const r1Bound = (base, extra = {}) => withVariant(base, { assessmentPresentationRevisionId: AP1FED, ...extra });
+  const r2Bound = (base, extra = {}) => withVariant(base, { assessmentPresentationRevisionId: AP5158, ...extra });
+  const unbound = (base, extra = {}) => withVariant(base, extra);
   const buildAt = (cfg, canonicalSourceBytes, variantSourceBytes = variantBytes) =>
     variantSource.buildVariantArtifact({
       cfg,
@@ -226,75 +298,78 @@ describe("variant baseline", () => {
       assessmentPayloads: [e1(), e2()].map((e) => ({ name: e.file, payload: e.payload })),
     });
 
-  test("the AP-bound r1 variant still reproduces pr90f... after the current revision advances to r2", () => {
-    const r = buildAt(cfgAt(R2), sourceAt(e2()));
-    expect(r.presentationRevisionId).toBe(PR90F);
-    expect(r.assessmentBinding).toEqual({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
-    expect(r.assessmentRevisions).toEqual([`${EL}.r1.json`]);
+  test("the configured variant binds the certified r2 presentation", () => {
+    expect(elCfg.variants["reading-adapted"].assessmentPresentationRevisionId).toBe(AP5158);
   });
 
-  test("the legacy unbound variant stays tied to r1 and reproduces prff01...", () => {
-    const r = buildAt(unbound(cfgAt(R2)), sourceAt(e2()));
-    expect(r.presentationRevisionId).toBe(PRFF01);
-    expect(r.assessmentRevisions).toEqual([`${EL}.r1.json`]);
-  });
+  test.each([["Stage A (r1 current)", R1], ["Stage B (r2 current)", R2]])(
+    "%s: the r2-bound variant builds to retained pr6b7c..., bound to r2 + ap515838...",
+    (_label, current) => {
+      const r = buildAt(r2Bound(cfgAt(current)), stageSource(current));
+      expect(r.presentationRevisionId).toBe(PR6B7C);
+      expect(r.assessmentBinding).toEqual({ assessmentRevisionId: R2, assessmentPresentationRevisionId: AP5158 });
+      expect(r.assessmentRevisions).toEqual([`${EL}.r2.json`]);
+      expect(r.assessmentRevisionBasis).toBe("assessmentPresentation");
+    },
+  );
 
-  test("today (r1 current) both retained revisions reproduce unchanged", () => {
-    const repo = (cfg) => variantSource.buildVariantArtifact({
-      cfg, variantKey: "reading-adapted", canonicalSourceBytes: elSource, variantSourceBytes: variantBytes,
+  test.each([["Stage A (r1 current)", R1], ["Stage B (r2 current)", R2]])(
+    "%s: the historical r1 variant source still reproduces pr90f... (ap1fed...) and prff01... byte-for-byte",
+    (_label, current) => {
+      const bound = buildAt(r1Bound(cfgAt(current)), stageSource(current), r1VariantSource());
+      expect(bound.presentationRevisionId).toBe(PR90F);
+      expect(bound.assessmentBinding).toEqual({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
+      const legacy = buildAt(unbound(cfgAt(current)), stageSource(current), r1VariantSource());
+      expect(legacy.presentationRevisionId).toBe(PRFF01);
+      expect(legacy.assessmentRevisionBasis).toBe("legacy-r1");
+    },
+  );
+
+  test("the real repository state builds exactly the retained pr6b7c...", () => {
+    const repo = variantSource.buildVariantArtifact({
+      cfg: elCfg, variantKey: "reading-adapted", canonicalSourceBytes: elSource, variantSourceBytes: variantBytes,
       assessmentPayloads: variantSource.loadAssessmentPayloads(EL),
     });
-    expect(repo(elCfg).presentationRevisionId).toBe(PR90F);
-    expect(repo(unbound(elCfg)).presentationRevisionId).toBe(PRFF01);
+    expect(repo.presentationRevisionId).toBe(PR6B7C);
   });
 
-  test("a variant cannot silently inherit the wrong revision", () => {
-    // Unbound variant declared r2 but still carrying the r1 quiz: its quiz
-    // script differs from the r2 baseline.
-    expect(() => buildAt(unbound(cfgAt(R2), { assessmentRevisionId: R2 }), sourceAt(e2()))).toThrow(/script blocks are not byte-identical|variant quiz differs|not faithful to earths-layers.r2.json/);
-    // Unbound, undeclared (legacy r1) variant whose quiz was moved to r2.
-    const variantAtR2 = (() => {
-      const lit = render.locateQuizLiteral(variantBytes);
-      return variantBytes.slice(0, lit.start) + render.literalSource(N.questionsForPayload(EL, e2().payload)) + variantBytes.slice(lit.end);
-    })();
-    expect(() => buildAt(unbound(cfgAt(R2)), sourceAt(e2()), variantAtR2)).toThrow("variant quiz is not exactly assessment_earths-layers__r1");
+  test("a variant cannot silently inherit or claim the wrong revision", () => {
+    const src = stageSource(CURRENT);
+    // The r2 presentation on the r1 variant source, and the r1 presentation on the r2 variant source.
+    expect(() => buildAt(r2Bound(cfgAt(CURRENT)), src, r1VariantSource())).toThrow(/variant quiz is not exactly assessment_earths-layers__r2|script blocks are not byte-identical|variant quiz differs/);
+    expect(() => buildAt(r1Bound(cfgAt(CURRENT)), src, variantBytes)).toThrow(/variant quiz is not exactly assessment_earths-layers__r1|script blocks are not byte-identical|variant quiz differs/);
+    // Unbound, undeclared (legacy r1) variant whose quiz is r2.
+    expect(() => buildAt(unbound(cfgAt(CURRENT)), src, variantBytes)).toThrow(/variant quiz is not exactly assessment_earths-layers__r1|script blocks are not byte-identical|not a pinned historical legacy-r1 artifact/);
     // A declaration that disagrees with the bound presentation, or is not committed.
-    expect(() => buildAt({ ...cfgAt(R2), variants: { "reading-adapted": { ...elCfg.variants["reading-adapted"], assessmentRevisionId: R2 } } }, sourceAt(e2()))).toThrow("maps to assessment_earths-layers__r1");
-    expect(() => buildAt(unbound(cfgAt(R2), { assessmentRevisionId: "assessment_earths-layers__r3" }), sourceAt(e2()))).toThrow("is not a committed revision");
+    expect(() => buildAt(r1Bound(cfgAt(CURRENT), { assessmentRevisionId: R2 }), src, r1VariantSource())).toThrow("maps to assessment_earths-layers__r1");
+    expect(() => buildAt(r2Bound(cfgAt(CURRENT), { assessmentRevisionId: R1 }), src)).toThrow("maps to assessment_earths-layers__r2");
+    expect(() => buildAt(unbound(cfgAt(CURRENT), { assessmentRevisionId: "assessment_earths-layers__r3" }), src)).toThrow("is not a committed revision");
   });
 
   // Owner ruling S9-D7 (9B closure): variant revision provenance.
   describe("variant revision provenance (S9-D7)", () => {
-    const variantAtR2 = () => {
-      const lit = render.locateQuizLiteral(variantBytes);
-      return variantBytes.slice(0, lit.start) + render.literalSource(N.questionsForPayload(EL, e2().payload)) + variantBytes.slice(lit.end);
-    };
+    const src = () => stageSource(CURRENT);
 
     test("the pinned legacy-r1 list is exactly the historical prff01... artifact", () => {
       expect(variantSource.LEGACY_R1_UNBOUND_REVISIONS).toEqual([PRFF01]);
     });
 
     test("AP-bound provenance comes from the certified presentation record, and an agreeing declaration is accepted", () => {
-      const agreeing = { ...cfgAt(R2), variants: { "reading-adapted": { ...elCfg.variants["reading-adapted"], assessmentRevisionId: R1 } } };
-      for (const cfg of [cfgAt(R2), agreeing]) {
-        const r = buildAt(cfg, sourceAt(e2()));
+      for (const cfg of [r2Bound(cfgAt(CURRENT)), r2Bound(cfgAt(CURRENT), { assessmentRevisionId: R2 })]) {
+        const r = buildAt(cfg, src());
         expect(r.assessmentRevisionBasis).toBe("assessmentPresentation");
-        expect(r.presentationRevisionId).toBe(PR90F);
+        expect(r.presentationRevisionId).toBe(PR6B7C);
       }
-    });
-
-    test("historical prff01... is valid only through the pinned legacy-r1 path", () => {
-      const r = buildAt(unbound(cfgAt(R2)), sourceAt(e2()));
-      expect(r.assessmentRevisionBasis).toBe("legacy-r1");
-      expect(r.presentationRevisionId).toBe(PRFF01);
+      const r1 = buildAt(r1Bound(cfgAt(CURRENT), { assessmentRevisionId: R1 }), src(), r1VariantSource());
+      expect(r1.presentationRevisionId).toBe(PR90F);
     });
 
     test("an explicit variant assessmentRevisionId supplies provenance for a new unbound variant", () => {
-      const r1 = buildAt(unbound(cfgAt(R2), { assessmentRevisionId: R1 }), sourceAt(e2()));
+      const r1 = buildAt(unbound(cfgAt(CURRENT), { assessmentRevisionId: R1 }), src(), r1VariantSource());
       expect(r1.assessmentRevisionBasis).toBe("declared");
       expect(r1.assessmentRevisions).toEqual([`${EL}.r1.json`]);
       expect(N.readDeclaration(r1.bytes)).toBeNull();
-      const r2 = buildAt(unbound(cfgAt(R2), { assessmentRevisionId: R2 }), sourceAt(e2()), variantAtR2());
+      const r2 = buildAt(unbound(cfgAt(CURRENT), { assessmentRevisionId: R2 }), src(), variantBytes);
       expect(r2.assessmentRevisionBasis).toBe("declared");
       expect(r2.assessmentRevisions).toEqual([`${EL}.r2.json`]);
       expect(F.checkFidelity(EL, e2().payload, F.extractCanonicalQuiz(r2.bytes, EL))).toEqual([]);
@@ -304,37 +379,39 @@ describe("variant baseline", () => {
     test("a newly authored unbound variant without explicit provenance never silently receives r1", () => {
       // An unbound variant whose bytes are not the pinned historical artifact
       // (here: the unadapted canonical source as a new variant).
-      expect(() => buildAt(unbound(cfgAt(R1)), elSource, elSource)).toThrow("is not a pinned historical legacy-r1 artifact");
-      expect(() => buildAt(unbound(cfgAt(R2)), sourceAt(e2()), sourceAt(e2()))).toThrow(/not exactly assessment_earths-layers__r1|not a pinned historical legacy-r1 artifact/);
+      expect(() => buildAt(unbound(cfgAt(R1)), r1CurrentSource(), r1CurrentSource())).toThrow("is not a pinned historical legacy-r1 artifact");
+      expect(() => buildAt(unbound(cfgAt(R2)), r2CurrentSource(), r2CurrentSource())).toThrow(/not exactly assessment_earths-layers__r1|not a pinned historical legacy-r1 artifact/);
     });
 
     test("conflicting or unknown provenance fails closed", () => {
-      const conflicting = { ...cfgAt(R2), variants: { "reading-adapted": { ...elCfg.variants["reading-adapted"], assessmentRevisionId: R2 } } };
-      expect(() => buildAt(conflicting, sourceAt(e2()))).toThrow("maps to assessment_earths-layers__r1");
-      expect(() => buildAt(unbound(cfgAt(R2), { assessmentRevisionId: "assessment_earths-layers__r9" }), sourceAt(e2()))).toThrow("is not a committed revision");
-      expect(() => buildAt(unbound(cfgAt(R2), { assessmentRevisionId: R2 }), sourceAt(e2()))).toThrow();
+      expect(() => buildAt(r1Bound(cfgAt(CURRENT), { assessmentRevisionId: R2 }), src(), r1VariantSource())).toThrow("maps to assessment_earths-layers__r1");
+      expect(() => buildAt(unbound(cfgAt(CURRENT), { assessmentRevisionId: "assessment_earths-layers__r9" }), src())).toThrow("is not a committed revision");
+      expect(() => buildAt(unbound(cfgAt(CURRENT), { assessmentRevisionId: R1 }), src(), variantBytes)).toThrow();
     });
   });
 
   test("the variant config refuses a malformed or foreign variant revision", () => {
     const withRev = (id) => ({ ...elCfg, variants: { "reading-adapted": { ...elCfg.variants["reading-adapted"], assessmentRevisionId: id } } });
-    expect(() => configMod.validateConfigShape(withRev(R1), EL)).not.toThrow();
+    expect(() => configMod.validateConfigShape(withRev(R2), EL)).not.toThrow();
     expect(() => configMod.validateConfigShape(withRev("assessment_water-cycle__r1"), EL)).toThrow("must be assessment_earths-layers__r<N>");
     expect(() => configMod.validateConfigShape(withRev("r1"), EL)).toThrow("must be assessment_earths-layers__r<N>");
   });
 
-  test("variants:verify still finds pr90f... as the retained build with no new manifest entry", () => {
+  test("variants:verify finds pr6b7c... as the retained current build; the manifest only appended it", () => {
     const res = variantSource.checkAuthoredVariants();
     expect(res.failures).toEqual([]);
-    expect(res.checked).toEqual([{ label: `${EL}/reading-adapted`, presentationRevisionId: PR90F, retained: true }]);
+    expect(res.checked).toEqual([{ label: `${EL}/reading-adapted`, presentationRevisionId: PR6B7C, retained: true }]);
     const manifest = JSON.parse(read("app/lessons/variants/manifest.json"));
-    expect(manifest.map((e) => e.presentationRevisionId)).toEqual([PRFF01, PR90F]);
+    expect(manifest.map((e) => e.presentationRevisionId)).toEqual([PRFF01, PR90F, PR6B7C]);
+    expect(manifest[2]).toMatchObject({ assessmentRevisionId: R2, assessmentPresentationRevisionId: AP5158 });
+    expect(manifest[1]).toMatchObject({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
+    expect(manifest[0].assessmentRevisionId).toBeUndefined();
   });
 });
 
 describe("protected historical bytes", () => {
   test("retained variant artifacts still hash to their presentation revision ids", () => {
-    for (const id of [PR90F, PRFF01]) {
+    for (const id of [PR90F, PRFF01, PR6B7C]) {
       expect(`pr${sha256(fs.readFileSync(path.join(ROOT, `app/lessons/variants/lesson_${EL}__${id}.html`)))}`).toBe(id);
     }
   });
@@ -355,13 +432,22 @@ describe("revision-to-path table", () => {
     expect(read(N.CLIENT_PATH_TABLE_FILE)).toBe(a);
   });
 
-  test("every single-revision lesson maps r1 to its unversioned v2 page", () => {
+  test("every single-revision lesson maps r1 to its unversioned v2 page; Earth's Layers maps r1 and r2 to their renditions", () => {
     const table = builder.buildPathTable();
     expect(Object.keys(table.lessons)).toEqual(configMod.listConfiguredSlugs());
-    for (const slug of configMod.listConfiguredSlugs()) {
+    for (const slug of configMod.listConfiguredSlugs().filter((s) => s !== EL)) {
       expect(table.lessons[slug]).toEqual({ [`assessment_${slug}__r1`]: `/app/lessons/lesson_${slug}.html` });
     }
-    expect(N.renditionPathsInTable(table)).toEqual([]);
+    expect(table.lessons[EL]).toEqual({
+      [R1]: "/app/lessons/assessment-revisions/lesson_earths-layers__r1.html",
+      [R2]: "/app/lessons/assessment-revisions/lesson_earths-layers__r2.html",
+    });
+    // No entry points a revision at the unversioned (current) page.
+    expect(Object.values(table.lessons[EL])).not.toContain(`/app/lessons/lesson_${EL}.html`);
+    expect(N.renditionPathsInTable(table)).toEqual([
+      "app/lessons/assessment-revisions/lesson_earths-layers__r1.html",
+      "app/lessons/assessment-revisions/lesson_earths-layers__r2.html",
+    ]);
     expect(JSON.stringify(table)).not.toMatch(/correct|explanation|accommodat|variant/i);
   });
 
@@ -381,7 +467,9 @@ describe("revision-to-path table", () => {
 
   test("an unknown revision or lesson has no path and no current fallback", () => {
     const table = builder.buildPathTable();
-    expect(N.resolveRevisionPath(table, EL, R2)).toBeNull();
+    expect(N.resolveRevisionPath(table, EL, R1)).toBe("/app/lessons/assessment-revisions/lesson_earths-layers__r1.html");
+    expect(N.resolveRevisionPath(table, EL, R2)).toBe("/app/lessons/assessment-revisions/lesson_earths-layers__r2.html");
+    expect(N.resolveRevisionPath(table, EL, "assessment_earths-layers__r3")).toBeNull();
     expect(N.resolveRevisionPath(table, EL, "assessment_earths-layers__r01")).toBeNull();
     expect(N.resolveRevisionPath(table, "unknown-lesson", "assessment_unknown-lesson__r1")).toBeNull();
     expect(N.resolveRevisionPath(table, EL, "")).toBeNull();
@@ -389,11 +477,15 @@ describe("revision-to-path table", () => {
   });
 
   test("an ambiguous multi-revision lesson cannot enter the table", () => {
-    expect(() => N.buildRevisionPathTable([elCfg], bySlug([e1(), e2()]))).toThrow("must declare canonicalAssessmentRevisionId");
+    expect(() => N.buildRevisionPathTable([undeclared(elCfg)], bySlug([e1(), e2()]))).toThrow("must declare canonicalAssessmentRevisionId");
   });
 
-  test("the rendition tree holds only the table today", () => {
-    expect(builder.verifyRenditionTree()).toMatchObject({ renditions: 0 });
-    expect(fs.readdirSync(paths.RENDITION_OUTPUT_ROOT)).toEqual(["revision-paths.json"]);
+  test("the rendition tree holds the table and exactly the Earth's Layers r1 and r2 renditions", () => {
+    expect(builder.verifyRenditionTree()).toMatchObject({ renditions: 2 });
+    expect(fs.readdirSync(paths.RENDITION_OUTPUT_ROOT).sort()).toEqual([
+      "lesson_earths-layers__r1.html",
+      "lesson_earths-layers__r2.html",
+      "revision-paths.json",
+    ]);
   });
 });

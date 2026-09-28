@@ -110,13 +110,14 @@ import { deployAssessmentRevision } from "../../assessments/assessment-deploymen
 const PAYLOAD_FILE_PATTERN = /^([a-z0-9]+(?:-[a-z0-9]+)*)\.r([1-9][0-9]*)\.json$/;
 const PAYLOAD_DIR = __dirname;
 
-// Guardrail count. The committed set is 49 as of Sprint 29G.1 (49 lessons,
-// r1 each; unchanged by F5.3 Slice 9A). Asserting the
+// Guardrail count. The committed set was 49 as of Sprint 29G.1 (49 lessons,
+// r1 each; unchanged by F5.3 Slice 9A) and is 50 since the Earth's Layers r2
+// authoring pass (earths-layers.r2.json, the first later revision). Asserting the
 // exact count is deliberate: a payload silently lost (a bad merge, an errant
 // delete) or a payload silently added (an uncertified file) should force a
 // conscious update to this constant and a human review, rather than passing
 // unnoticed because the loop simply iterated a different number of files.
-const EXPECTED_PAYLOAD_COUNT = 49;
+const EXPECTED_PAYLOAD_COUNT = 50;
 
 function discoverPayloadFiles(): string[] {
   return fs

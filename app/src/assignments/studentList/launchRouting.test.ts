@@ -326,3 +326,62 @@ describe("no client-side accommodation logic / no Firestore lookup", () => {
     }
   });
 });
+
+// Earth's Layers r2 authoring: the real committed revision-path table now
+// holds r1 and r2 (r2 current). No synthetic table; the same routing code the
+// bundle ships.
+describe("real Earth's Layers r1 + r2 routing (committed table)", () => {
+  const EL = "earths-layers";
+  const R1 = `assessment_${EL}__r1`;
+  const R2 = `assessment_${EL}__r2`;
+  const R1_PAGE = `/app/lessons/assessment-revisions/lesson_${EL}__r1.html`;
+  const R2_PAGE = `/app/lessons/assessment-revisions/lesson_${EL}__r2.html`;
+  const PR90F = "pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189";
+  const PR90F_PATH = `app/lessons/variants/lesson_${EL}__${PR90F}.html`;
+  const el = (over: Partial<AssignmentsListForStudentItem>) => mkItem({ lessonSlug: EL, title: "Earth's Layers", ...over });
+
+  test("an r1 assignment (canonical) opens the r1 rendition although r2 is current", () => {
+    expect(planAssignmentLaunch(el({ assessmentRevisionId: R1 }))?.primaryUrl).toBe(`${R1_PAGE}?assignment=asg-1`);
+  });
+
+  test("an r1 differentiated launch opens retained pr90f..., and its load-failure fallback is the r1 rendition", () => {
+    const plan = planAssignmentLaunch(el({
+      assessmentRevisionId: R1,
+      launchRef: REF,
+      presentation: { variantKey: "reading-adapted", presentationRevisionId: PR90F, path: PR90F_PATH },
+    }));
+    expect(plan?.primaryUrl).toBe(`/${PR90F_PATH}?assignment=asg-1&launchRef=${REF}`);
+    expect(plan?.canonicalUrl).toBe(`${R1_PAGE}?assignment=asg-1`);
+  });
+
+  test("an r2 assignment opens the r2 rendition", () => {
+    expect(planAssignmentLaunch(el({ assessmentRevisionId: R2 }))?.primaryUrl).toBe(`${R2_PAGE}?assignment=asg-1`);
+  });
+
+  test("a future r2 differentiated launch opens retained pr6b7c..., and its load-failure fallback is the r2 rendition", () => {
+    const PR6B7C = "pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948";
+    const PR6B7C_PATH = `app/lessons/variants/lesson_${EL}__${PR6B7C}.html`;
+    const plan = planAssignmentLaunch(el({
+      assessmentRevisionId: R2,
+      launchRef: REF,
+      presentation: { variantKey: "reading-adapted", presentationRevisionId: PR6B7C, path: PR6B7C_PATH },
+    }));
+    expect(plan?.primaryUrl).toBe(`/${PR6B7C_PATH}?assignment=asg-1&launchRef=${REF}`);
+    expect(plan?.canonicalUrl).toBe(`${R2_PAGE}?assignment=asg-1`);
+  });
+
+  test("r2 without differentiated coverage (canonicalFallback grant) opens canonical r2, never r1 or a variant", () => {
+    const plan = planAssignmentLaunch(el({ assessmentRevisionId: R2, launchRef: REF }));
+    expect(plan?.primaryUrl).toBe(`${R2_PAGE}?assignment=asg-1&launchRef=${REF}`);
+    expect(plan?.differentiated).toBe(false);
+  });
+
+  test("assignment-tied practice follows the frozen revision (r1 and r2)", () => {
+    expect(planPracticeLaunch(EL, undefined, R1)?.primaryUrl).toBe(R1_PAGE);
+    expect(planPracticeLaunch(EL, undefined, R2)?.primaryUrl).toBe(R2_PAGE);
+  });
+
+  test("an uncommitted revision has no launch (no current fallback)", () => {
+    expect(planAssignmentLaunch(el({ assessmentRevisionId: `assessment_${EL}__r3` }))).toBeNull();
+  });
+});
