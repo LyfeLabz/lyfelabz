@@ -4,7 +4,7 @@
   "generatedBy": "app/scripts/build-curriculum-manifest.cjs",
   "canonicalSource": "index.html",
   "canonicalSourceRelativeToApp": "../index.html",
-  "canonicalSourceSha256": "dcdebeae1f545b895c0e6f3242b8f2df0eb551a55780aa1c300235664c45d60e",
+  "canonicalSourceSha256": "1cf543d41836a8f8b31a7dd05cd57fadda48818090b29886d9fa0461b9839bbc",
   "doNotEditByHand": "This file is generated from the root canonical index.html. Do not edit by hand. Regenerate with `npm run curriculum:build` inside app/.",
   "totals": {
     "unitCount": 50,
@@ -883,7 +883,7 @@
         {
           "slug": "conducting-experiments",
           "title": "How to Conduct Experiments",
-          "description": "How do scientists know their results can be trusted? Learn to control variables, test a hypothesis, and turn a question into an experiment that gives real answers.",
+          "description": "Learn how scientists build fair tests, identify variables, make observations, and use evidence to draw conclusions.",
           "grade": "6",
           "topic": "tech-engineering",
           "gated": false,

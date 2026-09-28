@@ -933,6 +933,9 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .hypo-feedback.partial { background: rgba(245,200,66,0.07); border: 1px solid rgba(245,200,66,0.3); border-left: 4px solid var(--gold); color: var(--text); }
 .hypo-feedback.partial strong { color: var(--gold); }
 .hypo-check-wrap { text-align: center; margin-bottom: 1rem; }
+.hypo-own { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px dashed var(--border); }
+.hypo-own-lead { font-size: 0.95rem; color: var(--text); line-height: 1.6; margin-bottom: 0.7rem; }
+.hypo-own .hypo-own-input { min-height: 84px; margin-bottom: 0.9rem; }
 .hypo-check {
   font-family: 'Nunito', sans-serif;
   font-size: 0.92rem;
@@ -1395,7 +1398,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <span class="hero-float">📋</span>
   <div class="hero-badge">Lesson</div>
   <h1>How to Conduct Experiments</h1>
-  <p class="hero-sub">Drop a Mentos into soda and a foamy geyser erupts. Anyone can watch it happen - but a scientist can find out <em>why</em>. This lesson teaches you the scientist's toolkit.</p>
+  <p class="hero-sub">Drop a Mentos into soda and a foamy geyser erupts - but some sodas erupt far higher than others. Anyone can watch it happen. A scientist tests it fairly and lets the evidence decide. This lesson teaches you the scientist's toolkit.</p>
   <div class="driving-question">
     <div class="dq-icon">🔍</div>
     <div class="dq-body">
@@ -1408,9 +1411,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a Mentos-and-soda eruption and two everyday mysteries before naming any vocabulary. A genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
-  <span class="ls-badge" data-tip="Hypotheses, variables, and observations are explored through familiar experiments before their vocabulary labels appear. Students build understanding, then receive the word that names it. (Willingham, 2009)">🏷️ Label After Learning</span>
-  <span class="ls-badge" data-tip="The hypothesis frame is broken into three explicit numbered parts (if, then, because), with worked examples shown before students build one independently. Stepwise modeling reduces cognitive load. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
+  <span class="ls-badge" data-tip="The hero opens with the Mentos-and-soda puzzle before any vocabulary, and the Engage mysteries come before any Explore instruction. Students predict which soda erupts highest, then check that prediction against supplied results at the end. A genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
+  <span class="ls-badge" data-tip="Students close the lesson by writing a claim, evidence, and reasoning from supplied Mentos results they did not collect, citing specific measurements. Backing a claim with evidence builds scientific argument. (McNeill &amp; Krajcik, 2011)">🧩 Evidence-Based Reasoning</span>
+  <span class="ls-badge" data-tip="The hypothesis frame is broken into three explicit numbered parts (if, then, because), with worked examples shown before students assemble one from drop-down choices, then try one in their own words. Stepwise modeling reduces cognitive load. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
   <span class="ls-badge" data-tip="Students sort variables and classify observations themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
   <span class="ls-badge" data-tip="The quiz asks students to identify variables and classify observations in brand-new experiments rather than recall definitions. Transfer tasks reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
 </div>
@@ -1427,7 +1430,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="goal-grid">
       <div class="goal-card">
         <span class="goal-icon">❓</span>
-        <div class="goal-text">Write a testable hypothesis that explains the cause-and-effect relationship between variables, using the if - then - because frame.</div>
+        <div class="goal-text">Build a testable hypothesis that explains the cause-and-effect relationship between variables, using the if - then - because frame.</div>
         <span class="goal-std">SEP 1</span>
       </div>
       <div class="goal-card">
@@ -1445,6 +1448,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="goal-text">Explain the difference between an observation and an inference, and draw reasonable inferences from evidence.</div>
         <span class="goal-std">SEP 4</span>
       </div>
+      <div class="goal-card">
+        <span class="goal-icon">📊</span>
+        <div class="goal-text">Use supplied experimental results to support a claim with specific evidence and reasoning.</div>
+        <span class="goal-std">SEP 4</span>
+      </div>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -1454,8 +1462,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Name the four science-practice targets before students do any of the work.</li>
-            <li>Frame the lesson as skills to perform, not facts to memorize.</li>
+            <li>Prepare students for the upcoming melting-ice-on-four-surfaces investigation by naming the tools they will use there.</li>
+            <li>Set honest scope: students assemble a hypothesis, sort variables, classify observations, practice inference, and analyze supplied data. They do not design or run an experiment, collect measurements, or generate the soda data here.</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -1469,13 +1477,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <div class="edu-note-head">Bloom's / DOK</div>
           <ul class="edu-note-text">
             <li>Understand to Apply</li>
-            <li>DOK 1 to 2 (goals name and classify; no goal demands extended reasoning here)</li>
+            <li>DOK 1 to 3 (most goals name and classify; the supplied-data goal asks for a claim backed by evidence)</li>
           </ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
           <ul class="edu-note-text">
-            <li>Four short goal cards, one idea each</li>
+            <li>Five short goal cards, one idea each</li>
             <li>Practice standards tagged for transparency</li>
             <li>Plain "be able to do" phrasing</li>
           </ul>
@@ -1521,7 +1529,15 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Inference</div>
-        <div class="gc-def">A conclusion that you draw about something based on your observations - not something you observed directly.</div>
+        <div class="gc-def">An interpretation you make based on your observations - an explanation of what they mean, not something you observed directly.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-term">Evidence</div>
+        <div class="gc-def">The observations and measurements you use to support a claim.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Conclusion</div>
+        <div class="gc-def">The answer to an investigation's question that the evidence supports, decided after the results are in.</div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Scientific Inquiry</div>
@@ -1536,7 +1552,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Pre-teach the eight terms students meet again in context below.</li>
+            <li>Pre-teach the ten terms students meet again in context below.</li>
             <li>Give a definition to return to when a word reappears.</li>
           </ul>
         </div>
@@ -1583,7 +1599,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <span class="hook-card-icon">🥤</span>
         <div class="hook-card-name">The Eruption</div>
         <div class="hook-card-observation">
-          You drop a Mentos candy into a bottle of soda. In one second, foam blasts out of the bottle like a geyser - but only with some sodas, and not others.
+          Drop a Mentos candy into a bottle of soda, and in about a second foam can blast out like a geyser - but some sodas erupt much higher than others.
         </div>
         <div class="hook-card-question">What would make the eruption bigger or smaller? How could you find out?</div>
         <div class="hook-card-prompt">Click to look closer</div>
@@ -1614,7 +1630,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="observe-row">
       <div class="observe-card">
         <span class="observe-icon">💡</span>
-        <span><strong>Notice something?</strong> Each mystery began the same way: you observed something, and a question appeared. Scientific inquiry always starts with a question, driven by curiosity or a desire to solve a problem.</span>
+        <span><strong>Notice something?</strong> Each mystery began the same way: someone noticed something, and a question appeared. Scientific inquiry always starts with a question, driven by curiosity or a desire to solve a problem.</span>
       </div>
       <div class="observe-card green-card">
         <span class="observe-icon">🤔</span>
@@ -1623,7 +1639,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <div class="bridge-callout">
-      <strong>The mission:</strong> By the end of this lesson, you'll be able to take any "why does that happen?" question and design a fair experiment to answer it. Step one: make an educated guess.
+      <strong>The mission:</strong> Learn the tools scientists use to turn a "why does that happen?" question into a fair test - tools you will soon use in a real investigation of your own. Then use them to decide what a set of Mentos results actually shows. Step one: make an educated guess.
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -1640,7 +1656,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
           <ul class="edu-note-text">
-            <li>Curiosity gap primes attention before any vocabulary appears</li>
+            <li>Curiosity gap primes attention before any Explore instruction</li>
             <li>Phenomenon-based learning anchors the abstract method in concrete events</li>
           </ul>
         </div>
@@ -1672,7 +1688,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label" style="color: var(--teal); background: var(--iv-dim); border-color: var(--iv-border);">Explore · The Educated Guess</span>
     <h2 class="section-title">What Is a Hypothesis?</h2>
-    <p class="section-desc">Before scientists test anything, they predict what will happen and <em>why</em>. That prediction has a name.</p>
+    <p class="section-desc">Before scientists test anything, they make a <strong>prediction</strong>: what they think will happen. When they add <em>why</em> they think so, the prediction becomes a hypothesis.</p>
 
     <div class="name-it teal-it">
       <div class="name-it-label">Key idea: Hypothesis</div>
@@ -1694,23 +1710,23 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="question-pause predict-pause" id="qp-hypo">
       <div class="qp-row">
         <span class="question-pause-icon">🥤</span>
-        <div class="question-pause-text"><strong>Back to the eruption:</strong> Mentos dropped into which soda will cause the biggest foaming eruption? Make a prediction to unlock the Hypothesis Builder.</div>
+        <div class="question-pause-text"><strong>Back to the eruption:</strong> Mentos dropped into which soda will cause the biggest foaming eruption? Make a prediction to unlock the Hypothesis Builder. Hold on to it: at the end of the lesson, you will check it against a set of supplied results.</div>
       </div>
       <p class="predict-hint">Choose one</p>
       <div class="predict-buttons">
-        <button class="predict-btn">Diet soda - it has special ingredients</button>
-        <button class="predict-btn">Regular soda - sugar makes more foam</button>
-        <button class="predict-btn">Sparkling water - it's the fizziest</button>
+        <button class="predict-btn">Diet soda</button>
+        <button class="predict-btn">Regular soda</button>
+        <button class="predict-btn">Flat soda (it stopped fizzing)</button>
       </div>
     </div>
 
     <!-- HYPOTHESIS BUILDER -->
     <div class="hypo-card predict-gated" data-gate="qp-hypo">
       <div class="hypo-title">🧪 The Hypothesis Builder</div>
-      <div class="hypo-sub">A strong hypothesis has three parts. Use the drop-downs to build one for the Mentos experiment, then check it.</div>
+      <div class="hypo-sub">A strong hypothesis has three parts. The drop-downs give you the pieces. Choose pieces that fit together into a testable hypothesis for the Mentos question, then check it.</div>
 
       <div class="hypo-steps">
-        <div class="hypo-step"><span class="hypo-step-num">1</span><span><strong>If</strong> - the change you will make (the cause).</span></div>
+        <div class="hypo-step"><span class="hypo-step-num">1</span><span><strong>If</strong> - the change being tested (the cause).</span></div>
         <div class="hypo-step"><span class="hypo-step-num">2</span><span><strong>Then</strong> - the result you predict (the effect).</span></div>
         <div class="hypo-step"><span class="hypo-step-num">3</span><span><strong>Because</strong> - your reasoning, based on what you already know.</span></div>
       </div>
@@ -1744,6 +1760,17 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <button class="hypo-check" id="hypo-check-btn">Check My Hypothesis</button>
       </div>
       <div class="hypo-feedback" id="hypo-feedback" aria-live="polite"></div>
+
+      <!-- Scaffold fade: after a checked drop-down hypothesis, students try
+           one in their own words. Optional, ungraded, and not saved. -->
+      <div class="predict-gated hypo-own" id="hypo-own">
+        <p class="hypo-own-lead"><strong>Your turn - no drop-downs.</strong> Think back to the Thirsty Plant mystery. Write your own if - then - because hypothesis about how the amount of water affects how a plant grows.</p>
+        <textarea class="ce-think-input hypo-own-input" id="hypo-own-input" placeholder="If ..., then ..., because ..." aria-label="Write your own if - then - because hypothesis about water and plant growth"></textarea>
+        <div class="hypo-check-wrap">
+          <button class="hypo-check" id="hypo-own-btn" type="button">Compare With the Checklist</button>
+        </div>
+        <div class="hypo-feedback" id="hypo-own-feedback" aria-live="polite"></div>
+      </div>
     </div>
 
     <div class="bridge-callout teal">
@@ -1758,7 +1785,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
             <li>Define a hypothesis as a testable, reasoned prediction, not a random guess.</li>
-            <li>Make students build the if - then - because frame, not just read it.</li>
+            <li>Scaffold construction, not independent authorship: students assemble a hypothesis from drop-down choices, then may try one in their own words.</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -1779,7 +1806,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
           <ul class="edu-note-text">
-            <li>Drop-down builder, no free typing required</li>
+            <li>Drop-down builder first; the own-words step is optional</li>
             <li>Predict gate before the builder, with immediate feedback</li>
             <li>Key term defined in place before use</li>
           </ul>
@@ -1902,7 +1929,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <div class="bridge-callout green">
-      <strong>Question → hypothesis → fair test.</strong> Now the experiment is running. But what exactly do you write down while it happens? Time to talk about observations.
+      <strong>Question → hypothesis → fair test.</strong> Once a fair test is running, what exactly should a scientist write down? Time to talk about observations.
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -1913,7 +1940,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
             <li>Separate the three variable roles and tie each to a color used lesson-wide.</li>
-            <li>Make students justify why holding controls constant is what makes a test fair.</li>
+            <li>Have students choose why holding controls constant is what makes a test fair.</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -1928,7 +1955,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <div class="edu-note-head">Bloom's / DOK</div>
           <ul class="edu-note-text">
             <li>Understand to Analyze</li>
-            <li>DOK 2 to 3 (sorting is 2; justifying why a control keeps the test fair reaches 3)</li>
+            <li>DOK 2 (sorting roles and choosing why a control keeps the test fair)</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -2025,8 +2052,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Distinguish quantitative from qualitative evidence before students collect data.</li>
-            <li>Practice classifying real lab-notebook entries, not just reading the definitions.</li>
+            <li>Distinguish quantitative from qualitative evidence before students collect their own data in a later hands-on investigation.</li>
+            <li>Practice classifying sample lab-notebook entries, not just reading the definitions.</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -2069,7 +2096,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div class="name-it" style="border-left-color: #b47fff;">
       <div class="name-it-label" style="color: #b47fff;">Key idea: Inference</div>
-      <p>An <strong style="color:#b47fff;">inference</strong> is a conclusion that you draw about something <strong style="color:#b47fff;">based on your observations</strong>. You didn't see it happen - your brain filled in the most likely explanation.</p>
+      <p>An <strong style="color:#b47fff;">inference</strong> is an interpretation you make <strong style="color:#b47fff;">based on your observations</strong>. You didn't see it happen - your brain filled in the most likely explanation.</p>
     </div>
 
     <!-- Inference predict gates (from the PDF's two examples) -->
@@ -2087,7 +2114,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
     <div class="name-it predict-gated" data-gate="qp-inf1" style="border-left-color: #b47fff;">
       <div class="name-it-label" style="color: #b47fff;">The reasonable inference</div>
-      <p>You can infer that <strong style="color:#b47fff;">they think it is going to rain</strong>. You never observed rain - you observed a raincoat and umbrella, and your brain connected the clues to the most likely explanation. That's an inference: a conclusion built from observations.</p>
+      <p>You can infer that <strong style="color:#b47fff;">they think it is going to rain</strong>. You never observed rain - you observed a raincoat and umbrella, and your brain connected the clues to the most likely explanation. That's an inference: an explanation built from observations.</p>
     </div>
 
     <div class="question-pause predict-pause" id="qp-inf2">
@@ -2114,8 +2141,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
       <div class="observe-card orange-card">
         <span class="observe-icon">🧠</span>
-        <span><strong>Inference:</strong> the conclusion your brain draws from those observations. "It probably rained or dew formed."</span>
+        <span><strong>Inference:</strong> the explanation your brain builds from those observations. "It probably rained or dew formed."</span>
       </div>
+    </div>
+
+    <div class="name-it" style="border-left-color: #b47fff; margin-top: 2rem;">
+      <div class="name-it-label" style="color: #b47fff;">Key idea: Prediction to Conclusion</div>
+      <p>A <strong>prediction</strong> is what you think will happen before testing. <strong>Observations</strong> and <strong>measurements</strong> are what actually happened. <strong>Evidence</strong> is the observations and measurements you use to support a claim. An <strong>inference</strong> explains what observations mean. A <strong>conclusion</strong> is the answer the evidence supports once the results are in - and it can only be as strong as that evidence.</p>
     </div>
 
 
@@ -2171,7 +2203,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
       <div class="qr-sub">A quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">In the Mentos experiment, you drop the same candy into three different sodas and measure how high each eruption goes. What is the independent variable?</div>
+      <div class="qr-q" id="qr1Q">In a Mentos investigation, a team drops the same candy into three different sodas and measures how high each eruption goes. What is the independent variable?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
         <label><input type="radio" name="qr1" value="0"><span>The height of the eruption</span></label>
         <label><input type="radio" name="qr1" value="1"><span>The type of soda</span></label>
@@ -2187,10 +2219,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
       <div class="qr-sub">One more brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">A student writes in her lab notebook: "The Mentos eruption was probably bigger in diet soda because diet soda holds more dissolved gas." Is that an observation or an inference?</div>
+      <div class="qr-q" id="qr2Q">A student watches a Mentos eruption and writes in a lab notebook: "The foam was probably pushed up by gas escaping from the soda all at once." Is that an observation or an inference?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>An observation - she wrote it down during the experiment</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>An inference - it's a conclusion explaining what she observed</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>An observation - the student wrote it down while watching</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>An inference - it's an explanation of what the student saw</span></label>
         <label><input type="radio" name="qr2" value="2"><span>A control variable - it stayed the same</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
@@ -2247,7 +2279,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Explain · Wrap-Up</span>
     <h2 class="section-title">Back to the Eruption</h2>
-    <p class="section-desc">You started with a foamy mystery. Now you have the full scientist's toolkit to solve it - or any mystery.</p>
+    <p class="section-desc">You started with a foamy mystery. Now you have the toolkit a scientist uses to investigate it. At the end of the quiz, you will use that toolkit to analyze results from a Mentos-and-soda investigation.</p>
 
     <div class="wrapup-beats">
 
@@ -2270,14 +2302,14 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
       <div class="wrapup-beat wrapup-beat-3">
         <div class="wrapup-beat-label">Collect and Conclude</div>
-        <div class="wrapup-beat-answer">Observe carefully, then infer.</div>
-        <div class="wrapup-beat-body">Record <strong>quantitative</strong> observations (numbers) and <strong>qualitative</strong> observations (senses), then draw an <strong>inference</strong>: the conclusion your evidence supports.</div>
+        <div class="wrapup-beat-answer">Let the evidence decide.</div>
+        <div class="wrapup-beat-body">Record <strong>quantitative</strong> observations (numbers) and <strong>qualitative</strong> observations (senses). Use the ones that answer your question as <strong>evidence</strong>, make <strong>inferences</strong> about what they mean, and state a <strong>conclusion</strong> no stronger than your evidence.</div>
       </div>
 
     </div>
 
     <h3 class="section-title" style="font-size: 1.4rem; margin-top: 3rem;">Everything in One Place</h3>
-    <p class="section-desc">The words to know and the goals you worked toward, all in one spot.</p>
+    <p class="section-desc">The words to know and the goals you are working toward, all in one spot.</p>
 
     <div class="summary-table-wrap">
       <table class="summary-table">
@@ -2291,7 +2323,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <tr><td class="term">Control variables</td><td>The other factors kept constant to ensure any change measured was due to the independent variable.</td></tr>
           <tr><td class="term">Quantitative observation</td><td>An observation using precise measurements and numerical quantities: length, height, temperature, time.</td></tr>
           <tr><td class="term">Qualitative observation</td><td>An observation using sensory information to describe qualities: colors, textures, smells, tastes.</td></tr>
-          <tr><td class="term">Inference</td><td>A conclusion you draw about something based on your observations.</td></tr>
+          <tr><td class="term">Prediction</td><td>What you think will happen, before testing.</td></tr>
+          <tr><td class="term">Inference</td><td>An interpretation you make based on your observations.</td></tr>
+          <tr><td class="term">Evidence</td><td>The observations and measurements you use to support a claim.</td></tr>
+          <tr><td class="term">Conclusion</td><td>The answer the evidence supports, decided after the results are in.</td></tr>
         </tbody>
       </table>
     </div>
@@ -2303,23 +2338,27 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </thead>
         <tbody>
           <tr>
-            <td class="term" style="white-space: normal;">Write a testable hypothesis using the if - then - because frame (SEP 1).</td>
-            <td>You built a complete hypothesis for the Mentos experiment and checked whether it was testable and explained a cause-and-effect relationship.</td>
+            <td class="term" style="white-space: normal;">Build a testable hypothesis using the if - then - because frame.</td>
+            <td>You used the Hypothesis Builder to assemble an if - then - because hypothesis for the Mentos question, checked whether its parts fit together, and could try one in your own words.</td>
           </tr>
           <tr>
-            <td class="term" style="white-space: normal;">Identify independent, dependent, and control variables (SEP 3).</td>
-            <td>You sorted every factor in the plant experiment into its correct role and explained why control variables make a test fair.</td>
+            <td class="term" style="white-space: normal;">Identify independent, dependent, and control variables.</td>
+            <td>You sorted every factor in the plant experiment into its correct role and chose why control variables make a test fair.</td>
           </tr>
           <tr>
-            <td class="term" style="white-space: normal;">Classify observations and draw inferences (SEP 4).</td>
-            <td>You sorted lab-notebook entries into quantitative and qualitative, and drew reasonable inferences from the raincoat and wet-grass clues.</td>
+            <td class="term" style="white-space: normal;">Classify observations and draw inferences.</td>
+            <td>You sorted sample lab-notebook entries into quantitative and qualitative, and drew reasonable inferences from the raincoat and wet-grass clues.</td>
+          </tr>
+          <tr>
+            <td class="term" style="white-space: normal;">Use supplied results to support a claim.</td>
+            <td>At the end of the quiz, you will analyze results from a Mentos-and-soda investigation and write a claim, evidence, and reasoning.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="bridge-callout teal">
-      <strong>Essential question:</strong> How do scientists turn a curious question into an answer they can trust? If you can answer that using the words hypothesis, independent variable, dependent variable, control variables, observation, and inference, you own this lesson.
+      <strong>Essential question:</strong> How do scientists turn a curious question into an answer they can trust? If you can answer that using the words hypothesis, independent variable, dependent variable, control variables, observation, inference, evidence, and conclusion, you are ready to use these tools in a real investigation.
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -2542,7 +2581,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Evaluate · Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you discovered, including a brand-new experiment for you to analyze. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything in this lesson, including a brand-new experiment for you to analyze. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
 
@@ -2573,17 +2612,65 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       .ce-think-model.show { display:block; animation: ceThinkFadeUp 0.35s ease both; }
       .ce-think-model strong { color:var(--text); }
       .ce-think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#7fe0b0; margin-bottom:0.4rem; }
+      .ce-think-model p { margin: 0 0 0.6rem; }
+      .ce-think-model p:last-child { margin-bottom: 0; }
+      .ce-data { background: var(--dark); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 1.1rem; }
+      .ce-data-title { font-family:'Fredoka One', cursive; font-size:1.05rem; color:var(--text); margin-bottom:0.35rem; }
+      .ce-data-note { font-size:0.88rem; color:var(--gold); font-weight:800; line-height:1.55; margin-bottom:0.7rem; }
+      .ce-data-setup { list-style:none; margin:0 0 0.9rem; padding:0; font-size:0.9rem; color:var(--text-muted); line-height:1.6; }
+      .ce-data-setup li { margin-bottom:0.3rem; }
+      .ce-data-setup strong { color:var(--text); }
+      .ce-data .summary-table-wrap { margin-bottom: 0.5rem; }
+      .ce-data .summary-table th { white-space: nowrap; padding: 0.7rem 0.9rem; }
+      .ce-data .summary-table td { padding: 0.65rem 0.9rem; }
+      .ce-data .summary-table td.num { color: var(--text); font-weight: 800; white-space: nowrap; }
+      .ce-data-foot { font-size:0.8rem; color:var(--text-muted); line-height:1.5; }
+      @media (max-width: 480px) {
+        .ce-data { padding: 0.85rem 0.75rem; }
+        .ce-data .summary-table th, .ce-data .summary-table td { padding: 0.6rem 0.45rem; white-space: normal; }
+        .ce-data .summary-table td.term, .ce-data .summary-table td.num { white-space: normal; }
+        .ce-data .summary-table th { letter-spacing: 0.02em; font-size: 0.66rem; }
+      }
       @keyframes ceThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
     </style>
     <div class="ce-think-box" id="ce-think">
       <div class="ce-think-eyebrow">🧠 Show Your Thinking</div>
       <p class="ce-think-lead">Scientists don't just know the answer. They explain their thinking.</p>
       <p class="ce-think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
-      <p class="ce-think-prompt">You tested the Mentos mystery: the same candy, three different sodas, and you measured how high each eruption reached. Make a <strong>claim</strong> about which soda erupts biggest, back it with <strong>evidence</strong> (the observations from your fair test), and explain your <strong>reasoning</strong> - how those observations let you <strong>infer</strong> an answer you can trust. Use the words <strong>observation</strong> and <strong>inference</strong>.</p>
-      <textarea class="ce-think-input" id="ce-thinking" placeholder="Write your claim, then your evidence, then your reasoning..." aria-label="Make a claim about which soda erupts biggest, cite your evidence, and explain your reasoning"></textarea>
+      <!-- Supplied experimental evidence. Students analyze these results; they
+           did not collect them. The model answer below uses only this data. -->
+      <div class="ce-data" id="ce-data">
+        <div class="ce-data-title" id="ce-data-title">📋 Supplied Results: The Mentos Eruption Test</div>
+        <p class="ce-data-note">You did not collect these results. A science club ran this test and shared their measurements for you to analyze.</p>
+        <ul class="ce-data-setup">
+          <li><strong>Question:</strong> Which type of soda makes the tallest Mentos eruption?</li>
+          <li><strong>Changed (independent variable):</strong> the type of soda - diet cola, regular cola, or flat cola (regular cola left open overnight until it stopped fizzing, so most of its dissolved gas had escaped).</li>
+          <li><strong>Measured (dependent variable):</strong> eruption height - how high the foam rose above the bottle opening, measured with a meter stick against a wall.</li>
+          <li><strong>Kept the same (controls):</strong> same brand, same 2-liter bottle size, same room temperature, 5 Mentos dropped all at once with the same tube, and the same person measuring.</li>
+          <li><strong>Trials:</strong> three separate bottles of each soda.</li>
+        </ul>
+        <div class="summary-table-wrap">
+          <table class="summary-table" aria-labelledby="ce-data-title">
+            <thead>
+              <tr><th scope="col">Soda</th><th scope="col">Eruption height<br>(trials 1, 2, 3)</th><th scope="col">What the club noticed</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="term">Diet cola</td><td class="num">250, 230, 260 cm</td><td>A tall, fast column of foam</td></tr>
+              <tr><td class="term">Regular cola</td><td class="num">90, 110, 80 cm</td><td>A shorter column of foam</td></tr>
+              <tr><td class="term">Flat cola</td><td class="num">0, 0, 0 cm</td><td>A few bubbles; no foam left the bottle</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="ce-data-foot">Heights are rounded to the nearest 10 cm.</p>
+      </div>
+      <p class="ce-think-prompt">Use only the supplied results above. <strong>Claim:</strong> Which soda do these results show made the tallest eruption? <strong>Evidence:</strong> Which specific measurements support your claim? <strong>Reasoning:</strong> Why do those measurements support it? Explain what the club kept the same and what the three trials show. Then check: does this evidence support the prediction you made at the start of the lesson?</p>
+      <textarea class="ce-think-input" id="ce-thinking" placeholder="Write your claim, then your evidence, then your reasoning..." aria-label="Use the results from the Mentos-and-soda investigation to write a claim, evidence, and reasoning"></textarea>
       <div class="ce-think-model" id="ce-think-model">
         <span class="tm-label">One strong way to say it</span>
-        <strong>Claim:</strong> diet soda causes the biggest eruption. <strong>Evidence:</strong> in a fair test you change only the type of soda and keep the candy, the amount, and the bottle the same, then record quantitative observations - the diet-soda foam reached the highest measured height. <strong>Reasoning:</strong> because every other factor was controlled, the difference in eruption height had to be caused by the soda, so you can infer the soda is the cause, not luck. That is how an observation becomes an answer you can trust: a fair test lets you infer a cause from an effect. If your answer makes a claim, backs it with observations from a controlled test, and reasons from evidence to an inference, you have it.
+        <p><strong>Claim:</strong> In this test, diet cola made the tallest eruption.</p>
+        <p><strong>Evidence:</strong> All three diet cola trials (250, 230, and 260 cm) were higher than every regular cola trial (90, 110, and 80 cm). The flat cola trials were 0 cm every time.</p>
+        <p><strong>Reasoning:</strong> The type of soda was the only thing the club changed. They kept the brand, bottle size, temperature, number of Mentos, and drop method the same, so those factors cannot explain the difference in height. The heights varied a little from trial to trial, but diet cola was highest in all three, so the result was not a one-time fluke. These results show <em>which</em> soda erupted highest, not <em>why</em>. One reasonable inference: flat cola had lost most of its gas and did not erupt at all, so the dissolved gas is probably what forms the foam.</p>
+        <p>If you predicted a different soda, this evidence does not support that prediction - and changing your thinking when the evidence disagrees is exactly what scientists do. If your answer makes a claim, cites specific measurements, and explains why they support it, you have it.</p>
       </div>
     </div>
 
@@ -2594,8 +2681,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Close the lesson with the student constructing an evidence-based answer, not selecting one.</li>
-            <li>Return to the Mentos anchor so hypothesis, fair test, observation, and inference combine into one conclusion.</li>
+            <li>Have students reason from supplied Mentos results they did not collect: a claim, specific measurements, and reasoning.</li>
+            <li>Rehearse the claim-evidence-reasoning routine students will use with their own data in the upcoming hands-on investigation.</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -2603,6 +2690,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <ul class="edu-note-text">
             <li>Generation and self-explanation surface gaps that multiple choice hides</li>
             <li>Mini CER matches an evidence-and-inference lesson: claim, evidence, reasoning</li>
+            <li>Repeated trials let students judge consistency, not just a single reading</li>
             <li>Model answer revealed only after submitting supports honest self-check</li>
           </ul>
         </div>
@@ -2616,7 +2704,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
           <ul class="edu-note-text">
-            <li>Sentence-starter scaffold names claim, evidence, and reasoning</li>
+            <li>Supplied data table with a labeled setup, next to the prompt</li>
             <li>Required before submit, with a model answer to compare against</li>
             <li>The same closing routine students meet in every lesson</li>
           </ul>
@@ -2638,7 +2726,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div id="ce-submit-status"></div>
       <div class="mystery-loop">
         <span class="ml-label">🔍 The Mystery You Came In With</span>
-        You started this lesson with one question: <strong>"How do scientists turn a curious question into an answer they can trust?"</strong> If you can name the variables, write a hypothesis, and tell observations from inferences, you've earned the toolkit.
+        You started this lesson with one question: <strong>"How do scientists turn a curious question into an answer they can trust?"</strong> If you can name the variables, build a hypothesis, tell observations from inferences, and back a claim with evidence, you've earned the toolkit.
       </div>
       <button class="reset-btn" onclick="ceResetQuiz()">Try Again</button>
       <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
@@ -2755,7 +2843,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">Experimental design is the backbone of every science unit. <strong>Extension challenges:</strong> actually run the Mentos experiment at home (outside!) - write your hypothesis first, name all three variable types, and record two quantitative and two qualitative observations. Or design an experiment to answer one of your own "why does that happen?" questions and trade designs with a partner: can they find a variable you forgot to control?</p>
+    <p class="continue-intro">Experimental design is the backbone of every science unit. <strong>Extension challenge:</strong> pick one of your own "why does that happen?" questions and plan a fair test on paper. Name the <strong>independent variable</strong> you would change, the <strong>dependent variable</strong> you would measure, and the <strong>controls</strong> you would keep the same. Then trade plans with a partner: can they find a variable you forgot to control?</p>
     <div class="continue-grid">
       <div class="cont-card soon">
         <div class="cont-icon">&#128640;</div>
@@ -2774,7 +2862,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Move the method off the screen into a real or self-designed experiment.</li>
+            <li>Move the method into a self-designed fair-test plan students write on paper.</li>
             <li>Use a peer swap to hunt for an uncontrolled variable in a partner's design.</li>
           </ul>
         </div>
@@ -2933,17 +3021,39 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     }
     if (soda !== 'flat' && result === 'none') {
       fb.className = 'hypo-feedback visible partial';
-      fb.innerHTML = '<strong>Testable, but think it through.</strong> This soda is full of dissolved gas - would it really make no eruption at all? Your hypothesis is testable, which is great, but your prior knowledge suggests a different prediction.';
+      fb.innerHTML = '<strong>Testable, but check that the parts fit.</strong> Your because says dissolved gas decides how much foam escapes, and this soda is still full of gas. Does &quot;no eruption at all&quot; match your own reasoning? Adjust your then or your because.';
       return;
     }
     if (soda === 'flat' && result !== 'none' && result !== 'smallest') {
       fb.className = 'hypo-feedback visible partial';
-      fb.innerHTML = '<strong>Testable, but think it through.</strong> Flat soda has already lost its dissolved gas - would it really make the biggest eruption? Your hypothesis is testable, which is great, but your prior knowledge suggests a different prediction.';
+      fb.innerHTML = '<strong>Testable, but check that the parts fit.</strong> Your because says dissolved gas decides how much foam escapes, but flat soda has already lost most of its gas. Does &quot;the biggest eruption&quot; match your own reasoning? Adjust your then or your because.';
       return;
     }
     fb.className = 'hypo-feedback visible ok';
-    fb.innerHTML = '<strong>That\'s a real hypothesis!</strong> It is testable (you could run this experiment tomorrow), it names a cause (the type of soda) and an effect (the eruption size), and the "because" gives reasoning based on prior knowledge. Fun fact: scientists found diet soda usually erupts biggest - its ingredients let bubbles form fastest on the candy\'s rough surface.';
+    fb.innerHTML = '<strong>That\'s a real hypothesis!</strong> It is testable (someone could run this test and measure the result), it names a cause (the type of soda) and an effect (the eruption size), and the "because" gives reasoning based on prior knowledge. A well-built hypothesis can still turn out to be wrong. Only evidence can tell you, and you will look at a set of supplied results at the end of the lesson.';
+    var own = document.getElementById('hypo-own');
+    if (own) own.classList.add('visible');
   });
+
+  // Own-words step: a self-check against a checklist, never scored or saved.
+  var ownBtn = document.getElementById('hypo-own-btn');
+  var ownIn  = document.getElementById('hypo-own-input');
+  var ownFb  = document.getElementById('hypo-own-feedback');
+  if (ownBtn && ownIn && ownFb) {
+    ownBtn.addEventListener('click', function(){
+      if (!ownIn.value.trim()) {
+        ownFb.className = 'hypo-feedback visible partial';
+        ownFb.innerHTML = '<strong>Write yours first.</strong> Try the frame: If ..., then ..., because ....';
+        return;
+      }
+      ownFb.className = 'hypo-feedback visible ok';
+      ownFb.innerHTML = '<strong>Check your hypothesis against this list.</strong><br>' +
+        '1. Does your <strong>if</strong> name one change being tested (the amount of water)?<br>' +
+        '2. Does your <strong>then</strong> name a result someone could measure, like plant height?<br>' +
+        '3. Does your <strong>because</strong> give a reason from what you already know?<br>' +
+        'One example: If a plant gets a medium amount of water, then it will grow taller than plants given a little or a lot, because plants need water to grow but too much water can keep roots from getting air.';
+    });
+  }
 })();
 </script>
 
@@ -3057,11 +3167,11 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
   }
 
   wireQR('qr1', 1,
-    'Correct! The type of soda is what you change on purpose - the independent variable. The eruption height is the dependent variable, and using the same candy is a control.',
+    'Correct! The type of soda is what the team changes on purpose - the independent variable. The eruption height is the dependent variable, and using the same candy is a control.',
     'Not quite. Ask: which factor did the experimenter change on purpose? The eruption height is what responds, and the candy stays the same.');
   wireQR('qr2', 1,
-    'Correct! "Probably... because..." is the giveaway. She is drawing a conclusion from her observations - that is an inference, not something she directly observed.',
-    'Not quite. She did not directly observe gas amounts - she drew a conclusion to explain what she saw. Words like "probably" and "because" signal an inference.');
+    'Correct! "Probably" is the giveaway. The student could see the foam, but not gas pushing it. Explaining what you saw is an inference, not something you directly observed.',
+    'Not quite. The student could see the foam, but could not see gas pushing it - that part is an explanation of what they saw. Words like "probably" signal an inference.');
 })();
 </script>
 
@@ -3292,7 +3402,7 @@ function ceSubmitQuiz() {
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
   var msg   = pct === 100 ? '🏆 Perfect score! You think like a scientist.'
-    : pct >= 80 ? '🌟 Great work! Review any you missed and you\'re ready to design real experiments.'
+    : pct >= 80 ? '🌟 Great work! Review any you missed and you\'re ready to use these tools in a real investigation.'
     : pct >= 60 ? '📚 Solid effort. Go back through the lesson and try again.'
     : '💪 Keep going; review each section carefully and try again!';
   document.getElementById('ce-score-num').textContent = score;
