@@ -459,3 +459,59 @@ describe("launch context rides in the fragment, never the query string", () => {
     expect(primary.fragment).toEqual({ assignment: "a?b=c&d#e", launchRef: REF });
   });
 });
+
+// Policy E cache transition: Firebase Hosting omits custom security headers on
+// 304 responses, so the executor prepares (replaces the browser's cached copy
+// of) every navigation target before navigating to it.
+describe("executeLaunch - Policy E target preparation", () => {
+  const record = () => {
+    const events: string[] = [];
+    const deps: LaunchExecuteDeps = {
+      navigate: (u) => {
+        events.push(`navigate ${u}`);
+      },
+      probe: () => Promise.resolve(true),
+      prepareNavigation: async (u) => {
+        events.push(`prepare ${u}`);
+      },
+    };
+    return { events, deps };
+  };
+
+  test("canonical: prepare the exact URL, then navigate it", async () => {
+    const { events, deps } = record();
+    await executeLaunch(planAssignmentLaunch(mkItem())!, deps);
+    expect(events).toEqual([`prepare ${CANONICAL_URL}`, `navigate ${CANONICAL_URL}`]);
+  });
+
+  test("differentiated: probe, prepare the variant, navigate it", async () => {
+    const { events, deps } = record();
+    const plan = planAssignmentLaunch(mkItem({ presentation: { variantKey: "k", presentationRevisionId: REV, path: SAFE_PATH }, launchRef: REF }))!;
+    await executeLaunch(plan, deps);
+    expect(events).toEqual([`prepare ${plan.primaryUrl}`, `navigate ${plan.primaryUrl}`]);
+  });
+
+  test("probe failure: prepare and navigate the canonical fallback only", async () => {
+    const { events, deps } = record();
+    const plan = planAssignmentLaunch(mkItem({ presentation: { variantKey: "k", presentationRevisionId: REV, path: SAFE_PATH }, launchRef: REF }))!;
+    await executeLaunch(plan, { ...deps, probe: () => Promise.resolve(false) });
+    expect(events).toEqual([`prepare ${CANONICAL_URL}`, `navigate ${CANONICAL_URL}`]);
+  });
+
+  test("rejected differentiated path: prepare and navigate canonical", async () => {
+    const { events, deps } = record();
+    const plan = planAssignmentLaunch(mkItem({ presentation: { variantKey: "k", presentationRevisionId: REV, path: "//evil" }, launchRef: REF }))!;
+    await executeLaunch(plan, deps);
+    expect(events).toEqual([`prepare ${CANONICAL_URL}`, `navigate ${CANONICAL_URL}`]);
+  });
+
+  test("a rejected preparation still navigates exactly once", async () => {
+    const navigated: string[] = [];
+    await executeLaunch(planAssignmentLaunch(mkItem({ launchRef: REF }))!, {
+      navigate: (u) => navigated.push(u),
+      probe: () => Promise.resolve(true),
+      prepareNavigation: () => Promise.reject(new Error("offline")),
+    });
+    expect(navigated).toEqual([`${CANONICAL_URL}&launchRef=${REF}`]);
+  });
+});

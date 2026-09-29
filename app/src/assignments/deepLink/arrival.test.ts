@@ -272,3 +272,23 @@ describe("renderDeepLinkArrival - retry", () => {
     );
   });
 });
+
+// Policy E cache transition: the arrival handoff passes the injected target
+// preparation through to the shared launch executor.
+describe("renderDeepLinkArrival - Policy E target preparation", () => {
+  test("prepares the exact handoff URL before navigating to it", async () => {
+    const mount = makeMount();
+    const order: string[] = [];
+    const deps = makeDeps({
+      navigate: jest.fn((u: string) => {
+        order.push(`navigate ${u}`);
+      }),
+      prepareNavigation: jest.fn(async (u: string) => {
+        order.push(`prepare ${u}`);
+      }),
+    });
+    await renderDeepLinkArrival(mount, deps);
+    const url = `${PAGE}#assignment=${ASSIGNMENT_ID}`;
+    expect(order).toEqual([`prepare ${url}`, `navigate ${url}`]);
+  });
+});

@@ -43,7 +43,12 @@ const download: Downloader = (url) => {
   const file = parsed.pathname.slice(1);
   return Promise.resolve({ status: 200, redirected: false, body: fixture(file), contentType: mime(file) });
 };
-async function prepare(downloader: Downloader = download, repoRoot = REPO_ROOT) {
+// The reviewed ASTRA-004 overlay is the shim as committed in 1ab9609, pinned by
+// APPROVED_OVERLAY_SHA256. The working-tree shim has since evolved (Policy E
+// cache transition), so the suite reads the approved bytes from that commit and
+// prepares from a repository root that holds them, never from the live file.
+const APPROVED_OVERLAY_COMMIT = "1ab9609";
+async function prepare(downloader: Downloader = download, repoRoot = path.join(processRoot, "repo")) {
   return prepareArtifact({ repoRoot, manifest, downloader });
 }
 async function writeFile(root: string, file: string, bytes: Buffer | string = "safe"): Promise<void> {
@@ -99,7 +104,7 @@ beforeAll(() => {
   fixtures = new Map(manifest.map((file) => [file, file in dist ? Buffer.from(dist[file]) :
     cp.execFileSync("git", ["-C", REPO_ROOT, "show", `cb73aff:${file}`], { maxBuffer: 8 * 1024 * 1024 })]));
   for (const [file, bytes] of fixtures) assertBaselineIdentity(file, bytes);
-  overlay = readFileSync(path.join(REPO_ROOT, SHIM_PATH));
+  overlay = cp.execFileSync("git", ["-C", REPO_ROOT, "show", `${APPROVED_OVERLAY_COMMIT}:${SHIM_PATH}`], { maxBuffer: 8 * 1024 * 1024 });
   expect(sha256(overlay)).toBe(APPROVED_OVERLAY_SHA256);
   processRoot = mkdtempSync(path.join(os.tmpdir(), "astra004-cli-test-"));
   processEntry = path.join(processRoot, "repo/platform/functions/lib/scripts/astra004-hosting-prepare.js");

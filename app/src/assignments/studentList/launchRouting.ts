@@ -221,7 +221,26 @@ export type LaunchExecuteDeps = {
   // it must NOT carry a variantKey, presentationRevisionId, launchRef, path, or
   // any accommodation detail. Optional; a no-op when omitted.
   readonly onVariantLoadFailure?: () => void;
+  // Policy E cache transition (deliveryNavigation.ts): replace the browser's
+  // cached copy of the exact URL about to be navigated with a response governed
+  // by the current Hosting policy. Awaited immediately before EVERY navigation
+  // (primary or canonical fallback). Best-effort: a rejection is ignored and the
+  // navigation proceeds. Production wires prepareDeliveryNavigation.
+  readonly prepareNavigation?: (url: string) => Promise<unknown>;
 };
+
+// Prepare, then navigate. The navigation always happens, exactly once, with the
+// unchanged url (fragment and any query intact).
+async function navigatePrepared(deps: LaunchExecuteDeps, url: string): Promise<void> {
+  if (deps.prepareNavigation !== undefined) {
+    try {
+      await deps.prepareNavigation(url);
+    } catch {
+      // Fail open: preparation never blocks delivery.
+    }
+  }
+  deps.navigate(url);
+}
 
 // Execute a launch plan. Canonical and canonicalFallback plans navigate directly.
 // A differentiated plan is load-probed first; on failure the client falls back
@@ -229,14 +248,15 @@ export type LaunchExecuteDeps = {
 // none), and emits the anomaly. A plan whose differentiated path was rejected at
 // build time is handled identically (anomaly + canonical fallback) without a
 // probe. The executor never routes to any target other than the plan's
-// server-selected `primaryUrl` or its canonical fallback.
+// server-selected `primaryUrl` or its canonical fallback. Every navigation is
+// preceded by the Policy E cache preparation when the deps provide it.
 export async function executeLaunch(
   plan: LaunchPlan,
   deps: LaunchExecuteDeps,
 ): Promise<void> {
   if (plan.differentiatedRejected) {
     deps.onVariantLoadFailure?.();
-    deps.navigate(plan.canonicalUrl);
+    await navigatePrepared(deps, plan.canonicalUrl);
     return;
   }
 
@@ -249,10 +269,10 @@ export async function executeLaunch(
     }
     if (!loadable) {
       deps.onVariantLoadFailure?.();
-      deps.navigate(plan.canonicalUrl);
+      await navigatePrepared(deps, plan.canonicalUrl);
       return;
     }
   }
 
-  deps.navigate(plan.primaryUrl);
+  await navigatePrepared(deps, plan.primaryUrl);
 }

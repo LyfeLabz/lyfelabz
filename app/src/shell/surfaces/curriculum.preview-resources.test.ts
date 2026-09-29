@@ -51,6 +51,40 @@ const LESSON_WITH_RESOURCE = "what-is-life";
 const LESSON_WITHOUT_RESOURCE = "earths-layers";
 
 describe("Curriculum Preview control (Sprint 28.6D Task 7)", () => {
+  // Policy E cache transition: Firebase Hosting omits custom security headers
+  // on 304 responses, so a plain Preview click prepares the `/app/lessons/**`
+  // target (GET, cache "reload") before the new tab loads it.
+  test("a plain Preview click prepares the lesson before the new tab loads it", async () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, { listClasses: emptyListClasses });
+    const preview = mount.querySelector<HTMLAnchorElement>(
+      `[data-testid=lesson-preview-${LESSON_WITHOUT_RESOURCE}]`,
+    )!;
+    const tab = { opener: window as unknown, location: { replace: jest.fn() } };
+    const open = jest.spyOn(window, "open").mockReturnValue(tab as unknown as Window);
+    const fetchMock = jest.fn(() =>
+      Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)) } as unknown as Response),
+    );
+    const originalFetch = (window as { fetch?: typeof fetch }).fetch;
+    (window as { fetch?: unknown }).fetch = fetchMock;
+    try {
+      const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+      preview.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(true);
+      expect(open).toHaveBeenCalledWith("", "_blank");
+      expect(tab.opener).toBeNull();
+      for (let i = 0; i < 5; i++) await Promise.resolve();
+      expect(fetchMock).toHaveBeenCalledWith(
+        preview.href,
+        expect.objectContaining({ method: "GET", cache: "reload" }),
+      );
+      expect(tab.location.replace).toHaveBeenCalledWith(preview.href);
+    } finally {
+      open.mockRestore();
+      (window as { fetch?: unknown }).fetch = originalFetch;
+    }
+  });
+
   test("every surfaced lesson card renders a Preview control", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, { listClasses: emptyListClasses });
@@ -120,8 +154,11 @@ describe("Curriculum Preview control (Sprint 28.6D Task 7)", () => {
       `[data-testid=lesson-preview-${LESSON_WITHOUT_RESOURCE}]`,
     )!;
     // jsdom does not navigate on an anchor click, but it must not spawn any
-    // assignment/session surface either.
+    // assignment/session surface either. jsdom has no window.open; stub it as a
+    // refused tab so the click keeps the native link path.
+    const open = jest.spyOn(window, "open").mockReturnValue(null);
     preview.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    open.mockRestore();
     expect(document.querySelector("[data-testid=assign-overlay]")).toBeNull();
     expect(mount.querySelector("[data-testid=curriculum-grid]")).not.toBeNull();
   });

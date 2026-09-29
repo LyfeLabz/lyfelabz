@@ -40,6 +40,10 @@ export type DeepLinkArrivalDeps = {
   readonly probe?: (url: string) => Promise<boolean>;
   // Emit the neutral, non-sensitive variant-load-failure anomaly (§7.3).
   readonly onVariantLoadFailure?: () => void;
+  // Policy E cache transition: prepare the exact lesson URL before the handoff
+  // navigates to it (studentList/deliveryNavigation.ts). Production wires the
+  // same preparation as the My Science launcher; best-effort, never blocking.
+  readonly prepareNavigation?: (url: string) => Promise<unknown>;
   // Return the student to their My Science landing (the calm fallback for an
   // informational or non-retryable state). The seam name is retained.
   readonly onGoToMyAssignments: () => void;
@@ -128,6 +132,7 @@ function launchExecuteDeps(deps: DeepLinkArrivalDeps) {
     navigate: deps.navigate,
     probe: deps.probe ?? (async (): Promise<boolean> => true),
     onVariantLoadFailure: deps.onVariantLoadFailure,
+    prepareNavigation: deps.prepareNavigation,
   };
 }
 

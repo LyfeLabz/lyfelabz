@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Policy E (SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md): the shell states its
+     referrer policy in the document as well as in the /app/** Hosting header.
+     Firebase Hosting omits custom headers on 304 responses, so a shell copy
+     cached before a header change would otherwise keep the browser default. -->
+<meta name="referrer" content="strict-origin">
 <title>LyfeLabz Platform</title>
 <!-- Sprint 20 (Visual Identity Refinement): load Orbitron so the
      Teacher Workspace can reuse the canonical LYFELABZ wordmark

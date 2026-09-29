@@ -43,6 +43,7 @@ import type {
 } from "../navigationHistory";
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { buildLessonBasePath } from "../../assignments/studentList/launch";
+import { attachDeliveryNewTabPreparation } from "../../assignments/studentList/deliveryNavigation";
 import { mintAssignmentId } from "./shared/assignmentId";
 import { formatLocalDate, formatLocalTime } from "./shared/activeAssignments";
 import {
@@ -1428,6 +1429,11 @@ function renderLessonCard(
       "aria-label",
       `Preview ${lesson.title} (opens in a new tab)`,
     );
+    // Policy E cache transition: a plain click prepares the `/app/lessons/**`
+    // target before the new tab loads it (deliveryNavigation.ts). The link
+    // itself is unchanged, so modified clicks keep native behavior.
+    const view = doc.defaultView;
+    if (view !== null) attachDeliveryNewTabPreparation(preview, view);
     actionPair.appendChild(preview);
   }
 

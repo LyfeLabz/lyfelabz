@@ -74,8 +74,8 @@ import type { AssignmentsListForStudentCallable } from "./assignments/studentLis
 import {
   executeLaunch,
   type LaunchPlan,
-  type LaunchExecuteDeps,
 } from "./assignments/studentList/launchRouting";
+import { createBrowserLaunchExecuteDeps } from "./assignments/studentList/browserLaunch";
 import { createAttemptsListForStudentCallable } from "./assignments/studentResults/wire";
 import type { StudentResultsListCallable } from "./assignments/studentResults/types";
 import { createDeepLinkResolveCallable } from "./assignments/deepLink/wire";
@@ -159,43 +159,6 @@ const findMount = (): HTMLElement => {
   if (el === null) throw new Error(`missing mount node #${MOUNT_ID}`);
   return el;
 };
-
-// F5.2 §7.3 (Slice 5): the browser wiring for the launch executor. The routing
-// DECISION is server-authoritative and lives in launchRouting.ts; this only
-// supplies the three browser side effects it needs. `navigate` is the certified
-// full-page assignment launch. `probe` is a same-origin HEAD load-check used
-// only for a differentiated artifact before the navigation commits, so an
-// unloadable variant (structurally exceptional under §6.8) can fall back
-// visually to the standard lesson rather than land the student on a broken page;
-// any failure resolves false (fail safe toward canonical). `onVariantLoadFailure`
-// emits a NEUTRAL, non-sensitive anomaly (no variantKey, presentationRevisionId,
-// launchRef, path, or accommodation detail) - the durable delivery outcome is
-// derived server-side (Slice 6), never asserted by the client.
-function createBrowserLaunchExecuteDeps(win: Window): LaunchExecuteDeps {
-  return {
-    navigate: (url: string) => {
-      win.location.assign(url);
-    },
-    probe: async (url: string) => {
-      try {
-        const res = await win.fetch(url, { method: "HEAD", cache: "no-store" });
-        return res.ok;
-      } catch {
-        return false;
-      }
-    },
-    onVariantLoadFailure: () => {
-      try {
-        // eslint-disable-next-line no-console
-        console.warn(
-          "[lyfelabz] lesson presentation unavailable; opening the standard lesson",
-        );
-      } catch {
-        // Observability only.
-      }
-    },
-  };
-}
 
 async function run(): Promise<void> {
   const mount = findMount();
@@ -912,6 +875,9 @@ async function run(): Promise<void> {
           navigate: launchDeps.navigate,
           probe: launchDeps.probe,
           onVariantLoadFailure: launchDeps.onVariantLoadFailure,
+          // Policy E cache transition: the arrival handoff prepares its lesson
+          // target exactly as the My Science launcher does.
+          prepareNavigation: launchDeps.prepareNavigation,
           onGoToMyAssignments: () => {
             dispatch(session, table, mount, window.history);
           },

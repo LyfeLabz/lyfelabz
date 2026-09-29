@@ -510,6 +510,64 @@ test('every external script on /app/lessons/** has an explicit analytics-boundar
   assert.deepEqual([...seen].sort(), Object.keys(EXTERNAL_SCRIPT_DECISIONS).sort());
 });
 
+// Policy E cache transition. Firebase Hosting omits custom headers on 304 Not
+// Modified responses, and Policy E changed only headers, so a browser holding a
+// pre-policy copy of a zone page would keep reusing it without the CSP. Product
+// navigation into the zone therefore replaces the cached copy first (GET, cache
+// 'reload'): the application launcher (app/src/assignments/studentList/
+// deliveryNavigation.ts) and, for links between delivery pages, the runtime shim.
+// These zone pages load no runtime, so links FROM them are not prepared (the
+// documented residual in SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md); links TO them
+// from runtime-bearing pages are.
+const ZONE_PAGES_WITHOUT_LINK_PREPARATION = Object.freeze([
+  'app/lessons/about_learning-science.html',
+  'app/lessons/about_lyfelabz.html',
+  'app/lessons/about_privacy.html',
+  'app/lessons/body-system-diseases.html',
+  'app/lessons/body-system-interactions.html',
+  'app/lessons/disease_circulatory.html',
+  'app/lessons/disease_digestive.html',
+  'app/lessons/disease_excretory.html',
+  'app/lessons/disease_immune.html',
+  'app/lessons/disease_muscular.html',
+  'app/lessons/disease_nervous.html',
+  'app/lessons/disease_respiratory.html',
+  'app/lessons/disease_skeletal.html',
+  'app/lessons/index.html',
+  'app/lessons/system_circulatory.html',
+  'app/lessons/system_digestive.html',
+  'app/lessons/system_excretory.html',
+  'app/lessons/system_immune.html',
+  'app/lessons/system_muscular.html',
+  'app/lessons/system_nervous.html',
+  'app/lessons/system_respiratory.html',
+  'app/lessons/system_skeletal.html'
+]);
+
+test('Policy E cache transition: the runtime shim prepares in-zone links with an unconditional reload', () => {
+  const shim = fs.readFileSync(path.join(outputDirectory, 'assets/lyfelabz-assessment-runtime.js'), 'utf8');
+  assert.match(shim, /var DELIVERY_ZONE_PREFIX = '\/app\/lessons\/';/);
+  assert.match(shim, /method: 'GET',\s*cache: 'reload',\s*credentials: 'same-origin'/);
+  assert.match(shim, /response\.arrayBuffer\(\)/);
+  assert.doesNotMatch(shim, /cache: 'no-cache'|cache: 'no-store'|method: 'HEAD'/);
+});
+
+test('Policy E cache transition: exactly the documented zone pages load no link preparation', () => {
+  const without = lessonDeliveryArtifacts().filter((entry) =>
+    !fs.readFileSync(path.join(outputDirectory, entry), 'utf8').includes('/assets/lyfelabz-assessment-runtime.js'));
+  assert.deepEqual(without, [...ZONE_PAGES_WITHOUT_LINK_PREPARATION]);
+});
+
+test('Policy E: the application shell states the /app/** referrer policy in the document too', () => {
+  // A shell copy cached before a header change would otherwise revalidate to a
+  // headerless 304 and fall back to the browser default referrer policy.
+  for (const entry of ['app/index.html', 'app/lessons/index.html']) {
+    const html = fs.readFileSync(path.join(outputDirectory, entry), 'utf8');
+    const metas = [...html.matchAll(/<meta\s+name="referrer"\s+content="([^"]+)">/g)].map((m) => m[1]);
+    assert.deepEqual(metas, [APP_REFERRER_POLICY], entry);
+  }
+});
+
 test('application artifact build leaves the certified marketing artifact and config unchanged', () => {
   assert.deepEqual(directorySnapshot(marketingDirectory), marketingBefore);
   const marketing = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.marketing.json'), 'utf8'));

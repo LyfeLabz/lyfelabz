@@ -1,6 +1,6 @@
 # Security Backlog: Launch Context in Lesson URLs and Analytics
 
-**Status:** Opened 2026-09-29 from the Earth's Layers r2 Stage B staging certification and the follow-up read-only reconnaissance. Item 1 is **resolved and staging-certified** by the launch-URL fragment hardening (commit `432e728`, staging Hosting `a473c38faacc9396`); production is not deployed. Items 1b, 2, 3 and 4 are **resolved by policy**: the owner approved Policy E (2026-09-29), the Hosting analytics boundary described below. It is implemented and locally certified (Hosting emulator), not yet deployed to staging or production.
+**Status:** Opened 2026-09-29 from the Earth's Layers r2 Stage B staging certification and the follow-up read-only reconnaissance. Item 1 is **resolved and staging-certified** by the launch-URL fragment hardening (commit `432e728`, staging Hosting `a473c38faacc9396`); production is not deployed. Items 1b, 2, 3 and 4 are **resolved by policy**: the owner approved Policy E (2026-09-29), the Hosting analytics boundary described below. It is deployed to staging (Hosting `737d935a2c048330`) and **not certified**: staging exposed a 304 cache-transition defect (below). The transition fix is implemented, locally certified in Chrome, and owner-approved with an accepted transition residual; it is not yet deployed to staging or production.
 
 ## Background
 
@@ -88,6 +88,66 @@ The one expected console error on zone pages is the blocked gtag.js load. `scrip
 - the production key has no referrer restriction.
 
 No LyfeLabz code reads `document.referrer`.
+
+## Policy E cache transition (304 defect; fix locally certified, not deployed)
+
+**Defect (staging, 2026-09-29).** On fresh 200 responses Policy E behaves as designed. Firebase Hosting, however, sends **304 Not Modified without the custom headers** (no CSP, no Referrer-Policy); `curl` against staging `737d935a2c048330` confirms this.
+
+Policy E changed headers only, so lesson bytes and ETags did not change. A browser holding a copy of a `/app/lessons/**` page cached before Policy E therefore keeps it, headers included:
+- it reuses the copy with no request while it is fresh (`max-age=3600`);
+- it then revalidates to a headerless 304 and keeps the old stored headers, indefinitely.
+
+That copy has no CSP, so gtag.js loads. Staging recorded one `/g/collect` hit from the historical r1 variant this way.
+
+**Mechanism.** Before product navigation into `/app/lessons/**`, the browser's cached copy of the exact target is replaced. The request is:
+
+`GET <target without fragment>`, `cache: "reload"`, `credentials: "same-origin"`, with the body read to the end.
+
+- `reload` makes an unconditional request and stores the full 200, which carries the current headers.
+- The navigation that follows then uses a copy governed by the current policy. A later revalidation 304 only refreshes the headers it carries, so the stored CSP persists.
+- `no-cache` does not work: it revalidates to the headerless 304. `no-store` never writes the cache. `HEAD` never replaces the stored GET.
+- Preparation is best-effort. On failure, or after 4 s, the navigation proceeds exactly as before.
+- The fragment (launch context) never enters the request. The navigation URL (fragment and any legacy query) is unchanged.
+
+**Coverage.**
+- **Application bundle** (`app/src/assignments/studentList/deliveryNavigation.ts`, wired in `browserLaunch.ts`): `executeLaunch` prepares before every navigation. That covers My Science canonical, canonicalFallback, differentiated (after the existing HEAD probe) and revision-bound renditions, the `/app/a/{id}` assignment and practice handoffs, and the canonical fallback after a failed or rejected variant.
+- **Teacher Preview:** a plain click opens the tab synchronously, severs its opener, prepares, then loads the unchanged href. Modified clicks keep native behavior.
+- **Links between delivery pages:** the shared runtime shim (`assets/lyfelabz-assessment-runtime.js`, SHA-256 `d07473b3…` to `e77b0458…`) holds a plain same-tab click on a same-origin `/app/lessons/**` link, prepares the target, then follows the unchanged href. It installs only on `/app/lessons/**` pages. It leaves untouched in-page fragments, other origins, `/app/` and root links, modified clicks, `target`/`download` links, clicks a lesson handler already handled, and all buttons (quiz controls). No lesson HTML, rendition, retained variant or `presentationRevisionId` changes.
+- **App shell** (`app/index.html`): it also states `<meta name="referrer" content="strict-origin">`. The byte change gives every cached shell a new ETag, so the next revalidation (within `max-age=3600` of the release) returns a 200 with the header. The meta keeps the policy in the document regardless of headers.
+
+**Owner decisions (2026-09-29).** The owner approved the implementation and made three decisions.
+
+*Accepted transition residual.* This is an accepted residual. It is **not zero risk**, and it is distinct from the steady-state Policy E architecture. It applies only to browsers that cached a `/app/lessons/**` resource before Policy E. Navigation the product does not initiate cannot be prepared:
+- direct typed URLs;
+- bookmarks;
+- history and session restore to a representation cached before Policy E;
+- links from the 22 zone pages that load no runtime shim (the body-system `system_*`/`disease_*` pages, the `about_*` pages, `body-system-*`, and the shell copy `index.html`, pinned in `scripts/app-hosting/build.test.cjs`). Links **to** those pages from runtime-bearing pages are prepared;
+- the shell transition: a browser-initiated `/app/a/{id}` arrival can reuse a still-fresh pre-release shell copy, with the browser-default referrer policy, for up to one hour (`max-age=3600`) after the release.
+
+Such a stale copy stays stale until:
+- the product navigates to that URL;
+- the browser evicts it;
+- the user hard-reloads.
+
+While stale, each visit can send Google Analytics the page path without query or fragment. The exception is a pre-hardening `?assignment=` URL restored from history, which also sends that query.
+
+The residual is transitional. Fresh responses always carry Policy E. Every product-controlled launch and prepared link replaces the stale copy it targets. The population of pre-policy cache entries only shrinks. Explicitly rejected, because they add disproportionate complexity or broader cache behavior for a shrinking condition:
+- `Clear-Site-Data`;
+- a service worker;
+- cache-busting query parameters;
+- any change to immutable lesson artifacts.
+
+Self-healing detection in the shim, which would act only after a first hit, is also not implemented.
+
+*Shared runtime shim: approved.* The shared, mutable runtime shim may prepare same-tab `/app/lessons/**` navigation targets before navigation. Only shared platform navigation behavior changes. For retained variants and renditions, all of these are unchanged:
+- bytes and SHA-256 hashes (`variants:verify`);
+- `presentationRevisionId`s;
+- lesson content;
+- assessment and scoring behavior.
+
+Historical retained presentation artifacts remain immutable.
+
+*ASTRA-004: approved, fail-closed.* The historical ASTRA-004 staging preparer (`platform/functions/src/scripts/astra004-hosting-prepare.ts`) still requires the working-tree shim to match the reviewed overlay hash `d07473b3…`. At HEAD it therefore **refuses** to prepare, rather than silently accepting the modified shim. Its test suite validates the previously approved overlay bytes as committed in `1ab9609`, the approval commit. `APPROVED_OVERLAY_SHA256` is unchanged.
 
 ## Item 1b: assignment id in GA `dr` after a `/app/a/{id}` arrival (RESOLVED by policy; not yet deployed)
 

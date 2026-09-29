@@ -5,7 +5,7 @@
  * docs/platform/SPRINT_17_IMPLEMENTATION_SPECIFICATION.md, Section 5.
  *
  * This file is the ONE canonical include added to every instructional
- * page in Sprint 17 Slice 1. It performs two jobs and nothing else:
+ * page in Sprint 17 Slice 1. It performs three jobs and nothing else:
  *
  *   1. Detects whether the current page was opened from the certified
  *      assignment launcher (assignment context) or as a standalone
@@ -21,9 +21,15 @@
  *      assessmentSessionsAutosave, assessmentAttemptsFinalize,
  *      assessmentAttemptGet).
  *
- * In standalone mode the shim is fully inert: no dynamic script
+ *   3. On pages under /app/lessons/ only (the Policy E educational-delivery
+ *      zone), prepares the target of an ordinary same-tab link to another
+ *      /app/lessons/ page before the browser follows it. See
+ *      installDeliveryNavigationPreparation below.
+ *
+ * In standalone mode the shim is otherwise inert: no dynamic script
  * injection, no Firebase initialization, no network traffic beyond the
- * fetch of this file itself. Standalone lesson pages therefore pay only
+ * fetch of this file itself and the job 3 request a student triggers by
+ * following such a link. Standalone lesson pages therefore pay only
  * the cost of a tiny script (this file); the ~334 KB active bundle
  * loads only on assignment-mode navigations.
  *
@@ -184,6 +190,122 @@
   window[NAMESPACE] = window[NAMESPACE] || {};
   window[NAMESPACE][RUNTIME_KEY] = runtime;
   window[NAMESPACE][LESSON_QUIZ_KEY] = lessonQuiz;
+
+  // Policy E cache transition (docs/platform/SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md).
+  //
+  // Policy E governs /app/lessons/** through Hosting response headers; the
+  // lesson bytes and ETags did not change, and Firebase Hosting omits those
+  // headers on 304 responses. A browser holding a copy of a page cached before
+  // Policy E keeps reusing it without the Content-Security-Policy, so Google
+  // Analytics would run there. The application prepares its own launches
+  // (app/src/assignments/studentList/deliveryNavigation.ts); this covers the
+  // ordinary links between delivery pages (Connections, companion pages, the
+  // home link), whose HTML is immutable.
+  //
+  // For a plain same-tab click on a same-origin link to another /app/lessons/
+  // page, the shim holds the navigation, requests the target once with
+  //   GET, cache: 'reload', credentials: 'same-origin'
+  // (an unconditional request whose full 200 response, carrying the current
+  // headers, replaces the browser's cached copy), reads the body to the end,
+  // and then follows the link's unchanged href. Preparation is best-effort: on
+  // failure or after DELIVERY_PREPARE_TIMEOUT_MS the link is followed anyway.
+  // Everything else keeps native behavior: links on other origins or outside
+  // /app/lessons/, fragment links within the page, modified or non-primary
+  // clicks, links with a target or download attribute, and any click a lesson
+  // handler already handled. Pages outside /app/lessons/ (the public root
+  // lessons) install nothing. Quiz controls are buttons, not links, and are
+  // never touched.
+  var DELIVERY_ZONE_PREFIX = '/app/lessons/';
+  var DELIVERY_PREPARE_TIMEOUT_MS = 4000;
+
+  function prepareDeliveryTarget(requestUrl) {
+    return new Promise(function (resolve) {
+      var settled = false;
+      var timer = null;
+      function settle() {
+        if (settled) return;
+        settled = true;
+        if (timer !== null) clearTimeout(timer);
+        resolve();
+      }
+      timer = setTimeout(settle, DELIVERY_PREPARE_TIMEOUT_MS);
+      try {
+        window.fetch(requestUrl, {
+          method: 'GET',
+          cache: 'reload',
+          credentials: 'same-origin',
+          mode: 'same-origin',
+          redirect: 'follow'
+        }).then(function (response) {
+          return response.arrayBuffer();
+        }).then(settle, settle);
+      } catch (_err) {
+        settle();
+      }
+    });
+  }
+
+  function deliveryNavigationTarget(event, loc) {
+    if (event.defaultPrevented) return null;
+    if (event.button !== 0) return null;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
+    var node = event.target;
+    if (node && node.nodeType !== 1) node = node.parentNode;
+    if (!node || typeof node.closest !== 'function') return null;
+    var anchor = node.closest('a[href], area[href]');
+    if (!anchor || typeof anchor.href !== 'string') return null;
+    var targetAttr = anchor.getAttribute('target');
+    if (targetAttr && targetAttr.toLowerCase() !== '_self') return null;
+    if (anchor.hasAttribute('download')) return null;
+    var href = anchor.href;
+    var url;
+    var here;
+    try {
+      url = new URL(href);
+      here = new URL(loc.href);
+    } catch (_err) {
+      return null;
+    }
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+    if (url.origin !== here.origin) return null;
+    if (url.pathname.indexOf(DELIVERY_ZONE_PREFIX) !== 0) return null;
+    // A link to this same page with a fragment (including a bare '#') is a
+    // same-document scroll, never a page load.
+    if (href.indexOf('#') !== -1 && url.pathname === here.pathname && url.search === here.search) {
+      return null;
+    }
+    url.hash = '';
+    return { href: href, requestUrl: url.href };
+  }
+
+  function installDeliveryNavigationPreparation() {
+    try {
+      var loc = window.location;
+      if (!loc || typeof loc.pathname !== 'string') return;
+      if (loc.pathname.indexOf(DELIVERY_ZONE_PREFIX) !== 0) return;
+      if (typeof window.fetch !== 'function' || typeof URL !== 'function') return;
+      var doc = window.document;
+      if (!doc || typeof doc.addEventListener !== 'function') return;
+      var latest = 0;
+      // Bubble phase on the document: every lesson handler on the link or
+      // its ancestors runs first and may prevent the navigation itself.
+      doc.addEventListener('click', function (event) {
+        var target = deliveryNavigationTarget(event, loc);
+        if (target === null) return;
+        event.preventDefault();
+        // Only the most recent click navigates, so a double click or a quick
+        // second choice never produces two navigations.
+        var token = ++latest;
+        prepareDeliveryTarget(target.requestUrl).then(function () {
+          if (token === latest) loc.assign(target.href);
+        });
+      }, false);
+    } catch (_err) {
+      // Leave native link behavior in place.
+    }
+  }
+
+  installDeliveryNavigationPreparation();
 
   if (!hasAssignmentContext) return;
 
