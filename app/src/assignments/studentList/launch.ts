@@ -12,9 +12,18 @@ import { resolveAssessmentRevisionPath } from "./revisionPaths";
 // respect to any of that; it composes a URL and nothing else.
 //
 // URL contract (per Sprint 17 Implementation Specification §4 and
-// §5.1):
+// §5.1, as hardened below):
 //
-//   /lesson_<slug>.html?assignment=<encodedAssignmentId>
+//   <revision page>#assignment=<encodedAssignmentId>
+//
+// Launch-context hardening (security backlog
+// SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md): the assignment context, and the
+// launch-grant reference added by launchRouting.ts, ride in the URL FRAGMENT,
+// never the query string. A fragment is never sent in an HTTP request or a
+// Referer header, and the lesson pages' analytics page view (whose page
+// location is the URL without its fragment) never receives it. The assessment
+// runtime reads the query first and then the fragment (runtime/entry.ts,
+// runtime/launchParams.ts), so legacy query-form links keep working.
 //
 // Confidentiality: only the assignmentId crosses into the URL. No UID,
 // schoolId, districtId, teacherId, classId, recipient identifier,
@@ -23,8 +32,8 @@ import { resolveAssessmentRevisionPath } from "./revisionPaths";
 // on lesson load; the browser is not the authorization authority.
 //
 // Preservation: the canonical lesson URL is untouched by a standalone
-// (unassigned) visit. Removing the `?assignment` query parameter must
-// leave the lesson at its byte-for-byte practice-mode URL.
+// (unassigned) visit. Removing the `#assignment` fragment must leave the
+// lesson at its byte-for-byte practice-mode URL.
 
 const LESSON_SLUG_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,126}[A-Za-z0-9])?$/;
 
@@ -63,10 +72,21 @@ export function buildAssignmentLaunchUrl(
   }
   const basePath = buildRevisionBoundLessonPath(lessonSlug, item.assessmentRevisionId);
   if (basePath === null) return null;
-  // encodeURIComponent covers every reserved URL character including
-  // `&`, `?`, `#`, `=`, and `/`; the assignmentId is treated as opaque.
-  const encoded = encodeURIComponent(assignmentId);
-  return `${basePath}?assignment=${encoded}`;
+  return withLaunchContext(basePath, ASSIGNMENT_CONTEXT_PARAM, assignmentId);
+}
+
+// The launch-context parameter names the assessment runtime reads
+// (runtime/entry.ts, runtime/launchParams.ts).
+export const ASSIGNMENT_CONTEXT_PARAM = "assignment";
+export const LAUNCH_REF_CONTEXT_PARAM = "launchRef";
+
+// Append one launch-context parameter to an internal page URL's FRAGMENT
+// (`#k=v`, or `&k=v` when a fragment already exists). Never touches the query
+// string. encodeURIComponent covers every reserved URL character including
+// `&`, `?`, `#`, `=`, and `/`; the value is treated as opaque.
+export function withLaunchContext(url: string, key: string, value: string): string {
+  const sep = url.includes("#") ? "&" : "#";
+  return `${url}${sep}${key}=${encodeURIComponent(value)}`;
 }
 
 // F5.3 Slice 9D: the practice-mode (no `?assignment=`) canonical page of an

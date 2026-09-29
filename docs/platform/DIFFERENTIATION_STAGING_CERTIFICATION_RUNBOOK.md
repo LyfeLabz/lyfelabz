@@ -469,6 +469,7 @@ Hosting serves the lesson pages, `app/dist/bundle.js`, the runtime, and the path
 3. **Browser refetch.** In the certification browser (signed in as the test student, on the staging origin), fetch every path with `fetch(path, { cache: "reload" })`. This bypasses and replaces the HTTP-cache entry. Hash the bytes with `crypto.subtle.digest("SHA-256", …)`; each must equal step 1.
 4. **Fresh navigation.** Navigate to `/app/` (a real navigation, not history). The resource-timing `decodedBodySize` of `/app/dist/bundle.js` must equal the step 1 byte length.
 5. **Executing-bundle fingerprint.** The My Science "Open assignment" control of the frozen-r1 assignment must carry `data-assignment-launch-url` = `/app/lessons/assessment-revisions/lesson_earths-layers__r1.html?assignment=<id>`.
+   - After the launch-URL fragment hardening (`SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md`), the same attribute reads `…__r1.html#assignment=<id>`. Either form identifies the bundle's path table; the fragment form also identifies a post-hardening bundle.
    - A pre-Stage-A bundle yields `/app/lessons/lesson_earths-layers.html?assignment=<id>`.
    - The value is computed by the executing bundle from its own path table.
 6. **Stage B only.** The refetched unversioned v1 and v2 pages declare r2. The fingerprint in step 5 is unchanged, because the bundle is identical.

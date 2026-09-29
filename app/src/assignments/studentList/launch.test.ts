@@ -21,7 +21,7 @@ const mkItem = (
 describe("buildAssignmentLaunchUrl", () => {
   test("uses the canonical lesson URL and encodes only the assignmentId", () => {
     const url = buildAssignmentLaunchUrl(mkItem());
-    expect(url).toBe("/app/lessons/lesson_what-is-life.html?assignment=assign-1");
+    expect(url).toBe("/app/lessons/lesson_what-is-life.html#assignment=assign-1");
   });
 
   test("percent-encodes reserved characters in assignmentId", () => {
@@ -29,16 +29,17 @@ describe("buildAssignmentLaunchUrl", () => {
       mkItem({ assignmentId: "a b&c?d#e/f=g" }),
     );
     expect(url).toBe(
-      `/app/lessons/lesson_what-is-life.html?assignment=${encodeURIComponent("a b&c?d#e/f=g")}`,
+      `/app/lessons/lesson_what-is-life.html#assignment=${encodeURIComponent("a b&c?d#e/f=g")}`,
     );
   });
 
-  test("adds only the assignment parameter and no other query keys", () => {
+  test("carries only the assignment parameter, in the fragment, and no query string at all", () => {
     const raw = buildAssignmentLaunchUrl(mkItem());
     expect(raw).not.toBeNull();
-    const [, query = ""] = raw!.split("?");
-    const params = new URLSearchParams(query);
-    expect(Array.from(params.keys())).toEqual(["assignment"]);
+    const url = new URL(raw!, "https://lyfelabz.test");
+    expect(url.search).toBe("");
+    expect(Array.from(new URLSearchParams(url.hash.slice(1)).keys())).toEqual(["assignment"]);
+    expect(new URLSearchParams(url.hash.slice(1)).get("assignment")).toBe("assign-1");
   });
 
   test.each([
@@ -85,7 +86,7 @@ describe("buildAssignmentLaunchUrl", () => {
     const url = buildAssignmentLaunchUrl(
       mkItem({ lessonSlug: "earths-layers", assignmentId: "asg-42" }),
     );
-    expect(url).toBe("/app/lessons/assessment-revisions/lesson_earths-layers__r1.html?assignment=asg-42");
+    expect(url).toBe("/app/lessons/assessment-revisions/lesson_earths-layers__r1.html#assignment=asg-42");
   });
 
   test("a lesson with no page in the revision-path table has no launch URL (no v1 or current fallback)", () => {
@@ -116,13 +117,13 @@ describe("revision-bound canonical routing (F5.3 Slice 9D)", () => {
 
   test("with the real r2 current, an r1 assignment routes to the exact r1 rendition, never the current page", () => {
     expect(buildAssignmentLaunchUrl(mkItem({ lessonSlug: EL, assessmentRevisionId: R1, assignmentId: "a1" }))).toBe(
-      "/app/lessons/assessment-revisions/lesson_earths-layers__r1.html?assignment=a1",
+      "/app/lessons/assessment-revisions/lesson_earths-layers__r1.html#assignment=a1",
     );
   });
 
   test("an r2 assignment routes to the exact r2 rendition from the committed table", () => {
     expect(buildAssignmentLaunchUrl(mkItem({ lessonSlug: EL, assessmentRevisionId: R2, assignmentId: "a2" }))).toBe(
-      "/app/lessons/assessment-revisions/lesson_earths-layers__r2.html?assignment=a2",
+      "/app/lessons/assessment-revisions/lesson_earths-layers__r2.html#assignment=a2",
     );
   });
 
@@ -153,7 +154,9 @@ describe("revision-bound canonical routing (F5.3 Slice 9D)", () => {
   test("the URL never carries the revision; only the assignment id is added", () => {
     const url = buildAssignmentLaunchUrl(mkItem({ lessonSlug: EL, assessmentRevisionId: R1 }))!;
     expect(url).not.toContain("assessment_");
-    expect([...new URLSearchParams(url.split("?")[1]).keys()]).toEqual(["assignment"]);
+    const parsed = new URL(url, "https://lyfelabz.test");
+    expect(parsed.search).toBe("");
+    expect([...new URLSearchParams(parsed.hash.slice(1)).keys()]).toEqual(["assignment"]);
   });
 
   test("the bundled table is the committed 9B table (single-revision r1 -> unversioned v2 page; Earth's Layers -> renditions)", () => {

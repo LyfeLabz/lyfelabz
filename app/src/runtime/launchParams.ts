@@ -3,8 +3,10 @@
 // from the runtime entry as a pure, Firebase-free function so the transport seam
 // is unit-testable without booting the assessment runtime.
 //
-// The launcher appends `?launchRef=<opaque>` ONLY on a differentiated or
-// canonicalFallback launch. The value is an opaque server-minted grant id; this
+// The launcher appends `launchRef=<opaque>` ONLY on a differentiated or
+// canonicalFallback launch, in the URL fragment (`#...&launchRef=`; launch-URL
+// hardening, never the query string). Legacy query-form links are still read:
+// the query is checked first, then the fragment. The value is an opaque server-minted grant id; this
 // function reads it VERBATIM and never decodes, derives, interprets, or replaces
 // it - the runtime only transports it to `assessmentSessionsBegin`, and the
 // server (Slice 6) is the sole authority on its validity. A light URL-safe /

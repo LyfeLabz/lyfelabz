@@ -20,7 +20,7 @@ const REV = `pr${"a".repeat(64)}`;
 // `variantRelativeOutputPath` / `assertActivateWriteConsistent`.
 const SAFE_PATH = `app/lessons/variants/lesson_what-is-life__${REV}.html`;
 // The canonical (v2-overridden) URL for what-is-life, no launchRef.
-const CANONICAL_URL = "/app/lessons/lesson_what-is-life.html?assignment=asg-1";
+const CANONICAL_URL = "/app/lessons/lesson_what-is-life.html#assignment=asg-1";
 
 const REF = "0123456789abcdef0123456789abcdef";
 
@@ -68,7 +68,7 @@ describe("planAssignmentLaunch - routing decision (F5.2 §7.3)", () => {
     expect(plan?.differentiated).toBe(true);
     // The path is used verbatim (server-selected), only made absolute same-origin.
     expect(plan?.primaryUrl).toBe(
-      `/${SAFE_PATH}?assignment=asg-1&launchRef=${REF}`,
+      `/${SAFE_PATH}#assignment=asg-1&launchRef=${REF}`,
     );
     // The canonical fallback never carries the launchRef.
     expect(plan?.canonicalUrl).toBe(CANONICAL_URL);
@@ -98,7 +98,7 @@ describe("planAssignmentLaunch - routing decision (F5.2 §7.3)", () => {
     // The client transports the server path unchanged; it never reconstructs a
     // path from the item's own lessonSlug (what-is-life).
     expect(plan?.primaryUrl).toBe(
-      `/${otherPath}?assignment=asg-1&launchRef=${REF}`,
+      `/${otherPath}#assignment=asg-1&launchRef=${REF}`,
     );
   });
 
@@ -341,7 +341,7 @@ describe("real Earth's Layers r1 + r2 routing (committed table)", () => {
   const el = (over: Partial<AssignmentsListForStudentItem>) => mkItem({ lessonSlug: EL, title: "Earth's Layers", ...over });
 
   test("an r1 assignment (canonical) opens the r1 rendition although r2 is current", () => {
-    expect(planAssignmentLaunch(el({ assessmentRevisionId: R1 }))?.primaryUrl).toBe(`${R1_PAGE}?assignment=asg-1`);
+    expect(planAssignmentLaunch(el({ assessmentRevisionId: R1 }))?.primaryUrl).toBe(`${R1_PAGE}#assignment=asg-1`);
   });
 
   test("an r1 differentiated launch opens retained pr90f..., and its load-failure fallback is the r1 rendition", () => {
@@ -350,12 +350,12 @@ describe("real Earth's Layers r1 + r2 routing (committed table)", () => {
       launchRef: REF,
       presentation: { variantKey: "reading-adapted", presentationRevisionId: PR90F, path: PR90F_PATH },
     }));
-    expect(plan?.primaryUrl).toBe(`/${PR90F_PATH}?assignment=asg-1&launchRef=${REF}`);
-    expect(plan?.canonicalUrl).toBe(`${R1_PAGE}?assignment=asg-1`);
+    expect(plan?.primaryUrl).toBe(`/${PR90F_PATH}#assignment=asg-1&launchRef=${REF}`);
+    expect(plan?.canonicalUrl).toBe(`${R1_PAGE}#assignment=asg-1`);
   });
 
   test("an r2 assignment opens the r2 rendition", () => {
-    expect(planAssignmentLaunch(el({ assessmentRevisionId: R2 }))?.primaryUrl).toBe(`${R2_PAGE}?assignment=asg-1`);
+    expect(planAssignmentLaunch(el({ assessmentRevisionId: R2 }))?.primaryUrl).toBe(`${R2_PAGE}#assignment=asg-1`);
   });
 
   test("a future r2 differentiated launch opens retained pr6b7c..., and its load-failure fallback is the r2 rendition", () => {
@@ -366,13 +366,13 @@ describe("real Earth's Layers r1 + r2 routing (committed table)", () => {
       launchRef: REF,
       presentation: { variantKey: "reading-adapted", presentationRevisionId: PR6B7C, path: PR6B7C_PATH },
     }));
-    expect(plan?.primaryUrl).toBe(`/${PR6B7C_PATH}?assignment=asg-1&launchRef=${REF}`);
-    expect(plan?.canonicalUrl).toBe(`${R2_PAGE}?assignment=asg-1`);
+    expect(plan?.primaryUrl).toBe(`/${PR6B7C_PATH}#assignment=asg-1&launchRef=${REF}`);
+    expect(plan?.canonicalUrl).toBe(`${R2_PAGE}#assignment=asg-1`);
   });
 
   test("r2 without differentiated coverage (canonicalFallback grant) opens canonical r2, never r1 or a variant", () => {
     const plan = planAssignmentLaunch(el({ assessmentRevisionId: R2, launchRef: REF }));
-    expect(plan?.primaryUrl).toBe(`${R2_PAGE}?assignment=asg-1&launchRef=${REF}`);
+    expect(plan?.primaryUrl).toBe(`${R2_PAGE}#assignment=asg-1&launchRef=${REF}`);
     expect(plan?.differentiated).toBe(false);
   });
 
@@ -383,5 +383,79 @@ describe("real Earth's Layers r1 + r2 routing (committed table)", () => {
 
   test("an uncommitted revision has no launch (no current fallback)", () => {
     expect(planAssignmentLaunch(el({ assessmentRevisionId: `assessment_${EL}__r3` }))).toBeNull();
+  });
+});
+
+// Launch-URL hardening (security backlog SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md):
+// every URL the launcher builds carries `assignment` and `launchRef` ONLY in the
+// fragment, never in the query string, so neither reaches an HTTP request, a
+// Referer header, or the lesson pages' analytics page location.
+describe("launch context rides in the fragment, never the query string", () => {
+  const EL = "earths-layers";
+  const R1 = `assessment_${EL}__r1`;
+  const R2 = `assessment_${EL}__r2`;
+  const PR90F = "pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189";
+  const PR90F_PATH = `app/lessons/variants/lesson_${EL}__${PR90F}.html`;
+  const parse = (u: string) => {
+    const url = new URL(u, "https://lyfelabz.test");
+    return { path: url.pathname, search: url.search, fragment: Object.fromEntries(new URLSearchParams(url.hash.slice(1))) };
+  };
+  const el = (over: Partial<AssignmentsListForStudentItem>) => mkItem({ lessonSlug: EL, title: "Earth's Layers", ...over });
+
+  test.each([
+    ["canonical (unversioned single-revision page)", mkItem(), { assignment: "asg-1" }],
+    ["revision-bound canonical r1", el({ assessmentRevisionId: R1 }), { assignment: "asg-1" }],
+    ["revision-bound canonical r2", el({ assessmentRevisionId: R2 }), { assignment: "asg-1" }],
+    ["canonicalFallback (launchRef only)", el({ assessmentRevisionId: R2, launchRef: REF }), { assignment: "asg-1", launchRef: REF }],
+    [
+      "differentiated",
+      el({ assessmentRevisionId: R1, launchRef: REF, presentation: { variantKey: "reading-adapted", presentationRevisionId: PR90F, path: PR90F_PATH } }),
+      { assignment: "asg-1", launchRef: REF },
+    ],
+  ])("%s: primary URL has no query and the exact fragment context", (_label, item, fragment) => {
+    const plan = planAssignmentLaunch(item)!;
+    const primary = parse(plan.primaryUrl);
+    expect(primary.search).toBe("");
+    expect(primary.fragment).toEqual(fragment);
+    // The canonical target (DOM attribute and every fallback) never carries a launchRef.
+    const canonical = parse(plan.canonicalUrl);
+    expect(canonical.search).toBe("");
+    expect(canonical.fragment).toEqual({ assignment: "asg-1" });
+  });
+
+  test("the differentiated load-failure fallback navigates the canonical page with the assignment only", async () => {
+    const plan = planAssignmentLaunch(el({
+      assessmentRevisionId: R1,
+      launchRef: REF,
+      presentation: { variantKey: "reading-adapted", presentationRevisionId: PR90F, path: PR90F_PATH },
+    }))!;
+    const navigated: string[] = [];
+    await executeLaunch(plan, { navigate: (u) => navigated.push(u), probe: () => Promise.resolve(false) });
+    expect(navigated).toHaveLength(1);
+    expect(parse(navigated[0]!)).toEqual({ path: `/app/lessons/assessment-revisions/lesson_${EL}__r1.html`, search: "", fragment: { assignment: "asg-1" } });
+  });
+
+  test("a rejected differentiated path falls back canonical with no query and no launchRef", () => {
+    const plan = planAssignmentLaunch(el({
+      assessmentRevisionId: R1,
+      launchRef: REF,
+      presentation: { variantKey: "reading-adapted", presentationRevisionId: PR90F, path: "https://evil.example/x.html" },
+    }))!;
+    expect(plan.differentiatedRejected).toBe(true);
+    expect(parse(plan.primaryUrl)).toEqual({ path: `/app/lessons/assessment-revisions/lesson_${EL}__r1.html`, search: "", fragment: { assignment: "asg-1" } });
+  });
+
+  test("assignment-tied practice carries no launch context at all", () => {
+    for (const rev of [R1, R2]) {
+      const plan = planPracticeLaunch(EL, undefined, rev)!;
+      expect(parse(plan.primaryUrl)).toEqual({ path: `/app/lessons/assessment-revisions/lesson_${EL}__r${rev.slice(-1)}.html`, search: "", fragment: {} });
+    }
+  });
+
+  test("an assignment id with reserved characters is encoded inside the fragment and never opens a query", () => {
+    const plan = planAssignmentLaunch(mkItem({ assignmentId: "a?b=c&d#e", launchRef: REF }))!;
+    const primary = parse(plan.primaryUrl);
+    expect(primary.search).toBe("");
+    expect(primary.fragment).toEqual({ assignment: "a?b=c&d#e", launchRef: REF });
   });
 });

@@ -1893,7 +1893,7 @@ describe("My Science (28.6G) - empty / loading / error / read-only / a11y", () =
       "[data-testid=assignments-launch]",
     );
     const url = btn?.getAttribute("data-assignment-launch-url") ?? "";
-    expect(url).toBe("/app/lessons/lesson_what-is-life.html?assignment=assign-1");
+    expect(url).toBe("/app/lessons/lesson_what-is-life.html#assignment=assign-1");
     for (const forbidden of ["u1", "s1", "uid=", "schoolId=", "session=", "token=", "score="]) {
       expect(url).not.toContain(forbidden);
     }
@@ -1941,7 +1941,7 @@ describe("My Science (28.6G) - empty / loading / error / read-only / a11y", () =
     // The DOM launch attribute is the CANONICAL URL - never the opaque variant
     // path and never the launchRef.
     const attr = btn?.getAttribute("data-assignment-launch-url") ?? "";
-    expect(attr).toBe("/app/lessons/lesson_what-is-life.html?assignment=assign-1");
+    expect(attr).toBe("/app/lessons/lesson_what-is-life.html#assignment=assign-1");
     expect(attr).not.toContain("variants");
     expect(attr).not.toContain("launchRef");
     // Clicking hands the executor the differentiated plan (server path + ref).
@@ -1949,8 +1949,8 @@ describe("My Science (28.6G) - empty / loading / error / read-only / a11y", () =
     expect(onLaunchAssignment).toHaveBeenCalledWith({
       differentiated: true,
       differentiatedRejected: false,
-      canonicalUrl: "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
-      primaryUrl: `/app/lessons/variants/lesson_what-is-life__${rev}.html?assignment=assign-1&launchRef=${ref}`,
+      canonicalUrl: "/app/lessons/lesson_what-is-life.html#assignment=assign-1",
+      primaryUrl: `/app/lessons/variants/lesson_what-is-life__${rev}.html#assignment=assign-1&launchRef=${ref}`,
     });
   });
 
@@ -1970,8 +1970,8 @@ describe("My Science (28.6G) - empty / loading / error / read-only / a11y", () =
     expect(onLaunchAssignment).toHaveBeenCalledWith({
       differentiated: false,
       differentiatedRejected: false,
-      canonicalUrl: "/app/lessons/lesson_what-is-life.html?assignment=assign-1",
-      primaryUrl: `/app/lessons/lesson_what-is-life.html?assignment=assign-1&launchRef=${ref}`,
+      canonicalUrl: "/app/lessons/lesson_what-is-life.html#assignment=assign-1",
+      primaryUrl: `/app/lessons/lesson_what-is-life.html#assignment=assign-1&launchRef=${ref}`,
     });
   });
 

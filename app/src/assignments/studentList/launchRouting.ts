@@ -1,4 +1,10 @@
-import { buildAssignmentLaunchUrl, buildRevisionBoundLessonPath } from "./launch";
+import {
+  ASSIGNMENT_CONTEXT_PARAM,
+  LAUNCH_REF_CONTEXT_PARAM,
+  buildAssignmentLaunchUrl,
+  buildRevisionBoundLessonPath,
+  withLaunchContext,
+} from "./launch";
 import type { AssignmentsListForStudentItem } from "./types";
 
 // F5.2 §7.3 - Persistent Student Differentiation Slice 5: the single client
@@ -38,12 +44,13 @@ import type { AssignmentsListForStudentItem } from "./types";
 // `BEGIN_REQUIRES_LAUNCH` and require fresh re-resolution rather than record a
 // false differentiated (or a client-authored canonicalFallback) outcome.
 
-// The launch query parameter name the assessment runtime reads on the lesson
-// page to detect assignment context (Sprint 17). Mirrors runtime/entry.ts.
-const ASSIGNMENT_PARAM = "assignment";
+// The launch-context parameter the assessment runtime reads on the lesson page
+// to detect assignment context (Sprint 17). Mirrors runtime/entry.ts.
+const ASSIGNMENT_PARAM = ASSIGNMENT_CONTEXT_PARAM;
 // F5.2 §4.3/§8 - the single new optional field `assessmentSessionsBegin` accepts.
 // The client transports the opaque grant id under this name and never decodes it.
-const LAUNCH_REF_PARAM = "launchRef";
+// Both ride in the URL fragment, never the query string (launch.ts).
+const LAUNCH_REF_PARAM = LAUNCH_REF_CONTEXT_PARAM;
 
 // §5.2/M4 opaque artifact-path grammar, matching the server's authoritative
 // `variantRelativeOutputPath` / `assertActivateWriteConsistent` formula
@@ -69,11 +76,6 @@ export function isSafeLaunchRef(ref: unknown): ref is string {
   return typeof ref === "string" && SAFE_LAUNCH_REF_RE.test(ref);
 }
 
-// Append a query parameter to an internal path, preserving any existing query.
-function withParam(url: string, key: string, value: string): string {
-  const sep = url.includes("?") ? "&" : "?";
-  return `${url}${sep}${key}=${encodeURIComponent(value)}`;
-}
 
 // Build the same-origin navigation URL for a validated differentiated artifact
 // path. The server path is a RELATIVE `app/lessons/...` string; we make it an
@@ -122,8 +124,8 @@ export function planAssignmentLaunch(
     // discards the ref and falls back canonically (§7.3, no client-side upgrade).
     const variantUrl = buildVariantNavigationUrl(presentation.path);
     if (variantUrl !== null && isSafeLaunchRef(item.launchRef)) {
-      let primaryUrl = withParam(variantUrl, ASSIGNMENT_PARAM, item.assignmentId);
-      primaryUrl = withParam(primaryUrl, LAUNCH_REF_PARAM, item.launchRef);
+      let primaryUrl = withLaunchContext(variantUrl, ASSIGNMENT_PARAM, item.assignmentId);
+      primaryUrl = withLaunchContext(primaryUrl, LAUNCH_REF_PARAM, item.launchRef);
       return {
         primaryUrl,
         differentiated: true,
@@ -144,7 +146,7 @@ export function planAssignmentLaunch(
   // canonical launch carries no ref.
   if (isSafeLaunchRef(item.launchRef)) {
     return {
-      primaryUrl: withParam(canonicalUrl, LAUNCH_REF_PARAM, item.launchRef),
+      primaryUrl: withLaunchContext(canonicalUrl, LAUNCH_REF_PARAM, item.launchRef),
       differentiated: false,
       canonicalUrl,
       differentiatedRejected: false,
@@ -161,7 +163,7 @@ export function planAssignmentLaunch(
 
 // Plan a practice launch (deep-link lessonPractice). Practice never reaches
 // session begin (§9): its grants are never consumed, so no launchRef is
-// transported and no `?assignment=` is added - the lesson opens in standalone
+// transported and no `#assignment=` is added - the lesson opens in standalone
 // practice mode. A differentiated presentation still routes the student to the
 // adapted artifact (with the same probe/fallback), because practice re-resolves
 // current configuration on every launch.

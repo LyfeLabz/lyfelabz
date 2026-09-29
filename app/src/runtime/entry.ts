@@ -25,7 +25,8 @@ import type {
 //
 // This entry:
 //   1. Detects the assignment context handed off by the certified
-//      launcher (Sprint 17 Slice 4: `?assignment=<id>`).
+//      launcher (Sprint 17 Slice 4: `?assignment=<id>`; since the launch-URL
+//      hardening, `#assignment=<id>` in the fragment, query still accepted).
 //   2. In standalone mode (no assignment context), remains inert: no
 //      Firebase initialization, no auth listener, no network traffic.
 //   3. In assignment mode, initializes Firebase against the same

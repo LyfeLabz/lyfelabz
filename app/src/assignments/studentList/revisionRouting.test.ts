@@ -55,11 +55,11 @@ async function navigateFor(plan: ReturnType<typeof planAssignmentLaunch>, probe 
 
 describe("canonical assignment routing (My Science)", () => {
   test("an r1 assignment routes to the r1 page while r2 is current", async () => {
-    expect(await navigateFor(planAssignmentLaunch(item({ assessmentRevisionId: R1 })))).toEqual([`${R1_PAGE}?assignment=a1`]);
+    expect(await navigateFor(planAssignmentLaunch(item({ assessmentRevisionId: R1 })))).toEqual([`${R1_PAGE}#assignment=a1`]);
   });
 
   test("a synthetic r2 assignment routes to the r2 page", async () => {
-    expect(await navigateFor(planAssignmentLaunch(item({ assessmentRevisionId: R2 })))).toEqual([`${R2_PAGE}?assignment=a1`]);
+    expect(await navigateFor(planAssignmentLaunch(item({ assessmentRevisionId: R2 })))).toEqual([`${R2_PAGE}#assignment=a1`]);
   });
 
   test.each([
@@ -84,20 +84,20 @@ describe("differentiated and canonicalFallback routing", () => {
       launchRef: REF,
       presentation: { variantKey: "reading-adapted", presentationRevisionId: PR90F, path: VARIANT_PATH },
     }));
-    expect(await navigateFor(plan)).toEqual([`/${VARIANT_PATH}?assignment=a1&launchRef=${REF}`]);
+    expect(await navigateFor(plan)).toEqual([`/${VARIANT_PATH}#assignment=a1&launchRef=${REF}`]);
     // Its load-failure fallback is the frozen revision's canonical page.
-    expect(plan!.canonicalUrl).toBe(`${R1_PAGE}?assignment=a1`);
-    expect(await navigateFor(plan, false)).toEqual([`${R1_PAGE}?assignment=a1`]);
+    expect(plan!.canonicalUrl).toBe(`${R1_PAGE}#assignment=a1`);
+    expect(await navigateFor(plan, false)).toEqual([`${R1_PAGE}#assignment=a1`]);
   });
 
   test("canonicalFallback on a synthetic r2 (only r1 differentiated coverage) routes to the r2 page", async () => {
     const plan = planAssignmentLaunch(item({ assessmentRevisionId: R2, launchRef: REF }));
-    expect(await navigateFor(plan)).toEqual([`${R2_PAGE}?assignment=a1&launchRef=${REF}`]);
+    expect(await navigateFor(plan)).toEqual([`${R2_PAGE}#assignment=a1&launchRef=${REF}`]);
   });
 
   test("canonicalFallback on r1 routes to the r1 page, never the current r2", async () => {
     expect(await navigateFor(planAssignmentLaunch(item({ assessmentRevisionId: R1, launchRef: REF })))).toEqual([
-      `${R1_PAGE}?assignment=a1&launchRef=${REF}`,
+      `${R1_PAGE}#assignment=a1&launchRef=${REF}`,
     ]);
   });
 
@@ -145,14 +145,21 @@ describe("Classroom deep-link arrival (/app/a/{assignmentId})", () => {
     return { navigate, mount };
   }
 
+  test("the Classroom handoff carries the launch context in the fragment only (launch-URL hardening)", async () => {
+    const { navigate } = await arrive(resolution({ assessmentRevisionId: R1, launchRef: REF }));
+    const url = new URL(navigate.mock.calls[0][0] as string, "https://lyfelabz.test");
+    expect(url.search).toBe("");
+    expect(Object.fromEntries(new URLSearchParams(url.hash.slice(1)))).toEqual({ assignment: "a1", launchRef: REF });
+  });
+
   test("an old r1 Classroom link still reaches r1 after r2 becomes current", async () => {
     const { navigate } = await arrive(resolution({ assessmentRevisionId: R1 }));
-    expect(navigate).toHaveBeenCalledWith(`${R1_PAGE}?assignment=a1`);
+    expect(navigate).toHaveBeenCalledWith(`${R1_PAGE}#assignment=a1`);
   });
 
   test("the resolver's revision controls the destination (r2)", async () => {
     const { navigate } = await arrive(resolution({ assessmentRevisionId: R2, launchRef: REF }));
-    expect(navigate).toHaveBeenCalledWith(`${R2_PAGE}?assignment=a1&launchRef=${REF}`);
+    expect(navigate).toHaveBeenCalledWith(`${R2_PAGE}#assignment=a1&launchRef=${REF}`);
   });
 
   test("assignment-associated lessonPractice arrives on the frozen revision", async () => {

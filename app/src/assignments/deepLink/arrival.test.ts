@@ -57,7 +57,7 @@ describe("renderDeepLinkArrival - silent handoff", () => {
     await renderDeepLinkArrival(mount, deps);
     expect(deps.navigate).toHaveBeenCalledTimes(1);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `${PAGE}?assignment=${ASSIGNMENT_ID}`,
+      `${PAGE}#assignment=${ASSIGNMENT_ID}`,
     );
     expect(deps.onGoToMyAssignments).not.toHaveBeenCalled();
   });
@@ -97,7 +97,7 @@ describe("renderDeepLinkArrival - differentiated routing", () => {
     await renderDeepLinkArrival(mount, deps);
     expect(deps.probe).toHaveBeenCalledTimes(1);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `/${SAFE_PATH}?assignment=${ASSIGNMENT_ID}&launchRef=${REF}`,
+      `/${SAFE_PATH}#assignment=${ASSIGNMENT_ID}&launchRef=${REF}`,
     );
   });
 
@@ -108,7 +108,7 @@ describe("renderDeepLinkArrival - differentiated routing", () => {
     });
     await renderDeepLinkArrival(mount, deps);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `${PAGE}?assignment=${ASSIGNMENT_ID}&launchRef=${REF}`,
+      `${PAGE}#assignment=${ASSIGNMENT_ID}&launchRef=${REF}`,
     );
   });
 
@@ -123,7 +123,7 @@ describe("renderDeepLinkArrival - differentiated routing", () => {
     await renderDeepLinkArrival(mount, deps);
     expect(onVariantLoadFailure).toHaveBeenCalledTimes(1);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `${PAGE}?assignment=${ASSIGNMENT_ID}`,
+      `${PAGE}#assignment=${ASSIGNMENT_ID}`,
     );
     // The differentiated URL and the launchRef were never navigated.
     const navd = (deps.navigate as jest.Mock).mock.calls[0][0] as string;
@@ -268,7 +268,7 @@ describe("renderDeepLinkArrival - retry", () => {
     await Promise.resolve();
     expect(resolve).toHaveBeenCalledTimes(2);
     expect(deps.navigate).toHaveBeenCalledWith(
-      `${PAGE}?assignment=${ASSIGNMENT_ID}`,
+      `${PAGE}#assignment=${ASSIGNMENT_ID}`,
     );
   });
 });
