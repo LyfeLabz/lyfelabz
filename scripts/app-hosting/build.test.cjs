@@ -344,6 +344,172 @@ test('application Hosting config is curated and routes only the certified SPA pa
   assert.equal(firebase.hosting.rewrites.some((rule) => rule.source === '/app/**' || rule.source === '**'), false);
 });
 
+// Hosting analytics boundary (SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md, Policy E):
+// no third-party analytics runs anywhere in the educational-delivery zone
+// (/app/lessons/**: canonical v2 pages, revision renditions, retained variants,
+// and the companion pages and shell copy the artifact places beside them), and
+// every /app/** response carries an origin-only referrer policy. The policy is
+// applied by Hosting response headers, so no lesson HTML, rendition, or retained
+// presentation byte changes. Public root pages keep Google Analytics.
+const LESSON_DELIVERY_CSP =
+  "script-src 'self' 'unsafe-inline' https://apis.google.com https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+const APP_REFERRER_POLICY = 'strict-origin';
+
+// Every external script origin that can run on /app/lessons/** (a <script src> in
+// a zone page, or a script URL a same-origin zone script may inject), with an
+// explicit policy decision. A new origin, or a new URL on a path-pinned origin,
+// fails the guard below until it is decided here AND the CSP is reconciled:
+// nothing is silently blocked (a broken page) or silently allowed (an
+// analytics/privacy exception).
+const EXTERNAL_SCRIPT_DECISIONS = Object.freeze({
+  // Google Analytics (gtag.js). The inline snippet in every page is inert under
+  // the CSP: gtag.js never loads, so no /g/collect hit is ever sent.
+  'https://www.googletagmanager.com': { decision: 'blocked' },
+  // Firebase Auth's own gapi loader (js/api.js, then its gapi iframe modules under
+  // /_/scs/). The SDK loads it proactively on mobile, Safari, and iOS browsers
+  // when getAuth() runs (assessment runtime, and the shell copy's sign-in popup);
+  // verified on a mobile user agent against the Hosting emulator. Host-level
+  // because the loader chooses its own module paths.
+  'https://apis.google.com': { decision: 'allowed', cspSource: 'https://apis.google.com' },
+  // jsPDF, pinned to the exact file the Body Systems companion pages use for
+  // their PDF export. It loads no further scripts.
+  'https://cdnjs.cloudflare.com': {
+    decision: 'allowed',
+    cspSource: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+  },
+  // reCAPTCHA (phone auth / reCAPTCHA Enterprise). Bundled by the Firebase Auth
+  // SDK but never invoked: nothing in the zone signs in by phone.
+  'https://www.google.com': { decision: 'blocked' }
+});
+
+// Same-origin scripts zone pages may load ('self'): the assessment runtime chain
+// and, for the shell copy at app/lessons/index.html, the application bundle.
+const ZONE_SAME_ORIGIN_SCRIPTS = Object.freeze([
+  'app/dist/bundle.js',
+  'assets/lyfelabz-assessment-runtime-active.js',
+  'assets/lyfelabz-assessment-runtime.js',
+  'assets/lyfelabz-firebase-config.js'
+]);
+
+// Script features the CSP deliberately does not grant: no 'unsafe-eval', and no
+// worker or blob sources.
+const UNGRANTED_SCRIPT_FEATURES = /\beval\(|new Function\(|new (?:Shared)?Worker\(/;
+
+// The headers Hosting sends for a request path under the curated config. Only the
+// `/prefix/**` glob shape is supported; any other source shape fails so this model
+// cannot silently diverge from Hosting's glob semantics (the emulator test below
+// verifies the real served headers).
+function configuredHeadersFor(requestPath) {
+  const firebase = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
+  const headers = {};
+  for (const rule of firebase.hosting.headers) {
+    const match = /^(\/[a-z0-9/-]*?)\/\*\*$/.exec(rule.source);
+    assert.ok(match, `unsupported header source shape: ${rule.source}`);
+    if (!requestPath.startsWith(`${match[1]}/`)) continue;
+    for (const { key, value } of rule.headers) headers[key.toLowerCase()] = value;
+  }
+  return headers;
+}
+
+function lessonDeliveryArtifacts() {
+  return result.files.filter((entry) => entry.startsWith('app/lessons/') && entry.endsWith('.html'));
+}
+
+function cspScriptSources() {
+  const match = /^script-src ([^;]+)$/.exec(LESSON_DELIVERY_CSP);
+  assert.ok(match, 'the lesson-delivery CSP is a single script-src directive');
+  return match[1].split(' ');
+}
+
+test('application Hosting config declares exactly the analytics-boundary headers', () => {
+  const firebase = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
+  assert.deepEqual(firebase.hosting.headers, [
+    { source: '/app/**', headers: [{ key: 'Referrer-Policy', value: APP_REFERRER_POLICY }] },
+    { source: '/app/lessons/**', headers: [{ key: 'Content-Security-Policy', value: LESSON_DELIVERY_CSP }] }
+  ]);
+});
+
+test('lesson-delivery paths receive the analytics-blocking CSP and the referrer policy', () => {
+  const zone = lessonDeliveryArtifacts();
+  // Canonical v2 pages, revision renditions, every retained variant, and the
+  // companion copies.
+  assert.ok(zone.some((entry) => /^app\/lessons\/lesson_[a-z0-9-]+\.html$/.test(entry)));
+  assert.ok(zone.some((entry) => entry.startsWith('app/lessons/assessment-revisions/')));
+  assert.ok(zone.some((entry) => entry.startsWith('app/lessons/variants/')));
+  assert.ok(zone.includes('app/lessons/system_nervous.html'));
+  for (const entry of zone) {
+    assert.deepEqual(configuredHeadersFor(`/${entry}`), {
+      'referrer-policy': APP_REFERRER_POLICY,
+      'content-security-policy': LESSON_DELIVERY_CSP
+    }, entry);
+  }
+});
+
+test('application shell routes receive only the referrer policy', () => {
+  for (const requestPath of ['/app/', '/app/a/test-assignment', '/app/student', '/app/teacher', '/app/signin', '/app/lms-callback.html', '/app/dist/bundle.js']) {
+    assert.deepEqual(configuredHeadersFor(requestPath), { 'referrer-policy': APP_REFERRER_POLICY }, requestPath);
+  }
+});
+
+test('public root pages receive neither header and keep Google Analytics', () => {
+  const publicPages = result.files.filter((entry) => !entry.startsWith('app/') && entry.endsWith('.html'));
+  assert.ok(publicPages.includes('index.html'));
+  assert.ok(publicPages.includes('lesson_what-is-life.html'));
+  for (const entry of publicPages) {
+    assert.deepEqual(configuredHeadersFor(`/${entry}`), {}, entry);
+  }
+  for (const entry of ['index.html', 'lesson_what-is-life.html', 'lesson_earths-layers.html', 'system_nervous.html']) {
+    assert.match(fs.readFileSync(path.join(outputDirectory, entry), 'utf8'), /googletagmanager\.com\/gtag\/js\?id=G-9QHB5G2B5B/, entry);
+  }
+});
+
+test('the lesson-delivery CSP blocks analytics and allows exactly the decided script sources', () => {
+  const sources = cspScriptSources();
+  assert.deepEqual(sources.filter((source) => !source.startsWith('https://')), ["'self'", "'unsafe-inline'"]);
+  // No eval, wildcard, scheme-wide, blob:, or data: script source.
+  for (const source of sources) assert.doesNotMatch(source, /unsafe-eval|\*|^https?:$|^blob:|^data:/, source);
+  const decidedAllowed = Object.values(EXTERNAL_SCRIPT_DECISIONS)
+    .filter((entry) => entry.decision === 'allowed')
+    .map((entry) => entry.cspSource);
+  assert.deepEqual(sources.filter((source) => source.startsWith('https://')), decidedAllowed);
+  for (const analyticsOrigin of ['https://www.googletagmanager.com', 'https://www.google-analytics.com', 'https://region1.google-analytics.com']) {
+    assert.equal(sources.some((source) => source.startsWith('https://') && new URL(source).origin === analyticsOrigin), false, analyticsOrigin);
+  }
+});
+
+test('every external script on /app/lessons/** has an explicit analytics-boundary decision', () => {
+  const seen = new Set();
+  const decide = (url, where) => {
+    const { origin } = new URL(url);
+    const entry = EXTERNAL_SCRIPT_DECISIONS[origin];
+    assert.ok(entry && Object.hasOwn(EXTERNAL_SCRIPT_DECISIONS, origin),
+      `${where} loads a script from ${origin}, which has no analytics-boundary decision: add it to EXTERNAL_SCRIPT_DECISIONS and reconcile the /app/lessons/** CSP in firebase.json`);
+    if (entry.decision === 'allowed' && entry.cspSource !== origin) {
+      assert.equal(url.split(/[?#]/)[0], entry.cspSource,
+        `${where} loads ${url}, but the CSP allows only ${entry.cspSource} from ${origin}: decide the new script and reconcile the CSP`);
+    }
+    seen.add(origin);
+  };
+  for (const entry of lessonDeliveryArtifacts()) {
+    const html = fs.readFileSync(path.join(outputDirectory, entry), 'utf8');
+    for (const [, src] of html.matchAll(/<script\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi)) {
+      if (/^\/(?!\/)/.test(src)) {
+        assert.ok(ZONE_SAME_ORIGIN_SCRIPTS.includes(src.slice(1)), `${entry} loads unexpected same-origin script ${src}`);
+        continue;
+      }
+      decide(src, entry);
+    }
+    assert.doesNotMatch(html, UNGRANTED_SCRIPT_FEATURES, entry);
+  }
+  for (const asset of ZONE_SAME_ORIGIN_SCRIPTS) {
+    const source = fs.readFileSync(path.join(outputDirectory, asset), 'utf8');
+    for (const [url] of source.matchAll(/https:\/\/[a-z0-9.-]+\/[^"'`\s]*\.js\b/g)) decide(url, asset);
+    assert.doesNotMatch(source, UNGRANTED_SCRIPT_FEATURES, asset);
+  }
+  // The decision table stays exact: every decided origin is still observed.
+  assert.deepEqual([...seen].sort(), Object.keys(EXTERNAL_SCRIPT_DECISIONS).sort());
+});
+
 test('application artifact build leaves the certified marketing artifact and config unchanged', () => {
   assert.deepEqual(directorySnapshot(marketingDirectory), marketingBefore);
   const marketing = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.marketing.json'), 'utf8'));
@@ -412,5 +578,27 @@ test('Firebase Hosting emulator serves certified routes and rejects forbidden pa
   for (const relativePath of result.files.filter((entry) => entry.startsWith('app/lessons/variants/') && entry.endsWith('.html'))) {
     const { response } = await get(`/${relativePath}`);
     assert.equal(response.status, 200, relativePath);
+  }
+
+  // Analytics boundary: the served headers (not just firebase.json) compose as
+  // designed. Both rules apply to /app/lessons/**; neither applies to public pages.
+  for (const relativePath of lessonDeliveryArtifacts()) {
+    const { response } = await get(`/${relativePath}`);
+    assert.equal(response.status, 200, relativePath);
+    assert.equal(response.headers.get('content-security-policy'), LESSON_DELIVERY_CSP, relativePath);
+    assert.equal(response.headers.get('referrer-policy'), APP_REFERRER_POLICY, relativePath);
+  }
+  for (const relativePath of [...shellRoutes, '/app/lms-callback.html', '/app/dist/bundle.js']) {
+    const { response } = await get(relativePath);
+    assert.equal(response.headers.get('referrer-policy'), APP_REFERRER_POLICY, relativePath);
+    assert.equal(response.headers.get('content-security-policy'), null, relativePath);
+  }
+  const publicAnalyticsPages = ['/', '/index.html', '/lesson_what-is-life.html', '/lesson_earths-layers.html', '/about_lyfelabz.html', '/system_nervous.html'];
+  for (const relativePath of [...publicAnalyticsPages, '/about_privacy.html', '/assets/lyfelabz-assessment-runtime.js']) {
+    const { response, body } = await get(relativePath);
+    assert.equal(response.status, 200, relativePath);
+    assert.equal(response.headers.get('content-security-policy'), null, relativePath);
+    assert.equal(response.headers.get('referrer-policy'), null, relativePath);
+    if (publicAnalyticsPages.includes(relativePath)) assert.match(body, /googletagmanager\.com\/gtag\/js/, relativePath);
   }
 });

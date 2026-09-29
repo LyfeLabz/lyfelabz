@@ -1,6 +1,6 @@
 # Security Backlog: Launch Context in Lesson URLs and Analytics
 
-**Status:** Opened 2026-09-29 from the Earth's Layers r2 Stage B staging certification and the follow-up read-only reconnaissance. Item 1 is **resolved and staging-certified** by the launch-URL fragment hardening (commit `432e728`, staging Hosting `a473c38faacc9396`); production is not deployed. Items 1b, 2, 3 and 4 are **open**.
+**Status:** Opened 2026-09-29 from the Earth's Layers r2 Stage B staging certification and the follow-up read-only reconnaissance. Item 1 is **resolved and staging-certified** by the launch-URL fragment hardening (commit `432e728`, staging Hosting `a473c38faacc9396`); production is not deployed. Items 1b, 2, 3 and 4 are **resolved by policy**: the owner approved Policy E (2026-09-29), the Hosting analytics boundary described below. It is implemented and locally certified (Hosting emulator), not yet deployed to staging or production.
 
 ## Background
 
@@ -51,32 +51,71 @@ Disclosure grants nothing on its own, but authorization-related material and int
 - **Integrity.** Unchanged: both assignments, all attempts (best r1 40%, r2 70%), both Current pointers, sessions (none), passbacks (0), the scoped r1 and r2 coverage, the AP records, accommodation, Functions, and production.
 - **Mutations.** The Hosting release, the flag round trip, and 10 launch grants from certification launches (with their audit events).
 
-## Item 1b: assignment id in GA `dr` after a `/app/a/{id}` arrival (OPEN; found during the item 1 staging certification)
+## Approved policy: the Hosting analytics boundary (Policy E)
 
-The Google Classroom arrival URL `/app/a/{assignmentId}` carries the assignment id in its **path**; this is the external Classroom contract and did not change. When the arrival hands off to the lesson page, the lesson page's `document.referrer`, and therefore GA's `dr`, is that arrival URL, so GA receives the assignment id. It never receives a launchRef.
+**Decision (owner, 2026-09-29).**
+- Google Analytics stays on genuinely public pages: the marketing site and the root public pages on either Hosting site, including root `/lesson_*.html`.
+- Google Analytics does not operate anywhere under `/app/lessons/**`, the educational-delivery zone. That zone covers:
+  - authenticated assignments and assessment interactions;
+  - differentiated variants and canonicalFallback launches;
+  - historical retained variants and revision renditions;
+  - deep-link practice and teacher preview;
+  - the companion pages and the shell copy that the application artifact places beside the lessons.
 
-My Science launches are not affected (their `dr` is `/app/student`). A candidate fix is a referrer policy for the application shell (for example `strict-origin` for `/app/**`), so that same-origin navigations out of `/app/a/…` report only the origin. That is a Hosting or shell change needing owner authorization.
+  Suppression is by **path, not by detected assignment context**. The inline gtag snippet runs before the deferred runtime can detect context, and deep-link practice arrivals carry no `assignment=` at all.
 
-## Item 2: differentiated `/variants/` path reveals accommodated delivery (OPEN)
+**Mechanism.** Firebase Hosting response headers in `firebase.json`. No lesson HTML, rendition, retained presentation, `presentationRevisionId`, runtime asset, app bundle, Function, or Rule changes. The now-inert gtag snippet stays in the lesson HTML on purpose: removing it would change v2 bytes and force new presentation revisions.
 
-A differentiated launch loads `/app/lessons/variants/lesson_<slug>__pr<hash>.html`, and GA records that path in `dl`. The path shows that a pseudonymous GA client received a differentiated (accommodation-related) presentation. Revision renditions similarly reveal `…__r<N>` (low sensitivity).
+| Source | Header |
+|---|---|
+| `/app/**` | `Referrer-Policy: strict-origin` |
+| `/app/lessons/**` | `Content-Security-Policy: script-src 'self' 'unsafe-inline' https://apis.google.com https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js` |
 
-Item 1 does not change this. Fixing it needs a sanitized `page_location`/`page_referrer` (for example mapping variant paths to the canonical lesson path), which changes the canonical lesson sources.
-- Retained artifacts are immutable, so they would need **new content-addressed presentation revisions**, and published coverage would have to be repointed.
-- In production, differentiated delivery is disabled today, so no variant paths reach GA from production. **Decide this before production differentiation activation.**
+Hosting applies every matching rule, so `/app/lessons/**` responses carry both headers. Other `/app/**` routes, including `/app/a/**`, `/app/student` and `/app/teacher`, carry only the referrer policy. Root public pages carry neither. All of this was verified on served headers in the Hosting emulator.
 
-## Item 3: staging and production share one GA property (OPEN)
+**Why each script source is allowed.**
+- `'self'`: the assessment runtime chain (`/assets/lyfelabz-assessment-runtime.js`, `lyfelabz-firebase-config.js`, `lyfelabz-assessment-runtime-active.js`), plus `/app/dist/bundle.js` for the shell copy at `/app/lessons/index.html`.
+- `'unsafe-inline'`: every lesson's inline scripts and inline event handlers (for example `onclick="elSelectAnswer(…)"`).
+- `https://apis.google.com`: Firebase Auth's own gapi loader. The SDK loads `js/api.js` and then its gapi iframe modules proactively on mobile, Safari and iOS browsers whenever `getAuth()` runs; this was observed on a mobile user agent against the emulator. It is not an analytics endpoint.
+- The exact jsPDF 2.5.1 file: the PDF export of the Body Systems companion pages (`system_*`, `extension_body-systems`, `game_photon-runner`). It is pinned to the exact file, not the CDN host, and loads no further scripts.
 
-Every page, on every host, hard-codes `G-9QHB5G2B5B`. Staging certification traffic, including test launch-grant ids now expired, reaches the production analytics property. Owner decision needed.
+**Deliberately not granted.** `https://www.googletagmanager.com`, so gtag.js never loads, the inline snippet only fills a local `dataLayer`, and no `/g/collect` hit is sent. Also not granted: `'unsafe-eval'`, workers, `blob:`, `data:`, and reCAPTCHA (`https://www.google.com`), which the Firebase SDK bundles but nothing in the zone invokes.
 
-## Item 4: whether analytics should run on authenticated student assessment pages at all (OPEN)
+The one expected console error on zone pages is the blocked gtag.js load. `scripts/app-hosting/build.test.cjs` guards every external script origin in the zone: a new one fails until it is explicitly decided and the CSP is reconciled.
 
-Pending an owner decision. It covers:
-- the data-minimization review of lesson pages opened in assignment context;
-- GA's pseudonymous client id;
-- enhanced-measurement events.
+**Referrer policy.** The browser Firebase API keys tolerate an origin-only `Referer`:
+- the staging key's allowed referrers are `https://lyfelabz-staging.web.app/*` and `https://lyfelabz-staging.firebaseapp.com/*`, which the origin form matches;
+- the production key has no referrer restriction.
 
-This is not a legal determination.
+No LyfeLabz code reads `document.referrer`.
+
+## Item 1b: assignment id in GA `dr` after a `/app/a/{id}` arrival (RESOLVED by policy; not yet deployed)
+
+The Google Classroom arrival URL `/app/a/{assignmentId}` carries the assignment id in its **path**; this is the external Classroom contract and does not change. `/app/a/{id}` itself never ran analytics. The exposure came from the destination lesson page, whose GA `dr` was the arrival URL.
+
+Every arrival handoff target is under `/app/lessons/**`, where GA no longer loads, so no GA hit carries the arrival path. As defense in depth, `Referrer-Policy: strict-origin` on `/app/**` makes any navigation out of an `/app` page report only the origin. That includes a future link from the shell or a lesson to a GA-bearing public page. Verified in the emulator: `document.referrer` after leaving a `/app/lessons/variants/…` page is the bare origin.
+
+## Item 2: differentiated `/variants/` path reveals accommodated delivery (RESOLVED by policy; not yet deployed)
+
+A differentiated launch loads `/app/lessons/variants/lesson_<slug>__pr<hash>.html`. Under the boundary, GA receives nothing from that page, including the initial page view, enhanced-measurement events, reloads and same-origin navigation. GA also does not receive the path as a later page's `dr`, because of the referrer policy.
+
+No `page_location` sanitization is needed, and no new presentation revision is minted. The boundary also covers historical retained variants, because it is applied by response header rather than in the immutable HTML.
+
+Hosting and CDN request logs still record `/variants/…` paths. That is first-party infrastructure logging under the Firebase Hosting service, distinct from third-party analytics.
+
+## Item 3: staging and production share one GA property (RESOLVED by policy; not yet deployed)
+
+`firebase.json` is shared by both Hosting sites, so the boundary applies to staging too: staging educational delivery, including certification launches and test launch-grant traffic, sends nothing to GA. A separate staging property is not required.
+
+Staging's **public** root pages still use the existing `G-9QHB5G2B5B` property, with hostname `lyfelabz-staging.web.app`, unless a GA hostname filter is separately configured in GA admin. That is an optional owner setting, not a code change.
+
+## Item 4: whether analytics should run on authenticated student assessment pages (RESOLVED by policy; not yet deployed)
+
+No. Authenticated educational delivery does not use Google Analytics:
+- first-party records already hold what GA approximated on these pages: `launchGrants`, `assessmentSessions`, `attempts`, `auditEvents` and grade passback;
+- no replacement telemetry is added.
+
+This is a data-minimization decision, not a legal determination.
 
 ## Related
 
