@@ -1,6 +1,6 @@
 # Security Backlog: Launch Context in Lesson URLs and Analytics
 
-**Status:** Opened 2026-09-29 from the Earth's Layers r2 Stage B staging certification and the follow-up read-only reconnaissance. Item 1 is **resolved and staging-certified** by the launch-URL fragment hardening (commit `432e728`, staging Hosting `a473c38faacc9396`); production is not deployed. Items 1b, 2, 3 and 4 are **resolved by policy**: the owner approved Policy E (2026-09-29), the Hosting analytics boundary described below. It is deployed to staging (Hosting `737d935a2c048330`) and **not certified**: staging exposed a 304 cache-transition defect (below). The transition fix is implemented, locally certified in Chrome, and owner-approved with an accepted transition residual; it is not yet deployed to staging or production.
+**Status:** Opened 2026-09-29 from the Earth's Layers r2 Stage B staging certification and the follow-up read-only reconnaissance. Item 1 is **resolved and staging-certified** by the launch-URL fragment hardening (commit `432e728`, staging Hosting `a473c38faacc9396`); production is not deployed. Items 1b, 2, 3 and 4 are **resolved by policy**: the owner approved Policy E (2026-09-29), the Hosting analytics boundary described below. Staging release `737d935a2c048330` exposed a 304 cache-transition defect (below). With the transition fix (commit `6776da5`, staging Hosting `f8b1c6edb86e71de`), Policy E is **staging-certified** (2026-09-29), with an owner-accepted transition residual. Production is not deployed.
 
 ## Background
 
@@ -89,7 +89,7 @@ The one expected console error on zone pages is the blocked gtag.js load. `scrip
 
 No LyfeLabz code reads `document.referrer`.
 
-## Policy E cache transition (304 defect; fix locally certified, not deployed)
+## Policy E cache transition (304 defect; fix staging-certified 2026-09-29; production not deployed)
 
 **Defect (staging, 2026-09-29).** On fresh 200 responses Policy E behaves as designed. Firebase Hosting, however, sends **304 Not Modified without the custom headers** (no CSP, no Referrer-Policy); `curl` against staging `737d935a2c048330` confirms this.
 
@@ -149,13 +149,69 @@ Historical retained presentation artifacts remain immutable.
 
 *ASTRA-004: approved, fail-closed.* The historical ASTRA-004 staging preparer (`platform/functions/src/scripts/astra004-hosting-prepare.ts`) still requires the working-tree shim to match the reviewed overlay hash `d07473b3…`. At HEAD it therefore **refuses** to prepare, rather than silently accepting the modified shim. Its test suite validates the previously approved overlay bytes as committed in `1ab9609`, the approval commit. `APPROVED_OVERLAY_SHA256` is unchanged.
 
-## Item 1b: assignment id in GA `dr` after a `/app/a/{id}` arrival (RESOLVED by policy; not yet deployed)
+**Staging certification (2026-09-29).**
+- **Release.** Commit `6776da5f58d66f6a4ad08255b64587004388e23e`, built in the clean worktree `lyfelabz-pc-release` with real installs.
+  - Gates: app 137 suites and 3862 tests; Functions 156 suites and 4101 tests; Hosting 23 pass and 1 skipped.
+  - Hosting only. The live sequence was:
+    - `737d935a2c048330`;
+    - `a473c38faacc9396` (the pre-Policy-E version, released for fixture creation at 22:01:27.417Z);
+    - `f8b1c6edb86e71de` (released 22:02:30.524Z).
+
+    Staging was without Policy E for 63 s.
+  - All 221 deployed files are served byte-identical to the artifact. The served delta against `737d935a2c048330` is exactly:
+    - `/app/dist/bundle.js` (`e26927d3…`, 1,486,057 bytes);
+    - `/app/index.html` and its copy `/app/lessons/index.html` (`4b5d7958…`);
+    - `/assets/lyfelabz-assessment-runtime.js` (`d07473b3…` to `e77b0458…`).
+
+    Every lesson page, rendition, retained variant, and the active runtime is byte-identical.
+- **Genuine stale fixture.** While `a473c38faacc9396` was live, the signed-in certification browser fetched six real staging pages with `cache: "reload"`. It loaded no document, so gtag never ran. `only-if-cached` confirmed the stored copies had no CSP, the same ETags as the current bytes, and dates of 22:02:17-18Z. They were:
+  - the `pr90f…` and `pr6b7c…` variants;
+  - both Earth's Layers renditions;
+  - `lesson_plate-tectonics.html` and `lesson_earthquakes.html`.
+
+  After the fix was released, all six were still stored without the CSP.
+- **Healing (primary gate): My Science r2 differentiated launch into the stale `pr6b7c…` copy.**
+  - The launch ran the HEAD probe, then the preparation GET, then the document navigation.
+  - The stored copy then carried the CSP and `strict-origin` (Date 22:04:45Z). The navigation was served from it (`transferSize` 0), and the document ran under the CSP (eval blocked).
+  - gtag.js was blocked by the CSP before any request, `google_tag_manager` was undefined, and there was no `/g/collect`.
+  - The fragment kept `assignment` and the 32-hex `launchRef`, with an empty query. The correct presentation loaded, and the active runtime 17.5.0 loaded with the staging config and no error.
+  - A reload revalidated to a 304 (`transferSize` 300). The stored CSP persisted (Date 22:06:12Z).
+- **Matrix.**
+  - `/app/a/{id}` r1 arrival into the stale `pr90f…` copy: prepared (HEAD, GET, document), CSP stored (22:06:58Z), gtag blocked. The lesson's `document.referrer` was the bare origin.
+  - A real Connections click from that page into the stale `lesson_plate-tectonics.html` copy: the runtime shim prepared it (GET, then document), CSP stored (22:07:20Z), gtag blocked.
+- **Not exercised on staging** (automated tests and the local Chrome reproduction cover them):
+  - canonical and canonicalFallback launches, including the rendition targets, which need the delivery flag changed;
+  - Teacher Preview, which needs a teacher session;
+  - deep-link practice, which has no valid fixture.
+- **Referrer.** The public root page reached from a delivery page received the bare origin as `document.referrer`: no assignment id, launchRef, or variant path.
+- **Public analytics.** The root page loads gtag.js and sends its `/g/collect` page view, with no CSP.
+- **jsPDF.** `system_nervous.html` loads the pinned jsPDF file and generates a PDF (`%PDF-1.3`) under the CSP, with gtag blocked.
+- **Real Safari (owner, iPhone/iPad).** From My Science, the Earth's Layers lesson opened and behaved normally, with no submission.
+  - Tapping answers autosaved: a live r2 session (`…3rb8j6cfpceua`, attempt 1, differentiated `pr6b7c…`, 2 responses) began at 22:16:50Z.
+  - This confirms Firebase Auth, session begin, and autosave under the CSP in Safari.
+- **Integrity.** Unchanged:
+  - attempts: r1 a1 to a4, best 40%; r2 a1 to a2, best 70%;
+  - both Current pointers;
+  - 0 passbacks;
+  - the r1 and r2 coverage;
+  - the AP records;
+  - the flag (true).
+
+  Added: 7 launch grants from ordinary My Science and `/app/a` loads. They remain.
+
+  The Safari check also started the live r2 session above. It was removed as explicit, owner-authorized staging certification cleanup (2026-09-29):
+  - The session was re-read and verified: live, r2, `sessionOrdinal` 1, differentiated `pr6b7c…`, 2 responses, started 22:16:50.501Z, the student's only session, no subcollections.
+  - That one document (`assessmentSessions/<r2 assignment>__<student>__1`) was deleted with an `updateTime` precondition. This is the same single-document delete as the staging driver's `resetSession`, which is hard-wired to the synthetic fixture.
+  - Afterwards, the whole integrity snapshot equals the pre-deploy baseline, with no sessions, apart from the launch-grant count.
+- **Accepted residual.** Unchanged and not re-tested. The certification browser still holds stale copies of both renditions and `lesson_earthquakes.html`.
+
+## Item 1b: assignment id in GA `dr` after a `/app/a/{id}` arrival (RESOLVED by policy; staging-certified 2026-09-29; production not deployed)
 
 The Google Classroom arrival URL `/app/a/{assignmentId}` carries the assignment id in its **path**; this is the external Classroom contract and does not change. `/app/a/{id}` itself never ran analytics. The exposure came from the destination lesson page, whose GA `dr` was the arrival URL.
 
 Every arrival handoff target is under `/app/lessons/**`, where GA no longer loads, so no GA hit carries the arrival path. As defense in depth, `Referrer-Policy: strict-origin` on `/app/**` makes any navigation out of an `/app` page report only the origin. That includes a future link from the shell or a lesson to a GA-bearing public page. Verified in the emulator: `document.referrer` after leaving a `/app/lessons/variants/…` page is the bare origin.
 
-## Item 2: differentiated `/variants/` path reveals accommodated delivery (RESOLVED by policy; not yet deployed)
+## Item 2: differentiated `/variants/` path reveals accommodated delivery (RESOLVED by policy; staging-certified 2026-09-29; production not deployed)
 
 A differentiated launch loads `/app/lessons/variants/lesson_<slug>__pr<hash>.html`. Under the boundary, GA receives nothing from that page, including the initial page view, enhanced-measurement events, reloads and same-origin navigation. GA also does not receive the path as a later page's `dr`, because of the referrer policy.
 
@@ -163,13 +219,13 @@ No `page_location` sanitization is needed, and no new presentation revision is m
 
 Hosting and CDN request logs still record `/variants/…` paths. That is first-party infrastructure logging under the Firebase Hosting service, distinct from third-party analytics.
 
-## Item 3: staging and production share one GA property (RESOLVED by policy; not yet deployed)
+## Item 3: staging and production share one GA property (RESOLVED by policy; staging-certified 2026-09-29; production not deployed)
 
 `firebase.json` is shared by both Hosting sites, so the boundary applies to staging too: staging educational delivery, including certification launches and test launch-grant traffic, sends nothing to GA. A separate staging property is not required.
 
 Staging's **public** root pages still use the existing `G-9QHB5G2B5B` property, with hostname `lyfelabz-staging.web.app`, unless a GA hostname filter is separately configured in GA admin. That is an optional owner setting, not a code change.
 
-## Item 4: whether analytics should run on authenticated student assessment pages (RESOLVED by policy; not yet deployed)
+## Item 4: whether analytics should run on authenticated student assessment pages (RESOLVED by policy; staging-certified 2026-09-29; production not deployed)
 
 No. Authenticated educational delivery does not use Google Analytics:
 - first-party records already hold what GA approximated on these pages: `launchGrants`, `assessmentSessions`, `attempts`, `auditEvents` and grade passback;
