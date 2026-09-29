@@ -206,11 +206,10 @@ Current state:
 
 - Every assignable lesson commits
   `platform/functions/src/scripts/assessments/<slug>.r1.json`. Earth's
-  Layers also commits `earths-layers.r2.json` (not deployed), so it has r1
-  and r2 renditions and must declare `canonicalAssessmentRevisionId`. In
-  release Stage A that is r1 (its unversioned pages still display r1); Stage
-  B switches the declaration and the source quiz literal to r2 (addendum
-  §21.12).
+  Layers also commits `earths-layers.r2.json`, so it has r1 and r2
+  renditions and must declare `canonicalAssessmentRevisionId`. Since release
+  Stage B (`28e2e2c`) that is r2, and its unversioned pages display r2; r1 is
+  displayed only through its rendition (addendum §21.12).
 - Every canonical artifact declares its revision (Slice 9B, below).
 - An assignment freezes its `assessmentRevisionId` at publication, and
   assignment launches route to that revision's page (Slice 9D).

@@ -2,7 +2,7 @@
 
 ## F5.3 Addendum: Accessible Assessment Presentations
 
-**Status:** Specification addendum to `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (F5.2). Owner-approved with decisions D1-D8 (section "Owner decisions"). **Slices 1-4 implemented** (answer-position quality gate; server response validation; immutable assessment-presentation records, certification records, manifest binding, and the `assessmentPresentations` deny-all Rules block; build-time rendering of a certified presentation into a lesson artifact and canonical-option-identity mapping in the browser runtime; publication, resolution, and provenance propagation through index, grant, session, and attempt, with displayed-option validation). The owner's Slice 5 covers the table's slices 5 and 6. **Slices 6A and 6B implemented** (owner-review tooling; the Earth's Layers presentation `ap1fed478c...02c25`, owner-certified, retained, bound, and rendered into the new retained revision `pr90f52136...2189`; see slices 6A and 7 in section 20). **Slice 8 (staging certification C7-A to C7-F) is COMPLETE and PASSING for Earth's Layers** (2026-09-28; section 18.1). **Slice 9 (revision-bound canonical assessment rendering) is specified in section 21.** Its owner rulings are recorded, and its normative basis is ratified as PDR-031. Slice 9.0 (documentation reconciliation) is complete. Slice 9A (payload authority and multi-revision tooling, section 21.3) is implemented. Slice 9B (declarations, renditions, variant baseline, path table, Hosting inclusion; sections 21.3 to 21.5) is implemented with no routing or runtime change. Slice 9C-1 (revision-aware server read path and shared coverage evaluator, section 21.6) is implemented with no writes and no client change. Slice 9C-2 (revision-scoped coverage publication, section 21.7) is implemented as repository tooling; nothing has been published. Slice 9D (revision-bound client routing and runtime integrity, sections 21.4 and 21.5) is implemented. 9E (staging certification C8) is COMPLETE and PASSING (section 18.3). Earth's Layers r2 is authored, owner-approved and certified locally; staging Stage A is complete (r2 deployed on staging as assessment data, pages still r1-current), and Stage B and production are not started (section 21.12). Slice 10 and production are not started. Where this addendum and F5.2 conflict, this addendum governs for assessment presentation only; every F5.2 contract not named in section 16 is unchanged.
+**Status:** Specification addendum to `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md` (F5.2). Owner-approved with decisions D1-D8 (section "Owner decisions"). **Slices 1-4 implemented** (answer-position quality gate; server response validation; immutable assessment-presentation records, certification records, manifest binding, and the `assessmentPresentations` deny-all Rules block; build-time rendering of a certified presentation into a lesson artifact and canonical-option-identity mapping in the browser runtime; publication, resolution, and provenance propagation through index, grant, session, and attempt, with displayed-option validation). The owner's Slice 5 covers the table's slices 5 and 6. **Slices 6A and 6B implemented** (owner-review tooling; the Earth's Layers presentation `ap1fed478c...02c25`, owner-certified, retained, bound, and rendered into the new retained revision `pr90f52136...2189`; see slices 6A and 7 in section 20). **Slice 8 (staging certification C7-A to C7-F) is COMPLETE and PASSING for Earth's Layers** (2026-09-28; section 18.1). **Slice 9 (revision-bound canonical assessment rendering) is specified in section 21.** Its owner rulings are recorded, and its normative basis is ratified as PDR-031. Slice 9.0 (documentation reconciliation) is complete. Slice 9A (payload authority and multi-revision tooling, section 21.3) is implemented. Slice 9B (declarations, renditions, variant baseline, path table, Hosting inclusion; sections 21.3 to 21.5) is implemented with no routing or runtime change. Slice 9C-1 (revision-aware server read path and shared coverage evaluator, section 21.6) is implemented with no writes and no client change. Slice 9C-2 (revision-scoped coverage publication, section 21.7) is implemented as repository tooling; nothing has been published. Slice 9D (revision-bound client routing and runtime integrity, sections 21.4 and 21.5) is implemented. 9E (staging certification C8) is COMPLETE and PASSING (section 18.3). Earth's Layers r2 is authored, owner-approved, certified locally, and staging-certified through Stages A and B, with live r1 and r2 coexistence (section 21.12); production is not started. Slice 10 and production are not started. Where this addendum and F5.2 conflict, this addendum governs for assessment presentation only; every F5.2 contract not named in section 16 is unchanged.
 
 **Evidence base:** repository HEAD `176fe27`; staging certification C4-C6 (2026-09-27); a read-only audit of all 49 committed assessment payloads.
 
@@ -866,7 +866,7 @@ Production is paused at C3 with `prff01d9...375c` published. Whether production 
 - Sessions freeze that value, autosave validates against it, and finalize scores against it (current).
 - Slice 9 extends the binding to what the student sees: canonical renditions, differentiated coverage, launch routing, and a runtime check.
 - The client never selects the revision. The server derives it from the assignment.
-- Until Slice 9 is certified, no lesson may receive a second deployed revision (PDR-031h). Slice 9 is staging-certified (C8). Deployed state: production has exactly r1 for every lesson; staging also has Earth's Layers r2 deployed (Stage A, 21.12). Repository: Earth's Layers also commits r2, which Stage A keeps non-current (21.12).
+- Until Slice 9 is certified, no lesson may receive a second deployed revision (PDR-031h). Slice 9 is staging-certified (C8). Deployed state: production has exactly r1 for every lesson; staging also has Earth's Layers r2 deployed, current, and covered (Stages A and B, 21.12). Repository: Earth's Layers also commits r2, which Stage A keeps non-current (21.12).
 
 #### 21.2 Owner rulings (Slice 9 architecture review, 2026-09-27)
 
@@ -1086,7 +1086,7 @@ Every implementation sub-slice runs `npm --prefix app run verify` and the Functi
    - C6, C7-F, the AP records, the index documents, and the assignments are unchanged.
 5. Production follows under separate authorization.
 
-**Status (2026-09-28): local certification COMPLETE and PASSING; staging Stage A COMPLETE and PASSING (record below); Stage B prepared, not executed.** Nothing is deployed, published, or committed by this work.
+**Status (2026-09-29): local certification COMPLETE and PASSING; staging Stage A and Stage B COMPLETE and PASSING (records below). Production is not started.**
 
 Owner rulings (2026-09-28, owner review packet):
 - **R2-D1.** Canonical r2 q1 to q10 approved as presented.
@@ -1180,6 +1180,77 @@ Local results:
 - **Production.** Hosting `fc8feef66cddca29` (2026-09-27T12:27:40Z) and all 70 Function update times are unchanged; only metadata was listed.
 - **Earliest Stage B Hosting release:** **2026-09-29T00:05:22.741Z** (Stage A release plus 3600 s), and only with the Stage B checkpoint (runbook §3e).
 - **Staging note.** Newly published staging Earth's Layers assignments now freeze r2. The test class `uwxg1a0yiyq4ts5ctejs` also holds two pre-existing Earth's Layers draft assignments (2026-09-26); publishing either would freeze r2. The Stage B r2-assignment class decision covers them.
+
+**Stage B staging record (2026-09-29): COMPLETE and PASSING; live r1 + r2 coexistence staging-certified.** Production is untouched.
+- **Release.** Commit `28e2e2ca6241eaf422a0db9c9c9419f6b8606701` ("Make Earth's Layers r2 current").
+  - It is exactly the certified four-file transition: the config declaration r1 to r2, the source quiz literal (a verbatim copy of the variant's r2 literal), and the regenerated v1 and v2 pages.
+  - Built from the clean detached worktree `lyfelabz-r2b-release` with real installs.
+  - Gates: app verify 133 suites and 3743 tests; app build; Functions 156 suites and 4101 tests, typecheck, lint, build; Hosting 228 files, 14 pass and 1 skipped.
+  - The artifact differs from the Stage A artifact only in the two ordinary pages.
+- **Precondition.** At 00:06:01Z, after the 00:05:22.741Z boundary, Stage A was still the served release and all ten certified Stage A files were served unchanged. The pre-snapshot equaled the Stage A final state.
+- **Hosting.** Version `dd2878386ce4cbbd`, released **2026-09-29T00:06:22.079Z**.
+  - The served delta is exactly `/app/lessons/lesson_earths-layers.html` and `/lesson_earths-layers.html`, with no path added or removed; all 221 served files equal the artifact.
+  - The ordinary v1 and v2 pages declare and display r2 (four choices).
+  - The bundle, runtime, table, both renditions, `pr90f…` and `pr6b7c…` are byte-identical to Stage A.
+- **Cache checkpoint.**
+  - The certification browser's `cache: "reload"` refetches of all ten files equal the Stage B release hashes, and the fresh-navigation bundle decoded size is 1,482,495 bytes.
+  - The frozen-r1 fingerprint still names the r1 rendition.
+  - The r1 differentiated launch still reaches `pr90f…` + `ap1fed…`, with no session.
+- **r2 assignment (owner decision, 2026-09-29).**
+  - SYT Acceptance (`uwxg1a0yiyq4ts5ctejs`) holds a valid, fully staffed Current r1 assignment. The teacher Assign dialog therefore shows it as "Up to date" (locked); the product's only new-assignment path there is "Assign as new" after closing that Current, which would have made r1 history-only.
+  - The owner chose a second class instead, keeping r1 live. The controlled student joined "LyfeLabz Staging Test" (`qxtgj09sb58fox0zgv30`, G6 Block B, no Classroom link) through the product callable `enrollmentsJoinByCode`, called as the student with the class join code. Enrollment `qxtgj09sb58fox0zgv30__NmxK5iDDdhcXYbOECyOFHu26AOb2`.
+  - As the teacher, the Earth's Layers Assign dialog was used with only that class selected, Ungraded, and Post now. It created and published **`a-earths-layers-qxtgj09sb58fox0zgv30-kpckdzwx0hyhv-3rb8j6cfpceua`**:
+    - classroom mode, ungraded, no Classroom link;
+    - frozen **`assessment_earths-layers__r2`**;
+    - one recipient, the controlled student (`classPublication`);
+    - Current in Block B from 14:34:36Z.
+  - The r1 assignment remains Current in Block F, unchanged. The two Block F drafts are untouched.
+- **Canonical r2** (flag false 14:37:56Z, restored true 14:39:15Z and verified).
+  - My Science reached the r2 rendition (declares r2, 10 × 4, r2 content, Show Your Thinking prompt).
+  - The begin session froze r2 `canonicalFallback`, and the runtime gate passed.
+  - Attempt `…3rb8j6cfpceua__NmxK5iDDdhcXYbOECyOFHu26AOb2__a1`: responses `AAAAAAAAAA`, **3/10 (30%)**, equal to the independent rescore against the committed r2 key `BDACBADCAB`. The session was consumed.
+- **Scoped r2 coverage.** `publish-variant --op=publish --target=staging --project=lyfelabz-staging --hosting-origin=https://lyfelabz-staging.web.app --lesson=earths-layers --variant=reading-adapted --revision=pr6b7c… --published-by=lyfelabz-owner-r2b` passed every stage:
+  - LOCAL_VERIFIED;
+  - HOSTING_DEPLOYED: release `48660c1305746ad7` at 14:39:32Z, file-for-file identical to `dd2878386ce4cbbd`;
+  - HOSTED_BYTES_VERIFIED;
+  - ASSESSMENT_PRESENTATION_RECORDED: `ap515838…` created, hashing to its id;
+  - INDEX_UPDATED: `earths-layers__reading-adapted__r2` created (active, `pr6b7c…`, r2, `ap515838…`).
+
+  The legacy and scoped r1 records and the `ap1fed…` record are unchanged.
+- **Adapted r2.**
+  - My Science reached `pr6b7c…` with binding r2 + `ap515838…`, display orders `ABC DAC BCA ACB ACB ABC ADB CBD BCA ABC`, three choices per item, the approved adapted stems and Show Your Thinking, and no omission or review text.
+  - Grant: differentiated, `pr6b7c…`, `ap515838…`, config 1; it equals the page's launchRef.
+  - The negatives driver passed 44/44: the session froze `pr6b7c…`/`ap515838…`/config 1; the omitted q1 option D and the unknown Z were refused; all provenance forgeries were refused.
+  - Attempt `…__a2`: `differentiated`, `reading-adapted`, `pr6b7c…`, `ap515838…`, config 1, responses `BDACBADBBA`, **7/10 (70%)**, equal to the independent rescore. The session was consumed.
+- **Live r1 + r2 coexistence (same student, same bundle):**
+  - My Science lists r2 (70%, 2 attempts, best `a2`) routing to the r2 rendition, and r1 (40%, 4 attempts, best `a2` of r1) routing to the r1 rendition.
+  - The list resolver gives r2 → `pr6b7c…` and r1 → `pr90f…`.
+  - The deep-link resolver gives `assignmentLaunch`/`authorized` for both, with their own revision and presentation.
+  - Re-opening r1 (no submission) reached `pr90f…` + `ap1fed…` with r1 content.
+  - `canonicalFallback` is proven per revision: r2 by the attempt above, r1 by C8 `a4`.
+- **Practice.** No practice-mode assignment exists, and the teacher Assign dialog offers only ungraded or graded classroom assignments, so live assignment-tied practice was not certified. It remains covered by the 9C-1 `lessonPractice` server tests and the 9D routing tests.
+- **Mutation ledger (staging only):**
+  - Hosting `dd2878386ce4cbbd` and the publisher's identical `48660c1305746ad7`;
+  - the enrollment above;
+  - the r2 assignment, its recipient, and the Block B Current pointer;
+  - the flag round trip (ends true);
+  - two r2 sessions, both consumed;
+  - attempts `…__a1` and `…__a2` on the r2 assignment;
+  - `presentationVariants/earths-layers__reading-adapted__r2` and `assessmentPresentations/ap515838…`;
+  - 16 launch grants from certification loads and probes, with their normal audit events (not enumerated).
+- **Unchanged:**
+  - the r1 assignment, recipient and Block F Current;
+  - attempts `a1`–`a4`;
+  - the r1 and r2 assessment documents and the parent (current r2);
+  - the legacy and scoped r1 coverage and `ap1fed…`;
+  - accommodation (config 1);
+  - 0 passbacks;
+  - all 70 staging Functions;
+  - production (Hosting `fc8feef66cddca29`, 70 Functions).
+- **Findings (not blockers):**
+  - The lesson pages' analytics `page_view` beacon sends the full page URL, including `assignment` and the `launchRef` grant id, to Google Analytics. This is pre-existing and needs a separate owner decision.
+  - The teacher Assign dialog pre-selects every other eligible class by default.
+  - An already-onboarded student has no UI to join a further class.
 
 **Backlog (UX, not a blocker).** When the runtime refuses a submit (for example a revision mismatch), the lesson's local results reveal still shows a local score above "Could not submit" (C8, 18.3). Nothing is recorded. Whether to suppress the local score on a refused submit is an owner UX decision.
 

@@ -350,7 +350,7 @@ fixed by rebuilding from current source and redeploying hosting to staging only.
 This runbook covers the F5.2 Slices 1-6 gate. The F5.3 certifications are specified and recorded in `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md`:
 
 - **C7 (Earth's Layers accessible assessment): COMPLETE, PASSING.** See addendum §18.1.
-- **Earth's Layers r2: Stage A COMPLETE, PASSING (2026-09-28, Hosting `980e784622c62aba` at 23:05:22.741Z, r2 data deployed); Stage B PREPARED, NOT EXECUTED, not before 2026-09-29T00:05:22.741Z.** See §3e and the addendum §21.12 record.
+- **Earth's Layers r2: Stage A COMPLETE, PASSING (2026-09-28, Hosting `980e784622c62aba`); Stage B COMPLETE, PASSING (2026-09-29, Hosting `dd2878386ce4cbbd`, r2 assignment, scoped r2 coverage, live r1 + r2 coexistence).** See §3e and the addendum §21.12 records.
 - **C8 (Slice 9 revision-bound rendering): COMPLETE, PASSING.** See addendum §18.3 (record), §18.2 (the authoritative sequence) and §3d below (operational amendments).
 
 C8 environment preconditions, in addition to the addendum steps:
@@ -387,7 +387,7 @@ These amend §2 and §3 for revision-scoped coverage. Where they differ, this se
 - **Flag and live sessions.** A session freezes its delivery at its first begin and is reused until it is finalized. Finalize (or confirm there is no) live session before changing the delivery flag, or the next launch reuses the old delivery.
 - **Synthetic fixture under 9D.** `staging-cert-assignment` (lesson `staging-cert-fixture`) has no canonical page in the revision-path table. Under 9D its My Science card shows with no launch action. This is expected fail-closed behavior; the headless drivers are unaffected.
 
-## 3e. Earth's Layers r2: two-stage staging release (Stage A COMPLETE; Stage B PREPARED, NOT EXECUTED)
+## 3e. Earth's Layers r2: two-stage staging release (Stage A and Stage B COMPLETE)
 
 Owner ruling R2-D6 (addendum §21.12). Each stage is its own owner-approved execution prompt. Nothing here authorizes a deploy, publish, Firestore write, or flag change.
 
@@ -481,6 +481,11 @@ Hosting serves the lesson pages, `app/dist/bundle.js`, the runtime, and the path
 - Waiting `max-age` after the Stage A release guarantees that no pre-Stage-A bundle is still fresh.
 
 ### Stage B
+
+**Executed 2026-09-29: COMPLETE, PASSING.** Record in addendum §21.12. Release `28e2e2c`, Hosting `dd2878386ce4cbbd` released 00:06:22.079Z. The r2 assignment `a-earths-layers-qxtgj09sb58fox0zgv30-kpckdzwx0hyhv-3rb8j6cfpceua` is in "LyfeLabz Staging Test" (owner decision; step 6).
+
+Step 6 note. A class whose Current Earth's Layers assignment is valid and fully staffed shows "Up to date" in the Assign dialog. A new assignment there requires closing that Current first ("Assign as new"), which makes the old assignment history-only. To keep an older revision live, use another class.
+
 
 1. **Preconditions.**
    - Stage A certified, including step 9.
