@@ -4,7 +4,7 @@
   "generatedBy": "app/scripts/build-curriculum-manifest.cjs",
   "canonicalSource": "index.html",
   "canonicalSourceRelativeToApp": "../index.html",
-  "canonicalSourceSha256": "1cf543d41836a8f8b31a7dd05cd57fadda48818090b29886d9fa0461b9839bbc",
+  "canonicalSourceSha256": "aaced8c69d120d13579c0ebd47140cea9c435fd31677615e19747b729d246075",
   "doNotEditByHand": "This file is generated from the root canonical index.html. Do not edit by hand. Regenerate with `npm run curriculum:build` inside app/.",
   "totals": {
     "unitCount": 50,
@@ -606,7 +606,7 @@
         {
           "slug": "water-cycle",
           "title": "The Water Cycle",
-          "description": "Where does rain come from, and where does it go next? Trace a single drop of water as it travels endlessly between the oceans, the sky, and the land.",
+          "description": "Where can water go after rain? Explore storage and many connected pathways within Earth, a closed system for water, and explain the different roles of solar energy and gravity.",
           "grade": "7",
           "topic": "earth-space",
           "gated": false,

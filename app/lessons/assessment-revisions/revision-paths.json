@@ -139,7 +139,8 @@
       "assessment_types-of-volcanoes__r1": "/app/lessons/lesson_types-of-volcanoes.html"
     },
     "water-cycle": {
-      "assessment_water-cycle__r1": "/app/lessons/lesson_water-cycle.html"
+      "assessment_water-cycle__r1": "/app/lessons/assessment-revisions/lesson_water-cycle__r1.html",
+      "assessment_water-cycle__r2": "/app/lessons/assessment-revisions/lesson_water-cycle__r2.html"
     },
     "wave-behavior": {
       "assessment_wave-behavior__r1": "/app/lessons/lesson_wave-behavior.html"

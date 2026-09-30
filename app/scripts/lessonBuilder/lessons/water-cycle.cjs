@@ -26,6 +26,7 @@ Regenerate: npm --prefix app run lessons:build -- --only=water-cycle --target=v2
 
 module.exports = {
   slug: "water-cycle",
+  canonicalAssessmentRevisionId: "assessment_water-cycle__r2",
   canonicalSource: "lesson-sources/lesson_water-cycle.html",
   outputs: {
     v1: "lesson_water-cycle.html",

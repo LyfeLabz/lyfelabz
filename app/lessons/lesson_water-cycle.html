@@ -410,6 +410,7 @@ Regenerate: npm --prefix app run lessons:build -- --only=water-cycle --target=v2
     transition: filter 0.2s; position: relative; border: none; text-align: left;
     font-family: 'Nunito', sans-serif;
   }
+  .layer-row { flex-wrap: wrap; gap: 0.3rem 0.7rem; }
   .layer-row:hover { filter: brightness(1.18); }
   .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
   .layer-detail-panel {
@@ -428,6 +429,9 @@ Regenerate: npm --prefix app run lessons:build -- --only=water-cycle --target=v2
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
   }
   .figure-box svg { width: 100%; height: auto; display: block; }
+  .wc-diagram-scroll { overflow-x: auto; }
+  .wc-diagram-scroll svg { min-width: 700px; }
+  .wc-diagram-scroll:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
   .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
 
   /* ── QUICK RECALL ── */
@@ -703,7 +707,7 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
-<script type="application/json" id="lyfelabz-assessment-revision">{"schemaVersion":1,"lessonSlug":"water-cycle","assessmentRevisionId":"assessment_water-cycle__r1"}</script>
+<script type="application/json" id="lyfelabz-assessment-revision">{"schemaVersion":1,"lessonSlug":"water-cycle","assessmentRevisionId":"assessment_water-cycle__r2"}</script>
 <script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
 </head>
 <body>
@@ -736,12 +740,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <span class="hero-float">&#127783;&#65039;</span>
   <div class="hero-badge">Lesson</div>
   <h1>The Water Cycle</h1>
-  <p>A puddle dries up after the rain and seems to vanish. Yet the oceans never empty and the rain keeps coming back. The same water has been moving around Earth for billions of years.</p>
+  <p>A puddle dries up after the rain and seems to vanish. Where does its water go? Follow water as it moves among the air, land, oceans, and living things, or stays stored along the way.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">What keeps Earth's water moving in an endless cycle?</div>
+      <div class="dq-text">How does water move through many pathways within Earth?</div>
     </div>
   </div>
 </header>
@@ -749,11 +753,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (a puddle disappears, yet water never runs out) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the cycle into small, sequenced steps keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each step with a diagram of the water cycle builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (a puddle dries up, but its water remains within Earth) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the cycle into small groups of related processes keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing processes with diagrams of the water cycle builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Systems thinking: students trace energy and gravity moving water through Earth's spheres, mirroring authentic Earth science. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
+  <span class="ls-badge" data-tip="Systems thinking: students explain energy, gravity, storage, and multiple water pathways within Earth, mirroring authentic Earth science. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
 </div>
 
 
@@ -778,12 +782,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
       <div class="goal-card">
         <span class="goal-icon">&#9878;&#65039;</span>
-        <div class="goal-text">I can explain how the force of gravity drives precipitation, runoff, and infiltration.</div>
+        <div class="goal-text">I can explain how gravity pulls falling precipitation and helps water flow downhill.</div>
         <span class="goal-std">7.MS-ESS2-4</span>
       </div>
       <div class="goal-card">
         <span class="goal-icon">&#128260;</span>
-        <div class="goal-text">I can model the water cycle and explain why Earth's water is never used up.</div>
+        <div class="goal-text">I can develop a model of multiple pathways and storage within Earth, a closed system for water.</div>
         <span class="goal-std">7.MS-ESS2-4</span>
       </div>
     </div>
@@ -793,7 +797,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+          <ul class="edu-note-text"><li>Set a goal of explaining a journey and an alternative within a closed Earth water system.</li><li>Set a clear target before content begins.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -801,7 +805,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+          <ul class="edu-note-text"><li>Understand to Explain</li><li>DOK 1 to 2; evaluate the student model separately</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
@@ -824,7 +828,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="glossary-grid">
       <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
         <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Water Cycle</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The continuous movement of water between the ocean, the air, the land, and living things, powered by the Sun and gravity.</div>
+        <div class="gc-def">The movement and storage of water among reservoirs within Earth, a closed system for water. Solar energy and gravity play different roles.</div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Water Vapor</span><span class="gc-chev">&#9662;</span></div>
@@ -832,15 +836,15 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Evaporation</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When the Sun's heat changes liquid water into water vapor that rises into the air.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-evaporation')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">Liquid water changing into invisible water vapor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-evaporation')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Transpiration</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When water evaporates from inside plant cells into the atmosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-transpiration')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">Water taken up by roots moves through plants, evaporates inside leaves, and exits as vapor through tiny leaf openings.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-transpiration')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Condensation</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When rising water vapor cools and turns back into liquid droplets, forming clouds.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-condensation')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">Water vapor changing into liquid droplets when moist air cools enough.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-condensation')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Precipitation</span><span class="gc-chev">&#9662;</span></div>
@@ -848,19 +852,19 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Runoff</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">Water that flows across the land and collects in streams, rivers, and oceans.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-runoff')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">Water flowing across the land, for example into a stream or lake.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-runoff')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Infiltration</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When water soaks down into the soil and rocks instead of flowing across the surface.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-infiltration')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">Water entering the ground. Some stays in soil; some moves deeper.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-infiltration')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Groundwater</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">Water stored underground in the spaces between soil and rock. Most of it slowly returns to the ocean.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-groundwater')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">Water in saturated pores and fractures in soil and rock: spaces filled with water. It can stay stored or flow.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-groundwater')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Collection</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When water gathers back in the ocean, lakes, rivers, and underground, ready to start the cycle again.</div>
+        <div class="gc-def">Water gathering in reservoirs such as lakes, oceans, or the ground. It may remain stored before moving again.</div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -869,7 +873,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+          <ul class="edu-note-text"><li>Distinguish invisible water vapor from cloud droplets and ice crystals.</li><li>Lower the language barrier before reading.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -902,88 +906,116 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="phenomenon-icon">&#128167;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>Water That Never Runs Out</h3>
-        <p>Earth has had about the same amount of water for billions of years. No new water is being made, and almost none escapes into space. The water in your glass may once have fallen as rain on a dinosaur. So if water is never created or destroyed, how does it keep moving from the ocean to the sky to the land and back again?</p>
+        <h3>Water Within a Closed System</h3>
+        <p><strong>Earth is a closed system for water.</strong> Water does not leave the system or get added to it as part of the water cycle. Instead, it moves among reservoirs (places that store water) within Earth and changes location and state. <strong>A closed system does not mean one closed-loop pathway.</strong> How could the puddle's water move to another reservoir?</p>
       </div>
     </div>
 
-    <!-- Water cycle overview image -->
+    <!-- Existing inline Water Cycle overview: connected pathways -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A water cycle scene: the Sun heats the ocean, water rises and forms a cloud, rain falls on a mountain, and water runs off the land back to the ocean">
+      <div class="wc-diagram-scroll" tabindex="0" role="region" aria-label="Water pathways diagram; scroll horizontally on narrow screens">
+      <svg viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="wc-overview-title wc-overview-desc">
+        <title id="wc-overview-title">Many water pathways within the closed Earth system</title>
+        <desc id="wc-overview-desc">Water can remain stored in the ocean, lake, soil, groundwater, and snow and ice. Solar energy supports evaporation of liquid water into invisible atmospheric vapor. Condensation forms cloud droplets; clouds may contain droplets and ice. Precipitation can reach the ocean, land, and mountain snow. Snow can melt and run downhill across land into the lake. Water can infiltrate into soil, enter roots and move through plants, then evaporate inside leaves and exit as vapor through leaf openings during transpiration. Some soil water moves deeper. Groundwater fills saturated pores and fractures in rock, not an underground lake, and can flow back to surface water. These arrows show possible connections, not a required route. This schematic's icon sizes, arrow widths, and positions are not measurements.</desc>
         <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#16314a"/>
-            <stop offset="100%" stop-color="#1d3a52"/>
-          </linearGradient>
-          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#3a86c8"/>
-            <stop offset="100%" stop-color="#1f5b8f"/>
-          </linearGradient>
+          <!-- Every arrowhead points along the path's positive x tangent. -->
+          <marker id="wc-vapor-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b8def3"/></marker>
+          <marker id="wc-water-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b8def3"/></marker>
+          <marker id="wc-plant-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#a1dfae"/></marker>
+          <linearGradient id="wc-ocean-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#28688d"/><stop offset="1" stop-color="#173c59"/></linearGradient>
+          <pattern id="wc-rock-texture" width="38" height="30" patternUnits="userSpaceOnUse">
+            <rect width="38" height="30" fill="#38474c"/>
+            <path d="M0,11 L13,8 L24,17 L38,14 M13,8 L17,0 M24,17 L20,30" fill="none" stroke="#738b94" stroke-width="1" opacity="0.35"/>
+            <circle cx="7" cy="23" r="1.5" fill="#7bb6d1" opacity="0.55"/><circle cx="31" cy="6" r="1" fill="#7bb6d1" opacity="0.55"/>
+          </pattern>
+          <clipPath id="wc-scene-clip"><rect width="760" height="520" rx="14"/></clipPath>
         </defs>
-        <!-- sky -->
-        <rect x="0" y="0" width="600" height="250" fill="url(#sky)"/>
-        <!-- sun -->
-        <circle cx="70" cy="60" r="30" fill="#f5c842"/>
-        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
-          <line x1="70" y1="14" x2="70" y2="2"/><line x1="70" y1="106" x2="70" y2="118"/>
-          <line x1="24" y1="60" x2="12" y2="60"/><line x1="116" y1="60" x2="128" y2="60"/>
-          <line x1="37" y1="27" x2="29" y2="19"/><line x1="103" y1="93" x2="111" y2="101"/>
-          <line x1="103" y1="27" x2="111" y2="19"/><line x1="37" y1="93" x2="29" y2="101"/>
+        <g clip-path="url(#wc-scene-clip)">
+          <rect width="760" height="520" fill="#16314a"/>
+          <!-- One continuous landscape; the coast meets the ocean at the left. -->
+          <path d="M185,342 C243,301 275,276 321,289 C358,305 403,328 457,309 C495,285 544,298 575,276 L662,170 L760,308 L760,520 L185,520 Z" fill="#50694d"/>
+          <path d="M185,350 C341,360 514,336 760,351 L760,417 C550,405 353,425 185,409 Z" fill="#6b5946"/>
+          <path d="M185,409 C353,425 550,405 760,417 L760,520 L185,520 Z" fill="url(#wc-rock-texture)"/>
+          <path d="M0,319 L207,319 Q196,331 185,342 L185,520 L0,520 Z" fill="url(#wc-ocean-fill)"/>
+          <path d="M0,332 Q24,338 48,332 T96,332 T144,332 T190,332 M17,350 Q40,356 63,350 T109,350 T155,350" fill="none" stroke="#69a3c0" stroke-width="2" opacity="0.45"/>
+          <path d="M337,309 Q365,298 396,306 Q426,315 461,307 Q449,332 400,334 Q362,331 337,309 Z" fill="#438db0"/>
+          <path d="M348,315 Q395,327 447,317" fill="none" stroke="#98c9df" stroke-width="1.5" opacity="0.7"/>
+          <path d="M662,170 L688,207 L670,201 L658,213 L646,204 L633,207 Z" fill="#e2edf1"/>
+          <!-- Plants and roots connect visibly with the soil beneath them. -->
+          <path d="M535,300 L535,232 M535,269 L514,250 M535,251 L554,233" fill="none" stroke="#9cbb7e" stroke-width="5" stroke-linecap="round"/>
+          <path d="M535,300 L520,327 M535,302 L549,324 M531,310 L509,317" fill="none" stroke="#b3a87d" stroke-width="2"/>
+          <ellipse cx="512" cy="248" rx="18" ry="10" transform="rotate(28 512 248)" fill="#79ad76"/>
+          <ellipse cx="555" cy="231" rx="18" ry="10" transform="rotate(-28 555 231)" fill="#79ad76"/>
+          <circle cx="55" cy="49" r="23" fill="#f5c842"/>
+          <g stroke="#e5bc57" stroke-width="2" stroke-linecap="round" opacity="0.7">
+            <path d="M55,15 V8 M55,83 V90 M21,49 H14 M89,49 H96 M31,25 L26,20 M79,73 L84,78 M79,25 L84,20 M31,73 L26,78"/>
+          </g>
+          <g fill="#dce8ee">
+            <circle cx="323" cy="94" r="24"/><circle cx="355" cy="78" r="33"/><circle cx="394" cy="89" r="28"/>
+            <rect x="322" y="92" width="76" height="25" rx="12"/>
+          </g>
+          <!-- Major transfers share one weight; green follows water through the plant. -->
+          <g fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path data-process="evaporation" d="M62,316 C42,246 70,185 82,140" stroke="#b8def3" marker-end="url(#wc-vapor-arrow)"><title>Evaporation: ocean liquid becomes invisible atmospheric vapor</title></path>
+            <path data-process="condensation" d="M190,122 C225,113 258,103 297,99" stroke="#b8def3" marker-end="url(#wc-vapor-arrow)"><title>Condensation: atmospheric vapor becomes cloud droplets</title></path>
+            <path data-process="precipitation" stroke-dasharray="7 6" d="M385,129 C393,186 410,245 406,302" stroke="#b8def3" marker-end="url(#wc-water-arrow)"><title>Precipitation: cloud water falls toward the lake</title></path>
+            <path data-process="precipitation-ocean" stroke-dasharray="7 6" d="M303,125 C277,213 248,274 200,316" stroke="#b8def3" marker-end="url(#wc-water-arrow)"><title>Precipitation can also fall into the ocean</title></path>
+            <path data-process="snowfall" stroke-dasharray="7 6" d="M428,92 C544,40 729,76 652,182" stroke="#b8def3" marker-end="url(#wc-water-arrow)"><title>Precipitation can add to snow and ice storage on the mountain</title></path>
+            <path data-process="melting-runoff" d="M644,214 L617,247" stroke="#b8def3" marker-end="url(#wc-water-arrow)"><title>Melting: stored snow and ice becomes water that can flow down the slope</title></path>
+            <path data-process="runoff" d="M608,253 C589,278 567,292 548,296 C516,301 496,300 458,315" stroke="#b8def3" marker-end="url(#wc-water-arrow)"><title>Runoff: water flows downhill across the land surface into the lake</title></path>
+            <path data-process="infiltration" d="M479,315 L479,391" stroke="#b8def3" marker-end="url(#wc-water-arrow)"><title>Infiltration: surface water enters the soil</title></path>
+            <path data-process="deeper-water" d="M479,416 L479,449" stroke="#b8def3" marker-end="url(#wc-water-arrow)"><title>Some soil water moves deeper into saturated groundwater spaces</title></path>
+            <path data-process="root-uptake" d="M553,386 C551,355 544,333 535,315" stroke="#a1dfae" marker-end="url(#wc-plant-arrow)"><title>Roots take up soil water into the plant</title></path>
+            <path data-process="transpiration" d="M547,215 C531,186 523,153 503,128" stroke="#a1dfae" marker-end="url(#wc-plant-arrow)"><title>Transpiration: water evaporates inside leaves and vapor exits into the atmosphere</title></path>
+            <path data-process="groundwater-flow" d="M587,460 C498,485 390,451 390,379 L390,330" stroke="#b8def3" marker-end="url(#wc-water-arrow)"><title>Groundwater flows through saturated pores and fractures and can enter a lake</title></path>
+          </g>
+          <!-- Processes dominate; reservoirs orient the reader without explanations. -->
+          <g class="wc-process-labels" font-family="Nunito,sans-serif" font-size="18" font-weight="800" fill="#edf6fb">
+            <text x="94" y="214">Evaporation</text>
+            <text x="168" y="88">Condensation</text>
+            <text x="248" y="202">Precipitation</text>
+            <text x="541" y="155">Transpiration</text>
+            <text x="608" y="294">Runoff</text>
+            <text x="492" y="408">Infiltration</text>
+          </g>
+          <g class="wc-reservoir-labels" font-family="Nunito,sans-serif" font-size="14" font-weight="700" fill="#d7e3df">
+            <text x="213" y="28">Atmosphere</text>
+            <text x="65" y="407">Ocean</text>
+            <text x="385" y="324" fill="#f2f8fb">Lake</text>
+            <text x="673" y="188">Snow / ice</text>
+            <text x="614" y="385">Soil water</text>
+            <text x="580" y="493">Groundwater</text>
+          </g>
+          <g font-family="Nunito,sans-serif" font-size="12" font-weight="600" fill="#c7d4d8">
+            <text x="103" y="53" fill="#e5cd83">Solar energy</text>
+            <text x="664" y="244">Melting</text>
+          </g>
         </g>
-        <!-- cloud -->
-        <g fill="#dfe7ee">
-          <circle cx="360" cy="80" r="28"/><circle cx="395" cy="70" r="34"/>
-          <circle cx="435" cy="82" r="26"/><rect x="358" y="80" width="80" height="26" rx="13"/>
-        </g>
-        <!-- rain -->
-        <g stroke="#7cc8f8" stroke-width="3" stroke-linecap="round">
-          <line x1="368" y1="116" x2="362" y2="134"/><line x1="392" y1="116" x2="386" y2="134"/>
-          <line x1="416" y1="116" x2="410" y2="134"/><line x1="440" y1="116" x2="434" y2="134"/>
-        </g>
-        <!-- ocean -->
-        <rect x="0" y="250" width="600" height="90" fill="url(#sea)"/>
-        <!-- mountain / land -->
-        <path d="M340,250 L470,250 L405,150 Z" fill="#5d6e4a"/>
-        <path d="M405,150 L430,188 L388,196 Z" fill="#e8edf2" opacity="0.8"/>
-        <!-- evaporation arrows from ocean -->
-        <g stroke="#9fb8cc" stroke-width="3" fill="none" marker-end="url(#up)">
-          <path d="M120,250 C120,200 140,190 150,150"/>
-          <path d="M190,250 C190,210 210,200 215,160"/>
-        </g>
-        <!-- runoff arrow down the mountain to sea -->
-        <path d="M420,210 C440,236 470,244 500,255" stroke="#7cc8f8" stroke-width="4" fill="none" marker-end="url(#dn)"/>
-        <defs>
-          <marker id="up" markerWidth="9" markerHeight="9" refX="4" refY="2" orient="auto"><path d="M0,8 L4,0 L8,8 Z" fill="#9fb8cc"/></marker>
-          <marker id="dn" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="#7cc8f8"/></marker>
-        </defs>
-        <text x="150" y="300" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#dfe7ee">Ocean</text>
-        <text x="200" y="178" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Evaporation</text>
-        <text x="397" y="48" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#5a6e82">Condensation</text>
-        <text x="404" y="148" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#dfe7ee">Precipitation</text>
       </svg>
-      <div class="figure-caption">The same water travels from ocean to sky to land and back, over and over again.</div>
+      </div>
+      <div class="figure-caption">Water can follow many different pathways as it moves through Earth's closed water system.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> If no new water is ever made, what keeps the same water moving around Earth instead of just sitting still in the ocean?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> What helps water change state and move among reservoirs within the closed Earth system?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Nothing moves it; the water just stays in the ocean.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>Water must stay in whichever reservoir it enters.</button>
         <button class="predict-btn"><span class="pb-letter">B</span>Energy from the Sun and the pull of gravity keep moving it.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Plants and animals drink it and make new water.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Every drop follows one fixed route through all reservoirs.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Two forces never stop working on Earth's water. Energy from the Sun heats water and lifts it into the air, and gravity pulls water back down to the land and ocean. Together they push the same water through an endless loop called the water cycle. To see how, we have to follow a single drop on its journey.</p>
+      <p>The best answer is <strong>B</strong>. Solar energy supplies much of the energy for evaporation: liquid water changes to invisible vapor. Gravity pulls precipitation downward and helps water flow downhill. These are different roles: the Sun is an energy source, and gravity is a force. Water follows many pathways and can remain stored along the way.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the two forces that move all of Earth's water. Then we'll follow a drop as it rises into the sky, forms clouds, falls as rain, and travels back across the land to the ocean.
+      <strong>Where we're headed:</strong> First we'll compare solar energy and gravity. Then we'll explore processes that connect reservoirs and build an example journey with an alternative route.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -991,7 +1023,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a familiar phenomenon: a drying puddle.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the lesson in a familiar phenomenon: a drying puddle.</li><li>Check that closed system is not interpreted as one closed-loop pathway.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1012,22 +1044,22 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: TWO FORCES THAT MOVE WATER
+     EXPLORE 1: ENERGY AND GRAVITY
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explore &middot; The Two Drivers</span>
     <h2 class="section-title">What Moves the Water</h2>
-    <p class="section-desc">The water cycle is not random. Every step is powered by one of two forces working together: energy from the Sun and the force of gravity.</p>
+    <p class="section-desc">Solar energy and gravity play different roles in the water cycle. Energy can help water change state; gravity is a force that affects its motion.</p>
 
     <div class="content-card">
       <div class="card-header">
         <span class="card-icon">&#128260;</span>
-        <div class="card-title">An Endless Loop</div>
+        <div class="card-title">A Connected System</div>
       </div>
       <div class="card-body">
-        <p>Water on Earth is never used up. It simply changes state and changes place. A drop can be liquid in the ocean, a gas in the air, and a liquid again when it falls as rain.</p>
-        <p>Because the same water keeps cycling, we call it the <span class="vocab">water cycle</span>. Two forces keep the loop turning, and they push in opposite directions.</p>
+        <p>Earth is a closed system for water. Water moves among reservoirs and can stay stored in oceans, lakes, rivers, soil, groundwater, snow and ice, the atmosphere, and living things. A lake can lose liquid water by evaporation or gain it from rain and streams.</p>
+        <p>We call this connected movement and storage the <span class="vocab">water cycle</span>. Water need not visit every reservoir or return to the ocean before moving again. Global recycling does not mean usable water is equally available everywhere at all times.</p>
       </div>
     </div>
 
@@ -1035,24 +1067,24 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="crust-card oceanic">
         <div class="crust-title">&#9728;&#65039; Powered by the Sun</div>
         <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>The Sun's heat <strong>lifts water up</strong> into the air</span></li>
-          <li><span class="crust-dot"></span><span>Drives <strong>evaporation</strong> from oceans, lakes, and soil</span></li>
-          <li><span class="crust-dot"></span><span>Drives <strong>transpiration</strong> from plants</span></li>
+          <li><span class="crust-dot"></span><span>The Sun supplies <strong>energy</strong> for much evaporation</span></li>
+          <li><span class="crust-dot"></span><span>Supplies energy for <strong>evaporation</strong> from oceans, lakes, rivers, and wet soil</span></li>
+          <li><span class="crust-dot"></span><span>Supports evaporation inside leaves during <strong>transpiration</strong></span></li>
         </ul>
       </div>
       <div class="crust-card continental">
-        <div class="crust-title">&#9878;&#65039; Powered by Gravity</div>
+        <div class="crust-title">&#9878;&#65039; Pulled by Gravity</div>
         <ul class="crust-list">
           <li><span class="crust-dot"></span><span>Gravity <strong>pulls water down</strong> toward the ground</span></li>
           <li><span class="crust-dot"></span><span>Drives <strong>precipitation</strong> falling from clouds</span></li>
-          <li><span class="crust-dot"></span><span>Drives <strong>runoff</strong> and <strong>infiltration</strong> across and into the land</span></li>
+          <li><span class="crust-dot"></span><span>Helps <strong>runoff</strong> flow downhill and water move through the ground</span></li>
         </ul>
       </div>
     </div>
 
     <div class="callout gold">
       <span class="callout-icon">&#128161;</span>
-      <div class="callout-body"><strong>The key pattern:</strong> The Sun pushes water up, and gravity pulls water down. The endless tug between these two forces is what keeps water cycling through the ocean, the air, and the land.</div>
+      <div class="callout-body"><strong>Energy and force:</strong> Solar energy helps liquid water become vapor. Gravity pulls water downward and acts throughout the Earth system; it does not switch on after clouds form.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1060,7 +1092,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the two driving forces before naming each step.</li><li>Ground the whole cycle in cause and effect.</li></ul>
+          <ul class="edu-note-text"><li>Distinguish solar energy (energy source) from gravity (force).</li><li>Gravity acts throughout; it does not switch on after condensation.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1072,7 +1104,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Two short, parallel comparison cards</li><li>Plain "up vs down" framing</li><li>Key terms in bold</li></ul>
+          <ul class="edu-note-text"><li>Two short, parallel comparison cards</li><li>Plain energy-source and force distinction</li><li>Key terms in bold</li></ul>
         </div>
       </div>
     </div>
@@ -1081,71 +1113,69 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: WATER RISES (interactive journey)
+     EXPLORE 2: CONNECTED PROCESSES (interactive journey)
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="journey" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Journey</span>
-    <h2 class="section-title">Follow a Drop of Water</h2>
-    <p class="section-desc">A single drop travels through four main stages, again and again. Click a stage to follow the drop on its journey.</p>
+    <span class="section-label">Explore &middot; Connected Processes</span>
+    <h2 class="section-title">Explore Possible Water Pathways</h2>
+    <p class="section-desc">Explore four groups of processes in any order. They are choices within a larger system, not four required stages for every drop. A journey may include storage and branch into different routes.</p>
 
     <div class="layer-wrap">
       <div class="layer-figure">
-        <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A circular water cycle diagram showing evaporation rising from the ocean, condensation forming a cloud, precipitation falling, and collection on land flowing back to the ocean">
+        <svg viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="wc-pathways-title wc-pathways-desc">
+          <title id="wc-pathways-title">Example connections, not required stages</title>
+          <desc id="wc-pathways-desc">A lake can evaporate into the atmosphere or remain stored. Precipitation can reach soil. Water on land can flow toward a lake or infiltrate into soil; some moves deeper to groundwater, which can flow to the lake. Explore the process groups in any order.</desc>
           <defs>
-            <linearGradient id="sea2" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#3a86c8"/><stop offset="100%" stop-color="#1f5b8f"/>
-            </linearGradient>
+            <marker id="wc-detail-vapor-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#c5d9e8"/></marker>
+            <marker id="wc-detail-water-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7cc8f8"/></marker>
+            <marker id="wc-detail-flow-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#8de3ae"/></marker>
           </defs>
-          <rect x="0" y="0" width="320" height="280" fill="#13283c"/>
-          <!-- ocean -->
-          <rect x="0" y="220" width="320" height="60" fill="url(#sea2)"/>
-          <!-- land -->
-          <path d="M210,220 L320,220 L320,200 C290,190 250,205 210,220 Z" fill="#5d6e4a"/>
-          <!-- sun -->
-          <circle cx="44" cy="44" r="22" fill="#f5c842"/>
-          <!-- cloud -->
-          <g fill="#dfe7ee">
-            <circle cx="150" cy="60" r="22"/><circle cx="180" cy="50" r="26"/>
-            <circle cx="210" cy="62" r="20"/><rect x="148" y="60" width="64" height="20" rx="10"/>
+          <rect width="320" height="360" rx="12" fill="#13283c"/>
+          <rect x="70" y="20" width="200" height="60" rx="12" fill="#304c60"/>
+          <rect x="12" y="210" width="106" height="54" rx="12" fill="#205681"/>
+          <rect x="202" y="210" width="108" height="54" rx="12" fill="#5b493b"/>
+          <rect x="180" y="307" width="130" height="40" rx="12" fill="#304c60"/>
+          <g fill="none" stroke-width="2.5">
+            <path data-process="evaporation" d="M47,210 C20,151 31,88 70,57" stroke="#c5d9e8" marker-end="url(#wc-detail-vapor-arrow)"><title>Evaporation: lake water to atmospheric vapor</title></path>
+            <path data-process="precipitation" d="M250,80 L250,210" stroke="#7cc8f8" marker-end="url(#wc-detail-water-arrow)"><title>Precipitation: cloud water to land</title></path>
+            <path data-process="runoff" d="M202,230 L118,230" stroke="#8de3ae" marker-end="url(#wc-detail-flow-arrow)"><title>Runoff: surface water on land to lake</title></path>
+            <path data-process="deeper-water" d="M270,264 L270,307" stroke="#7cc8f8" marker-end="url(#wc-detail-water-arrow)"><title>Some soil water moves deeper to groundwater</title></path>
+            <path data-process="groundwater-flow" d="M180,329 C114,329 75,319 65,264" stroke="#8de3ae" marker-end="url(#wc-detail-flow-arrow)"><title>Groundwater can flow to a lake</title></path>
           </g>
-          <!-- evaporation arrow (up, left) -->
-          <path d="M70,220 C60,160 90,120 120,90" stroke="#9fb8cc" stroke-width="4" fill="none" marker-end="url(#u2)"/>
-          <!-- precipitation arrow (down, right) -->
-          <path d="M205,90 C235,130 250,170 255,210" stroke="#7cc8f8" stroke-width="4" fill="none" marker-end="url(#d2)"/>
-          <!-- collection / runoff arrow (along land back to sea) -->
-          <path d="M250,215 C220,230 150,235 90,228" stroke="#1de9b6" stroke-width="4" fill="none" marker-end="url(#g2)"/>
-          <defs>
-            <marker id="u2" markerWidth="9" markerHeight="9" refX="4" refY="2" orient="auto"><path d="M0,8 L4,0 L8,8 Z" fill="#9fb8cc"/></marker>
-            <marker id="d2" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="#7cc8f8"/></marker>
-            <marker id="g2" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#1de9b6"/></marker>
-          </defs>
-          <text x="58" y="150" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">1</text>
-          <text x="183" y="38" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#5a6e82">2</text>
-          <text x="258" y="160" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#7cc8f8">3</text>
-          <text x="160" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#0d3b2f">4</text>
+          <g font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#e8edf2" text-anchor="middle">
+            <text x="170" y="43">Atmosphere: vapor</text><text x="170" y="64">Clouds: droplets / ice</text>
+            <text x="94" y="136">Evaporation</text>
+            <text x="244" y="167" text-anchor="end">Precipitation</text>
+            <text x="65" y="232">Lake</text><text x="65" y="251">storage</text>
+            <text x="256" y="232">Land / soil</text><text x="256" y="251">storage</text>
+            <text x="160" y="216">Runoff</text>
+            <text x="262" y="284" text-anchor="end">Some moves deeper</text>
+            <text x="245" y="332">Groundwater</text>
+            <text x="87" y="347">Groundwater flow</text>
+          </g>
         </svg>
       </div>
       <div class="layer-controls">
         <div class="layer-list">
-          <div class="layer-row" style="background: rgba(232,129,74,0.30); color: #f0b48a;" onclick="layerClick(1)" id="term-evaporation">
-            <span>1 &middot; Evaporation &amp; Transpiration</span><span class="layer-tag">water rises</span>
+          <div class="layer-row" style="background: rgba(232,129,74,0.30); color: #f0b48a;" onclick="layerClick(1)">
+            <span>Evaporation &amp; Transpiration</span><span class="layer-tag">liquid to vapor</span>
           </div>
-          <div class="layer-row" style="background: rgba(29,233,182,0.26); color: #7df0d2;" onclick="layerClick(2)" id="term-condensation">
-            <span>2 &middot; Condensation</span><span class="layer-tag">clouds form</span>
+          <div class="layer-row" style="background: rgba(29,233,182,0.26); color: #7df0d2;" onclick="layerClick(2)">
+            <span>Condensation</span><span class="layer-tag">clouds form</span>
           </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.28); color: #aeddfb;" onclick="layerClick(3)" id="term-precipitation">
-            <span>3 &middot; Precipitation</span><span class="layer-tag">water falls</span>
+          <div class="layer-row" style="background: rgba(124,200,248,0.28); color: #aeddfb;" onclick="layerClick(3)">
+            <span>Precipitation</span><span class="layer-tag">water falls</span>
           </div>
-          <div class="layer-row" style="background: rgba(122,143,166,0.32); color: #c4d2df;" onclick="layerClick(4)" id="term-runoff">
-            <span>4 &middot; Collection</span><span class="layer-tag">runoff &amp; groundwater</span>
+          <div class="layer-row" style="background: rgba(122,143,166,0.32); color: #c4d2df;" onclick="layerClick(4)">
+            <span>Movement &amp; Storage</span><span class="layer-tag">surface &amp; ground</span>
           </div>
         </div>
         <div class="layer-detail-panel">
           <div class="ld-inner">
-            <div class="ld-label" id="ld-label">Click a stage</div>
-            <div class="ld-title" id="ld-title">Start at the ocean &#8594;</div>
-            <div class="ld-body" id="ld-body">Each stage moves water to a new place and often changes its state. Click any stage to follow the drop and see which force is at work.</div>
+            <div class="ld-label" id="ld-label">Choose a process</div>
+            <div class="ld-title" id="ld-title">Many routes are possible</div>
+            <div class="ld-body" id="ld-body">Choose any group to explore movement, state change, or storage. Use these ideas to explain a journey and another route water could take.</div>
           </div>
         </div>
       </div>
@@ -1153,7 +1183,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div class="callout slate">
       <span class="callout-icon">&#128260;</span>
-      <div class="callout-body"><strong>It never ends:</strong> After collection, the Sun's heat lifts the water up again and the loop repeats. There is no true start or finish to the water cycle.</div>
+      <div class="callout-body"><strong>No required starting point:</strong> There is no true start or finish to the water cycle. Water in a lake could evaporate, flow into a stream, or stay stored. None of these routes requires a trip to the ocean first.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1161,11 +1191,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give a whole-cycle map before studying each step.</li><li>Show the loop has no beginning or end.</li></ul>
+          <ul class="edu-note-text"><li>Use these process groups as examples within a larger system.</li><li>Choosing a process is exploration, not evidence of developing a model.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Advance organizer</li><li>Dual coding with the interactive diagram</li><li>Pattern recognition (up, across, down, return)</li></ul>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Dual coding with the interactive diagram</li><li>Compare alternative pathways and storage</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1173,7 +1203,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal each stage, no hover</li><li>Labeled diagram paired with text</li><li>Numbered, ordered stages</li></ul>
+          <ul class="edu-note-text"><li>Click to reveal each process group, no hover</li><li>Labeled diagram paired with text</li><li>Choices can be explored in any order</li></ul>
         </div>
       </div>
     </div>
@@ -1182,13 +1212,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WATER GOES UP
+     EXPLORE 3: LIQUID TO VAPOR
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="up" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; Water Goes Up</span>
-    <h2 class="section-title">Lifted Into the Sky</h2>
-    <p class="section-desc">The journey begins when the Sun's energy lifts water off Earth's surface. This happens in two ways, one from water and one from plants.</p>
+    <span class="section-label">Explore &middot; Liquid to Vapor</span>
+    <h2 class="section-title">Water Becomes Invisible Vapor</h2>
+    <p class="section-desc">Water can enter the atmosphere from exposed wet surfaces and from plants. In both cases, liquid water changes into invisible water vapor.</p>
 
     <div class="content-card">
       <div class="card-header">
@@ -1196,23 +1226,23 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="card-title">From Liquid to Vapor</div>
       </div>
       <div class="card-body">
-        <p>Energy from the Sun heats up liquid water and changes it into <span class="vocab">water vapor</span>, an invisible gas. Water that leaves Earth's oceans, rivers, lakes, and wet soil rises up into the atmosphere.</p>
+        <p>Liquid water can change into <span class="vocab">water vapor</span>, an invisible gas. Evaporation happens at exposed water surfaces, including oceans, rivers, lakes, and wet soil. Solar energy supplies much of the energy for evaporation in Earth's water cycle.</p>
       </div>
     </div>
 
-    <div class="name-it orange-it">
+    <div id="term-evaporation" class="name-it orange-it">
       <div class="name-it-label">Key idea: Evaporation</div>
-      <p><strong>Evaporation</strong> is the process in which the Sun's heat turns liquid water into water vapor that rises into the air. Most of the water in the cycle evaporates from the oceans, because oceans cover most of the planet.</p>
+      <p><strong>Evaporation</strong> is liquid water changing into invisible water vapor. It does not require boiling or direct sunlight. Movement upward in the air is not the state change itself. Most evaporation in the global water cycle occurs over the oceans, which cover most of the planet.</p>
     </div>
 
-    <div class="name-it green-it">
+    <div id="term-transpiration" class="name-it green-it">
       <div class="name-it-label">Key idea: Transpiration</div>
-      <p>Plants move water too. <strong>Transpiration</strong> is the process of evaporation from inside of plant cells into the atmosphere. Plants pull water up from the soil through their roots, and that water exits as vapor through tiny openings in their leaves.</p>
+      <p>Plants move water too. They absorb water through their roots, and water moves through the plant. During <strong>transpiration</strong>, some water evaporates inside leaves and exits as vapor through tiny openings in the leaves.</p>
     </div>
 
     <div class="callout teal">
       <span class="callout-icon">&#127811;</span>
-      <div class="callout-body"><strong>Same idea, two sources:</strong> Evaporation and transpiration both add water vapor to the air using the Sun's energy. One comes from open water and soil, the other from living plants.</div>
+      <div class="callout-body"><strong>Connected reservoirs:</strong> Evaporation transfers water from exposed wet surfaces to the air. Transpiration connects soil water, plants, and the atmosphere. Solar energy supports these liquid-to-vapor changes.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1220,7 +1250,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Explain the Sun-driven inputs to the cycle.</li><li>Connect a physical process to a biological one.</li></ul>
+          <ul class="edu-note-text"><li>Explain transfers to the atmosphere within the closed system.</li><li>Trace roots to leaves to vapor; evaporation does not require boiling or direct sunlight.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1247,7 +1277,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Explore &middot; Water in the Sky</span>
     <h2 class="section-title">Clouds and Rain</h2>
-    <p class="section-desc">Once water vapor is high in the atmosphere, the air around it is cold. That cold is what turns vapor back into the water we can see.</p>
+    <p class="section-desc">When moist air cools enough, some invisible water vapor can become tiny liquid droplets. Clouds contain droplets and/or ice crystals, not visible water vapor.</p>
 
     <div class="content-card">
       <div class="card-header">
@@ -1255,23 +1285,23 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="card-title">Cooling Makes Clouds</div>
       </div>
       <div class="card-body">
-        <p>As water vapor rises up into the atmosphere, it starts to cool and become liquid again. When a large amount of water vapor cools and joins together, the result is cloud formation.</p>
+        <p>Moist air can cool enough for some water vapor to condense into tiny liquid droplets. These droplets can form clouds. Clouds may also contain ice crystals, or both droplets and ice crystals.</p>
       </div>
     </div>
 
-    <div class="name-it teal-it">
+    <div id="term-condensation" class="name-it teal-it">
       <div class="name-it-label">Key idea: Condensation</div>
-      <p><strong>Condensation</strong> is the process in which rising water vapor cools and turns back into tiny liquid droplets. Billions of these droplets together form a cloud. Condensation is the opposite of evaporation: vapor becomes liquid instead of liquid becoming vapor.</p>
+      <p><strong>Condensation</strong> is water vapor changing into liquid droplets when moist air cools enough. It is the opposite of evaporation: vapor becomes liquid instead of liquid becoming vapor. Cloud formation and falling precipitation are different processes.</p>
     </div>
 
-    <div class="name-it blue-it">
+    <div id="term-precipitation" class="name-it blue-it">
       <div class="name-it-label">Key idea: Precipitation</div>
-      <p>When the water in the clouds gets too heavy to stay up, gravity pulls it back to Earth. <strong>Precipitation</strong> is water that falls back to the surface as rain, snow, sleet, or hail.</p>
+      <p>Cloud droplets and/or ice particles can grow large enough to fall as <strong>precipitation</strong>. Gravity pulls them downward. Precipitation reaches land and ocean as rain, snow, sleet, or hail. Not all clouds produce precipitation.</p>
     </div>
 
     <div class="callout gold">
       <span class="callout-icon">&#9878;&#65039;</span>
-      <div class="callout-body"><strong>Gravity takes over:</strong> Up to this point the Sun did the work, lifting water into the sky. Now gravity does the work, pulling the heavy droplets back down to the land and ocean.</div>
+      <div class="callout-body"><strong>Different processes:</strong> Condensation forms liquid droplets; precipitation is water falling from clouds. Gravity acts before, during, and after these events. It does not take turns with the Sun.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1279,7 +1309,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Explain how vapor becomes clouds and rain.</li><li>Mark the handoff from the Sun to gravity.</li></ul>
+          <ul class="edu-note-text"><li>Explain how vapor becomes clouds and rain.</li><li>Check that students separate condensation from precipitation; not every cloud produces precipitation.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1305,8 +1335,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <section id="land" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explore &middot; Water on Land</span>
-    <h2 class="section-title">Back Across the Ground</h2>
-    <p class="section-desc">Once precipitation lands, gravity keeps pulling it downhill and downward. The water takes two different paths back toward the ocean.</p>
+    <h2 class="section-title">Water on and Under the Ground</h2>
+    <p class="section-desc">Water on land may flow across the surface, enter the ground, evaporate, or remain stored. Snow and ice can store water until melting lets it follow another pathway, such as runoff.</p>
 
     <div class="content-card">
       <div class="card-header">
@@ -1314,13 +1344,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="card-title">Flowing Across the Surface</div>
       </div>
       <div class="card-body">
-        <p>When rain falls on the land, some of it flows across the surface. Water that collects in rivers, streams, and oceans this way is called <span class="vocab">runoff</span>. Gravity pulls this water steadily downhill until it reaches a larger body of water.</p>
+        <p>When rain falls on a hillside, some water flows downhill across the surface into streams and rivers. This is <span class="vocab">runoff</span>. Gravity helps this surface water flow toward lower places.</p>
       </div>
     </div>
 
-    <div id="term-groundwater" class="name-it slate-it">
+    <div id="term-runoff" class="name-it slate-it">
       <div class="name-it-label">Key idea: Runoff</div>
-      <p><strong>Runoff</strong> is precipitation that flows over the land and collects in streams, rivers, and the ocean. It is the surface path that returns water to the sea.</p>
+      <p><strong>Runoff</strong> is water flowing across the land surface. It may enter streams and lakes, collect temporarily, or infiltrate along the way. Surface flow and infiltration are connected pathways, not permanently separate tracks.</p>
     </div>
 
     <div class="content-card">
@@ -1335,11 +1365,16 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div id="term-infiltration" class="name-it teal-it">
       <div class="name-it-label">Key idea: Infiltration</div>
-      <p><strong>Infiltration</strong> happens when precipitation soaks down into the soil and rocks. The water that collects underground forms pockets of <strong>groundwater</strong>. Most groundwater slowly moves through the ground and eventually returns to the ocean.</p>
+      <p><strong>Infiltration</strong> is water entering the ground. Some infiltrated water stays in soil and can be taken up by roots or evaporate. Some moves deeper; entering the ground does not instantly make all water groundwater.</p>
+    </div>
+
+    <div id="term-groundwater" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Groundwater</div>
+      <p><strong>Groundwater</strong> occupies saturated pores and fractures in soil and rock: spaces filled with water. It can remain stored or move through those spaces, connecting with springs, streams, lakes, and oceans.</p>
     </div>
 
     <div class="bridge-callout teal">
-      <strong>Two paths, one destination:</strong> Whether water runs off the surface or infiltrates the ground, gravity keeps moving it toward the ocean. There the Sun can lift it back into the air, and the cycle begins again.
+      <strong>Many possible journeys:</strong> Rain could stay in soil, enter a plant, and return to the air through transpiration. Other water could remain underground or join a stream. Water does not have to return to the ocean before another pathway begins.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1347,11 +1382,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Explain the two land paths that close the loop.</li><li>Return the drop to the ocean to restart the cycle.</li></ul>
+          <ul class="edu-note-text"><li>Distinguish infiltration, soil water, and groundwater storage and flow.</li><li>Groundwater fills saturated pores and fractures, not giant underground caverns.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison (surface vs underground path)</li><li>Cause-and-effect (gravity to flow)</li><li>Closure of the cycle schema</li></ul>
+          <ul class="edu-note-text"><li>Comparison (surface vs underground path)</li><li>Cause-and-effect (gravity to flow)</li><li>Connections among surface water, soil, plants, and groundwater</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1359,7 +1394,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Two clearly separated paths</li><li>Short paragraphs</li></ul>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Connected paths and storage described plainly</li><li>Short paragraphs</li></ul>
         </div>
       </div>
     </div>
@@ -1379,7 +1414,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">The Sun heats the ocean and water rises into the air as an invisible gas. What is this process?</div>
+      <div class="qr-q" id="qr1Q">Liquid water at a lake surface changes into invisible water vapor. What is this process?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
         <label><input type="radio" name="qr1" value="0"><span>Condensation</span></label>
         <label><input type="radio" name="qr1" value="1"><span>Evaporation</span></label>
@@ -1395,7 +1430,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">Water vapor high in the sky cools and turns back into tiny droplets that form clouds. What is this?</div>
+      <div class="qr-q" id="qr2Q">Moist air cools enough for some water vapor to change into tiny liquid droplets. What is this process?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
         <label><input type="radio" name="qr2" value="0"><span>Condensation</span></label>
         <label><input type="radio" name="qr2" value="1"><span>Runoff</span></label>
@@ -1455,37 +1490,37 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <section id="explain" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">One Endless Loop</h2>
-    <p class="section-desc">You started with a question: what keeps the same water moving around Earth? Now you can trace the whole loop, step by step.</p>
+    <h2 class="section-title">One System, Many Pathways</h2>
+    <p class="section-desc">Return to the drying puddle. Its water can become invisible vapor while staying within Earth. Use the processes below to explain a possible journey, including a place it could stay stored.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">The Sun Lifts Water Up</div>
+        <div class="wrapup-beat-label">Solar Energy Helps Water Change State</div>
         <div class="wrapup-beat-answer">Energy from the Sun powers evaporation and transpiration.</div>
-        <div class="wrapup-beat-body">The Sun's heat turns liquid water into <strong>water vapor</strong> from oceans, soil, and plants. The vapor rises into the atmosphere.</div>
+        <div class="wrapup-beat-body">Solar energy supplies much of the energy for liquid water to become invisible <strong>water vapor</strong> from exposed wet surfaces and inside leaves.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">The Sky Cools It Down</div>
-        <div class="wrapup-beat-answer">Cooling causes condensation, and gravity causes precipitation.</div>
-        <div class="wrapup-beat-body">High up, vapor cools and condenses into clouds. When the droplets grow heavy, <strong>gravity</strong> pulls them down as rain or snow.</div>
+        <div class="wrapup-beat-label">Clouds Form; Some Produce Precipitation</div>
+        <div class="wrapup-beat-answer">Cooling can cause condensation; gravity pulls falling precipitation downward.</div>
+        <div class="wrapup-beat-body">Moist air cooling enough allows condensation into droplets. Clouds may contain droplets and/or ice. If particles grow large enough, they can fall as precipitation.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Gravity Returns It</div>
-        <div class="wrapup-beat-answer">Runoff and infiltration carry water back to the ocean.</div>
-        <div class="wrapup-beat-body">Water flows across the land as <strong>runoff</strong> or soaks in as <strong>groundwater</strong>. Both return to the ocean, where the Sun can lift it again.</div>
+        <div class="wrapup-beat-label">Water Moves or Stays Stored</div>
+        <div class="wrapup-beat-answer">Reservoirs connect through many possible pathways.</div>
+        <div class="wrapup-beat-body">Water may flow downhill as <strong>runoff</strong>, enter the ground by <strong>infiltration</strong>, or stay stored in lakes, soil, groundwater, or snow and ice.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
-      <strong>The full loop:</strong>
+      <strong>Ideas to connect in your model:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Sun heats the water</span>
+        <span class="wuc wuc-1">Solar energy supports evaporation</span>
         <span class="wuc wuc-1">Evaporation and transpiration</span>
-        <span class="wuc wuc-2">Condensation forms clouds</span>
+        <span class="wuc wuc-2">Condensation: vapor to droplets</span>
         <span class="wuc wuc-2">Gravity pulls down precipitation</span>
-        <span class="wuc wuc-3">Runoff and infiltration return it</span>
+        <span class="wuc wuc-3">Movement and storage in reservoirs</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's water is never created or destroyed. The same water moves endlessly between the ocean, the air, the land, and living things, driven by the Sun's energy and the force of gravity. That is why the puddle vanished but the water never ran out.</div>
+      <div style="margin-top: 1rem;">Earth is a closed system for water. Water does not leave the system or get added to it as part of the water cycle. It changes location and state and may stay stored. The system is closed, but its pathways are not a single closed loop. The puddle dried as its water changed to invisible vapor.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1493,7 +1528,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the steps into one cause-and-effect loop.</li><li>Answer the opening question directly.</li></ul>
+          <ul class="edu-note-text"><li>Connect processes and storage without requiring an ocean return.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1501,11 +1536,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+          <ul class="edu-note-text"><li>Understand and Explain</li><li>DOK 2; reading this summary is not a model-building performance</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+          <ul class="edu-note-text"><li>Related ideas in short groups</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
         </div>
       </div>
     </div>
@@ -1557,11 +1592,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="think-eyebrow">🧠 Show Your Thinking</div>
       <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
       <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
-      <p class="think-prompt">In one or two sentences, trace how a single drop of water leaves the ocean, rises into the sky, and travels back across the land to the ocean again. Name the two forces that move it, the <strong>Sun</strong> and <strong>gravity</strong>, and the processes they drive. Use the word <strong>back</strong>.</p>
-      <textarea class="think-input" id="el-thinking" placeholder="Write your explanation here..." aria-label="Trace how a single drop of water leaves the ocean, rises into the sky, and travels back across the land to the ocean"></textarea>
+      <p class="think-prompt">Build a word model in <strong>3–4 sentences</strong>. Explain why <strong>Earth is a closed system for water</strong>. Describe one possible journey with a <strong>state change</strong> and a place water could <strong>stay stored</strong>; include an <strong>alternative pathway</strong> from one reservoir. Explain the different roles of <strong>solar energy</strong> and <strong>gravity</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Write your explanation here..." aria-label="Build a word model: closed Earth water system, a journey and alternative pathway, state change, storage, solar energy, and gravity"></textarea>
       <div class="think-model" id="el-think-model">
         <span class="tm-label">One strong way to say it</span>
-        The Sun's heat evaporates a drop from the ocean into invisible water vapor that rises into the air. High up it cools and condenses into a cloud, and when the droplets grow heavy, <strong>gravity</strong> pulls them down as precipitation. The water then runs off the surface or soaks in as groundwater and flows <strong>back</strong> to the ocean, where the Sun can lift it again. The same water is never used up, so the loop repeats.
+        Earth is a closed system for water: the water cycle moves water within Earth without adding or removing it. Water can stay stored in a lake, then use solar energy to evaporate from liquid into invisible vapor. When moist air cools enough, some vapor condenses into cloud droplets that may grow large enough to fall as rain, pulled down by gravity. Alternatively, lake water could flow downhill into a stream under gravity instead of evaporating.
       </div>
     </div>
 
@@ -1571,19 +1606,19 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>End the lesson with the student constructing the cycle in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+          <ul class="edu-note-text"><li>Look for a closed-system boundary, a journey and alternative, state change, storage, and distinct energy/force roles.</li><li>One route alone does not demonstrate understanding of multiple pathways.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Systems thinking: tracing one drop through the whole loop</li><li>Self-check reveal for comparison, ungraded</li></ul>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Systems thinking: explain one possible journey and another route</li><li>Self-check reveal for comparison, ungraded</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+          <ul class="edu-note-text"><li>Apply and Explain</li><li>DOK 2; deeper reasoning depends on the student response</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Sentence-length response, not an essay</li><li>Keyword scaffold ("back")</li><li>Model answer to compare against</li></ul>
+          <ul class="edu-note-text"><li>Short word model in 3–4 sentences</li><li>Prompt names the model features to include</li><li>Model answer to compare against</li></ul>
         </div>
       </div>
     </div>
@@ -1599,7 +1634,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"What keeps Earth's water moving in an endless cycle?"</strong> If you can trace the Sun lifting water up, clouds forming, gravity pulling rain down, and water returning to the ocean, you have answered it.
+        You started this lesson asking: <strong>"How does water move through many pathways within Earth?"</strong> Compare your model with the example: did you include storage, a state change, an alternative pathway, and different roles for solar energy and gravity within the closed Earth water system? Your quiz score checks selected concepts; your explanation shows how you connect them.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
@@ -1612,7 +1647,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>The score measures selected concepts; review the ungraded word model for connected reasoning.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1639,7 +1674,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>evaporation</strong>, <strong>condensation</strong>, and <strong>precipitation</strong>, the water-cycle steps powered by the sun and pulled by gravity. More investigations, simulations, and challenges are coming soon.</p>
+    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>evaporation</strong>, <strong>condensation</strong>, and <strong>precipitation</strong>, processes within a system of connected reservoirs. Explain how solar energy and gravity play different roles. More investigations, simulations, and challenges are coming soon.</p>
     <div class="continue-grid">
       <div class="cont-card soon">
         <div class="cont-icon">&#128640;</div>
@@ -1662,7 +1697,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>Depth depends on the follow-up task; clicking a link is not evidence of mastery</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
@@ -1678,7 +1713,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Connections</span>
     <h2 class="section-title">Connections</h2>
-    <p class="section-desc">Water is always on the move, and that motion reshapes the land it touches.</p>
+    <p class="section-desc">Water can remain stored. When it moves, it can reshape the land it touches.</p>
     <div class="connections-grid">
 
       <a class="cont-card lesson" href="lesson_weathering-and-erosion.html" aria-label="Weathering and Erosion lesson">
@@ -1774,10 +1809,10 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 <!-- ===== WATER CYCLE STAGES INTERACTIVE ===== -->
 <script>
 const layerData = {
-  1: { label: 'Stage 1 · Powered by the Sun', title: 'Evaporation & Transpiration', body: 'The Sun heats liquid water in the ocean, lakes, and soil, turning it into water vapor that rises into the air. Plants add vapor too through transpiration. This is how water leaves the surface and goes up.' },
-  2: { label: 'Stage 2 · High in the sky', title: 'Condensation', body: 'High in the atmosphere the air is cold. Rising water vapor cools and turns back into tiny liquid droplets. Billions of droplets together form clouds. This is the opposite of evaporation.' },
-  3: { label: 'Stage 3 · Powered by gravity', title: 'Precipitation', body: 'When the droplets in a cloud grow too heavy, gravity pulls them down. The water falls back to Earth as rain, snow, sleet, or hail. This returns water to the land and ocean.' },
-  4: { label: 'Stage 4 · Back to the ocean', title: 'Collection: Runoff & Groundwater', body: 'On the ground, gravity keeps water moving. Runoff flows across the surface into streams and rivers, while infiltration soaks water into the soil as groundwater. Most of it returns to the ocean, where the cycle begins again.' }
+  1: { label: 'Process group · Liquid to vapor', title: 'Evaporation & Transpiration', body: 'Evaporation changes liquid water from exposed wet surfaces into invisible vapor. Solar energy supplies much of its energy. Plants take up soil water; some evaporates inside leaves and exits through tiny leaf openings as transpiration.' },
+  2: { label: 'Process group · Vapor to liquid', title: 'Condensation', body: 'When moist air cools enough, some water vapor condenses into tiny liquid droplets. Clouds can contain droplets and/or ice crystals. Clouds do not automatically produce precipitation.' },
+  3: { label: 'Process group · Falling water', title: 'Precipitation', body: 'Cloud droplets and/or ice particles can grow large enough to fall. Gravity pulls them downward as precipitation, including rain, snow, sleet, and hail over land and ocean. Gravity acts throughout the system.' },
+  4: { label: 'Process group · Connected reservoirs', title: 'Movement & Storage', body: 'Water may flow downhill as runoff, infiltrate into soil, or stay stored. Some soil water enters plants; some moves deeper into saturated pores and fractures as groundwater. Groundwater can stay stored or connect with streams, lakes, springs, and oceans. Snow and ice store water that may later melt. No ocean return is required.' }
 };
 function layerClick(n) {
   const d = layerData[n];
@@ -1828,14 +1863,14 @@ function layerClick(n) {
     });
   }
   wireQR('qr1', 1,
-    'Correct! When the Sun heats liquid water and it rises into the air as vapor, that is evaporation.',
-    'Not quite. Heat from the Sun turning liquid water into rising water vapor is evaporation.');
+    'Correct! Liquid water changing into invisible water vapor is evaporation. It does not require boiling.',
+    'Not quite. Evaporation is liquid water changing into invisible water vapor; upward motion is not its definition.');
   wireQR('qr2', 0,
-    'Correct! Vapor cooling and turning back into droplets that form clouds is condensation.',
-    'Not quite. Vapor cooling into droplets that form clouds is condensation, the opposite of evaporation.');
+    'Correct! Water vapor changing into liquid droplets is condensation. Clouds may also contain ice crystals.',
+    'Not quite. Water vapor changing into liquid droplets is condensation, the opposite of evaporation. This does not automatically produce precipitation.');
   wireQR('qr3', 2,
     'Correct! Water flowing across the land into streams and rivers is runoff.',
-    'Not quite. Water that flows across the surface into rivers and the ocean is runoff.');
+    'Not quite. Water flowing across the land surface is runoff. It may enter a stream, collect, or infiltrate along the way.');
 })();
 </script>
 
@@ -1855,7 +1890,7 @@ var elQuizQuestions = [
     explanation: "Energy from the Sun heats liquid water and powers evaporation, which keeps the whole water cycle moving."
   },
   {
-    q: "Water leaves the ocean's surface and rises into the air. What state change is happening during evaporation?",
+    q: "What state change happens during evaporation from an exposed water surface?",
     options: [
       "Liquid water freezes into ice",
       "Water vapor cools into liquid",
@@ -1863,30 +1898,30 @@ var elQuizQuestions = [
       "Solid ice changes straight into vapor"
     ],
     correct: 2,
-    explanation: "Evaporation is when the Sun's heat turns liquid water into water vapor, an invisible gas, that rises into the atmosphere."
+    explanation: "Evaporation is liquid water changing into invisible water vapor. Solar energy supplies much of its energy in the water cycle; it does not require boiling or direct sunlight."
   },
   {
-    q: "Plants release water vapor into the air from inside their cells. What is this process called?",
+    q: "Plants take up water through roots. Some water evaporates inside leaves and exits as vapor through tiny leaf openings. What is this process?",
     options: ["Condensation", "Transpiration", "Precipitation", "Infiltration"],
     correct: 1,
-    explanation: "Transpiration is the process of evaporation from inside plant cells into the atmosphere."
+    explanation: "During transpiration, water moves from roots through the plant, evaporates inside leaves, and exits through tiny leaf openings as water vapor."
   },
   {
-    q: "Why do clouds form as water vapor rises high into the cold atmosphere?",
+    q: "Moist air cools enough for liquid cloud droplets to form. What happens to some of the water vapor?",
     options: [
       "The vapor is heated and expands",
       "Gravity pulls the vapor upward",
       "The vapor sinks straight into the soil",
-      "The vapor cools and condenses into tiny droplets"
+      "The vapor condenses into tiny liquid droplets"
     ],
     correct: 3,
-    explanation: "As vapor rises it cools and condenses back into liquid droplets. Billions of droplets together form a cloud."
+    explanation: "When moist air cools enough, some water vapor condenses into tiny liquid droplets. Clouds may contain droplets and/or ice crystals; they do not all produce precipitation."
   },
   {
     q: "Rain, snow, sleet, and hail are all forms of what?",
     options: ["Precipitation", "Evaporation", "Transpiration", "Runoff"],
     correct: 0,
-    explanation: "Precipitation is water that falls from clouds back to Earth when the droplets grow too heavy for gravity to hold up."
+    explanation: "Cloud droplets and/or ice particles can grow large enough to fall as precipitation. Gravity pulls them downward toward land and ocean."
   },
   {
     q: "After rain falls on a hillside, water flows downhill into streams and rivers. What is this moving surface water called?",
@@ -1896,32 +1931,32 @@ var elQuizQuestions = [
   },
   {
     q: "Some rainwater soaks down into the soil and rock instead of flowing across the surface. What is this process called?",
-    options: ["Runoff", "Infiltration", "Evaporation", "Transpiration"],
-    correct: 1,
+    options: ["Runoff", "Transpiration", "Evaporation", "Infiltration"],
+    correct: 3,
     explanation: "Infiltration happens when water soaks down into the soil and rocks below the surface."
   },
   {
-    q: "Water that soaks into the ground and collects in the spaces between soil and rock is called what?",
-    options: ["Runoff", "Water vapor", "A cloud", "Groundwater"],
-    correct: 3,
-    explanation: "Groundwater is water stored underground in pockets and spaces. Most of it eventually returns to the ocean."
+    q: "Water filling saturated pores and fractures in soil and rock is called what?",
+    options: ["Runoff", "Groundwater", "A cloud", "Water vapor"],
+    correct: 1,
+    explanation: "Groundwater occupies saturated pores and fractures: spaces filled with water. It can stay stored or flow to springs, streams, lakes, and oceans. Some infiltrated water remains in soil instead of reaching groundwater."
   },
   {
-    q: "Besides the Sun's energy, what force pulls precipitation, runoff, and groundwater back downward?",
+    q: "What force pulls precipitation downward and helps runoff flow downhill?",
     options: ["Gravity", "Magnetism", "Friction", "The Moon's heat"],
     correct: 0,
-    explanation: "Gravity pulls water downward, causing precipitation to fall and runoff and groundwater to move toward the ocean."
+    explanation: "Gravity pulls precipitation downward and helps runoff flow downhill. Solar energy supplies energy for much evaporation. Gravity acts throughout the Earth system, not just after clouds form."
   },
   {
-    q: "Why do scientists say the water on Earth is never used up?",
+    q: "What does it mean that Earth is a closed system for water?",
     options: [
-      "New water is constantly created by clouds",
-      "Water leaves Earth and is replaced from space",
-      "The same water is recycled endlessly through the water cycle",
-      "Plants make brand new water during transpiration"
+      "Every drop must follow the same four stages",
+      "Water must return to the ocean before it can evaporate",
+      "Water moves and can stay stored within Earth, without being added or removed by the water cycle",
+      "Water stays in one reservoir without changing state"
     ],
     correct: 2,
-    explanation: "Water is not created or destroyed. The same water moves endlessly between the ocean, air, land, and living things in the water cycle."
+    explanation: "Earth is a closed system for water. The water cycle redistributes water among reservoirs within Earth, with state changes and storage along many possible pathways. Closed system does not mean one closed-loop route."
   }
 ];
 
@@ -2009,8 +2044,8 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand the water cycle cold.'
-    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect quiz score! Compare your model with the example to check how you connected the ideas.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review missed items and compare your model with the example.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
   document.getElementById('el-score-num').textContent = score;

@@ -2,8 +2,9 @@
 <!--
 GENERATED FILE. DO NOT EDIT DIRECTLY.
 Canonical source: lesson-sources/lesson_water-cycle.html
-Build target: v1
-Regenerate: npm --prefix app run lessons:build -- --only=water-cycle --target=v1
+Assessment revision: assessment_water-cycle__r2 (platform/functions/src/scripts/assessments/water-cycle.r2.json)
+Build target: v2 assessment-revision rendition
+Regenerate: npm --prefix app run lessons:build -- --only=water-cycle
 -->
 <html lang="en">
 <head>
@@ -16,7 +17,7 @@ Regenerate: npm --prefix app run lessons:build -- --only=water-cycle --target=v1
   gtag('config', 'G-9QHB5G2B5B');
 </script>
 <meta charset="UTF-8">
-<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/x-icon" href="/app/lessons/favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://lyfelabz.com/lesson_water-cycle.html">
 <meta name="description" content="Explore the water cycle: how energy from the sun and the force of gravity move water through evaporation, transpiration, condensation, precipitation, runoff, infiltration, and groundwater. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
@@ -484,47 +485,6 @@ Regenerate: npm --prefix app run lessons:build -- --only=water-cycle --target=v1
 
   /* ── QUIZ ── */
   .quiz-section { background: var(--dark2); }
-  .quiz-mode-toggle {
-    display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem;
-    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
-    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
-    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
-  }
-  .mode-btn {
-    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
-    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
-    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55); background: transparent;
-  }
-  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
-  .mode-btn.active {
-    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
-    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
-    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-    text-shadow: 0 0 12px rgba(159,184,204,0.6);
-  }
-  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
-  .mode-hint span { display: none; }
-  .mode-hint span.visible { display: inline; }
-  .student-info-box {
-    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent2);
-  }
-  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
-  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
-  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
-  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
-  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
-  .info-field input, .info-field select {
-    width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
-    border: 1.5px solid var(--border); border-radius: 10px; color: var(--text);
-    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
-    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
-  }
-  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
-  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
-  .info-field select option { background: #161e28; color: var(--text); }
-  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
-  .info-error.show { display: block; }
   .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
   .quiz-progress { display: flex; align-items: center; gap: 1rem; }
   .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
@@ -552,6 +512,22 @@ Regenerate: npm --prefix app run lessons:build -- --only=water-cycle --target=v1
   .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
   .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
+     clears the sticky chrome. The chrome is the sticky nav (top:0, ~64px)
+     plus the sticky quiz-progress bar (top:64px, ~46px) = ~110px, so a
+     120px margin lands the score just below it with a small gap. At the
+     600px phone breakpoint the nav is ~52px and the progress bar moves to
+     top:52px, so the stack is ~98px and 104px is the matching value. */
+  .score-board { scroll-margin-top: 120px; }
+  .score-board:focus { outline: none; }
+  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
+  /* Sprint 28 O3. Assignment-context return control. Hidden until the
+     assigned-submission path reveals it; styled as a secondary companion
+     to the primary Try Again button. */
+  .return-assignments { display: none; }
+  .return-assignments.show { display: inline-block; margin-top: 1.25rem; margin-left: 0.75rem; padding: 0.85rem 2.2rem; border-radius: 12px; font-weight: 800; font-size: 1rem; font-family: 'Nunito', sans-serif; text-decoration: none; color: var(--text); background: transparent; border: 1.5px solid var(--border); transition: all 0.25s; }
+  .return-assignments.show:hover { transform: translateY(-2px); border-color: var(--teal); box-shadow: 0 8px 24px rgba(122,143,166,0.25); }
+  .return-assignments.show:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
   .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
   .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
   .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
@@ -709,7 +685,6 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
   .footer-links a,
   .predict-btn,
   .qr-actions button,
-  .mode-btn,
   .qr-check,
   .qr-retry {
     min-height: 44px;
@@ -743,7 +718,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <a href="/app/lessons/index.html" class="nav-logo">LYFELABZ</a>
   <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
   <ul class="nav-links" id="navLinks">
     <li><a href="#vocab">Vocab</a></li>
@@ -752,7 +727,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <li><a href="#continue">More</a></li>
     <li><a href="#connections">Connections</a></li>
   </ul>
-  <a href="index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
+  <a href="/app/lessons/index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
 </nav>
 
 <main id="main" tabindex="-1">
@@ -1583,48 +1558,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <h2 class="section-title">Check Your Understanding</h2>
     <p class="section-desc">Ten questions covering everything you explored, from evaporation to groundwater. Answer every question, then submit.</p>
 
-    <!-- Mode Toggle -->
-    <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
-    </div>
-    <div class="mode-hint">
-      <span id="hint-practice"  class="visible">Your score will not be sent</span>
-      <span id="hint-classroom">Your score will be sent to your teacher</span>
-    </div>
 
-    <!-- Student Info Box (Classroom Mode only) -->
-    <div class="student-info-box" id="student-info-box" style="display:none;">
-      <div class="student-info-title">Before You Begin</div>
-      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
-      <div class="info-fields">
-        <div class="info-field">
-          <label for="el-student-name">Student Name</label>
-          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="el-err-name">Please enter your name.</div>
-        </div>
-        <div class="info-field">
-          <label for="el-teacher-select">Teacher</label>
-          <select id="el-teacher-select">
-            <option value="">- Select -</option>
-            <option value="mr-kankel">Mr. Kankel</option>
-            <option value="mr-rovner">Mr. Rovner</option>
-          </select>
-          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
-        </div>
-        <div class="info-field">
-          <label for="el-block-select">Class Block</label>
-          <select id="el-block-select">
-            <option value="">- Select -</option>
-            <option value="A">A Block</option><option value="B">B Block</option>
-            <option value="C">C Block</option><option value="D">D Block</option>
-            <option value="E">E Block</option><option value="F">F Block</option>
-            <option value="G">G Block</option>
-          </select>
-          <div class="info-error" id="el-err-block">Please select your block.</div>
-        </div>
-      </div>
-    </div>
 
     <!-- Sticky Progress Bar -->
     <div class="quiz-progress-sticky">
@@ -1696,7 +1630,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <!-- Score Board -->
-    <div class="score-board" id="el-score">
+    <div class="score-board" id="el-score" tabindex="-1" role="status" aria-live="polite">
       <div class="big-score" id="el-score-num"></div>
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
@@ -1705,6 +1639,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -1782,7 +1717,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <p class="section-desc">Water can remain stored. When it moves, it can reshape the land it touches.</p>
     <div class="connections-grid">
 
-      <a class="cont-card lesson" href="lesson_weathering-and-erosion.html" aria-label="Weathering and Erosion lesson">
+      <a class="cont-card lesson" href="/app/lessons/lesson_weathering-and-erosion.html" aria-label="Weathering and Erosion lesson">
         <div class="cont-icon">🪨</div>
         <div class="cont-cat">Lesson</div>
         <div class="cont-name">Weathering and Erosion</div>
@@ -1790,7 +1725,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <span class="cont-status">Explore</span>
       </a>
 
-      <a class="cont-card lesson" href="lesson_plate-tectonics.html" aria-label="Plate Tectonics lesson">
+      <a class="cont-card lesson" href="/app/lessons/lesson_plate-tectonics.html" aria-label="Plate Tectonics lesson">
         <div class="cont-icon">🧩</div>
         <div class="cont-cat">Lesson</div>
         <div class="cont-name">Plate Tectonics</div>
@@ -1807,9 +1742,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="footer-logo">LYFELABZ&#8482;</div>
   <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
   <div class="footer-links">
-    <a href="about_lyfelabz.html">About LyfeLabz</a>
-    <a href="about_privacy.html">Privacy Policy</a>
-    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+    <a href="/app/lessons/about_lyfelabz.html">About LyfeLabz</a>
+    <a href="/app/lessons/about_privacy.html">Privacy Policy</a>
+    <a href="/app/lessons/about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
@@ -1945,10 +1880,8 @@ function layerClick(n) {
 // ── GOOGLE SHEET URLS ────────────────────────────────────────────────
 // Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
 // TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
-const EL_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 var elQuizState = { selected: [], submitted: false };
-var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
@@ -1959,12 +1892,7 @@ var elQuizQuestions = [
   },
   {
     q: "What state change happens during evaporation from an exposed water surface?",
-    options: [
-      "Liquid water freezes into ice",
-      "Water vapor cools into liquid",
-      "Liquid water changes into water vapor",
-      "Solid ice changes straight into vapor"
-    ],
+    options: ["Liquid water freezes into ice", "Water vapor cools into liquid", "Liquid water changes into water vapor", "Solid ice changes straight into vapor"],
     correct: 2,
     explanation: "Evaporation is liquid water changing into invisible water vapor. Solar energy supplies much of its energy in the water cycle; it does not require boiling or direct sunlight."
   },
@@ -1976,12 +1904,7 @@ var elQuizQuestions = [
   },
   {
     q: "Moist air cools enough for liquid cloud droplets to form. What happens to some of the water vapor?",
-    options: [
-      "The vapor is heated and expands",
-      "Gravity pulls the vapor upward",
-      "The vapor sinks straight into the soil",
-      "The vapor condenses into tiny liquid droplets"
-    ],
+    options: ["The vapor is heated and expands", "Gravity pulls the vapor upward", "The vapor sinks straight into the soil", "The vapor condenses into tiny liquid droplets"],
     correct: 3,
     explanation: "When moist air cools enough, some water vapor condenses into tiny liquid droplets. Clouds may contain droplets and/or ice crystals; they do not all produce precipitation."
   },
@@ -2017,44 +1940,13 @@ var elQuizQuestions = [
   },
   {
     q: "What does it mean that Earth is a closed system for water?",
-    options: [
-      "Every drop must follow the same four stages",
-      "Water must return to the ocean before it can evaporate",
-      "Water moves and can stay stored within Earth, without being added or removed by the water cycle",
-      "Water stays in one reservoir without changing state"
-    ],
+    options: ["Every drop must follow the same four stages", "Water must return to the ocean before it can evaporate", "Water moves and can stay stored within Earth, without being added or removed by the water cycle", "Water stays in one reservoir without changing state"],
     correct: 2,
     explanation: "Earth is a closed system for water. The water cycle redistributes water among reservoirs within Earth, with state changes and storage along many possible pathways. Closed system does not mean one closed-loop route."
   }
 ];
 
-function elSetQuizMode(mode) {
-  elQuizMode = mode;
-  var infoBox      = document.getElementById('student-info-box');
-  var btnPractice  = document.getElementById('btn-practice');
-  var btnClassroom = document.getElementById('btn-classroom');
-  var hintPractice  = document.getElementById('hint-practice');
-  var hintClassroom = document.getElementById('hint-classroom');
-  if (mode === 'practice') {
-    infoBox.style.display = 'none';
-    btnPractice.classList.add('active');
-    btnClassroom.classList.remove('active');
-    hintPractice.classList.add('visible');
-    hintClassroom.classList.remove('visible');
-  } else {
-    infoBox.style.display = 'block';
-    btnClassroom.classList.add('active');
-    btnPractice.classList.remove('active');
-    hintClassroom.classList.add('visible');
-    hintPractice.classList.remove('visible');
-  }
-}
 
-(function () {
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
-  else elSetQuizMode('practice');
-})();
 
 function elBuildQuiz() {
   var container = document.getElementById('el-quiz-questions');
@@ -2103,15 +1995,6 @@ function elUpdateProgress() {
   document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
 }
 
-function elValidateStudentInfo() {
-  var name    = document.getElementById('el-student-name').value.trim();
-  var teacher = document.getElementById('el-teacher-select').value;
-  var block   = document.getElementById('el-block-select').value;
-  document.getElementById('el-err-name').classList.toggle('show', !name);
-  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('el-err-block').classList.toggle('show', !block);
-  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
-}
 
 function elSubmitQuiz() {
   if (elQuizState.submitted) return;
@@ -2120,13 +2003,6 @@ function elSubmitQuiz() {
   var elThinkGate = document.getElementById('el-thinking');
   if (elThinkGate && !elThinkGate.value.trim()) return;
   var elAssigned = window.lyfelabz.lessonQuiz.hasAssignmentContext();
-  if (!elAssigned && elQuizMode === 'classroom') {
-    var info = elValidateStudentInfo();
-    if (!info.valid) {
-      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-  }
   elQuizState.submitted = true;
   document.getElementById('el-submit-btn').disabled = true;
   // Lock the Show Your Thinking response and surface the model answer so the
@@ -2163,6 +2039,10 @@ function elSubmitQuiz() {
   var sb = document.getElementById('el-score');
   sb.classList.add('show');
   sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Sprint 28 O2. Move focus to the results region after the offset scroll
+  // owns the viewport position. preventScroll keeps the scroll-margin-top
+  // landing intact so focus does not tug the page back under the chrome.
+  sb.focus({ preventScroll: true });
 
   if (pct === 100) {
     elQuizState.continueTimer = setTimeout(function () {
@@ -2177,6 +2057,11 @@ function elSubmitQuiz() {
     // facing feedback is unchanged. Duplicate clicks are guarded by
     // elQuizState.submitted; finalize itself is idempotent on the
     // runtime side via a per-runtime idempotency key.
+    // Sprint 28 O3. Reveal the assignment-context return control so the
+    // student has an in-product route back to /app/ (My Assignments)
+    // without relying on browser Back.
+    var elReturnCtl = document.getElementById('back-to-assignments');
+    if (elReturnCtl) elReturnCtl.classList.add('show');
     var elFinalStatus = document.getElementById('el-submit-status');
     elFinalStatus.innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Submitting...</div>';
     // Defensive terminal-state handler. finalize is contracted to resolve
@@ -2202,40 +2087,9 @@ function elSubmitQuiz() {
     return;
   }
 
-  if (elQuizMode === 'practice') {
-    document.getElementById('el-submit-status').innerHTML =
-      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
-    return;
-  }
 
-  var info2 = elValidateStudentInfo();
-  var teacherLabel = info2.teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
-  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
-  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
-  // Thinking rides along in the final `thinking` field. Teacher selects the
-  // endpoint only; it is not a submitted field.
-  var letters = ['A','B','C','D'];
-  var params = new URLSearchParams({ resourceId: 'lesson_water-cycle', grade: '7', teacher: info2.teacher, studentName: info2.name, block: info2.block });
-  elQuizState.selected.forEach(function (idx, i) {
-    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
-  });
-  params.set('score', score);
-  params.set('thinking', thinkingText);
-  fetch(EL_ENDPOINT, { method: 'POST', body: params })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.status === 'success') {
-        document.getElementById('el-submit-status').innerHTML =
-          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
-      } else {
-        document.getElementById('el-submit-status').innerHTML =
-          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
-      }
-    })
-    .catch(function() {
-      document.getElementById('el-submit-status').innerHTML =
-        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
-    });
+  document.getElementById('el-submit-status').innerHTML =
+    '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Exploration mode. Your work is not saved. Launch this lesson from an assignment to record your score with your teacher.</div>';
 }
 
 function elResetQuiz() {

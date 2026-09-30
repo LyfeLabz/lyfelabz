@@ -1,0 +1,269 @@
+{
+  "activityId": "water-cycle",
+  "revisionOrdinal": 2,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "water-cycle-scientific-remediation",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "What provides most of the energy that powers the water cycle?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The Sun's heat"
+        },
+        {
+          "optionId": "B",
+          "text": "Earth's magnetic field"
+        },
+        {
+          "optionId": "C",
+          "text": "Heat from Earth's core"
+        },
+        {
+          "optionId": "D",
+          "text": "The light of the Moon"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Energy from the Sun heats liquid water and powers evaporation, which keeps the whole water cycle moving."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "What state change happens during evaporation from an exposed water surface?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Liquid water freezes into ice"
+        },
+        {
+          "optionId": "B",
+          "text": "Water vapor cools into liquid"
+        },
+        {
+          "optionId": "C",
+          "text": "Liquid water changes into water vapor"
+        },
+        {
+          "optionId": "D",
+          "text": "Solid ice changes straight into vapor"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Evaporation is liquid water changing into invisible water vapor. Solar energy supplies much of its energy in the water cycle; it does not require boiling or direct sunlight."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Plants take up water through roots. Some water evaporates inside leaves and exits as vapor through tiny leaf openings. What is this process?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Condensation"
+        },
+        {
+          "optionId": "B",
+          "text": "Transpiration"
+        },
+        {
+          "optionId": "C",
+          "text": "Precipitation"
+        },
+        {
+          "optionId": "D",
+          "text": "Infiltration"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "During transpiration, water moves from roots through the plant, evaporates inside leaves, and exits through tiny leaf openings as water vapor."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Moist air cools enough for liquid cloud droplets to form. What happens to some of the water vapor?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The vapor is heated and expands"
+        },
+        {
+          "optionId": "B",
+          "text": "Gravity pulls the vapor upward"
+        },
+        {
+          "optionId": "C",
+          "text": "The vapor sinks straight into the soil"
+        },
+        {
+          "optionId": "D",
+          "text": "The vapor condenses into tiny liquid droplets"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "When moist air cools enough, some water vapor condenses into tiny liquid droplets. Clouds may contain droplets and/or ice crystals; they do not all produce precipitation."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "Rain, snow, sleet, and hail are all forms of what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Precipitation"
+        },
+        {
+          "optionId": "B",
+          "text": "Evaporation"
+        },
+        {
+          "optionId": "C",
+          "text": "Transpiration"
+        },
+        {
+          "optionId": "D",
+          "text": "Runoff"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Cloud droplets and/or ice particles can grow large enough to fall as precipitation. Gravity pulls them downward toward land and ocean."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "After rain falls on a hillside, water flows downhill into streams and rivers. What is this moving surface water called?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Groundwater"
+        },
+        {
+          "optionId": "B",
+          "text": "Infiltration"
+        },
+        {
+          "optionId": "C",
+          "text": "Runoff"
+        },
+        {
+          "optionId": "D",
+          "text": "Condensation"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Runoff is precipitation that flows across the land surface and collects in streams, rivers, and the ocean."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "Some rainwater soaks down into the soil and rock instead of flowing across the surface. What is this process called?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Runoff"
+        },
+        {
+          "optionId": "B",
+          "text": "Transpiration"
+        },
+        {
+          "optionId": "C",
+          "text": "Evaporation"
+        },
+        {
+          "optionId": "D",
+          "text": "Infiltration"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Infiltration happens when water soaks down into the soil and rocks below the surface."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "Water filling saturated pores and fractures in soil and rock is called what?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Runoff"
+        },
+        {
+          "optionId": "B",
+          "text": "Groundwater"
+        },
+        {
+          "optionId": "C",
+          "text": "A cloud"
+        },
+        {
+          "optionId": "D",
+          "text": "Water vapor"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Groundwater occupies saturated pores and fractures: spaces filled with water. It can stay stored or flow to springs, streams, lakes, and oceans. Some infiltrated water remains in soil instead of reaching groundwater."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "What force pulls precipitation downward and helps runoff flow downhill?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Gravity"
+        },
+        {
+          "optionId": "B",
+          "text": "Magnetism"
+        },
+        {
+          "optionId": "C",
+          "text": "Friction"
+        },
+        {
+          "optionId": "D",
+          "text": "The Moon's heat"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Gravity pulls precipitation downward and helps runoff flow downhill. Solar energy supplies energy for much evaporation. Gravity acts throughout the Earth system, not just after clouds form."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "What does it mean that Earth is a closed system for water?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Every drop must follow the same four stages"
+        },
+        {
+          "optionId": "B",
+          "text": "Water must return to the ocean before it can evaporate"
+        },
+        {
+          "optionId": "C",
+          "text": "Water moves and can stay stored within Earth, without being added or removed by the water cycle"
+        },
+        {
+          "optionId": "D",
+          "text": "Water stays in one reservoir without changing state"
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Earth is a closed system for water. The water cycle redistributes water among reservoirs within Earth, with state changes and storage along many possible pathways. Closed system does not mean one closed-loop route."
+    }
+  ]
+}

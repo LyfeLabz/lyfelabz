@@ -124,7 +124,7 @@ describe("canonical revision declaration", () => {
     for (const slug of configMod.listConfiguredSlugs()) {
       const cfg = configMod.loadConfig(slug);
       const configured = cfg.canonicalAssessmentRevisionId || `assessment_${slug}__r1`;
-      expect(configured).toBe(slug === EL ? CURRENT : `assessment_${slug}__r1`);
+      expect(configured).toBe(slug === EL ? CURRENT : slug === "water-cycle" ? "assessment_water-cycle__r2" : `assessment_${slug}__r1`);
       for (const target of ["v1", "v2"]) {
         const html = read(cfg.outputs[target]);
         expect(N.readDeclaration(html)).toEqual({ schemaVersion: 1, lessonSlug: slug, assessmentRevisionId: configured });
@@ -272,11 +272,13 @@ describe("revision-bound renditions (real r1 + r2)", () => {
   });
 
   test("a single-revision lesson produces no rendition", () => {
-    const wc = configMod.loadConfig("water-cycle");
-    const single = builder.buildAllTargets(wc, read(wc.canonicalSource), new Map([["water-cycle", R.revisionsForLesson("water-cycle")]]));
+    const singleCfg = configMod.loadConfig("plate-tectonics");
+    const revisions = R.revisionsForLesson(singleCfg.slug);
+    expect(revisions.map((r) => r.revisionOrdinal)).toEqual([1]);
+    const single = builder.buildAllTargets(singleCfg, read(singleCfg.canonicalSource), new Map([[singleCfg.slug, revisions]]));
     expect(single.renditions).toEqual([]);
-    expect(single.v2.bytes).toBe(read(wc.outputs.v2));
-    expect(single.v1.bytes).toBe(read(wc.outputs.v1));
+    expect(single.v2.bytes).toBe(read(singleCfg.outputs.v2));
+    expect(single.v1.bytes).toBe(read(singleCfg.outputs.v1));
   });
 });
 
@@ -437,21 +439,29 @@ describe("revision-to-path table", () => {
     expect(read(N.CLIENT_PATH_TABLE_FILE)).toBe(a);
   });
 
-  test("every single-revision lesson maps r1 to its unversioned v2 page; Earth's Layers maps r1 and r2 to their renditions", () => {
+  test("single-revision lessons use unversioned pages; Earth's Layers and Water Cycle use r1 and r2 renditions", () => {
     const table = builder.buildPathTable();
     expect(Object.keys(table.lessons)).toEqual(configMod.listConfiguredSlugs());
-    for (const slug of configMod.listConfiguredSlugs().filter((s) => s !== EL)) {
+    for (const slug of configMod.listConfiguredSlugs().filter((s) => s !== EL && s !== "water-cycle")) {
       expect(table.lessons[slug]).toEqual({ [`assessment_${slug}__r1`]: `/app/lessons/lesson_${slug}.html` });
     }
     expect(table.lessons[EL]).toEqual({
       [R1]: "/app/lessons/assessment-revisions/lesson_earths-layers__r1.html",
       [R2]: "/app/lessons/assessment-revisions/lesson_earths-layers__r2.html",
     });
-    // No entry points a revision at the unversioned (current) page.
-    expect(Object.values(table.lessons[EL])).not.toContain(`/app/lessons/lesson_${EL}.html`);
+    expect(table.lessons["water-cycle"]).toEqual({
+      "assessment_water-cycle__r1": "/app/lessons/assessment-revisions/lesson_water-cycle__r1.html",
+      "assessment_water-cycle__r2": "/app/lessons/assessment-revisions/lesson_water-cycle__r2.html",
+    });
+    // No multi-revision entry points at the unversioned (current) page.
+    for (const slug of [EL, "water-cycle"]) {
+      expect(Object.values(table.lessons[slug])).not.toContain(`/app/lessons/lesson_${slug}.html`);
+    }
     expect(N.renditionPathsInTable(table)).toEqual([
       "app/lessons/assessment-revisions/lesson_earths-layers__r1.html",
       "app/lessons/assessment-revisions/lesson_earths-layers__r2.html",
+      "app/lessons/assessment-revisions/lesson_water-cycle__r1.html",
+      "app/lessons/assessment-revisions/lesson_water-cycle__r2.html",
     ]);
     expect(JSON.stringify(table)).not.toMatch(/correct|explanation|accommodat|variant/i);
   });
@@ -463,10 +473,13 @@ describe("revision-to-path table", () => {
     expect(N.serializePathTable(table)).toBe(N.serializePathTable(N.buildRevisionPathTable(configs, map)));
     expect(N.resolveRevisionPath(table, EL, R1)).toBe("/app/lessons/assessment-revisions/lesson_earths-layers__r1.html");
     expect(N.resolveRevisionPath(table, EL, R2)).toBe("/app/lessons/assessment-revisions/lesson_earths-layers__r2.html");
-    expect(N.resolveRevisionPath(table, "water-cycle", "assessment_water-cycle__r1")).toBe("/app/lessons/lesson_water-cycle.html");
+    expect(N.resolveRevisionPath(table, "water-cycle", "assessment_water-cycle__r1")).toBe("/app/lessons/assessment-revisions/lesson_water-cycle__r1.html");
+    expect(N.resolveRevisionPath(table, "water-cycle", "assessment_water-cycle__r2")).toBe("/app/lessons/assessment-revisions/lesson_water-cycle__r2.html");
     expect(N.renditionPathsInTable(table)).toEqual([
       "app/lessons/assessment-revisions/lesson_earths-layers__r1.html",
       "app/lessons/assessment-revisions/lesson_earths-layers__r2.html",
+      "app/lessons/assessment-revisions/lesson_water-cycle__r1.html",
+      "app/lessons/assessment-revisions/lesson_water-cycle__r2.html",
     ]);
   });
 
@@ -485,11 +498,13 @@ describe("revision-to-path table", () => {
     expect(() => N.buildRevisionPathTable([undeclared(elCfg)], bySlug([e1(), e2()]))).toThrow("must declare canonicalAssessmentRevisionId");
   });
 
-  test("the rendition tree holds the table and exactly the Earth's Layers r1 and r2 renditions", () => {
-    expect(builder.verifyRenditionTree()).toMatchObject({ renditions: 2 });
+  test("the rendition tree holds the table and exactly the Earth's Layers and Water Cycle r1 and r2 renditions", () => {
+    expect(builder.verifyRenditionTree()).toMatchObject({ renditions: 4 });
     expect(fs.readdirSync(paths.RENDITION_OUTPUT_ROOT).sort()).toEqual([
       "lesson_earths-layers__r1.html",
       "lesson_earths-layers__r2.html",
+      "lesson_water-cycle__r1.html",
+      "lesson_water-cycle__r2.html",
       "revision-paths.json",
     ]);
   });

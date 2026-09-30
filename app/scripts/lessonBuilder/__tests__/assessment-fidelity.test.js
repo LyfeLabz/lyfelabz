@@ -87,8 +87,8 @@ describe("Phase 5B assessment coverage", () => {
     expect(orphans).toEqual([]);
   });
 
-  test("every lesson commits r1, and only Earth's Layers also commits r2 (its first real later revision)", () => {
-    const expected = SLUGS.flatMap((slug) => (slug === "earths-layers" ? [`${slug}.r1.json`, `${slug}.r2.json`] : [`${slug}.r1.json`]));
+  test("every lesson commits r1; Earth's Layers and Water Cycle also commit r2", () => {
+    const expected = SLUGS.flatMap((slug) => (["earths-layers", "water-cycle"].includes(slug) ? [`${slug}.r1.json`, `${slug}.r2.json`] : [`${slug}.r1.json`]));
     expect(DISCOVERED.revisions.map((e) => e.file)).toEqual(expected);
   });
 });
