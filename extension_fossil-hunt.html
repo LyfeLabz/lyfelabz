@@ -639,6 +639,7 @@
     }
     body.ls-active   .ls-focus   { display: flex; }
     body.stem-active .stem-focus { display: flex; }
+    body.ls-active #fossilTeacherNotes { display: block; }
     .ls-focus-label, .stem-focus-label {
       width: 100%; font-size: .68rem; font-weight: 900; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); margin-bottom: 4px;
@@ -875,7 +876,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="victory-stars">&#9733; &#9733; &#9733;</div>
     <div class="victory-title">FOSSIL HUNT COMPLETE</div>
     <p class="victory-sub">You successfully correlated rock layers across multiple locations using index fossils.</p>
-    <p class="victory-sub-2">This is exactly how geologists determine the relative ages of rock layers.</p>
+    <p class="victory-sub-2">Your fossil evidence and superposition agree in this simplified model; correlation does not give an exact deposition date.</p>
     <p class="victory-age" id="victoryAgeText"></p>
     <button class="victory-close" id="victoryClose">Keep Exploring</button>
   </div>
@@ -892,13 +893,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <!-- Hero -->
     <div class="hero">
-      <div class="hero-badge">Extension</div>
+      <div class="hero-badge">EXTENSION</div>
       <h1>Fossil Hunt</h1>
       <p>Use index fossils to match rock layers and determine their relative ages.</p>
     </div>
 
     <div class="hook-box">
-      You are on a fossil hunt. Scientists have uncovered rock layers at three separate locations, and your job is to use fossil evidence to figure out which layers are the same age; and which came first.
+      You are on a fossil hunt. Scientists have uncovered rock layers at three separate locations, and your job is to use fossil evidence to figure out which layers correspond within a supported interval, and which came first.
     </div>
 
     <p style="text-align:center;font-size:.9rem;color:var(--muted);margin:-8px auto 16px;max-width:720px;line-height:1.6;">
@@ -914,11 +915,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <p class="learn-intro">
         Fossils are the remains or traces of organisms from the past. Some fossils are especially useful for helping scientists determine the age of rock layers, these are called <strong style="color:var(--gold)">index fossils</strong>.
       </p>
-      <p class="learn-intro" style="margin-top:-6px;">A fossil makes a good index fossil only if it meets all three of these criteria:</p>
+      <p class="learn-intro" style="margin-top:-6px;">Useful index fossils have evidence for these features:</p>
       <div class="criteria-list">
         <div class="criteria-item">
           <div class="criteria-num">1</div>
-          <div class="criteria-text">Lived for a <strong>short period of time</strong>; so its fossils only appear in a narrow band of rock layers.</div>
+          <div class="criteria-text">Had a <strong>restricted known time range</strong>; established from geological reference evidence.</div>
         </div>
         <div class="criteria-item">
           <div class="criteria-num">2</div>
@@ -975,8 +976,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <button class="diff-btn" id="challengeBtn">Challenge</button>
         </div>
         <p class="subtext" id="diffDescriptor" style="font-size:.76rem;margin-top:-8px;margin-bottom:10px;color:var(--muted);">
-          <span id="diffDescPractice">Includes highlighted index fossils and fewer horizons.</span>
-          <span id="diffDescChallenge" style="display:none;">Includes more horizons and misleading fossils.</span>
+          <span id="diffDescPractice">Includes highlighted reference evidence and fewer horizons.</span>
+          <span id="diffDescChallenge" style="display:none;">Includes more horizons and independent comparison of the supplied evidence.</span>
         </p>
         <!-- Difficulty-switch warning (fix #4) -->
         <p id="diffWarning"></p>
@@ -995,7 +996,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <!-- Field Notes -->
         <div class="field-notes">
           <span class="field-notes-label">Field Notes</span>
-          <p>Index fossils appear in exactly one layer per location. Your mission: find matching fossil horizons across all three dig sites, then determine which layers are oldest.</p>
+          <p>Use fossils and their age ranges to match rock layers from different locations. Remember: in undisturbed rock layers, older layers are below younger layers.</p>
+          <p>These rock layers are simplified examples. Use the fossil names and information provided as evidence. You do not need to memorize fossil names or dates. <strong>mya = million years ago.</strong></p>
         </div>
 
         <!-- Mission Chip - appears when a layer is selected (fix #1) -->
@@ -1015,7 +1017,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="ordering-panel hidden" id="orderingPanel">
           <div id="orderingRevealBanner">&#9733; All fossil horizons identified! Determine their age order below.</div>
           <div class="ordering-title">Determine the Age Order</div>
-          <p class="ordering-sub">All fossil horizons identified! Click them below in order from <strong style="color:var(--purple)">OLDEST</strong> to <strong style="color:var(--cyan)">YOUNGEST</strong>. Use both layer position and fossil age clues.</p>
+          <p class="ordering-sub">All fossil horizons identified! Click them below in order from <strong style="color:var(--purple)">OLDEST</strong> to <strong style="color:var(--cyan)">YOUNGEST</strong>. Use position within each undisturbed sequence and the supplied fossil reference intervals.</p>
           <div class="ordering-slots" id="orderingSlots"></div>
           <div class="ordering-choices" id="orderingChoices"></div>
           <div class="ordering-msg hidden" id="orderingMsg"></div>
@@ -1085,7 +1087,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <!-- Step 2: Age Order -->
       <div class="classroom-section">
         <div class="classroom-section-title" style="color:var(--orange);">Step 2, Determine Age Order</div>
-        <p class="subtext" style="font-size:.85rem;margin:6px 0 10px;">Place the fossil horizons in order from oldest to youngest using their position in the rock layers.</p>
+        <p class="subtext" style="font-size:.85rem;margin:6px 0 10px;">Place the fossil horizons in order from oldest to youngest using position within each undisturbed sequence and the supplied marker intervals. Then complete the final thinking check.</p>
         <div id="ageOrderProgress" style="font-size:.82rem;font-weight:700;color:var(--muted);margin-top:4px;">
           <span id="ageOrderStatus">Complete Step 1 to unlock age ordering.</span>
         </div>
@@ -1096,7 +1098,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="classroom-section-title" style="color:var(--yellow);">Step 3, Answer the Quiz</div>
         <div id="quizContent">
           <div class="quiz-locked-overlay" id="quizLockedOverlay">
-            <p class="quiz-locked-text" style="font-size:.95rem;">&#128274; Complete all fossil matches and age ordering to unlock the quiz.</p>
+            <p class="quiz-locked-text" style="font-size:.95rem;">&#128274; Complete all fossil matches, correct age ordering and the final thinking check to unlock the quiz.</p>
           </div>
           <div id="quizQuestions" class="hidden"></div>
           <div id="quizScoreArea" class="hidden" style="margin-top:10px;">
@@ -1137,7 +1139,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="submit-section">
           <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit Score</button>
-          <p class="submit-helper" id="submitHelperText">Complete all fossil matches, age ordering, and all 10 quiz questions first.</p>
+          <p class="submit-helper" id="submitHelperText">Complete all fossil matches, correct ordering, the final thinking check and all 10 quiz responses first.</p>
           <div class="submit-success" id="submitSuccess">Your work has been submitted! Great fossil detective work.</div>
           <div class="submit-error" id="submitError"></div>
         </div>
@@ -1153,14 +1155,24 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <span class="ls-badge" data-tip="Students must actively construct connections between fossil evidence and layer age, building conceptual knowledge through doing rather than passive reading. (Chi &amp; Wylie, 2014)">Active Sense-Making</span>
       <span class="ls-badge" data-tip="Immediate corrective feedback on incorrect fossil matches provides formative assessment in the moment, allowing students to revise their reasoning. (Black &amp; Wiliam, 1998)">Immediate Feedback</span>
       <span class="ls-badge" data-tip="The multi-location correlation task requires students to identify patterns across spatial representations, a core scientific and mathematical reasoning skill. (Newcombe, 2010)">Spatial Pattern Recognition</span>
-      <span class="ls-badge" data-tip="Practice Mode scaffolds the task by exposing index fossil labels; Challenge Mode removes the scaffold, requiring transfer of learned criteria. (Wood et al., 1976)">Scaffolded Transfer</span>
+      <span class="ls-badge" data-tip="Practice difficulty highlights reference evidence; Challenge reduces answer cues but still supplies identifications, cards, hints and feedback. Success with support does not by itself demonstrate independent transfer.">Scaffolded Transfer</span>
     </div>
+    <details class="ls-focus" id="fossilTeacherNotes">
+      <summary>Fossil Hunt — Educator Guidance</summary>
+      <p>Required Grade 6 activity; ESS1-4 remains classification C. These fictional columns model selected layers in undisturbed sequences, with omitted time and no reworked fossils. They are not an actual measured outcrop or a record of continuous deposition. Rock color, name, thickness and screen height between sites are not dating evidence.</p>
+      <p>Identification is supplied. Glyphs are schematic, not diagnostic illustrations. Students reason from the cards, without memorizing Latin names, taxonomic ranks, periods or dates. Named markers have more restricted reference intervals than their broad groups. Rounded brackets enclose geological intervals; they are not exact taxon lifespans, first appearances, extinctions or layer dates. Distribution is scoped to the cited reference setting; these different markers do not establish one real region shared by the entire fictional sequence.</p>
+      <p>Practice: G1 ammonite Dactylioceras commune; G2 crinoid Scyphocrinites; G3 trilobite Paradoxides. Oldest to youngest: G3 → G2 → G1. Challenge: G1 Dactylioceras commune; G2 brachiopod Mucrospirifer mucronatus; G3 Scyphocrinites; G4 Paradoxides. Oldest to youngest: G4 → G3 → G2 → G1. Broad Rugose Coral is contextual evidence (about 470–252 mya), not a narrow marker.</p>
+      <p>Correlations support corresponding intervals, not exact simultaneity. Lower layers are older within each undisturbed sequence. Require agreement between marker intervals and this relative order. The youngest correlated marker is not the youngest layer: Challenge A0 lies above A2, but its unidentified shell cannot establish precise correlation of top layers.</p>
+      <p>Practice highlights reference evidence. Challenge removes those highlights and undiscovered answer labels, but retains supplied identifications, hints and feedback. Ask students to explain the evidence and its limits orally; scaffolded completion and selected responses alone do not establish independent reasoning or an authored SP6 explanation. This activity contributes to ESS1-4; it does not assess every requirement, including cross-cutting relationships and long-term geological processes.</p>
+      <p>The existing submission retains score, response letters and summary counts. It does not retain students’ match arrangements, order attempts, final-check reasoning or written explanations. Richer retention is deferred to Student Evidence Architecture.</p>
+      <p>Reference basis: <a href="https://webapps.bgs.ac.uk/memoirs/docs/B01778.html">BGS Jurassic zonation</a>; <a href="https://journals.lib.unb.ca/index.php/ag/article/download/atlgeol.2014.014/26305?inline=1">Scyphocrinites study</a>; <a href="https://www.bgs.ac.uk/discovering-geology/fossils-and-geological-time/trilobites/">BGS trilobites</a>; <a href="https://vtechworks.lib.vt.edu/items/a4de0072-a866-4281-9aa9-848aed740fdd">regional Mucrospirifer study</a>; <a href="https://paleo.indiana.edu/research/indiana-corals.html">rugose coral context</a>; <a href="https://stratigraphy.org/ICSchart/ChronostratChart2024-12.pdf">geological interval boundaries</a>; <a href="https://www.nps.gov/subjects/geology/fundamental-geologic-principles.htm">geological principles</a>; <a href="https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf">Massachusetts STE framework</a>.</p>
+    </details>
     <div class="stem-focus">
       <span class="stem-focus-label">MA STE Standards &middot; Grade 6&ndash;8</span>
-      <span class="stem-badge" data-tip="6.MS-ESS1-4: Construct a scientific explanation based on evidence from rock strata for how the geologic time scale is used to organize Earth's 4.6-billion-year-old history.">6.MS-ESS1-4</span>
-      <span class="stem-badge" data-tip="Science Practice 6: Constructing Explanations, students use index fossil evidence to construct explanations for layer correlation and relative age.">SP6: Explanation</span>
+      <span class="stem-badge" data-tip="MA 6.MS-ESS1-4 involves analyzing and interpreting rock-layer and fossil evidence to determine relative ages. This activity contributes fossil interpretation, correlation and ordering evidence; it does not cover the full performance requirement.">6.MS-ESS1-4</span>
+      <span class="stem-badge" data-tip="Supports reasoning toward explanations through selections and feedback. Students do not author a scientific explanation here; selected-response success alone is not evidence of full SP6 performance.">SP6: Reasoning Support</span>
       <span class="stem-badge" data-tip="Science Practice 4: Analyzing and Interpreting Data, students analyze fossil distribution across multiple locations to identify patterns of age correlation.">SP4: Data Analysis</span>
-      <span class="stem-badge" data-tip="Crosscutting Concept 1: Patterns, students identify repeating fossil patterns across locations as evidence of geological contemporaneity.">CCC1: Patterns</span>
+      <span class="stem-badge" data-tip="Crosscutting Concept 1: Patterns, students identify repeating fossil patterns across locations as evidence of corresponding geological intervals.">CCC1: Patterns</span>
     </div>
   </div>
 
@@ -1237,57 +1249,58 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           {
             name: 'A', label: 'Location A',
             layers: [
-              { id:'A0', fossil:'Shell Fragment',   rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
-              { id:'A1', fossil:'Ammonite',         rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
-              { id:'A2', fossil:'Fern Impression',  rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
-              { id:'A3', fossil:'Trilobite',        rock:'Mudstone',     color:'#7a9878', isIndex:true,  group:'G2' },
-              { id:'A4', fossil:'Ancient Coral',    rock:'Conglomerate', color:'#8c7045', isIndex:false, group:null },
-              { id:'A5', fossil:'Crinoid',          rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' }
+              { id:'A0', fossil:'Shell Fragment',   rock:'Sandstone',    color:'#c2a87a', role:'context', group:null },
+              { id:'A1', fossil:'Dactylioceras commune', markerId:'am-commune',         rock:'Limestone',    color:'#a8b8c8', role:'marker',  group:'G1' },
+              { id:'A2', fossil:'Fern Impression',  rock:'Shale',        color:'#7a6858', role:'context', group:null },
+              { id:'A3', fossil:'Scyphocrinites', markerId:'cr-scypho',        rock:'Mudstone',     color:'#7a9878', role:'marker',  group:'G2' },
+              { id:'A4', fossil:'Rugose Coral',    rock:'Conglomerate', color:'#8c7045', role:'context', group:null },
+              { id:'A5', fossil:'Paradoxides', markerId:'tr-paradoxides',          rock:'Dark Shale',   color:'#5868a0', role:'marker',  group:'G3' }
             ]
           },
           {
             name: 'B', label: 'Location B',
             layers: [
-              { id:'B0', fossil:'Leaf Impression',  rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
-              { id:'B1', fossil:'Ammonite',         rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
-              { id:'B2', fossil:'Trilobite',        rock:'Mudstone',     color:'#7a9878', isIndex:true,  group:'G2' },
-              { id:'B3', fossil:'Coral Fragment',   rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
-              { id:'B4', fossil:'Crinoid',          rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' }
+              { id:'B0', fossil:'Leaf Impression',  rock:'Shale',        color:'#7a6858', role:'context', group:null },
+              { id:'B1', fossil:'Dactylioceras commune', markerId:'am-commune',         rock:'Limestone',    color:'#a8b8c8', role:'marker',  group:'G1' },
+              { id:'B2', fossil:'Scyphocrinites', markerId:'cr-scypho',        rock:'Mudstone',     color:'#7a9878', role:'marker',  group:'G2' },
+              { id:'B3', fossil:'Coral Fragment',   rock:'Sandstone',    color:'#c2a87a', role:'context', group:null },
+              { id:'B4', fossil:'Paradoxides', markerId:'tr-paradoxides',          rock:'Dark Shale',   color:'#5868a0', role:'marker',  group:'G3' }
             ]
           },
           {
             name: 'C', label: 'Location C',
             layers: [
-              { id:'C0', fossil:'Fern Impression',  rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
-              { id:'C1', fossil:'Ammonite',         rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
-              { id:'C2', fossil:'Ancient Coral',    rock:'Conglomerate', color:'#8c7045', isIndex:false, group:null },
-              { id:'C3', fossil:'Trilobite',        rock:'Mudstone',     color:'#7a9878', isIndex:true,  group:'G2' },
-              { id:'C4', fossil:'Shell Fragment',   rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
-              { id:'C5', fossil:'Crinoid',          rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' }
+              { id:'C0', fossil:'Fern Impression',  rock:'Shale',        color:'#7a6858', role:'context', group:null },
+              { id:'C1', fossil:'Dactylioceras commune', markerId:'am-commune',         rock:'Limestone',    color:'#a8b8c8', role:'marker',  group:'G1' },
+              { id:'C2', fossil:'Coral — type unidentified',    rock:'Conglomerate', color:'#8c7045', role:'context', group:null },
+              { id:'C3', fossil:'Scyphocrinites', markerId:'cr-scypho',        rock:'Mudstone',     color:'#7a9878', role:'marker',  group:'G2' },
+              { id:'C4', fossil:'Shell Fragment',   rock:'Sandstone',    color:'#c2a87a', role:'context', group:null },
+              { id:'C5', fossil:'Paradoxides', markerId:'tr-paradoxides',          rock:'Dark Shale',   color:'#5868a0', role:'marker',  group:'G3' }
             ]
           }
         ],
         groups: {
-          G1: { fossil:'Ammonite',  ids:['A1','B1','C1'], color:'rgba(36,232,255,0.85)',  cssClass:'matched-G1', dotClass:'G1', label:'1', displayColor:'#24e8ff' },
-          G2: { fossil:'Trilobite', ids:['A3','B2','C3'], color:'rgba(246,203,67,0.85)', cssClass:'matched-G2', dotClass:'G2', label:'2', displayColor:'#f6cb43' },
-          G3: { fossil:'Crinoid',   ids:['A5','B4','C5'], color:'rgba(154,92,255,0.85)', cssClass:'matched-G3', dotClass:'G3', label:'3', displayColor:'#9a5cff' }
+          G1: { fossil:'Dactylioceras commune', markerId:'am-commune',  ids:['A1','B1','C1'], color:'rgba(36,232,255,0.85)',  cssClass:'matched-G1', dotClass:'G1', label:'1', displayColor:'#24e8ff' },
+          G2: { fossil:'Scyphocrinites', markerId:'cr-scypho', ids:['A3','B2','C3'], color:'rgba(246,203,67,0.85)', cssClass:'matched-G2', dotClass:'G2', label:'2', displayColor:'#f6cb43' },
+          G3: { fossil:'Paradoxides', markerId:'tr-paradoxides',   ids:['A5','B4','C5'], color:'rgba(154,92,255,0.85)', cssClass:'matched-G3', dotClass:'G3', label:'3', displayColor:'#9a5cff' }
         },
         hints: [
-          'Look for fossils that appear exactly once at each location, those meet the first criteria for an index fossil.',
-          'The Ammonite appears once in Location A, once in Location B, and once in Location C. Investigate those three layers and link them.',
-          'The Trilobite also appears exactly once per location. After that, look deep, the Crinoid appears once at the bottom of each site and completes the third fossil horizon.'
+          "Read the supplied identification and reference interval on each fossil card. A broad group can span much more time than a named marker.",
+          "Compare the identified fossils across different sites. Does the documented distribution and restricted interval support linking them?",
+          "Check your proposed links against layer order: lower layers are older in each undisturbed sequence. The fossil intervals and relative order should agree."
         ],
-        victoryAge: 'From oldest to youngest: Crinoid horizon (deepest) &#8594; Trilobite horizon &#8594; Ammonite horizon &#8594; Top layers (shallowest)',
+        victoryAge: "Correlated marker horizons, oldest → youngest: Paradoxides → Scyphocrinites → Dactylioceras commune. Unmatched layers above the youngest marker are younger within each undisturbed sequence.",
         ageCheck: {
-          question: 'Look at the age ranges of the fossils you found. Which fossil existed for the LONGEST stretch of time?',
+          question: "Why is the identified Scyphocrinites marker more useful for this correlation than a fossil identified only as crinoid?",
           options: [
-            'Ammonite, about 240 to 66 million years ago',
-            'Trilobite, about 520 to 250 million years ago',
-            'Crinoid, about 480 million years ago to today'
+            "It has a more restricted known interval; the broad crinoid group spans hundreds of millions of years.",
+            "Its symbol is larger, so it must give a more precise age.",
+            "A fossil becomes a useful marker just because it occurs in a single displayed layer.",
+            "Every crinoid lived at the same time as Scyphocrinites."
           ],
-          correct: 2,
-          correctFeedback: 'Correct! The Crinoid has existed for roughly 480 million years, far longer than the Ammonite or Trilobite. A long time range is actually a disadvantage for an index fossil, because it cannot help pinpoint a narrow window of geologic time.',
-          wrongFeedback: 'Not quite. Compare the time ranges carefully. The Crinoid has existed from about 480 million years ago to today, a span of nearly half a billion years. The Ammonite and Trilobite both went extinct, giving them shorter and more precise ranges.'
+          correct: 0,
+          correctFeedback: "The named marker has a much more restricted known interval and documented wide distribution. The broad crinoid group extends from about 480 mya to today. Our rounded reference bracket encloses geological intervals; it is not an exact taxon lifespan or an exact layer date.",
+          wrongFeedback: "Compare the supplied identifications and their documented intervals. Symbol size and the number of displayed occurrences do not establish geological duration. Try again."
         }
       },
 
@@ -1298,297 +1311,332 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           {
             name: 'A', label: 'Location A',
             layers: [
-              { id:'A0', fossil:'Shell Fragment',  rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
-              { id:'A1', fossil:'Graptolite',      rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
-              { id:'A2', fossil:'Ammonite',        rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
-              { id:'A3', fossil:'Brachiopod',      rock:'Siltstone',    color:'#9878a8', isIndex:true,  group:'G2' },
-              { id:'A4', fossil:'Graptolite',      rock:'Mudstone',     color:'#7a9878', isIndex:false, group:null },
-              { id:'A5', fossil:'Crinoid',         rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' },
-              { id:'A6', fossil:'Rugose Coral',    rock:'Deep Lime',    color:'#704888', isIndex:true,  group:'G4' }
+              { id:'A0', fossil:'Shell Fragment',  rock:'Sandstone',    color:'#c2a87a', role:'context', group:null },
+              { id:'A1', fossil:'Crinoid — type unidentified',      rock:'Shale',        color:'#7a6858', role:'context', group:null },
+              { id:'A2', fossil:'Dactylioceras commune', markerId:'am-commune',        rock:'Limestone',    color:'#a8b8c8', role:'marker',  group:'G1' },
+              { id:'A3', fossil:'Mucrospirifer mucronatus', markerId:'br-mucronatus',      rock:'Siltstone',    color:'#9878a8', role:'marker',  group:'G2' },
+              { id:'A4', fossil:'Graptolite — type unidentified',      rock:'Mudstone',     color:'#7a9878', role:'context', group:null },
+              { id:'A5', fossil:'Scyphocrinites', markerId:'cr-scypho',         rock:'Dark Shale',   color:'#5868a0', role:'marker',  group:'G3' },
+              { id:'A6', fossil:'Paradoxides', markerId:'tr-paradoxides',    rock:'Limestone',    color:'#704888', role:'marker',  group:'G4' }
             ]
           },
           {
             name: 'B', label: 'Location B',
             layers: [
-              { id:'B0', fossil:'Fern Impression', rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
-              { id:'B1', fossil:'Ammonite',        rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
-              { id:'B2', fossil:'Graptolite',      rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
-              { id:'B3', fossil:'Brachiopod',      rock:'Siltstone',    color:'#9878a8', isIndex:true,  group:'G2' },
-              { id:'B4', fossil:'Crinoid',         rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' },
-              { id:'B5', fossil:'Rugose Coral',    rock:'Deep Lime',    color:'#704888', isIndex:true,  group:'G4' }
+              { id:'B0', fossil:'Fern Impression', rock:'Shale',        color:'#7a6858', role:'context', group:null },
+              { id:'B1', fossil:'Dactylioceras commune', markerId:'am-commune',        rock:'Limestone',    color:'#a8b8c8', role:'marker',  group:'G1' },
+              { id:'B2', fossil:'Crinoid — type unidentified',      rock:'Sandstone',    color:'#c2a87a', role:'context', group:null },
+              { id:'B3', fossil:'Mucrospirifer mucronatus', markerId:'br-mucronatus',      rock:'Siltstone',    color:'#9878a8', role:'marker',  group:'G2' },
+              { id:'B4', fossil:'Scyphocrinites', markerId:'cr-scypho',         rock:'Dark Shale',   color:'#5868a0', role:'marker',  group:'G3' },
+              { id:'B5', fossil:'Paradoxides', markerId:'tr-paradoxides',    rock:'Limestone',    color:'#704888', role:'marker',  group:'G4' }
             ]
           },
           {
             name: 'C', label: 'Location C',
             layers: [
-              { id:'C0', fossil:'Coral Fragment',  rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
-              { id:'C1', fossil:'Ammonite',        rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
-              { id:'C2', fossil:'Graptolite',      rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
-              { id:'C3', fossil:'Brachiopod',      rock:'Siltstone',    color:'#9878a8', isIndex:true,  group:'G2' },
-              { id:'C4', fossil:'Shell Fragment',  rock:'Conglomerate', color:'#8c7045', isIndex:false, group:null },
-              { id:'C5', fossil:'Crinoid',         rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' },
-              { id:'C6', fossil:'Rugose Coral',    rock:'Deep Lime',    color:'#704888', isIndex:true,  group:'G4' }
+              { id:'C0', fossil:'Coral Fragment',  rock:'Sandstone',    color:'#c2a87a', role:'context', group:null },
+              { id:'C1', fossil:'Dactylioceras commune', markerId:'am-commune',        rock:'Limestone',    color:'#a8b8c8', role:'marker',  group:'G1' },
+              { id:'C2', fossil:'Crinoid — type unidentified',      rock:'Shale',        color:'#7a6858', role:'context', group:null },
+              { id:'C3', fossil:'Mucrospirifer mucronatus', markerId:'br-mucronatus',      rock:'Siltstone',    color:'#9878a8', role:'marker',  group:'G2' },
+              { id:'C4', fossil:'Rugose Coral',  rock:'Conglomerate', color:'#8c7045', role:'context', group:null },
+              { id:'C5', fossil:'Scyphocrinites', markerId:'cr-scypho',         rock:'Dark Shale',   color:'#5868a0', role:'marker',  group:'G3' },
+              { id:'C6', fossil:'Paradoxides', markerId:'tr-paradoxides',    rock:'Limestone',    color:'#704888', role:'marker',  group:'G4' }
             ]
           }
         ],
         groups: {
-          G1: { fossil:'Ammonite',    ids:['A2','B1','C1'], color:'rgba(36,232,255,0.85)',  cssClass:'matched-G1', dotClass:'G1', label:'1', displayColor:'#24e8ff' },
-          G2: { fossil:'Brachiopod',  ids:['A3','B3','C3'], color:'rgba(246,203,67,0.85)', cssClass:'matched-G2', dotClass:'G2', label:'2', displayColor:'#f6cb43' },
-          G3: { fossil:'Crinoid',     ids:['A5','B4','C5'], color:'rgba(154,92,255,0.85)', cssClass:'matched-G3', dotClass:'G3', label:'3', displayColor:'#9a5cff' },
-          G4: { fossil:'Rugose Coral',ids:['A6','B5','C6'], color:'rgba(255,140,66,0.85)', cssClass:'matched-G4', dotClass:'G4', label:'4', displayColor:'#ff8c42' }
+          G1: { fossil:'Dactylioceras commune', markerId:'am-commune',    ids:['A2','B1','C1'], color:'rgba(36,232,255,0.85)',  cssClass:'matched-G1', dotClass:'G1', label:'1', displayColor:'#24e8ff' },
+          G2: { fossil:'Mucrospirifer mucronatus', markerId:'br-mucronatus',  ids:['A3','B3','C3'], color:'rgba(246,203,67,0.85)', cssClass:'matched-G2', dotClass:'G2', label:'2', displayColor:'#f6cb43' },
+          G3: { fossil:'Scyphocrinites', markerId:'cr-scypho',     ids:['A5','B4','C5'], color:'rgba(154,92,255,0.85)', cssClass:'matched-G3', dotClass:'G3', label:'3', displayColor:'#9a5cff' },
+          G4: { fossil:'Paradoxides', markerId:'tr-paradoxides',ids:['A6','B5','C6'], color:'rgba(255,140,66,0.85)', cssClass:'matched-G4', dotClass:'G4', label:'4', displayColor:'#ff8c42' }
         },
         hints: [
-          'A true index fossil appears in exactly ONE layer per location. The Graptolite appears in TWO layers at Location A; that makes it unreliable as an index fossil.',
-          'The Ammonite and Brachiopod each appear once per location. These are your first two fossil horizons to correlate. Investigate them carefully.',
-          'The Crinoid and Rugose Coral each appear once per location, at the deepest layers. Find them to complete all four fossil horizons.'
+          "Inspect the supplied identifications, reference intervals and distribution evidence. Decide how much time each identification can distinguish.",
+          "Compare evidence between sites. Shared broad group names alone may leave a much wider possible interval than a named marker.",
+          "Check fossil intervals against superposition within each site. Distinguish the youngest correlated marker from younger unmatched layers above it."
         ],
-        victoryAge: 'From oldest to youngest: Rugose Coral horizon (deepest) &#8594; Crinoid horizon &#8594; Brachiopod horizon &#8594; Ammonite horizon &#8594; Top layers (shallowest)',
+        victoryAge: "Correlated marker horizons, oldest → youngest: Paradoxides → Scyphocrinites → Mucrospirifer mucronatus → Dactylioceras commune. Unmatched layers above the youngest marker are younger within each undisturbed sequence.",
         ageCheck: {
-          question: 'Based on their time ranges, which fossil in this puzzle confirms that the YOUNGEST horizon formed most recently in geologic time?',
+          question: "At Location A, A2 contains the youngest correlated marker, Dactylioceras commune. What can you infer about the shell fragment layer A0 above it?",
           options: [
-            'Rugose Coral, 488 to 252 million years ago',
-            'Crinoid, about 480 million years ago to today',
-            'Ammonite, about 240 to 66 million years ago',
-            'Brachiopod, about 540 million years ago to today'
+            "A0 has exactly the same age as A2 because both are near the top.",
+            "A0 is younger than A2 in this undisturbed sequence, but its supplied identification cannot precisely correlate it with the other top layers.",
+            "A0 is older because shell fragments always come from older animals.",
+            "All three top layers formed at the same instant because they share a screen height."
           ],
-          correct: 2,
-          correctFeedback: 'Correct! The Ammonite existed from about 240 to 66 million years ago, the most recent window of any fossil in this puzzle. This confirms that the Ammonite horizon is the youngest layer. Both the layer position AND the age range agree.',
-          wrongFeedback: 'Look at which fossil has the most recent time range. The Ammonite existed from about 240 to 66 million years ago. Compare that to the Rugose Coral (488–252 Ma), Crinoid (480 Ma–today), and Brachiopod (540 Ma–today). The Ammonite lived most recently, which confirms the youngest horizon.'
+          correct: 1,
+          correctFeedback: "Superposition places A0 after A2 within Location A. A2 is the youngest correlated marker horizon, not the youngest layer. The unidentified shell fragment in A0 does not establish an exact cross-site correlation of the top layers.",
+          wrongFeedback: "Use position within Location A: lower layers are older in this undisturbed sequence. Then ask whether the supplied shell identification is precise enough to link top layers across sites. Try again."
         }
       }
 
     };
 
-    /* ─── QUIZ DATA (10 questions per mode) ────────────────────────── */
+    /* ─── QUIZ DATA (10 questions per difficulty) ─────────────────── */
     const QUIZ_DATA = {
       practice: [
-            {
-                  id: 1,
-                  text: "What makes a fossil useful as an index fossil?",
-                  options: [
-                        "Short-lived and widespread",
-                        "Large and easy to see",
-                        "Found in only one place",
-                        "Made of hard material"
-                  ],
-                  correct: 0
-            },
-            {
-                  id: 2,
-                  text: "What does a matched fossil horizon show?",
-                  options: [
-                        "Sites were next to each other",
-                        "Rocks have identical minerals",
-                        "Layers formed about the same time",
-                        "Fossils came from one animal"
-                  ],
-                  correct: 2
-            },
-            {
-                  id: 3,
-                  text: "Why are shell fragments weak dating clues?",
-                  options: [
-                        "They are always too small",
-                        "They preserve only in lava",
-                        "They appear only in deserts",
-                        "They lack clear identifying features"
-                  ],
-                  correct: 3
-            },
-            {
-                  id: 4,
-                  text: "Which idea explains older layers below younger layers?",
-                  options: [
-                        "Cross-cutting relationships",
-                        "Law of superposition",
-                        "Original horizontality",
-                        "Lateral continuity"
-                  ],
-                  correct: 1
-            },
-            {
-                  id: 5,
-                  text: "How did index fossils help in the game?",
-                  options: [
-                        "They linked matching layers",
-                        "They measured exact ages",
-                        "They showed rock colors",
-                        "They counted fossil sizes"
-                  ],
-                  correct: 0
-            },
-            {
-                  id: 6,
-                  text: "Why is a very long fossil time range less useful?",
-                  options: [
-                        "It makes fossils disappear",
-                        "It proves rocks are young",
-                        "It gives a less precise age",
-                        "It changes rock color"
-                  ],
-                  correct: 2
-            },
-            {
-                  id: 7,
-                  text: "Which evidence points to the oldest fossil horizon?",
-                  options: [
-                        "Largest fossil size",
-                        "Brightest rock color",
-                        "Fewest fossil types",
-                        "Deepest matching layer"
-                  ],
-                  correct: 3
-            },
-            {
-                  id: 8,
-                  text: "A fourth site has the same ammonite horizon. What can scientists infer?",
-                  options: [
-                        "The site is nearby",
-                        "That layer has a similar age",
-                        "The rock must be igneous",
-                        "The fossil is not useful"
-                  ],
-                  correct: 1
-            },
-            {
-                  id: 9,
-                  text: "Why can the same fossil across distant places be useful?",
-                  options: [
-                        "It can match layer ages",
-                        "It proves exact distance",
-                        "It shows rock hardness",
-                        "It identifies weather today"
-                  ],
-                  correct: 0
-            },
-            {
-                  id: 10,
-                  text: "Why is fossil correlation useful to geologists?",
-                  options: [
-                        "All rocks look identical",
-                        "Every fossil gives exact years",
-                        "Index fossils match ages across sites",
-                        "Depth alone works everywhere"
-                  ],
-                  correct: 2
-            }
+        {
+          id: 1,
+          text: "Which evidence makes an identified fossil useful for correlation?",
+          options: [
+            "A restricted known time range and documented distribution",
+            "A large symbol",
+            "One displayed occurrence by itself",
+            "The darkest rock color"
+          ],
+          correct: 0,
+          explanation: "Duration and distribution come from fossil reference evidence, not the number of occurrences displayed in this puzzle."
+        },
+        {
+          id: 2,
+          text: "What does a supported marker match between sites indicate?",
+          options: [
+            "The sites were adjacent",
+            "The rocks have identical minerals",
+            "Evidence for a corresponding interval",
+            "The fossils came from one individual"
+          ],
+          correct: 2,
+          explanation: "The identified marker supports correlation within its reference interval, not exact simultaneity."
+        },
+        {
+          id: 3,
+          text: "Why is this supplied Shell Fragment insufficient for a narrow correlation?",
+          options: [
+            "Fragments are always useless",
+            "It must have formed in lava",
+            "Its small size proves it is young",
+            "Its source organism has not been identified precisely enough"
+          ],
+          correct: 3,
+          explanation: "A fragment can preserve diagnostic information. This specimen is supplied only as an unidentified shell fragment."
+        },
+        {
+          id: 4,
+          text: "What supports lower layers being older in these undisturbed sequences?",
+          options: [
+            "Rock color",
+            "Superposition",
+            "Fossil symbol size",
+            "Screen height between sites"
+          ],
+          correct: 1,
+          explanation: "Superposition establishes relative order within an undisturbed sequence; it does not match equal screen heights across sites."
+        },
+        {
+          id: 5,
+          text: "How do the supplied named markers help in this activity?",
+          options: [
+            "They support links within documented reference intervals",
+            "They give exact calendar dates",
+            "They measure rock thickness",
+            "They make all fossils identical"
+          ],
+          correct: 0,
+          explanation: "Use identification, interval and distribution together, then check the links against layer order."
+        },
+        {
+          id: 6,
+          text: "Why is a broad group spanning hundreds of millions of years less precise for this task?",
+          options: [
+            "It contains no real fossils",
+            "It proves every rock is young",
+            "It leaves a wider possible time interval",
+            "It changes rock color"
+          ],
+          correct: 2,
+          explanation: "A more specific identification can narrow the interval. Broad fossils still provide useful evidence."
+        },
+        {
+          id: 7,
+          text: "Which combination supports the oldest correlated marker horizon?",
+          options: [
+            "Largest symbol and thickest rock",
+            "Brightest color and rock name",
+            "Most displayed occurrences",
+            "Lowest marker within each sequence and the oldest marker reference interval"
+          ],
+          correct: 3,
+          explanation: "The Paradoxides marker lies below the other markers, consistent with its older reference interval."
+        },
+        {
+          id: 8,
+          text: "A fourth site has a reliably identified Dactylioceras commune fossil in its original layer. What does that support?",
+          options: [
+            "The site must be nearby",
+            "Correlation within the documented marker interval, if other evidence agrees",
+            "An exact deposition date",
+            "Equal layer thickness"
+          ],
+          correct: 1,
+          explanation: "The supplied identification and distribution support a corresponding interval, not an exact instant."
+        },
+        {
+          id: 9,
+          text: "Why does documented distribution across multiple sites matter?",
+          options: [
+            "It supports using that identified marker to compare sites within its known distribution",
+            "It proves the exact distance",
+            "It reveals rock hardness",
+            "It measures present weather"
+          ],
+          correct: 0,
+          explanation: "Distribution evidence defines where the marker can be used. Do not assume every fossil occurs worldwide."
+        },
+        {
+          id: 10,
+          text: "How should fossil evidence and layer position be used together?",
+          options: [
+            "Use color instead of evidence",
+            "Assume every fossil gives an exact age",
+            "Check that correlated intervals agree with relative order within each undisturbed site",
+            "Match equal screen heights"
+          ],
+          correct: 2,
+          explanation: "Consistent fossil and stratigraphic evidence supports the interpretation; a conflict requires rechecking it."
+        }
       ],
       challenge: [
-            {
-                  id: 1,
-                  text: "What makes a fossil strong for correlation?",
-                  options: [
-                        "It is large and heavy",
-                        "It appears in one region",
-                        "It survives every era",
-                        "It is short-lived and widespread"
-                  ],
-                  correct: 3
-            },
-            {
-                  id: 2,
-                  text: "What does a successful fossil match mean?",
-                  options: [
-                        "Layers formed about the same time",
-                        "Rocks have the same minerals",
-                        "Sites must touch each other",
-                        "Fossils are from one organism"
-                  ],
-                  correct: 0
-            },
-            {
-                  id: 3,
-                  text: "Why is the graptolite misleading in Challenge mode?",
-                  options: [
-                        "It is too colorful",
-                        "It is not preserved",
-                        "It appears in multiple layers",
-                        "It is only found once"
-                  ],
-                  correct: 2
-            },
-            {
-                  id: 4,
-                  text: "Which rule explains oldest layers at the bottom?",
-                  options: [
-                        "Original horizontality",
-                        "Law of superposition",
-                        "Lateral continuity",
-                        "Cross-cutting relationships"
-                  ],
-                  correct: 1
-            },
-            {
-                  id: 5,
-                  text: "Why do more fossil horizons help geologists?",
-                  options: [
-                        "They prove all rocks are older",
-                        "They identify every mineral",
-                        "They remove the need for evidence",
-                        "They create more time markers"
-                  ],
-                  correct: 3
-            },
-            {
-                  id: 6,
-                  text: "Which fossil confirms the youngest Challenge horizon?",
-                  options: [
-                        "Ammonite",
-                        "Rugose coral",
-                        "Crinoid",
-                        "Brachiopod"
-                  ],
-                  correct: 0
-            },
-            {
-                  id: 7,
-                  text: "What evidence best supports the oldest horizon?",
-                  options: [
-                        "Largest fossil shape",
-                        "Brightest layer color",
-                        "Deepest matched layer",
-                        "Most common rock name"
-                  ],
-                  correct: 2
-            },
-            {
-                  id: 8,
-                  text: "A fourth site matches the brachiopod horizon. What does that suggest?",
-                  options: [
-                        "The site must be nearby",
-                        "The layer is about the same age",
-                        "The fossil is not useful",
-                        "The layer is always younger"
-                  ],
-                  correct: 1
-            },
-            {
-                  id: 9,
-                  text: "Why cannot Graptolite link one exact layer here?",
-                  options: [
-                        "It has no fossil shape",
-                        "It appears only once",
-                        "It is too hard to see",
-                        "It occurs in multiple layers"
-                  ],
-                  correct: 3
-            },
-            {
-                  id: 10,
-                  text: "Why is fossil correlation reliable across locations?",
-                  options: [
-                        "Rock color never changes",
-                        "All fossils give exact ages",
-                        "Depth always matches worldwide",
-                        "Index fossils mark shared time windows"
-                  ],
-                  correct: 3
-            }
+        {
+          id: 1,
+          text: "Which evidence best supports a fossil marker for this task?",
+          options: [
+            "A large symbol",
+            "A familiar broad group name alone",
+            "A long group history alone",
+            "A supplied identification with a restricted interval and documented distribution"
+          ],
+          correct: 3,
+          explanation: "The named identification, temporal information and distribution work together as evidence."
+        },
+        {
+          id: 2,
+          text: "What does a supported cross-site fossil match establish here?",
+          options: [
+            "A corresponding interval supported by the marker",
+            "Identical minerals",
+            "Adjacent sites",
+            "Exactly simultaneous deposition"
+          ],
+          correct: 0,
+          explanation: "Correlation has limited precision; the enclosing interval does not specify an exact layer age."
+        },
+        {
+          id: 3,
+          text: "Why is Graptolite — type unidentified insufficient for the requested narrow correlation?",
+          options: [
+            "Its symbol is colorful",
+            "Graptolites cannot fossilize",
+            "This broad identification does not supply a restricted marker interval",
+            "The number of displayed layers determines its geological duration"
+          ],
+          correct: 2,
+          explanation: "Some identified graptolites are excellent markers. The supplied broad identification here lacks that precision."
+        },
+        {
+          id: 4,
+          text: "Which principle orders layers within these undisturbed sequences?",
+          options: [
+            "Screen-height matching",
+            "Superposition",
+            "Rock-color matching",
+            "Rock-name matching"
+          ],
+          correct: 1,
+          explanation: "Lower layers are older within an undisturbed sequence. Cross-site correlation needs additional evidence."
+        },
+        {
+          id: 5,
+          text: "How can several well-supported marker intervals help?",
+          options: [
+            "They prove every rock is the same age",
+            "They identify every mineral",
+            "They remove uncertainty entirely",
+            "They provide several links whose order can be checked across sites"
+          ],
+          correct: 3,
+          explanation: "Multiple correlations allow a consistency check; each retains its own limits on precision."
+        },
+        {
+          id: 6,
+          text: "Which statement correctly describes Location A?",
+          options: [
+            "A2 is the youngest correlated marker, while unmatched A0 above it is younger",
+            "A2 is the youngest layer because its marker is youngest",
+            "A0 is exactly the same age as the other top layers",
+            "The broad crinoid group fixes the age of A1 exactly"
+          ],
+          correct: 0,
+          explanation: "The youngest correlated marker and the youngest layer are different. A0 lacks identification for a precise cross-site link."
+        },
+        {
+          id: 7,
+          text: "What supports the oldest correlated marker horizon?",
+          options: [
+            "The largest glyph",
+            "The brightest color",
+            "Its lower position in every sequence agrees with the older Paradoxides reference interval",
+            "The name Limestone"
+          ],
+          correct: 2,
+          explanation: "Both superposition and the marker evidence support the relative order; rock name does not determine age."
+        },
+        {
+          id: 8,
+          text: "A fourth site in the documented region contains Mucrospirifer mucronatus in its original layer. What does it suggest?",
+          options: [
+            "The site must be next door",
+            "A corresponding Middle Devonian interval if other evidence agrees",
+            "The exact same moment of deposition",
+            "The species occurred everywhere on Earth"
+          ],
+          correct: 1,
+          explanation: "This marker has regional distribution evidence. The broad enclosing interval is not its exact lifespan."
+        },
+        {
+          id: 9,
+          text: "How should you interpret the rounded numerical reference brackets on a named-marker card?",
+          options: [
+            "As exact first and last dates of that taxon",
+            "As exact ages of individual layers",
+            "As biological lifespans to subtract",
+            "As enclosing geological intervals that provide supporting context"
+          ],
+          correct: 3,
+          explanation: "The brackets are not measured first-appearance and extinction dates. No memorization or lifespan calculation is needed."
+        },
+        {
+          id: 10,
+          text: "A proposed link disagrees with relative order in the undisturbed columns. What should you do?",
+          options: [
+            "Choose the matching color",
+            "Ignore the layer order",
+            "Use screen height alone",
+            "Recheck the identification, interval and proposed link against superposition"
+          ],
+          correct: 3,
+          explanation: "A supported interpretation must make the fossil evidence and relative order agree."
+        }
       ]
-};
+    };
 
     /* ─── STATE ─────────────────────────────────────────────────────── */
-    let quizContinueTimer = null;
+    let runGeneration = 0;
+    const runTimers = new Set();
+    function scheduleRun(callback, delay) {
+      const generation = runGeneration;
+      const timer = setTimeout(() => {
+        runTimers.delete(timer);
+        if (generation === runGeneration) callback();
+      }, delay);
+      runTimers.add(timer);
+      return timer;
+    }
+    function cancelRunCallbacks() {
+      runGeneration++;
+      runTimers.forEach(timer => clearTimeout(timer));
+      runTimers.clear();
+    }
     let state = {
       difficulty:     'practice',
       selected:       null,
@@ -1605,7 +1653,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       orderCorrect:   false,
       ageCheckAnswered: false,
       ageCheckCorrect:  false,
-      quizSubmitted: false
+      quizSubmitted: false,
+      submitting: false,
+      ageCheckLocked: false
     };
 
     /* ─── HELPERS ───────────────────────────────────────────────────── */
@@ -1621,6 +1671,75 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     }
 
     function getLocName(id) { return id.charAt(0); }
+
+    function markerEvidence(layer) {
+      const info = layer && FOSSIL_INFO[layer.fossil];
+      const interval = info && info.interval;
+      const group = layer && currentLevel().groups[layer.group];
+      if (!info || info.role !== 'marker' || layer.role !== 'marker' ||
+          !layer.markerId || layer.markerId !== info.markerId ||
+          !interval || interval.kind !== 'enclosing geological interval' ||
+          !Number.isFinite(interval.oldestMa) || !Number.isFinite(interval.youngestMa) ||
+          interval.oldestMa <= interval.youngestMa ||
+          !info.source || !info.distribution || !info.distribution.description ||
+          !info.distribution.modelSites.includes(getLocName(layer.id)) ||
+          !group || group.markerId !== info.markerId || !group.ids.includes(layer.id)) return null;
+      return info;
+    }
+
+    function markerOrderAgrees() {
+      const lv = currentLevel();
+      const order = lv.ageOrderOldestFirst;
+      if (order.length !== Object.keys(lv.groups).length || new Set(order).size !== order.length) return false;
+      const evidence = order.map(id => {
+        const group = lv.groups[id];
+        return group && group.ids.length === lv.locations.length &&
+          new Set(group.ids.map(getLocName)).size === lv.locations.length &&
+          group.ids.every(layerId => {
+            const layer = getLayerById(layerId);
+            return layer && layer.group === id && markerEvidence(layer);
+          }) && FOSSIL_INFO[group.fossil];
+      });
+      if (evidence.some(info => !info || !info.interval)) return false;
+      if (!evidence.every((info, i) => i === 0 ||
+          evidence[i - 1].interval.youngestMa > info.interval.oldestMa)) return false;
+      return lv.locations.every(loc => {
+        const markerOrder = loc.layers.filter(layer => layer.role === 'marker').map(layer => layer.group);
+        return markerOrder.length === order.length &&
+          markerOrder.every((id, i) => id === order[order.length - 1 - i]);
+      });
+    }
+
+    function canCorrelate(first, second) {
+      if (!first || !second || getLocName(first.id) === getLocName(second.id)) return false;
+      const a = markerEvidence(first);
+      const b = markerEvidence(second);
+      return !!(a && b && a.markerId === b.markerId &&
+        a.interval.oldestMa === b.interval.oldestMa && a.interval.youngestMa === b.interval.youngestMa &&
+        first.group === second.group && markerOrderAgrees());
+    }
+
+    function correlationsComplete() {
+      return markerOrderAgrees() && Object.entries(currentLevel().groups).every(([id, group]) =>
+        state.completedGroups.includes(id) && group.ids.every(layerId => state.matched[layerId] === id));
+    }
+
+    function puzzleComplete() {
+      return correlationsComplete() && state.orderCorrect &&
+        currentLevel().ageOrderOldestFirst.every((id, i) => state.orderSelected[i] === id) &&
+        state.ageCheckAnswered && state.ageCheckCorrect;
+    }
+
+    function canSubmit() {
+      return state.classroomMode && puzzleComplete() && !state.submitting && !state.quizSubmitted &&
+        QUIZ_DATA[state.difficulty].every(q => Number.isInteger(state.quizAnswers[q.id]) &&
+          state.quizAnswers[q.id] >= 0 && state.quizAnswers[q.id] < q.options.length);
+    }
+
+    function correlationFeedback(fossil) {
+      const info = FOSSIL_INFO[fossil];
+      return `The supplied ${info.commonGroup.toLowerCase()} identification, ${fossil}, and its documented distribution support a corresponding interval (${info.interval.label}). This does not establish exact simultaneity or an exact deposition date.`;
+    }
 
     /* ─── SAVE / LOAD (disabled - always start fresh) ──────────────── */
     function saveState() {}
@@ -1674,62 +1793,152 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     /* ─── FOSSIL INFO DATA ───────────────────────────────────────────── */
     const FOSSIL_INFO = {
-      'Ammonite': {
-        range: 'About 240 to 66 million years ago',
-        desc: 'Ammonites were ocean animals related to modern squid and octopus. They had coiled shells and went extinct at the same time as the dinosaurs. Because they changed rapidly over time and spread across many seas, they are excellent index fossils.',
-        isStrongIndex: true
+      "Dactylioceras commune": {
+            "commonGroup": "Ammonite",
+            "broadGroupHistory": "Ammonites as a broad group span much of the Triassic to the end of the Cretaceous; this card supplies a narrower named identification.",
+            "markerId": "am-commune",
+            "role": "marker",
+            "rank": "species",
+            "range": "Reference context: Toarcian; commune subzone within the bifrons zone (about 184–175 mya)",
+            "interval": {
+                  "oldestMa": 184,
+                  "youngestMa": 175,
+                  "kind": "enclosing geological interval",
+                  "label": "Toarcian; commune subzone within the bifrons zone"
+            },
+            "distribution": {
+                  "description": "Documented in regional British Jurassic zonation; the three fictional sites represent sites within that documented correlation setting.",
+                  "modelSites": [
+                        "A",
+                        "B",
+                        "C"
+                  ]
+            },
+            "source": "https://webapps.bgs.ac.uk/memoirs/docs/B01778.html",
+            "desc": "Supplied identification: Dactylioceras commune (ammonite). Documented in regional British Jurassic zonation; the three fictional sites represent sites within that documented correlation setting. These rounded bounds enclose the reference interval; they are not exact first-appearance or extinction dates, a taxon lifespan, or an exact date for a layer."
       },
-      'Trilobite': {
-        range: 'About 520 to 250 million years ago',
-        desc: 'Trilobites were ancient ocean arthropods, distantly related to crabs and insects. They had segmented bodies and a hard outer shell. Different species lived during very specific time periods, making many trilobites reliable index fossils.',
-        isStrongIndex: true
+      "Scyphocrinites": {
+            "commonGroup": "Crinoid",
+            "broadGroupHistory": "The broad crinoid group extends from about 480 mya to today.",
+            "markerId": "cr-scypho",
+            "role": "marker",
+            "rank": "genus",
+            "range": "Reference context: latest Silurian to earliest Devonian; Pridoli to lowermost Lochkovian (about 423–413 mya)",
+            "interval": {
+                  "oldestMa": 423,
+                  "youngestMa": 413,
+                  "kind": "enclosing geological interval",
+                  "label": "latest Silurian to earliest Devonian; Pridoli to lowermost Lochkovian"
+            },
+            "distribution": {
+                  "description": "Documented across widely separated regions. This named crinoid has a far more restricted known interval than crinoids as a whole.",
+                  "modelSites": [
+                        "A",
+                        "B",
+                        "C"
+                  ]
+            },
+            "source": "https://journals.lib.unb.ca/index.php/ag/article/download/atlgeol.2014.014/26305?inline=1",
+            "desc": "Supplied identification: Scyphocrinites (crinoid). Documented across widely separated regions. This named crinoid has a far more restricted known interval than crinoids as a whole. These rounded bounds enclose the reference interval; they are not exact first-appearance or extinction dates, a taxon lifespan, or an exact date for a layer."
       },
-      'Crinoid': {
-        range: 'About 480 million years ago to today',
-        desc: 'Crinoids, sometimes called sea lilies, are animals that attach to the seafloor and filter food from the water. Some ancient species are useful index fossils because they lived during specific eras and are easy to identify in rock.',
-        isStrongIndex: true
+      "Paradoxides": {
+            "commonGroup": "Trilobite",
+            "broadGroupHistory": "The broad trilobite group spans the Cambrian to the end of the Permian.",
+            "markerId": "tr-paradoxides",
+            "role": "marker",
+            "rank": "genus",
+            "range": "Reference context: middle Cambrian (about 507–497 mya)",
+            "interval": {
+                  "oldestMa": 507,
+                  "youngestMa": 497,
+                  "kind": "enclosing geological interval",
+                  "label": "middle Cambrian"
+            },
+            "distribution": {
+                  "description": "Documented in several regions, including Britain, Newfoundland and Sweden.",
+                  "modelSites": [
+                        "A",
+                        "B",
+                        "C"
+                  ]
+            },
+            "source": "https://www.bgs.ac.uk/discovering-geology/fossils-and-geological-time/trilobites/",
+            "desc": "Supplied identification: Paradoxides (trilobite). Documented in several regions, including Britain, Newfoundland and Sweden. These rounded bounds enclose the reference interval; they are not exact first-appearance or extinction dates, a taxon lifespan, or an exact date for a layer."
       },
-      'Brachiopod': {
-        range: 'About 540 million years ago to today',
-        desc: 'Brachiopods are small shelled animals that live on the ocean floor. They look a little like clams but are very different inside. Certain ancient species make good index fossils because they were widespread and only existed for a limited time.',
-        isStrongIndex: true
+      "Mucrospirifer mucronatus": {
+            "commonGroup": "Brachiopod",
+            "broadGroupHistory": "The broad brachiopod group extends from the Cambrian to today.",
+            "markerId": "br-mucronatus",
+            "role": "marker",
+            "rank": "species",
+            "range": "Reference context: Middle Devonian (about 393–382 mya)",
+            "interval": {
+                  "oldestMa": 393,
+                  "youngestMa": 382,
+                  "kind": "enclosing geological interval",
+                  "label": "Middle Devonian"
+            },
+            "distribution": {
+                  "description": "Documented regionally in eastern North America. The fictional sites share this regional reference setting; worldwide distribution is not assumed.",
+                  "modelSites": [
+                        "A",
+                        "B",
+                        "C"
+                  ]
+            },
+            "source": "https://vtechworks.lib.vt.edu/items/a4de0072-a866-4281-9aa9-848aed740fdd",
+            "desc": "Supplied identification: Mucrospirifer mucronatus (brachiopod). Documented regionally in eastern North America. The fictional sites share this regional reference setting; worldwide distribution is not assumed. These rounded bounds enclose the reference interval; they are not exact first-appearance or extinction dates, a taxon lifespan, or an exact date for a layer."
       },
-      'Rugose Coral': {
-        range: 'About 488 to 252 million years ago',
-        desc: 'Rugose corals were ancient reef-building animals that went completely extinct around 252 million years ago. Because they are easy to recognize and lived during a specific window of geologic time, they work well as index fossils.',
-        isStrongIndex: true
+      "Crinoid — type unidentified": {
+            "commonGroup": "Crinoid",
+            "broadGroupHistory": "The broad crinoid group extends from about 480 mya to today.",
+            "role": "context",
+            "range": "Broad group: about 480 mya to today",
+            "desc": "Crinoids are marine animals; some live attached to the seafloor, while others have different ways of life. This specimen has no more specific supplied identification. The broad group spans hundreds of millions of years and cannot supply the narrow marker interval requested here."
       },
-      'Graptolite': {
-        range: 'About 485 to 320 million years ago',
-        desc: 'Graptolites were colonial ocean animals that floated in ancient seas. While some species are useful index fossils, in this puzzle the graptolite appears in more than one layer at the same location, meaning it cannot pinpoint a single time period.',
-        isStrongIndex: false
+      "Graptolite — type unidentified": {
+            "commonGroup": "Graptolite",
+            "role": "context",
+            "range": "Broad fossil-group context: Cambrian to Carboniferous",
+            "desc": "Graptolites included attached and floating colonial forms. Some precisely identified graptolites are excellent markers. This specimen has only a broad supplied identification, so it lacks a restricted reference interval for this task."
       },
-      'Shell Fragment': {
-        range: 'Difficult to date, many shell types exist',
-        desc: 'This is a broken piece of shell. Without knowing what animal it came from, scientists cannot use it to date rock layers. Fragments lack the distinct features needed to identify them reliably.',
-        isStrongIndex: false
+      "Rugose Coral": {
+            "commonGroup": "Rugose Coral",
+            "role": "context",
+            "range": "Broad group: about 470–252 mya; Middle Ordovician to end-Permian",
+            "desc": "Rugose corals included solitary and colonial marine animals. This broad identification supplies useful Paleozoic context, but its long group history is insufficient for the requested narrow correlation."
       },
-      'Coral Fragment': {
-        range: 'Difficult to date, many coral types exist',
-        desc: 'This is a piece of coral, but it is too incomplete to identify the species. Scientists need to recognize the full fossil clearly to use it as an index fossil, a fragment does not provide enough information.',
-        isStrongIndex: false
+      "Shell Fragment": {
+            "commonGroup": "Shell Fragment",
+            "role": "context",
+            "range": "No restricted interval supplied",
+            "desc": "This specimen is supplied only as a shell fragment, without a diagnostic identification of its source organism. That limits this correlation. Other fragments can preserve features that allow precise identification and useful dating."
       },
-      'Ancient Coral': {
-        range: 'Broadly present across hundreds of millions of years',
-        desc: 'Corals have existed for an extremely long time, and many types look similar across different eras. Without identifying a specific species, ancient coral cannot tell you the age of a rock layer.',
-        isStrongIndex: false
+      "Coral Fragment": {
+            "commonGroup": "Coral Fragment",
+            "role": "context",
+            "range": "No restricted interval supplied",
+            "desc": "This particular fragment has no supplied diagnostic coral identification. A fragment can be useful when diagnostic features are preserved, but this evidence does not provide a narrow interval."
       },
-      'Fern Impression': {
-        range: 'Ferns have existed for about 360 million years',
-        desc: 'Fern impressions show the shape of a fern leaf pressed into rock. Ferns have been around for hundreds of millions of years and are still alive today. Because they lived across such a long time span, they are not useful for dating rock layers.',
-        isStrongIndex: false
+      "Coral — type unidentified": {
+            "commonGroup": "Coral",
+            "role": "context",
+            "range": "Broad coral context; no restricted interval supplied",
+            "desc": "This specimen is identified only as coral. A more specific identification could supply better temporal information; the present label does not establish a narrow correlation."
       },
-      'Leaf Impression': {
-        range: 'Varies widely depending on plant species',
-        desc: 'A leaf impression is the shape of a leaf preserved in rock. Without knowing the plant species, it is nearly impossible to determine when this layer was formed. Leaf impressions are interesting but not reliable for dating.',
-        isStrongIndex: false
+      "Fern Impression": {
+            "commonGroup": "Fern Impression",
+            "role": "context",
+            "range": "Broad group context: Devonian to today",
+            "desc": "This impression is identified only as a fern. Its broad group history leaves a wide possible interval. Impressions can preserve diagnostic features, but no narrower identification is supplied for this specimen."
+      },
+      "Leaf Impression": {
+            "commonGroup": "Leaf Impression",
+            "role": "context",
+            "range": "No restricted interval supplied",
+            "desc": "This leaf impression has no supplied identification of its plant group or species. Impressions can be useful evidence when diagnostic features permit identification; this specimen does not supply a narrow interval."
       }
-    };
+};
 
     function updateFossilInfoPanel(fossilName) {
       const panel      = document.getElementById('fossilInfoPanel');
@@ -1754,17 +1963,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       panel.classList.add('active');
 
       iconEl.textContent  = getFossilChar(fossilName);
-      nameEl.textContent  = fossilName;
+      nameEl.textContent  = info.role === 'marker' ? info.commonGroup + ' — ' + fossilName : fossilName;
       rangeEl.textContent = info.range;
-      descEl.textContent  = info.desc;
+      descEl.textContent  = (info.broadGroupHistory ? info.broadGroupHistory + ' ' : '') + info.desc;
 
-      if (info.isStrongIndex) {
-        pillEl.className   = 'fossil-info-index-pill strong';
-        pillEl.textContent = 'Strong Index Fossil';
-      } else {
-        pillEl.className   = 'fossil-info-index-pill weak';
-        pillEl.textContent = 'Not an Index Fossil';
-      }
+      pillEl.style.display = state.difficulty === 'practice' ? '' : 'none';
+      pillEl.className = 'fossil-info-index-pill';
+      pillEl.textContent = info.role === 'marker' ? 'Compare the named reference evidence' : 'Inspect the supplied identification';
 
       // Pulse animation on update
       panel.classList.remove('panel-flash');
@@ -1802,18 +2007,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     /* ─── NON-INDEX REASON ───────────────────────────────────────────── */
     function getNonIndexReason(fossil) {
-      const lv = currentLevel();
-      for (const loc of lv.locations) {
-        const count = loc.layers.filter(l => l.fossil === fossil).length;
-        if (count > 1) {
-          return `This fossil existed for too long to pinpoint one layer, the ${fossil} shows up in more than one layer at Location ${loc.name}. A good index fossil must appear in only one layer per site.`;
-        }
-      }
       const info = FOSSIL_INFO[fossil];
-      if (info && !info.isStrongIndex) {
-        return `This fossil appears in too many different layers or time periods to be a precise clue. Index fossils must have lived during a short, specific window of geologic time.`;
-      }
-      return `The ${fossil} is not a reliable index fossil here. A strong index fossil must be short-lived and appear in only one rock layer per location.`;
+      return info && info.role === 'context'
+        ? info.desc
+        : 'The supplied identity, interval or distribution does not support this proposed link. Recheck both occurrences against the reference evidence and layer order.';
     }
 
     /* ─── MATCH LOGIC ────────────────────────────────────────────────── */
@@ -1857,14 +2054,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         return;
       }
 
-      // Different location - attempt correlation
-      const fossil1 = selLayer.fossil;
-      const fossil2 = layer.fossil;
-
-      // Different fossils
-      if (fossil1 !== fossil2) {
-        setFeedback('error', 'No Match Found',
-          `"${fossil1}" and "${fossil2}" are different fossils. Only layers with the same fossil can be correlated. Search for a layer that contains ${fossil1}.`);
+      // Both occurrences need supported identity, interval, distribution and consistent layer order.
+      if (!canCorrelate(selLayer, layer)) {
+        const contextual = [selLayer, layer].find(item => item.role !== 'marker');
+        const reason = contextual ? getNonIndexReason(contextual.fossil) :
+          'These supplied occurrences do not support the same marker interval in this activity. Compare both identifications and their reference evidence, then check layer order. Other geological evidence can support correlations outside this model.';
+        setFeedback('error', 'Insufficient Evidence for This Link', reason);
         flashError(state.selected);
         flashError(layerId);
         state.errors++;
@@ -1874,20 +2069,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         return;
       }
 
-      // Same fossil - check if it is an index fossil
-      if (!selLayer.isIndex) {
-        const reason = getNonIndexReason(selLayer.fossil);
-        setFeedback('error', fossil1 + ' Is Not an Index Fossil', reason);
-        flashError(state.selected);
-        flashError(layerId);
-        state.errors++;
-        state.selected = null;
-        updateMissionChip();
-        updateStats(); renderLayers(); saveState();
-        return;
-      }
-
-      // Valid index fossil match - record the pair
       const groupId = selLayer.group;
       const alreadyMatched1 = state.matched[state.selected];
       const alreadyMatched2 = state.matched[layerId];
@@ -1917,23 +2098,20 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         const remaining = Object.keys(currentLevel().groups).filter(g => !state.completedGroups.includes(g));
         if (remaining.length === 0) {
           setFeedback('success', 'All Fossil Horizons Found!',
-            `The ${grp.fossil} layers are linked, you have now identified all correlation groups. Determine their age order below.`);
+            correlationFeedback(grp.fossil) + " All groups are linked; check their relative order below.");
           state.selected = null;
           updateMissionChip();
           checkVictory();
         } else {
           setFeedback('success', 'Fossil Horizon Identified!',
-            `All three "${grp.fossil}" layers are now matched. These rock layers formed at the same time. ${remaining.length} horizon${remaining.length>1?'s':''} left to find!`);
+            correlationFeedback(grp.fossil) + ` ${remaining.length} horizon${remaining.length>1?'s':''} left to find.`);
           state.selected = null;
           updateMissionChip();
         }
       } else {
         // Partial match - 2 of 3 locations linked; keep selection live for third click
-        const remaining = grp.ids.filter(id => !state.matched[id]);
-        const ageInfo = FOSSIL_INFO[grp.fossil];
-        const ageNote = ageInfo ? ' This fossil existed ' + ageInfo.range.toLowerCase() + ', helping geologists narrow down when this layer formed.' : '';
         setFeedback('success', 'Match Found!',
-          `Both layers contain "${grp.fossil}", meaning these layers formed during the same time period. Now find the matching layer at the third location to complete this horizon.${ageNote}`);
+          correlationFeedback(grp.fossil) + ' Compare the evidence at the third location.');
         // Keep the most recently clicked layer selected so the student can immediately click the third column
         state.selected = layer2Id;
         updateMissionChip();
@@ -1942,10 +2120,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       updateStats(); renderLayers(); renderGroups(); renderClassroomPanel(); saveState();
 
       // Draw lines with a slight delay for earned feel
-      setTimeout(drawLines, 380);
+      scheduleRun(drawLines, 380);
 
       // Discovery pulse on matched layers
-      setTimeout(() => {
+      scheduleRun(() => {
         pulseLayer(layer1Id);
         pulseLayer(layer2Id);
       }, 80);
@@ -1954,7 +2132,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     /* ─── VICTORY CHECK ──────────────────────────────────────────────── */
     function checkVictory() {
       const lv = currentLevel();
-      const allDone = Object.keys(lv.groups).every(g => state.completedGroups.includes(g));
+      const allDone = correlationsComplete();
       if (!allDone) return;
 
       // Enter ordering phase - track whether this is the first reveal (fix #3)
@@ -1981,9 +2159,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
         const banner = document.getElementById('orderingRevealBanner');
         banner.classList.add('show');
-        setTimeout(() => banner.classList.remove('show'), 4500);
+        scheduleRun(() => banner.classList.remove('show'), 4500);
 
-        setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120);
+        scheduleRun(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120);
       }
 
       const groups = lv.groups;
@@ -2041,7 +2219,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     /* ─── HANDLE ORDER CLICK ─────────────────────────────────────────── */
     function handleOrderClick(groupId) {
-      if (state.orderSelected.includes(groupId) || state.orderCorrect) return;
+      if (!correlationsComplete() || !currentLevel().groups[groupId] ||
+          state.orderSelected.length >= Object.keys(currentLevel().groups).length ||
+          state.orderSelected.includes(groupId) || state.orderCorrect) return;
       state.orderSelected.push(groupId);
 
       const lv = currentLevel();
@@ -2051,30 +2231,24 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
       if (state.orderSelected.length === n) {
         // Check against correct order
-        const correct = lv.ageOrderOldestFirst.every((g, i) => g === state.orderSelected[i]);
+        const correct = markerOrderAgrees() && lv.ageOrderOldestFirst.every((g, i) => g === state.orderSelected[i]);
         if (correct) {
           state.orderCorrect = true;
           setFeedback('success', 'Age Order Confirmed!',
-            'You correctly placed the fossil horizons from oldest to youngest. This is how geologists read time in rock.');
+            'The marker intervals agree with superposition: lower layers are older within each undisturbed sequence. The order gives relative ages, not exact dates.');
           renderOrderingPanel();
           renderClassroomPanel();
-          if (!state.ageCheckAnswered) {
-            setTimeout(() => showAgeCheck(), 900);
-          } else if (!state.victoryShown) {
-            state.victoryShown = true;
-            document.getElementById('victoryAgeText').innerHTML = lv.victoryAge;
-            setTimeout(() => document.getElementById('victoryOverlay').classList.add('show'), 900);
-          }
+          if (!state.ageCheckCorrect) scheduleRun(showAgeCheck, 900);
         } else {
           // Wrong order - show error, then reset after delay
           const msgEl = document.getElementById('orderingMsg');
           msgEl.className = 'ordering-msg error';
-          msgEl.textContent = 'That order is not quite right. Remember: deeper layers are older. Think about where each fossil appeared in the columns and try again.';
+          msgEl.textContent = 'That order does not agree with the evidence. Compare the marker intervals and the relative positions within each undisturbed sequence, then try again.';
           setFeedback('error', 'Incorrect Order',
-            'Think about which fossil horizon appeared deepest at each location. Deeper means older!');
+            'Lower layers are older within these undisturbed sequences. Check that the reference intervals agree; do not use rock color, thickness or screen height between sites.');
           state.errors++;
           updateStats();
-          setTimeout(() => {
+          scheduleRun(() => {
             state.orderSelected = [];
             renderOrderingPanel();
           }, 2400);
@@ -2085,6 +2259,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     /* ─── AGE CHECK OVERLAY ──────────────────────────────────────────── */
     function showAgeCheck() {
+      if (!correlationsComplete() || !state.orderCorrect || state.ageCheckCorrect) return;
+      state.ageCheckLocked = false;
       const lv  = currentLevel();
       const ac  = lv.ageCheck;
       const overlay = document.getElementById('ageCheckOverlay');
@@ -2109,6 +2285,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     }
 
     function handleAgeCheckAnswer(idx) {
+      if (!correlationsComplete() || !state.orderCorrect || state.ageCheckLocked ||
+          !document.getElementById('ageCheckOverlay').classList.contains('show') ||
+          !Number.isInteger(idx) || idx < 0 || idx >= currentLevel().ageCheck.options.length) return;
+      state.ageCheckLocked = true;
       const lv  = currentLevel();
       const ac  = lv.ageCheck;
       const optEls  = Array.from(document.getElementById('ageCheckOptions').querySelectorAll('.age-check-option'));
@@ -2117,7 +2297,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
       // Disable all options while showing feedback
       optEls.forEach(el => el.classList.add('disabled'));
-      optEls[idx].classList.remove('disabled');
 
       if (idx === ac.correct) {
         optEls[idx].classList.add('correct-answer');
@@ -2128,13 +2307,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         saveState();
         renderClassroomPanel();
         // Show victory after a moment
-        setTimeout(() => {
+        scheduleRun(() => {
           document.getElementById('ageCheckOverlay').classList.remove('show');
           renderClassroomPanel();
-          if (!state.victoryShown) {
+          if (puzzleComplete() && !state.victoryShown) {
             state.victoryShown = true;
             document.getElementById('victoryAgeText').innerHTML = lv.victoryAge;
-            setTimeout(() => document.getElementById('victoryOverlay').classList.add('show'), 300);
+            scheduleRun(() => document.getElementById('victoryOverlay').classList.add('show'), 300);
           }
         }, 2200);
       } else {
@@ -2198,7 +2377,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           }
 
           // Dim non-target layers when something is selected (fix #1)
-          if (state.selected && state.selected !== layer.id && !matchedGroup) {
+          if (isPractice && state.selected && state.selected !== layer.id && !matchedGroup) {
             const selLayer = getLayerById(state.selected);
             if (selLayer) {
               const sameLocation   = getLocName(layer.id) === getLocName(state.selected);
@@ -2210,10 +2389,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           }
 
           // Index badge (practice only)
-          if (isPractice && layer.isIndex) {
+          if (isPractice && layer.role === 'marker') {
             const badge = document.createElement('div');
             badge.className = 'index-badge';
-            badge.textContent = 'INDEX';
+            badge.textContent = 'REFERENCE';
             div.appendChild(badge);
           }
 
@@ -2238,7 +2417,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
           const rock = document.createElement('div');
           rock.className = 'fossil-rock';
-          rock.textContent = layer.rock;
+          rock.textContent = layer.id + ' · ' + (layer.role === 'marker' ? FOSSIL_INFO[layer.fossil].commonGroup + ' · ' : '') + layer.rock;
           div.appendChild(rock);
 
           div.addEventListener('click', () => handleLayerClick(layer.id));
@@ -2269,12 +2448,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         'Rugose Coral':     '\u2733',  // eight-spoked asterisk
         'Shell Fragment':   '\u25D4',  // partial circle
         'Coral Fragment':   '\u2736',  // star-6
-        'Ancient Coral':    '\u2736',
+        'Coral':    '\u2736',
         'Fern Impression':  '\u2767',  // floral
         'Leaf Impression':  '\u2740',  // leaf
         'Sea Snail':        '\u25D5'
       };
-      return map[fossilName] || '\u25A1';
+      const info = FOSSIL_INFO[fossilName];
+      return map[info ? info.commonGroup : fossilName] || '\u25A1';
     }
 
     /* ─── DRAW CORRELATION LINES ─────────────────────────────────────── */
@@ -2365,7 +2545,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
         const fossil = document.createElement('div');
         fossil.className = 'group-fossil';
-        fossil.textContent = grp.fossil;
+        fossil.textContent = state.difficulty === 'challenge' && matched === 0 ? 'Undiscovered interval' : grp.fossil;
 
         const status = document.createElement('div');
         status.className = 'group-status' + (isDone ? ' complete' : '');
@@ -2401,29 +2581,47 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     let _resetTimer   = null;
 
     function executeReset() {
-      state.selected        = null;
-      state.matched         = {};
-      state.completedGroups = [];
-      state.errors          = 0;
-      state.hintIndex       = 0;
-      state.victoryShown    = false;
-      state.quizAnswers     = {};
-      state.quizSubmitted   = false;
-      state.orderingPhase   = false;
-      state.orderSelected   = [];
-      state.orderCorrect    = false;
-
+      cancelRunCallbacks();
+      _resetPending = false;
+      _diffConfirmPending = null;
+      _resetTimer = _diffConfirmTimer = null;
+      Object.assign(state, {
+        selected: null, matched: {}, completedGroups: [], errors: 0, hintsUsed: 0, hintIndex: 0,
+        victoryShown: false, quizAnswers: {}, quizSubmitted: false, submitting: false,
+        orderingPhase: false, orderSelected: [], orderCorrect: false,
+        ageCheckAnswered: false, ageCheckCorrect: false, ageCheckLocked: false
+      });
       updateMissionChip();
-      document.getElementById('hintBox').classList.remove('show');
-      document.getElementById('victoryOverlay').classList.remove('show');
-      document.getElementById('orderingPanel').classList.add('hidden');
-      document.getElementById('orderingRevealBanner').classList.remove('show');
+      ['hintBox', 'victoryOverlay', 'ageCheckOverlay', 'orderingRevealBanner', 'diffWarning', 'ageCheckRetry'].forEach(id =>
+        document.getElementById(id).classList.remove('show'));
+      ['orderingPanel', 'quizQuestions', 'quizScoreArea'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['hintText', 'victoryAgeText', 'ageCheckQuestion', 'ageCheckOptions', 'ageCheckFeedback',
+        'orderingSlots', 'orderingChoices', 'orderingMsg', 'diffWarning', 'submitSuccess', 'submitError',
+        'missionChipText', 'fossilInfoIcon', 'fossilInfoName', 'fossilInfoRange', 'fossilInfoDesc', 'fossilInfoPill',
+        'matchProgressGrid', 'correlationSvg'].forEach(id => document.getElementById(id).textContent = '');
+      document.getElementById('ageCheckFeedback').className = 'age-check-feedback';
+      document.getElementById('orderingMsg').className = 'ordering-msg hidden';
+      document.getElementById('orderingPanel').classList.remove('animate-in');
       document.getElementById('quizQuestions').dataset.built = '';
       document.getElementById('quizQuestions').innerHTML = '';
-      document.getElementById('quizQuestions').classList.add('hidden');
-      document.getElementById('quizScoreArea').classList.add('hidden');
-      setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
-
+      document.getElementById('quizScoreBadge').textContent = '0 / 10 answered';
+      document.getElementById('quizLockedOverlay').classList.remove('hidden');
+      document.getElementById('matchProgressFill').style.width = '0%';
+      document.getElementById('matchProgressLabel').textContent = '0 of ' + Object.keys(currentLevel().groups).length + ' horizons identified';
+      document.getElementById('ageOrderStatus').textContent = 'Complete Step 1 to unlock age ordering.';
+      document.getElementById('ageOrderStatus').style.color = 'var(--muted)';
+      const resetBtn = document.getElementById('resetBtn');
+      resetBtn.textContent = 'Reset Puzzle';
+      resetBtn.className = 'btn-subtle';
+      const submitBtn = document.getElementById('classroomSubmitBtn');
+      submitBtn.textContent = 'Submit Score';
+      submitBtn.className = 'submit-btn locked';
+      submitBtn.disabled = true;
+      document.getElementById('submitHelperText').style.display = '';
+      ['submitSuccess', 'submitError'].forEach(id => document.getElementById(id).style.display = 'none');
+      updateFossilInfoPanel(null);
+      document.getElementById('fossilInfoPanel').classList.remove('panel-flash');
+      setFeedback('neutral', 'Begin Hunt', 'Inspect the supplied fossil evidence at each site. Link supported intervals, then check their relative order.');
       updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
     }
 
@@ -2442,7 +2640,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         btn.textContent  = 'Tap again to confirm';
         btn.classList.remove('btn-subtle');
         btn.classList.add('btn-danger');
-        _resetTimer = setTimeout(() => {
+        _resetTimer = scheduleRun(() => {
           _resetPending    = false;
           btn.textContent  = 'Reset Puzzle';
           btn.classList.remove('btn-danger');
@@ -2467,7 +2665,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     document.getElementById('challengeBtn').addEventListener('click', () => switchDifficulty('challenge'));
 
     function switchDifficulty(diff) {
-      if (state.difficulty === diff) return;
+      if (!LEVELS[diff] || state.difficulty === diff) return;
 
       const hasProgress = Object.keys(state.matched).length > 0 || state.orderingPhase;
       const warning = document.getElementById('diffWarning');
@@ -2479,7 +2677,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         const label = diff === 'practice' ? 'Practice' : 'Challenge';
         warning.textContent = '\u26a0\ufe0f Switching will reset your current progress. Click \u201c' + label + '\u201d again to confirm.';
         warning.classList.add('show');
-        _diffConfirmTimer = setTimeout(() => {
+        _diffConfirmTimer = scheduleRun(() => {
           _diffConfirmPending = null;
           warning.classList.remove('show');
         }, 4000);
@@ -2491,34 +2689,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       clearTimeout(_diffConfirmTimer);
       warning.classList.remove('show');
 
-      state.difficulty      = diff;
-      state.selected        = null;
-      state.matched         = {};
-      state.completedGroups = [];
-      state.errors          = 0;
-      state.hintIndex       = 0;
-      state.victoryShown    = false;
-      state.quizAnswers     = {};
-      state.quizSubmitted   = false;
-      state.orderingPhase   = false;
-      state.orderSelected   = [];
-      state.orderCorrect    = false;
-
+      state.difficulty = diff;
       document.getElementById('practiceBtn').classList.toggle('active', diff === 'practice');
       document.getElementById('challengeBtn').classList.toggle('active', diff === 'challenge');
       document.getElementById('diffDescPractice').style.display = diff === 'practice' ? '' : 'none';
       document.getElementById('diffDescChallenge').style.display = diff === 'challenge' ? '' : 'none';
-      document.getElementById('hintBox').classList.remove('show');
-      document.getElementById('victoryOverlay').classList.remove('show');
-      document.getElementById('orderingPanel').classList.add('hidden');
-      document.getElementById('orderingRevealBanner').classList.remove('show');
-      document.getElementById('quizQuestions').dataset.built = '';
-      state.ageCheckAnswered = false;
-      state.ageCheckCorrect  = false;
-
-      updateMissionChip();
-      setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
-      updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
+      executeReset();
     }
 
     /* ─── MODE TOGGLE (Practice / Classroom) ─────────────────────────── */
@@ -2552,38 +2728,37 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         const node   = document.createElement('div');
         node.className = 'match-node' + (isDone ? ' done' : '');
         node.innerHTML = `<span class="match-node-label">${isDone ? 'DISCOVERED' : 'SEARCHING'}</span>
-          <span class="match-node-fossil">${grp.fossil}</span>`;
+          <span class="match-node-fossil">${state.difficulty === 'challenge' && !grp.ids.some(id => state.matched[id] === groupId) ? 'Undiscovered interval' : grp.fossil}</span>`;
         grid.appendChild(node);
       });
       document.getElementById('matchProgressFill').style.width = pct + '%';
       document.getElementById('matchProgressLabel').textContent = done + ' of ' + total + ' horizons identified';
 
       // Age order status
-      const allMatched = done === total;
+      const allMatched = correlationsComplete();
       const ageStatusEl = document.getElementById('ageOrderStatus');
       if (!allMatched) {
         ageStatusEl.textContent = 'Complete Step 1 to unlock age ordering.';
         ageStatusEl.style.color = 'var(--muted)';
       } else if (state.orderCorrect) {
-        ageStatusEl.textContent = 'Age order confirmed, outstanding field work!';
+        ageStatusEl.textContent = state.ageCheckCorrect ? 'Order and final thinking check complete.' : 'Order confirmed. Complete the final thinking check above.';
         ageStatusEl.style.color = 'var(--green)';
       } else {
         ageStatusEl.textContent = 'All horizons found, place them in order from oldest to youngest in the game above.';
         ageStatusEl.style.color = 'var(--orange)';
       }
 
-      // Quiz unlock - requires all matched AND age order correct
-      const quizUnlocked = allMatched && state.orderCorrect;
+      // Current-run correlations, ordering and successful final check unlock the quiz.
+      const quizUnlocked = puzzleComplete();
       document.getElementById('quizLockedOverlay').classList.toggle('hidden', quizUnlocked);
       if (quizUnlocked) buildQuiz();
 
-      // Submit button - requires all matched, age order correct, and all quiz answered
-      const answered = Object.keys(state.quizAnswers).length;
-      const ready    = quizUnlocked && answered === QUIZ_DATA[state.difficulty].length;
+      // Submission also requires all ten valid responses; a perfect score is not required.
+      const ready = canSubmit();
       const submitBtn = document.getElementById('classroomSubmitBtn');
       submitBtn.disabled  = !ready;
       submitBtn.className = 'submit-btn ' + (ready ? 'ready' : 'locked');
-      document.getElementById('submitHelperText').style.display = ready ? 'none' : '';
+      document.getElementById('submitHelperText').style.display = ready || state.quizSubmitted ? 'none' : '';
     }
 
     /* ─── BUILD QUIZ ─────────────────────────────────────────────────── */
@@ -2609,7 +2784,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           btn.dataset.optionIndex = i;
           btn.innerHTML = '<div class="quiz-option-letter">' + letters[i] + '</div><span>' + opt + '</span>';
           btn.addEventListener('click', () => {
-            if (state.quizSubmitted) return;
+            if (!puzzleComplete() || state.quizSubmitted || state.submitting) return;
             state.quizAnswers[q.id] = i;
             Array.from(opts.querySelectorAll('.quiz-option')).forEach((o,j) => {
               o.classList.toggle('selected', j === i);
@@ -2644,6 +2819,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         const qEl = document.querySelector('.quiz-question[data-qid="' + q.id + '"]');
         if (!qEl) return;
         const selected = state.quizAnswers[q.id];
+        let explanation = qEl.querySelector('.quiz-explanation');
+        if (!explanation) {
+          explanation = document.createElement('p');
+          explanation.className = 'quiz-explanation subtext';
+          qEl.appendChild(explanation);
+        }
+        explanation.textContent = 'Why: ' + q.explanation;
         qEl.querySelectorAll('.quiz-option').forEach(opt => {
           const idx = Number(opt.dataset.optionIndex);
           opt.classList.add('review-locked');
@@ -2661,7 +2843,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     /* ─── CLASSROOM SUBMIT ───────────────────────────────────────────── */
     document.getElementById('classroomSubmitBtn').addEventListener('click', async () => {
       const btn     = document.getElementById('classroomSubmitBtn');
-      if (btn.disabled) return;
+      if (!canSubmit()) return;
+      const generation = runGeneration;
+      state.submitting = true;
       const teacher = document.getElementById('teacherSelect').value;
 
       btn.disabled    = true;
@@ -2689,8 +2873,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       try {
         const res = await fetch(FH_ENDPOINT, { method: 'POST', body: params });
         const data = await res.json();
+        if (generation !== runGeneration) return;
+        if (!puzzleComplete()) throw new Error('Current run is incomplete');
         if (data.status !== 'success') throw new Error(data.message || 'Server error');
         const finalQuizScore = computeQuizScore();
+        state.submitting = false;
         state.quizSubmitted = true;
         showQuizReview();
         btn.textContent = 'Submitted';
@@ -2700,14 +2887,15 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         successEl.style.display = 'block';
         const qTotal = QUIZ_DATA[state.difficulty].length;
         if (finalQuizScore === qTotal + '/' + qTotal) {
-          quizContinueTimer = setTimeout(function () {
+          scheduleRun(function () {
             const more = document.getElementById('continue');
             if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 1900);
         }
       } catch(err) {
-        btn.disabled    = false;
-        btn.className   = 'submit-btn ready';
+        if (generation !== runGeneration) return;
+        state.submitting = false;
+        renderClassroomPanel();
         btn.textContent = 'Submit Score';
         document.getElementById('submitError').textContent = 'Submission failed. Check your connection and try again.';
         document.getElementById('submitError').style.display = 'block';
@@ -2732,7 +2920,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(drawLines, 120);
+      resizeTimer = scheduleRun(drawLines, 120);
     });
 
     /* ─── BOOT ───────────────────────────────────────────────────────── */
