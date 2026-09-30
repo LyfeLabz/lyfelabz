@@ -20,7 +20,8 @@
  *   - the supplied-data contract (setup, labeling, three trials per soda);
  *   - the model answer cites only measurements that appear in the dataset;
  *   - Show Your Thinking stays required but never reaches scoring or the
- *     graded finalize/autosave payload.
+ *     graded selections; it reaches finalize only as the ungraded
+ *     `writtenResponse` option (the repository written-response contract).
  */
 
 const { JSDOM, VirtualConsole } = require("jsdom");
@@ -133,7 +134,7 @@ describe("Conducting Experiments Show Your Thinking is required but ungraded (v2
             hasAssignmentContext: () => true,
             autosave: (sel) => calls.autosave.push(sel.slice()),
             finalize: (sel, ...rest) => {
-              calls.finalize.push({ sel: sel.slice(), extra: rest.length });
+              calls.finalize.push({ sel: sel.slice(), rest });
               return Promise.resolve({ ok: true });
             },
           },
@@ -169,15 +170,15 @@ describe("Conducting Experiments Show Your Thinking is required but ungraded (v2
   test.each([
     "x",
     "Claim: diet cola. Evidence: 250, 230, 260 cm vs 90, 110, 80 cm. Reasoning: only the soda changed.",
-  ])("score and graded payload ignore the response (%#)", (thinking) => {
+  ])("score and graded selections ignore the response; finalize carries it as writtenResponse (%#)", (thinking) => {
     const { win, doc, calls } = mount();
     answerAll(win, doc, 3);
-    typeThinking(win, doc, thinking);
+    typeThinking(win, doc, `  ${thinking}\n`);
     doc.getElementById("ce-submit-btn").click();
 
     expect(doc.getElementById("ce-score-num").textContent).toBe("9/10");
     expect(calls.finalize).toHaveLength(1);
-    expect(calls.finalize[0].extra).toBe(0);
+    expect(calls.finalize[0].rest).toEqual([{ writtenResponse: thinking }]);
     expect(calls.finalize[0].sel).toHaveLength(10);
     expect(calls.finalize[0].sel.every((v) => Number.isInteger(v))).toBe(true);
     for (const sel of calls.autosave) expect(sel.every((v) => v === null || Number.isInteger(v))).toBe(true);

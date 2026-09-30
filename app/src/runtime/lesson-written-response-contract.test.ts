@@ -12,10 +12,10 @@ import * as path from "path";
 
 const REPO = path.resolve(__dirname, "../../..");
 
-// Lessons with a known, deliberately deferred gap. Conducting Experiments has
-// separate in-flight pilot work in its source; its finalize call is updated
-// with that work. Remove the slug once it passes (the test below enforces it).
-const PENDING = new Set(["conducting-experiments"]);
+// Lessons with a known, deliberately deferred gap. Remove the slug once it
+// passes (the test below enforces it). Empty: every submitting lesson,
+// including Conducting Experiments, now passes its written response.
+const PENDING = new Set<string>();
 
 const FINALIZE_CALL = /window\.lyfelabz\.lessonQuiz\.finalize\(([^)]*)\)/g;
 const CANONICAL_ARGS = /^\w+QuizState\.selected, \{ writtenResponse: \w*[tT]hinkingText \}$/;

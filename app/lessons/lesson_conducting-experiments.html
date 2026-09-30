@@ -3439,7 +3439,7 @@ function ceSubmitQuiz() {
     function ceShowSubmitError(msg) {
       ceFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ceGenericError) + '</div>';
     }
-    window.lyfelabz.lessonQuiz.finalize(ceQuizState.selected).then(function (r) {
+    window.lyfelabz.lessonQuiz.finalize(ceQuizState.selected, { writtenResponse: ceThinkingText }).then(function (r) {
       if (r && r.ok) {
         ceFinalStatus.innerHTML = '<div class="score-submitted">✅ Submitted to your teacher</div>';
       } else if (r) {
