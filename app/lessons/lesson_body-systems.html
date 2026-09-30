@@ -931,13 +931,10 @@ Regenerate: npm --prefix app run lessons:build -- --only=body-systems --target=v
   /* dis-card - button sits between desc and link */
 
   /* ── QUIZ MODE TOGGLE ── */
-  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
-     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
-     ~46px = ~110px; 120px lands the score just below it). At the 600px
-     phone breakpoint the stack is ~98px, so 104px is the matching value. */
-  .score-board { scroll-margin-top: 120px; }
+  /* Sprint 28 O2. The results region takes programmatic focus after the
+     post-submit scroll. The scroll offset itself is the measured
+     sticky-stack rule in #quiz-chrome-offsets, shared by v1 and v2. */
   .score-board:focus { outline: none; }
-  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
   /* Sprint 28 O3. Assignment-context return control. Hidden until the
      assigned-submission path reveals it; styled as a secondary companion
      to the primary Try Again button. */
@@ -1423,13 +1420,17 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 
   /* ── CONTINUE ── */
   .quiz-option.selected  { border-color: var(--accent) !important; background: rgba(59,200,232,0.1) !important; }
-  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
   .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
   .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0a1f2e; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
   .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(59,200,232,0.4); }
   .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .score-submitted { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
   .score-error { font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  /* Refused or failed submission: the headline says the score was not
+     recorded (text, not color alone) and the reason sits directly beneath it. */
+  .score-board.score-not-recorded { border-color: rgba(231,76,60,0.45); }
+  .score-board.score-not-recorded .big-score { font-size: 2.2rem; line-height: 1.2; color: var(--text); }
+  .score-board.score-not-recorded .score-error { border-radius: 12px; line-height: 1.5; text-align: left; }
   .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: pointer; transition: all 0.2s; display: inline-block; }
   .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
   .vocab { color: var(--accent); font-weight: 800; border-bottom: 1.5px dotted rgba(59,200,232,0.6); cursor: help; }
@@ -1628,6 +1629,38 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
   .quiz-progress-sticky { top: 52px; }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<style id="quiz-chrome-offsets">
+/* Sticky quiz chrome. The nav wraps to different heights at different widths
+   (about 74px on a Chromebook and 120px on a tablet or phone), so the progress
+   tray and the post-submit landing read the MEASURED heights that the
+   quiz-chrome-offsets script publishes as --quiz-nav-h and --quiz-progress-h.
+   This block follows #mobile-canonical so the measured dock replaces its fixed
+   phone offset; the px values are the same no-JS fallbacks, and the canonical
+   menu-open rule still lifts the tray out of flow. */
+.quiz-progress-sticky {
+  position: sticky;
+  top: var(--quiz-nav-h, 64px);
+  z-index: 100;
+  background: var(--dark2);
+  padding: 0.6rem 1.1rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: var(--quiz-nav-h, 52px); }
+}
+/* Post-submit landing clears the measured nav + tray with breathing room. */
+.score-board {
+  scroll-margin-top: calc(var(--quiz-nav-h, 64px) + var(--quiz-progress-h, 56px) + 1rem);
+}
+/* Keyboard focus inside the quiz never lands under the sticky nav + tray. */
+.quiz-option, .think-input, .quiz-submit-btn, .reset-btn {
+  scroll-margin-top: calc(var(--quiz-nav-h, 64px) + var(--quiz-progress-h, 56px) + 0.75rem);
+}
 </style>
 <script type="application/json" id="lyfelabz-assessment-revision">{"schemaVersion":1,"lessonSlug":"body-systems","assessmentRevisionId":"assessment_body-systems__r1"}</script>
 <script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
@@ -2490,11 +2523,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="score-board" id="bs-score" tabindex="-1" role="status" aria-live="polite">
       <div class="big-score" id="bs-score-num"></div>
       <p id="bs-score-msg"></p>
+      <!-- Submission status sits directly under the score so the result and
+           whether it was recorded are in view together, even on short screens. -->
+      <div id="bs-submit-status"></div>
       <div class="mystery-loop">
         <span class="ml-label">🔍 The Question You Came In With</span>
         You started this lesson asking: <strong>"When you sprint for a bus, what's actually happening inside your body, and how many systems kick in at once?"</strong> The answer is teamwork. Your nervous system gives the orders, your respiratory system pulls in extra oxygen, your circulatory system rushes it to your muscles, and your muscular and skeletal systems move your legs, at least five systems firing at once. No system works alone. If you can trace that hand-off, you have answered it.
       </div>
-      <div id="bs-submit-status"></div>
       <button class="reset-btn" onclick="bsResetQuiz()">🔄 Try Again</button>
       <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
     </div>
@@ -2754,6 +2789,7 @@ function bsSubmitQuiz() {
   // and reach Try Again without the page moving on its own.
   if (pct === 100) {
     bsQuizState.continueTimer = setTimeout(() => {
+      bsQuizState.continueTimer = null;
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
@@ -2774,8 +2810,22 @@ function bsSubmitQuiz() {
     // Defensive terminal-state handler so the UI is always truthful even if
     // finalize resolves null or rejects unexpectedly.
     var bsGenericError = 'Submission did not complete. Please refresh and try again.';
+    // Nothing was recorded, so the locally calculated score must not read as a
+    // recorded result: the headline becomes "Score not recorded" and the
+    // reason sits directly beneath it. The per-question feedback above stays.
     function bsShowSubmitError(msg) {
+      sb.classList.add('score-not-recorded');
+      document.getElementById('bs-score-num').textContent = 'Score not recorded';
+      document.getElementById('bs-score-msg').textContent = 'Your teacher did not receive this attempt. Your answer feedback is still shown above.';
       bsFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || bsGenericError) + '</div>';
+      // Keep the student on the result: cancel a pending perfect-score jump
+      // to More, or bring the result back if that jump already happened.
+      if (bsQuizState.continueTimer) {
+        clearTimeout(bsQuizState.continueTimer);
+        bsQuizState.continueTimer = null;
+      } else if (pct === 100) {
+        sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
     window.lyfelabz.lessonQuiz.finalize(bsQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
@@ -2803,7 +2853,7 @@ function bsResetQuiz() {
     clearTimeout(bsQuizState.continueTimer);
     bsQuizState.continueTimer = null;
   }
-  document.getElementById('bs-score').classList.remove('show');
+  document.getElementById('bs-score').classList.remove('show', 'score-not-recorded');
   document.getElementById('bs-submit-status').innerHTML = '';
   // Reset Show Your Thinking for a fresh attempt.
   const thinkInput = document.getElementById('bs-thinking');
@@ -2988,6 +3038,34 @@ resize(); requestAnimationFrame(draw);
     }
     document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
   });
+})();
+</script>
+
+<!-- ===== STICKY QUIZ CHROME OFFSETS =====
+     Publishes the real sticky nav and progress-tray heights as CSS variables
+     for #quiz-chrome-offsets. The tray docks directly under the nav at every
+     width, and the post-submit scrollIntoView (via .score-board
+     scroll-margin-top) lands the results below both. ResizeObserver keeps the
+     values current when the nav wraps, fonts load, the window resizes, or the
+     phone menu opens. -->
+<script id="quiz-chrome-offsets-js">
+(function(){
+  var root = document.documentElement;
+  var nav  = document.querySelector('nav');
+  var tray = document.querySelector('.quiz-progress-sticky');
+  if (!nav || !tray) return;
+  function sync(){
+    root.style.setProperty('--quiz-nav-h', nav.offsetHeight + 'px');
+    root.style.setProperty('--quiz-progress-h', tray.offsetHeight + 'px');
+  }
+  sync();
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(sync);
+    ro.observe(nav);
+    ro.observe(tray);
+  } else {
+    window.addEventListener('resize', sync);
+  }
 })();
 </script>
 

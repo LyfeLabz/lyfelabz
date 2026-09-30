@@ -365,11 +365,6 @@ Regenerate: npm --prefix app run lessons:build -- --only=cell-types --target=v1
   .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
   .info-error.show { display: block; }
 
-  .quiz-progress-sticky {
-    position: sticky; top: 60px; z-index: 100;
-    background: var(--dark2); padding: 0.85rem 0 0.75rem;
-    margin-bottom: 2rem; border-bottom: 1px solid var(--border);
-  }
   .quiz-progress { display: flex; align-items: center; gap: 1rem; }
   .progress-bar  { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--teal)); border-radius: 99px; transition: width 0.4s; width: 0%; }
@@ -438,6 +433,11 @@ Regenerate: npm --prefix app run lessons:build -- --only=cell-types --target=v1
     background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3);
     padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
   }
+  /* Refused or failed submission: the headline says the score was not
+     recorded (text, not color alone) and the reason sits directly beneath it. */
+  .score-board.score-not-recorded { border-color: rgba(231,76,60,0.45); }
+  .score-board.score-not-recorded .big-score { font-size: 2.2rem; line-height: 1.2; color: var(--text); }
+  .score-board.score-not-recorded .score-error { border-radius: 12px; line-height: 1.5; text-align: left; }
 
   /* ===== FOOTER ===== */
   footer {
@@ -876,6 +876,38 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
   .quiz-progress-sticky { top: 52px; }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<style id="quiz-chrome-offsets">
+/* Sticky quiz chrome. The nav wraps to different heights at different widths
+   (about 74px on a Chromebook and 120px on a tablet or phone), so the progress
+   tray and the post-submit landing read the MEASURED heights that the
+   quiz-chrome-offsets script publishes as --quiz-nav-h and --quiz-progress-h.
+   This block follows #mobile-canonical so the measured dock replaces its fixed
+   phone offset; the px values are the same no-JS fallbacks, and the canonical
+   menu-open rule still lifts the tray out of flow. */
+.quiz-progress-sticky {
+  position: sticky;
+  top: var(--quiz-nav-h, 60px);
+  z-index: 100;
+  background: var(--dark2);
+  padding: 0.6rem 1.1rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: var(--quiz-nav-h, 52px); }
+}
+/* Post-submit landing clears the measured nav + tray with breathing room. */
+.score-board {
+  scroll-margin-top: calc(var(--quiz-nav-h, 64px) + var(--quiz-progress-h, 56px) + 1rem);
+}
+/* Keyboard focus inside the quiz never lands under the sticky nav + tray. */
+.quiz-option, .think-input, .quiz-submit-btn, .reset-btn {
+  scroll-margin-top: calc(var(--quiz-nav-h, 64px) + var(--quiz-progress-h, 56px) + 0.75rem);
+}
 </style>
 <script type="application/json" id="lyfelabz-assessment-revision">{"schemaVersion":1,"lessonSlug":"cell-types","assessmentRevisionId":"assessment_cell-types__r1"}</script>
 <script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
@@ -2344,11 +2376,13 @@ buildReflection();
     <div class="score-board" id="ct-score">
       <div class="big-score" id="ct-score-num"></div>
       <p id="ct-score-msg"></p>
+      <!-- Submission status sits directly under the score so the result and
+           whether it was recorded are in view together, even on short screens. -->
+      <div id="ct-submit-status"></div>
       <div class="mystery-loop">
         <span class="ml-label">🔍 The Question You Came In With</span>
         You started this lesson asking: <strong>"If all living things are made of cells, why aren't all cells the same?"</strong> Because a cell is a strategy, not just a building block. One cell can do every job, or many specialized cells can each do one job well; DNA can float freely or sit sealed in a nucleus. There is no best cell, only different <strong>strategies</strong> for staying alive. If you can say that, you have answered it.
       </div>
-      <div id="ct-submit-status"></div>
       <button class="reset-btn" onclick="ctResetQuiz()">Try Again</button>
     </div>
 
@@ -2718,6 +2752,7 @@ function ctSubmitQuiz() {
   // and reach Try Again without the page moving on its own.
   if (pct === 100) {
     ctQuizState.continueTimer = setTimeout(() => {
+      ctQuizState.continueTimer = null;
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
@@ -2733,8 +2768,22 @@ function ctSubmitQuiz() {
     // Defensive terminal-state handler so the UI is always truthful even if
     // finalize resolves null or rejects unexpectedly.
     var ctGenericError = 'Submission did not complete. Please refresh and try again.';
+    // Nothing was recorded, so the locally calculated score must not read as a
+    // recorded result: the headline becomes "Score not recorded" and the
+    // reason sits directly beneath it. The per-question feedback above stays.
     function ctShowSubmitError(msg) {
+      sb.classList.add('score-not-recorded');
+      document.getElementById('ct-score-num').textContent = 'Score not recorded';
+      document.getElementById('ct-score-msg').textContent = 'Your teacher did not receive this attempt. Your answer feedback is still shown above.';
       ctFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ctGenericError) + '</div>';
+      // Keep the student on the result: cancel a pending perfect-score jump
+      // to More, or bring the result back if that jump already happened.
+      if (ctQuizState.continueTimer) {
+        clearTimeout(ctQuizState.continueTimer);
+        ctQuizState.continueTimer = null;
+      } else if (pct === 100) {
+        sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
     window.lyfelabz.lessonQuiz.finalize(ctQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
@@ -2789,7 +2838,7 @@ function ctResetQuiz() {
     clearTimeout(ctQuizState.continueTimer);
     ctQuizState.continueTimer = null;
   }
-  document.getElementById('ct-score').classList.remove('show');
+  document.getElementById('ct-score').classList.remove('show', 'score-not-recorded');
   document.getElementById('ct-submit-status').innerHTML = '';
   // Reset Show Your Thinking for a fresh attempt.
   const thinkInput = document.getElementById('ct-thinking');
@@ -2842,6 +2891,34 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     }
     document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
   });
+})();
+</script>
+
+<!-- ===== STICKY QUIZ CHROME OFFSETS =====
+     Publishes the real sticky nav and progress-tray heights as CSS variables
+     for #quiz-chrome-offsets. The tray docks directly under the nav at every
+     width, and the post-submit scrollIntoView (via .score-board
+     scroll-margin-top) lands the results below both. ResizeObserver keeps the
+     values current when the nav wraps, fonts load, the window resizes, or the
+     phone menu opens. -->
+<script id="quiz-chrome-offsets-js">
+(function(){
+  var root = document.documentElement;
+  var nav  = document.querySelector('nav');
+  var tray = document.querySelector('.quiz-progress-sticky');
+  if (!nav || !tray) return;
+  function sync(){
+    root.style.setProperty('--quiz-nav-h', nav.offsetHeight + 'px');
+    root.style.setProperty('--quiz-progress-h', tray.offsetHeight + 'px');
+  }
+  sync();
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(sync);
+    ro.observe(nav);
+    ro.observe(tray);
+  } else {
+    window.addEventListener('resize', sync);
+  }
 })();
 </script>
 

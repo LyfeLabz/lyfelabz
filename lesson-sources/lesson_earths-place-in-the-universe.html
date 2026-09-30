@@ -354,13 +354,10 @@
   .mode-hint span.visible { display: inline; }
   /* LYFELABZ:V1-ONLY:END legacy-classroom-styles */
   /* LYFELABZ:V2-ONLY:BEGIN o2-results-style */
-  /* Sprint 28 O2. Offset the post-submit scroll so the results heading
-     clears the sticky chrome (sticky nav ~64px + sticky quiz-progress bar
-     ~46px = ~110px; 120px lands the score just below it). At the 600px
-     phone breakpoint the stack is ~98px, so 104px is the matching value. */
-  .score-board { scroll-margin-top: 120px; }
+  /* Sprint 28 O2. The results region takes programmatic focus after the
+     post-submit scroll. The scroll offset itself is the measured
+     sticky-stack rule in #quiz-chrome-offsets, shared by v1 and v2. */
   .score-board:focus { outline: none; }
-  @media (max-width: 600px) { .score-board { scroll-margin-top: 104px; } }
   /* LYFELABZ:V2-ONLY:END o2-results-style */
   /* LYFELABZ:V2-ONLY:BEGIN o3-return-style */
   /* Sprint 28 O3. Assignment-context return control. Hidden until the
@@ -388,7 +385,6 @@
   .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
   .info-error.show { display: block; }
   /* LYFELABZ:V1-ONLY:END legacy-student-info-styles */
-  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
   .quiz-progress { display: flex; align-items: center; gap: 1rem; }
   .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
@@ -443,6 +439,11 @@
   .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
   .score-submitted { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
   .score-error { font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  /* Refused or failed submission: the headline says the score was not
+     recorded (text, not color alone) and the reason sits directly beneath it. */
+  .score-board.score-not-recorded { border-color: rgba(231,76,60,0.45); }
+  .score-board.score-not-recorded .big-score { font-size: 2.2rem; line-height: 1.2; color: var(--text); }
+  .score-board.score-not-recorded .score-error { border-radius: 12px; line-height: 1.5; text-align: left; }
 
   /* ── CONTINUE ── */
   #continue { background: var(--dark2); }
@@ -764,6 +765,38 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
   .quiz-progress-sticky { top: 52px; }
 }
 body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
+<style id="quiz-chrome-offsets">
+/* Sticky quiz chrome. The nav wraps to different heights at different widths
+   (about 74px on a Chromebook and 120px on a tablet or phone), so the progress
+   tray and the post-submit landing read the MEASURED heights that the
+   quiz-chrome-offsets script publishes as --quiz-nav-h and --quiz-progress-h.
+   This block follows #mobile-canonical so the measured dock replaces its fixed
+   phone offset; the px values are the same no-JS fallbacks, and the canonical
+   menu-open rule still lifts the tray out of flow. */
+.quiz-progress-sticky {
+  position: sticky;
+  top: var(--quiz-nav-h, 64px);
+  z-index: 100;
+  background: var(--dark2);
+  padding: 0.6rem 1.1rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: var(--quiz-nav-h, 52px); }
+}
+/* Post-submit landing clears the measured nav + tray with breathing room. */
+.score-board {
+  scroll-margin-top: calc(var(--quiz-nav-h, 64px) + var(--quiz-progress-h, 56px) + 1rem);
+}
+/* Keyboard focus inside the quiz never lands under the sticky nav + tray. */
+.quiz-option, .think-input, .quiz-submit-btn, .reset-btn {
+  scroll-margin-top: calc(var(--quiz-nav-h, 64px) + var(--quiz-progress-h, 56px) + 0.75rem);
+}
 </style>
 <script defer src="/assets/lyfelabz-assessment-runtime.js"></script>
 </head>
@@ -2291,6 +2324,7 @@ function epuSubmitQuiz() {
 
   if (pct === 100) {
     epuQuizState.continueTimer = setTimeout(() => {
+      epuQuizState.continueTimer = null;
       const more = document.getElementById('go-further-anchor');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
@@ -2312,8 +2346,22 @@ function epuSubmitQuiz() {
     // Defensive terminal-state handler so the UI is always truthful even if
     // finalize resolves null or rejects unexpectedly.
     var epuGenericError = 'Submission did not complete. Please refresh and try again.';
+    // Nothing was recorded, so the locally calculated score must not read as a
+    // recorded result: the headline becomes "Score not recorded" and the
+    // reason sits directly beneath it. The per-question feedback above stays.
     function epuShowSubmitError(msg) {
+      sb.classList.add('score-not-recorded');
+      document.getElementById('epu-score-num').textContent = 'Score not recorded';
+      document.getElementById('epu-score-msg').textContent = 'Your teacher did not receive this attempt. Your answer feedback is still shown above.';
       epuFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || epuGenericError) + '</div>';
+      // Keep the student on the result: cancel a pending perfect-score jump
+      // to More, or bring the result back if that jump already happened.
+      if (epuQuizState.continueTimer) {
+        clearTimeout(epuQuizState.continueTimer);
+        epuQuizState.continueTimer = null;
+      } else if (pct === 100) {
+        sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
     window.lyfelabz.lessonQuiz.finalize(epuQuizState.selected, { writtenResponse: thinkingText }).then(function (r) {
       if (r && r.ok) {
@@ -2378,7 +2426,7 @@ function epuResetQuiz() {
     clearTimeout(epuQuizState.continueTimer);
     epuQuizState.continueTimer = null;
   }
-  document.getElementById('epu-score').classList.remove('show');
+  document.getElementById('epu-score').classList.remove('show', 'score-not-recorded');
   document.getElementById('epu-submit-status').innerHTML = '';
   // Reset Show Your Thinking for a fresh attempt.
   const thinkInput = document.getElementById('epu-thinking');
@@ -2496,6 +2544,34 @@ requestAnimationFrame(draw);
     }
     document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
   });
+})();
+</script>
+
+<!-- ===== STICKY QUIZ CHROME OFFSETS =====
+     Publishes the real sticky nav and progress-tray heights as CSS variables
+     for #quiz-chrome-offsets. The tray docks directly under the nav at every
+     width, and the post-submit scrollIntoView (via .score-board
+     scroll-margin-top) lands the results below both. ResizeObserver keeps the
+     values current when the nav wraps, fonts load, the window resizes, or the
+     phone menu opens. -->
+<script id="quiz-chrome-offsets-js">
+(function(){
+  var root = document.documentElement;
+  var nav  = document.querySelector('nav');
+  var tray = document.querySelector('.quiz-progress-sticky');
+  if (!nav || !tray) return;
+  function sync(){
+    root.style.setProperty('--quiz-nav-h', nav.offsetHeight + 'px');
+    root.style.setProperty('--quiz-progress-h', tray.offsetHeight + 'px');
+  }
+  sync();
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(sync);
+    ro.observe(nav);
+    ro.observe(tray);
+  } else {
+    window.addEventListener('resize', sync);
+  }
 })();
 </script>
 

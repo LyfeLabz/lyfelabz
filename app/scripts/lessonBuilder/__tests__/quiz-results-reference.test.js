@@ -33,17 +33,69 @@
  * lesson's REAL built quiz script against its REAL built markup with a
  * stubbed window.lyfelabz.lessonQuiz adapter.
  *
- * To roll the transformation out, add a lesson here (and mark it
- * `offset: "measured", offsetVars: "quiz"` in w2-results-contract.test.js).
+ * The ordinary-lesson rollout applied the same transformation to 45 more
+ * lessons, so the list below is the full rollout contract (46 lessons). Each
+ * is also marked `offset: "measured", offsetVars: "quiz"` in
+ * w2-results-contract.test.js. Water Cycle (revision workflow), Earth's
+ * Layers and Conducting Experiments (differentiation variant workflow) are
+ * deliberately NOT listed here.
  */
 
 const builder = require("../index.cjs");
 
-const QUIZ_RESULTS_REFERENCE_LESSONS = [{ slug: "photosynthesis", prefix: "el" }];
+// Photosynthesis (the certified reference) first, then the 45 ordinary lessons.
+const QUIZ_RESULTS_REFERENCE_LESSONS = [
+  { slug: "photosynthesis", prefix: "el" },
+  { slug: "plate-tectonics", prefix: "el" },
+  { slug: "earthquakes", prefix: "el" },
+  { slug: "what-is-life", prefix: "wl" },
+  { slug: "cell-types", prefix: "ct" },
+  { slug: "organelles", prefix: "og" },
+  { slug: "body-systems", prefix: "bs" },
+  { slug: "biological-evolution", prefix: "be" },
+  { slug: "layers-of-time", prefix: "lt" },
+  { slug: "continental-drift", prefix: "cd" },
+  { slug: "gravity", prefix: "grav" },
+  { slug: "sun-earth-moon", prefix: "sem" },
+  { slug: "phases-of-the-moon", prefix: "pm" },
+  { slug: "eclipses", prefix: "ec" },
+  { slug: "earths-place-in-the-universe", prefix: "epu" },
+  { slug: "measuring-matter", prefix: "mm" },
+  { slug: "physical-properties", prefix: "pp" },
+  { slug: "pure-substances-and-mixtures", prefix: "psm" },
+  { slug: "chemical-reactions", prefix: "cr" },
+  { slug: "nature-of-waves", prefix: "nw" },
+  { slug: "wave-behavior", prefix: "wb" },
+  { slug: "digital-signals", prefix: "ds" },
+  { slug: "engineering-design", prefix: "ed" },
+  { slug: "choosing-materials", prefix: "cm" },
+  { slug: "designing-to-scale", prefix: "cm" },
+  { slug: "types-of-volcanoes", prefix: "vc" },
+  { slug: "hotspot-volcanoes", prefix: "el" },
+  { slug: "weathering-and-erosion", prefix: "el" },
+  { slug: "renewable-and-nonrenewable-resources", prefix: "el" },
+  { slug: "parts-of-an-ecosystem", prefix: "el" },
+  { slug: "energy-flow", prefix: "el" },
+  { slug: "carbon-cycle", prefix: "el" },
+  { slug: "ecosystem-stability", prefix: "el" },
+  { slug: "reproductive-success", prefix: "rs" },
+  { slug: "human-impacts", prefix: "el" },
+  { slug: "forms-of-energy", prefix: "fe" },
+  { slug: "energy-transfer", prefix: "et" },
+  { slug: "heat-transfer", prefix: "ht" },
+  { slug: "introduction-to-electricity", prefix: "el" },
+  { slug: "design-tradeoffs", prefix: "el" },
+  { slug: "structural-systems", prefix: "el" },
+  { slug: "transportation-systems", prefix: "el" },
+  { slug: "communication-systems", prefix: "el" },
+  { slug: "engineering-systems", prefix: "el" },
+  { slug: "technology-and-society", prefix: "el" },
+  { slug: "innovation-and-sustainability", prefix: "el" },
+];
 
 // A lesson that has not received the transformation. Its #mobile-canonical
-// block is the repository-wide canonical copy the reference must not alter.
-const CANONICAL_BLOCK_SOURCE_SLUG = "energy-flow";
+// block is the repository-wide canonical copy the rollout must not alter.
+const CANONICAL_BLOCK_SOURCE_SLUG = "earths-layers";
 
 const NOT_RECORDED = "Score not recorded";
 
@@ -70,10 +122,14 @@ function bodyMarkup(html) {
   return html.slice(open + "<body>".length, close);
 }
 
+// The complete inline <script> element that defines <prefix>SubmitQuiz. Some
+// lessons declare their questions before the quiz state, and some use const,
+// so the whole real script is executed rather than a slice of it.
 function quizScript(html, prefix) {
-  const start = html.indexOf(`var ${prefix}QuizState`);
-  expect(start).toBeGreaterThan(-1);
-  return html.slice(start, html.indexOf("</script>", start));
+  const at = html.indexOf(`function ${prefix}SubmitQuiz(`);
+  expect(at).toBeGreaterThan(-1);
+  const open = html.lastIndexOf("<script>", at) + "<script>".length;
+  return html.slice(open, html.indexOf("</script>", at));
 }
 
 function cssVar(name) {
@@ -103,7 +159,8 @@ describe.each(QUIZ_RESULTS_REFERENCE_LESSONS)("quiz results reference: $slug", (
     test("the tray docks under the MEASURED nav, with padding on every side", () => {
       const css = blockById(html, "style", "quiz-chrome-offsets");
       expect(css).not.toBeNull();
-      expect(css).toContain("top: var(--quiz-nav-h, 64px);");
+      // The no-JS fallback keeps the lesson's own former fixed top (60px or 64px).
+      expect(css).toMatch(/\.quiz-progress-sticky \{\n  position: sticky;\n  top: var\(--quiz-nav-h, (?:60|64)px\);/);
       expect(css).toContain("padding: 0.6rem 1.1rem;");
       // Phone keeps the canonical 52px only as the no-JS fallback.
       expect(css).toMatch(/@media \(max-width: 600px\) \{\s*\.quiz-progress-sticky \{ top: var\(--quiz-nav-h, 52px\); \}/);
@@ -133,11 +190,15 @@ describe.each(QUIZ_RESULTS_REFERENCE_LESSONS)("quiz results reference: $slug", (
       const board = html.slice(html.indexOf(`id="${P}-score"`));
       const msg = board.indexOf(`<p id="${P}-score-msg"></p>`);
       const status = board.indexOf(`<div id="${P}-submit-status"></div>`);
-      const mystery = board.indexOf('<div class="mystery-loop">');
       expect(msg).toBeGreaterThan(-1);
       expect(status).toBeGreaterThan(msg);
-      expect(mystery).toBeGreaterThan(status);
-      expect(board.split(`id="${P}-submit-status"`).length - 1).toBe(1);
+      // Nothing but whitespace or a comment separates the message and status.
+      const between = board.slice(msg + `<p id="${P}-score-msg"></p>`.length, status);
+      expect(between.replace(/<!--[\s\S]*?-->/g, "").trim()).toBe("");
+      // Lessons with a Mystery box keep it below the status.
+      const mystery = board.indexOf('<div class="mystery-loop">');
+      if (mystery > -1 && mystery < board.indexOf("</button>")) expect(mystery).toBeGreaterThan(status);
+      expect(html.split(`id="${P}-submit-status"`).length - 1).toBe(1);
     });
 
     // Desktop (Chromebook), tablet, and phone nav heights measured in a real
@@ -223,6 +284,16 @@ describe.each(QUIZ_RESULTS_REFERENCE_LESSONS)("quiz results reference: $slug", (
       )();
     }
 
+    // The lesson's own More Learning target for the perfect-score jump
+    // (`continue` in most lessons, `go-further-anchor` in a few).
+    function moreTarget() {
+      const m = new RegExp(`${P}QuizState\\.continueTimer = setTimeout\\([\\s\\S]*?getElementById\\('([^']+)'\\)`).exec(html);
+      expect(m).not.toBeNull();
+      expect(["continue", "go-further-anchor"]).toContain(m[1]);
+      expect(document.getElementById(m[1])).not.toBeNull();
+      return m[1];
+    }
+
     // Answers `correctCount` questions correctly (the first N), the rest wrong.
     function answerAndSubmit(correctCount) {
       const q = window.__q;
@@ -267,9 +338,11 @@ describe.each(QUIZ_RESULTS_REFERENCE_LESSONS)("quiz results reference: $slug", (
       // Local scoring is unchanged while the submission is in flight.
       expect(el(`${P}-score-num`).textContent).toBe(`7/${total}`);
       expect(el(`${P}-submit-status`).textContent).toContain("Submitting...");
+      const localMessage = el(`${P}-score-msg`).textContent;
+      expect(localMessage.length).toBeGreaterThan(0);
       await settle();
       expect(el(`${P}-score-num`).textContent).toBe(`7/${total}`);
-      expect(el(`${P}-score-msg`).textContent).toContain("Solid effort");
+      expect(el(`${P}-score-msg`).textContent).toBe(localMessage);
       expect(el(`${P}-submit-status`).textContent).toContain("Submitted to your teacher");
       expect(el(`${P}-score`).classList.contains("show")).toBe(true);
       expect(el(`${P}-score`).classList.contains("score-not-recorded")).toBe(false);
@@ -282,11 +355,11 @@ describe.each(QUIZ_RESULTS_REFERENCE_LESSONS)("quiz results reference: $slug", (
 
     test("B. a perfect successful submission still moves on to More Learning", async () => {
       mount(async () => ({ ok: true, result: { attemptId: "a1" } }));
-      const total = answerAndSubmit(10);
+      const total = answerAndSubmit(Infinity);
       await settle();
       expect(el(`${P}-score-num`).textContent).toBe(`${total}/${total}`);
       jest.advanceTimersByTime(1900);
-      expect(scrolled).toEqual([`${P}-score`, "continue"]);
+      expect(scrolled).toEqual([`${P}-score`, moreTarget()]);
       expect(window.__q.state.continueTimer).toBeNull();
     });
 
@@ -333,7 +406,7 @@ describe.each(QUIZ_RESULTS_REFERENCE_LESSONS)("quiz results reference: $slug", (
 
     test("C. a refused perfect submission cancels the pending jump to More", async () => {
       mount(() => Promise.resolve({ ok: false, message: "Refused.", recoverable: false }));
-      answerAndSubmit(10);
+      answerAndSubmit(Infinity);
       await settle();
       jest.advanceTimersByTime(5000);
       expect(el(`${P}-score-num`).textContent).toBe(NOT_RECORDED);
@@ -343,13 +416,14 @@ describe.each(QUIZ_RESULTS_REFERENCE_LESSONS)("quiz results reference: $slug", (
     test("C. a refusal that arrives after the jump to More brings the result back", async () => {
       let reject;
       mount(() => new Promise((_resolve, rej) => { reject = rej; }));
-      answerAndSubmit(10);
+      answerAndSubmit(Infinity);
       jest.advanceTimersByTime(1900);
-      expect(scrolled).toEqual([`${P}-score`, "continue"]);
+      const more = moreTarget();
+      expect(scrolled).toEqual([`${P}-score`, more]);
       reject(new Error("late"));
       await settle();
       expect(el(`${P}-score-num`).textContent).toBe(NOT_RECORDED);
-      expect(scrolled).toEqual([`${P}-score`, "continue", `${P}-score`]);
+      expect(scrolled).toEqual([`${P}-score`, more, `${P}-score`]);
     });
 
     test("C. Try Again clears the not-recorded state", async () => {
