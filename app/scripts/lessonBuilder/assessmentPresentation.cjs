@@ -80,6 +80,8 @@ const ITEM_KEYS = Object.freeze(["itemId", "stem", "displayedOptions", "omittedO
 const OPTION_KEYS = Object.freeze(["optionId", "text"]);
 const OMITTED_KEYS = Object.freeze(["optionId", "rationale"]);
 const SYT_KEYS = Object.freeze(["prompt", "modelAnswer", "requiredTerms"]);
+const SYT_MODEL_KEYS = Object.freeze(["paragraphs"]);
+const SYT_PARAGRAPH_KEYS = Object.freeze(["lead", "text"]);
 
 // ---------------------------------------------------------------------------
 // Canonical serialization and identity
@@ -158,6 +160,92 @@ function isNonEmptyString(v) {
 
 function unknownKeys(obj, allowed) {
   return Object.keys(obj).filter((k) => !allowed.includes(k));
+}
+
+// ---------------------------------------------------------------------------
+// Show Your Thinking model answer (section 9.1)
+// ---------------------------------------------------------------------------
+//
+// Two closed forms, chosen by the canonical model answer's own structure
+// (modelAnswerKindEquivalence):
+//   - a non-empty string: one escaped text run, for canonical models written
+//     as inline prose (every lesson except those below);
+//   - { paragraphs: [{ lead: string | null, text: string }, ...] }: ordered
+//     paragraphs, for canonical models written as <p> blocks (for example a
+//     Claim / Evidence / Reasoning model). `lead` is an optional label the
+//     renderer emphasizes; both are plain text and are always escaped.
+// A single unlabeled paragraph is refused so one model has one encoding.
+
+function isTrimmedText(v) {
+  return isNonEmptyString(v) && v === v.trim();
+}
+
+function modelAnswerProblems(modelAnswer) {
+  const at = "showYourThinking.modelAnswer";
+  if (typeof modelAnswer === "string") return isNonEmptyString(modelAnswer) ? [] : [`${at} must be a non-empty string`];
+  if (!isPlainObject(modelAnswer)) return [`${at} must be a non-empty string or an object { paragraphs }`];
+  const problems = unknownKeys(modelAnswer, SYT_MODEL_KEYS).map((k) => `${at} unknown field "${k}"`);
+  const paragraphs = modelAnswer.paragraphs;
+  if (!Array.isArray(paragraphs) || paragraphs.length === 0) {
+    problems.push(`${at}.paragraphs must be a non-empty array`);
+    return problems;
+  }
+  paragraphs.forEach((p, i) => {
+    const pat = `${at}.paragraphs[${i}]`;
+    if (!isPlainObject(p)) {
+      problems.push(`${pat} must be an object { lead, text }`);
+      return;
+    }
+    for (const k of unknownKeys(p, SYT_PARAGRAPH_KEYS)) problems.push(`${pat} unknown field "${k}"`);
+    if (!Object.prototype.hasOwnProperty.call(p, "lead") || (p.lead !== null && !isTrimmedText(p.lead))) {
+      problems.push(`${pat}.lead must be null or a non-empty string without surrounding whitespace`);
+    }
+    if (!isTrimmedText(p.text)) problems.push(`${pat}.text must be a non-empty string without surrounding whitespace`);
+  });
+  if (paragraphs.length === 1 && isPlainObject(paragraphs[0]) && paragraphs[0].lead === null) {
+    problems.push(`${at} is a single unlabeled paragraph; use the string form`);
+  }
+  return problems;
+}
+
+// "inline" for the string form, "paragraphs" for the structured form.
+function modelAnswerKind(modelAnswer) {
+  return typeof modelAnswer === "string" ? "inline" : "paragraphs";
+}
+
+// Plain text of either form, for comparisons and review (never rendering).
+// Paragraphs join with a space, each as "lead text", which is what the
+// rendered paragraphs read as. Unrecognized shapes read as "".
+function modelAnswerText(modelAnswer) {
+  if (typeof modelAnswer === "string") return modelAnswer;
+  if (!isPlainObject(modelAnswer) || !Array.isArray(modelAnswer.paragraphs)) return "";
+  return modelAnswer.paragraphs
+    .filter(isPlainObject)
+    .map((p) => [p.lead, p.text].filter((s) => typeof s === "string" && s.length > 0).join(" "))
+    .filter((s) => s.length > 0)
+    .join(" ");
+}
+
+// The record's model-answer form must match the canonical model's kind
+// ("inline" or "paragraphs", read from the lesson by the renderer's
+// readShowYourThinking), so a paragraph model is never flattened and
+// paragraph markup never reaches an inline model.
+function modelAnswerKindEquivalence(showYourThinking, canonicalShowYourThinking) {
+  if (!showYourThinking) return { ok: true, failures: [] };
+  const canonicalKind = canonicalShowYourThinking && canonicalShowYourThinking.modelKind;
+  if (canonicalKind !== "inline" && canonicalKind !== "paragraphs") {
+    return { ok: false, failures: ["the canonical lesson has no Show Your Thinking model answer to compare the model-answer form against"] };
+  }
+  const kind = modelAnswerKind(showYourThinking.modelAnswer);
+  if (kind === canonicalKind) return { ok: true, failures: [] };
+  return {
+    ok: false,
+    failures: [
+      kind === "inline"
+        ? "showYourThinking.modelAnswer is a string, but the canonical model answer is <p> paragraphs; use { paragraphs } to preserve its structure"
+        : "showYourThinking.modelAnswer is { paragraphs }, but the canonical model answer is inline prose; use the string form",
+    ],
+  };
 }
 
 function findCorrectnessKeys(value, at, out) {
@@ -386,7 +474,7 @@ function validateAssessmentPresentation(record, canonicalPayload) {
   } else {
     for (const k of unknownKeys(syt, SYT_KEYS)) fail(`showYourThinking unknown field "${k}"`);
     if (!isNonEmptyString(syt.prompt)) fail("showYourThinking.prompt must be a non-empty string");
-    if (!isNonEmptyString(syt.modelAnswer)) fail("showYourThinking.modelAnswer must be a non-empty string");
+    for (const problem of modelAnswerProblems(syt.modelAnswer)) fail(problem);
     if (!Array.isArray(syt.requiredTerms) || !syt.requiredTerms.every(isNonEmptyString)) {
       fail("showYourThinking.requiredTerms must be an array of non-empty strings");
     } else if (isNonEmptyString(syt.prompt)) {
@@ -634,7 +722,7 @@ function identicalTextFindings(record, canonicalPayload, canonicalLesson = {}) {
   const canonicalSyt = canonicalLesson.showYourThinking;
   if (record.showYourThinking && canonicalSyt) {
     push(compareText("showYourThinking.prompt", record.showYourThinking.prompt, canonicalSyt.prompt));
-    push(compareText("showYourThinking.modelAnswer", record.showYourThinking.modelAnswer, canonicalSyt.modelAnswer));
+    push(compareText("showYourThinking.modelAnswer", modelAnswerText(record.showYourThinking.modelAnswer), canonicalSyt.modelAnswer));
   }
   return findings;
 }
@@ -664,7 +752,7 @@ function requiredTermEquivalence(showYourThinking, canonicalShowYourThinking) {
       canonicalPrompt: has(canonicalShowYourThinking.prompt, term),
       adaptedPrompt: has(showYourThinking.prompt, term),
       canonicalModelAnswer: has(canonicalShowYourThinking.modelAnswer, term),
-      adaptedModelAnswer: has(showYourThinking.modelAnswer, term),
+      adaptedModelAnswer: has(modelAnswerText(showYourThinking.modelAnswer), term),
     };
     terms.push(row);
     if (!row.canonicalPrompt) failures.push(`required term "${term}" is not in the canonical Show Your Thinking prompt`);
@@ -926,6 +1014,9 @@ module.exports = {
   answerCueFindings,
   identicalTextFindings,
   requiredTermEquivalence,
+  modelAnswerKind,
+  modelAnswerText,
+  modelAnswerKindEquivalence,
   verifyRetainedRecord,
   verifyRetainedRecords,
   applicableCriteria,

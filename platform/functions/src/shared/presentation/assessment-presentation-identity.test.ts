@@ -48,6 +48,41 @@ describe("assessment-presentation identity", () => {
     expect(computeAssessmentPresentationRevisionId(r)).toBe(tooling.assessmentPresentationRevisionIdFor(r));
   });
 
+  it("matches the build tooling for a structured paragraph model answer, in any key order", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..", "..", "..");
+    const req = createRequire(__filename);
+    const tooling = req(path.join(repoRoot, "app", "scripts", "lessonBuilder", "assessmentPresentation.cjs")) as {
+      canonicalJson: (v: unknown) => string;
+      assessmentPresentationRevisionIdFor: (r: unknown) => string;
+    };
+    const r = record({
+      showYourThinking: {
+        prompt: "Explain your claim, evidence, and reasoning.",
+        modelAnswer: {
+          paragraphs: [
+            { lead: "Claim:", text: "c" },
+            { lead: "Evidence:", text: "e" },
+            { lead: null, text: "r" },
+          ],
+        },
+        requiredTerms: ["claim"],
+      },
+    });
+    expect(canonicalJson(r)).toBe(tooling.canonicalJson(r));
+    expect(computeAssessmentPresentationRevisionId(r)).toBe(tooling.assessmentPresentationRevisionIdFor(r));
+    const reversed = (v: unknown): unknown => {
+      if (Array.isArray(v)) return v.map(reversed);
+      if (v !== null && typeof v === "object") {
+        const out: Record<string, unknown> = {};
+        for (const k of Object.keys(v).reverse()) out[k] = reversed((v as Record<string, unknown>)[k]);
+        return out;
+      }
+      return v;
+    };
+    expect(computeAssessmentPresentationRevisionId(reversed(r))).toBe(computeAssessmentPresentationRevisionId(r));
+    expect(canonicalJson(r)).toContain('{"lead":null,"text":"r"}');
+  });
+
   it("is independent of key order (Firestore may return maps in any order)", () => {
     const r = record();
     const reordered = JSON.parse(JSON.stringify(r)) as Record<string, unknown>;

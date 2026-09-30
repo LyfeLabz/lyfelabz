@@ -24,6 +24,10 @@ const THREE_CHOICE_POSITIONS = [0, 1, 2, 1, 2, 0, 2, 0, 1, 2];
 const CANONICAL_DIRECTIONS = "Ten questions. Answer every question, then submit.";
 const CANONICAL_PROMPT_HTML = "Explain how heat from the core drives <strong>convection</strong> in the mantle.";
 const CANONICAL_MODEL = "Canonical model answer: heat rises, the mantle flows in convection currents, and plates move.";
+// A canonical model answer written as <p> paragraphs (the structured form).
+const CANONICAL_PARAGRAPH_MODEL = `<p><strong>Claim:</strong> Heat drives <em>convection</em>.</p>
+        <p><strong>Evidence:</strong> Hot rock rises and cool rock sinks.</p>
+        <p>That loop moves the plates.</p>`;
 
 function quizLiteral(prefix = "fx") {
   const qs = CANONICAL_CORRECT.split("").map((c, i) => ({
@@ -37,7 +41,7 @@ function quizLiteral(prefix = "fx") {
 
 // A page with the canonical quiz and Show Your Thinking anchors. `markers`
 // adds the V1/V2 markers the lesson builder config requires.
-function lessonHtml({ prefix = "fx", markers = true, thinkBox = true, literal = quizLiteral(prefix) } = {}) {
+function lessonHtml({ prefix = "fx", markers = true, thinkBox = true, literal = quizLiteral(prefix), modelHtml = CANONICAL_MODEL } = {}) {
   const v1 = markers
     ? `<!-- LYFELABZ:V1-ONLY:BEGIN legacy-form -->\n<div class="legacy">LEGACY_ONLY classroom form</div>\n<!-- LYFELABZ:V1-ONLY:END legacy-form -->\n`
     : "";
@@ -49,7 +53,7 @@ function lessonHtml({ prefix = "fx", markers = true, thinkBox = true, literal = 
       <textarea class="think-input" id="${prefix}-thinking" placeholder="Write your explanation here..." aria-label="Explain how heat from the core drives convection"></textarea>
       <div class="think-model" id="${prefix}-think-model">
         <span class="tm-label">One strong way to say it</span>
-        ${CANONICAL_MODEL}
+        ${modelHtml}
       </div>
     </div>
 `
@@ -102,6 +106,19 @@ function recordBase(traits) {
 const ADAPTED_SYT = {
   prompt: "Tell how heat from the core makes the mantle move by convection.",
   modelAnswer: "Adapted model: hot rock rises, cool rock sinks, and this convection moves the plates.",
+  requiredTerms: ["convection"],
+};
+
+// The structured form, for a lesson whose canonical model is <p> paragraphs.
+const ADAPTED_SYT_PARAGRAPHS = {
+  prompt: ADAPTED_SYT.prompt,
+  modelAnswer: {
+    paragraphs: [
+      { lead: "Claim:", text: "Heat makes the mantle move by convection." },
+      { lead: "Evidence:", text: "Hot rock goes up and cool rock goes down." },
+      { lead: null, text: "This moves the plates." },
+    ],
+  },
   requiredTerms: ["convection"],
 };
 
@@ -205,7 +222,9 @@ module.exports = {
   IDS,
   CANONICAL_DIRECTIONS,
   CANONICAL_MODEL,
+  CANONICAL_PARAGRAPH_MODEL,
   ADAPTED_SYT,
+  ADAPTED_SYT_PARAGRAPHS,
   quizLiteral,
   lessonHtml,
   canonicalPayload,

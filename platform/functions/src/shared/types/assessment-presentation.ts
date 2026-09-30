@@ -51,10 +51,20 @@ export type AssessmentPresentationRecord = {
   }>;
   readonly showYourThinking: {
     readonly prompt: string;
-    readonly modelAnswer: string;
+    readonly modelAnswer: AssessmentPresentationModelAnswer;
     readonly requiredTerms: ReadonlyArray<string>;
   } | null;
 };
+
+// A Show Your Thinking model answer: one plain-text run for a canonical model
+// written as inline prose, or ordered plain-text paragraphs (each with an
+// optional lead label) for a canonical model written as <p> blocks. Never
+// HTML; the build renderer escapes every string.
+export type AssessmentPresentationModelAnswer =
+  | string
+  | {
+    readonly paragraphs: ReadonlyArray<{ readonly lead: string | null; readonly text: string }>;
+  };
 
 // Deterministic serialization behind the content-addressed id (object keys
 // sorted by UTF-16 code unit, arrays in order, no insignificant whitespace,

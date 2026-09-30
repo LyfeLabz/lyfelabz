@@ -13,6 +13,8 @@
  *   - the one Slice 3 validator (schema, identity inputs, option integrity,
  *     displayed answer positions, and the Slice 6A answer-cue heuristics);
  *   - required-term equivalence against BOTH Show Your Thinking prompts;
+ *   - the model-answer form (string or paragraphs) against the canonical
+ *     model's kind;
  *   - identical-to-canonical text findings (review information only);
  *   - the owner's display-position target (spread <= 1, no run of 3, no
  *     cycle: no hard finding and no warning from the Slice 1 standard);
@@ -202,6 +204,9 @@ function analyze({ record, draftBytes = null, canonicalPayload, canonicalLesson,
     ? AP.requiredTermEquivalence(record.showYourThinking, canonicalLesson.showYourThinking)
     : { ok: true, failures: [], terms: [] };
   hardFailures.push(...requiredTerms.failures);
+  if (isPlainObject(record.showYourThinking)) {
+    hardFailures.push(...AP.modelAnswerKindEquivalence(record.showYourThinking, canonicalLesson.showYourThinking).failures);
+  }
 
   const cues = structurallyUsable ? AP.answerCueFindings(record, canonicalPayload) : null;
   const identical = structurallyUsable ? AP.identicalTextFindings(record, canonicalPayload, canonicalLesson) : [];
@@ -244,7 +249,7 @@ function analyze({ record, draftBytes = null, canonicalPayload, canonicalLesson,
       canonicalPrompt: canonicalLesson.showYourThinking && canonicalLesson.showYourThinking.prompt,
       adaptedPrompt: syt.prompt,
       canonicalModelAnswer: canonicalLesson.showYourThinking && canonicalLesson.showYourThinking.modelAnswer,
-      adaptedModelAnswer: syt.modelAnswer,
+      adaptedModelAnswer: AP.modelAnswerText(syt.modelAnswer),
     })
     : [];
 
@@ -402,7 +407,7 @@ function renderPacket(a, { preview = null } = {}) {
   L.push(`- Canonical prompt: ${csyt ? csyt.prompt : "(none)"}`);
   L.push(`- Adapted prompt: ${syt ? syt.prompt : "(null: canonical prompt shown)"}`);
   L.push(`- Canonical model answer: ${csyt ? csyt.modelAnswer : "(none)"}`);
-  L.push(`- Adapted model answer: ${syt ? syt.modelAnswer : "(null)"}`);
+  L.push(`- Adapted model answer: ${syt ? AP.modelAnswerText(syt.modelAnswer) : "(null)"}`);
   L.push(`- Required terms: ${syt ? syt.requiredTerms.join(", ") : "(none)"}; equivalence ${a.requiredTerms.ok ? "PASS" : "FAIL"}`);
   for (const f of ["showYourThinking.prompt", "showYourThinking.modelAnswer"]) {
     const same = identicalByField.get(f);

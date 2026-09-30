@@ -14,7 +14,9 @@
  *   2. the quiz section's `<p class="section-desc">` text, when the record
  *      supplies directions;
  *   3. the Show Your Thinking prompt, model answer, and textarea accessible
- *      name, when the record supplies an adapted block;
+ *      name, when the record supplies an adapted block, located by the
+ *      shared quiz-prefix id convention (locateShowYourThinking); the rest
+ *      of the component (for example supplied evidence) is never touched;
  *   4. one inserted, non-executable binding block
  *        <script type="application/json" id="lyfelabz-assessment-presentation">
  *      carrying lessonSlug, assessmentRevisionId,
@@ -50,6 +52,8 @@ const acorn = require("acorn");
 const fidelity = require("./assessmentFidelity.cjs");
 const AP = require("./assessmentPresentation.cjs");
 const paths = require("./paths.cjs");
+const invariance = require("./variantInvariance.cjs");
+const { findTagEnd } = require("./variantLinks.cjs");
 
 const BINDING_ELEMENT_ID = "lyfelabz-assessment-presentation";
 const BINDING_SCHEMA_VERSION = 1;
@@ -74,9 +78,9 @@ function scriptSafeJson(value) {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-// Locates the single `<prefix>QuizQuestions = [ ... ]` literal and returns its
-// exact HTML offsets. Only classic inline scripts are parsed.
-function locateQuizLiteral(html) {
+// Every `<prefix>QuizQuestions = [ ... ]` literal with its exact HTML
+// offsets. Only classic inline scripts are parsed.
+function findQuizLiterals(html) {
   const found = [];
   const re = /<script\b([^>]*)>([\s\S]*?)<\/script>/g;
   let m;
@@ -104,6 +108,13 @@ function locateQuizLiteral(html) {
       }
     }
   }
+  return found;
+}
+
+// Locates the single `<prefix>QuizQuestions = [ ... ]` literal and returns its
+// exact HTML offsets.
+function locateQuizLiteral(html) {
+  const found = findQuizLiterals(html);
   if (found.length !== 1) fail(`expected exactly one <prefix>QuizQuestions literal, found ${found.length}`);
   const literal = found[0];
   literal.elements.forEach((el, i) => {
@@ -195,10 +206,6 @@ function boldRequiredTerms(escapedPrompt, requiredTerms) {
   return out;
 }
 
-const THINK_PROMPT_RE = /(<p class="think-prompt">)([\s\S]*?)(<\/p>)/g;
-const THINK_MODEL_RE = /(<div class="think-model"[^>]*>\s*<span class="tm-label">[^<]*<\/span>)([\s\S]*?)(<\/div>)/g;
-const THINK_INPUT_RE = /(<textarea class="think-input"[^>]*\saria-label=")([^"]*)(")/g;
-
 const NAMED_ENTITIES = Object.freeze({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", middot: "·", rsquo: "’", lsquo: "‘" });
 
 // Plain text of an HTML fragment (tags removed, entities decoded, whitespace
@@ -217,20 +224,235 @@ function htmlToText(fragment) {
     .trim();
 }
 
-// Reads the lesson's Show Your Thinking wording as plain text, or null when
-// the lesson has no think box. Throws when the anchors are ambiguous.
-function readShowYourThinking(html) {
-  const prompts = [...html.matchAll(THINK_PROMPT_RE)];
-  if (prompts.length === 0) return null;
-  const models = [...html.matchAll(THINK_MODEL_RE)];
-  const inputs = [...html.matchAll(THINK_INPUT_RE)];
-  if (prompts.length !== 1 || models.length !== 1 || inputs.length !== 1) {
-    fail(`lesson has ${prompts.length} think-prompt, ${models.length} think-model, ${inputs.length} think-input anchor(s); expected exactly one each`);
+// -- Show Your Thinking component locator ----------------------------------
+//
+// Every lesson's Show Your Thinking component follows one id convention keyed
+// to its quiz prefix <p> (the prefix of `<p>QuizQuestions` and
+// `<p>-quiz-questions`):
+//
+//   <div class="think-box | <p>-think-box" id="<p>-think">
+//     ...                                              (untouched)
+//     <p class="<family>think-prompt">PROMPT</p>
+//     ...                                              (untouched)
+//     <textarea id="<p>-thinking" class="<family>think-input ..." aria-label="LABEL">
+//     <div class="<family>think-model" id="<p>-think-model">
+//       <span class="tm-label">...</span>MODEL
+//     </div>
+//   </div>
+//
+// <family> is "" (unprefixed classes) or "<p>-", matching the box's own class.
+// Discovery is scoped to the box, so same-family classes elsewhere in the
+// lesson (for example a second `<p>-think-input` textarea in Explore) are
+// never mistaken for the component. The model answer is either inline prose
+// (text and inline prose tags) or a run of <p> paragraphs holding inline
+// prose; that canonical kind decides which record form may be rendered into
+// it (assessmentPresentation.modelAnswerKindEquivalence). Anything ambiguous,
+// missing, or structurally unexpected throws.
+
+const SYT_BOX_CLASS_RE = /^(?:([a-z][a-z0-9]*)-)?think-box$/;
+const SYT_ID_RE = /(?:^|\s)id\s*=\s*(?:"([^"]*)"|'([^']*)')/i;
+const SYT_ARIA_LABEL_RE = /\saria-label="([^"]*)"/g;
+
+// The shared invariance tokenizer's contiguous token stream, with each
+// token's [start, end) offset in `html`.
+function positionedTokens(html) {
+  let at = 0;
+  const tokens = invariance.tokenize(html).map((t) => {
+    const bytes = t.type === "open" || t.type === "close" ? t.raw : t.value;
+    const start = at;
+    at += bytes.length;
+    return { ...t, start, end: at };
+  });
+  if (at !== html.length) fail("Show Your Thinking locator could not tokenize the lesson contiguously");
+  return tokens;
+}
+
+function idOf(attrs) {
+  const m = SYT_ID_RE.exec(attrs);
+  return m ? (m[1] !== undefined ? m[1] : m[2]) : null;
+}
+
+function classesOf(attrs) {
+  const m = /(?:^|\s)class\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
+  return m ? (m[1] !== undefined ? m[1] : m[2]).split(/\s+/).filter(Boolean) : [];
+}
+
+// The open tag's attributes of any open or raw element token.
+function attrsOf(token) {
+  if (token.type === "open") return token.attrs;
+  if (token.type === "raw" && token.kind !== "comment" && token.kind !== "decl") {
+    const open = token.value.slice(0, findTagEnd(token.value, 0));
+    return open.replace(/^<[A-Za-z][A-Za-z0-9:-]*/, "").replace(/\/?>$/, "");
   }
+  return null;
+}
+
+// Index of the close token matching the open token at `i`.
+function closeIndex(tokens, i) {
+  const tag = tokens[i].tag;
+  let depth = 0;
+  for (let j = i; j < tokens.length; j += 1) {
+    const t = tokens[j];
+    if (t.type === "open" && t.tag === tag && !t.selfClosing) depth += 1;
+    else if (t.type === "close" && t.tag === tag) {
+      depth -= 1;
+      if (depth === 0) return j;
+    }
+  }
+  return fail(`Show Your Thinking <${tag}> at offset ${tokens[i].start} is never closed`);
+}
+
+function isInlineProse(tokens, from, to) {
+  for (let j = from; j < to; j += 1) {
+    const t = tokens[j];
+    if (t.type === "raw") return false;
+    if ((t.type === "open" || t.type === "close") && !invariance.INLINE_PROSE_TAGS.has(t.tag)) return false;
+  }
+  return true;
+}
+
+// Canonical model-answer kind of the content tokens (from, to): "inline" or
+// "paragraphs". Throws on anything else.
+function modelKindOf(tokens, from, to, label) {
+  let paragraphs = 0;
+  let looseText = false;
+  let other = false;
+  for (let j = from; j < to; j += 1) {
+    const t = tokens[j];
+    if (t.type === "text") {
+      if (t.value.trim() !== "") looseText = true;
+    } else if (t.type === "open" && t.tag === "p") {
+      const end = closeIndex(tokens, j);
+      if (end >= to || !isInlineProse(tokens, j + 1, end)) other = true;
+      paragraphs += 1;
+      j = end;
+    } else if (t.type === "open" && invariance.INLINE_PROSE_TAGS.has(t.tag)) {
+      looseText = true;
+      if (!t.selfClosing) {
+        const end = closeIndex(tokens, j);
+        if (end >= to || !isInlineProse(tokens, j + 1, end)) other = true;
+        j = end;
+      }
+    } else {
+      other = true;
+    }
+  }
+  if (!other && paragraphs > 0 && !looseText) return "paragraphs";
+  if (!other && paragraphs === 0 && looseText) return "inline";
+  return fail(`${label} has an unsupported model-answer structure; expected inline prose or <p> paragraphs of inline prose`);
+}
+
+// Locates the one Show Your Thinking component, or returns null when the
+// lesson has none. Offsets are content ranges: prompt inner HTML, the
+// textarea aria-label value, and the model content after its tm-label span.
+function locateShowYourThinking(html) {
+  const tokens = positionedTokens(html);
+  const boxes = [];
+  tokens.forEach((t, i) => {
+    if (t.type === "open" && t.classes.some((c) => SYT_BOX_CLASS_RE.test(c))) boxes.push(i);
+  });
+  if (boxes.length === 0) return null;
+  if (boxes.length !== 1) fail(`lesson has ${boxes.length} Show Your Thinking components (think-box); expected exactly one`);
+
+  const bi = boxes[0];
+  const box = tokens[bi];
+  const boxId = idOf(box.attrs);
+  const idMatch = /^([a-z][a-z0-9]*)-think$/.exec(boxId || "");
+  if (box.tag !== "div" || !idMatch) {
+    fail(`Show Your Thinking component must be a <div id="<prefix>-think"> (found <${box.tag}> ${boxId === null ? "with no id" : `id="${boxId}"`})`);
+  }
+  const prefix = idMatch[1];
+  const familyClasses = box.classes.filter((c) => SYT_BOX_CLASS_RE.test(c));
+  let family = null;
+  if (familyClasses.length === 1 && familyClasses[0] === "think-box") family = "";
+  if (familyClasses.length === 1 && familyClasses[0] === `${prefix}-think-box`) family = `${prefix}-`;
+  if (family === null) {
+    fail(`#${prefix}-think class "${familyClasses.join(" ")}" does not match its prefix; expected think-box or ${prefix}-think-box`);
+  }
+  const box$ = `#${prefix}-think`;
+
+  const literals = findQuizLiterals(html);
+  if (literals.length !== 1) fail(`${box$} needs exactly one <prefix>QuizQuestions literal to confirm its prefix, found ${literals.length}`);
+  if (literals[0].prefix !== prefix) fail(`${box$} prefix "${prefix}" does not match the quiz literal prefix "${literals[0].prefix}"`);
+
+  const inputId = `${prefix}-thinking`;
+  const modelId = `${prefix}-think-model`;
+  const idCounts = new Map();
+  for (const t of tokens) {
+    const attrs = attrsOf(t);
+    const id = attrs === null ? null : idOf(attrs);
+    if (id !== null) idCounts.set(id, (idCounts.get(id) || 0) + 1);
+  }
+  for (const id of [`${prefix}-think`, inputId, modelId]) {
+    if (idCounts.get(id) !== 1) fail(`id "${id}" must appear exactly once in the lesson (found ${idCounts.get(id) || 0})`);
+  }
+
+  const be = closeIndex(tokens, bi);
+  const inside = [];
+  for (let j = bi + 1; j < be; j += 1) inside.push(j);
+
+  // Prompt.
+  const promptClass = `${family}think-prompt`;
+  const prompts = inside.filter((j) => tokens[j].type === "open" && tokens[j].tag === "p" && tokens[j].classes.includes(promptClass));
+  if (prompts.length !== 1) fail(`lesson has ${prompts.length} ${promptClass} anchor(s) inside ${box$}; expected exactly one`);
+  const pe = closeIndex(tokens, prompts[0]);
+
+  // Textarea (the only one in the component).
+  const areas = inside.filter((j) => tokens[j].type === "raw" && tokens[j].kind === "textarea");
+  if (areas.length !== 1) fail(`${box$} contains ${areas.length} textarea(s); expected exactly one, #${inputId}`);
+  const area = tokens[areas[0]];
+  const areaAttrs = attrsOf(area);
+  if (idOf(areaAttrs) !== inputId) fail(`the ${box$} textarea must be #${inputId}`);
+  if (!classesOf(areaAttrs).includes(`${family}think-input`)) fail(`#${inputId} must carry class ${family}think-input`);
+  const areaOpen = area.value.slice(0, findTagEnd(area.value, 0));
+  const labels = [...areaOpen.matchAll(SYT_ARIA_LABEL_RE)];
+  if (labels.length !== 1 || labels[0][1].trim() === "") fail(`#${inputId} must carry exactly one non-empty double-quoted aria-label`);
+  const labelStart = area.start + labels[0].index + ' aria-label="'.length;
+
+  // Model answer: tm-label span first, then the answer itself.
+  const models = inside.filter((j) => tokens[j].type === "open" && tokens[j].tag === "div" && idOf(tokens[j].attrs) === modelId);
+  if (models.length !== 1) fail(`#${modelId} must be inside ${box$}`);
+  const mi = models[0];
+  if (!tokens[mi].classes.includes(`${family}think-model`)) fail(`#${modelId} must carry class ${family}think-model`);
+  const me = closeIndex(tokens, mi);
+  let si = mi + 1;
+  while (si < me && tokens[si].type === "text" && tokens[si].value.trim() === "") si += 1;
+  if (si >= me || tokens[si].type !== "open" || tokens[si].tag !== "span" || !tokens[si].classes.includes("tm-label")) {
+    fail(`#${modelId} must begin with its <span class="tm-label">`);
+  }
+  const se = closeIndex(tokens, si);
+  if (se !== si + 2 || tokens[si + 1].type !== "text") fail(`#${modelId} tm-label must hold plain text only`);
+  const kind = modelKindOf(tokens, se + 1, me, `#${modelId}`);
+
+  const prompt = { start: tokens[prompts[0]].end, end: tokens[pe].start };
+  const ariaLabel = { start: labelStart, end: labelStart + labels[0][1].length };
+  const model = { start: tokens[se].end, end: tokens[me].start, kind };
   return {
-    prompt: htmlToText(prompts[0][2]),
-    modelAnswer: htmlToText(models[0][2]),
-    ariaLabel: htmlToText(inputs[0][2]),
+    prefix,
+    family,
+    box: { start: box.start, end: tokens[be].end },
+    prompt,
+    ariaLabel,
+    model,
+    text: {
+      prompt: htmlToText(html.slice(prompt.start, prompt.end)),
+      modelAnswer: htmlToText(html.slice(model.start, model.end)),
+      ariaLabel: htmlToText(html.slice(ariaLabel.start, ariaLabel.end)),
+    },
+  };
+}
+
+// Reads the lesson's Show Your Thinking wording as plain text, with the
+// canonical model-answer kind, or null when the lesson has no Show Your
+// Thinking component. Throws when the component is ambiguous or malformed.
+function readShowYourThinking(html) {
+  const located = locateShowYourThinking(html);
+  if (located === null) return null;
+  return {
+    prompt: located.text.prompt,
+    modelAnswer: located.text.modelAnswer,
+    ariaLabel: located.text.ariaLabel,
+    modelKind: located.model.kind,
   };
 }
 
@@ -245,18 +467,39 @@ function readQuizDirections(html) {
   return matches.length === 1 ? htmlToText(matches[0][1]) : null;
 }
 
+// The exact bytes an adapted block writes into the three located ranges.
+// Record text is always escaped; the only markup is the renderer's own
+// constant <strong> and <p> tags. The string model answer keeps its original
+// single-run emission, byte for byte.
+function showYourThinkingFragments(syt) {
+  const body =
+    typeof syt.modelAnswer === "string"
+      ? escapeHtml(syt.modelAnswer)
+      : syt.modelAnswer.paragraphs
+        .map((p) => `<p>${p.lead !== null ? `<strong>${escapeHtml(p.lead)}</strong> ` : ""}${escapeHtml(p.text)}</p>`)
+        .join("\n        ");
+  return {
+    prompt: boldRequiredTerms(escapeHtml(syt.prompt), syt.requiredTerms),
+    model: `\n        ${body}\n      `,
+    ariaLabel: escapeHtml(syt.prompt),
+  };
+}
+
 function renderShowYourThinking(html, syt) {
-  const promptRe = THINK_PROMPT_RE;
-  const modelRe = THINK_MODEL_RE;
-  const inputRe = THINK_INPUT_RE;
-  for (const [re, name] of [[promptRe, "think-prompt"], [modelRe, "think-model"], [inputRe, "think-input aria-label"]]) {
-    const n = [...html.matchAll(re)].length;
-    if (n !== 1) fail(`lesson has ${n} ${name} anchor(s); an adapted Show Your Thinking block needs exactly one`);
+  const located = locateShowYourThinking(html);
+  if (located === null) {
+    fail("lesson has 0 think-prompt anchor(s) (no Show Your Thinking component); an adapted Show Your Thinking block needs exactly one");
   }
-  const prompt = boldRequiredTerms(escapeHtml(syt.prompt), syt.requiredTerms);
-  let out = html.replace(promptRe, (_all, open, _old, close) => `${open}${prompt}${close}`);
-  out = out.replace(modelRe, (_all, open, _old, close) => `${open}\n        ${escapeHtml(syt.modelAnswer)}\n      ${close}`);
-  out = out.replace(inputRe, (_all, open, _old, close) => `${open}${escapeHtml(syt.prompt)}${close}`);
+  const kinds = AP.modelAnswerKindEquivalence(syt, { modelKind: located.model.kind });
+  if (!kinds.ok) fail(`Show Your Thinking model answer cannot be rendered:\n  - ${kinds.failures.join("\n  - ")}`);
+  const fragments = showYourThinkingFragments(syt);
+  const edits = [
+    [located.prompt, fragments.prompt],
+    [located.ariaLabel, fragments.ariaLabel],
+    [located.model, fragments.model],
+  ].sort((a, b) => b[0].start - a[0].start);
+  let out = html;
+  for (const [range, bytes] of edits) out = out.slice(0, range.start) + bytes + out.slice(range.end);
   return out;
 }
 
@@ -333,8 +576,18 @@ function verifyRendered(html, { record, questions, binding }) {
       if (html.includes(escapeHtml(om.rationale))) fail(`omitted-option rationale for ${item.itemId} leaked into the artifact`);
     }
   }
-  if (record.showYourThinking !== null && !html.includes(escapeHtml(record.showYourThinking.modelAnswer))) {
-    fail("rendered Show Your Thinking model answer is missing");
+  if (record.showYourThinking !== null) {
+    const located = locateShowYourThinking(html);
+    const expected = showYourThinkingFragments(record.showYourThinking);
+    const at = (range) => html.slice(range.start, range.end);
+    if (
+      located === null ||
+      at(located.prompt) !== expected.prompt ||
+      at(located.ariaLabel) !== expected.ariaLabel ||
+      at(located.model) !== expected.model
+    ) {
+      fail("rendered Show Your Thinking does not match the presentation");
+    }
   }
 }
 
@@ -363,6 +616,9 @@ module.exports = {
   htmlToText,
   buildPresentationQuiz,
   readBindingBlock,
+  locateShowYourThinking,
+  showYourThinkingFragments,
+  renderShowYourThinking,
   readShowYourThinking,
   readQuizDirections,
   renderAssessmentPresentation,
