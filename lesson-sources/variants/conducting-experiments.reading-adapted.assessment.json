@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "kind": "lyfelabz.assessmentPresentation",
+  "lessonSlug": "conducting-experiments",
+  "assessmentRevisionId": "assessment_conducting-experiments__r1",
+  "traits": {
+    "language": "adapted",
+    "choiceCount": 3
+  },
+  "directions": "There are 10 questions about everything in this lesson. Some questions describe new experiments for you to analyze. Answer every question, and then submit.",
+  "items": [
+    {
+      "itemId": "q1",
+      "stem": "Which sentence best describes a good hypothesis?",
+      "displayedOptions": [
+        {
+          "optionId": "A",
+          "text": "A wild guess about what will happen, not based on anything you already know"
+        },
+        {
+          "optionId": "B",
+          "text": "A testable, educated guess that explains a cause-and-effect relationship between variables"
+        },
+        {
+          "optionId": "C",
+          "text": "A fact that other scientists have already proven true"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "D",
+          "rationale": "\"A question that begins every scientific investigation\" confuses the hypothesis with a different step of inquiry (the question comes first, then the hypothesis). That is a sequence-of-inquiry error rather than a misunderstanding of what a hypothesis is, and the quiz construct is the nature of a good hypothesis. The two retained lures bracket the correct answer from opposite sides: a wild guess has too little basis (the testable and not-testable cards, the Builder's rejection of \"luck\"), and a proven fact claims too much certainty (the Builder's \"a well-built hypothesis can still turn out to be wrong\", and a conclusion is decided only after the results are in)."
+        }
+      ],
+      "feedback": "A hypothesis is an educated guess that explains an observation based on what you already know. A good hypothesis is testable. It also explains the cause-and-effect relationship between variables. It is not a wild guess. It is also not a proven fact, because a hypothesis can turn out to be wrong once the evidence is in."
+    },
+    {
+      "itemId": "q2",
+      "stem": "A student drops the same ball onto the same floor. She drops it from 1 m, 2 m, and 3 m. She wants to know if dropping the ball from higher up changes how high it bounces. What is the independent variable?",
+      "displayedOptions": [
+        {
+          "optionId": "C",
+          "text": "The height she drops the ball from"
+        },
+        {
+          "optionId": "A",
+          "text": "How high the ball bounces back up each time"
+        },
+        {
+          "optionId": "B",
+          "text": "The type of ball she drops"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "D",
+          "rationale": "\"The type of floor\" and \"The type of ball used\" test the same misconception: choosing a control variable that the stem says stays the same. Keeping one of them keeps that diagnosis. The key distractor, \"How high the ball bounces\" (swapping the independent and dependent variables), stays."
+        }
+      ],
+      "feedback": "The drop height is the factor the student changes on purpose, so it is the independent variable. The bounce height responds to that change, so it is the dependent variable. The same ball and the same floor are control variables."
+    },
+    {
+      "itemId": "q3",
+      "stem": "In the bouncing ball experiment, the student uses the same ball and the same floor every time. Why does she keep them the same?",
+      "displayedOptions": [
+        {
+          "optionId": "B",
+          "text": "To save money, so she does not need to buy more balls"
+        },
+        {
+          "optionId": "C",
+          "text": "Because the bounce height, the dependent variable, must stay the same"
+        },
+        {
+          "optionId": "A",
+          "text": "So only the drop height could cause a change in the bounce"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "D",
+          "rationale": "\"So the experiment finishes faster\" and \"To save money on buying extra balls\" both give a practical convenience instead of a scientific reason. Keeping one keeps that diagnosis. The more important lure, thinking the dependent variable must be held constant, stays."
+        }
+      ],
+      "feedback": "Control variables are kept constant. This makes sure any change measured was due to the independent variable. If the ball or the floor changed too, the student could not tell what really caused a difference in the bounce. The bounce height is the dependent variable, so it is supposed to change."
+    },
+    {
+      "itemId": "q4",
+      "stem": "Which of these is a quantitative observation?",
+      "displayedOptions": [
+        {
+          "optionId": "A",
+          "text": "The foam smelled very sweet, and it looked creamy and white"
+        },
+        {
+          "optionId": "C",
+          "text": "The eruption was really impressive and loud"
+        },
+        {
+          "optionId": "D",
+          "text": "The eruption lasted 8 seconds and reached 190 centimeters"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "B",
+          "rationale": "\"The soda felt cold and fizzy on my hand\" repeats the sensory-description error that the smell-and-color choice already tests. The opinion choice (\"really impressive and loud\") stays because it tests a different confusion: treating an opinion or a sound as a measurement."
+        }
+      ],
+      "feedback": "Quantitative observations use precise measurements and numbers, like 8 seconds and 190 centimeters. Smells and colors are qualitative observations. Calling an eruption impressive is an opinion, and it is not a measurement."
+    },
+    {
+      "itemId": "q5",
+      "stem": "You walk into the kitchen. You observe that the cookie jar is open, there are crumbs on the floor, and your dog is licking its lips. You decide that the dog ate the cookies. Which sentence is true?",
+      "displayedOptions": [
+        {
+          "optionId": "B",
+          "text": "The jar, the crumbs, and the lip-licking are observations. The dog eating the cookies is an inference."
+        },
+        {
+          "optionId": "A",
+          "text": "The jar, the crumbs, and the lip-licking are inferences. The dog eating the cookies is an observation."
+        },
+        {
+          "optionId": "C",
+          "text": "Everything in this kitchen story is an observation."
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "D",
+          "rationale": "\"Everything in the scenario is an inference\" is the least common error. Students far more often treat a conclusion as something they saw, which \"Everything is an observation\" keeps. The observation-inference reversal stays as the key distractor, written in the same form as the correct choice so neither choice stands out."
+        }
+      ],
+      "feedback": "What you directly see are observations: the open jar, the crumbs, and the lip-licking. You never saw the dog eat the cookies. That conclusion is an inference, drawn from your observations. It is a reasonable inference, but it is still an inference."
+    },
+    {
+      "itemId": "q6",
+      "stem": "A gardener wants to know if more sunlight makes tomato plants grow taller. Some plants get 2 hours of light, some get 6 hours, and some get 10 hours. After a month, she measures how tall they are. What is the dependent variable?",
+      "displayedOptions": [
+        {
+          "optionId": "B",
+          "text": "How many hours of light the plants get"
+        },
+        {
+          "optionId": "A",
+          "text": "The height of the plants"
+        },
+        {
+          "optionId": "D",
+          "text": "The amount of water the plants get"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "C",
+          "rationale": "\"The type of tomato plant\" and \"The amount of water given\" are both control variables. The water choice is kept because water was the independent variable in the lesson's own plant experiment, so it is the more tempting lure. The key distractor, \"The number of hours of light\" (swapping the independent and dependent variables), stays."
+        }
+      ],
+      "feedback": "The dependent variable is what you measure. It is the factor that responds to the change. Plant height responds to the light, so it is the dependent variable. Hours of light is the independent variable. The amount of water is a control variable."
+    },
+    {
+      "itemId": "q7",
+      "stem": "Which of these is a qualitative observation?",
+      "displayedOptions": [
+        {
+          "optionId": "C",
+          "text": "The leaves were a deep green and felt waxy"
+        },
+        {
+          "optionId": "A",
+          "text": "The plant grew 12 centimeters in two weeks"
+        },
+        {
+          "optionId": "D",
+          "text": "The pot held 500 milliliters of water"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "B",
+          "rationale": "All three canonical distractors are quantitative observations, so they test one misconception. \"The experiment ran for exactly 14 days\" is omitted because its absolute word \"exactly\" is a test-wise elimination cue. The growth and volume measurements keep the diagnosis."
+        }
+      ],
+      "feedback": "Qualitative observations use the senses to describe qualities like color and texture. Deep green, waxy leaves are an example. The other choices use numbers and measurements, so they are quantitative."
+    },
+    {
+      "itemId": "q8",
+      "stem": "A student writes this hypothesis: \"My plant will grow because plants are amazing.\" Why is it a weak hypothesis?",
+      "displayedOptions": [
+        {
+          "optionId": "B",
+          "text": "It uses the word because, and a good hypothesis should not use it"
+        },
+        {
+          "optionId": "C",
+          "text": "It clearly names the independent and dependent variables"
+        },
+        {
+          "optionId": "D",
+          "text": "It is not testable and names no cause-and-effect relationship"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "A",
+          "rationale": "\"It is too long to fit in a lab notebook\" judges a surface feature that no student would take for a scientific criterion, so it is the least plausible lure. \"Because is not allowed\" (misreading the if - then - because frame) and \"names the variables\" (not recognizing that no variables are named) keep the two meaningful misconceptions."
+        }
+      ],
+      "feedback": "A strong hypothesis is testable. It also explains how one variable affects another. \"Plants are amazing\" cannot be measured, and it names no cause and effect. So there is no way to design a fair experiment around it."
+    },
+    {
+      "itemId": "q9",
+      "stem": "You observe that the sidewalk is wet. The porch has a roof over it, and the porch is completely dry. What is the most reasonable inference?",
+      "displayedOptions": [
+        {
+          "optionId": "B",
+          "text": "Someone mopped the sidewalk but not the porch under the roof"
+        },
+        {
+          "optionId": "A",
+          "text": "It rained, and the roof kept the porch dry"
+        },
+        {
+          "optionId": "C",
+          "text": "The porch is made of waterproof material"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "D",
+          "rationale": "\"The sidewalk is always wet in the morning\" ignores the clues entirely, and its absolute word \"always\" is a test-wise elimination cue. \"Someone mopped only the sidewalk\" (an explanation that adds details no one observed) and \"waterproof material\" (an explanation that ignores the roof clue) keep the two meaningful reasoning errors."
+        }
+      ],
+      "feedback": "An inference is a conclusion drawn from observations. The sidewalk is wet, but the covered porch is dry. Together, these clues point to rain that the roof blocked. The other choices ignore the clues or add details you never observed."
+    },
+    {
+      "itemId": "q10",
+      "stem": "Two students want to know if sugar dissolves faster in warmer water. To make it a fair test, which factor should they keep the same?",
+      "displayedOptions": [
+        {
+          "optionId": "C",
+          "text": "The amount of sugar in each cup"
+        },
+        {
+          "optionId": "A",
+          "text": "The temperature of the water"
+        },
+        {
+          "optionId": "B",
+          "text": "How fast the sugar dissolves in the water"
+        }
+      ],
+      "omittedOptions": [
+        {
+          "optionId": "D",
+          "rationale": "\"Whether the water is warm or cold\" restates \"The temperature of the water\": both name the independent variable, so the canonical item has two near-duplicate lures. Keeping one keeps the diagnosis. \"How fast the sugar dissolves\" (holding the dependent variable constant) keeps the second misconception."
+        }
+      ],
+      "feedback": "Control variables stay constant so the test stays fair. The amount of sugar must be the same in every cup. The water temperature is the independent variable that they change on purpose. How fast the sugar dissolves is the dependent variable that they measure."
+    }
+  ],
+  "showYourThinking": {
+    "prompt": "Use only the supplied results above. Claim: Which soda made the tallest eruption in these results? Evidence: Which measurements support your claim? Name the specific numbers. Reasoning: Why do those measurements support your claim? Tell what the club kept the same. Tell what the three trials show. Last, look back at the prediction you made at the start of the lesson. Does this evidence support it?",
+    "modelAnswer": {
+      "paragraphs": [
+        {
+          "lead": "Claim:",
+          "text": "In this test, diet cola made the tallest eruption."
+        },
+        {
+          "lead": "Evidence:",
+          "text": "The three diet cola trials were 250, 230, and 260 cm. The three regular cola trials were 90, 110, and 80 cm. So every diet cola trial was higher than every regular cola trial. The flat cola trials were 0 cm every time."
+        },
+        {
+          "lead": "Reasoning:",
+          "text": "The type of soda was the only thing the club changed. They kept the brand, bottle size, temperature, number of Mentos, and drop method the same. So those factors cannot explain the difference in height. The heights changed a little from trial to trial. But diet cola was the highest in all three trials, so the result was not a one-time accident. These results show which soda erupted highest. They do not show why. One reasonable inference comes from the flat cola. It had lost most of its gas, and it did not erupt at all. So the dissolved gas is probably what forms the foam."
+        },
+        {
+          "lead": null,
+          "text": "If you predicted a different soda, this evidence does not support that prediction. Changing your thinking when the evidence disagrees is exactly what scientists do. If your answer makes a claim, cites specific measurements, and explains why they support it, your answer has all three parts."
+        }
+      ]
+    },
+    "requiredTerms": [
+      "claim",
+      "evidence",
+      "reasoning"
+    ]
+  }
+}

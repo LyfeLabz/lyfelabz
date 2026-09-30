@@ -286,10 +286,16 @@ describe("runtime shim - in-lesson navigation preparation (Policy E cache transi
   ])("retained variant / rendition page %s is covered without modification", async (relative) => {
     const html = fs.readFileSync(path.join(REPO_ROOT, relative), "utf8");
     const h = load(`${ORIGIN}/${relative}#assignment=a&launchRef=${"f".repeat(32)}`, { html });
-    const event = h.click('a[href="/app/lessons/lesson_earthquakes.html"]');
+    // Each retained page is exercised through its own first relocated
+    // in-lesson link (every retained lesson has one), to another lesson.
+    const own = /lesson_([a-z0-9-]+?)(?:__|\.html)/.exec(path.basename(relative))![1];
+    const href = h.doc.querySelector('a[href^="/app/lessons/lesson_"]')?.getAttribute("href");
+    expect(href).toMatch(/^\/app\/lessons\/lesson_[a-z0-9-]+\.html$/);
+    expect(href).not.toBe(`/app/lessons/lesson_${own}.html`);
+    const event = h.click(`a[href="${href}"]`);
     expect(event.defaultPrevented).toBe(true);
     await h.flush();
-    const target = `${ORIGIN}/app/lessons/lesson_earthquakes.html`;
+    const target = `${ORIGIN}${href}`;
     expect(h.events).toEqual([`GET reload ${target}`, `body read ${target}`, `navigate ${target}`]);
   });
 });

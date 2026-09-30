@@ -405,14 +405,24 @@ describe("retained record files", () => {
     expect(failures).toContain("unexpected file");
   });
 
-  test("the repository retains exactly the owner-certified Earth's Layers r1 and r2 presentations, and they verify cleanly", () => {
+  test("the repository retains exactly the owner-certified Earth's Layers r1 and r2 and Conducting Experiments r1 presentations, and they verify cleanly", () => {
     // F5.3 Slice 6B: the first real retained record (r1). Earth's Layers r2
-    // added the second. Records are add-only.
+    // added the second; Conducting Experiments r1 the third. Records are add-only.
     const EARTHS_LAYERS_R2_AP = "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903";
+    const CONDUCTING_EXPERIMENTS_AP = "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c";
     const result = AP.verifyRetainedRecords();
     expect(result.ok).toBe(true);
-    expect(result.count).toBe(2);
-    expect(fs.readdirSync(AP.retainedRecordDir()).sort()).toEqual([`${EARTHS_LAYERS_AP}.json`, `${EARTHS_LAYERS_R2_AP}.json`]);
+    expect(result.count).toBe(3);
+    expect(fs.readdirSync(AP.retainedRecordDir()).sort()).toEqual(
+      [`${EARTHS_LAYERS_AP}.json`, `${EARTHS_LAYERS_R2_AP}.json`, `${CONDUCTING_EXPERIMENTS_AP}.json`].sort(),
+    );
+    expect(AP.checkCertifiedPresentation(CONDUCTING_EXPERIMENTS_AP, {
+      lessonSlug: "conducting-experiments",
+      assessmentRevisionId: "assessment_conducting-experiments__r1",
+    }).failures).toEqual([]);
+    expect(AP.checkCertifiedPresentation(CONDUCTING_EXPERIMENTS_AP, { lessonSlug: "earths-layers" }).failures).toEqual([
+      'bound presentation belongs to lesson "conducting-experiments", not "earths-layers"',
+    ]);
     for (const [apId, own, other] of [
       [EARTHS_LAYERS_AP, "assessment_earths-layers__r1", "assessment_earths-layers__r2"],
       [EARTHS_LAYERS_R2_AP, "assessment_earths-layers__r2", "assessment_earths-layers__r1"],

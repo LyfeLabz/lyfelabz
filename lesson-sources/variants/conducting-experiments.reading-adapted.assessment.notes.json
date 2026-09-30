@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "kind": "lyfelabz.assessmentPresentationAuthoringNotes",
+  "lessonSlug": "conducting-experiments",
+  "assessmentRevisionId": "assessment_conducting-experiments__r1",
+  "items": [
+    {
+      "itemId": "q1",
+      "correctMeaning": "Both say a good hypothesis is testable, is an educated guess, and explains the cause-and-effect relationship between variables. \"The\" becomes \"a\" before \"cause-and-effect relationship\"; the three required ideas and the required terms testable and cause-and-effect are unchanged. The stem changes only \"statement\" to \"sentence\".",
+      "distractorMisconceptions": {
+        "A": "Thinks a hypothesis is a random or wild guess with no basis in prior knowledge (the misconception the testable and not-testable cards and the Builder's rejection of a \"luck\" reason target). Adapted as \"not based on anything you already know\" for the canonical \"based on nothing in particular\".",
+        "C": "Thinks a hypothesis is already established or certain, confusing it with a proven fact or a conclusion. The locked Builder feedback says a well-built hypothesis can still turn out to be wrong, and the lesson defines a conclusion as decided only after the results are in. Adapted as \"A fact that other scientists have already proven true\" for the canonical \"A fact that has already been proven true by other scientists\" (active voice, same meaning)."
+      }
+    },
+    {
+      "itemId": "q2",
+      "correctMeaning": "Both name the drop height as the independent variable. \"The height the ball is dropped from\" becomes \"The height she drops the ball from\". The stem keeps every fact (same ball, same floor, 1 m, 2 m and 3 m, bounce height as the result) and splits one long sentence into three short ones.",
+      "distractorMisconceptions": {
+        "A": "Swaps the independent and dependent variables: names the bounce height, which is what responds and is measured.",
+        "B": "Names a control variable (the ball, which the stem says stays the same) as the independent variable."
+      }
+    },
+    {
+      "itemId": "q3",
+      "correctMeaning": "Both say the ball and floor stay the same so that any change in bounce height can only be caused by the drop height. \"To make sure any change in bounce height was caused by the drop height alone\" becomes \"So only the drop height could cause a change in the bounce\". The stem states the setup first, then asks why.",
+      "distractorMisconceptions": {
+        "B": "Gives a practical convenience (cost) instead of the scientific purpose of a control variable.",
+        "C": "Thinks controls exist to keep the dependent variable from changing. The adapted wording names the bounce height as the dependent variable so the misconception is stated concretely, without the absolute word \"never\"."
+      }
+    },
+    {
+      "itemId": "q4",
+      "correctMeaning": "Identical correct option: the eruption lasted 8 seconds and reached 190 centimeters. The stem is unchanged.",
+      "distractorMisconceptions": {
+        "A": "Treats a sensory description (smell and color) as a quantitative observation.",
+        "C": "Treats an opinion (\"impressive\") and a sound quality (\"loud\") as a measurement."
+      }
+    },
+    {
+      "itemId": "q5",
+      "correctMeaning": "Both say the open jar, the crumbs, and the lip-licking are observations and the dog eating the cookies is an inference. The correct option is split into two short sentences. The stem splits one long sentence into four and changes \"conclude\" to \"decide\" and \"statement\" to \"sentence\".",
+      "distractorMisconceptions": {
+        "A": "Reverses observation and inference. The canonical choice reverses only the crumbs; the adapted choice reverses the whole set in the same form as the correct choice, so the reversal is still the tested error and the two choices cannot be told apart by form or length.",
+        "C": "Does not distinguish observation from inference and treats the conclusion as something that was seen."
+      }
+    },
+    {
+      "itemId": "q6",
+      "correctMeaning": "Both name the plant height as the dependent variable. \"The height the plants grow\" becomes \"The height of the plants\". The stem keeps every fact (sunlight, tomato plants, 2, 6 and 10 hours of light, height measured after a month) and splits the setup into short sentences.",
+      "distractorMisconceptions": {
+        "B": "Swaps the independent and dependent variables: names the hours of light, which is what the gardener changes.",
+        "D": "Names a control variable as the dependent variable. Water was the independent variable in the lesson's own plant experiment, so a student carrying that example over may choose it."
+      }
+    },
+    {
+      "itemId": "q7",
+      "correctMeaning": "Identical correct option: the leaves were a deep green and felt waxy. The stem is unchanged.",
+      "distractorMisconceptions": {
+        "A": "Treats a measurement with a number and unit (12 centimeters) as a qualitative observation.",
+        "D": "Treats a measurement with a number and unit (500 milliliters) as a qualitative observation."
+      }
+    },
+    {
+      "itemId": "q8",
+      "correctMeaning": "Both say the hypothesis is weak because it is not testable and does not explain a cause-and-effect relationship. \"Does not explain a cause-and-effect relationship\" becomes \"names no cause-and-effect relationship\"; testable and cause-and-effect stay. The stem introduces the quoted hypothesis in its own sentence.",
+      "distractorMisconceptions": {
+        "B": "Misreads the if - then - because frame and thinks the word because is not allowed.",
+        "C": "Does not notice that the statement names no variables, so accepts it as naming the independent and dependent variables. \"Correctly\" becomes \"clearly\" so the choice carries no answer-marker word."
+      }
+    },
+    {
+      "itemId": "q9",
+      "correctMeaning": "Identical correct option: it rained, and the roof kept the porch dry. The stem splits one sentence into two and states the roof as its own fact.",
+      "distractorMisconceptions": {
+        "B": "Adds a detail no one observed (someone mopping) instead of using the clues. \"Only the sidewalk\" becomes \"the sidewalk but not the porch under the roof\".",
+        "C": "Explains the dry porch with its material and ignores the roof clue that points to blocked rain."
+      }
+    },
+    {
+      "itemId": "q10",
+      "correctMeaning": "Both name the amount of sugar as the factor to keep the same. \"Added to each cup\" becomes \"in each cup\". The stem changes \"test whether warmer water dissolves sugar faster\" to \"want to know if sugar dissolves faster in warmer water\".",
+      "distractorMisconceptions": {
+        "A": "Names the independent variable (water temperature) as a control variable.",
+        "B": "Names the dependent variable (how fast the sugar dissolves) as a control variable."
+      }
+    }
+  ],
+  "showYourThinking": {
+    "evidenceComparison": "The supplied evidence (the ce-data block: setup, controls, three trials per soda, and the results table) is canonical and locked; the adapted presentation does not change, move, or restate it. The adapted model cites exactly the canonical model's measurements (250, 230 and 260 cm for diet cola; 90, 110 and 80 cm for regular cola; 0 cm for flat cola), every one of which appears in the supplied table (pinned by ce-reading-adapted-presentation.test.js). It lists the same controls (brand, bottle size, temperature, number of Mentos, drop method), keeps the which-not-why limit, the flat-cola inference, and the prediction check. The adapted prompt asks for the same claim, evidence, and reasoning, the same controls-and-trials explanation, and the same prediction check, in shorter sentences.",
+    "causalChain": [
+      {
+        "step": "Claim: name the soda that made the tallest eruption",
+        "terms": [
+          "claim",
+          "tallest eruption"
+        ]
+      },
+      {
+        "step": "Evidence: cite specific supplied measurements",
+        "terms": [
+          "evidence",
+          "250",
+          "90"
+        ]
+      },
+      {
+        "step": "Reasoning: only the type of soda changed; the controls rule out other causes",
+        "terms": [
+          "reasoning",
+          "the same"
+        ]
+      },
+      {
+        "step": "Repeated trials show the result is consistent",
+        "terms": [
+          "three trials",
+          "trial"
+        ]
+      },
+      {
+        "step": "The results show which soda, not why; the flat-cola inference about dissolved gas",
+        "terms": [
+          "inference",
+          "gas"
+        ]
+      },
+      {
+        "step": "Compare the evidence with the student's own prediction",
+        "terms": [
+          "prediction"
+        ]
+      }
+    ]
+  },
+  "unchanged": {
+    "q4.option:C": "Already short, plain, and literal; it is the opinion lure the item needs.",
+    "q4.option:D": "Correct choice kept verbatim so the numbers (8 seconds, 190 centimeters) and the measurement wording are exactly canonical.",
+    "q4.stem": "Already one short, direct question. \"Which observation is quantitative?\" was rejected because it would call the opinion choice an observation.",
+    "q7.option:A": "Short measurement statement with a number and unit; nothing to reduce.",
+    "q7.option:C": "Correct choice is already short and concrete; the sensory words are the construct.",
+    "q7.option:D": "Short measurement statement with a number and unit; nothing to reduce.",
+    "q7.stem": "Already one short, direct question, kept parallel with q4.",
+    "q9.option:A": "Correct choice is already short and literal.",
+    "q9.option:C": "Already short and literal; it is the ignores-the-roof lure.",
+    "q10.option:A": "A four-word noun phrase naming the independent variable; nothing to reduce."
+  }
+}

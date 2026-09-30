@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "assessmentPresentationRevisionId": "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c",
+  "reviewer": {
+    "role": "owner",
+    "reviewerId": "lyfelabz-owner"
+  },
+  "reviewedAt": "2026-09-30T12:26:18.000Z",
+  "determination": "approved",
+  "criteria": {
+    "scientificAccuracy": {
+      "result": "pass",
+      "notes": "Science as in assessment_conducting-experiments__r1: a good hypothesis is a testable, educated guess that explains a cause-and-effect relationship; independent, dependent, and control variables in new experiments; quantitative versus qualitative observations; observations versus inferences; fair-test controls."
+    },
+    "standardAndLearningTargetPreserved": {
+      "result": "pass",
+      "notes": "Same practice standards and learning goals as assessment_conducting-experiments__r1; bound to canonical r1 (no canonical r2)."
+    },
+    "cognitiveDemandPreserved": {
+      "result": "pass",
+      "notes": "Same reasoning per item in adapted language; three displayed choices per item is the accepted reading-adapted accommodation profile (adapted language, choiceCount 3)."
+    },
+    "correctAnswerEquivalence": {
+      "result": "pass",
+      "notes": "The canonical correct option is displayed on every item and each adapted correct choice keeps the canonical r1 correct meaning."
+    },
+    "distractorMisconceptionEquivalence": {
+      "result": "pass",
+      "notes": "Retained distractors keep the diagnostic misconceptions recorded in the authoring notes, including the IV/DV swaps in q2 and q6 and the observation/inference reversal in q5; q1 keeps the unsupported-guess and proven-fact misconceptions."
+    },
+    "omittedDistractorAppropriate": {
+      "result": "pass",
+      "notes": "Each item omits exactly one canonical distractor with a recorded rationale, approved as presented, including the q1 omission of D and the q10 removal of the near-duplicate independent-variable lure."
+    },
+    "noAnswerCueing": {
+      "result": "pass",
+      "notes": "Local automated review: 0 hard findings and 0 warnings as displayed; display positions BACCABACBA (A4 B3 C3); the correct choice is uniquely longest on 1 of 10 items (canonical 8 of 10). The 10 strings kept identical to canonical have recorded reasons."
+    },
+    "showYourThinkingEquivalence": {
+      "result": "pass",
+      "notes": "Adapted prompt and structured paragraph model (Claim:, Evidence:, Reasoning: leads and the closing paragraph) keep the claim-evidence-reasoning demand; semantic required terms claim, evidence, reasoning. The canonical Mentos supplied evidence (ce-data) is locked and identical, and every measurement the adapted model cites is a supplied trial height of the soda it names. Accepted presentation details: the prompt bolds each term with its colon outside the emphasis, and the model does not italicize which and why."
+    },
+    "explanationEquivalence": {
+      "result": "pass",
+      "notes": "Adapted feedback preserves the meaning of each canonical r1 explanation."
+    }
+  },
+  "items": [
+    {
+      "itemId": "q1",
+      "result": "pass",
+      "notes": "Owner approved: displays A (hypothesis as an unsupported guess), B (correct), C (hypothesis as a proven fact); D (the starting question) intentionally omitted."
+    },
+    {
+      "itemId": "q2",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Conducting Experiments r1 owner review packet)."
+    },
+    {
+      "itemId": "q3",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Conducting Experiments r1 owner review packet)."
+    },
+    {
+      "itemId": "q4",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Conducting Experiments r1 owner review packet)."
+    },
+    {
+      "itemId": "q5",
+      "result": "pass",
+      "notes": "Owner approved: the adapted full observation/inference reversal (A) is accepted as the reversal distractor."
+    },
+    {
+      "itemId": "q6",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Conducting Experiments r1 owner review packet)."
+    },
+    {
+      "itemId": "q7",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Conducting Experiments r1 owner review packet)."
+    },
+    {
+      "itemId": "q8",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Conducting Experiments r1 owner review packet)."
+    },
+    {
+      "itemId": "q9",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Conducting Experiments r1 owner review packet)."
+    },
+    {
+      "itemId": "q10",
+      "result": "pass",
+      "notes": "Owner approval of this exact content-addressed presentation (Conducting Experiments r1 owner review packet)."
+    }
+  ]
+}

@@ -400,9 +400,14 @@ describe("variant baseline", () => {
   test("variants:verify finds pr6b7c... as the retained current build; the manifest only appended it", () => {
     const res = variantSource.checkAuthoredVariants();
     expect(res.failures).toEqual([]);
-    expect(res.checked).toEqual([{ label: `${EL}/reading-adapted`, presentationRevisionId: PR6B7C, retained: true }]);
+    // Other lessons may declare retained variants too; every one must be retained.
+    expect(res.checked.every((c) => c.retained)).toBe(true);
+    expect(res.checked.filter((c) => c.label.startsWith(`${EL}/`))).toEqual([{ label: `${EL}/reading-adapted`, presentationRevisionId: PR6B7C, retained: true }]);
     const manifest = JSON.parse(read("app/lessons/variants/manifest.json"));
-    expect(manifest.map((e) => e.presentationRevisionId)).toEqual([PRFF01, PR90F, PR6B7C]);
+    // Append-only: the Earth's Layers history stays the manifest prefix, and
+    // every later entry belongs to another lesson.
+    expect(manifest.slice(0, 3).map((e) => e.presentationRevisionId)).toEqual([PRFF01, PR90F, PR6B7C]);
+    expect(manifest.filter((e) => e.lessonSlug === EL).map((e) => e.presentationRevisionId)).toEqual([PRFF01, PR90F, PR6B7C]);
     expect(manifest[2]).toMatchObject({ assessmentRevisionId: R2, assessmentPresentationRevisionId: AP5158 });
     expect(manifest[1]).toMatchObject({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
     expect(manifest[0].assessmentRevisionId).toBeUndefined();

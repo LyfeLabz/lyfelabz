@@ -136,4 +136,29 @@ module.exports = {
     "id=\"ce-thinking\"",
     "id=\"ce-think-model\"",
   ],
+  // Authored differentiated presentations (F5.2 §5.2; variantSource.cjs).
+  // Only prose inside these sections and containers may differ from the
+  // canonical lesson. The content-preservation contract for this variant is
+  // docs/platform/DIFFERENTIATION_CONTENT_PRESERVATION_CONDUCTING_EXPERIMENTS.md.
+  variants: {
+    "reading-adapted": {
+      source: "lesson-sources/variants/conducting-experiments.reading-adapted.html",
+      adaptableSections: ["hook", "hypothesis", "variables", "observations", "inference", "summary"],
+      adaptableSelectors: [
+        "p", "span", ".hook-card-observation", ".question-pause-text", ".process-body",
+        ".bridge-callout", ".wrapup-beat-answer", ".wrapup-beat-body",
+      ],
+      lockedSelectors: [
+        ".edu-note", ".teal-it", ".predict-hint", ".predict-buttons", ".hypo-card", ".sorter-card",
+        ".summary-table-wrap", ".wrapup-behavior-chips", ".section-label", ".hook-card-icon",
+        ".observe-icon", ".question-pause-icon", ".process-icon", ".process-mini",
+      ],
+      assessmentRevisionId: "assessment_conducting-experiments__r1",
+      // F5.3: owner-certified accessible assessment presentation (adapted
+      // language, three choices) for assessment_conducting-experiments__r1.
+      // Record: platform/functions/src/scripts/assessment-presentations/<id>.json;
+      // review: lesson-sources/variants/reviews/<id>.json.
+      assessmentPresentationRevisionId: "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c",
+    },
+  },
 };
