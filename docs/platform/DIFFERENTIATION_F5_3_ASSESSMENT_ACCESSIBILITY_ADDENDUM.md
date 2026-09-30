@@ -1086,7 +1086,15 @@ Every implementation sub-slice runs `npm --prefix app run verify` and the Functi
    - C6, C7-F, the AP records, the index documents, and the assignments are unchanged.
 5. Production follows under separate authorization.
 
-**Status (2026-09-29): local certification COMPLETE and PASSING; staging Stage A and Stage B COMPLETE and PASSING (records below). Production is not started.**
+**Status (2026-09-30): local certification COMPLETE and PASSING; staging Stage A and Stage B COMPLETE and PASSING (records below). Production canonical r2 is COMPLETE; production coverage, AP records, and activation are not started.**
+
+**Production record (2026-09-29 to 09-30).** Production followed the staged order as the Slice 9 + Policy E catch-up (full record: `SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md`, "Production catch-up").
+- P1: the five F5.3/9C-1 Functions, from HEAD `6930452`.
+- P2: Stage A Hosting `04a3bffc0b91518b` from `8b6773a` (23:18:15.275Z). The owner's beta student reached the r1 rendition for the existing r1 assignment.
+- P3: more than 3600 s later, `deploy-assessment.ts --target=production` deployed `assessment_earths-layers__r2` (00:20:50Z; revision and answer key equal the committed payload, key `BDACBADCAB` by plan). The parent became current r2.
+- P4: HEAD Hosting `1fdb7d3ff3ead2aa` (Stage B plus fragment hardening, Policy E, and the cache-transition fix), 00:26:01.579Z.
+
+The existing production Earth's Layers assignment stays frozen to r1. No r2 assignment, `…__r2` coverage, or `assessmentPresentations` record exists in production, and the delivery flag is absent.
 
 Owner rulings (2026-09-28, owner review packet):
 - **R2-D1.** Canonical r2 q1 to q10 approved as presented.

@@ -13,6 +13,30 @@ require explicit, separate human authorization from Chris before they may run.
 > be reconciled with `DIFFERENTIATION_F5_3_ASSESSMENT_ACCESSIBILITY_ADDENDUM.md`
 > §21 and the staging runbook §3d before any production activation. No
 > production action is authorized by this notice.
+>
+> **Production state (2026-09-30).** Slice 9, Earth's Layers canonical r2,
+> fragment hardening, and Policy E are live in production. The Slice 9 +
+> Policy E catch-up is recorded in `SECURITY_BACKLOG_LAUNCH_URL_ANALYTICS.md`
+> ("Production catch-up"). Current state:
+> - Hosting `1fdb7d3ff3ead2aa` (commit `6930452`).
+> - The five F5.3/9C-1 Functions (`assessmentSessionsBegin`,
+>   `assignmentsListForStudent`, `lmsDeepLinkResolve`,
+>   `assessmentSessionsAutosave`, `assessmentAttemptsFinalize`) run `6930452`
+>   source. The `lmsGradePassbacks*` Functions still run `60b5f6a` source
+>   (separately tracked drift). The rest are as §21.
+> - The Firestore ruleset of 2026-09-18 is unchanged. It lacks only the
+>   explicit `assessmentPresentations` deny-all, which the terminal
+>   default-deny already covers.
+> - Earth's Layers has r1 and r2 (current r2), with the existing assignment
+>   frozen r1.
+> - `platformConfig/differentiatedDelivery` is absent, 0 launch grants exist,
+>   the only coverage is the legacy unbound `prff01…` record, and there are no
+>   AP records.
+>
+> §21 below remains the historical 2026-09-26 observation. Before any
+> activation, this runbook's publication, coverage, deploy-set, and routing
+> steps must still be reconciled with Slice 9, including the legacy `prff01…`
+> record.
 
 Authoritative contract: `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md`
 (hereafter F5.2). This runbook never overrides F5.2; where they appear to

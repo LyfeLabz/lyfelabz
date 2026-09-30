@@ -1,6 +1,6 @@
 # Security Backlog: Launch Context in Lesson URLs and Analytics
 
-**Status:** Opened 2026-09-29 from the Earth's Layers r2 Stage B staging certification and the follow-up read-only reconnaissance. Item 1 is **resolved and staging-certified** by the launch-URL fragment hardening (commit `432e728`, staging Hosting `a473c38faacc9396`); production is not deployed. Items 1b, 2, 3 and 4 are **resolved by policy**: the owner approved Policy E (2026-09-29), the Hosting analytics boundary described below. Staging release `737d935a2c048330` exposed a 304 cache-transition defect (below). With the transition fix (commit `6776da5`, staging Hosting `f8b1c6edb86e71de`), Policy E is **staging-certified** (2026-09-29), with an owner-accepted transition residual. Production is not deployed.
+**Status:** Opened 2026-09-29 from the Earth's Layers r2 Stage B staging certification and the follow-up read-only reconnaissance. Item 1 is **resolved and staging-certified** by the launch-URL fragment hardening (commit `432e728`, staging Hosting `a473c38faacc9396`); production is not deployed. Items 1b, 2, 3 and 4 are **resolved by policy**: the owner approved Policy E (2026-09-29), the Hosting analytics boundary described below. Staging release `737d935a2c048330` exposed a 304 cache-transition defect (below). With the transition fix (commit `6776da5`, staging Hosting `f8b1c6edb86e71de`), Policy E is **staging-certified** (2026-09-29), with an owner-accepted transition residual, and **live in production** since 2026-09-30 (Hosting `1fdb7d3ff3ead2aa`; see "Production catch-up").
 
 ## Background
 
@@ -12,7 +12,7 @@ Every lesson page, meaning all 49 canonical lessons, their generated v1 and v2 p
 
 GA4 sends the page location as `dl` = the URL **including its query string but not its fragment**, and the referrer as `dr` = `document.referrer`. Both were verified on staging (2026-09-29). The authenticated application shell (`/app/`, My Science, the teacher workspace, `/app/a/{id}`) loads no analytics.
 
-## Item 1: `assignment` and `launchRef` in the query string (RESOLVED; staging-certified 2026-09-29; production not deployed)
+## Item 1: `assignment` and `launchRef` in the query string (RESOLVED; staging-certified 2026-09-29; live in production 2026-09-30)
 
 **Finding.** The assignment launcher put the launch context in the query string (`…?assignment=<id>&launchRef=<grant id>`). Every lesson-page analytics hit therefore sent both values to Google Analytics:
 - directly, in `dl`;
@@ -89,7 +89,7 @@ The one expected console error on zone pages is the blocked gtag.js load. `scrip
 
 No LyfeLabz code reads `document.referrer`.
 
-## Policy E cache transition (304 defect; fix staging-certified 2026-09-29; production not deployed)
+## Policy E cache transition (304 defect; fix staging-certified 2026-09-29; live in production 2026-09-30)
 
 **Defect (staging, 2026-09-29).** On fresh 200 responses Policy E behaves as designed. Firebase Hosting, however, sends **304 Not Modified without the custom headers** (no CSP, no Referrer-Policy); `curl` against staging `737d935a2c048330` confirms this.
 
@@ -205,13 +205,55 @@ Historical retained presentation artifacts remain immutable.
   - Afterwards, the whole integrity snapshot equals the pre-deploy baseline, with no sessions, apart from the launch-grant count.
 - **Accepted residual.** Unchanged and not re-tested. The certification browser still holds stale copies of both renditions and `lesson_earthquakes.html`.
 
-## Item 1b: assignment id in GA `dr` after a `/app/a/{id}` arrival (RESOLVED by policy; staging-certified 2026-09-29; production not deployed)
+## Production catch-up: Slice 9, Earth's Layers r2, fragment hardening, Policy E (2026-09-29 to 09-30)
+
+Production was at Hosting `fc8feef66cddca29`, proven to be commit `4ebaad1` (all 216 deployable files byte-identical to its rebuilt artifact), with Functions predating Slice 9. Deploying HEAD directly would have shipped the 9D client over pre-9C-1 Functions and failed every assignment launch (addendum 21.10). Production was therefore brought forward in the certified dependency order, each phase separately owner-authorized. Differentiated delivery stayed dark throughout: `platformConfig/differentiatedDelivery` is absent, and no coverage or AP record was published.
+
+1. **P1 Functions (2026-09-29T22:54:27Z to 22:54:30Z).** Exactly `assessmentSessionsBegin`, `assignmentsListForStudent`, `lmsDeepLinkResolve`, `assessmentSessionsAutosave`, and `assessmentAttemptsFinalize`, deployed from HEAD `6930452`.
+   - Each deployed source archive equals HEAD's 422 source files, with the release build's `lib`.
+   - The other 65 Functions are unchanged. Finalize keeps its Classroom secret (version 4).
+   - Before the deploy, all 25 live production sessions (r1, canonical) were checked against the new revision-bound response validator; none would be refused.
+2. **P2 Stage A Hosting (`04a3bffc0b91518b`, 2026-09-29T23:18:15.275Z).** Built from `8b6773a`.
+   - 106 files changed or were added:
+     - the Slice 9B r1 declarations (96 lesson pages, each byte-identical to production apart from the one block);
+     - the 9D bundle and active runtime;
+     - the r1 and r2 renditions and `revision-paths.json`;
+     - the inert `pr90f…` and `pr6b7c…`;
+     - the approved Conducting Experiments improvement `e5306e4`.
+   - No headers.
+   - The owner's production beta student then opened the existing Earth's Layers assignment from My Science. It routed to the r1 rendition, with no answer or submission.
+3. **P3 Earth's Layers r2 data (2026-09-30T00:20:50Z).** More than 3600 s after P2.
+   - `deploy-assessment.ts --target=production` wrote the r2 revision and answer key, both equal to the committed payload, and advanced `currentRevisionId` from r1 to r2.
+   - The r1 documents and the existing r1 assignment are unchanged.
+4. **P4 Hosting (`1fdb7d3ff3ead2aa`, 2026-09-30T00:26:01.579Z).** Built from HEAD `6930452`, byte-identical (221/221) to the staging-certified `f8b1c6edb86e71de`.
+   - The delta from Stage A was:
+     - the two Stage B Earth's Layers pages (r2);
+     - the fragment and cache-transition bundle;
+     - the app shell and its `app/lessons/index.html` copy;
+     - the runtime shim;
+     - the Policy E headers.
+   - Served headers are correct by zone on all 221 files: the CSP plus `strict-origin` under `/app/lessons/**`, `strict-origin` only elsewhere under `/app/**`, and neither on public pages.
+   - Verified in production:
+     - gtag.js is blocked and no `/g/collect` is sent on zone pages;
+     - the root page sends its GA page view;
+     - the pinned jsPDF loads and generates a PDF under the CSP.
+   - The signed-out certification browser held a genuine pre-Policy-E production copy of `/app/lessons/lesson_earths-layers.html`. A real Connections click from `lesson_plate-tectonics.html` produced the runtime shim's preparation GET before the navigation. The page was then served from the replaced copy, with the CSP, declaring r2, and with gtag blocked.
+   - The production bundle carries fragment-form launch context and the preparation mechanism. With the flag absent no launch grant is minted, so production launch URLs carry `#assignment=` only. Grant-bearing fragments are staging-certified.
+
+**Integrity.** Across P1 to P4, only these changed: the five Function revisions, the two Hosting releases, and the three P3 documents. Unchanged: the assignments (22, all r1), attempts (144), live sessions (25), passbacks (99), Current pointers (4), launch grants (0), the legacy `prff01…` coverage, AP records (0), and Rules.
+
+**Separately tracked.**
+- The production `lmsGradePassbacks*` Functions still run `60b5f6a` source, predating `4ebaad1`'s passback-engine and Classroom-provider changes. This is pre-existing, is not a Slice 9 dependency, and needs its own reconciliation.
+- AP and scoped-coverage publication, and differentiated-delivery activation, remain separate owner decisions.
+- The accepted transition residual applies to production browsers that cached `/app/lessons/**` pages before 2026-09-30T00:26Z.
+
+## Item 1b: assignment id in GA `dr` after a `/app/a/{id}` arrival (RESOLVED by policy; staging-certified 2026-09-29; live in production 2026-09-30)
 
 The Google Classroom arrival URL `/app/a/{assignmentId}` carries the assignment id in its **path**; this is the external Classroom contract and does not change. `/app/a/{id}` itself never ran analytics. The exposure came from the destination lesson page, whose GA `dr` was the arrival URL.
 
 Every arrival handoff target is under `/app/lessons/**`, where GA no longer loads, so no GA hit carries the arrival path. As defense in depth, `Referrer-Policy: strict-origin` on `/app/**` makes any navigation out of an `/app` page report only the origin. That includes a future link from the shell or a lesson to a GA-bearing public page. Verified in the emulator: `document.referrer` after leaving a `/app/lessons/variants/…` page is the bare origin.
 
-## Item 2: differentiated `/variants/` path reveals accommodated delivery (RESOLVED by policy; staging-certified 2026-09-29; production not deployed)
+## Item 2: differentiated `/variants/` path reveals accommodated delivery (RESOLVED by policy; staging-certified 2026-09-29; live in production 2026-09-30)
 
 A differentiated launch loads `/app/lessons/variants/lesson_<slug>__pr<hash>.html`. Under the boundary, GA receives nothing from that page, including the initial page view, enhanced-measurement events, reloads and same-origin navigation. GA also does not receive the path as a later page's `dr`, because of the referrer policy.
 
@@ -219,13 +261,13 @@ No `page_location` sanitization is needed, and no new presentation revision is m
 
 Hosting and CDN request logs still record `/variants/…` paths. That is first-party infrastructure logging under the Firebase Hosting service, distinct from third-party analytics.
 
-## Item 3: staging and production share one GA property (RESOLVED by policy; staging-certified 2026-09-29; production not deployed)
+## Item 3: staging and production share one GA property (RESOLVED by policy; staging-certified 2026-09-29; live in production 2026-09-30)
 
 `firebase.json` is shared by both Hosting sites, so the boundary applies to staging too: staging educational delivery, including certification launches and test launch-grant traffic, sends nothing to GA. A separate staging property is not required.
 
 Staging's **public** root pages still use the existing `G-9QHB5G2B5B` property, with hostname `lyfelabz-staging.web.app`, unless a GA hostname filter is separately configured in GA admin. That is an optional owner setting, not a code change.
 
-## Item 4: whether analytics should run on authenticated student assessment pages (RESOLVED by policy; staging-certified 2026-09-29; production not deployed)
+## Item 4: whether analytics should run on authenticated student assessment pages (RESOLVED by policy; staging-certified 2026-09-29; live in production 2026-09-30)
 
 No. Authenticated educational delivery does not use Google Analytics:
 - first-party records already hold what GA approximated on these pages: `launchGrants`, `assessmentSessions`, `attempts`, `auditEvents` and grade passback;
