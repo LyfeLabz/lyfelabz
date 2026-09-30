@@ -71,12 +71,40 @@ require explicit, separate human authorization from Chris before they may run.
 >   activating Reading Accessibility through Student Services makes
 >   differentiated delivery operational for that student wherever certified
 >   coverage exists (today Earth's Layers r1 and r2). This is intended
->   behavior. Keep Student Services accommodation changes controlled until
->   Phase D is certified. Setting `enabled` to `false` remains the F5.2 §8.6
+>   behavior. Setting `enabled` to `false` remains the F5.2 §8.6
 >   operational disable.
-> - Phase D (controlled Reading Accessibility activation for the designated
->   beta student, with end-to-end production delivery verification) is NOT
->   performed.
+> - Phases D/E are complete and certified (2026-09-30; full record: addendum
+>   §21.12, "Production Phases D/E"). **Earth's Layers r1 differentiated
+>   delivery is production-certified.** The designated beta student went
+>   canonical → active accommodation → differentiated delivery → inactive
+>   accommodation → canonical on the existing frozen-r1 assignment:
+>   - Scope limitation: the owning production account is
+>     `platformAdministrator`, and the accommodation callables require the
+>     canonical role `teacher`, so the production Student Services UI save
+>     could not be exercised and is **not** certified (staging certified it).
+>     Production used an operator-equivalent activation and deactivation
+>     (one transaction each, run outside the repository) with truthful
+>     `platformAdministrator` audit provenance and change-ticket
+>     correlation IDs.
+>   - Phase D: the record became active/adapted at `configRevision` 1, with
+>     history `r1` and one audit event. No grant was minted by activation.
+>   - Phase E: one My Science load minted exactly one differentiated grant
+>     (`reading-adapted`, `pr90f…` + `ap1fed…`, config 1, 6 h expiry). The
+>     launch reached the exact retained `pr90f…` artifact with `assignment`
+>     and `launchRef` in the fragment and no query string. The r1 AP
+>     displayed 3 choices on all 10 items. No answer, session, attempt or
+>     passback.
+>   - Deactivation: the record became inactive at `configRevision` 2, with
+>     history `r2` and a second audit event. The Phase E grant was left to
+>     expire (15:42:00Z) and be TTL-deleted.
+>   - Canonical restoration: a fresh My Science load minted no grant and
+>     routed to the canonical frozen-r1 rendition with no `launchRef`.
+>   - Assignments (22), attempts (144), Current pointers (4), sessions (25),
+>     passbacks (99), coverage, AP records, the flag, Hosting, Functions,
+>     Rules and the TTL policy were unchanged throughout.
+>   - r2 coverage is published and staging-certified, but no production r2
+>     assignment exists, so the r2 differentiated path is not
+>     production-exercised.
 >
 > §21 below remains the historical 2026-09-26 observation. A later formal
 > G19 run must still reconcile this runbook's deploy-set and routing steps
