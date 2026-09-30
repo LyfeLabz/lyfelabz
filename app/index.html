@@ -1621,6 +1621,16 @@
     background: #fff;
     width: 5.5rem;
   }
+  /* The compact 5.5rem width above is sized for Points. A native date
+     input also has to fit a full MM/DD/YYYY value beside the browser's
+     calendar-picker icon, which 5.5rem cannot, so the shared Due date
+     field clipped the year's last digit. It uses the same width and box
+     model as the per-class posting date (`.shell-assign-row-schedule
+     .shell-assign-row-date`) so both date fields in the dialog match. */
+  .shell-assign-field input[type="date"] {
+    width: 10rem;
+    box-sizing: border-box;
+  }
   /* Compact, always-current confirmation of how many classes this
      Assign action will affect. Sits opposite Cancel/Assign in the
      footer via `margin-right: auto`, not DOM order. */
