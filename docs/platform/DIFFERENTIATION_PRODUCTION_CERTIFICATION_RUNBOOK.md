@@ -48,14 +48,39 @@ require explicit, separate human authorization from Chris before they may run.
 >   Rules, the flag, and accommodations were unchanged.
 > - The P9 TTL policy on `launchGrants.expiresAt` is ACTIVE (added
 >   2026-09-27; re-read 2026-09-30). This supersedes the §21 observation.
-> - Phase C (flag activation) is NOT performed. Production remains dark:
->   `platformConfig/differentiatedDelivery` is absent, with 0 accommodations
->   and 0 launch grants. A controlled-beta accommodation and end-to-end
->   production delivery verification remain future work.
+> - Phase C (flag activation) is complete and certified (2026-09-30; full
+>   record: addendum §21.12, "Production activation (Phase C)"):
+>   - Chris created `platformConfig/differentiatedDelivery` with the boolean
+>     `enabled: true` in the Firebase Console. That was the only Phase C
+>     production mutation. Differentiated delivery is enabled.
+>   - At certification there were 0 accommodations (0 active, 0 history
+>     entries) and 0 launch grants.
+>   - The designated beta student opened the existing Earth's Layers
+>     assignment and received canonical delivery (frozen-r1 rendition, no
+>     `launchRef`, no `/variants/` route, four choices on all 10 items, no
+>     new session or grant). This certifies "flag enabled + no active
+>     accommodation → canonical delivery with no differentiated launch
+>     grant".
+> - The teacher Student Services UI gate is OPEN: `G19_GATE_OPEN = true`
+>   since `ece3861` ("Open Student Services pilot gate", 2026-09-26), and the
+>   production bundle carries it. Formal G19 remains deferred by owner
+>   decision. The §3 invariants 1-2, the §16 item 10 dark-state check, and
+>   the §20 checklist items 4, 20, 24 and 26 describe the G19 dark-state
+>   procedure and no longer describe current production.
+> - Operational note: with the gate open and the flag enabled, a teacher
+>   activating Reading Accessibility through Student Services makes
+>   differentiated delivery operational for that student wherever certified
+>   coverage exists (today Earth's Layers r1 and r2). This is intended
+>   behavior. Keep Student Services accommodation changes controlled until
+>   Phase D is certified. Setting `enabled` to `false` remains the F5.2 §8.6
+>   operational disable.
+> - Phase D (controlled Reading Accessibility activation for the designated
+>   beta student, with end-to-end production delivery verification) is NOT
+>   performed.
 >
-> §21 below remains the historical 2026-09-26 observation. Before any
-> activation, this runbook's deploy-set and routing steps must still be
-> reconciled with Slice 9.
+> §21 below remains the historical 2026-09-26 observation. A later formal
+> G19 run must still reconcile this runbook's deploy-set and routing steps
+> with Slice 9.
 
 Authoritative contract: `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md`
 (hereafter F5.2). This runbook never overrides F5.2; where they appear to
