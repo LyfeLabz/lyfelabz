@@ -72,7 +72,7 @@ const W2_V2_LESSONS = [
   { slug: "weathering-and-erosion", prefix: "el" },
   { slug: "renewable-and-nonrenewable-resources", prefix: "el" },
   { slug: "parts-of-an-ecosystem", prefix: "el" },
-  { slug: "photosynthesis", prefix: "el" },
+  { slug: "photosynthesis", prefix: "el", offset: "measured", offsetVars: "quiz" },
   { slug: "energy-flow", prefix: "el" },
   { slug: "carbon-cycle", prefix: "el" },
   { slug: "ecosystem-stability", prefix: "el" },
@@ -97,8 +97,12 @@ const W2_V2_LESSONS = [
 // heights, shared by v1 and v2, because the nav wraps to ~74/113/125px at
 // Chromebook/tablet/phone widths and no single constant clears it. Lessons
 // without the flag keep the original fixed-offset contract below.
-const MEASURED_OFFSET_RULE =
-  "scroll-margin-top: calc(var(--ce-nav-h, 64px) + var(--ce-progress-h, 56px) + 1rem);";
+// `offsetVars` names the published variable family: the pilot keeps its
+// lesson-specific `--ce-*` names; the reference implementation (photosynthesis)
+// and the rollout use the lesson-neutral `--quiz-*` names.
+function measuredOffsetRule(offsetVars) {
+  return `scroll-margin-top: calc(var(--${offsetVars}-nav-h, 64px) + var(--${offsetVars}-progress-h, 56px) + 1rem);`;
+}
 
 // The standalone (non-assignment) v2 completion copy. Used as an ordering
 // landmark: the O3 reveal must sit in the assignment branch, which precedes
@@ -109,8 +113,9 @@ function build(slug, target) {
   return builder.buildLesson({ slug, target, write: false }).bytes;
 }
 
-describe.each(W2_V2_LESSONS)("W2 hardened-results contract: $slug", ({ slug, prefix, offset }) => {
+describe.each(W2_V2_LESSONS)("W2 hardened-results contract: $slug", ({ slug, prefix, offset, offsetVars = "ce" }) => {
   const measured = offset === "measured";
+  const MEASURED_OFFSET_RULE = measuredOffsetRule(offsetVars);
   let v1;
   let v2;
 
