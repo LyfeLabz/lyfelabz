@@ -29,14 +29,33 @@ require explicit, separate human authorization from Chris before they may run.
 >   default-deny already covers.
 > - Earth's Layers has r1 and r2 (current r2), with the existing assignment
 >   frozen r1.
-> - `platformConfig/differentiatedDelivery` is absent, 0 launch grants exist,
->   the only coverage is the legacy unbound `prff01…` record, and there are no
->   AP records.
+> - P1-P4 (the infrastructure catch-up above) are complete.
+> - Phases A and B (coverage publication) are complete and certified. Earth's
+>   Layers `reading-adapted` has revision-bound scoped coverage for both
+>   revisions, published with `publish-variant.ts --target=production` (full
+>   record: addendum §21.12, "Production coverage publication"):
+>   - `presentationVariants/earths-layers__reading-adapted__r1`: active,
+>     r1 → `pr90f…` + `assessmentPresentations/ap1fed…` (Phase A);
+>   - `presentationVariants/earths-layers__reading-adapted__r2`: active,
+>     r2 → `pr6b7c…` + `assessmentPresentations/ap515838…` (Phase B);
+>   - the shared coverage evaluator resolves each revision from its scoped
+>     record (active, source scoped).
+> - The legacy unscoped `earths-layers__reading-adapted` record (`prff01…`,
+>   no revision) is unchanged and retained as historical evidence. Scoped
+>   records take precedence.
+> - Phases A and B wrote exactly those four documents. Assignments,
+>   attempts, Current pointers, sessions, passbacks, Hosting, Functions,
+>   Rules, the flag, and accommodations were unchanged.
+> - The P9 TTL policy on `launchGrants.expiresAt` is ACTIVE (added
+>   2026-09-27; re-read 2026-09-30). This supersedes the §21 observation.
+> - Phase C (flag activation) is NOT performed. Production remains dark:
+>   `platformConfig/differentiatedDelivery` is absent, with 0 accommodations
+>   and 0 launch grants. A controlled-beta accommodation and end-to-end
+>   production delivery verification remain future work.
 >
 > §21 below remains the historical 2026-09-26 observation. Before any
-> activation, this runbook's publication, coverage, deploy-set, and routing
-> steps must still be reconciled with Slice 9, including the legacy `prff01…`
-> record.
+> activation, this runbook's deploy-set and routing steps must still be
+> reconciled with Slice 9.
 
 Authoritative contract: `DIFFERENTIATION_F5_2_IMPLEMENTATION_SPECIFICATION.md`
 (hereafter F5.2). This runbook never overrides F5.2; where they appear to
@@ -125,9 +144,11 @@ staging-certified at `1ddc813`. G19 asks a different question than G14
 certified, remain dark, and fail closed, without misrepresenting delivery and
 without touching real student data.
 
-**What G19 can and cannot prove in production today.** The checked-in
-retention manifest `app/lessons/variants/manifest.json` is `[]`. No production
-presentation revision exists, and none may be published by G19. G19 therefore
+**What G19 can and cannot prove in production today.** At this revision
+(2026-09-26), the checked-in retention manifest
+`app/lessons/variants/manifest.json` was `[]` and no production presentation
+revision existed; that is superseded by Phases A and B (see the
+production-state notice above). None may be published by G19. G19 therefore
 proves the production posture of the delivery infrastructure (deployed as
 certified, deny-all, flag disabled, no coverage, every resolution canonical).
 It does not produce a production `"differentiated"` attempt. The
@@ -653,8 +674,9 @@ No row requires a production mutation.
 - **Under the curated artifact:** a published revision is deployable only
   because its manifest entry precedes the deploy. This matches the §6.8
   ordering and is enforced by `scripts/app-hosting/build.cjs`.
-- **Production:** no production artifact exists, so there is no production
-  liveness check to perform. Production publication is out of scope.
+- **Production:** at this revision no production artifact existed, so there
+  was no production liveness check to perform. Production publication is out
+  of G19 scope (Phases A and B later ran it separately; see the notice above).
 
 ### Slice 4 - Server resolution (Op C) + launch grants
 - **Prove:**
