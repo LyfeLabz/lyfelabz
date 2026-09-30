@@ -29,8 +29,17 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: platform/functions/package-lock.json
+          cache-dependency-path: |
+            platform/functions/package-lock.json
+            app/package-lock.json
       - name: Install dependencies
+        run: npm ci
+      # The operator CLIs (publish-variant, deploy-assessment-staging) and
+      # their tests load the canonical app-owned lessonBuilder modules at run
+      # time, and those resolve their dependencies (e.g. acorn) from
+      # app/node_modules.
+      - name: Install app dependencies
+        working-directory: app
         run: npm ci
       - name: Lint
         run: npm run lint
