@@ -40,9 +40,9 @@ const builder = require("../index.cjs");
 // comments from the canonical source, so it now satisfies the identical
 // contract as every other lesson.
 const W2_V2_LESSONS = [
-  { slug: "earths-layers", prefix: "el" },
+  { slug: "earths-layers", prefix: "el", offset: "measured", offsetVars: "quiz" },
   { slug: "plate-tectonics", prefix: "el", offset: "measured", offsetVars: "quiz" },
-  { slug: "water-cycle", prefix: "el" },
+  { slug: "water-cycle", prefix: "el", offset: "measured", offsetVars: "quiz" },
   { slug: "earthquakes", prefix: "el", offset: "measured", offsetVars: "quiz" },
   { slug: "what-is-life", prefix: "wl", offset: "measured", offsetVars: "quiz" },
   { slug: "cell-types", prefix: "ct", offset: "measured", offsetVars: "quiz" },
@@ -98,8 +98,9 @@ const W2_V2_LESSONS = [
 // Chromebook/tablet/phone widths and no single constant clears it. Lessons
 // without the flag keep the original fixed-offset contract below.
 // `offsetVars` names the published variable family: the pilot keeps its
-// lesson-specific `--ce-*` names; the reference implementation (photosynthesis)
-// and the rollout use the lesson-neutral `--quiz-*` names.
+// lesson-specific `--ce-*` names; the reference implementation (photosynthesis),
+// the rollout, and the Water Cycle and Earth's Layers special cases use the
+// lesson-neutral `--quiz-*` names. Every configured lesson is now measured.
 function measuredOffsetRule(offsetVars) {
   return `scroll-margin-top: calc(var(--${offsetVars}-nav-h, 64px) + var(--${offsetVars}-progress-h, 56px) + 1rem);`;
 }

@@ -347,12 +347,12 @@ describe("the Earth's Layers draft (real content, read only)", () => {
     ]);
   });
 
-  test("the certified r2 presentation previews deterministically without leaking review content, and its unmarked bytes are exactly retained pr6b7c...", () => {
+  test("the certified r2 presentation previews deterministically without leaking review content, and its unmarked bytes are exactly retained pr8996...", () => {
     const p1 = variantSource.buildUncertifiedAssessmentPreview({ slug: "earths-layers", variantKey: "reading-adapted", record: a.record });
     const p2 = variantSource.buildUncertifiedAssessmentPreview({ slug: "earths-layers", variantKey: "reading-adapted", record: a.record });
     expect(p1.html).toBe(p2.html);
     expect(p1.assessmentPresentationRevisionId).toBe(a.assessmentPresentationRevisionId);
-    expect(p1.projectedPresentationRevisionId).toBe("pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948");
+    expect(p1.projectedPresentationRevisionId).toBe("pr8996a455b762c209c8a74c20954521cd93313df920923292aa334161560f6e11");
     expect(p1.html).toContain(UNCERTIFIED_PREVIEW_MARKER);
     expect(R.readBindingBlock(p1.html)).toMatchObject({ lessonSlug: "earths-layers", assessmentRevisionId: R2, assessmentPresentationRevisionId: a.assessmentPresentationRevisionId });
     expect(R.readBindingBlock(p1.html).items.map((it) => it.optionIds.length)).toEqual(new Array(10).fill(3));
@@ -361,8 +361,8 @@ describe("the Earth's Layers draft (real content, read only)", () => {
   });
 
   test("the retained r1 presentation cannot be re-rendered from the authored variant source, which now carries the r2 quiz", () => {
-    // pr90f... stays retained and immutable; its byte reproduction is proven
-    // from the historical r1 variant source (assessmentRenditions.test.js).
+    // pr90f... stays retained and immutable; its bytes are hash-pinned and the
+    // r1 binding is proven from the r1 variant source (assessmentRenditions.test.js).
     expect(() => variantSource.buildUncertifiedAssessmentPreview({ slug: "earths-layers", variantKey: "reading-adapted", record: ap1fed })).toThrow(
       /script blocks are not byte-identical to the canonical lesson|variant quiz is not exactly assessment_earths-layers__r1/,
     );

@@ -36,5 +36,35 @@
     "publishedAt": "2026-09-30T12:30:00.000Z",
     "assessmentRevisionId": "assessment_conducting-experiments__r1",
     "assessmentPresentationRevisionId": "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c"
+  },
+  {
+    "lessonSlug": "earths-layers",
+    "variantKey": "reading-adapted",
+    "presentationRevisionId": "pr8996a455b762c209c8a74c20954521cd93313df920923292aa334161560f6e11",
+    "path": "app/lessons/variants/lesson_earths-layers__pr8996a455b762c209c8a74c20954521cd93313df920923292aa334161560f6e11.html",
+    "sha256": "8996a455b762c209c8a74c20954521cd93313df920923292aa334161560f6e11",
+    "publishedAt": "2026-09-30T22:39:56.000Z",
+    "assessmentRevisionId": "assessment_earths-layers__r2",
+    "assessmentPresentationRevisionId": "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903"
+  },
+  {
+    "lessonSlug": "conducting-experiments",
+    "variantKey": "reading-adapted",
+    "presentationRevisionId": "pr7715ff14a5d647f518fffe2f8af8de8cfd843a2739a3a32172a14d5363465e5e",
+    "path": "app/lessons/variants/lesson_conducting-experiments__pr7715ff14a5d647f518fffe2f8af8de8cfd843a2739a3a32172a14d5363465e5e.html",
+    "sha256": "7715ff14a5d647f518fffe2f8af8de8cfd843a2739a3a32172a14d5363465e5e",
+    "publishedAt": "2026-09-30T22:39:56.000Z",
+    "assessmentRevisionId": "assessment_conducting-experiments__r1",
+    "assessmentPresentationRevisionId": "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c"
+  },
+  {
+    "lessonSlug": "earths-layers",
+    "variantKey": "reading-adapted",
+    "presentationRevisionId": "pr7718b6fb29e40df7a338ea6896071229f232b884e9301f01c223181051071667",
+    "path": "app/lessons/variants/lesson_earths-layers__pr7718b6fb29e40df7a338ea6896071229f232b884e9301f01c223181051071667.html",
+    "sha256": "7718b6fb29e40df7a338ea6896071229f232b884e9301f01c223181051071667",
+    "publishedAt": "2026-09-30T23:33:37.000Z",
+    "assessmentRevisionId": "assessment_earths-layers__r1",
+    "assessmentPresentationRevisionId": "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25"
   }
 ]

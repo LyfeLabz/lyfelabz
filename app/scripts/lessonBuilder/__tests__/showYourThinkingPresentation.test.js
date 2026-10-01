@@ -12,9 +12,9 @@
  *   - one locator (quiz-prefix id convention, box-scoped, fail closed) for
  *     every real lesson, unprefixed and prefixed class families alike;
  *   - Earth's Layers string-path non-regression: retained records keep their
- *     ids, the rebuild-verified artifact reproduces byte for byte, and both
- *     bound retained artifacts' Show Your Thinking bytes reproduce from their
- *     records;
+ *     ids, the rebuild-verified artifact reproduces byte for byte, and every
+ *     bound retained artifact's Show Your Thinking bytes reproduce from its
+ *     record;
  *   - Biological Evolution (prefixed, inline) and Conducting Experiments
  *     (prefixed, paragraph model, supplied evidence, a second same-family
  *     textarea) render end to end, in memory, with synthetic wording only;
@@ -120,7 +120,12 @@ describe("Earth's Layers non-regression (string path)", () => {
   const BOUND = [
     ["pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189", "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25"],
     ["pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948", "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903"],
+    // The Quiz Results Polish successors of pr6b7c... and pr90f..., same records.
+    ["pr8996a455b762c209c8a74c20954521cd93313df920923292aa334161560f6e11", "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903"],
+    ["pr7718b6fb29e40df7a338ea6896071229f232b884e9301f01c223181051071667", "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25"],
   ];
+  // The retained revision today's sources build.
+  const CURRENT = BOUND[2][0];
   const artifact = (pr) => read(`app/lessons/variants/lesson_earths-layers__${pr}.html`);
   const record = (ap) => JSON.parse(read(`${RECORD_DIR}/${ap}.json`));
 
@@ -135,8 +140,8 @@ describe("Earth's Layers non-regression (string path)", () => {
 
   test("the rebuild-verified artifact reproduces byte for byte", () => {
     const built = variantSource.buildAuthoredVariant({ slug: "earths-layers", variantKey: "reading-adapted" });
-    expect(built.presentationRevisionId).toBe(BOUND[1][0]);
-    expect(built.bytes).toBe(artifact(BOUND[1][0]));
+    expect(built.presentationRevisionId).toBe(CURRENT);
+    expect(built.bytes).toBe(artifact(CURRENT));
   });
 
   test.each(BOUND)("retained %s Show Your Thinking bytes reproduce from %s", (pr, ap) => {

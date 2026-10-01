@@ -2668,6 +2668,15 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   border: 1px solid rgba(231,76,60,0.3);
   padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
 }
+/* Refused or failed submission: the headline says the score was not
+   recorded (text, not color alone) and the reason sits directly beneath it.
+   The board drops its green success tint so nothing reads as a recorded result. */
+.score-board.score-not-recorded {
+  background: rgba(231,76,60,0.06);
+  border-color: rgba(231,76,60,0.45);
+}
+.score-board.score-not-recorded .big-score { font-size: 2.2rem; line-height: 1.2; color: var(--text); }
+.score-board.score-not-recorded .score-error { border-radius: 12px; line-height: 1.5; text-align: left; }
 .reset-btn {
   background: linear-gradient(135deg, var(--blue), var(--blue-dark));
   color: #fff; border: none;
@@ -3636,6 +3645,7 @@ function ceSubmitQuiz() {
 
   if (pct === 100) {
     ceQuizState.continueTimer = setTimeout(function () {
+      ceQuizState.continueTimer = null;
       var more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
@@ -3657,8 +3667,22 @@ function ceSubmitQuiz() {
     // Defensive terminal-state handler so the UI is always truthful even if
     // finalize resolves null or rejects unexpectedly.
     var ceGenericError = 'Submission did not complete. Please refresh and try again.';
+    // Nothing was recorded, so the locally calculated score must not read as a
+    // recorded result: the headline becomes "Score not recorded" and the
+    // reason sits directly beneath it. The per-question feedback above stays.
     function ceShowSubmitError(msg) {
+      sb.classList.add('score-not-recorded');
+      document.getElementById('ce-score-num').textContent = 'Score not recorded';
+      document.getElementById('ce-score-msg').textContent = 'Your teacher did not receive this attempt. Your answer feedback is still shown above.';
       ceFinalStatus.innerHTML = '<div class="score-error">⚠️ Could not submit: ' + (msg || ceGenericError) + '</div>';
+      // Keep the student on the result: cancel a pending perfect-score jump
+      // to More, or bring the result back if that jump already happened.
+      if (ceQuizState.continueTimer) {
+        clearTimeout(ceQuizState.continueTimer);
+        ceQuizState.continueTimer = null;
+      } else if (pct === 100) {
+        sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
     window.lyfelabz.lessonQuiz.finalize(ceQuizState.selected, { writtenResponse: ceThinkingText }).then(function (r) {
       if (r && r.ok) {
@@ -3722,7 +3746,7 @@ function ceResetQuiz() {
     clearTimeout(ceQuizState.continueTimer);
     ceQuizState.continueTimer = null;
   }
-  document.getElementById('ce-score').classList.remove('show');
+  document.getElementById('ce-score').classList.remove('show', 'score-not-recorded');
   document.getElementById('ce-submit-status').innerHTML = '';
   // Restore Show Your Thinking for a fresh attempt.
   var ceThinkEl = document.getElementById('ce-thinking');

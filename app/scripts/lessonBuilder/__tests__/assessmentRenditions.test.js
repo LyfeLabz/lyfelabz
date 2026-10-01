@@ -10,8 +10,16 @@
  *
  * Multi-revision behavior is proven with the REAL Earth's Layers pair: the
  * committed r1 and r2 (authored and owner-approved 2026-09-28), the retained
- * r1 presentations (prff01..., pr90f... + ap1fed...) and the retained r2
- * presentation (pr6b7c... + ap515838...).
+ * r1 presentations (prff01..., pr90f... and its Quiz Results Polish successor
+ * pr7718..., both bound + ap1fed...) and the retained r2 presentations
+ * (pr6b7c... and its successor pr8996..., both + ap515838...).
+ *
+ * The Quiz Results Polish changed the canonical source's presentation (style
+ * and script), so today's sources build the successors pr7718... (from the
+ * historical r1 variant source) and pr8996... (from the authored source), in
+ * either stage and byte for byte, and can no longer rebuild pr90f..., prff01...
+ * or pr6b7c.... Those stay immutable and hash-pinned ("protected historical
+ * bytes"), and new bytes can never claim the pinned legacy-r1 provenance.
  *
  * The repository moves through two release states (addendum 21.12): Stage A
  * declares r1 as the canonical current revision, Stage B declares r2. Every
@@ -39,6 +47,11 @@ const EL = "earths-layers";
 const PR90F = "pr90f52136d39f36d21bf1602d0af3901adf0eae32a046c522907c5e932f342189";
 const PRFF01 = "prff01d9d2cf71210c491afc60cf98cd3d69b91d5c64cae51aff2463b50892375c";
 const PR6B7C = "pr6b7c74fe84fb20a9b05d4b2d6e006c21ed2bc02d58dcfbefc925dbd4c400e948";
+// The retained r2-bound revision today's sources build (Quiz Results Polish).
+const PR8996 = "pr8996a455b762c209c8a74c20954521cd93313df920923292aa334161560f6e11";
+// The retained r1-bound revision the historical r1 variant source builds today
+// (Quiz Results Polish successor of pr90f..., same ap1fed... binding).
+const PR7718 = "pr7718b6fb29e40df7a338ea6896071229f232b884e9301f01c223181051071667";
 const AP1FED = "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25";
 const AP5158 = "ap51583824375c58be36627f047f280510b0cde98e9aba2fbec7ef058ad2fc4903";
 const R1 = "assessment_earths-layers__r1";
@@ -175,7 +188,7 @@ describe("canonical revision declaration", () => {
   });
 
   test("retained variant bytes never carry the canonical declaration", () => {
-    for (const id of [PR90F, PRFF01, PR6B7C]) {
+    for (const id of [PR90F, PRFF01, PR6B7C, PR8996, PR7718]) {
       expect(N.readDeclaration(read(`app/lessons/variants/lesson_${EL}__${id}.html`))).toBeNull();
     }
   });
@@ -305,10 +318,10 @@ describe("variant baseline", () => {
   });
 
   test.each([["Stage A (r1 current)", R1], ["Stage B (r2 current)", R2]])(
-    "%s: the r2-bound variant builds to retained pr6b7c..., bound to r2 + ap515838...",
+    "%s: the r2-bound variant builds to retained pr8996..., bound to r2 + ap515838...",
     (_label, current) => {
       const r = buildAt(r2Bound(cfgAt(current)), stageSource(current));
-      expect(r.presentationRevisionId).toBe(PR6B7C);
+      expect(r.presentationRevisionId).toBe(PR8996);
       expect(r.assessmentBinding).toEqual({ assessmentRevisionId: R2, assessmentPresentationRevisionId: AP5158 });
       expect(r.assessmentRevisions).toEqual([`${EL}.r2.json`]);
       expect(r.assessmentRevisionBasis).toBe("assessmentPresentation");
@@ -316,23 +329,24 @@ describe("variant baseline", () => {
   );
 
   test.each([["Stage A (r1 current)", R1], ["Stage B (r2 current)", R2]])(
-    "%s: the historical r1 variant source still reproduces pr90f... (ap1fed...) and prff01... byte-for-byte",
+    "%s: the historical r1 variant source reproduces retained pr7718... (r1 + ap1fed...) byte-for-byte, and legacy provenance fails closed",
     (_label, current) => {
       const bound = buildAt(r1Bound(cfgAt(current)), stageSource(current), r1VariantSource());
-      expect(bound.presentationRevisionId).toBe(PR90F);
+      expect(bound.presentationRevisionId).toBe(PR7718);
+      expect(bound.bytes).toBe(read(`app/lessons/variants/lesson_${EL}__${PR7718}.html`));
       expect(bound.assessmentBinding).toEqual({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
-      const legacy = buildAt(unbound(cfgAt(current)), stageSource(current), r1VariantSource());
-      expect(legacy.presentationRevisionId).toBe(PRFF01);
-      expect(legacy.assessmentRevisionBasis).toBe("legacy-r1");
+      expect(bound.assessmentRevisionBasis).toBe("assessmentPresentation");
+      // New bytes can never claim the pinned legacy-r1 provenance of prff01....
+      expect(() => buildAt(unbound(cfgAt(current)), stageSource(current), r1VariantSource())).toThrow("is not a pinned historical legacy-r1 artifact");
     },
   );
 
-  test("the real repository state builds exactly the retained pr6b7c...", () => {
+  test("the real repository state builds exactly the retained pr8996...", () => {
     const repo = variantSource.buildVariantArtifact({
       cfg: elCfg, variantKey: "reading-adapted", canonicalSourceBytes: elSource, variantSourceBytes: variantBytes,
       assessmentPayloads: variantSource.loadAssessmentPayloads(EL),
     });
-    expect(repo.presentationRevisionId).toBe(PR6B7C);
+    expect(repo.presentationRevisionId).toBe(PR8996);
   });
 
   test("a variant cannot silently inherit or claim the wrong revision", () => {
@@ -360,10 +374,11 @@ describe("variant baseline", () => {
       for (const cfg of [r2Bound(cfgAt(CURRENT)), r2Bound(cfgAt(CURRENT), { assessmentRevisionId: R2 })]) {
         const r = buildAt(cfg, src());
         expect(r.assessmentRevisionBasis).toBe("assessmentPresentation");
-        expect(r.presentationRevisionId).toBe(PR6B7C);
+        expect(r.presentationRevisionId).toBe(PR8996);
       }
       const r1 = buildAt(r1Bound(cfgAt(CURRENT), { assessmentRevisionId: R1 }), src(), r1VariantSource());
-      expect(r1.presentationRevisionId).toBe(PR90F);
+      expect(r1.assessmentBinding).toEqual({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
+      expect(r1.presentationRevisionId).toBe(PR7718);
     });
 
     test("an explicit variant assessmentRevisionId supplies provenance for a new unbound variant", () => {
@@ -399,17 +414,20 @@ describe("variant baseline", () => {
     expect(() => configMod.validateConfigShape(withRev("r1"), EL)).toThrow("must be assessment_earths-layers__r<N>");
   });
 
-  test("variants:verify finds pr6b7c... as the retained current build; the manifest only appended it", () => {
+  test("variants:verify finds pr8996... as the retained current build; the manifest only appended it", () => {
     const res = variantSource.checkAuthoredVariants();
     expect(res.failures).toEqual([]);
     // Other lessons may declare retained variants too; every one must be retained.
     expect(res.checked.every((c) => c.retained)).toBe(true);
-    expect(res.checked.filter((c) => c.label.startsWith(`${EL}/`))).toEqual([{ label: `${EL}/reading-adapted`, presentationRevisionId: PR6B7C, retained: true }]);
+    expect(res.checked.filter((c) => c.label.startsWith(`${EL}/`))).toEqual([{ label: `${EL}/reading-adapted`, presentationRevisionId: PR8996, retained: true }]);
     const manifest = JSON.parse(read("app/lessons/variants/manifest.json"));
-    // Append-only: the Earth's Layers history stays the manifest prefix, and
-    // every later entry belongs to another lesson.
+    // Append-only: the original Earth's Layers history stays the manifest
+    // prefix, and the Quiz Results Polish successors (r2, then r1) were
+    // appended after it.
     expect(manifest.slice(0, 3).map((e) => e.presentationRevisionId)).toEqual([PRFF01, PR90F, PR6B7C]);
-    expect(manifest.filter((e) => e.lessonSlug === EL).map((e) => e.presentationRevisionId)).toEqual([PRFF01, PR90F, PR6B7C]);
+    expect(manifest.filter((e) => e.lessonSlug === EL).map((e) => e.presentationRevisionId)).toEqual([PRFF01, PR90F, PR6B7C, PR8996, PR7718]);
+    expect(manifest.find((e) => e.presentationRevisionId === PR8996)).toMatchObject({ assessmentRevisionId: R2, assessmentPresentationRevisionId: AP5158 });
+    expect(manifest.find((e) => e.presentationRevisionId === PR7718)).toMatchObject({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
     expect(manifest[2]).toMatchObject({ assessmentRevisionId: R2, assessmentPresentationRevisionId: AP5158 });
     expect(manifest[1]).toMatchObject({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1FED });
     expect(manifest[0].assessmentRevisionId).toBeUndefined();
@@ -418,7 +436,7 @@ describe("variant baseline", () => {
 
 describe("protected historical bytes", () => {
   test("retained variant artifacts still hash to their presentation revision ids", () => {
-    for (const id of [PR90F, PRFF01, PR6B7C]) {
+    for (const id of [PR90F, PRFF01, PR6B7C, PR8996, PR7718]) {
       expect(`pr${sha256(fs.readFileSync(path.join(ROOT, `app/lessons/variants/lesson_${EL}__${id}.html`)))}`).toBe(id);
     }
   });
