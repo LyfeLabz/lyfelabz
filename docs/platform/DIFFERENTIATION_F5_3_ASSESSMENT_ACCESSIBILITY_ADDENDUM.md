@@ -1108,6 +1108,8 @@ Every implementation sub-slice runs `npm --prefix app run verify` and the Functi
 
 The existing production Earth's Layers assignment stays frozen to r1. No r2 assignment exists in production.
 
+**Current-state note (2026-10-01).** The production coverage named in this section (`pr90f…` for r1, `pr6b7c…` for r2) was later repointed to the Quiz Results Polish successors `pr7718b6fb29e40df7a338ea6896071229f232b884e9301f01c223181051071667` (r1, existing r1 AP binding) and `pr8996a455b762c209c8a74c20954521cd93313df920923292aa334161560f6e11` (r2, existing r2 AP binding). The earlier presentations are retained and immutable; the records above are historical evidence and are not rewritten. Production Water Cycle is on `assessment_water-cycle__r2` (2026-10-01T11:47:41Z). Conducting Experiments successor `pr7715ff14…` is hosted and staging-certified but has no production coverage. Current state: `CURRENT_PLATFORM_STATE.md` and `RELEASE_2026-10-01_PRODUCTION_APP_CATCHUP.md`.
+
 **Production coverage publication (2026-09-30, Phases A and B).** Each phase ran `publish-variant.ts --op=publish --target=production` from a clean worktree of `deab657`, with the guarded no-op `HOSTING_DEPLOYED` stage. Every stage passed, and hosted bytes matched the retained artifact before any write. The AP was created first and the scoped record last.
 - Phase A (01:52:03Z): `assessmentPresentations/ap1fed…` and `presentationVariants/earths-layers__reading-adapted__r1` (active, r1 → `pr90f…` + `ap1fed…`).
 - Phase B (01:59:11Z): `assessmentPresentations/ap515838…` and `presentationVariants/earths-layers__reading-adapted__r2` (active, r2 → `pr6b7c…` + `ap515838…`).

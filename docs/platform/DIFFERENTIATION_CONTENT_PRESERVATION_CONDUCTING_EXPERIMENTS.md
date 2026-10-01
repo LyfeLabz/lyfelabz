@@ -23,6 +23,14 @@ reasoning.
 - Status: contract, lesson prose, and assessment presentation owner-approved
   and certified (2026-09-30); presentation retained (see section 8). No
   presentation coverage is published.
+  **Current-state note (2026-10-01):** the Quiz Results Polish rollout minted the
+  successor presentation
+  `pr7715ff14a5d647f518fffe2f8af8de8cfd843a2739a3a32172a14d5363465e5e`
+  (same `ap1acc…` binding to `assessment_conducting-experiments__r1`). It is
+  staging-certified and hosted in the production bundle, but production coverage
+  remains absent by owner decision, so it is not production-active. The
+  `pr4bd0…` revision recorded in section 8 is historical and retained. See
+  `RELEASE_2026-10-01_PRODUCTION_APP_CATCHUP.md`.
 
 ### Variant configuration
 

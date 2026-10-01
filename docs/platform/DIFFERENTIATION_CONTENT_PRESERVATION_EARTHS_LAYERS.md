@@ -17,6 +17,13 @@ One record per lesson variant. Future variants get their own
 - Status: contract finalized and owner-approved (2026-09-26). The first
   authored revision was reviewed against it (see "Review of the authored
   revision" below).
+  **Current-state note (2026-10-01):** the Quiz Results Polish rollout minted
+  successor presentations that are now the production coverage: r1
+  `pr7718b6fb29e40df7a338ea6896071229f232b884e9301f01c223181051071667` and r2
+  `pr8996a455b762c209c8a74c20954521cd93313df920923292aa334161560f6e11` (existing
+  AP bindings). Earlier presentations (`pr90f…`, `pr6b7c…`) are retained,
+  immutable, and superseded as current coverage. See
+  `RELEASE_2026-10-01_PRODUCTION_APP_CATCHUP.md`.
 
 ---
 
