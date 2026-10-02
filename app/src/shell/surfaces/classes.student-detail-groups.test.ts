@@ -298,7 +298,8 @@ describe("unresolved legacy / invalid Current: no grouping, real titles", () => 
         [ALICE.studentId]: [unresolved("u1", Date.UTC(2026, 8, 1, 12)), unresolved("u2", Date.UTC(2026, 8, 8, 12))],
       },
     });
-    expect(cards(mount).map((c) => c.getAttribute("data-assignment-id"))).toEqual(["u1", "u2"]);
+    // Newest publication first: u2 (Sep 8) above u1 (Sep 1).
+    expect(cards(mount).map((c) => c.getAttribute("data-assignment-id"))).toEqual(["u2", "u1"]);
     expect(qa(mount, "[data-testid=student-detail-assignment-title]").map((t) => t.textContent)).toEqual([
       "Engineering Design",
       "Engineering Design",
@@ -318,7 +319,7 @@ describe("unresolved legacy / invalid Current: no grouping, real titles", () => 
       },
     });
     expect(cards(mount)).toHaveLength(2);
-    expect(qa(mount, "[data-testid=student-detail-best-score]").map((e) => e.textContent)).toEqual(["65%", "95%"]);
+    expect(qa(mount, "[data-testid=student-detail-best-score]").map((e) => e.textContent)).toEqual(["95%", "65%"]);
     expect(q(mount, "[data-group-resolution=valid]")).toBeNull();
   });
 });
@@ -514,5 +515,155 @@ describe("class attempts are read once per class session", () => {
     await settle();
     expect(text(mount, "student-detail-name")).toBe(ALICE.studentDisplayName);
     expect(qa(mount, "[data-testid=student-detail-best-score]").map((e) => e.textContent)).toEqual(["60%"]);
+  });
+});
+
+describe("history order: newest assignment publication first", () => {
+  const SEP_10 = Date.UTC(2026, 8, 10, 12);
+  const SEP_12 = Date.UTC(2026, 8, 12, 12);
+  const SEP_20 = Date.UTC(2026, 8, 20, 12);
+  const SEP_21 = Date.UTC(2026, 8, 21, 12);
+  const OCT_2 = Date.UTC(2026, 9, 2, 12);
+
+  // Assignment A (Sep 10) and Assignment B (Sep 20), different lessons.
+  // The server delivers groups in id order, so A always arrives first.
+  const groupA = (overrides: Partial<StudentAssignmentGroup> = {}) =>
+    group({
+      lessonSlug: "lesson_water-cycle",
+      operationalAssignmentId: "asg-a",
+      assignmentIds: ["asg-a"],
+      title: "Assignment A",
+      publishedAt: SEP_10,
+      ...overrides,
+    });
+  const groupB = (overrides: Partial<StudentAssignmentGroup> = {}) =>
+    group({
+      lessonSlug: "lesson_earths-layers",
+      operationalAssignmentId: "asg-b",
+      assignmentIds: ["asg-b"],
+      title: "Assignment B",
+      publishedAt: SEP_20,
+      ...overrides,
+    });
+  const ids = (mount: HTMLElement) => cards(mount).map((c) => c.getAttribute("data-assignment-id"));
+
+  const withRegistry = (
+    deps: ClassesSurfaceDeps,
+    registry: Array<{ assignmentId: string; title: string; publishedAt?: number }>,
+  ): ClassesSurfaceDeps => ({
+    ...deps,
+    assignmentDetail: {
+      list: () => registry.map((r) => ({ ...r, status: "published" as const, className: "(A) Science" })),
+      open: jest.fn(),
+      register: jest.fn(),
+      setOutletController: jest.fn(),
+    } as never,
+  });
+  async function openAliceWith(deps: ClassesSurfaceDeps) {
+    const mount = await mountSurface(deps);
+    await openClass(mount, CLASS_A);
+    await showStudents(mount);
+    await openStudent(mount, ALICE.studentId);
+    return mount;
+  }
+
+  test("the newer published assignment appears first regardless of server delivery order", async () => {
+    const { mount } = await openAlice({
+      attemptsByClass: { [CLASS_A]: [attempt("asg-a", 70, SEP_12), attempt("asg-b", 90, SEP_21)] },
+      groupsByStudent: { [ALICE.studentId]: [groupA(), groupB()] },
+    });
+    expect(ids(mount)).toEqual(["asg-b", "asg-a"]);
+  });
+
+  test("retaking an older assignment (Oct 2) never moves it above a newer assignment", async () => {
+    const { mount } = await openAlice({
+      // Attempts arrive submittedAt desc, exactly as the class read returns them.
+      attemptsByClass: {
+        [CLASS_A]: [
+          attempt("asg-a", 95, OCT_2, 2),
+          attempt("asg-b", 80, SEP_21, 1),
+          attempt("asg-a", 60, SEP_12, 1),
+        ],
+      },
+      groupsByStudent: { [ALICE.studentId]: [groupA(), groupB()] },
+    });
+    expect(ids(mount)).toEqual(["asg-b", "asg-a"]);
+    expect(qa(mount, "[data-testid=student-detail-assignment-title]").map((t) => t.textContent)).toEqual([
+      "Assignment B",
+      "Assignment A",
+    ]);
+    // The retake still counts toward A's own cumulative history.
+    expect(qa(mount, "[data-testid=student-detail-best-score]").map((e) => e.textContent)).toEqual(["80%", "95%"]);
+  });
+
+  test("score and submission times never control order: an unattempted newer assignment stays above a recently scored older one", async () => {
+    const { mount } = await openAlice({
+      attemptsByClass: { [CLASS_A]: [attempt("asg-a", 100, OCT_2, 3), attempt("asg-a", 50, SEP_12, 1)] },
+      groupsByStudent: { [ALICE.studentId]: [groupA(), groupB()] },
+    });
+    expect(ids(mount)).toEqual(["asg-b", "asg-a"]);
+    expect(cards(mount)[0]!.getAttribute("data-assignment-status")).toBe("not-started");
+  });
+
+  test("equal publication times order deterministically by assignment id", async () => {
+    const forward = await openAlice({
+      attemptsByClass: { [CLASS_A]: [attempt("asg-b", 80, OCT_2)] },
+      groupsByStudent: { [ALICE.studentId]: [groupA({ publishedAt: SEP_20 }), groupB()] },
+    });
+    expect(ids(forward.mount)).toEqual(["asg-a", "asg-b"]);
+    document.body.innerHTML = "";
+    const reversed = await openAlice({
+      attemptsByClass: { [CLASS_A]: [attempt("asg-b", 80, OCT_2)] },
+      groupsByStudent: { [ALICE.studentId]: [groupB(), groupA({ publishedAt: SEP_20 })] },
+    });
+    expect(ids(reversed.mount)).toEqual(["asg-a", "asg-b"]);
+  });
+
+  test("a legacy entry without publishedAt sorts last (by id among themselves), never by its attempt time", async () => {
+    const legacy = (id: string) =>
+      group({ resolution: "unresolved", operationalAssignmentId: id, assignmentIds: [id], publishedAt: null });
+    const { mount } = await openAlice({
+      attemptsByClass: { [CLASS_A]: [attempt("legacy-2", 90, OCT_2), attempt("legacy-1", 70, SEP_12)] },
+      groupsByStudent: { [ALICE.studentId]: [legacy("legacy-2"), groupA(), legacy("legacy-1"), groupB()] },
+    });
+    expect(ids(mount)).toEqual(["asg-b", "asg-a", "legacy-1", "legacy-2"]);
+  });
+
+  test("an orphan attempt card is placed by its registry publishedAt, or last when unknown", async () => {
+    const h = harness({
+      attemptsByClass: {
+        [CLASS_A]: [attempt("orphan-unknown", 40, OCT_2), attempt("orphan-new", 55, SEP_21), attempt("asg-a", 70, SEP_12)],
+      },
+      groupsByStudent: { [ALICE.studentId]: [groupA(), groupB()] },
+    });
+    const mount = await openAliceWith(
+      withRegistry(h.deps, [{ assignmentId: "orphan-new", title: "Orphan", publishedAt: Date.UTC(2026, 8, 25, 12) }]),
+    );
+    expect(ids(mount)).toEqual(["orphan-new", "asg-b", "asg-a", "orphan-unknown"]);
+  });
+
+  test("the per-assignment fallback (no `groups`) also orders by registry publishedAt, not by latest attempt", async () => {
+    const h = harness({
+      attemptsByClass: {
+        [CLASS_A]: [attempt("asg-a", 95, OCT_2, 2), attempt("asg-b", 80, SEP_21), attempt("asg-a", 60, SEP_12)],
+      },
+      groupsByStudent: { [ALICE.studentId]: undefined },
+      assignmentsByStudent: {
+        [ALICE.studentId]: [
+          { assignmentId: "asg-a", hasLiveSession: false },
+          { assignmentId: "asg-b", hasLiveSession: false },
+          { assignmentId: "asg-c", hasLiveSession: false },
+        ],
+      },
+    });
+    const mount = await openAliceWith(
+      withRegistry(h.deps, [
+        { assignmentId: "asg-a", title: "Assignment A", publishedAt: SEP_10 },
+        { assignmentId: "asg-b", title: "Assignment B", publishedAt: SEP_20 },
+        { assignmentId: "asg-c", title: "Assignment C", publishedAt: Date.UTC(2026, 8, 30, 12) },
+      ]),
+    );
+    expect(ids(mount)).toEqual(["asg-c", "asg-b", "asg-a"]);
+    expect(cards(mount)[0]!.getAttribute("data-assignment-status")).toBe("not-started");
   });
 });

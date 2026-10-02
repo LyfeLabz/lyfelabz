@@ -4604,6 +4604,41 @@ const registryTitle = (
   assignmentId: string,
 ): string | null => registry.find((a) => a.assignmentId === assignmentId)?.title ?? null;
 
+const registryPublishedAt = (
+  registry: ReadonlyArray<AssignmentDetailMetadata>,
+  assignmentId: string,
+): number | null => {
+  const ms = registry.find((a) => a.assignmentId === assignmentId)?.publishedAt;
+  return typeof ms === "number" && Number.isFinite(ms) ? ms : null;
+};
+
+// Student Detail history order: newest assignment publication first, keyed
+// ONLY on the assignment's write-once `publishedAt` (never attempt,
+// submission, or score time, so a retake never moves an older assignment
+// above a newer one). Same comparator as `assignmentsListForStudent`:
+// missing `publishedAt` (legacy) last, assignment id ascending as the
+// deterministic tiebreaker.
+type StudentDetailCardEntry = {
+  readonly card: HTMLElement;
+  readonly assignmentId: string;
+  readonly publishedAt: number | null;
+};
+
+function appendCardsNewestPublishedFirst(
+  list: HTMLElement,
+  entries: ReadonlyArray<StudentDetailCardEntry>,
+): void {
+  const ordered = [...entries].sort((a, b) => {
+    if (a.publishedAt !== b.publishedAt) {
+      if (a.publishedAt === null) return 1;
+      if (b.publishedAt === null) return -1;
+      return b.publishedAt - a.publishedAt;
+    }
+    return a.assignmentId < b.assignmentId ? -1 : a.assignmentId > b.assignmentId ? 1 : 0;
+  });
+  for (const entry of ordered) list.appendChild(entry.card);
+}
+
 // The six metric boxes for one card, computed from exactly the attempts
 // passed in (one assignment, or a whole Current occurrence group).
 function appendStudentDetailMetricsGrid(
@@ -4661,9 +4696,10 @@ function appendStudentDetailStatus(
   li.appendChild(status);
 }
 
-// Pre-grouping rendering, unchanged: one card per assignment the student
-// completed (metrics), then one per expected-but-uncompleted assignment
-// (In progress / Not started). Used when the server sent no `groups`.
+// Pre-grouping rendering: one card per assignment the student completed
+// (metrics) and one per expected-but-uncompleted assignment (In progress /
+// Not started), newest publication first. Used when the server sent no
+// `groups`.
 function buildPerAssignmentStudentDetailList(
   doc: Document,
   studentAttempts: ReadonlyArray<CompletedAttemptSummary>,
@@ -4699,10 +4735,15 @@ function buildPerAssignmentStudentDetailList(
   list.className = "shell-student-detail-assignments";
   list.setAttribute("data-testid", "student-detail-assignments");
 
+  const entries: StudentDetailCardEntry[] = [];
+  const addEntry = (assignmentId: string, card: HTMLElement): void => {
+    entries.push({ card, assignmentId, publishedAt: registryPublishedAt(registry, assignmentId) });
+  };
+
   for (const [assignmentId, attempts] of byAssignment) {
     const card = buildCompletedAssignmentCard(doc, assignmentId, attempts, resolveTitle(assignmentId), registry);
     appendWrittenResponses(doc, card, attempts, attemptDetail);
-    list.appendChild(card);
+    addEntry(assignmentId, card);
   }
 
   // In Progress / Not Started cards: no metrics grid is ever rendered, so no
@@ -4721,9 +4762,10 @@ function buildPerAssignmentStudentDetailList(
       `student-detail-assignment-status-${assignmentId}`,
       hasLiveSession ? "In progress" : "Not started",
     );
-    list.appendChild(li);
+    addEntry(assignmentId, li);
   }
 
+  appendCardsNewestPublishedFirst(list, entries);
   return list;
 }
 
@@ -4778,6 +4820,10 @@ function buildGroupedStudentDetailList(
   list.className = "shell-student-detail-assignments";
   list.setAttribute("data-testid", "student-detail-assignments");
 
+  // A group card is keyed on the publication of the assignment it displays
+  // (Current, the closed Current, or the unresolved assignment itself) -
+  // the same `publishedAt` shown on its date line.
+  const entries: StudentDetailCardEntry[] = [];
   const claimed = new Set<string>();
   for (const group of groups) {
     for (const id of group.assignmentIds) claimed.add(id);
@@ -4786,7 +4832,11 @@ function buildGroupedStudentDetailList(
     const card = buildGroupCard(doc, group, attempts, registry);
     if (card !== null) {
       appendWrittenResponses(doc, card, attempts, attemptDetail);
-      list.appendChild(card);
+      entries.push({
+        card,
+        assignmentId: group.operationalAssignmentId ?? group.assignmentIds[0]!,
+        publishedAt: group.publishedAt,
+      });
     }
   }
 
@@ -4807,9 +4857,10 @@ function buildGroupedStudentDetailList(
       registry,
     );
     appendWrittenResponses(doc, card, attempts, attemptDetail);
-    list.appendChild(card);
+    entries.push({ card, assignmentId, publishedAt: registryPublishedAt(registry, assignmentId) });
   }
 
+  appendCardsNewestPublishedFirst(list, entries);
   return list.childElementCount === 0 ? null : list;
 }
 
