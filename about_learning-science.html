@@ -677,29 +677,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="hero-eyebrow">Evidence-Based Design</div>
   <h1>Learning Science</h1>
   <p>Every lesson, extension, and game on LyfeLabz is built around principles from cognitive psychology and the science of learning, not just intuition. Here's what's working under the hood.</p>
-
-  <!-- Hero-level toggles - visible and intentional for educator landing -->
-  <div style="margin-top:1.6rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;">
-    <div style="display:flex;gap:0.65rem;flex-wrap:wrap;justify-content:center;">
-      <button id="edu-hero-btn" onclick="toggleEduMode()" style="
-        display:inline-flex;align-items:center;gap:0.7rem;
-        font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;
-        letter-spacing:0.05em;text-transform:uppercase;
-        border-radius:99px;padding:0.6rem 1.5rem;cursor:pointer;
-        transition:all 0.22s ease;
-        border:1px solid rgba(59,200,232,0.3);
-        background:rgba(59,200,232,0.07);
-        color:rgba(59,200,232,0.65);
-      ">
-        <span id="edu-hero-dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:rgba(59,200,232,0.35);transition:all 0.22s;"></span>
-        <span id="edu-hero-label">Enable Educator Mode</span>
-      </button>
-    </div>
-    <div style="font-size:0.82rem;color:rgba(255,255,255,0.45);line-height:1.8;text-align:center;max-width:720px;">
-      Enabling Educator Mode highlights the cognitive strategy at work in each activity.<br>
-      Toggling it on applies it site-wide. Closing the tab resets everything.
-    </div>
-  </div>
 </div>
 
 
@@ -944,68 +921,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
-<script>
-function syncEduToggleUI(isOn) {
-  var btn  = document.getElementById('edu-toggle-btn');
-  var dot  = document.getElementById('edu-toggle-dot');
-  var lbl  = document.getElementById('edu-toggle-label');
-  var hint = document.getElementById('edu-toggle-hint');
-  var hBtn = document.getElementById('edu-hero-btn');
-  var hDot = document.getElementById('edu-hero-dot');
-  var hLbl = document.getElementById('edu-hero-label');
-  var hHnt = document.getElementById('edu-hero-hint');
-  if (isOn) {
-    // footer toggle
-    if (btn) {
-      btn.style.borderColor = 'rgba(59,200,232,0.55)';
-      btn.style.background  = 'rgba(59,200,232,0.12)';
-      btn.style.color       = 'rgba(59,200,232,0.95)';
-    }
-    if (dot) { dot.style.background = '#3bc8e8'; dot.style.boxShadow = '0 0 8px rgba(59,200,232,0.7)'; }
-    if (lbl) lbl.textContent = 'Learning Science Badges: On';
-    if (hint) hint.innerHTML = 'Badges are now visible on every activity page this session.';
-    // hero toggle
-    if (hBtn) {
-      hBtn.style.borderColor = 'rgba(59,200,232,0.6)';
-      hBtn.style.background  = 'rgba(59,200,232,0.14)';
-      hBtn.style.color       = '#3bc8e8';
-    }
-    if (hDot) { hDot.style.background = '#3bc8e8'; hDot.style.boxShadow = '0 0 10px rgba(59,200,232,0.75)'; }
-    if (hLbl) hLbl.textContent = 'Educator Mode: On';
-    if (hHnt) hHnt.innerHTML = 'Badges are visible on all activity pages. Navigate to any lesson or game to see them.';
-    document.body.classList.add('ls-active');
-  } else {
-    if (btn) {
-      btn.style.borderColor = 'rgba(59,200,232,0.22)';
-      btn.style.background  = 'rgba(59,200,232,0.05)';
-      btn.style.color       = 'rgba(59,200,232,0.5)';
-    }
-    if (dot) { dot.style.background = 'rgba(59,200,232,0.3)'; dot.style.boxShadow = 'none'; }
-    if (lbl) lbl.textContent = 'Enable Educator Mode';
-    if (hint) hint.innerHTML = 'Badges appear on every lesson, extension &amp; game, this session only.';
-    if (hBtn) {
-      hBtn.style.borderColor = 'rgba(59,200,232,0.3)';
-      hBtn.style.background  = 'rgba(59,200,232,0.07)';
-      hBtn.style.color       = 'rgba(59,200,232,0.65)';
-    }
-    if (hDot) { hDot.style.background = 'rgba(59,200,232,0.35)'; hDot.style.boxShadow = 'none'; }
-    if (hLbl) hLbl.textContent = 'Enable Educator Mode';
-    if (hHnt) hHnt.innerHTML = 'Turns on learning science badges across every activity, for this session only';
-    document.body.classList.remove('ls-active');
-  }
-}
-
-function toggleEduMode() {
-  var isOn = sessionStorage.getItem('lyfelabz-ls') === 'on';
-  var next = !isOn;
-  if (next) { sessionStorage.setItem('lyfelabz-ls', 'on'); }
-  else { sessionStorage.removeItem('lyfelabz-ls'); }
-  syncEduToggleUI(next);
-}
-
-(function() { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); })();
-</script>
-
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');</script>
 <script>
 const canvas = document.getElementById('stars');
@@ -1036,26 +951,6 @@ function draw(t) {
 }
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize(); requestAnimationFrame(draw);
-</script>
-<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
-<script>
-(function() {
-  document.addEventListener('keydown', function(e) {
-    var ae  = document.activeElement;
-    var tag = ae && ae.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
-    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
-    e.preventDefault();
-    if (typeof toggleEduMode === 'function') {
-      toggleEduMode();
-    } else {
-      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
-      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
-      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
-    }
-    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
-  });
-})();
 </script>
 
 </main>

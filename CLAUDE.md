@@ -272,6 +272,17 @@ navigation, section labels, and homepage cards defer to it.
 - Prefer: Explore, More, Connections.
 - Avoid: Goals, Recall, 5Ws, Learning Targets.
 
+**Individual-first.** Standard digital lessons are asynchronous, individual-first
+experiences. Student pages contain only controls relevant to the student's own
+learning; teacher and product configuration controls do not belong there.
+
+**Educator Mode is controlled only from `index.html`.** Every other page
+(lessons, extensions, simulations, investigations, challenges, games, about
+pages) only consumes the session state (`sessionStorage['lyfelabz-ls']` applied
+as `body.ls-active`) to reveal educator-only content such as `.edu-note`. Pages
+never render or wire their own switch: no button, footer toggle, hidden
+handler, or keyboard shortcut. Guarded by `app/scripts/educator-mode-control.test.js`.
+
 ---
 
 # VOCABULARY

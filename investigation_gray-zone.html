@@ -2710,9 +2710,7 @@ function notebookReview() {
   if (lsOn)   document.body.classList.add('ls-active');
   if (stemOn) document.body.classList.add('stem-active');
   document.addEventListener('DOMContentLoaded', function() {
-    const lsBtn   = document.querySelector('.ls-toggle');
     const stemBtn = document.querySelector('.stem-toggle');
-    if (lsBtn)   lsBtn.classList.toggle('active', lsOn);
     if (stemBtn) stemBtn.classList.toggle('active', stemOn);
   });
 })();
@@ -2720,13 +2718,6 @@ function toggleStem() {
   const on = document.body.classList.toggle('stem-active');
   sessionStorage.setItem('lyfelabz-stem', on ? 'on' : 'off');
   document.querySelector('.stem-toggle').classList.toggle('active', on);
-}
-function toggleLS() {
-  const on = document.body.classList.toggle('ls-active');
-  sessionStorage.setItem('lyfelabz-ls', on ? 'on' : 'off');
-  const btn = document.querySelector('.ls-toggle');
-  btn.classList.toggle('active', on);
-  btn.classList.toggle('ls', on);
 }
 </script>
 <script>
@@ -2874,26 +2865,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var params = new URLSearchParams(window.location.search);
   if (params.get('mode') === 'classroom') setMode(true);
 });
-</script>
-<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
-<script>
-(function() {
-  document.addEventListener('keydown', function(e) {
-    var ae  = document.activeElement;
-    var tag = ae && ae.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
-    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
-    e.preventDefault();
-    if (typeof toggleEduMode === 'function') {
-      toggleEduMode();
-    } else {
-      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
-      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
-      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
-    }
-    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
-  });
-})();
 </script>
 
 </main>

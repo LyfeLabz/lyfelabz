@@ -40,14 +40,15 @@ ul.edu-note-text li { margin-bottom: 0.2rem; }
 ul.edu-note-text li:last-child { margin-bottom: 0; }
 ```
 
-Toggle: there is no visible button. State is held in `sessionStorage['lyfelabz-ls']`
-(`'on'` / unset) and applied as `body.ls-active`. Two scripts make it work:
+Toggle: Educator Mode is turned on and off only from the `index.html` Educator Mode
+button (see CLAUDE.md, STUDENT LANGUAGE). State is held in
+`sessionStorage['lyfelabz-ls']` (`'on'` / unset) and applied as `body.ls-active`.
+A content page needs one script:
 
-1. Init (near the footer): adds `ls-active` on load if the session flag is on.
-2. Global hotkey (end of `<body>`): Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) toggles
-   the flag and the class. It ignores keystrokes while an input/textarea is focused.
+- Init (near the footer): adds `ls-active` on load if the session flag is on.
 
-Reuse both scripts as-is. Do not invent a new toggle or storage key.
+Reuse it as-is. Content pages never add a toggle, button, footer control, or
+keyboard shortcut, and never write the storage key.
 
 ---
 
@@ -181,8 +182,9 @@ click not hover, short paragraphs, high contrast, large targets.
    spaced hyphen before finishing.
 4. **Section count mismatch.** One note per section, placed last inside `.container`.
    Missing or duplicated notes break the "12 sections, 12 notes" expectation.
-5. **Toggle drift.** Reuse the exact `sessionStorage['lyfelabz-ls']` key, `body.ls-active`
-   class, and hotkey. A divergent key means the global hotkey stops working on that page.
+5. **Toggle drift.** Reuse the exact `sessionStorage['lyfelabz-ls']` key and
+   `body.ls-active` class. A divergent key means the homepage control stops reaching
+   that page. Never add a page-local control.
 6. **Student-view leakage.** Confirm `.edu-note { display: none; }` is present so notes
    never show with Educator Mode off.
 7. **Tag accuracy.** Do not tag "Dual coding" or "Misconception checking" unless the
@@ -195,7 +197,7 @@ click not hover, short paragraphs, high contrast, large targets.
 - [ ] Student view unchanged (notes hidden with Educator Mode off).
 - [ ] All notes `display: none` when off, `display: block` when on.
 - [ ] Note count equals section count.
-- [ ] Global hotkey toggles the class.
+- [ ] Turning Educator Mode on and off from `index.html` shows and hides the notes.
 - [ ] No console errors.
 - [ ] No placeholder text.
 - [ ] No em dashes.

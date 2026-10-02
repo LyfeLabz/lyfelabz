@@ -570,12 +570,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     </div>
 
-    <!-- Unified controls row -->
-    <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:1rem 1.5rem;display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
-      <span style="font-size:0.75rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-right:0.25rem;">Enable for this session:</span>
-      <button onclick="toggleEduMode()" style="display:inline-flex;align-items:center;gap:0.45rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;border-radius:99px;padding:0.38rem 1rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(59,200,232,0.6);background:rgba(59,200,232,0.1);color:#3bc8e8;">Learning Science</button>
-      <span style="font-size:0.72rem;color:rgba(255,255,255,0.2);margin-left:auto;">Session resets on tab close</span>
-    </div>
   </div>
 
   <!-- WHY LYFELABZ EXISTS -->
@@ -623,31 +617,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </footer>
 
 <script>
-function syncEduToggleUI(isOn) {
-  var btn = document.getElementById('edu-toggle-btn');
-  var dot = document.getElementById('edu-toggle-dot');
-  var lbl = document.getElementById('edu-toggle-label');
-  if (!btn) return;
-  if (isOn) {
-    btn.style.borderColor = 'rgba(59,200,232,0.55)'; btn.style.background = 'rgba(59,200,232,0.12)'; btn.style.color = 'rgba(59,200,232,0.95)';
-    dot.style.background = '#3bc8e8'; dot.style.boxShadow = '0 0 8px rgba(59,200,232,0.7)';
-    lbl.textContent = 'Learning Science: On';
-  } else {
-    btn.style.borderColor = 'rgba(59,200,232,0.8)'; btn.style.background = 'rgba(59,200,232,0.18)'; btn.style.color = '#3bc8e8';
-    dot.style.background = '#3bc8e8'; dot.style.boxShadow = 'none';
-    lbl.textContent = 'Show Learning Science Badges';
-  }
-}
-function toggleEduMode() {
-  var next = sessionStorage.getItem('lyfelabz-ls') !== 'on';
-  next ? sessionStorage.setItem('lyfelabz-ls','on') : sessionStorage.removeItem('lyfelabz-ls');
-  syncEduToggleUI(next);
-}
-(function() {
-  syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on');
-})();
-</script>
-<script>
   const canvas = document.getElementById('stars');
   const ctx = canvas.getContext('2d');
   let stars = [];
@@ -692,26 +661,6 @@ function toggleEduMode() {
 
   resize();
   requestAnimationFrame(draw);
-</script>
-<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
-<script>
-(function() {
-  document.addEventListener('keydown', function(e) {
-    var ae  = document.activeElement;
-    var tag = ae && ae.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
-    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
-    e.preventDefault();
-    if (typeof toggleEduMode === 'function') {
-      toggleEduMode();
-    } else {
-      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
-      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
-      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
-    }
-    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
-  });
-})();
 </script>
 
 </body>

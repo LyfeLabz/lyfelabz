@@ -3252,19 +3252,16 @@ function initToggles(){
   // Header toggle buttons are no longer rendered on investigation pages -
   // this page depends on the LyfeLabz index-page toggles, which persist via sessionStorage.
   const stem = document.getElementById('lyfelabz-stem'); // may be null
-  const ls   = document.getElementById('lyfelabz-ls');   // may be null
 
   function applyToggles(){
     document.body.classList.toggle('stem-active', state.toggles.stem);
     document.body.classList.toggle('ls-active',   state.toggles.ls);
     if (stem) stem.classList.toggle('active', state.toggles.stem);
-    if (ls)   { ls.classList.toggle('active', state.toggles.ls); ls.classList.toggle('ls', true); }
     // Mirror current state back into sessionStorage so the index page stays in sync.
+    // Educator Mode (lyfelabz-ls) is read-only here: only the index page changes it.
     try {
       if (state.toggles.stem) sessionStorage.setItem('lyfelabz-stem', 'on');
       else sessionStorage.removeItem('lyfelabz-stem');
-      if (state.toggles.ls) sessionStorage.setItem('lyfelabz-ls', 'on');
-      else sessionStorage.removeItem('lyfelabz-ls');
     } catch(e){}
   }
   // Restore from the index-page sessionStorage settings.
@@ -3274,7 +3271,6 @@ function initToggles(){
   } catch(e){}
   // Only attach click listeners if the local buttons exist.
   if (stem) stem.addEventListener('click', () => { state.toggles.stem = !state.toggles.stem; applyToggles(); });
-  if (ls)   ls.addEventListener('click',   () => { state.toggles.ls   = !state.toggles.ls;   applyToggles(); });
   applyToggles();
 }
 
@@ -3369,26 +3365,6 @@ function boot(){
   }
 }
 document.addEventListener('DOMContentLoaded', boot);
-</script>
-<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
-<script>
-(function() {
-  document.addEventListener('keydown', function(e) {
-    var ae  = document.activeElement;
-    var tag = ae && ae.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
-    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
-    e.preventDefault();
-    if (typeof toggleEduMode === 'function') {
-      toggleEduMode();
-    } else {
-      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
-      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
-      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
-    }
-    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
-  });
-})();
 </script>
 
 </main>

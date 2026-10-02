@@ -6,7 +6,8 @@ const { JSDOM } = require('jsdom');
 const html = fs.readFileSync(path.join(__dirname, '../../extension_fossil-hunt.html'), 'utf8');
 const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(match => match[1]);
 const main = scripts.find(script => script.includes('const LEVELS'));
-const educator = scripts.find(script => script.includes("document.body.classList.toggle('ls-active'"));
+// The page only consumes the homepage-controlled Educator Mode session state.
+const educator = main.match(/if\(sessionStorage\.getItem\('lyfelabz-ls'\)==='on'\)[^\n]*/)[0];
 const AM = 'Dactylioceras commune';
 const SC = 'Scyphocrinites';
 const TR = 'Paradoxides';
@@ -34,7 +35,6 @@ beforeEach(() => {
     puzzleComplete, canSubmit, handleLayerClick, handleOrderClick, showAgeCheck,
     handleAgeCheckAnswer, executeReset, switchDifficulty, setMode, renderClassroomPanel,
     renderLayers, renderGroups, updateFossilInfoPanel, showQuizReview, computeQuizScore };`);
-  w.eval(educator);
   app = w.testApp;
 });
 afterEach(() => {
@@ -357,6 +357,9 @@ test('Practice reference labels and Educator guidance preserve the bounded model
   expect(el('layer-A1').textContent).toContain('A1 · Ammonite');
   expect(w.document.querySelector('.hero-badge').textContent).toBe('EXTENSION');
   w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'i', ctrlKey: true, altKey: true, bubbles: true }));
+  expect(w.document.body.classList.contains('ls-active')).toBe(false);
+  w.sessionStorage.setItem('lyfelabz-ls', 'on');
+  w.eval(educator);
   expect(w.document.body.classList.contains('ls-active')).toBe(true);
   const notes = el('fossilTeacherNotes').textContent;
   expect(notes).toMatch(/Required Grade 6 activity; ESS1-4 remains classification C/);

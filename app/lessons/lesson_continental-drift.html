@@ -2132,12 +2132,9 @@ function applyReset() {
 
 <!-- ─── SCRIPTS ─────────────────────────────────────────────────────── -->
 
-<!-- Educator Mode / STEM Toggle -->
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
 <script>
-var lsObserver = new MutationObserver(function() {
-  document.body.classList.toggle('ls-active',   document.body.classList.contains('educator-mode'));
-});
-lsObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
 </script>
 
 <!-- Evidence interactive panel -->
@@ -2552,26 +2549,6 @@ resize();
 requestAnimationFrame(draw);
 </script>
 
-<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
-<script>
-(function() {
-  document.addEventListener('keydown', function(e) {
-    var ae  = document.activeElement;
-    var tag = ae && ae.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
-    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
-    e.preventDefault();
-    if (typeof toggleEduMode === 'function') {
-      toggleEduMode();
-    } else {
-      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
-      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
-      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
-    }
-    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
-  });
-})();
-</script>
 
 <!-- ===== STICKY QUIZ CHROME OFFSETS =====
      Publishes the real sticky nav and progress-tray heights as CSS variables

@@ -66,7 +66,7 @@ describe("Water Cycle scientific revision integrity", () => {
 });
 
 describe.each(["v1", "v2"])("Water Cycle teaching and interactions (%s)", (target) => {
-  let win, doc, calls, timers, errors;
+  let win, doc, calls, timers, errors, educatorSession = false;
   beforeEach(() => {
     calls = { autosave: [], finalize: [] }; timers = []; errors = [];
     const vc = new VirtualConsole();
@@ -74,6 +74,7 @@ describe.each(["v1", "v2"])("Water Cycle teaching and interactions (%s)", (targe
     const dom = new JSDOM(builder.buildLesson({ slug: "water-cycle", target, write: false }).bytes, {
       url: "https://water-cycle.test/", runScripts: "dangerously", virtualConsole: vc,
       beforeParse(w) {
+        if (educatorSession) w.sessionStorage.setItem("lyfelabz-ls", "on");
         w.requestAnimationFrame = () => 0;
         w.HTMLCanvasElement.prototype.getContext = () => ({ clearRect() {}, beginPath() {}, arc() {}, fill() {} });
         w.HTMLElement.prototype.scrollIntoView = jest.fn();
@@ -187,11 +188,24 @@ describe.each(["v1", "v2"])("Water Cycle teaching and interactions (%s)", (targe
     expect(doc.getElementById("el-submit-btn").disabled).toBe(true);
     expect(win.elQuizState.continueTimer).toBeNull();
   });
-  test("Educator Mode hotkey reveals guidance and toggles off", () => {
-    for (const expected of [true, false]) {
+  test("Educator Mode stays off without the homepage session state; the lesson offers no local switch", () => {
+    expect(doc.body.classList.contains("ls-active")).toBe(false);
+    doc.dispatchEvent(new win.KeyboardEvent("keydown", { key: "i", ctrlKey: true, altKey: true }));
+    doc.dispatchEvent(new win.KeyboardEvent("keydown", { key: "i", ctrlKey: true, metaKey: true }));
+    expect(doc.body.classList.contains("ls-active")).toBe(false);
+    expect(win.sessionStorage.getItem("lyfelabz-ls")).toBeNull();
+  });
+  describe("with Educator Mode turned on from the homepage", () => {
+    beforeAll(() => { educatorSession = true; });
+    afterAll(() => { educatorSession = false; });
+    test("guidance is revealed and the lesson offers no local switch", () => {
+      expect(doc.body.classList.contains("ls-active")).toBe(true);
       doc.dispatchEvent(new win.KeyboardEvent("keydown", { key: "i", ctrlKey: true, altKey: true }));
-      expect(doc.body.classList.contains("ls-active")).toBe(expected);
-    }
+      expect(doc.body.classList.contains("ls-active")).toBe(true);
+      expect(win.sessionStorage.getItem("lyfelabz-ls")).toBe("on");
+    });
+  });
+  test("Educator Mode guidance is present for the homepage-controlled state", () => {
     const notes = [...doc.querySelectorAll(".edu-note")].map((x) => x.textContent).join(" ");
     expect(doc.querySelectorAll(".edu-note")).toHaveLength(13);
     for (const phrase of ["not giant underground caverns", "not evidence of developing a model", "One route alone", "ungraded word model"]) expect(notes).toContain(phrase);
