@@ -1,0 +1,269 @@
+{
+  "activityId": "renewable-and-nonrenewable-resources",
+  "revisionOrdinal": 2,
+  "itemOrderingRule": "authoredOrder",
+  "schemaVersion": 1,
+  "publishedBy": "massachusetts-grade-7-resource-evidence-r2",
+  "items": [
+    {
+      "itemId": "q1",
+      "itemType": "singleChoice",
+      "stem": "Which comparison correctly describes a coal plant and solar panels supplying electricity to a city?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Both systems burn fuel that forms over millions of years."
+        },
+        {
+          "optionId": "B",
+          "text": "Coal is a finite fuel; panels convert incoming solar energy."
+        },
+        {
+          "optionId": "C",
+          "text": "Solar panels replenish coal that the power plant burns."
+        },
+        {
+          "optionId": "D",
+          "text": "Using sunlight today reduces the sunlight arriving tomorrow."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Coal is nonrenewable on human timescales. Solar panels capture incoming sunlight; they do not consume a stored supply of solar fuel."
+    },
+    {
+      "itemId": "q2",
+      "itemType": "singleChoice",
+      "stem": "Freshwater is renewable through the water cycle. Why can a town still have a limited usable supply?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Renewable freshwater can be used only once before it disappears."
+        },
+        {
+          "optionId": "B",
+          "text": "Renewable resources are available in equal amounts everywhere."
+        },
+        {
+          "optionId": "C",
+          "text": "Water is nonrenewable whenever a community uses it."
+        },
+        {
+          "optionId": "D",
+          "text": "Drought, withdrawals, pollution, and delivery limits can restrict local availability."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "Natural renewal does not guarantee enough usable freshwater at a particular place and time."
+    },
+    {
+      "itemId": "q3",
+      "itemType": "singleChoice",
+      "stem": "Evidence A reports NYC average water use of 154.89 gallons/person/day in 2000. What does this number describe?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Total city daily use divided by the city population."
+        },
+        {
+          "optionId": "B",
+          "text": "The exact amount every resident used at home each day."
+        },
+        {
+          "optionId": "C",
+          "text": "All water used by the whole city in one year."
+        },
+        {
+          "optionId": "D",
+          "text": "The number of people served by each gallon of water."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Per capita is a citywide average. It does not mean every individual used the same amount, and city consumption includes uses beyond homes."
+    },
+    {
+      "itemId": "q4",
+      "itemType": "singleChoice",
+      "stem": "Evidence A: NYC population was 7,335,650 in 1990 and 8,175,133 in 2010; average use was 194.09 and 127.09 gallons/person/day. Which comparison is accurate?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Population and average use per person both increased."
+        },
+        {
+          "optionId": "B",
+          "text": "Population fell while average use per person increased."
+        },
+        {
+          "optionId": "C",
+          "text": "Population increased while average use per person decreased."
+        },
+        {
+          "optionId": "D",
+          "text": "Population and average use per person both stayed constant."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "The population values increase, while the average daily use per person values decrease."
+    },
+    {
+      "itemId": "q5",
+      "itemType": "singleChoice",
+      "stem": "NYC total consumption was 1,423.8 million gallons/day in 1990 and 1,039.0 million gallons/day in 2010. What does this evidence show?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Total consumption increased by 384.8 million gallons/day."
+        },
+        {
+          "optionId": "B",
+          "text": "Total consumption decreased by 384.8 million gallons/day."
+        },
+        {
+          "optionId": "C",
+          "text": "Each resident reduced use by 384.8 gallons/day."
+        },
+        {
+          "optionId": "D",
+          "text": "Water quality improved by 384.8 million gallons/day."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "Subtracting 1,039.0 from 1,423.8 gives a decrease of 384.8 million gallons/day in total use. The quantity is not per-person use or water quality."
+    },
+    {
+      "itemId": "q6",
+      "itemType": "singleChoice",
+      "stem": "Why is population growth alone insufficient to predict a town’s total daily water use?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Total use depends on both population and average use per person."
+        },
+        {
+          "optionId": "B",
+          "text": "Average use per person must rise whenever population rises."
+        },
+        {
+          "optionId": "C",
+          "text": "Population has no connection to the amount of water used."
+        },
+        {
+          "optionId": "D",
+          "text": "A renewable water supply makes total daily use constant."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "People × gallons/person/day = gallons/day. A sufficiently large decrease in average use can offset an increase in population."
+    },
+    {
+      "itemId": "q7",
+      "itemType": "singleChoice",
+      "stem": "DEP reported approximately 90 million gallons/day in savings from the 1994–1997 program replacing approximately 1.3 million toilets. How could replacement technology reduce demand?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "It increases the rainfall reaching the water-supply system."
+        },
+        {
+          "optionId": "B",
+          "text": "It removes the need for freshwater in all city buildings."
+        },
+        {
+          "optionId": "C",
+          "text": "It reduces population by serving fewer city residents."
+        },
+        {
+          "optionId": "D",
+          "text": "It provides flushing with less water, lowering water needed for the service."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "D",
+      "explanation": "More efficient fixtures can provide sanitation with less water per flush. The program figure is a DEP-reported approximate savings estimate."
+    },
+    {
+      "itemId": "q8",
+      "itemType": "singleChoice",
+      "stem": "A student says NYC’s 1994–1997 Toilet Rebate Program caused the entire 1990–2010 decline in water use. What is the main problem with this claim?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The program happened outside the 1990–2010 period."
+        },
+        {
+          "optionId": "B",
+          "text": "The data measure only toilet use in individual homes."
+        },
+        {
+          "optionId": "C",
+          "text": "Other conservation and system-management changes also occurred."
+        },
+        {
+          "optionId": "D",
+          "text": "DEP reported no water savings from replacing toilets."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "C",
+      "explanation": "Evidence C supports an approximate program savings figure, not attributing the entire citywide historical decline to one intervention."
+    },
+    {
+      "itemId": "q9",
+      "itemType": "singleChoice",
+      "stem": "What additional evidence would be needed to test whether NYC water quality improved while water demand fell?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Comparable water-quality measurements over time."
+        },
+        {
+          "optionId": "B",
+          "text": "Only the number of toilets replaced by the program."
+        },
+        {
+          "optionId": "C",
+          "text": "Only the per-person water consumption in 2010."
+        },
+        {
+          "optionId": "D",
+          "text": "Only the difference between the two population totals."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "A",
+      "explanation": "Water consumption measures demand. A water-quality claim requires water-quality evidence; lower demand alone does not establish it."
+    },
+    {
+      "itemId": "q10",
+      "itemType": "singleChoice",
+      "stem": "A town argues water-efficient fixtures could mitigate pressure on freshwater supplies while serving more people. Which evidence is most relevant?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "NYC’s population totals alone, without any water-use measurements."
+        },
+        {
+          "optionId": "B",
+          "text": "NYC’s population and consumption trends plus DEP’s reported replacement-program savings."
+        },
+        {
+          "optionId": "C",
+          "text": "NYC rainfall patterns and reservoir capacities, without fixture-use measurements."
+        },
+        {
+          "optionId": "D",
+          "text": "The program’s dates and fixture count, without its savings finding or consumption trends."
+        }
+      ],
+      "points": 1,
+      "correctOptionId": "B",
+      "explanation": "The historical trends relate population to demand, and the program finding supports a technology mechanism. Neither establishes the town’s exact future savings."
+    }
+  ]
+}

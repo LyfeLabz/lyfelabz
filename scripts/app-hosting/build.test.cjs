@@ -205,28 +205,32 @@ function writeRevisionTable(lessons) {
   );
 }
 
-test('the revision path table ships with exactly the Earth\'s Layers and Water Cycle r1 and r2 renditions it names', () => {
+test('the revision path table ships with exactly the Earth\'s Layers, Water Cycle, and Renewable Resources r1 and r2 renditions it names', () => {
   assert.equal(result.files.includes('app/lessons/assessment-revisions/revision-paths.json'), true);
-  assert.equal(result.assessmentRevisionRenditions, 4);
+  assert.equal(result.assessmentRevisionRenditions, 6);
   assert.deepEqual(result.files.filter((entry) => entry.startsWith('app/lessons/assessment-revisions/')).sort(), [
     'app/lessons/assessment-revisions/lesson_earths-layers__r1.html',
     'app/lessons/assessment-revisions/lesson_earths-layers__r2.html',
+    'app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r1.html',
+    'app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r2.html',
     'app/lessons/assessment-revisions/lesson_water-cycle__r1.html',
     'app/lessons/assessment-revisions/lesson_water-cycle__r2.html',
     'app/lessons/assessment-revisions/revision-paths.json'
   ]);
   const shipped = JSON.parse(fs.readFileSync(path.join(outputDirectory, 'app/lessons/assessment-revisions/revision-paths.json'), 'utf8'));
   assert.equal(Object.keys(shipped.lessons).length, 49);
-  // 47 single-revision lessons map r1 to their unversioned page; Earth's
-  // Layers and Water Cycle map r1 and r2 to their renditions, which ship as
+  // 46 single-revision lessons map r1 to their unversioned page; Earth's
+  // Layers, Water Cycle, and Renewable Resources map r1 and r2 to their renditions, which ship as
   // copies.
   const table = readAssessmentRevisionCopies();
-  assert.equal(table.pageTargets.length, 47);
+  assert.equal(table.pageTargets.length, 46);
   assert.equal(table.pageTargets.includes('app/lessons/lesson_earths-layers.html'), false);
   assert.equal(table.pageTargets.includes('app/lessons/lesson_water-cycle.html'), false);
   assert.deepEqual(table.copies.map((copy) => copy.destination).sort(), [
     'app/lessons/assessment-revisions/lesson_earths-layers__r1.html',
     'app/lessons/assessment-revisions/lesson_earths-layers__r2.html',
+    'app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r1.html',
+    'app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r2.html',
     'app/lessons/assessment-revisions/lesson_water-cycle__r1.html',
     'app/lessons/assessment-revisions/lesson_water-cycle__r2.html',
     'app/lessons/assessment-revisions/revision-paths.json'

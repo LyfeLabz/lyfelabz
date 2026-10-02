@@ -118,7 +118,8 @@ const PAYLOAD_DIR = __dirname;
 // delete) or a payload silently added (an uncertified file) should force a
 // conscious update to this constant and a human review, rather than passing
 // unnoticed because the loop simply iterated a different number of files.
-const EXPECTED_PAYLOAD_COUNT = 51;
+// Renewable Resources r2 adds the approved historical-evidence assessment.
+const EXPECTED_PAYLOAD_COUNT = 52;
 
 function discoverPayloadFiles(): string[] {
   return fs

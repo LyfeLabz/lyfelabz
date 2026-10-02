@@ -113,11 +113,11 @@ describe("identifier grammar", () => {
 });
 
 describe("identity of one committed payload", () => {
-  test("every committed payload validates: 49 r1 payloads plus Earth's Layers and Water Cycle r2", () => {
+  test("every committed payload validates: 49 r1 payloads plus Earth's Layers, Water Cycle, and Renewable Resources r2", () => {
     const { revisions, failures } = R.discoverRevisions({ repoRoot: ROOT });
     expect(failures).toEqual([]);
-    expect(revisions).toHaveLength(51);
-    expect(revisions.filter((e) => e.revisionOrdinal !== 1).map((e) => e.file)).toEqual(["earths-layers.r2.json", "water-cycle.r2.json"]);
+    expect(revisions).toHaveLength(52);
+    expect(revisions.filter((e) => e.revisionOrdinal !== 1).map((e) => e.file)).toEqual(["earths-layers.r2.json", "renewable-and-nonrenewable-resources.r2.json", "water-cycle.r2.json"]);
     expect(revisions.filter((e) => e.revisionOrdinal === 1)).toHaveLength(49);
     for (const e of revisions) {
       expect(R.describeRevision(e.file, e.payload).problems).toEqual([]);
@@ -261,9 +261,9 @@ describe("canonical revision resolution", () => {
   const r1 = () => entry("earths-layers.r1.json", realPayload());
   const r2 = () => entry("earths-layers.r2.json", syntheticRevision(2));
 
-  test("a single committed r1 resolves without any config declaration (all lessons except Earth's Layers and Water Cycle)", () => {
+  test("a single committed r1 resolves without any config declaration (all lessons except Earth's Layers, Water Cycle, and Renewable Resources)", () => {
     expect(R.resolveCanonicalRevision(cfg(), [r1()]).assessmentRevisionId).toBe(EL_R1);
-    for (const slug of configMod.listConfiguredSlugs().filter((s) => s !== EL && s !== "water-cycle")) {
+    for (const slug of configMod.listConfiguredSlugs().filter((s) => s !== EL && s !== "water-cycle" && s !== "renewable-and-nonrenewable-resources")) {
       const c = configMod.loadConfig(slug);
       expect(c.canonicalAssessmentRevisionId).toBeUndefined();
       expect(R.resolveCanonicalRevision(c, R.revisionsForLesson(slug, { repoRoot: ROOT })).revisionOrdinal).toBe(1);
@@ -418,13 +418,13 @@ describe("answer-position quality is per revision", () => {
     }
   });
 
-  test("today's audit: 49 r1 payloads and Earth's Layers and Water Cycle r2, 14 recorded r1 debts, no failures", () => {
+  test("today's audit: 49 r1 payloads and Earth's Layers, Water Cycle, and Renewable Resources r2, 14 recorded r1 debts, no failures", () => {
     const result = Q.verifyRepository();
     expect(result.failures).toEqual([]);
-    expect(result.audit).toHaveLength(51);
-    expect(result.audit.filter((a) => !a.file.endsWith(".r1.json")).map((a) => a.file)).toEqual(["earths-layers.r2.json", "water-cycle.r2.json"]);
+    expect(result.audit).toHaveLength(52);
+    expect(result.audit.filter((a) => !a.file.endsWith(".r1.json")).map((a) => a.file)).toEqual(["earths-layers.r2.json", "renewable-and-nonrenewable-resources.r2.json", "water-cycle.r2.json"]);
     expect(new Set(result.debt.map((d) => d.split(":")[0])).size).toBe(14);
-    for (const file of ["earths-layers.r2.json", "water-cycle.r2.json"]) {
+    for (const file of ["earths-layers.r2.json", "renewable-and-nonrenewable-resources.r2.json", "water-cycle.r2.json"]) {
       expect(result.debt.some((d) => d.startsWith(file))).toBe(false);
     }
   });

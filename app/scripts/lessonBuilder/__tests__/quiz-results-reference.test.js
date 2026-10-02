@@ -121,6 +121,8 @@ const CANONICAL_BLOCK_SOURCE_SLUG = "earths-layers";
 // behavior (Earth's Layers r2 and r1, Conducting Experiments r1); the older
 // retained variant revisions stay byte-frozen and are deliberately not listed.
 const SPECIAL_CASE_ARTIFACTS = [
+  { file: "app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r1.html", prefix: "el", geometry: "quiz", resourceEvidence: true },
+  { file: "app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r2.html", prefix: "el", geometry: "quiz", resourceEvidence: true },
   { file: "app/lessons/assessment-revisions/lesson_water-cycle__r1.html", prefix: "el", geometry: "quiz" },
   { file: "app/lessons/assessment-revisions/lesson_water-cycle__r2.html", prefix: "el", geometry: "quiz" },
   { file: "app/lessons/assessment-revisions/lesson_earths-layers__r1.html", prefix: "el", geometry: "quiz" },
@@ -222,11 +224,12 @@ describe.each(QUIZ_RESULTS_REFERENCE_LESSONS)("quiz results reference: $slug", (
   });
 
   describe("B-D. submission result presentation (v2, assignment context)", () => {
-    resultContract(() => build(slug, "v2"), prefix);
+    if (slug === "renewable-and-nonrenewable-resources") resourceResultContract(() => build(slug, "v2"));
+    else resultContract(() => build(slug, "v2"), prefix);
   });
 });
 
-describe.each(SPECIAL_CASE_ARTIFACTS)("quiz results special-case artifact: $file", ({ file, prefix, geometry }) => {
+describe.each(SPECIAL_CASE_ARTIFACTS)("quiz results special-case artifact: $file", ({ file, prefix, geometry, resourceEvidence }) => {
   const read = () => fs.readFileSync(path.join(REPO_ROOT, file), "utf8");
 
   describe("A. measured post-submit geometry", () => {
@@ -234,7 +237,8 @@ describe.each(SPECIAL_CASE_ARTIFACTS)("quiz results special-case artifact: $file
   });
 
   describe("B-D. submission result presentation (assignment context)", () => {
-    resultContract(read, prefix);
+    if (resourceEvidence) resourceResultContract(read);
+    else resultContract(read, prefix);
   });
 });
 
@@ -539,5 +543,50 @@ function resultContract(getHtml, P) {
     expect(el(`${P}-score`).classList.contains("score-not-recorded")).toBe(false);
     expect(el(`${P}-score`).classList.contains("show")).toBe(false);
     expect(el(`${P}-submit-status`).innerHTML).toBe("");
+  });
+}
+
+// The approved resource-evidence lesson intentionally supersedes the legacy
+// perfect-score jump and reset semantics. Run its actual canonical AND both
+// revision scripts; the dedicated lesson suite adds character, keyboard,
+// synchronous-failure, and full writer tests.
+function resourceResultContract(getHtml) {
+  let q;
+  let finalize;
+  const el = id => document.getElementById(id);
+  function mount(outcome) {
+    const html = getHtml();
+    document.body.innerHTML = bodyMarkup(html);
+    Element.prototype.scrollIntoView = jest.fn(function () {
+      return { id: this.id, model: el('el-think-model').classList.contains('show'),
+        status: el('el-submit-status').textContent, message: el('el-score-msg').textContent };
+    });
+    window.matchMedia = () => ({ matches: false });
+    finalize = jest.fn(() => Promise.resolve(outcome));
+    window.lyfelabz = { lessonQuiz: { hasAssignmentContext: () => true, autosave: () => null, finalize } };
+    q = new Function(quizScript(html, 'el') + '\nreturn {select:elSelectAnswer,submit:elSubmitQuiz,reset:elResetQuiz,questions:elQuizQuestions};')();
+    q.questions.forEach((item, i) => q.select(i, item.correct));
+    el('el-thinking').value = 'My argument with historical evidence and a limitation.';
+    q.submit();
+  }
+  async function settle() { for (let i = 0; i < 10; i++) await Promise.resolve(); }
+  afterEach(() => { document.body.innerHTML = ''; delete window.lyfelabz; delete window.matchMedia; });
+  test('confirmed assignment reports the knowledge check and teacher review, with no score-driven navigation', async () => {
+    mount({ ok: true }); await settle();
+    expect(el('el-score-msg').textContent).toBe('Knowledge and data check: 10/10. Your argument was submitted for teacher review.');
+    expect(el('el-think-model').classList.contains('show')).toBe(true);
+    expect(Element.prototype.scrollIntoView.mock.results.at(-1).value).toEqual({ id: 'el-score', model: true, status: el('el-submit-status').textContent, message: el('el-score-msg').textContent });
+    expect(finalize).toHaveBeenCalledWith(expect.any(Array), { writtenResponse: 'My argument with historical evidence and a limitation.' });
+    expect(finalize).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(el('el-score'));
+  });
+  test.each([null, {}, { ok: false }])('unconfirmed result %p preserves the argument and forbids assigned reset', async outcome => {
+    mount(outcome); await settle(); q.reset();
+    expect(el('el-score-msg').textContent).toBe('Submission could not be confirmed. Your response remains on this page.');
+    expect(el('el-thinking').value).toBe('My argument with historical evidence and a limitation.');
+    expect(el('el-thinking').readOnly).toBe(true);
+    expect(el('el-reset-btn').hidden).toBe(true);
+    expect(el('el-think-model').classList.contains('show')).toBe(false);
+    expect(el('back-to-assignments').classList.contains('show')).toBe(true);
   });
 }

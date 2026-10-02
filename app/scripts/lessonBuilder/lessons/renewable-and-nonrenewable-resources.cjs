@@ -27,6 +27,7 @@ Regenerate: npm --prefix app run lessons:build -- --only=renewable-and-nonrenewa
 
 module.exports = {
   slug: "renewable-and-nonrenewable-resources",
+  canonicalAssessmentRevisionId: "assessment_renewable-and-nonrenewable-resources__r2",
   canonicalSource: "lesson-sources/lesson_renewable-and-nonrenewable-resources.html",
   outputs: {
     v1: "lesson_renewable-and-nonrenewable-resources.html",
