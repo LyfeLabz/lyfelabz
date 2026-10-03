@@ -405,6 +405,11 @@
     font-family: 'Nunito', sans-serif;
   }
   .layer-row:hover { filter: brightness(1.18); }
+  #journey .layer-controls { min-width: 0; flex-basis: 260px; }
+  #journey .layer-row { flex-wrap: wrap; gap: 0.35rem 0.75rem; }
+  #journey .layer-row[aria-pressed="true"] { box-shadow: inset 0 0 0 2px #9fb8cc; }
+  #journey .layer-row:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+  #journey [data-carbon-view][hidden] { display: none; }
   .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
   .layer-detail-panel {
     background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
@@ -422,6 +427,12 @@
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
   }
   .figure-box svg { width: 100%; height: auto; display: block; }
+  .cc-diagram-scroll { overflow-x: auto; }
+  .cc-diagram-scroll svg { min-width: 700px; }
+  .cc-diagram-scroll:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+  .cc-model-key { max-width: 430px; margin: 0.75rem auto 0; padding: 0.65rem 0.9rem; background: rgba(22,49,74,0.45); border: 1px solid rgba(159,184,204,0.25); border-radius: 10px; text-align: center; }
+  .cc-model-key-title { display: block; margin-bottom: 0.3rem; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; color: #9fb8cc; }
+  .cc-model-key p { margin: 0; font-size: 0.82rem; font-weight: 700; line-height: 1.5; color: #edf6fb; }
   .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
 
   /* ── QUICK RECALL ── */
@@ -985,58 +996,97 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <!-- Carbon cycle overview image -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A carbon cycle scene: carbon dioxide in the air moves into a tree by photosynthesis, animals eat plants, respiration and a factory return carbon dioxide to the air, and buried remains form fossil fuels underground">
+      <div class="cc-diagram-scroll" tabindex="0" role="region" aria-label="Carbon pathways diagram; scroll horizontally on narrow screens">
+      <svg viewBox="0 0 760 680" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cc-overview-title cc-overview-desc">
+        <title id="cc-overview-title">Carbon moves from the air through living things and back</title>
+        <desc id="cc-overview-desc">Solid arrows trace carbon: atmospheric CO₂ enters plants by photosynthesis, feeding transfers plant carbon to animals, and both plants and animals return CO₂ through respiration. When organisms die, carbon enters dead organic matter. Decomposers break down this material and return CO₂ through respiration. A separate dashed pathway shows a small portion escaping full decomposition and becoming buried; over millions of years, some buried carbon forms fossil fuels. Fuel use brings fossil carbon to the factory, where combustion returns CO₂ to the air. The yellow dotted sunlight line shows energy supplied to plants, not carbon. This simplified model omits other carbon reservoirs; icon sizes and arrow widths are not measurements.</desc>
         <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#16314a"/>
-            <stop offset="100%" stop-color="#1d3a52"/>
-          </linearGradient>
-          <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#4a5d3a"/>
-            <stop offset="100%" stop-color="#33402a"/>
-          </linearGradient>
+          <!-- Arrowheads point along each path's positive x tangent, as in Water Cycle. -->
+          <marker id="cc-plant-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#a1dfae"/></marker>
+          <marker id="cc-air-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b8def3"/></marker>
+          <clipPath id="cc-scene-clip"><rect width="760" height="680" rx="14"/></clipPath>
         </defs>
-        <!-- sky -->
-        <rect x="0" y="0" width="600" height="250" fill="url(#sky)"/>
-        <!-- sun -->
-        <circle cx="70" cy="55" r="26" fill="#f5c842"/>
-        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
-          <line x1="70" y1="15" x2="70" y2="4"/><line x1="70" y1="95" x2="70" y2="106"/>
-          <line x1="30" y1="55" x2="19" y2="55"/><line x1="110" y1="55" x2="121" y2="55"/>
-          <line x1="41" y1="26" x2="33" y2="18"/><line x1="99" y1="84" x2="107" y2="92"/>
-          <line x1="99" y1="26" x2="107" y2="18"/><line x1="41" y1="84" x2="33" y2="92"/>
+        <g clip-path="url(#cc-scene-clip)">
+          <rect width="760" height="680" fill="#16314a"/>
+          <path d="M0,349 Q145,330 270,350 T530,351 T760,342 L760,680 L0,680 Z" fill="#50694d"/>
+          <path d="M0,520 Q140,503 265,522 T530,518 T760,520 L760,680 L0,680 Z" fill="#6b5946"/>
+          <path d="M0,555 Q140,538 265,557 T530,553 T760,555" fill="none" stroke="#ad9470" stroke-width="1" opacity="0.4"/>
+          <!-- All return paths lead toward CO₂ in the open atmosphere. -->
+          <text x="380" y="67" text-anchor="middle" font-family="Nunito,sans-serif" font-size="20" font-weight="800" fill="#edf6fb">CO₂ in the air</text>
+          <!-- Sunlight supplies energy; it has no carbon-transfer arrow. -->
+          <circle cx="55" cy="49" r="18" fill="#f5c842"/>
+          <path d="M55,22 V16 M55,76 V82 M28,49 H22 M82,49 H88" fill="none" stroke="#e5bc57" stroke-width="2" stroke-linecap="round"/>
+          <g font-family="Nunito,sans-serif" font-size="12" font-weight="600" fill="#e5cd83" text-anchor="middle">
+            <text x="55" y="104">Sunlight</text><text x="55" y="120">supplies energy</text>
+          </g>
+          <!-- Energy uses a dotted gold line without a carbon arrowhead. -->
+          <path data-energy="sunlight" d="M67,134 L125,223" fill="none" stroke="#e5cd83" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round"><title>Sunlight supplies energy to plants; this is not carbon movement</title></path>
+          <!-- Plant, plant eater, and fuel-burning factory share the landscape. -->
+          <path d="M169,348 V284 M169,308 L144,284 M169,301 L191,276" fill="none" stroke="#ad9470" stroke-width="9" stroke-linecap="round"/>
+          <g fill="#79ad76"><circle cx="148" cy="265" r="31"/><circle cx="181" cy="245" r="35"/><circle cx="204" cy="278" r="29"/></g>
+          <g fill="#c9a06a" stroke="#c9a06a" stroke-linejoin="round">
+            <ellipse cx="410" cy="326" rx="40" ry="21"/>
+            <path d="M377,326 L365,309 M390,340 L387,361 M428,340 L434,361" fill="none" stroke-width="7" stroke-linecap="round"/>
+            <path d="M433,321 L441,296 L460,301 L450,331 Z"/>
+            <ellipse cx="452" cy="297" rx="16" ry="11"/>
+            <path d="M444,290 L440,278 L450,288 M457,288 L463,278 L465,295 Z"/>
+          </g>
+          <circle cx="459" cy="295" r="2" fill="#16314a"/>
+          <path d="M610,351 V308 L633,296 V308 L655,296 V308 H704 V351 Z" fill="#738b94"/>
+          <rect x="672" y="270" width="17" height="41" fill="#9aadb4"/>
+          <g fill="#24465d"><rect x="622" y="323" width="13" height="15"/><rect x="646" y="323" width="13" height="15"/><rect x="677" y="323" width="16" height="28"/></g>
+          <!-- A small furnace flame signals combustion, not visible CO₂ or smoke. -->
+          <path d="M677,340 C674,334 681,332 681,326 C688,332 694,337 689,342 Q682,348 677,340 Z" fill="#e5a45f"/>
+          <path d="M681,340 Q680,336 684,333 Q689,339 685,342 Q682,344 681,340 Z" fill="#f5c842"/>
+          <!-- Dead material sits above the separate, long-term underground reservoir. -->
+          <g fill="#ad9470" stroke="#c8b48e" stroke-width="1.5">
+            <path d="M302,457 Q310,433 333,442 Q329,462 302,457 Z"/>
+            <path d="M342,460 Q347,439 366,449 Q362,466 342,460 Z"/>
+            <path d="M377,461 L410,445 L416,454 L383,469 Z"/>
+          </g>
+          <g fill="#303a3c" stroke="#738b94" stroke-width="1.5">
+            <path d="M304,607 L315,590 L343,593 L354,610 Z"/>
+            <path d="M352,610 L361,592 L385,586 L405,608 Z"/>
+          </g>
+          <!-- Separate paths have explicit origins and destinations; no air-to-animal arrow. -->
+          <g fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path data-process="photosynthesis" d="M298,62 C175,65 76,151 139,234" stroke="#a1dfae" marker-end="url(#cc-plant-arrow)"><title>Photosynthesis: carbon in atmospheric CO₂ enters plants</title></path>
+            <path data-process="feeding" d="M230,296 C279,323 324,325 373,325" stroke="#a1dfae" marker-end="url(#cc-plant-arrow)"><title>Feeding: animals eat plants and take in their carbon</title></path>
+            <path data-process="plant-respiration" d="M216,247 C263,203 300,145 350,86" stroke="#b8def3" marker-end="url(#cc-air-arrow)"><title>Plant respiration: carbon returns to atmospheric CO₂</title></path>
+            <path data-process="animal-respiration" d="M452,285 C495,205 456,131 413,86" stroke="#b8def3" marker-end="url(#cc-air-arrow)"><title>Animal respiration: carbon returns to atmospheric CO₂</title></path>
+            <path data-process="combustion" d="M680,270 C706,157 606,75 463,65" stroke="#b8def3" marker-end="url(#cc-air-arrow)"><title>Burning fuel: carbon in fuel returns to atmospheric CO₂</title></path>
+            <path data-process="plant-death" d="M169,352 C172,402 226,435 298,449" stroke="#a1dfae" marker-end="url(#cc-plant-arrow)"><title>Plant death: carbon moves into dead organic matter</title></path>
+            <path data-process="animal-death" d="M410,366 C411,393 403,416 391,441" stroke="#a1dfae" marker-end="url(#cc-plant-arrow)"><title>Animal death: carbon moves into dead organic matter</title></path>
+            <path data-process="decomposition" d="M424,457 C516,447 550,401 550,320 C550,180 490,125 445,85" stroke="#b8def3" marker-end="url(#cc-air-arrow)"><title>Decomposition: decomposers break down dead matter and release CO₂ through respiration</title></path>
+            <path data-process="long-term-burial" d="M350,496 L350,583" stroke="#a1dfae" stroke-dasharray="6 6" marker-end="url(#cc-plant-arrow)"><title>A small portion escapes full decomposition and is buried; some becomes fossil fuels over millions of years</title></path>
+            <path data-process="fuel-use" d="M409,602 C635,602 716,509 685,354" stroke="#b8def3" marker-end="url(#cc-air-arrow)"><title>Fuel use: fossil fuels are extracted and brought to combustion</title></path>
+          </g>
+          <g font-family="Nunito,sans-serif" font-size="18" font-weight="800" fill="#edf6fb">
+            <text x="145" y="163">Photosynthesis</text>
+            <text x="284" y="205">Plant respiration</text>
+            <text x="443" y="250" text-anchor="end">Animal respiration</text>
+            <text x="558" y="196"><tspan x="558">Fossil fuel</tspan><tspan x="558" dy="22"> combustion</tspan></text>
+            <text x="192" y="408">Death</text>
+            <text x="421" y="416">Death</text>
+            <text x="550" y="402">Decomposition</text>
+            <text x="581" y="487">Fuel use</text>
+            <text x="315" y="278" text-anchor="middle">Feeding</text>
+          </g>
+          <g font-family="Nunito,sans-serif" font-size="14" font-weight="700" fill="#d7e3df" text-anchor="middle">
+            <text x="130" y="386">Plants</text><text x="470" y="365">Animals</text><text x="650" y="373">Factory</text>
+            <text x="315" y="298">Animals eat plants</text>
+            <text x="357" y="488">Dead organic matter</text>
+            <text x="357" y="632">Fossil fuels</text>
+            <text x="337" y="536" text-anchor="end">A small portion is buried</text>
+            <text x="337" y="556" text-anchor="end">over millions of years</text>
+          </g>
         </g>
-        <!-- CO2 label in air -->
-        <text x="300" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-size="15" font-weight="900" fill="#9fb8cc">CO&#8322; in the air</text>
-        <!-- ground -->
-        <rect x="0" y="250" width="600" height="90" fill="url(#ground)"/>
-        <!-- tree -->
-        <rect x="166" y="190" width="14" height="60" fill="#6b4a2a"/>
-        <circle cx="173" cy="175" r="34" fill="#3ddc84"/>
-        <!-- animal (simple) -->
-        <ellipse cx="300" cy="232" rx="26" ry="15" fill="#c9a06a"/>
-        <circle cx="322" cy="222" r="10" fill="#c9a06a"/>
-        <rect x="284" y="244" width="4" height="12" fill="#c9a06a"/><rect x="312" y="244" width="4" height="12" fill="#c9a06a"/>
-        <!-- factory -->
-        <rect x="430" y="205" width="70" height="45" fill="#5a6e82"/>
-        <rect x="445" y="180" width="12" height="30" fill="#5a6e82"/>
-        <g fill="#9fb8cc" opacity="0.7">
-          <circle cx="451" cy="170" r="7"/><circle cx="460" cy="158" r="9"/><circle cx="450" cy="146" r="11"/>
-        </g>
-        <!-- photosynthesis arrow (air down into tree) -->
-        <path d="M250,80 C210,110 190,130 178,150" stroke="#3ddc84" stroke-width="4" fill="none" marker-end="url(#dn)"/>
-        <!-- respiration arrow (animal up to air) -->
-        <path d="M320,210 C340,160 350,120 360,85" stroke="#e8814a" stroke-width="4" fill="none" marker-end="url(#up)"/>
-        <!-- combustion arrow (factory smoke to air) -->
-        <path d="M460,150 C470,120 480,105 490,82" stroke="#e8814a" stroke-width="4" fill="none" marker-end="url(#up)"/>
-        <defs>
-          <marker id="up" markerWidth="9" markerHeight="9" refX="4" refY="2" orient="auto"><path d="M0,8 L4,0 L8,8 Z" fill="#e8814a"/></marker>
-          <marker id="dn" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="#3ddc84"/></marker>
-        </defs>
-        <text x="173" y="295" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Photosynthesis</text>
-        <text x="300" y="295" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Respiration</text>
-        <text x="465" y="295" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Burning fuel</text>
       </svg>
+      </div>
+      <div class="cc-model-key" role="note" aria-labelledby="cc-model-key-title">
+        <span class="cc-model-key-title" id="cc-model-key-title">HOW TO READ THIS MODEL</span>
+        <p>Arrows show carbon movement, not energy.</p>
+      </div>
       <div class="figure-caption">The same carbon moves from the air into plants, through animals, and back to the air, over and over again.</div>
     </div>
 
@@ -1167,60 +1217,142 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div class="layer-wrap">
       <div class="layer-figure">
-        <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A circular carbon cycle diagram: carbon dioxide enters a plant by photosynthesis, moves through animals in the food web, returns to the air by respiration and decomposition, and some is stored underground as fossil fuels">
-          <rect x="0" y="0" width="320" height="280" fill="#13283c"/>
-          <!-- ground -->
-          <rect x="0" y="215" width="320" height="65" fill="#3a4a2c"/>
-          <!-- CO2 air label -->
-          <text x="160" y="34" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#9fb8cc">CO&#8322; in the air</text>
-          <!-- tree -->
-          <rect x="62" y="180" width="10" height="40" fill="#6b4a2a"/>
-          <circle cx="67" cy="168" r="24" fill="#3ddc84"/>
-          <!-- animal -->
-          <ellipse cx="180" cy="200" rx="20" ry="12" fill="#c9a06a"/><circle cx="196" cy="192" r="8" fill="#c9a06a"/>
-          <!-- coal underground -->
-          <ellipse cx="255" cy="250" rx="26" ry="14" fill="#222a18"/>
-          <text x="255" y="254" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#9fb8cc">coal</text>
-          <!-- 1 photosynthesis: air down to tree -->
-          <path d="M120,55 C95,90 80,115 70,140" stroke="#3ddc84" stroke-width="4" fill="none" marker-end="url(#d2)"/>
-          <!-- 2 food web: tree to animal -->
-          <path d="M95,175 C130,180 150,188 162,194" stroke="#f5c842" stroke-width="4" fill="none" marker-end="url(#g2)"/>
-          <!-- 3 respiration: animal up to air -->
-          <path d="M198,182 C215,140 220,100 215,60" stroke="#e8814a" stroke-width="4" fill="none" marker-end="url(#u2)"/>
-          <!-- 4 storage: animal/ground down to coal -->
-          <path d="M205,205 C230,220 245,228 252,235" stroke="#7a8fa6" stroke-width="4" fill="none" marker-end="url(#s2)"/>
+        <svg id="cc-journey-diagram" viewBox="0 0 320 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cc-journey-title cc-journey-desc">
+          <title id="cc-journey-title">Into Plants: Photosynthesis</title>
+          <desc id="cc-journey-desc">Carbon moves from atmospheric CO₂ into a plant by photosynthesis.</desc>
           <defs>
-            <marker id="u2" markerWidth="9" markerHeight="9" refX="4" refY="2" orient="auto"><path d="M0,8 L4,0 L8,8 Z" fill="#e8814a"/></marker>
-            <marker id="d2" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="#3ddc84"/></marker>
-            <marker id="g2" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
-            <marker id="s2" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="#7a8fa6"/></marker>
+            <marker id="cc-journey-plant" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#a1dfae"/></marker>
+            <marker id="cc-journey-air" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b8def3"/></marker>
           </defs>
-          <text x="92" y="110" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#3ddc84">1</text>
-          <text x="128" y="180" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#f5c842">2</text>
-          <text x="222" y="120" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#e8814a">3</text>
-          <text x="228" y="232" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">4</text>
+          <rect width="320" height="380" rx="12" fill="#16314a"/>
+          <g font-family="Nunito,sans-serif" font-size="14" font-weight="800" fill="#edf6fb">
+            <g data-carbon-view="1">
+              <rect x="55" y="40" width="210" height="60" rx="12" fill="#304c60"/>
+              <text x="160" y="75" text-anchor="middle">CO₂ in the air</text>
+              <!-- Same tree shapes and colors as Image 1, scaled for the supporting model. -->
+              <g transform="translate(50 80) scale(0.65)">
+                <path d="M169,348 V284 M169,308 L144,284 M169,301 L191,276" fill="none" stroke="#ad9470" stroke-width="9" stroke-linecap="round"/>
+                <g fill="#79ad76"><circle cx="148" cy="265" r="31"/><circle cx="181" cy="245" r="35"/><circle cx="204" cy="278" r="29"/></g>
+              </g>
+              <text x="160" y="326" text-anchor="middle">Plant</text>
+              <path data-process="photosynthesis" d="M160,100 L160,218" fill="none" stroke="#a1dfae" stroke-width="2.5" marker-end="url(#cc-journey-plant)"/>
+              <text x="173" y="169" font-size="13">Photosynthesis</text>
+              <text x="160" y="347" text-anchor="middle" font-size="12">Carbon becomes part of plant food.</text>
+            </g>
+            <g data-carbon-view="2" hidden>
+              <g transform="translate(67 -85) scale(0.55)">
+                <path d="M169,348 V284 M169,308 L144,284 M169,301 L191,276" fill="none" stroke="#ad9470" stroke-width="9" stroke-linecap="round"/>
+                <g fill="#79ad76"><circle cx="148" cy="265" r="31"/><circle cx="181" cy="245" r="35"/><circle cx="204" cy="278" r="29"/></g>
+              </g>
+              <text x="160" y="124" text-anchor="middle">Plant</text>
+              <g transform="translate(-195 -10) scale(0.85)">
+                <g fill="#c9a06a" stroke="#c9a06a" stroke-linejoin="round">
+                  <ellipse cx="410" cy="326" rx="40" ry="21"/>
+                  <path d="M377,326 L365,309 M390,340 L387,361 M428,340 L434,361" fill="none" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M433,321 L441,296 L460,301 L450,331 Z"/>
+                  <ellipse cx="452" cy="297" rx="16" ry="11"/>
+                  <path d="M444,290 L440,278 L450,288 M457,288 L463,278 L465,295 Z"/>
+                </g>
+                <circle cx="459" cy="295" r="2" fill="#16314a"/>
+              </g>
+              <text x="160" y="320" text-anchor="middle">Animal</text>
+              <path data-process="feeding" d="M193,67 C253.9,104.41 248.1928,173.6098 202.877023,237.064729" fill="none" stroke="#a1dfae" stroke-width="2.5" marker-end="url(#cc-journey-plant)"/>
+              <text x="100" y="175">Feeding</text>
+              <text x="100" y="195" font-size="12">Animal eats plant</text>
+              <text x="160" y="347" text-anchor="middle" font-size="12">The same atom enters an animal.</text>
+            </g>
+            <g data-carbon-view="3" hidden>
+              <rect x="55" y="28" width="210" height="50" rx="12" fill="#304c60"/>
+              <text x="160" y="58" text-anchor="middle">CO₂ in the air</text>
+              <g transform="translate(8 50) scale(0.4)">
+                <path d="M169,348 V284 M169,308 L144,284 M169,301 L191,276" fill="none" stroke="#ad9470" stroke-width="9" stroke-linecap="round"/>
+                <g fill="#79ad76"><circle cx="148" cy="265" r="31"/><circle cx="181" cy="245" r="35"/><circle cx="204" cy="278" r="29"/></g>
+              </g>
+              <g transform="translate(-90 -42) scale(0.65)">
+                <g fill="#c9a06a" stroke="#c9a06a" stroke-linejoin="round">
+                  <ellipse cx="410" cy="326" rx="40" ry="21"/>
+                  <path d="M377,326 L365,309 M390,340 L387,361 M428,340 L434,361" fill="none" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M433,321 L441,296 L460,301 L450,331 Z"/>
+                  <ellipse cx="452" cy="297" rx="16" ry="11"/>
+                  <path d="M444,290 L440,278 L450,288 M457,288 L463,278 L465,295 Z"/>
+                </g>
+                <circle cx="459" cy="295" r="2" fill="#16314a"/>
+              </g>
+              <text x="47" y="210" text-anchor="middle" font-size="12">Plant</text>
+              <text x="218" y="211" text-anchor="middle" font-size="12">Animal</text>
+              <g transform="translate(-120 -80) scale(0.8)">
+                <g fill="#ad9470" stroke="#c8b48e" stroke-width="1.5">
+                  <path d="M302,457 Q310,433 333,442 Q329,462 302,457 Z"/>
+                  <path d="M342,460 Q347,439 366,449 Q362,466 342,460 Z"/>
+                  <path d="M377,461 L410,445 L416,454 L383,469 Z"/>
+                </g>
+              </g>
+              <text x="160" y="315" text-anchor="middle">Dead organic matter</text>
+              <path data-process="plant-respiration" d="M75,135 L100,78" fill="none" stroke="#b8def3" stroke-width="2.5" marker-end="url(#cc-journey-air)"/>
+              <path data-process="animal-respiration" d="M207,145 L207,78" fill="none" stroke="#b8def3" stroke-width="2.5" marker-end="url(#cc-journey-air)"/>
+              <path data-process="plant-death" d="M75,190 C75,228 98,248 125,276" fill="none" stroke="#a1dfae" stroke-width="2.5" marker-end="url(#cc-journey-plant)"/>
+              <path data-process="animal-death" d="M178,195 L170,277" fill="none" stroke="#a1dfae" stroke-width="2.5" marker-end="url(#cc-journey-plant)"/>
+              <path data-process="decomposition" d="M213,280 C274.1,284.55 295.485,187.7 291.4355,119.347625 C292,103 272,105 250,78" fill="none" stroke="#b8def3" stroke-width="2.5" marker-end="url(#cc-journey-air)"/>
+              <text x="149" y="103" text-anchor="middle" font-size="12"><tspan x="149">Cellular</tspan><tspan x="149" dy="15"> respiration</tspan></text>
+              <text x="118" y="235" font-size="12">Death</text>
+              <text x="270" y="238" text-anchor="end" font-size="12">Decomposition</text>
+              <text x="160" y="346" text-anchor="middle" font-size="12">Alternative routes back to the air</text>
+            </g>
+            <g data-carbon-view="4" hidden>
+              <g transform="translate(-90 -280) scale(0.7)">
+                <g fill="#ad9470" stroke="#c8b48e" stroke-width="1.5">
+                  <path d="M302,457 Q310,433 333,442 Q329,462 302,457 Z"/>
+                  <path d="M342,460 Q347,439 366,449 Q362,466 342,460 Z"/>
+                  <path d="M377,461 L410,445 L416,454 L383,469 Z"/>
+                </g>
+              </g>
+              <text x="160" y="20" text-anchor="middle">Dead organic matter</text>
+              <path d="M25,194 Q92,184 159,195 T295,194 L295,256 L25,256 Z" fill="#6b5946"/>
+              <g transform="translate(-70 -170) scale(0.65)">
+                <g fill="#303a3c" stroke="#738b94" stroke-width="1.5">
+                  <path d="M304,607 L315,590 L343,593 L354,610 Z"/>
+                  <path d="M352,610 L361,592 L385,586 L405,608 Z"/>
+                </g>
+              </g>
+              <text x="160" y="250" text-anchor="middle">Fossil fuels</text>
+              <path data-process="long-term-burial" d="M130,47 L94,82 L94,174 L140,210" fill="none" stroke="#a1dfae" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#cc-journey-plant)"/>
+              <text x="105" y="109" font-size="12">A small portion is buried</text>
+              <text x="105" y="130" font-size="12">and stored underground.</text>
+              <text x="105" y="160" font-size="12">Millions of years</text>
+              <path d="M20,269 H300" stroke="#738b94" opacity="0.4"/>
+              <text x="160" y="291" text-anchor="middle" font-size="12">Another storage route</text>
+              <rect x="15" y="311" width="95" height="42" rx="12" fill="#304c60"/>
+              <text x="62.5" y="337" text-anchor="middle">Air CO₂</text>
+              <rect x="212" y="311" width="95" height="42" rx="12" fill="#205681"/>
+              <text x="259.5" y="337" text-anchor="middle">Ocean</text>
+              <path data-process="ocean-uptake" d="M110,322 L212,322" fill="none" stroke="#b8def3" stroke-width="2.5" marker-end="url(#cc-journey-air)"/>
+              <path data-process="ocean-release" d="M212,344 L110,344" fill="none" stroke="#b8def3" stroke-width="2.5" marker-end="url(#cc-journey-air)"/>
+              <text x="160" y="313" text-anchor="middle" font-size="10">Dissolves</text>
+              <text x="160" y="367" text-anchor="middle" font-size="10">Returns to air</text>
+            </g>
+          </g>
         </svg>
       </div>
       <div class="layer-controls">
         <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(1)" id="term-photosynthesis">
+          <button type="button" aria-pressed="false" aria-controls="cc-journey-diagram cc-journey-detail" class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(1)" id="term-photosynthesis">
             <span>1 &middot; Into Plants</span><span class="layer-tag">photosynthesis</span>
-          </div>
-          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d27a;" onclick="layerClick(2)" id="term-foodweb">
-            <span>2 &middot; Through the Food Web</span><span class="layer-tag">eating</span>
-          </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(3)" id="term-backtoair">
-            <span>3 &middot; Back to the Air</span><span class="layer-tag">respiration &amp; decay</span>
-          </div>
-          <div class="layer-row" style="background: rgba(122,143,166,0.32); color: #c4d2df;" onclick="layerClick(4)" id="term-storage">
+          </button>
+          <button type="button" aria-pressed="false" aria-controls="cc-journey-diagram cc-journey-detail" class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d27a;" onclick="layerClick(2)" id="term-foodweb">
+            <span>2 &middot; Through the Food Web</span><span class="layer-tag">feeding</span>
+          </button>
+          <button type="button" aria-pressed="false" aria-controls="cc-journey-diagram cc-journey-detail" class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(3)" id="term-backtoair">
+            <span>3 &middot; Back to the Air</span><span class="layer-tag">respiration &amp; decomposition</span>
+          </button>
+          <button type="button" aria-pressed="false" aria-controls="cc-journey-diagram cc-journey-detail" class="layer-row" style="background: rgba(122,143,166,0.32); color: #c4d2df;" onclick="layerClick(4)" id="term-storage">
             <span>4 &middot; Long-Term Storage</span><span class="layer-tag">fuels &amp; oceans</span>
-          </div>
+          </button>
         </div>
-        <div class="layer-detail-panel">
+        <div class="layer-detail-panel" id="cc-journey-detail" role="region" aria-labelledby="ld-title" aria-live="polite" aria-atomic="true">
           <div class="ld-inner">
             <div class="ld-label" id="ld-label">Click a stage</div>
             <div class="ld-title" id="ld-title">Start in the air &#8594;</div>
-            <div class="ld-body" id="ld-body">Each stage moves carbon to a new place. Click any stage to follow the atom and see which process is at work.</div>
+            <div class="ld-body" id="ld-body">Follow one atom through possible routes. The four stages are not a required sequence; return to the air and storage are alternatives.</div>
           </div>
         </div>
       </div>
@@ -1575,14 +1707,100 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
       <strong>The full loop:</strong>
-      <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Photosynthesis takes carbon in</span>
-        <span class="wuc wuc-1">Carbon moves through the food web</span>
-        <span class="wuc wuc-2">Respiration and decay return it</span>
-        <span class="wuc wuc-2">Combustion releases stored carbon</span>
-        <span class="wuc wuc-3">Fossil fuels and oceans store it</span>
+      <div class="cc-diagram-scroll" tabindex="0" role="region" aria-label="Carbon cycle synthesis model; scroll horizontally on narrow screens" style="margin-top: 0.8rem;">
+        <svg id="cc-synthesis" viewBox="0 0 760 490" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cc-synthesis-title cc-synthesis-desc" style="display: block; width: 100%; height: auto; min-width: 660px;">
+          <title id="cc-synthesis-title">Connected pathways in the carbon cycle</title>
+          <desc id="cc-synthesis-desc">Follow the main loop: atmospheric CO₂ enters plants through photosynthesis, feeding transfers carbon to animals, death transfers it to dead organic matter, and decomposition returns it to atmospheric CO₂. Plants and animals also return CO₂ through cellular respiration. These are possible routes, not a required sequence for every atom. A secondary dashed route shows burial of a small portion of dead organic matter; some buried carbon forms fossil fuels over millions of years. Fuel use brings fossil carbon to the small factory; its furnace flame indicates combustion, which returns carbon to atmospheric CO₂. A separate two-way exchange connects atmospheric CO₂ and ocean carbon storage. Arrows represent carbon movement.</desc>
+          <defs>
+            <marker id="cc-synthesis-green" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#a1dfae"/></marker>
+            <marker id="cc-synthesis-blue" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b8def3"/></marker>
+          </defs>
+          <rect width="760" height="490" rx="14" fill="#16314a"/>
+          <g transform="translate(-60 -34) scale(0.9)">
+            <path d="M169,348 V284 M169,308 L144,284 M169,301 L191,276" fill="none" stroke="#ad9470" stroke-width="9" stroke-linecap="round"/>
+            <g fill="#79ad76"><circle cx="148" cy="265" r="31"/><circle cx="181" cy="245" r="35"/><circle cx="204" cy="278" r="29"/></g>
+          </g>
+          <g transform="translate(-76 130) scale(0.9)">
+            <g fill="#c9a06a" stroke="#c9a06a" stroke-linejoin="round">
+              <ellipse cx="410" cy="326" rx="40" ry="21"/>
+              <path d="M377,326 L365,309 M390,340 L387,361 M428,340 L434,361" fill="none" stroke-width="7" stroke-linecap="round"/>
+              <path d="M433,321 L441,296 L460,301 L450,331 Z"/>
+              <ellipse cx="452" cy="297" rx="16" ry="11"/>
+              <path d="M444,290 L440,278 L450,288 M457,288 L463,278 L465,295 Z"/>
+            </g>
+            <circle cx="459" cy="295" r="2" fill="#16314a"/>
+          </g>
+          <g transform="translate(173 -99) scale(0.8)">
+            <g fill="#ad9470" stroke="#c8b48e" stroke-width="1.5">
+              <path d="M302,457 Q310,433 333,442 Q329,462 302,457 Z"/>
+              <path d="M342,460 Q347,439 366,449 Q362,466 342,460 Z"/>
+              <path d="M377,461 L410,445 L416,454 L383,469 Z"/>
+            </g>
+          </g>
+          <g transform="translate(366 -90) scale(0.8)">
+            <g fill="#303a3c" stroke="#738b94" stroke-width="1.5">
+              <path d="M304,607 L315,590 L343,593 L354,610 Z"/>
+              <path d="M352,610 L361,592 L385,586 L405,608 Z"/>
+            </g>
+          </g>
+          <g transform="translate(250 70) scale(0.65)">
+          <path d="M610,351 V308 L633,296 V308 L655,296 V308 H704 V351 Z" fill="#738b94"/>
+          <rect x="672" y="270" width="17" height="41" fill="#9aadb4"/>
+          <g fill="#24465d"><rect x="622" y="323" width="13" height="15"/><rect x="646" y="323" width="13" height="15"/><rect x="677" y="323" width="16" height="28"/></g>
+          <!-- A small furnace flame signals combustion, not visible CO₂ or smoke. -->
+          <path d="M677,340 C674,334 681,332 681,326 C688,332 694,337 689,342 Q682,348 677,340 Z" fill="#e5a45f"/>
+          <path d="M681,340 Q680,336 684,333 Q689,339 685,342 Q682,344 681,340 Z" fill="#f5c842"/>
+          </g>
+          <g transform="translate(35 20)">
+          <path d="M574,102 Q595,92 616,102 T658,102 L658,130 Q616,142 574,130 Z" fill="#28688d"/>
+          <path d="M580,111 Q598,104 616,111 T652,111 M580,121 Q598,114 616,121 T652,121" fill="none" stroke="#98c9df" stroke-width="1.5"/>
+          </g>
+          <!-- The prominent outer loop connects the four biological reservoirs. -->
+          <g fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path data-process="photosynthesis" d="M218,62 C68,22 28,102 85,167" stroke="#a1dfae" marker-end="url(#cc-synthesis-green)"/>
+            <path data-process="feeding" d="M91,281 C106,367 185,425 257,422" stroke="#a1dfae" marker-end="url(#cc-synthesis-green)"/>
+            <path data-process="death" d="M334,407 C414,394 460,333 460,280" stroke="#a1dfae" marker-end="url(#cc-synthesis-green)"/>
+            <path data-process="decomposition" d="M488,258 C565,173 500,108 405,81" stroke="#b8def3" marker-end="url(#cc-synthesis-blue)"/>
+          </g>
+          <!-- Respiration provides shorter routes back inside the main loop. -->
+          <g fill="none" stroke="#b8def3" stroke-width="2.5" stroke-linecap="round" marker-end="url(#cc-synthesis-blue)">
+            <path data-process="plant-respiration" d="M135,188 C172,139 213,108 250,83"/>
+            <path data-process="animal-respiration" d="M331,382 C342,273 321,161 320,84"/>
+          </g>
+          <!-- Secondary storage connections have a lighter visual weight. -->
+          <g fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path data-process="burial" d="M499,274 L623,378" stroke="#a1dfae" stroke-dasharray="6 6" marker-end="url(#cc-synthesis-green)"/>
+            <path data-process="fuel-use" d="M689,386 C728,343 718,326 688,300" stroke="#b8def3" marker-end="url(#cc-synthesis-blue)"/>
+            <path data-process="combustion" d="M692,245 C752,147 738,4 300,28" stroke="#b8def3" marker-end="url(#cc-synthesis-blue)"/>
+            <path data-process="ocean-uptake" d="M441,86 C492,86 557,114 609,134" stroke="#b8def3" marker-end="url(#cc-synthesis-blue)"/>
+            <path data-process="ocean-release" d="M650,120 C597,61 514,25 447,44" stroke="#b8def3" marker-end="url(#cc-synthesis-blue)"/>
+          </g>
+          <g font-family="Nunito,sans-serif" font-size="18" font-weight="800" fill="#edf6fb">
+            <text x="318" y="64" text-anchor="middle">CO₂ in the atmosphere</text>
+            <text x="45" y="308" text-anchor="middle">Plants</text>
+            <text x="293" y="476" text-anchor="middle">Animals</text>
+            <text x="429" y="230" text-anchor="middle" font-size="16">Dead organic matter</text>
+            <text x="75" y="116">Photosynthesis</text>
+            <text x="133" y="365">Feeding</text>
+            <text x="365" y="365">Death</text>
+            <text x="546" y="211" font-size="15">Decomposition</text>
+          </g>
+          <g font-family="Nunito,sans-serif" font-size="15" font-weight="700" fill="#edf6fb">
+            <text x="178" y="178">Plant respiration</text>
+            <text x="350" y="190">Animal respiration</text>
+          </g>
+          <g font-family="Nunito,sans-serif" font-size="13" font-weight="700" fill="#c7d4d8">
+            <text x="654" y="175" text-anchor="middle">Ocean</text>
+            <text x="649" y="424" text-anchor="middle">Fossil fuels</text>
+            <text x="553" y="305">Small portion buried</text>
+            <text x="568" y="326">Millions of years</text>
+            <text x="606" y="232">Combustion</text>
+            <text x="547" y="137" text-anchor="middle">Dissolves</text>
+            <text x="554" y="80" text-anchor="middle">Returns to air</text>
+          </g>
+        </svg>
       </div>
-      <div style="margin-top: 1rem;">Earth's carbon is never created or destroyed. The same carbon atoms move endlessly among the air, living things, oceans, and rocks. That is why the carbon in your breath has been used many times before, and will be used again.</div>
+      <div style="margin-top: 1rem;">Carbon atoms are continually recycled through Earth's systems. The same carbon atoms move endlessly among the air, living things, oceans, and rocks. That is why the carbon in your breath has been used many times before, and will be used again.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1952,21 +2170,27 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 <!-- ===== CARBON CYCLE STAGES INTERACTIVE ===== -->
 <script>
 const layerData = {
-  1: { label: 'Stage 1 · Carbon goes in', title: 'Into Plants: Photosynthesis', body: 'Carbon floats in the air as carbon dioxide. Plant leaves absorb it and use sunlight to turn the carbon into food. This is the main way carbon moves from the nonliving air into living things.' },
-  2: { label: 'Stage 2 · Through living things', title: 'Through the Food Web', body: 'When animals eat plants, they take in the carbon, and some becomes part of their bodies. When other animals eat them, the carbon moves again. The same atom can pass through many living things.' },
-  3: { label: 'Stage 3 · Carbon comes out', title: 'Back to the Air', body: 'Living things release carbon dioxide through cellular respiration. When plants and animals die, decomposition breaks them down and returns most of their carbon to the air. Burning fuels releases carbon too.' },
-  4: { label: 'Stage 4 · Locked away', title: 'Long-Term Storage', body: 'Some carbon is stored for a very long time. Buried organisms became fossil fuels deep underground, and the oceans hold a huge store of dissolved carbon. This carbon returns to the air slowly, or quickly when fuels are burned.' }
+  1: { label: 'Stage 1 · Carbon goes in', title: 'Into Plants: Photosynthesis', body: 'Start with one carbon atom in atmospheric CO₂. A plant takes in the CO₂ during photosynthesis and uses sunlight energy to build food containing that atom.', diagram: 'Carbon moves from atmospheric CO₂ into a plant by photosynthesis.' },
+  2: { label: 'Stage 2 · Through living things', title: 'Through the Food Web', body: 'An animal eats the plant. The same carbon atom passes from plant food into the animal and may become part of its body. Feeding can move it to another animal later.', diagram: 'Feeding moves the carbon atom from a plant into an animal that eats it.' },
+  3: { label: 'Stage 3 · Alternative return routes', title: 'Back to the Air', body: 'The atom can return to atmospheric CO₂ through cellular respiration in a plant or animal. Or, after an organism dies, the atom can enter dead organic matter. Decomposers break down that material and can release the atom as CO₂ through respiration. These are alternative routes, not steps every atom must take.', diagram: 'Plant or animal carbon can return directly to atmospheric CO₂ through cellular respiration, or enter dead organic matter after death and return through decomposition.' },
+  4: { label: 'Stage 4 · Alternative storage routes', title: 'Long-Term Storage', body: 'Instead of returning to the air during decomposition, an atom in a small portion of dead organic matter may be buried and stored underground. Over millions of years, some buried carbon forms fossil fuels. Burning those fuels can later return the atom to atmospheric CO₂. Another route starts in the air: CO₂ dissolves in ocean water, where its carbon may remain stored for a long time before returning to the air. Ocean storage is not the next step after fossil fuels.', diagram: 'A dashed route leads from dead organic matter through burial and underground storage of a small portion, over millions of years, to fossil fuels. A separate route shows atmospheric CO₂ dissolving into the ocean and carbon returning to the air.' }
 };
 function layerClick(n) {
   const d = layerData[n];
+  if (!d) return;
   document.getElementById('ld-label').textContent = d.label;
   document.getElementById('ld-title').textContent = d.title;
-  document.getElementById('ld-body').textContent  = d.body;
-  document.querySelectorAll('.layer-row').forEach((el, i) => {
-    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
-    el.style.outlineOffset = '1px';
+  document.getElementById('ld-body').textContent = d.body;
+  document.getElementById('cc-journey-title').textContent = d.title;
+  document.getElementById('cc-journey-desc').textContent = d.diagram;
+  document.querySelectorAll('#journey .layer-row').forEach((el, i) => {
+    el.setAttribute('aria-pressed', String(i + 1 === n));
+  });
+  document.querySelectorAll('#journey [data-carbon-view]').forEach((el) => {
+    el.toggleAttribute('hidden', Number(el.dataset.carbonView) !== n);
   });
 }
+layerClick(1);
 </script>
 
 <!-- ===== QUICK RECALL CHECKPOINTS ===== -->
