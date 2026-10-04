@@ -206,9 +206,62 @@ describe("Student Detail Show Your Thinking", () => {
       ["at-2", written["at-2"]],
       ["at-3", written["at-3"]],
     ]);
-    expect(rows(card)[1]!.label).toMatch(/^Attempt 2 · \d{2}\/\d{2}\/\d{4}$/);
+    expect(rows(card)[1]!.label).toMatch(/^Attempt 2 · 70% · \d{2}\/\d{2}\/\d{4}$/);
     // Only this student's attempts are ever read.
     expect(detailCalls.sort()).toEqual(["at-1", "at-2", "at-3"]);
+  });
+
+  test("attempts are labeled Attempt 1, 2, 3 in actual sequence across the Current group, each with its own score", async () => {
+    // at-3 is attemptNumber 1 on the reassigned occurrence a2; on the
+    // cumulative card it is the student's third attempt, so its label
+    // never repeats "Attempt 1".
+    const scored = [
+      { ...attempt("at-1", "a1", 1000), percentage: 40 },
+      { ...attempt("at-3", "a2", 3000), percentage: 60 },
+      { ...attempt("at-2", "a1", 2000, 2), percentage: 90 },
+    ];
+    const { mount } = await openStudent({ attempts: scored, groups: [group({})], written });
+    const card = cards(mount)[0]!;
+    await toggle(card);
+    const labels = rows(card).map((r) => r.label!.replace(/ · \d{2}\/\d{2}\/\d{4}$/, ""));
+    expect(labels).toEqual(["Attempt 1 · 40%", "Attempt 2 · 90%", "Attempt 3 · 60%"]);
+    // Numbering is by sequence, not by best score: the best (90%) is Attempt 2.
+    expect(rows(card).map((r) => [r.attemptId, r.text])).toEqual([
+      ["at-1", written["at-1"]],
+      ["at-2", written["at-2"]],
+      ["at-3", written["at-3"]],
+    ]);
+  });
+
+  test("within one assignment the label equals the persisted attemptNumber", async () => {
+    const { mount } = await openStudent({
+      attempts: [attempt("at-2", "a1", 2000, 2), attempt("at-1", "a1", 1000, 1)],
+      groups: [group({ assignmentIds: ["a1"], operationalAssignmentId: "a1" })],
+      written,
+    });
+    const card = cards(mount)[0]!;
+    await toggle(card);
+    expect(rows(card).map((r) => r.label!.split(" · ")[0])).toEqual(["Attempt 1", "Attempt 2"]);
+    expect(rows(card).map((r) => r.attemptId)).toEqual(["at-1", "at-2"]);
+  });
+
+  test("a later retake never relabels or rewrites an earlier attempt", async () => {
+    const first = [attempt("at-1", "a1", 1000)];
+    const before = await openStudent({ attempts: first, groups: [group({})], written });
+    await toggle(cards(before.mount)[0]!);
+    const beforeRow = rows(cards(before.mount)[0]!)[0];
+
+    document.body.innerHTML = "";
+    const after = await openStudent({
+      attempts: [...first, { ...attempt("at-2", "a1", 2000, 2), percentage: 100 }],
+      groups: [group({})],
+      written,
+    });
+    await toggle(cards(after.mount)[0]!);
+    const afterRows = rows(cards(after.mount)[0]!);
+    expect(afterRows[0]).toEqual(beforeRow);
+    expect(afterRows[1]!.label).toMatch(/^Attempt 2 · 100% · /);
+    expect(afterRows[1]!.text).toBe(written["at-2"]);
   });
 
   test("Current changing never moves a historical attempt's response", async () => {

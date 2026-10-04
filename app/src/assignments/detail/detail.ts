@@ -36,6 +36,14 @@ import type {
 } from "./attempts-wire";
 import { groupRoster } from "./roster";
 import {
+  compareRosterNames,
+  createRosterSortControl,
+  DEFAULT_ROSTER_SORT_ORDER,
+  formatRosterName,
+  type RosterSortOrder,
+  type RosterSortPreference,
+} from "../../teacherPreferences/rosterSort";
+import {
   DISCREPANCY_NOTE_COPY,
   reconcileCounts,
   shouldDisplayDiscrepancyNote,
@@ -187,6 +195,10 @@ export type AssignmentDetailDeps = {
   readonly onSelectStudent?: (
     selection: AssignmentDetailStudentSelection,
   ) => void;
+  // Sprint 30 roster polish: the teacher's roster sort preference (shared
+  // with the Classes Students list). Absent: the default order is used and
+  // a change applies to this render only.
+  readonly rosterSort?: RosterSortPreference;
 };
 
 const STATUS_LABEL: Readonly<Record<AssignmentStatus, string>> = Object.freeze({
@@ -1214,6 +1226,7 @@ function renderReady(
       deps.gradePassback,
       onSelectStudent,
       shared.currentForFamily,
+      deps.rosterSort,
     );
   }
 
@@ -1288,6 +1301,7 @@ async function renderRosterPanel(
   cachedCurrentForFamily?: (
     metadata: AssignmentDetailMetadata,
   ) => Promise<CurrentForFamily> | null,
+  rosterSort?: RosterSortPreference,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -1393,6 +1407,39 @@ async function renderRosterPanel(
     return;
   }
 
+  // Sprint 30 roster polish: a compact Sort control above the groups. A
+  // change persists the teacher's preference and MOVES the existing rows into
+  // the new order (group membership never depends on the order), so focus
+  // stays on the control, nothing is re-fetched, and any live row state
+  // (a grade-sync Retry in flight or its result) is kept.
+  const sortOrder: RosterSortOrder = rosterSort?.read() ?? DEFAULT_ROSTER_SORT_ORDER;
+  const groupsHost = doc.createElement("div");
+  groupsHost.className = "shell-assignment-detail-roster-groups";
+  groupsHost.setAttribute("data-testid", "assignment-detail-roster-groups");
+  host.appendChild(
+    createRosterSortControl(doc, "assignment-detail-roster", sortOrder, (next) => {
+      rosterSort?.write(next);
+      const byName = compareRosterNames(next);
+      for (const list of Array.from(
+        groupsHost.querySelectorAll<HTMLElement>(".shell-assignment-detail-roster-list"),
+      )) {
+        const rows = Array.from(list.children) as HTMLElement[];
+        rows
+          .map((li) => ({
+            li,
+            studentId: li.getAttribute("data-student-id") ?? "",
+            studentDisplayName: li.getAttribute("data-student-name") ?? "",
+          }))
+          .sort(byName)
+          .forEach((row) => {
+            presentRosterName(row.li, row.studentDisplayName, next);
+            list.appendChild(row.li);
+          });
+      }
+    }),
+  );
+  host.appendChild(groupsHost);
+
   const grouping = groupRoster({
     recipients,
     completed: completed.map((c) => ({
@@ -1402,6 +1449,7 @@ async function renderRosterPanel(
       submittedAt: c.submittedAt,
     })),
     inProgressStudentCount: summary.inProgressStudents,
+    sortOrder,
   });
 
   // Sprint 16 Slice 3: every group header count is anchored to the
@@ -1412,7 +1460,7 @@ async function renderRosterPanel(
   // relabeling either dataset.
   appendRosterGroup(
     doc,
-    host,
+    groupsHost,
     "submitted",
     "Submitted",
     summary.completedStudents,
@@ -1428,10 +1476,11 @@ async function renderRosterPanel(
             gradePassback.retry({ assignmentId: metadata.assignmentId, studentId }),
         },
     onSelectStudent,
+    sortOrder,
   );
   appendRosterGroup(
     doc,
-    host,
+    groupsHost,
     "in-progress",
     "In progress",
     summary.inProgressStudents,
@@ -1439,10 +1488,11 @@ async function renderRosterPanel(
     false,
     undefined,
     onSelectStudent,
+    sortOrder,
   );
   appendRosterGroup(
     doc,
-    host,
+    groupsHost,
     "not-started",
     "Not started",
     summary.notStartedStudents,
@@ -1450,6 +1500,7 @@ async function renderRosterPanel(
     false,
     undefined,
     onSelectStudent,
+    sortOrder,
   );
 
   const reconciliation = reconcileCounts({
@@ -1469,7 +1520,7 @@ async function renderRosterPanel(
     note.setAttribute("role", "status");
     note.setAttribute("aria-live", "polite");
     note.textContent = DISCREPANCY_NOTE_COPY;
-    host.appendChild(note);
+    groupsHost.appendChild(note);
   }
 }
 
@@ -1788,6 +1839,7 @@ function appendRosterGroup(
         readonly studentId: string;
         readonly studentDisplayName: string;
         readonly percentage: number;
+        readonly attemptCount: number;
       }
   >,
   showPercentage: boolean,
@@ -1800,6 +1852,7 @@ function appendRosterGroup(
     ) => Promise<AssignmentGradePassbackRetryResult>;
   },
   onSelectStudent?: (studentId: string, studentDisplayName: string) => void,
+  sortOrder: RosterSortOrder = DEFAULT_ROSTER_SORT_ORDER,
 ): void {
   const group = doc.createElement("div");
   group.className = `shell-assignment-detail-roster-group shell-assignment-detail-roster-${key}`;
@@ -1840,6 +1893,8 @@ function appendRosterGroup(
         "data-testid",
         `assignment-detail-roster-row-${row.studentId}`,
       );
+      li.setAttribute("data-student-id", row.studentId);
+      li.setAttribute("data-student-name", row.studentDisplayName);
       // Student Progress & Assignment Membership Phase A, Slice 3: the
       // name is a clickable control (a plain button, styled as text) when
       // a navigation seam is wired; otherwise it stays the pre-Slice-3
@@ -1850,7 +1905,6 @@ function appendRosterGroup(
         onSelectStudent === undefined ? "span" : "button",
       );
       name.className = "shell-assignment-detail-roster-name";
-      name.textContent = row.studentDisplayName;
       if (onSelectStudent !== undefined) {
         const nameBtn = name as HTMLButtonElement;
         nameBtn.type = "button";
@@ -1858,24 +1912,47 @@ function appendRosterGroup(
           "data-testid",
           `assignment-detail-roster-name-${row.studentId}`,
         );
-        nameBtn.setAttribute(
-          "aria-label",
-          `Open student detail for ${row.studentDisplayName}`,
-        );
         nameBtn.addEventListener("click", () => {
           onSelectStudent(row.studentId, row.studentDisplayName);
         });
       }
       li.appendChild(name);
+      presentRosterName(li, row.studentDisplayName, sortOrder);
+      // Sprint 30 roster polish: the score and attempt count sit together
+      // right beside the name ("Ada Lovelace  90% · 2 attempts") so a row
+      // scans as one unit. The score is unchanged (the representative
+      // attempt's percentage); the summary is plain text, not a control.
       if (
         showPercentage &&
         "percentage" in row &&
         typeof row.percentage === "number"
       ) {
+        const summary = doc.createElement("span");
+        summary.className = "shell-assignment-detail-roster-summary";
+        summary.setAttribute(
+          "data-testid",
+          `assignment-detail-roster-summary-${row.studentId}`,
+        );
         const pct = doc.createElement("span");
         pct.className = "shell-assignment-detail-roster-percentage";
         pct.textContent = `${Math.round(row.percentage * 10) / 10}%`;
-        li.appendChild(pct);
+        summary.appendChild(pct);
+        if ("attemptCount" in row && row.attemptCount > 0) {
+          const sep = doc.createElement("span");
+          sep.className = "shell-assignment-detail-roster-summary-sep";
+          sep.setAttribute("aria-hidden", "true");
+          sep.textContent = " · ";
+          summary.appendChild(sep);
+          const count = doc.createElement("span");
+          count.className = "shell-assignment-detail-roster-attempts";
+          count.setAttribute(
+            "data-testid",
+            `assignment-detail-roster-attempts-${row.studentId}`,
+          );
+          count.textContent = formatAttemptCount(row.attemptCount);
+          summary.appendChild(count);
+        }
+        li.appendChild(summary);
       }
       // Sprint 30A.2: render the grade-passback status line + Retry action
       // ONLY when there is something useful to show. A `synced` status
@@ -1913,6 +1990,27 @@ function appendRosterGroup(
   }
 
   host.appendChild(group);
+}
+
+// Sprint 30 roster polish: the row's name follows the teacher's sort mode
+// ("Brown, Christopher" in Last name mode). The accessible name carries the
+// same visible text. Selection still passes the natural display name.
+function presentRosterName(
+  li: HTMLElement,
+  studentDisplayName: string,
+  order: RosterSortOrder,
+): void {
+  const name = li.querySelector<HTMLElement>(".shell-assignment-detail-roster-name");
+  if (name === null) return;
+  const shown = formatRosterName(studentDisplayName, order);
+  name.textContent = shown;
+  if (name.tagName === "BUTTON") {
+    name.setAttribute("aria-label", `Open student detail for ${shown}`);
+  }
+}
+
+function formatAttemptCount(count: number): string {
+  return `${count} ${count === 1 ? "attempt" : "attempts"}`;
 }
 
 function appendGradeSyncStatusLine(

@@ -95,8 +95,10 @@ const showAssignments = async (mount: HTMLElement) => {
   mount.querySelector<HTMLButtonElement>("[data-testid=class-nav-assignments]")!.click();
   await flush();
 };
+// Rows render in the default Last name (A-Z) presentation ("Last, First").
 const names = (mount: HTMLElement) =>
   Array.from(mount.querySelectorAll(".shell-roster-student-name")).map((n) => n.textContent);
+const shown = (classId: string, n: "One" | "Two") => `${n}, ${classId} Student`;
 
 describe("Students roster prefetch on class open", () => {
   test("opening a class starts THAT class's roster read in the background (and only that class's)", async () => {
@@ -131,7 +133,7 @@ describe("Students roster prefetch on class open", () => {
     await showStudents(mount);
 
     expect(mount.querySelector("[data-testid=roster-loading]")).toBeNull();
-    expect(names(mount)).toEqual([`${CLASS_A} Student One`, `${CLASS_A} Student Two`]);
+    expect(names(mount)).toEqual([shown(CLASS_A, "One"), shown(CLASS_A, "Two")]);
     expect(loader).toHaveBeenCalledTimes(1);
   });
 
@@ -146,7 +148,7 @@ describe("Students roster prefetch on class open", () => {
     await settle();
 
     expect(mount.querySelector("[data-testid=roster-loading]")).toBeNull();
-    expect(names(mount)).toEqual([`${CLASS_A} Student One`, `${CLASS_A} Student Two`]);
+    expect(names(mount)).toEqual([shown(CLASS_A, "One"), shown(CLASS_A, "Two")]);
     expect(loader).toHaveBeenCalledTimes(1);
   });
 
@@ -181,11 +183,11 @@ describe("Students roster prefetch on class open", () => {
     const b = pending.find((p) => p.classId === CLASS_B)!;
     a.resolve(rosterFor(CLASS_A));
     await settle();
-    expect(names(mount)).not.toContain(`${CLASS_A} Student One`);
+    expect(names(mount)).not.toContain(shown(CLASS_A, "One"));
     b.resolve(rosterFor(CLASS_B));
     await settle();
 
-    expect(names(mount)).toEqual([`${CLASS_B} Student One`, `${CLASS_B} Student Two`]);
+    expect(names(mount)).toEqual([shown(CLASS_B, "One"), shown(CLASS_B, "Two")]);
   });
 
   test("reopening a class fetches its roster anew (freshness per class open)", async () => {

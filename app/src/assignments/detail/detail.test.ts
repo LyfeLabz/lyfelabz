@@ -3895,3 +3895,265 @@ describe("renderAssignmentDetail - Student Progress & Assignment Membership Phas
     expect(group?.querySelector("button.shell-assignment-detail-roster-name")).toBeNull();
   });
 });
+
+describe("renderAssignmentDetail - Sprint 30 roster polish (score + attempts beside the name)", () => {
+  const meta = (): AssignmentDetailMetadata =>
+    freezeMetadata({ classId: "class-1", status: "published" });
+
+  const render = async (
+    recipients: ReadonlyArray<{ studentId: string; studentDisplayName: string }>,
+    attempts: ReadonlyArray<CompletedAttemptSummary>,
+    completedStudents: number,
+    onSelectStudent?: (selection: unknown) => void,
+  ) => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta()),
+      summaryCallable: resolvingSummary(
+        freezeSummary({
+          totalStudents: recipients.length,
+          completedStudents,
+          inProgressStudents: 0,
+          notStartedStudents: recipients.length - completedStudents,
+        }),
+      ),
+      recipientListCallable: spyingRecipients(recipients).callable,
+      attemptsListForClassCallable: spyingAttemptsList(attempts).callable,
+      ...(onSelectStudent !== undefined ? { onSelectStudent } : {}),
+    });
+    await flush();
+    await flush();
+    await flush();
+    return mount;
+  };
+
+  const rowText = (mount: HTMLElement, studentId: string): string =>
+    (
+      mount.querySelector(`[data-testid=assignment-detail-roster-summary-${studentId}]`)
+        ?.textContent ?? ""
+    );
+
+  test("shows the same best score with a grammatical attempt count", async () => {
+    const mount = await render(
+      [
+        { studentId: "stu-1", studentDisplayName: "Adrianna Blumberg" },
+        { studentId: "stu-2", studentDisplayName: "Ben Cole" },
+      ],
+      [
+        mkAttempt({ attemptId: "a1", studentId: "stu-1", attemptNumber: 1, percentage: 100, submittedAt: 1 }),
+        mkAttempt({ attemptId: "a2", studentId: "stu-1", attemptNumber: 2, percentage: 80, submittedAt: 2 }),
+        mkAttempt({ attemptId: "b1", studentId: "stu-2", attemptNumber: 1, percentage: 72.25, submittedAt: 3 }),
+        // Another assignment's attempt never counts toward this roster.
+        mkAttempt({ attemptId: "x1", studentId: "stu-2", assignmentId: "assign-other", percentage: 10 }),
+      ],
+      2,
+    );
+    expect(rowText(mount, "stu-1")).toBe("100% · 2 attempts");
+    expect(rowText(mount, "stu-2")).toBe("72.3% · 1 attempt");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-attempts-stu-2]")?.textContent,
+    ).toBe("1 attempt");
+    // The separator is decorative; the score and count are separate text.
+    const sep = mount.querySelector(
+      "[data-testid=assignment-detail-roster-summary-stu-1] .shell-assignment-detail-roster-summary-sep",
+    );
+    expect(sep?.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  test("rows are ordered by last name regardless of score or attempts", async () => {
+    const mount = await render(
+      [
+        { studentId: "s-y", studentDisplayName: "Amy Young" },
+        { studentId: "s-b", studentDisplayName: "Zed Baker" },
+        { studentId: "s-m", studentDisplayName: "Max Moss" },
+      ],
+      [
+        mkAttempt({ attemptId: "y", studentId: "s-y", percentage: 100 }),
+        mkAttempt({ attemptId: "b1", studentId: "s-b", percentage: 10, submittedAt: 1 }),
+        mkAttempt({ attemptId: "b2", studentId: "s-b", attemptNumber: 2, percentage: 20, submittedAt: 2 }),
+        mkAttempt({ attemptId: "m", studentId: "s-m", percentage: 50 }),
+      ],
+      3,
+    );
+    const order = Array.from(
+      mount.querySelectorAll(
+        "[data-testid=assignment-detail-roster-group-submitted] .shell-assignment-detail-roster-name",
+      ),
+    ).map((el) => el.textContent);
+    // Default Last name (A-Z) mode presents rows as "Last, First".
+    expect(order).toEqual(["Baker, Zed", "Moss, Max", "Young, Amy"]);
+  });
+
+  test("not-started rows show no score or attempt summary", async () => {
+    const mount = await render(
+      [{ studentId: "stu-1", studentDisplayName: "Ada Lovelace" }],
+      [],
+      0,
+    );
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-row-stu-1]"),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-summary-stu-1]"),
+    ).toBeNull();
+  });
+
+  test("the summary is plain text beside the name button, never inside it, and the name still opens Student Detail", async () => {
+    const selections: unknown[] = [];
+    const mount = await render(
+      [{ studentId: "stu-1", studentDisplayName: "Adrianna Blumberg" }],
+      [mkAttempt({ attemptId: "a1", studentId: "stu-1", percentage: 100 })],
+      1,
+      (s) => selections.push(s),
+    );
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-roster-name-stu-1]",
+    )!;
+    const summary = mount.querySelector(
+      "[data-testid=assignment-detail-roster-summary-stu-1]",
+    )!;
+    expect(btn.textContent).toBe("Blumberg, Adrianna");
+    expect(btn.getAttribute("aria-label")).toBe("Open student detail for Blumberg, Adrianna");
+    expect(btn.contains(summary)).toBe(false);
+    expect(summary.querySelector("button, a")).toBeNull();
+    expect(btn.nextElementSibling).toBe(summary);
+    btn.click();
+    expect(selections).toEqual([
+      {
+        classId: "class-1",
+        studentId: "stu-1",
+        studentDisplayName: "Adrianna Blumberg",
+        returnToAssignmentId: "assign-1",
+      },
+    ]);
+  });
+});
+
+describe("renderAssignmentDetail - Sprint 30 roster sort preference", () => {
+  const meta = (): AssignmentDetailMetadata =>
+    freezeMetadata({ classId: "class-1", status: "published" });
+  const recipients = [
+    { studentId: "s-adr", studentDisplayName: "Adrianna Zimmer" },
+    { studentId: "s-ben", studentDisplayName: "Ben Adams" },
+    { studentId: "s-cal", studentDisplayName: "Cal Moss" },
+    { studentId: "s-dee", studentDisplayName: "Dee Brown" },
+  ];
+  const attempts = [
+    mkAttempt({ attemptId: "a1", studentId: "s-adr", percentage: 100, submittedAt: 1 }),
+    mkAttempt({ attemptId: "a2", studentId: "s-adr", attemptNumber: 2, percentage: 60, submittedAt: 2 }),
+    mkAttempt({ attemptId: "b1", studentId: "s-ben", percentage: 40, submittedAt: 3 }),
+    mkAttempt({ attemptId: "c1", studentId: "s-cal", percentage: 80, submittedAt: 4 }),
+  ];
+
+  const render = async (rosterSort?: { read: () => "lastName" | "firstName"; write: (o: "lastName" | "firstName") => void }) => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta()),
+      summaryCallable: resolvingSummary(
+        freezeSummary({ totalStudents: 4, completedStudents: 3, inProgressStudents: 0, notStartedStudents: 1 }),
+      ),
+      recipientListCallable: spyingRecipients(recipients).callable,
+      attemptsListForClassCallable: spyingAttemptsList(attempts).callable,
+      onSelectStudent: () => undefined,
+      ...(rosterSort !== undefined ? { rosterSort } : {}),
+    });
+    await flush();
+    await flush();
+    await flush();
+    return mount;
+  };
+  const submittedNames = (mount: HTMLElement) =>
+    Array.from(
+      mount.querySelectorAll(
+        "[data-testid=assignment-detail-roster-group-submitted] .shell-assignment-detail-roster-name",
+      ),
+    ).map((el) => el.textContent);
+  const select = (mount: HTMLElement) =>
+    mount.querySelector<HTMLSelectElement>("[data-testid=assignment-detail-roster-sort-select]")!;
+
+  test("no preference seam: control shows Last name and rows are in last-name order", async () => {
+    const mount = await render();
+    expect(select(mount).value).toBe("lastName");
+    expect(submittedNames(mount)).toEqual(["Adams, Ben", "Moss, Cal", "Zimmer, Adrianna"]);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-group-not-started] .shell-assignment-detail-roster-name")
+        ?.textContent,
+    ).toBe("Brown, Dee");
+  });
+
+  test("switching First name -> Last name changes order AND presentation in place; the click still passes the natural name", async () => {
+    const selections: unknown[] = [];
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(meta()),
+      summaryCallable: resolvingSummary(
+        freezeSummary({ totalStudents: 4, completedStudents: 3, inProgressStudents: 0, notStartedStudents: 1 }),
+      ),
+      recipientListCallable: spyingRecipients(recipients).callable,
+      attemptsListForClassCallable: spyingAttemptsList(attempts).callable,
+      onSelectStudent: (sel) => selections.push(sel),
+      rosterSort: { read: () => "firstName", write: () => undefined },
+    });
+    await flush();
+    await flush();
+    await flush();
+    expect(submittedNames(mount)).toEqual(["Adrianna Zimmer", "Ben Adams", "Cal Moss"]);
+    select(mount).value = "lastName";
+    select(mount).dispatchEvent(new Event("change"));
+    expect(submittedNames(mount)).toEqual(["Adams, Ben", "Moss, Cal", "Zimmer, Adrianna"]);
+    const btn = mount.querySelector<HTMLButtonElement>("[data-testid=assignment-detail-roster-name-s-adr]")!;
+    expect(btn.getAttribute("aria-label")).toBe("Open student detail for Zimmer, Adrianna");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-summary-s-adr]")?.textContent,
+    ).toBe("100% · 2 attempts");
+    btn.click();
+    expect(selections).toEqual([
+      {
+        classId: "class-1",
+        studentId: "s-adr",
+        studentDisplayName: "Adrianna Zimmer",
+        returnToAssignmentId: "assign-1",
+      },
+    ]);
+  });
+
+  test("a saved First name preference is shown and applied", async () => {
+    const mount = await render({ read: () => "firstName", write: () => undefined });
+    expect(select(mount).value).toBe("firstName");
+    expect(submittedNames(mount)).toEqual(["Adrianna Zimmer", "Ben Adams", "Cal Moss"]);
+  });
+
+  test("changing the control persists it and reorders rows in place, keeping score, attempts, membership, and focus", async () => {
+    const writes: string[] = [];
+    const mount = await render({ read: () => "lastName", write: (o) => writes.push(o) });
+    const adrRow = mount.querySelector("[data-testid=assignment-detail-roster-row-s-adr]");
+    select(mount).focus();
+    select(mount).value = "firstName";
+    select(mount).dispatchEvent(new Event("change"));
+    expect(writes).toEqual(["firstName"]);
+    expect(submittedNames(mount)).toEqual(["Adrianna Zimmer", "Ben Adams", "Cal Moss"]);
+    // The same row element moved (no rebuild), with its summary intact.
+    expect(mount.querySelector("[data-testid=assignment-detail-roster-row-s-adr]")).toBe(adrRow);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-summary-s-adr]")?.textContent,
+    ).toBe("100% · 2 attempts");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-group-not-started]")?.textContent,
+    ).toContain("Dee Brown");
+    expect(document.activeElement).toBe(select(mount));
+  });
+
+  test("the Sort control is labeled and offers exactly the two name orders", async () => {
+    const mount = await render();
+    const control = mount.querySelector("[data-testid=assignment-detail-roster-sort]")!;
+    expect(control.querySelector("label")!.textContent).toBe("Sort");
+    expect(select(mount).getAttribute("aria-label")).toBe("Sort students by");
+    expect(Array.from(select(mount).options).map((o) => o.textContent)).toEqual([
+      "Last name (A-Z)",
+      "First name (A-Z)",
+    ]);
+  });
+});

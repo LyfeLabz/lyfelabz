@@ -3402,10 +3402,15 @@
     padding: 0;
     margin: 0;
   }
+  /* Sprint 30 roster polish: name, score, and attempt count read as one
+     group from the left edge instead of name and score sitting at opposite
+     ends of a wide row. Wraps (never overflows) when space runs out. */
   .shell-assignment-detail-roster-row {
     display: flex;
-    justify-content: space-between;
-    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
     padding: 0.4rem 0;
     border-bottom: 1px solid var(--tw-hairline-soft);
   }
@@ -3418,6 +3423,8 @@
     margin: 0;
     font: inherit;
     text-align: left;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   /* Student Progress & Assignment Membership Phase A, Slice 3 aesthetic
      polish: when the seam is wired the name renders as a real <button>
@@ -3440,9 +3447,48 @@
     box-shadow: var(--tw-focus-ring);
     border-radius: 3px;
   }
-  .shell-assignment-detail-roster-percentage {
+  .shell-assignment-detail-roster-summary {
     color: var(--tw-ink-muted);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .shell-assignment-detail-roster-percentage {
+    color: var(--tw-ink-soft);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Sprint 30 roster sort: the compact, shared "Sort" control above both
+     student rosters (Students list and an assignment's Roster). Same quiet
+     select treatment as the other small workspace selects. */
+  .shell-roster-sort {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.25rem 0 0.5rem 0;
+  }
+  .shell-roster-sort-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--tw-ink-soft);
+  }
+  .shell-roster-sort-select {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.4rem;
+    min-height: 32px;
+    max-width: 100%;
+    color: var(--tw-ink);
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-roster-sort-select:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+  }
+  @media (pointer: coarse) {
+    .shell-roster-sort-select { min-height: 44px; }
   }
   /* Classroom grade-sync status: compact, secondary to the student's result.
      A failure on an assignment that is no longer Current is history: muted

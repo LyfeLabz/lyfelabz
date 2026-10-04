@@ -98,7 +98,8 @@ describe("Sprint 29G.5P: Students roster reaches the Classes surface through the
         "[data-testid=roster-student] .shell-roster-student-name",
       ),
     ).map((n) => n.textContent);
-    expect(names).toEqual(["Alpha Student", "Bravo Student"]);
+    // Default Last name (A-Z) presentation: "Last, First".
+    expect(names).toEqual(["Student, Alpha", "Student, Bravo"]);
     expect(mount.querySelector("[data-testid=roster-empty]")).toBeNull();
   });
 
@@ -175,7 +176,7 @@ describe("Sprint 29G.5P: roster loader resolves lazily (initialization ordering)
         "[data-testid=roster-student] .shell-roster-student-name",
       ),
     ).map((n) => n.textContent);
-    expect(names).toEqual(["Late One", "Late Two"]);
+    expect(names).toEqual(["One, Late", "Two, Late"]);
     expect(mount.querySelector("[data-testid=roster-empty]")).toBeNull();
   });
 

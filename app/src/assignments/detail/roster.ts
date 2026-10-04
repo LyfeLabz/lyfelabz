@@ -1,4 +1,9 @@
 import type { AssignmentRecipient } from "./roster-wire";
+import {
+  compareRosterNames,
+  DEFAULT_ROSTER_SORT_ORDER,
+  type RosterSortOrder,
+} from "../../teacherPreferences/rosterSort";
 
 // Sprint 15 Slice 5: pure roster-grouping helpers for the Assignment
 // Detail surface. Every group is derived mechanically from a
@@ -16,6 +21,9 @@ export type SubmittedRow = {
   readonly studentId: string;
   readonly studentDisplayName: string;
   readonly percentage: number;
+  // Completed attempts by this student on this assignment (the same
+  // attempt set the representative percentage is selected from).
+  readonly attemptCount: number;
 };
 
 export type NamedRow = {
@@ -86,8 +94,17 @@ export function groupRoster(input: {
   readonly recipients: ReadonlyArray<AssignmentRecipient>;
   readonly completed: ReadonlyArray<CompletedAttemptForRoster>;
   readonly inProgressStudentCount: number;
+  // Display order for every group (the teacher's roster sort preference).
+  readonly sortOrder?: RosterSortOrder;
 }): RosterGrouping {
   const rep = selectRepresentativeAttempts(input.completed);
+  const attemptCounts = new Map<string, number>();
+  for (const attempt of input.completed) {
+    attemptCounts.set(
+      attempt.studentId,
+      (attemptCounts.get(attempt.studentId) ?? 0) + 1,
+    );
+  }
   const submittedRows: SubmittedRow[] = [];
   const remaining: AssignmentRecipient[] = [];
   for (const recipient of input.recipients) {
@@ -97,12 +114,16 @@ export function groupRoster(input: {
         studentId: recipient.studentId,
         studentDisplayName: recipient.studentDisplayName,
         percentage: attempt.percentage,
+        attemptCount: attemptCounts.get(recipient.studentId) ?? 0,
       });
     } else {
       remaining.push(recipient);
     }
   }
-  submittedRows.sort(compareByName);
+  // The in-progress / not-started split is arithmetic over the remaining
+  // recipients in display-name order (see above). That split is kept exactly
+  // as it was; only the order each group is DISPLAYED in follows the
+  // teacher's sort preference.
   remaining.sort(compareByName);
   const inProgressCount = Math.max(
     0,
@@ -110,9 +131,12 @@ export function groupRoster(input: {
   );
   const inProgress = remaining.slice(0, inProgressCount);
   const notStarted = remaining.slice(inProgressCount);
+  const byPreference = compareRosterNames(
+    input.sortOrder ?? DEFAULT_ROSTER_SORT_ORDER,
+  );
   return {
-    submitted: submittedRows,
-    inProgress,
-    notStarted,
+    submitted: submittedRows.sort(byPreference),
+    inProgress: inProgress.sort(byPreference),
+    notStarted: notStarted.sort(byPreference),
   };
 }

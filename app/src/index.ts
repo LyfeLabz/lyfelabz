@@ -139,6 +139,7 @@ import {
   type AttemptGetForTeacherCallable,
   type AttemptsListForClassCallable,
 } from "./assignments/detail/attempts-wire";
+import { createRosterSortPreference } from "./teacherPreferences/rosterSortStorage";
 import {
   createAssessmentStudentAssignmentsForClassCallable,
   type AssessmentStudentAssignmentsForClassCallable,
@@ -550,6 +551,12 @@ async function run(): Promise<void> {
       onSelectStudent: (selection) => {
         teacherShellStudentSelectionController?.selectStudent(selection);
       },
+      // Sprint 30 roster polish: the signed-in teacher's roster sort
+      // preference, the same per-teacher store the Classes Students list uses.
+      rosterSort:
+        lastActiveTeacher !== null
+          ? createRosterSortPreference(lastActiveTeacher.uid)
+          : undefined,
       onStatusChange: (metadata) => {
         assignmentDetailRegistry.register(metadata);
         // Sprint 16 Slice 1: when Curriculum owns the mount, refresh the

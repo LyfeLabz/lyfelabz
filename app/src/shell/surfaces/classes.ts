@@ -83,6 +83,14 @@ import type {
 import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
 import { registerOpenModal } from "../openModals";
 import type { ClassWorkspaceSection } from "../navigationHistory";
+import {
+  createRosterSortControl,
+  formatRosterName,
+  sortRosterStudents,
+  type RosterSortOrder,
+  type RosterSortPreference,
+} from "../../teacherPreferences/rosterSort";
+import { createRosterSortPreference } from "../../teacherPreferences/rosterSortStorage";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
 // the authenticated teacher. See SPRINT_6B_SPECIFICATION.md §6.
@@ -465,6 +473,9 @@ export function renderClassesSurface(
   const createClass = deps.createClass ?? null;
   const importDeps = deps.importFromClassroom ?? null;
   const activateClass = deps.activateClass ?? null;
+  // Sprint 30 roster polish: this teacher's roster sort preference, shared
+  // with Assignment Detail's roster (same per-teacher, same-browser store).
+  const rosterSort = createRosterSortPreference(session.uid);
   const syncRoster = deps.syncRoster ?? null;
   const refreshRoster = deps.refreshRoster ?? null;
   const loadRoster = deps.loadRoster ?? null;
@@ -868,6 +879,7 @@ export function renderClassesSurface(
           loadExpectedAssignments,
           listAllAssignments,
           loadAttemptDetail,
+          rosterSort,
         );
         return;
       }
@@ -3597,6 +3609,7 @@ function renderClassWorkspaceState(
     | null,
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
   loadAttemptDetail: (() => AttemptGetForTeacherCallable | null) | null,
+  rosterSort: RosterSortPreference,
 ): void {
   const workspace = doc.createElement("div");
   workspace.className = "shell-class-workspace";
@@ -3697,9 +3710,10 @@ function renderClassWorkspaceState(
         loadExpectedAssignments,
         listAssignments,
         loadAttemptDetail,
+        rosterSort,
       );
     } else {
-      renderRosterSurface(doc, surfaceMount, rosterView, onSelectStudent);
+      renderRosterSurface(doc, surfaceMount, rosterView, onSelectStudent, rosterSort);
     }
   } else {
     renderClassAssignmentsSurface(doc, surfaceMount, summary, assignmentsView);
@@ -4106,6 +4120,7 @@ function renderRosterSurface(
   mount: HTMLElement,
   view: RosterView,
   onSelectStudent: (studentId: string, displayName: string) => void,
+  rosterSort: RosterSortPreference,
 ): void {
   // Sprint 28.6H (Finding 3/5): section heading is "Students" (the class
   // identity is the workspace header).
@@ -4140,7 +4155,7 @@ function renderRosterSurface(
   // class opened, or loaded on an earlier Students visit): render it
   // immediately, with no loading state.
   if (view.kind === "ready") {
-    appendRosterStudents(doc, body, view.students, onSelectStudent);
+    appendRosterStudents(doc, body, view.students, onSelectStudent, rosterSort);
     return;
   }
 
@@ -4170,7 +4185,9 @@ function renderRosterSurface(
 
   view.promise.then(
     (students) => {
-      applyIfLive(() => appendRosterStudents(doc, body, students, onSelectStudent));
+      applyIfLive(() =>
+        appendRosterStudents(doc, body, students, onSelectStudent, rosterSort),
+      );
     },
     () => {
       // Failure must NOT render the "No students yet." empty state, which
@@ -4196,15 +4213,37 @@ function appendRosterStudents(
   body: HTMLElement,
   students: RosterStudents,
   onSelectStudent: (studentId: string, displayName: string) => void,
+  rosterSort: RosterSortPreference,
 ): void {
   if (students.length === 0) {
     appendRosterEmptyState(doc, body);
     return;
   }
+  // Sprint 30 roster polish: the list follows the teacher's sort preference
+  // (default Last name) in both order and name presentation ("Brown,
+  // Christopher" in Last name mode). Changing the Sort control persists it
+  // and redraws only the list, keeping focus on the control. Selection still
+  // passes the studentId and the natural display name, so Student Detail
+  // shows the student's name as resolved.
   const list = doc.createElement("ul");
+  const fillList = (): void => {
+    const order = rosterSort.read();
+    list.replaceChildren(
+      ...sortRosterStudents(students, order).map((s) => buildItem(s, order)),
+    );
+  };
+  body.appendChild(
+    createRosterSortControl(doc, "roster", rosterSort.read(), (order) => {
+      rosterSort.write(order);
+      fillList();
+    }),
+  );
   list.className = "shell-roster-list";
   list.setAttribute("data-testid", "roster-list");
-  for (const student of students) {
+  const buildItem = (
+    student: RosterStudents[number],
+    order: RosterSortOrder,
+  ): HTMLElement => {
     const item = doc.createElement("li");
     item.className = "shell-roster-item";
     const btn = doc.createElement("button");
@@ -4214,14 +4253,15 @@ function appendRosterStudents(
     btn.setAttribute("data-student-id", student.studentId);
     const name = doc.createElement("span");
     name.className = "shell-roster-student-name";
-    name.textContent = student.studentDisplayName;
+    name.textContent = formatRosterName(student.studentDisplayName, order);
     btn.appendChild(name);
     btn.addEventListener("click", () => {
       onSelectStudent(student.studentId, student.studentDisplayName);
     });
     item.appendChild(btn);
-    list.appendChild(item);
-  }
+    return item;
+  };
+  fillList();
   body.appendChild(list);
 }
 
@@ -4380,7 +4420,7 @@ function renderStudentDetailSurface(
   classId: string,
   studentId: string,
   studentDisplayName: string,
-  roster: ReadonlyArray<{
+  serverRoster: ReadonlyArray<{
     readonly studentId: string;
     readonly studentDisplayName: string;
   }> | null,
@@ -4396,6 +4436,7 @@ function renderStudentDetailSurface(
     | null,
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
   loadAttemptDetail: (() => AttemptGetForTeacherCallable | null) | null = null,
+  rosterSort: RosterSortPreference | null = null,
 ): void {
   const detail = doc.createElement("div");
   detail.className = "shell-student-detail";
@@ -4438,12 +4479,19 @@ function renderStudentDetailSurface(
   try { heading.focus({ preventScroll: true }); } catch { /* ignored */ }
 
   // Student Progress & Assignment Membership Phase A, Slice 2: Previous /
-  // Next, walking the exact server-sorted roster order already fetched for
-  // the Students list - no independent client sort, no second fetch. Absent
-  // entirely (not merely disabled) when no roster snapshot is available yet
+  // Next, walking the roster already fetched for the Students list - no
+  // second fetch. Absent entirely (not merely disabled) when no roster
+  // snapshot is available yet
   // (e.g. entered via a future Assignment Detail path in a mount that never
   // fetched the Students-tab roster) or the current student is not found in
   // it, rather than guessing at adjacency.
+  // Sprint 30 roster polish: walks the roster in the SAME order the Students
+  // list shows (the teacher's sort preference), so Next always goes to the
+  // name below this one in the list.
+  const roster =
+    serverRoster === null || rosterSort === null
+      ? serverRoster
+      : sortRosterStudents(serverRoster, rosterSort.read());
   const currentIndex =
     roster === null ? -1 : roster.findIndex((s) => s.studentId === studentId);
   if (roster !== null && currentIndex !== -1) {
@@ -5021,15 +5069,23 @@ function appendWrittenResponses(
       panel.replaceChildren();
       const list = doc.createElement("ol");
       list.className = "shell-student-detail-thinking-list";
-      for (const row of rows) {
+      rows.forEach((row, index) => {
         const item = doc.createElement("li");
         item.className = "shell-student-detail-thinking-item";
         item.setAttribute("data-testid", "student-detail-thinking-item");
         item.setAttribute("data-attempt-id", row.attempt.attemptId);
 
+        // Sprint 30 attempt labeling: "Attempt N" is the attempt's position
+        // in this card's chronological order (oldest = 1). Within one
+        // assignment that equals the persisted attemptNumber (assigned in
+        // submission order); across a Current group's occurrences, where
+        // attemptNumber restarts at 1 on each assignment, it keeps counting
+        // so no two attempts on a card share a label. Each label carries
+        // THAT attempt's own score and date.
         const label = doc.createElement("p");
         label.className = "shell-student-detail-thinking-label";
-        label.textContent = `Attempt ${row.attempt.attemptNumber} · ${formatAttemptDate(row.attempt.submittedAt)}`;
+        label.setAttribute("data-testid", "student-detail-thinking-label");
+        label.textContent = `Attempt ${index + 1} · ${Math.round(row.attempt.percentage)}% · ${formatAttemptDate(row.attempt.submittedAt)}`;
         item.appendChild(label);
 
         const body = doc.createElement("p");
@@ -5048,7 +5104,7 @@ function appendWrittenResponses(
         }
         item.appendChild(body);
         list.appendChild(item);
-      }
+      });
       panel.appendChild(list);
     });
   });

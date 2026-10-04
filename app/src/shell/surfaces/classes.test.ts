@@ -1929,7 +1929,8 @@ describe("Sprint 29G.5P: teacher Students tab roster", () => {
         "[data-testid=roster-student] .shell-roster-student-name",
       ),
     ).map((n) => n.textContent);
-    expect(names).toEqual(["Alpha Student", "Bravo Student"]);
+    // Default Last name (A-Z) presentation: "Last, First".
+    expect(names).toEqual(["Student, Alpha", "Student, Bravo"]);
     // Not the empty state.
     expect(mount.querySelector("[data-testid=roster-empty]")).toBeNull();
     expect(mount.querySelector("[data-testid=roster-error]")).toBeNull();
@@ -2017,7 +2018,7 @@ describe("Sprint 29G.5P: teacher Students tab roster", () => {
     await flush();
 
     const html = mount.innerHTML;
-    expect(html).toContain("Real Name");
+    expect(html).toContain("Name, Real"); // default Last name presentation
     expect(html).not.toContain("leak@example.com");
     expect(html).not.toContain("a".repeat(64));
   });

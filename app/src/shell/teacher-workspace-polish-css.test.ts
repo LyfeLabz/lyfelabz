@@ -154,6 +154,33 @@ describe("D2B - Assignment Detail is styled inside the shell", () => {
     expect(has(".shell-assignment-summary-grid")).toBe(true);
   });
 
+  test("roster rows keep name, score, and attempts grouped instead of at opposite edges", () => {
+    const row = ruleBody(html, ".shell-assignment-detail-roster-row");
+    expect(row).not.toBeNull();
+    expect(row).not.toMatch(/space-between/);
+    expect(row).toMatch(/flex-wrap:\s*wrap/);
+    // Long names wrap instead of overflowing; the summary stays on one line.
+    expect(ruleBody(html, ".shell-assignment-detail-roster-name")).toMatch(
+      /overflow-wrap:\s*anywhere/,
+    );
+    expect(ruleBody(html, ".shell-assignment-detail-roster-summary")).toMatch(
+      /white-space:\s*nowrap/,
+    );
+  });
+
+  test("the shared roster Sort control is styled with a visible focus ring and touch target", () => {
+    expect(has(".shell-roster-sort")).toBe(true);
+    expect(has(".shell-roster-sort-label")).toBe(true);
+    const select = ruleBody(html, ".shell-roster-sort-select");
+    expect(select).toMatch(/border-radius:\s*var\(--tw-radius-control\)/);
+    expect(ruleBody(html, ".shell-roster-sort-select:focus-visible")).toMatch(
+      /box-shadow:\s*var\(--tw-focus-ring\)/,
+    );
+    expect(html).toMatch(
+      /@media \(pointer: coarse\) \{\s*\.shell-roster-sort-select \{ min-height: 44px; \}/,
+    );
+  });
+
   test("roster and question lists remove default bullets", () => {
     expect(ruleBody(html, ".shell-assignment-detail-roster-list")).toMatch(
       /list-style:\s*none/,
