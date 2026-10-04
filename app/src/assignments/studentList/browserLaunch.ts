@@ -3,6 +3,7 @@ import {
   browserDeliveryPreparationDeps,
   prepareDeliveryNavigation,
 } from "./deliveryNavigation";
+import { enterAssignmentDelivery } from "./deliveryContext";
 
 // F5.2 §7.3 (Slice 5): the browser wiring for the launch executor. The routing
 // DECISION is server-authoritative and lives in launchRouting.ts; this only
@@ -24,6 +25,9 @@ import {
 export function createBrowserLaunchExecuteDeps(win: Window): LaunchExecuteDeps {
   return {
     navigate: (url: string) => {
+      // Every student launch puts this tab in assignment delivery
+      // (deliveryContext.ts): the lesson header offers Back to My Science.
+      enterAssignmentDelivery(win);
       win.location.assign(url);
     },
     probe: async (url: string) => {

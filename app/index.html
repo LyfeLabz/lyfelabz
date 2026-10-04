@@ -5111,6 +5111,53 @@
     flex: 0 0 auto;
   }
 
+  /* My Science title bar: the page heading on the left, the optional Explore
+     LyfeLabz navigation pill on the right. Wraps deliberately on narrow
+     widths (pill drops below the heading) instead of crushing the title. */
+  body:not(:has(#app-root > .shell-header)) .my-science-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 0 0 0.65rem;
+  }
+  body:not(:has(#app-root > .shell-header)) .my-science-titlebar h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+  }
+  /* Explore LyfeLabz: navigation, not a task. An outlined pill in the
+     workspace navigation color, never the filled green of Open assignment. */
+  body:not(:has(#app-root > .shell-header)) .student-explore-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 0 0 auto;
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 0 1rem;
+    border: 1px solid var(--tw-nav-edge);
+    border-radius: var(--tw-radius-pill);
+    background: transparent;
+    color: var(--tw-nav-edge);
+    font-size: 0.88rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+  body:not(:has(#app-root > .shell-header)) .student-explore-link:hover {
+    background: var(--tw-nav-wash);
+  }
+  body:not(:has(#app-root > .shell-header)) .student-explore-link:focus-visible {
+    outline: 2px solid var(--tw-nav-edge);
+    outline-offset: 3px;
+  }
+  @media (pointer: coarse) {
+    body:not(:has(#app-root > .shell-header)) .student-explore-link { min-height: 44px; }
+  }
+
   /* Domain section. The h2 is a real, left-aligned section heading that
      assistive tech can navigate; it never becomes a colored dashboard panel -
      the assignment cards remain the important objects. */

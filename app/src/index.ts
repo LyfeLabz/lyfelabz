@@ -76,6 +76,10 @@ import {
   type LaunchPlan,
 } from "./assignments/studentList/launchRouting";
 import { createBrowserLaunchExecuteDeps } from "./assignments/studentList/browserLaunch";
+import {
+  clearStudentNavigation,
+  enterStudentExploration,
+} from "./assignments/studentList/deliveryContext";
 import { createAttemptsListForStudentCallable } from "./assignments/studentResults/wire";
 import type { StudentResultsListCallable } from "./assignments/studentResults/types";
 import { createDeepLinkResolveCallable } from "./assignments/deepLink/wire";
@@ -928,6 +932,7 @@ async function run(): Promise<void> {
       try {
         await signOut(auth);
       } finally {
+        clearStudentNavigation(window);
         await rerun();
       }
     })();
@@ -1133,6 +1138,11 @@ async function run(): Promise<void> {
       // lesson (launchRef discarded). The runtime detects assignment context and
       // transports the launchRef on lesson load; this launcher only routes.
       void executeLaunch(plan, createBrowserLaunchExecuteDeps(window));
+    },
+    // Explore LyfeLabz on My Science: the tab becomes student exploration
+    // just before the browser follows the link to the catalog.
+    onEnterExploration: () => {
+      enterStudentExploration(window);
     },
   });
 

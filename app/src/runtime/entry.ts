@@ -119,6 +119,7 @@ type WindowWithRuntime = Window & {
   [NAMESPACE]?: {
     [RUNTIME_KEY]?: RuntimeGlobal;
     [LESSON_QUIZ_KEY]?: LessonQuizGlobal;
+    deliveryNavigation?: DeliveryNavigationState;
   };
 };
 
@@ -461,6 +462,12 @@ function recordLastError(
   }
 }
 
+// The shim-owned student navigation state (assets/lyfelabz-assessment-runtime.js).
+type DeliveryNavigationState = {
+  finalizeStarted?: () => void;
+  finalizeSettled?: (finalized: boolean) => void;
+};
+
 function installLessonQuiz(
   win: WindowWithRuntime,
   runtime: AssessmentRuntime | null,
@@ -519,10 +526,17 @@ function installLessonQuiz(
         return { ok: false, message: PRESENTATION_UNAVAILABLE_MESSAGE, recoverable: false };
       }
       const writtenResponse = normalizeWrittenResponse(options);
+      // Student navigation state (shim: deliveryNavigation). A failed or refused
+      // finalize is NOT a finalization: settle(false) leaves the assignment
+      // unfinished so Back to My Science still warns.
+      const deliveryNav = win[NAMESPACE]?.deliveryNavigation;
+      deliveryNav?.finalizeStarted?.();
       try {
         const result = await runtime.finalize(responses, writtenResponse);
+        deliveryNav?.finalizeSettled?.(true);
         return { ok: true, result };
       } catch (err) {
+        deliveryNav?.finalizeSettled?.(false);
         recordLastError(win, "finalize", err);
         const message = (err as { message?: unknown }).message;
         return {

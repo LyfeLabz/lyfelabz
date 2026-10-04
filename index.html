@@ -96,6 +96,34 @@
     align-items: center;
     gap: 0.65rem;
   }
+  /* Student exploration return (hidden unless the tab came from My Science).
+     Same pill as the about pages' header return link. */
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .nav-back:hover { opacity: 0.8; }
+  .nav-back:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+  .nav-back[hidden] { display: none !important; }
+  /* Phones: like the lesson header, the wordmark keeps the first row and the
+     return link sits beside the menu on the second. Only while it is shown. */
+  @media (max-width: 600px) {
+    nav:has(.nav-back:not([hidden])) { flex-wrap: wrap; row-gap: 0.6rem; }
+    .nav-right:has(> .nav-back:not([hidden])) { width: 100%; justify-content: space-between; }
+  }
   /* ===== HAMBURGER MENU ===== */
   .nav-menu-wrap {
     position: relative;
@@ -1053,6 +1081,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <div class="nav-right">
+    <a href="/app/" class="nav-back" id="myScienceReturn" data-testid="catalog-back-to-my-science" hidden><span aria-hidden="true">&#8592;</span>Back to My Science</a>
     <div class="nav-menu-wrap">
       <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -1065,6 +1094,24 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
   </div>
 </nav>
+
+<script>
+// Student exploration: a student who chose Explore LyfeLabz on My Science
+// (sessionStorage lyfelabz.studentNav.v1 = "explore", recorded by the app in
+// this tab) gets a way back to My Science. The link targets the application
+// shell (/app/), which shows a signed-in student My Science; static pages link
+// only to files the Hosting artifact certifies, as the lessons' /app/ links do.
+// Everyone else sees the catalog exactly as before; missing or unreadable
+// storage leaves the link hidden.
+(function () {
+  try {
+    if (window.sessionStorage.getItem('lyfelabz.studentNav.v1') === 'explore') {
+      var link = document.getElementById('myScienceReturn');
+      if (link) link.hidden = false;
+    }
+  } catch (e) {}
+})();
+</script>
 
 <main id="main" tabindex="-1">
 

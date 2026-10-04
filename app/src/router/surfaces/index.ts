@@ -42,6 +42,7 @@ import {
   type LaunchPlan,
 } from "../../assignments/studentList/launchRouting";
 import { buildLessonBasePath } from "../../assignments/studentList/launch";
+import { EXPLORE_CATALOG_PATH } from "../../assignments/studentList/deliveryContext";
 import type {
   StudentAttemptSummary,
   StudentResultsListCallable,
@@ -209,6 +210,11 @@ export type SurfaceDeps = {
   // at the wire: the plan's canonical URL carries only the assignmentId, and the
   // opaque launchRef travels only on the (probed) differentiated target.
   readonly onLaunchAssignment?: (plan: LaunchPlan) => void;
+  // Student navigation: called when a student chooses Explore LyfeLabz on My
+  // Science, before the browser follows the link to the catalog. The entry
+  // point records the tab's exploration mode (deliveryContext.ts); the
+  // surface itself stays free of storage access.
+  readonly onEnterExploration?: () => void;
   // Sprint 20 internal beta: injected create-class callable seam wired
   // per active-teacher session. Always supplied through a getter so
   // per-session state can rebind across reruns without rebuilding the
@@ -1248,10 +1254,17 @@ export const makeActiveStudentSurface =
     header.appendChild(identity);
     mount.appendChild(header);
 
-    // The single surface heading. renderHeadline focuses it, which both
-    // announces the surface on load and restores a sensible focus target
-    // when a student returns here from an assessment (Blueprint section 16).
-    renderHeadline(mount, "My Science");
+    // The My Science title bar: the single surface heading on the left and the
+    // optional Explore LyfeLabz navigation pill on the right. renderHeadline
+    // focuses the heading, which both announces the surface on load and
+    // restores a sensible focus target when a student returns here from an
+    // assessment (Blueprint section 16).
+    const titleBar = doc.createElement("div");
+    titleBar.className = "my-science-titlebar";
+    titleBar.setAttribute("data-testid", "my-science-titlebar");
+    mount.appendChild(titleBar);
+    renderHeadline(titleBar, "My Science");
+    renderExploreLink(titleBar, deps.onEnterExploration);
 
     const panel = doc.createElement("div");
     panel.setAttribute("data-testid", "my-science-panel");
@@ -1376,6 +1389,32 @@ export const makeActiveStudentSurface =
 
     load();
   };
+
+// The My Science entry into student exploration: a secondary navigation pill in
+// the title bar, outside the work panel, so it persists across loading, error,
+// empty, and populated states and never competes with an assignment's launch
+// control. A real link to the catalog; a plain primary click first records
+// exploration mode, then the browser navigates natively. Modified clicks (new
+// tab or window) keep native behavior and record nothing.
+const EXPLORE_LYFELABZ_LABEL = "Explore LyfeLabz";
+
+function renderExploreLink(mount: HTMLElement, onEnterExploration?: () => void): void {
+  const doc = mount.ownerDocument;
+  const link = doc.createElement("a");
+  link.className = "student-explore-link";
+  link.setAttribute("data-testid", "explore-lyfelabz");
+  link.href = EXPLORE_CATALOG_PATH;
+  link.appendChild(doc.createTextNode(EXPLORE_LYFELABZ_LABEL));
+  const arrow = doc.createElement("span");
+  arrow.setAttribute("aria-hidden", "true");
+  arrow.textContent = "\u2192";
+  link.appendChild(arrow);
+  link.addEventListener("click", (event) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    onEnterExploration?.();
+  });
+  mount.appendChild(link);
+}
 
 // Build the accessible status chip: a decorative glyph (aria-hidden) plus
 // the canonical PDR-024l label as visible text, so status is never

@@ -8353,10 +8353,14 @@
           return { ok: false, message: PRESENTATION_UNAVAILABLE_MESSAGE, recoverable: false };
         }
         const writtenResponse = normalizeWrittenResponse(options);
+        const deliveryNav = win[NAMESPACE]?.deliveryNavigation;
+        deliveryNav?.finalizeStarted?.();
         try {
           const result = await runtime.finalize(responses, writtenResponse);
+          deliveryNav?.finalizeSettled?.(true);
           return { ok: true, result };
         } catch (err) {
+          deliveryNav?.finalizeSettled?.(false);
           recordLastError(win, "finalize", err);
           const message = err.message;
           return {

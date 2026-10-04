@@ -26,6 +26,10 @@
  *      /app/lessons/ page before the browser follows it. See
  *      installDeliveryNavigationPreparation below.
  *
+ *   4. On the same pages, in student assignment delivery, turns the
+ *      header's existing return link into "Back to My Science"
+ *      (installStudentNavigation).
+ *
  * In standalone mode the shim is otherwise inert: no dynamic script
  * injection, no Firebase initialization, no network traffic beyond the
  * fetch of this file itself and the job 3 request a student triggers by
@@ -306,6 +310,249 @@
   }
 
   installDeliveryNavigationPreparation();
+
+  // Student navigation: Back to My Science in the lesson header.
+  //
+  // No control is added. In student assignment delivery the page's existing
+  // header return link (nav a.nav-back, e.g. "Earth & Space") becomes the
+  // student's global exit, "Back to My Science" -> /app/student. Every other
+  // context keeps its normal header navigation.
+  //
+  // Applies only under /app/lessons/ (app-hosted content; the public root
+  // lessons, catalog, and marketing pages never match) and never in Present
+  // Mode. Then, by page:
+  //
+  //   - Assigned page (carries assignment context, e.g. #assignment=): the
+  //     header return link becomes Back to My Science, and the LYFELABZ
+  //     wordmark (which also leads to My Science through the app shell) goes
+  //     through the same check. Leaving an UNFINISHED assignment asks first.
+  //     The legacy post-submit "Back to My Assignments" link is hidden so the
+  //     student has one exit.
+  //   - Any other page in a tab the student launch put in assignment mode
+  //     (sessionStorage lyfelabz.studentNav.v1 = "assignment"; see
+  //     app/src/assignments/studentList/deliveryContext.ts), i.e. companion
+  //     or connected pages reached from an assigned lesson: a header link to
+  //     the catalog (which under /app/lessons/ is the application shell)
+  //     becomes Back to My Science. A link to a parent lesson stays exactly as
+  //     it is. Nothing is submittable on such a page, so it never warns.
+  //   - Teacher Preview (fresh noopener tab), exploration, public visitors:
+  //     unchanged.
+  //
+  // "Unfinished" comes from runtime state, not page text: the active bundle
+  // reports finalizeStarted / finalizeSettled(ok) around lessonQuiz.finalize,
+  // and only a successful finalize latches 'finalized'. A failed or refused
+  // finalize returns to 'open'. Using the exit never begins, autosaves,
+  // finalizes, or clears anything.
+  var STUDENT_NAV_KEY = 'lyfelabz.studentNav.v1';
+  var STUDENT_NAV_ASSIGNMENT = 'assignment';
+  var PRESENT_MODE_KEY = 'lyfelabz.presentMode.returnContext';
+  var MY_SCIENCE_PATH = '/app/student';
+  var MY_SCIENCE_LABEL = 'Back to My Science';
+  var APP_SHELL_PATHS = ['/app/lessons/index.html', '/app/lessons/', '/app/', '/app/index.html'];
+  var NAV_STATE_KEY = 'deliveryNavigation';
+  var navState = 'open';
+
+  window[NAMESPACE][NAV_STATE_KEY] = {
+    state: function () { return navState; },
+    finalizeStarted: function () {
+      if (navState === 'open') navState = 'submitting';
+    },
+    finalizeSettled: function (finalized) {
+      if (finalized === true) navState = 'finalized';
+      else if (navState === 'submitting') navState = 'open';
+    }
+  };
+
+  function readSession(key) {
+    try {
+      return window.sessionStorage ? window.sessionStorage.getItem(key) : null;
+    } catch (_err) {
+      return null;
+    }
+  }
+
+  // The leave warning (approved presentation) and the single-exit rule.
+  var NAV_CSS =
+    '#back-to-assignments{display:none!important}' +
+    '.lyfelabz-leave-overlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;' +
+    'justify-content:center;padding:16px;background:rgba(0,0,0,.65)}' +
+    '.lyfelabz-leave-dialog{box-sizing:border-box;max-width:26rem;width:100%;padding:1.4rem;border-radius:14px;' +
+    'background:#111820;color:#f0e4c8;border:1.5px solid rgba(159,184,204,.7);' +
+    'font:600 1rem/1.5 Nunito,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}' +
+    '.lyfelabz-leave-dialog h2{margin:0 0 .5rem;font-size:1.2rem;font-weight:900}' +
+    '.lyfelabz-leave-dialog p{margin:0 0 1.1rem}' +
+    '.lyfelabz-leave-actions{display:flex;flex-wrap:wrap;gap:.6rem}' +
+    '.lyfelabz-leave-actions button{min-height:44px;padding:0 1.1rem;border-radius:10px;cursor:pointer;' +
+    'font-weight:800;font-size:.95rem;font-family:inherit;border:1.5px solid rgba(159,184,204,.7);' +
+    'background:transparent;color:#f0e4c8}' +
+    '.lyfelabz-leave-actions button.lyfelabz-leave-stay{background:#f5c842;border-color:#f5c842;color:#0a0e14}' +
+    '.lyfelabz-leave-actions button:focus-visible{outline:3px solid #f5c842;outline-offset:2px}';
+
+  function leaveCopy() {
+    if (navState === 'submitting') {
+      return {
+        title: 'Still submitting',
+        body: 'Your assignment is still being submitted. If you leave now, it might not be recorded.'
+      };
+    }
+    return {
+      title: 'Leave this assignment?',
+      body: "You haven't submitted this assignment yet. If you leave now, your current work may not appear when you return."
+    };
+  }
+
+  function showLeaveWarning(doc, opener, leave) {
+    var copy = leaveCopy();
+    var overlay = doc.createElement('div');
+    overlay.className = 'lyfelabz-leave-overlay';
+    overlay.setAttribute('data-testid', 'leave-warning');
+    var dialog = doc.createElement('div');
+    dialog.className = 'lyfelabz-leave-dialog';
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', 'lyfelabz-leave-title');
+    dialog.setAttribute('aria-describedby', 'lyfelabz-leave-body');
+    var title = doc.createElement('h2');
+    title.id = 'lyfelabz-leave-title';
+    title.textContent = copy.title;
+    var body = doc.createElement('p');
+    body.id = 'lyfelabz-leave-body';
+    body.textContent = copy.body;
+    var actions = doc.createElement('div');
+    actions.className = 'lyfelabz-leave-actions';
+    var stay = doc.createElement('button');
+    stay.type = 'button';
+    stay.className = 'lyfelabz-leave-stay';
+    stay.textContent = 'Stay';
+    stay.setAttribute('data-testid', 'leave-stay');
+    var go = doc.createElement('button');
+    go.type = 'button';
+    go.className = 'lyfelabz-leave-go';
+    go.textContent = MY_SCIENCE_LABEL;
+    go.setAttribute('data-testid', 'leave-confirm');
+    actions.appendChild(stay);
+    actions.appendChild(go);
+    dialog.appendChild(title);
+    dialog.appendChild(body);
+    dialog.appendChild(actions);
+    overlay.appendChild(dialog);
+
+    function close() {
+      doc.removeEventListener('keydown', onKey, true);
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      if (opener && typeof opener.focus === 'function') opener.focus();
+    }
+    function onKey(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+      } else if (event.key === 'Tab') {
+        // Keep focus inside the two-button dialog.
+        var active = doc.activeElement;
+        if (event.shiftKey && active === stay) {
+          event.preventDefault();
+          go.focus();
+        } else if (!event.shiftKey && active === go) {
+          event.preventDefault();
+          stay.focus();
+        } else if (active !== stay && active !== go) {
+          event.preventDefault();
+          stay.focus();
+        }
+      }
+    }
+    stay.addEventListener('click', close);
+    go.addEventListener('click', leave);
+    overlay.addEventListener('click', function (event) {
+      if (event.target === overlay) close();
+    });
+    doc.addEventListener('keydown', onKey, true);
+    doc.body.appendChild(overlay);
+    stay.focus();
+  }
+
+  // True when a header link leads to the catalog. Under /app/lessons/ that
+  // target is the application shell (index.html), which shows a signed-in
+  // student My Science anyway; a link to a lesson or other page is local
+  // navigation and is never a catalog link.
+  function isCatalogLink(anchor, loc) {
+    try {
+      var url = new URL(anchor.getAttribute('href'), loc.href);
+      var here = new URL(loc.href);
+      if (url.origin !== here.origin) return false;
+      return APP_SHELL_PATHS.indexOf(url.pathname) !== -1;
+    } catch (_err) {
+      return false;
+    }
+  }
+
+  // Leave for My Science, asking first only while this page holds an
+  // unfinished assignment.
+  function guardMyScienceExit(doc, loc, link) {
+    link.addEventListener('click', function (event) {
+      // Modified or non-primary clicks open elsewhere and leave this page in
+      // place; native behavior.
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!hasAssignmentContext || navState === 'finalized') return;
+      event.preventDefault();
+      if (doc.querySelector('.lyfelabz-leave-overlay')) return;
+      showLeaveWarning(doc, link, function () { loc.assign(MY_SCIENCE_PATH); });
+    });
+  }
+
+  function becomeMyScienceExit(doc, link) {
+    while (link.firstChild) link.removeChild(link.firstChild);
+    var arrow = doc.createElement('span');
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '←';
+    link.appendChild(arrow);
+    link.appendChild(doc.createTextNode(MY_SCIENCE_LABEL));
+    link.setAttribute('href', MY_SCIENCE_PATH);
+    link.setAttribute('data-testid', 'back-to-my-science');
+  }
+
+  function installStudentNavigation() {
+    try {
+      var loc = window.location;
+      if (!loc || typeof loc.pathname !== 'string' || typeof loc.href !== 'string') return;
+      if (loc.pathname.indexOf(DELIVERY_ZONE_PREFIX) !== 0) return;
+      if (readSession(PRESENT_MODE_KEY) !== null) return;
+      var assignmentTab = readSession(STUDENT_NAV_KEY) === STUDENT_NAV_ASSIGNMENT;
+      if (!hasAssignmentContext && !assignmentTab) return;
+      var doc = window.document;
+      if (!doc || typeof doc.querySelector !== 'function') return;
+
+      function apply() {
+        var back = doc.querySelector('nav a.nav-back');
+        if (!back || back.getAttribute('data-testid') === 'back-to-my-science') return false;
+        if (hasAssignmentContext) {
+          var style = doc.createElement('style');
+          style.id = 'lyfelabz-student-nav-style';
+          style.textContent = NAV_CSS;
+          (doc.head || doc.body).appendChild(style);
+          becomeMyScienceExit(doc, back);
+          guardMyScienceExit(doc, loc, back);
+          var logo = doc.querySelector('nav a.nav-logo');
+          if (logo) {
+            logo.setAttribute('href', MY_SCIENCE_PATH);
+            guardMyScienceExit(doc, loc, logo);
+          }
+        } else if (isCatalogLink(back, loc)) {
+          becomeMyScienceExit(doc, back);
+        }
+        return true;
+      }
+
+      // The shim loads with defer, so the header is normally parsed already.
+      if (!apply() && doc.readyState === 'loading' && typeof doc.addEventListener === 'function') {
+        doc.addEventListener('DOMContentLoaded', apply);
+      }
+    } catch (_err) {
+      // Never let navigation chrome break the lesson.
+    }
+  }
+
+  installStudentNavigation();
 
   if (!hasAssignmentContext) return;
 
