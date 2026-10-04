@@ -134,10 +134,11 @@ test('marketing Hosting config is isolated from the existing application config'
   ]);
   assert.deepEqual(marketing.hosting.redirects, [
     { source: '/app', destination: 'https://app.lyfelabz.com/app/', type: 301 },
-    { source: '/app/', destination: 'https://app.lyfelabz.com/app/', type: 301 }
+    { source: '/app/', destination: 'https://app.lyfelabz.com/app/', type: 301 },
+    { regex: '^/(lesson_[a-z0-9-]+\\.html)$', destination: 'https://app.lyfelabz.com/:1', type: 301 }
   ]);
-  assert.equal(marketing.hosting.redirects.some((rule) => rule.source.includes('*')), false);
-  assert.equal(marketing.hosting.redirects.some((rule) => rule.source.includes(':')), false);
+  assert.equal(marketing.hosting.redirects.some((rule) => (rule.source || '').includes('*')), false);
+  assert.equal(marketing.hosting.redirects.some((rule) => (rule.source || '').includes(':')), false);
   assert.equal(marketing.hosting.redirects.some((rule) => rule.source === '/app/src/index.ts'), false);
   assert.equal(marketing.hosting.redirects.some((rule) => rule.source === '/app/package.json'), false);
   assert.equal(marketing.hosting.redirects.some((rule) => rule.source === '/app/foo/bar'), false);
