@@ -16,6 +16,11 @@
         "source": "/app/",
         "destination": "https://app.lyfelabz.com/app/",
         "type": 301
+      },
+      {
+        "regex": "^/(lesson_[a-z0-9-]+\\.html)$",
+        "destination": "https://app.lyfelabz.com/:1",
+        "type": 301
       }
     ],
     "rewrites": [
