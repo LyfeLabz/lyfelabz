@@ -15,6 +15,7 @@
 <link rel="canonical" href="https://lyfelabz.com/">
 <meta name="description" content="LyfeLabz is a free interactive science learning platform for Grade 6-8 students. Explore body systems, evolution, cells, and more through lessons, simulations, and games.">
 <title>LyfeLabz | Science Learning Hub</title>
+<link rel="stylesheet" href="/content-type-tool.css">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   html { font-size: 18px; }
@@ -663,6 +664,13 @@
     font-weight: 700;
   }
   .ulink.inv:hover { background: rgba(59,130,246,0.32); border-color: rgba(59,130,246,0.9); color: #3B82F6; }
+  .ulink.tool {
+    background: rgba(var(--ct-tool-rgb),0.07);
+    color: var(--ct-tool);
+    border-color: rgba(var(--ct-tool-rgb),0.45);
+    font-weight: 700;
+  }
+  .ulink.tool:hover { background: rgba(var(--ct-tool-rgb),0.12); border-color: rgba(var(--ct-tool-rgb),0.7); color: var(--ct-tool); }
   .ulink.map {
     background: rgba(59,200,232,0.32);
     border-color: rgba(59,200,232,0.65);
@@ -1170,6 +1178,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <span class="ulink inv legend-pill">Investigation</span>
       <span class="ulink ext legend-pill">Extension</span>
       <span class="ulink chal legend-pill">Challenge</span>
+      <span class="ulink tool legend-pill">Tool</span>
     </div>
 
     <!-- ─── TOPIC GROUP: LIFE SCIENCE ─────────────────────────── -->

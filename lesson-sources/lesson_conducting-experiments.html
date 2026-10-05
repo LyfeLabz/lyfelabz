@@ -15,6 +15,7 @@
 <link rel="canonical" href="https://lyfelabz.com/lesson_conducting-experiments.html">
 <meta name="description" content="Why does Mentos and soda erupt? Learn how scientists turn questions into experiments: hypotheses, variables, observations, and inferences. Grade 6 science aligned to Massachusetts STE practices.">
 <title>LyfeLabz | How to Conduct Experiments</title>
+<link rel="stylesheet" href="/content-type-tool.css">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
@@ -2984,27 +2985,38 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 }
 .cont-card.inv { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.38); }
 .cont-card.les { background: rgba(245,160,40,0.08);  border: 1px solid rgba(245,160,40,0.35); }
-.cont-card.tool { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
+.cont-card.tool { background: rgba(var(--ct-tool-rgb),0.06); border: 1px solid rgba(var(--ct-tool-rgb),0.35); }
 .cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
 .cont-card.les::before { background: linear-gradient(90deg, #f5a028, #f5c842); }
-.cont-card.tool::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+.cont-card.tool::before { background: linear-gradient(90deg, var(--ct-tool), var(--ct-tool-muted)); }
 .cont-card.inv:hover { border-color: rgba(59,130,246,0.7);  box-shadow: 0 14px 40px rgba(59,130,246,0.2);  transform: translateY(-4px); }
 .cont-card.les:hover { border-color: rgba(245,160,40,0.65); box-shadow: 0 14px 40px rgba(245,160,40,0.18); transform: translateY(-4px); }
-.cont-card.tool:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
+.cont-card.tool:hover { border-color: rgba(var(--ct-tool-rgb),0.65); box-shadow: 0 14px 40px rgba(var(--ct-tool-rgb),0.10); transform: translateY(-4px); }
 .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; }
 .cont-card.inv .cont-icon { background: rgba(59,130,246,0.2);  }
 .cont-card.les .cont-icon { background: rgba(245,160,40,0.18); }
-.cont-card.tool .cont-icon { background: rgba(180,127,255,0.22);}
+.cont-card.tool .cont-icon { background: rgba(var(--ct-tool-rgb),0.12); }
 .cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
 .cont-card.inv .cont-cat { color: #3B82F6; }
 .cont-card.les .cont-cat { color: #f5a028; }
-.cont-card.tool .cont-cat { color: #b47fff; }
+.cont-card.tool .cont-cat { color: var(--ct-tool); }
 .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
 .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
 .cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
 .cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
-.cont-card.tool .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.tool:link .cont-link,
+.cont-card.tool:visited .cont-link,
+.cont-card.tool:hover .cont-link,
+.cont-card.tool:focus-visible .cont-link,
+.cont-card.tool:active .cont-link {
+  background: rgba(var(--ct-tool-rgb),0.07);
+  border-color: rgba(var(--ct-tool-rgb),0.45);
+  color: var(--ct-tool);
+}
+.cont-card.tool:hover .cont-link,
+.cont-card.tool:focus-visible .cont-link { background: rgba(var(--ct-tool-rgb),0.13); border-color: rgba(var(--ct-tool-rgb),0.7); }
+.cont-card.tool:active .cont-link { background: rgba(var(--ct-tool-rgb),0.18); border-color: rgba(var(--ct-tool-rgb),0.8); }
 .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
 .cont-body { flex: 1; }
 .coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
@@ -3014,7 +3026,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">Experimental design is the backbone of every science unit. <strong>Extension challenge:</strong> pick one of your own "why does that happen?" questions and plan a fair test on paper. Name the <strong>independent variable</strong> you would change, the <strong>dependent variable</strong> you would measure, and the <strong>controls</strong> you would keep the same. Then trade plans with a partner: can they find a variable you forgot to control?</p>
+    <p class="continue-intro"><strong>Try it yourself:</strong> Pick one of your own “Why does that happen?” questions and plan a fair test on paper. Name the <strong>independent variable</strong> you would change, the <strong>dependent variable</strong> you would measure, and the <strong>controls</strong> you would keep the same. Then review your plan: Is there anything else you would need to control to make it a fair test?</p>
     <div class="continue-grid">
       <a href="/tool_lab-report-assistant.html" class="cont-card tool">
         <div class="cont-icon" aria-hidden="true">&#128203;</div>

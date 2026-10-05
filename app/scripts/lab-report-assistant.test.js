@@ -91,6 +91,53 @@ test.each(['lesson-sources/lesson_conducting-experiments.html', 'lesson_conducti
   lesson.window.close();
 });
 
+test('Tool uses the shared neutral identity across hub, hero, and current More Learning cards', () => {
+  const tokens = fs.readFileSync(path.join(root, 'content-type-tool.css'), 'utf8');
+  expect(tokens).toContain('--ct-tool: #f1f5f9;');
+  expect(tokens).toContain('--ct-tool-muted: #cbd5e1;');
+  expect(tokens).toContain('--ct-tool-rgb: 241, 245, 249;');
+  expect(tokens).not.toMatch(/2dd4bf|99f6e4|0d9488|45, 212, 191/i);
+  expect(html).toContain('href="/content-type-tool.css"');
+  expect(html).toMatch(/\.hero-badge\s*\{[^}]*color: var\(--ct-tool\)/);
+  const manifest = require('../../scripts/marketing-hosting/public-files.json');
+  expect(manifest.files).toContain('content-type-tool.css');
+  const hub = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  expect(hub).toContain('href="/content-type-tool.css"');
+  expect(hub).toMatch(/\.ulink\.tool\s*\{[^}]*var\(--ct-tool-rgb\)/);
+  expect(hub).toMatch(/\.ulink\.tool\s*\{[^}]*color: var\(--ct-tool\)/);
+  expect(hub).toContain('<span class="ulink tool legend-pill">Tool</span>');
+
+  const currentVariant = require('../lessons/variants/manifest.json')
+    .filter(entry => entry.lessonSlug === 'conducting-experiments' && entry.variantKey === 'reading-adapted').at(-1);
+  const lessons = [
+    'lesson-sources/lesson_conducting-experiments.html',
+    'lesson-sources/variants/conducting-experiments.reading-adapted.html',
+    'lesson_conducting-experiments.html',
+    'app/lessons/lesson_conducting-experiments.html',
+    currentVariant.path,
+  ];
+  const prompt = 'Try it yourself: Pick one of your own “Why does that happen?” questions and plan a fair test on paper. Name the independent variable you would change, the dependent variable you would measure, and the controls you would keep the same. Then review your plan: Is there anything else you would need to control to make it a fair test?';
+  for (const filename of lessons) {
+    const source = fs.readFileSync(path.join(root, filename), 'utf8');
+    const lesson = new JSDOM(source);
+    const card = lesson.window.document.querySelector('#continue a.cont-card.tool');
+    expect(card.getAttribute('href')).toBe('/tool_lab-report-assistant.html');
+    expect(card.querySelector('.cont-cat').textContent).toBe('Tool');
+    expect(source).toContain('href="/content-type-tool.css"');
+    expect(source).toMatch(/\.cont-card\.tool\s*\{[^}]*var\(--ct-tool-rgb\)/);
+    expect(source).toMatch(/\.cont-card\.tool::before\s*\{[^}]*var\(--ct-tool\)[^}]*var\(--ct-tool-muted\)/);
+    expect(source).toMatch(/\.cont-card\.tool \.cont-cat\s*\{[^}]*var\(--ct-tool\)/);
+    for (const state of ['link', 'visited', 'hover', 'focus-visible', 'active']) {
+      expect(source).toContain(`.cont-card.tool:${state} .cont-link`);
+    }
+    expect(source).toMatch(/\.cont-card\.tool:active \.cont-link\s*\{[^}]*var\(--ct-tool-rgb\)/);
+    expect(lesson.window.document.querySelector('#continue .continue-intro').textContent).toBe(prompt);
+    expect(source).not.toContain('Extension challenge:');
+    expect(source).not.toContain('trade plans with a partner');
+    lesson.window.close();
+  }
+});
+
 test('all seven sections and review are reachable with jumps and previous/next; heading receives focus', () => {
   expect([...el('step-links').children].map(button => button.textContent)).toEqual(pills.map((label, index) => `${index + 1}. ${label}`));
   titles.forEach((title, index) => { jump(index); expect(el('step-title').textContent).toBe(title); expect(w.document.activeElement).toBe(el('step-title')); });

@@ -76,5 +76,15 @@
     "publishedAt": "2026-10-05T00:54:05Z",
     "assessmentRevisionId": "assessment_conducting-experiments__r1",
     "assessmentPresentationRevisionId": "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c"
+  },
+  {
+    "lessonSlug": "conducting-experiments",
+    "variantKey": "reading-adapted",
+    "presentationRevisionId": "prb5acbc038613c1a3473febc56cc1981ddfa028ff0990e8d4237e8951e6c247a0",
+    "path": "app/lessons/variants/lesson_conducting-experiments__prb5acbc038613c1a3473febc56cc1981ddfa028ff0990e8d4237e8951e6c247a0.html",
+    "sha256": "b5acbc038613c1a3473febc56cc1981ddfa028ff0990e8d4237e8951e6c247a0",
+    "publishedAt": "2026-10-05T23:08:53Z",
+    "assessmentRevisionId": "assessment_conducting-experiments__r1",
+    "assessmentPresentationRevisionId": "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c"
   }
 ]

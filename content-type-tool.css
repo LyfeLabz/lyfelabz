@@ -1,0 +1,6 @@
+/* Canonical neutral identity for LyfeLabz Tool utilities. */
+:root {
+  --ct-tool: #f1f5f9;
+  --ct-tool-muted: #cbd5e1;
+  --ct-tool-rgb: 241, 245, 249;
+}

@@ -6,6 +6,7 @@
 <meta name="description" content="Organize your ideas and build a lab report step by step with the LyfeLabz Lab Report Assistant.">
 <title>LyfeLabz | Lab Report Assistant</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="stylesheet" href="/content-type-tool.css">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;family=Fredoka+One&amp;family=Orbitron:wght@700;900&amp;display=swap" rel="stylesheet">
 <style>
 /* Canonical shell, typography, palette, glossary and accessibility from Conducting Experiments. */
@@ -136,9 +137,9 @@
   }
   .hero-badge {
     display: inline-block;
-    background: rgba(245,200,66,0.15);
-    border: 1px solid rgba(245,200,66,0.4);
-    color: var(--gold);
+    background: rgba(var(--ct-tool-rgb),0.08);
+    border: 1px solid rgba(var(--ct-tool-rgb),0.45);
+    color: var(--ct-tool);
     padding: 0.4rem 1.2rem;
     border-radius: 99px;
     font-size: 0.8rem;
