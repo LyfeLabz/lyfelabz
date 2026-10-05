@@ -26,9 +26,9 @@
  *     soda;
  *   - the structured Claim / Evidence / Reasoning model renders into the
  *     uncertified preview while ce-data stays byte-identical;
- *   - the retained artifact pr7715ff... (the Quiz Results Polish successor of
- *     pr4bd0e1...) is the certified ap1acc72... binding and reproduces byte
- *     for byte; pr4bd0e1... stays retained and byte-unchanged.
+ *   - the Lab Report Assistant link successor prb4fd72c... keeps the certified
+ *     ap1acc72... binding and reproduces byte for byte; both earlier artifacts
+ *     stay retained and byte-unchanged.
  *
  * Nothing here writes to the repository.
  */
@@ -48,12 +48,12 @@ const KEY = "reading-adapted";
 const R1 = "assessment_conducting-experiments__r1";
 const AP1ACC = "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c";
 const PR4BD0 = "pr4bd0e1dbe22e7b6db874dd16f4ff7313b19ed1b470acfae3dabbfdc96b350001";
-// The retained revision today's sources build (Quiz Results Polish successor
-// of pr4bd0e1..., same ap1acc72... binding).
+// Historical Quiz Results Polish revision, same ap1acc72... binding.
 const PR7715 = "pr7715ff14a5d647f518fffe2f8af8de8cfd843a2739a3a32172a14d5363465e5e";
+const PRB4FD7 = "prb4fd72c335c360c7c4a6ee8921dd244ad56aa9827526b1fb57d69e6c0d1c5fac";
 // The deterministic unbound (declared-r1) build of the proposed configuration.
 // Never retained; it pins the proposed build's exact bytes.
-const PR6992 = "pr69923db52d9245064213018dfe6345c3479e40029b2517fbdb6ee3c32f902dc0";
+const PR04FA = "pr04faf965316f9ef944d6bdc2be692b8c8c8dcfad38177cbf8691bbe79e9d7fb4";
 const DRAFT = path.join(paths.REPO_ROOT, "lesson-sources/variants/conducting-experiments.reading-adapted.assessment.json");
 
 const PROPOSED_VARIANT = {
@@ -143,7 +143,7 @@ describe("proposed variant configuration", () => {
 describe("variant source passes every F5.2 gate against canonical r1", () => {
   test("invariance, equivalence, quiz identity and fidelity, determinism", () => {
     // buildAuthoredVariant throws on any gate failure.
-    expect(built.presentationRevisionId).toBe(PR6992);
+    expect(built.presentationRevisionId).toBe(PR04FA);
     expect(built.assessmentRevisions).toEqual(["conducting-experiments.r1.json"]);
     expect(built.assessmentRevisionBasis).toBe("declared");
     expect(built.recordedAssessmentRevisionId).toBe(R1);
@@ -330,7 +330,8 @@ describe("uncertified preview", () => {
 describe("certified and retained", () => {
   const { sha256Hex } = require("../hash.cjs");
   const manifestMod = require("../variantManifest.cjs");
-  const RETAINED = `app/lessons/variants/lesson_${SLUG}__${PR7715}.html`;
+  const RETAINED = `app/lessons/variants/lesson_${SLUG}__${PRB4FD7}.html`;
+  const PREVIOUS = `app/lessons/variants/lesson_${SLUG}__${PR7715}.html`;
   const HISTORICAL = `app/lessons/variants/lesson_${SLUG}__${PR4BD0}.html`;
 
   test("the draft is exactly the retained, owner-certified record", () => {
@@ -342,15 +343,15 @@ describe("certified and retained", () => {
     expect(AP.loadReview(AP1ACC)).toMatchObject({ reviewer: { role: "owner" }, determination: "approved" });
   });
 
-  test("the declared variant builds to the retained pr7715ff... artifact, byte for byte", () => {
+  test("the declared variant builds to the retained Lab Report Assistant link artifact, byte for byte", () => {
     const bound = variantSource.buildAuthoredVariant({ slug: SLUG, variantKey: KEY });
-    expect(bound.presentationRevisionId).toBe(PR7715);
+    expect(bound.presentationRevisionId).toBe(PRB4FD7);
     expect(bound.assessmentBinding).toEqual({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
     const bytes = fs.readFileSync(path.join(paths.REPO_ROOT, RETAINED), "utf8");
     expect(bound.bytes).toBe(bytes);
-    expect(`pr${sha256Hex(bytes)}`).toBe(PR7715);
+    expect(`pr${sha256Hex(bytes)}`).toBe(PRB4FD7);
     // The retained bytes are the approved preview without its review marking.
-    expect(preview.projectedPresentationRevisionId).toBe(PR7715);
+    expect(preview.projectedPresentationRevisionId).toBe(PRB4FD7);
     expect(bytes).not.toContain("UNCERTIFIED");
   });
 
@@ -358,15 +359,25 @@ describe("certified and retained", () => {
     expect(`pr${sha256Hex(fs.readFileSync(path.join(paths.REPO_ROOT, HISTORICAL)))}`).toBe(PR4BD0);
   });
 
+  test("the previous artifact is unchanged and its successor differs only in More Learning", () => {
+    const previous = fs.readFileSync(path.join(paths.REPO_ROOT, PREVIOUS), "utf8");
+    const current = fs.readFileSync(path.join(paths.REPO_ROOT, RETAINED), "utf8");
+    expect(`pr${sha256Hex(previous)}`).toBe(PR7715);
+    const more = (html) => between(html, '<section id="continue">', "</section>");
+    expect(more(current)).toContain('href="/tool_lab-report-assistant.html"');
+    expect(current.replace(more(current), more(previous)).replaceAll('.cont-card.tool', '.cont-card.ext')).toBe(previous);
+  });
+
   test("the manifest records the binding, and variants:verify sees it as retained", () => {
     const entries = manifestMod.readManifest().filter((e) => e.lessonSlug === SLUG);
     // Append-only: the earlier revision first, then its successor, same binding.
-    expect(entries.map((e) => e.presentationRevisionId)).toEqual([PR4BD0, PR7715]);
+    expect(entries.map((e) => e.presentationRevisionId)).toEqual([PR4BD0, PR7715, PRB4FD7]);
     expect(entries[0]).toMatchObject({ variantKey: KEY, path: HISTORICAL, assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
-    expect(entries[1]).toMatchObject({ variantKey: KEY, path: RETAINED, assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
+    expect(entries[1]).toMatchObject({ variantKey: KEY, path: PREVIOUS, assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
+    expect(entries[2]).toMatchObject({ variantKey: KEY, path: RETAINED, assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
     const res = variantSource.checkAuthoredVariants();
     expect(res.failures).toEqual([]);
-    expect(res.checked).toContainEqual({ label: `${SLUG}/${KEY}`, presentationRevisionId: PR7715, retained: true });
+    expect(res.checked).toContainEqual({ label: `${SLUG}/${KEY}`, presentationRevisionId: PRB4FD7, retained: true });
   });
 
   test("the delivered artifact carries the canonical ce-data block and three choices per item", () => {

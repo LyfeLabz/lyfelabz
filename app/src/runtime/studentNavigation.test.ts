@@ -300,7 +300,7 @@ describe("assignment delivery header", () => {
   ];
 
   test("covers every app lesson, immutable variant, and assessment rendition without editing them", () => {
-    expect(RENDITIONS.length).toBe(49 + 7 + 6);
+    expect(RENDITIONS.length).toBe(49 + 8 + 6);
   });
 
   test.each(RENDITIONS)("%s: assigned header becomes Back to My Science", (rel) => {

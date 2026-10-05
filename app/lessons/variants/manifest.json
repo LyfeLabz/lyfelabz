@@ -66,5 +66,15 @@
     "publishedAt": "2026-09-30T23:33:37.000Z",
     "assessmentRevisionId": "assessment_earths-layers__r1",
     "assessmentPresentationRevisionId": "ap1fed478c9e4ad8335946ff7f7b165df657bafc48e8c5990d922419581fa02c25"
+  },
+  {
+    "lessonSlug": "conducting-experiments",
+    "variantKey": "reading-adapted",
+    "presentationRevisionId": "prb4fd72c335c360c7c4a6ee8921dd244ad56aa9827526b1fb57d69e6c0d1c5fac",
+    "path": "app/lessons/variants/lesson_conducting-experiments__prb4fd72c335c360c7c4a6ee8921dd244ad56aa9827526b1fb57d69e6c0d1c5fac.html",
+    "sha256": "b4fd72c335c360c7c4a6ee8921dd244ad56aa9827526b1fb57d69e6c0d1c5fac",
+    "publishedAt": "2026-10-05T00:54:05Z",
+    "assessmentRevisionId": "assessment_conducting-experiments__r1",
+    "assessmentPresentationRevisionId": "ap1acc72282dd0e33764f19ea8a46d23325ebd0721723249758e9a67d6f175712c"
   }
 ]

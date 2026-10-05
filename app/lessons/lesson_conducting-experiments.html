@@ -2823,27 +2823,27 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 }
 .cont-card.inv { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.38); }
 .cont-card.les { background: rgba(245,160,40,0.08);  border: 1px solid rgba(245,160,40,0.35); }
-.cont-card.ext { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
+.cont-card.tool { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
 .cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
 .cont-card.les::before { background: linear-gradient(90deg, #f5a028, #f5c842); }
-.cont-card.ext::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+.cont-card.tool::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
 .cont-card.inv:hover { border-color: rgba(59,130,246,0.7);  box-shadow: 0 14px 40px rgba(59,130,246,0.2);  transform: translateY(-4px); }
 .cont-card.les:hover { border-color: rgba(245,160,40,0.65); box-shadow: 0 14px 40px rgba(245,160,40,0.18); transform: translateY(-4px); }
-.cont-card.ext:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
+.cont-card.tool:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
 .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; }
 .cont-card.inv .cont-icon { background: rgba(59,130,246,0.2);  }
 .cont-card.les .cont-icon { background: rgba(245,160,40,0.18); }
-.cont-card.ext .cont-icon { background: rgba(180,127,255,0.22);}
+.cont-card.tool .cont-icon { background: rgba(180,127,255,0.22);}
 .cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
 .cont-card.inv .cont-cat { color: #3B82F6; }
 .cont-card.les .cont-cat { color: #f5a028; }
-.cont-card.ext .cont-cat { color: #b47fff; }
+.cont-card.tool .cont-cat { color: #b47fff; }
 .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
 .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
 .cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
 .cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
-.cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.tool .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
 .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
 .cont-body { flex: 1; }
 .coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
@@ -2855,14 +2855,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <h2 class="section-title">More Learning</h2>
     <p class="continue-intro">Experimental design is the backbone of every science unit. <strong>Extension challenge:</strong> pick one of your own "why does that happen?" questions and plan a fair test on paper. Name the <strong>independent variable</strong> you would change, the <strong>dependent variable</strong> you would measure, and the <strong>controls</strong> you would keep the same. Then trade plans with a partner: can they find a variable you forgot to control?</p>
     <div class="continue-grid">
-      <div class="cont-card soon">
-        <div class="cont-icon">&#128640;</div>
-        <div class="cont-body">
-          <div class="cont-name">More Coming Soon</div>
-          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
-          <span class="coming-soon-tag">Coming Soon</span>
-        </div>
-      </div>
+      <a href="/tool_lab-report-assistant.html" class="cont-card tool">
+        <div class="cont-icon" aria-hidden="true">&#128203;</div>
+        <div class="cont-cat">Tool</div>
+        <div class="cont-name">Lab Report Assistant</div>
+        <div class="cont-desc">Organize your ideas and build each section of your lab report step by step. Reuse this tool for your own investigations.</div>
+        <span class="cont-link">Build Your Report</span>
+      </a>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
