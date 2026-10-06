@@ -69,7 +69,7 @@ test('page renders without a framework or auth and is included in both hosting a
   expect(el('save-status').textContent).toBe('');
   expect(w.getComputedStyle(el('speech-status')).display).toBe('none');
   expect(w.getComputedStyle(el('save-status')).display).toBe('none');
-  expect(w.document.querySelector('.hero-badge').textContent).toBe('TOOL');
+  expect(w.document.querySelector('.hero-badge.ct-tool-pill').textContent).toBe('TOOL');
   expect(fs.existsSync(path.join(root, 'tool_lab-report-assistant.html'))).toBe(true);
   expect(fs.existsSync(path.join(root, 'extension_lab-report-assistant.html'))).toBe(false);
   expect(el('step-title').textContent).toBe(titles[0]);
@@ -97,8 +97,11 @@ test('Tool uses the shared neutral identity across hub, hero, and current More L
   expect(tokens).toContain('--ct-tool-muted: #cbd5e1;');
   expect(tokens).toContain('--ct-tool-rgb: 241, 245, 249;');
   expect(tokens).not.toMatch(/2dd4bf|99f6e4|0d9488|45, 212, 191/i);
+  expect(tokens).toMatch(/\.ct-tool-pill\s*\{[^}]*width: max-content;[^}]*border: 1px solid rgba\(var\(--ct-tool-rgb\), 0\.68\);[^}]*background: rgba\(var\(--ct-tool-rgb\), 0\.1\);[^}]*color: var\(--ct-tool\)/);
+  expect(tokens).toContain('.high-contrast .ct-tool-pill');
+  expect(tokens).toContain('@media (forced-colors: active)');
   expect(html).toContain('href="/content-type-tool.css"');
-  expect(html).toMatch(/\.hero-badge\s*\{[^}]*color: var\(--ct-tool\)/);
+  expect(html).toContain('<span class="hero-badge ct-tool-pill">TOOL</span>');
   const manifest = require('../../scripts/marketing-hosting/public-files.json');
   expect(manifest.files).toContain('content-type-tool.css');
   const hub = fs.readFileSync(path.join(root, 'index.html'), 'utf8');

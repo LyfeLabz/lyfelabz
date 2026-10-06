@@ -4,3 +4,31 @@
   --ct-tool-muted: #cbd5e1;
   --ct-tool-rgb: 241, 245, 249;
 }
+
+.ct-tool-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  white-space: nowrap;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid rgba(var(--ct-tool-rgb), 0.68);
+  border-radius: 999px;
+  background: rgba(var(--ct-tool-rgb), 0.1);
+  color: var(--ct-tool);
+  line-height: 1.2;
+}
+
+.high-contrast .ct-tool-pill {
+  border-color: #fff;
+  background: #000;
+  color: #fff;
+}
+
+@media (forced-colors: active) {
+  .ct-tool-pill {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+}
