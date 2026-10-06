@@ -1,15 +1,17 @@
 /*
  * LyfeLabz canonical curriculum parser (Sprint 6D.0).
  *
- * Reads the root `index.html` treated as the authoritative curriculum
- * inventory (PDR-007, TEACHER_EXPERIENCE_PHILOSOPHY.md §3.9). Returns a
- * deterministic, JSON-serialisable manifest of every unit and resource
- * surfaced by the canonical index.
+ * Reads the root `index.html` and returns a deterministic,
+ * JSON-serialisable description of every unit and resource the homepage
+ * surfaces. The authored source of curriculum metadata is now the
+ * curriculum registry (`curriculumRegistry.cjs`); this parser remains as
+ * the migration lockstep check that the hand-authored homepage presents
+ * exactly the registered curriculum.
  *
  * The parser is deliberately strict. It fails loudly rather than
  * silently omitting malformed or unrecognized curriculum markup. This
- * module has no external dependencies; it is required by the manifest
- * build script and by the drift test in `app/src/curriculum`.
+ * module has no external dependencies; it is required by the registry
+ * loader and by the drift test in `app/src/curriculum`.
  */
 
 "use strict";
@@ -440,24 +442,6 @@ function sha256(text) {
   return crypto.createHash("sha256").update(text, "utf8").digest("hex");
 }
 
-function buildManifest() {
-  const indexHtml = readRootIndexHtml();
-  const parsed = parseCurriculumFromIndexHtml(indexHtml);
-  return {
-    schemaVersion: 1,
-    generated: true,
-    generatedBy: "app/scripts/build-curriculum-manifest.cjs",
-    canonicalSource: "index.html",
-    canonicalSourceRelativeToApp: "../index.html",
-    canonicalSourceSha256: sha256(indexHtml),
-    doNotEditByHand:
-      "This file is generated from the root canonical index.html. Do not edit by hand. Regenerate with `npm run curriculum:build` inside app/.",
-    totals: parsed.totals,
-    topicGroups: parsed.topicGroups,
-    orphanUnits: parsed.orphanUnits,
-  };
-}
-
 module.exports = {
   ROOT_INDEX_RELATIVE,
   TOPIC_ORDER,
@@ -467,6 +451,6 @@ module.exports = {
   HREF_PREFIX_BY_TYPE,
   parseCurriculumFromIndexHtml,
   readRootIndexHtml,
-  buildManifest,
   sha256,
+  summarize,
 };

@@ -26,10 +26,24 @@ const parserPath = path.resolve(
 );
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const parser = require(parserPath) as {
-  buildManifest(): unknown;
   parseCurriculumFromIndexHtml(html: string): unknown;
   readRootIndexHtml(): string;
   sha256(text: string): string;
+};
+
+const registryPath = path.resolve(
+  __dirname,
+  "..",
+  "..",
+  "scripts",
+  "curriculumRegistry.cjs",
+);
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const registry = require(registryPath) as {
+  buildManifest(): unknown;
+  parseRegistryText(text: string): unknown;
+  readRegistryText(): string;
+  compareRegistryWithIndexHtml(registryText?: string, indexHtml?: string): string | null;
 };
 
 const MANIFEST_JSON_PATH = path.resolve(
@@ -43,26 +57,32 @@ const REGENERATE_HINT =
 describe("Canonical curriculum manifest (Sprint 6D.0)", () => {
   test("manifest is marked as generated and names its canonical source", () => {
     expect(CURRICULUM_MANIFEST.generated).toBe(true);
-    expect(CURRICULUM_MANIFEST.canonicalSource).toBe("index.html");
+    expect(CURRICULUM_MANIFEST.canonicalSource).toBe(
+      "app/src/curriculum/curriculum.registry.json",
+    );
     expect(CURRICULUM_MANIFEST.canonicalSourceSha256).toMatch(/^[0-9a-f]{64}$/);
     expect(CURRICULUM_MANIFEST.doNotEditByHand).toMatch(/generated/i);
   });
 
-  test("checked-in manifest matches a freshly parsed canonical index.html", () => {
-    const fresh = parser.buildManifest() as typeof CURRICULUM_MANIFEST;
+  test("checked-in manifest matches a freshly built curriculum registry", () => {
+    const fresh = registry.buildManifest() as typeof CURRICULUM_MANIFEST;
     const checked = JSON.parse(
       fs.readFileSync(MANIFEST_JSON_PATH, "utf8"),
     ) as unknown;
     if (JSON.stringify(fresh) !== JSON.stringify(checked)) {
       throw new Error(
-        `Curriculum manifest drift detected between root index.html and app/src/curriculum/curriculum.manifest.json. ${REGENERATE_HINT}`,
+        `Curriculum manifest drift detected between the curriculum registry and app/src/curriculum/curriculum.manifest.json. ${REGENERATE_HINT}`,
       );
     }
     // Also verify the sha256 recorded in the manifest matches the current
     // canonical source verbatim. This catches accidental edits that would
     // keep the content but change the fingerprint.
-    const sha = parser.sha256(parser.readRootIndexHtml());
+    const sha = parser.sha256(registry.readRegistryText());
     expect(CURRICULUM_MANIFEST.canonicalSourceSha256).toBe(sha);
+  });
+
+  test("root index.html presents exactly the registered curriculum (migration lockstep)", () => {
+    expect(registry.compareRegistryWithIndexHtml()).toBeNull();
   });
 
   test("every unit slug is unique and every resource href is unique", () => {
@@ -355,5 +375,113 @@ describe("Canonical curriculum parser strict-failure guarantees", () => {
       wrapSubjectBlock("life-science", "9", validCard("a", "A", "lesson_a.html")),
     );
     expect(() => parse(html)).toThrow(/invalid data-grades value/);
+  });
+});
+
+describe("Canonical curriculum registry strict-failure guarantees", () => {
+  type Json = Record<string, unknown>;
+  const minimal = (): Json => ({
+    schemaVersion: 1,
+    topicGroups: [
+      {
+        topic: "life-science",
+        gated: false,
+        gradeBlocks: [
+          {
+            grade: "6",
+            units: [
+              {
+                slug: "a",
+                title: "A",
+                description: "Desc",
+                resources: [{ type: "lesson", filename: "lesson_a.html", label: "Lesson" }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  const parse = (value: Json): unknown => registry.parseRegistryText(JSON.stringify(value));
+  const firstUnit = (value: Json): Json =>
+    ((((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0].units as Json[])[0]);
+
+  test("accepts a minimal valid registry", () => {
+    expect(() => parse(minimal())).not.toThrow();
+  });
+
+  test("fails on an unknown key", () => {
+    const value = minimal();
+    firstUnit(value).href = "/lesson_a.html";
+    expect(() => parse(value)).toThrow(/unknown key "href"/);
+  });
+
+  test("fails on an unrecognized topic", () => {
+    const value = minimal();
+    (value.topicGroups as Json[])[0].topic = "astrology";
+    expect(() => parse(value)).toThrow(/unknown canonical topic/);
+  });
+
+  test("fails on a duplicate unit slug", () => {
+    const value = minimal();
+    const block = ((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0];
+    block.units = [
+      firstUnit(value),
+      { slug: "a", title: "B", description: "Desc", resources: [] },
+    ];
+    expect(() => parse(value)).toThrow(/duplicate unit slug "a"/);
+  });
+
+  test("fails on a duplicate resource href", () => {
+    const value = minimal();
+    const block = ((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0];
+    block.units = [
+      firstUnit(value),
+      {
+        slug: "b",
+        title: "B",
+        description: "Desc",
+        resources: [{ type: "lesson", filename: "lesson_a.html", label: "Lesson" }],
+      },
+    ];
+    expect(() => parse(value)).toThrow(/duplicate resource href/);
+  });
+
+  test("fails on an unrecognized resource type", () => {
+    const value = minimal();
+    firstUnit(value).resources = [{ type: "tool", filename: "tool_a.html", label: "Tool" }];
+    expect(() => parse(value)).toThrow(/unrecognized resource type "tool"/);
+  });
+
+  test("fails when a filename does not match its declared type prefix", () => {
+    const value = minimal();
+    firstUnit(value).resources = [{ type: "simulation", filename: "lesson_a.html", label: "Sim" }];
+    expect(() => parse(value)).toThrow(/does not match its declared type/);
+  });
+
+  test("fails on placeholder units outside a gated topic group", () => {
+    const value = minimal();
+    ((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0].placeholderUnits = 1;
+    expect(() => parse(value)).toThrow(/placeholder units outside a gated topic group/);
+  });
+
+  test("fails on an unsupported grade", () => {
+    const value = minimal();
+    ((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0].grade = "9";
+    expect(() => parse(value)).toThrow(/invalid grade/);
+  });
+
+  test("fails on uncollapsed whitespace in authored text", () => {
+    const value = minimal();
+    firstUnit(value).title = " A";
+    expect(() => parse(value)).toThrow(/whitespace/);
+  });
+
+  test("lockstep reports the first divergence from root index.html", () => {
+    const value = JSON.parse(registry.readRegistryText()) as Json;
+    firstUnit(value).title = "Changed Title";
+    expect(registry.compareRegistryWithIndexHtml(JSON.stringify(value))).toBe(
+      "$.topicGroups.0.units.0.title",
+    );
   });
 });

@@ -2,7 +2,8 @@
 //
 // This module is the ONLY authoritative curriculum accessor for the
 // teacher application. It reads from `curriculum.manifest.json`, which
-// is generated deterministically from the root `index.html` by
+// is generated deterministically from the authored curriculum registry
+// (`curriculum.registry.json`) by
 // `app/scripts/build-curriculum-manifest.cjs`. Curriculum metadata is
 // never hand-authored in TypeScript. See:
 //
@@ -11,10 +12,11 @@
 //   - PDR-007 (canonical experience)
 //   - docs/platform/SPRINT_6D_0_SPECIFICATION.md
 //
-// To update curriculum metadata, edit the canonical `index.html` at the
-// repository root and run `npm run curriculum:build` inside `app/`. A
-// drift test enforces that the checked-in manifest matches the current
-// canonical source; do not edit the JSON directly.
+// To update curriculum metadata, edit `curriculum.registry.json` (and,
+// during migration, the matching card in the root `index.html`) and run
+// `npm run curriculum:build` inside `app/`. Drift tests enforce that the
+// checked-in manifest matches the registry and that the homepage presents
+// exactly the registered curriculum; do not edit the manifest directly.
 
 import manifestJson from "./curriculum.manifest.json";
 

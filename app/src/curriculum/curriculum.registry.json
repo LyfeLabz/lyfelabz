@@ -1,0 +1,747 @@
+{
+  "schemaVersion": 1,
+  "$comment": "Canonical authored LyfeLabz curriculum registry. Source of app/src/curriculum/curriculum.manifest.json (npm run curriculum:build inside app/). Order is significant. During migration the root index.html is still hand-authored and curriculum:verify requires it to present exactly this curriculum.",
+  "topicGroups": [
+    {
+      "topic": "life-science",
+      "gated": false,
+      "gradeBlocks": [
+        {
+          "grade": "6",
+          "units": [
+            {
+              "slug": "what-is-life",
+              "title": "What Is Life?",
+              "description": "What separates a living thing from a rock, a fire, or even a virus? Investigate the characteristics every organism shares, the discovery of cell theory, and why scientists still debate where the line of \"alive\" really falls.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_what-is-life.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "investigation",
+                  "filename": "investigation_gray-zone.html",
+                  "label": "The Gray Zone"
+                }
+              ]
+            },
+            {
+              "slug": "cell-types",
+              "title": "Cell Types",
+              "description": "If every living thing is built from cells, why is a bacterium nothing like a human? Explore how cells specialize and team up into tissues and organs, and why life evolved two very different cell designs, each with its own tradeoffs.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_cell-types.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "investigation",
+                  "filename": "investigation_cell-energy.html",
+                  "label": "Cell Energy"
+                }
+              ]
+            },
+            {
+              "slug": "organelles",
+              "title": "Cell Organelles",
+              "description": "A single cell works like a bustling factory. Step inside to discover how each part, from the nucleus to the mitochondria, does a specific job that keeps the whole cell running.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_organelles.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "investigation",
+                  "filename": "investigation_protein-pathway.html",
+                  "label": "Protein Pathway"
+                }
+              ]
+            },
+            {
+              "slug": "body-systems",
+              "title": "Human Body Systems",
+              "description": "Your heart, lungs, stomach, and brain never work alone. Explore how the body's systems connect and cooperate to keep you alive every second of the day.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_body-systems.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "extension",
+                  "filename": "extension_body-systems.html",
+                  "label": "Medical Mysteries"
+                }
+              ]
+            },
+            {
+              "slug": "biological-evolution",
+              "title": "Biological Evolution",
+              "description": "How does a species change over millions of years? Uncover how natural selection reshapes living things, and how fossils and DNA record the story of life on Earth.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_biological-evolution.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "extension",
+                  "filename": "extension_chernobyl-frogs.html",
+                  "label": "Chernobyl Frogs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "grade": "7",
+          "units": [
+            {
+              "slug": "parts-of-an-ecosystem",
+              "title": "Parts of an Ecosystem",
+              "description": "What connects a hawk, a blade of grass, and the soil beneath them? Explore how the living and nonliving parts of an ecosystem depend on one another to survive.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_parts-of-an-ecosystem.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "photosynthesis",
+              "title": "Photosynthesis",
+              "description": "How can a plant build itself out of nothing but air, water, and sunlight? Uncover the process that captures the Sun's energy and feeds nearly every living thing on Earth.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_photosynthesis.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "energy-flow",
+              "title": "Energy Flow in Ecosystems",
+              "description": "Why are there always more plants than predators? Follow energy as it moves up the food chain and discover why so much of it disappears at every step.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_energy-flow.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "carbon-cycle",
+              "title": "The Carbon Cycle",
+              "description": "How can the same carbon atom end up in a tree, a breath, and a rock? Track carbon as it cycles endlessly through living things, the air, the oceans, and the ground.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_carbon-cycle.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "ecosystem-stability",
+              "title": "Ecosystem Stability",
+              "description": "What happens when one species suddenly disappears? Investigate how a single change can ripple through an entire ecosystem and tip it out of balance.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_ecosystem-stability.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "reproductive-success",
+              "title": "Reproductive Success",
+              "description": "Why do some animals dance, sing, or build to attract a mate? Explore the behaviors and plant structures that give living things a better chance of passing on their traits.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_reproductive-success.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "human-impacts",
+              "title": "Human Impacts on Ecosystems",
+              "description": "How do everyday human choices ripple through the natural world? Examine the ways people change ecosystems, and how those same systems can be protected and restored.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_human-impacts.html",
+                  "label": "Lesson"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "earth-space",
+      "gated": false,
+      "gradeBlocks": [
+        {
+          "grade": "6",
+          "units": [
+            {
+              "slug": "layers-of-time",
+              "title": "Layers of Time",
+              "description": "Rocks are a written record of Earth's past. Discover how different rocks form and what their stacked layers reveal about events from long before humans existed.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_layers-of-time.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "extension",
+                  "filename": "extension_fossil-hunt.html",
+                  "label": "Fossil Hunt"
+                }
+              ]
+            },
+            {
+              "slug": "continental-drift",
+              "title": "Continental Drift",
+              "description": "What makes continents drift, mountains rise, and the ground shake? Explore how Earth's slowly moving plates reshape the surface over millions of years.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_continental-drift.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "simulation",
+                  "filename": "simulation_floatlandia-fracture.html",
+                  "label": "Floatlandia Fracture"
+                }
+              ]
+            },
+            {
+              "slug": "gravity",
+              "title": "Gravity",
+              "description": "Why do dropped objects fall, and why do planets circle the Sun instead of drifting away? Discover why gravity is always a pull, why it only stands out around very large masses, and how one force shapes the whole solar system.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_gravity.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "simulation",
+                  "filename": "simulation_gravity-wells.html",
+                  "label": "Gravity Wells"
+                }
+              ]
+            },
+            {
+              "slug": "sun-earth-moon",
+              "title": "Sun-Earth-Moon System",
+              "description": "How gravity, orbits, and motion connect the Sun, Earth, and Moon into one system, including rotation, revolution, and the forces that keep it all balanced.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_sun-earth-moon.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "phases-of-the-moon",
+              "title": "Phases of the Moon",
+              "description": "Why the Moon appears to change shape every night: orbit, tidal locking, the 8 phases, and the 29.5-day lunar cycle explained.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_phases-of-the-moon.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "extension",
+                  "filename": "extension_moon-tonight.html",
+                  "label": "Moon Tonight"
+                }
+              ]
+            },
+            {
+              "slug": "eclipses",
+              "title": "Eclipses",
+              "description": "Why solar and lunar eclipses are rare: orbital tilt, the umbra and penumbra, nodes, and the 400× coincidence that makes totality possible.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_eclipses.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "simulation",
+                  "filename": "simulation_eclipse-alignment.html",
+                  "label": "Eclipse Alignment"
+                }
+              ]
+            },
+            {
+              "slug": "earths-place-in-the-universe",
+              "title": "Earth's Place in the Universe",
+              "description": "How big is everything, and where do we fit? Zoom out from Earth to the solar system, the Milky Way, and billions of galaxies to build one nested model of the universe.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_earths-place-in-the-universe.html",
+                  "label": "Lesson"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "grade": "7",
+          "units": [
+            {
+              "slug": "earths-layers",
+              "title": "Earth's Layers",
+              "description": "What lies beneath your feet, all the way down to the center of the planet? Journey from the crust to the core to see how heat and motion deep inside Earth shape the surface we live on.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_earths-layers.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "plate-tectonics",
+              "title": "Plate Tectonics",
+              "description": "Why is Earth's surface always on the move? Explore how giant plates slide, collide, and pull apart to build mountains, open oceans, and reshape continents over millions of years.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_plate-tectonics.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "earthquakes",
+              "title": "Earthquakes",
+              "description": "What makes the ground suddenly shake? Discover how energy builds up and releases along faults, and why some places tremble far more often than others.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_earthquakes.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "types-of-volcanoes",
+              "title": "Types of Volcanoes",
+              "description": "Why do some volcanoes erupt gently while others explode? Investigate how magma, gas, and rock decide whether an eruption quietly oozes or violently blows its top.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_types-of-volcanoes.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "hotspot-volcanoes",
+              "title": "Hotspot Volcanoes",
+              "description": "How can a chain of volcanoes rise in the middle of a plate, far from any boundary? Follow a trail of islands that reveals a plate drifting slowly over a deep, fixed source of heat.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_hotspot-volcanoes.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "weathering-and-erosion",
+              "title": "Weathering & Erosion",
+              "description": "How can solid rock turn into sand and soil? Explore the slow forces of water, wind, and ice that break mountains down and carry the pieces across the planet.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_weathering-and-erosion.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "water-cycle",
+              "title": "The Water Cycle",
+              "description": "Where can water go after rain? Explore storage and many connected pathways within Earth, a closed system for water, and explain the different roles of solar energy and gravity.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_water-cycle.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "renewable-and-nonrenewable-resources",
+              "title": "Renewable & Nonrenewable Resources",
+              "description": "Use historical NYC water evidence to argue how technology could reduce demand as population grows. Review resource types and connect population, average use per person, and total consumption.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_renewable-and-nonrenewable-resources.html",
+                  "label": "Lesson"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "physical-science",
+      "gated": false,
+      "gradeBlocks": [
+        {
+          "grade": "6",
+          "units": [
+            {
+              "slug": "measuring-matter",
+              "title": "Measuring Matter",
+              "description": "How can numbers describe a piece of matter? Learn how measuring mass, volume, and density lets scientists compare substances and even figure out what something is made of.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_measuring-matter.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "physical-properties",
+              "title": "Physical Properties",
+              "description": "How can you identify a material without changing what it is? Explore the physical properties, like hardness, melting point, and conductivity, that let us describe and sort matter.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_physical-properties.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "pure-substances-and-mixtures",
+              "title": "Pure Substances & Mixtures",
+              "description": "What's the difference between a pure substance and a mixture? Explore elements, compounds, solutions, and how mixtures can be separated.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_pure-substances-and-mixtures.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "chemical-reactions",
+              "title": "Chemical Reactions",
+              "description": "When new substances form, atoms rearrange. Investigate the signs of chemical change, conservation of mass, and reactions all around you.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_chemical-reactions.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "extension",
+                  "filename": "extension_hidden-world-of-matter.html",
+                  "label": "Hidden World"
+                }
+              ]
+            },
+            {
+              "slug": "nature-of-waves",
+              "title": "Nature of Waves",
+              "description": "What's actually moving when a wave travels? Investigate how waves transfer energy without moving matter, and discover the difference between mechanical and electromagnetic waves.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_nature-of-waves.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "investigation",
+                  "filename": "investigation_amplitude-challenge.html",
+                  "label": "Amplitude Challenge"
+                }
+              ]
+            },
+            {
+              "slug": "wave-behavior",
+              "title": "Wave Behavior",
+              "description": "A door, a window, a brick wall - same sound, same light, three completely different outcomes. Explore how waves are reflected, absorbed, or transmitted when they hit different materials.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_wave-behavior.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "digital-signals",
+              "title": "Digital Signals",
+              "description": "How can a FaceTime call travel across the world and still sound clear? Discover digital signals, binary code, and the encode-transmit-decode journey.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_digital-signals.html",
+                  "label": "Lesson"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "grade": "7",
+          "units": [
+            {
+              "slug": "forms-of-energy",
+              "title": "Forms of Energy",
+              "description": "Energy is never created or destroyed, so where does it actually go? Discover the many forms energy can take and how it constantly changes from one into another.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_forms-of-energy.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "energy-transfer",
+              "title": "Energy Transfer",
+              "description": "What makes a moving object speed up, slow down, or change direction? Explore how energy moves between objects to cause every change in motion around you.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_energy-transfer.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "heat-transfer",
+              "title": "Heat Transfer",
+              "description": "Why does a metal spoon turn hot in soup while the handle stays cool? Investigate how thermal energy always flows from warmer things to cooler ones.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_heat-transfer.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "introduction-to-electricity",
+              "title": "Introduction to Electricity",
+              "description": "Why do you get a shock after shuffling across a carpet, and what does that have to do with lightning? Explore the invisible forces that push electric charge from place to place.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_introduction-to-electricity.html",
+                  "label": "Lesson"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "tech-engineering",
+      "gated": false,
+      "gradeBlocks": [
+        {
+          "grade": "6",
+          "units": [
+            {
+              "slug": "conducting-experiments",
+              "title": "How to Conduct Experiments",
+              "description": "Learn how scientists build fair tests, identify variables, make observations, and use evidence to draw conclusions.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_conducting-experiments.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "engineering-design",
+              "title": "Engineering Design",
+              "description": "How do engineers turn a problem into a working solution? Walk through the design process of building, testing, and improving that engineers use to tackle real-world challenges.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_engineering-design.html",
+                  "label": "Lesson"
+                },
+                {
+                  "type": "challenge",
+                  "filename": "challenge_welcome-to-floatia.html",
+                  "label": "Build-a-Boat"
+                }
+              ]
+            },
+            {
+              "slug": "choosing-materials",
+              "title": "Choosing Materials",
+              "description": "Why isn't a bicycle made entirely from one material? Discover how engineers match material properties to the demands of the problem they are solving.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_choosing-materials.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "designing-to-scale",
+              "title": "Designing to Scale",
+              "description": "A great idea is only useful if someone else can build it. Learn how engineers use scale drawings to communicate a design so anyone can follow it exactly.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_designing-to-scale.html",
+                  "label": "Lesson"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "grade": "7",
+          "units": [
+            {
+              "slug": "design-tradeoffs",
+              "title": "Design Tradeoffs",
+              "description": "Why can't engineers make something faster, cheaper, and stronger all at once? Discover how every design balances competing goals, and how engineers decide what matters most.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_design-tradeoffs.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "structural-systems",
+              "title": "Structural Systems",
+              "description": "What keeps a bridge standing and a tower from toppling over? Explore how structures carry loads and stand up to the forces constantly pushing and pulling on them.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_structural-systems.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "transportation-systems",
+              "title": "Transportation Systems",
+              "description": "How does a car, plane, or train move people and goods from place to place? Break a transportation system into the smaller subsystems that each do a different job.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_transportation-systems.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "communication-systems",
+              "title": "Communication Systems",
+              "description": "How does a message travel across the world in an instant? Compare the systems that send information and figure out why each one fits a different situation.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_communication-systems.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "engineering-systems",
+              "title": "Engineering Systems",
+              "description": "Why can one small failure bring an entire system crashing down? Explore how the parts of a system interact, and why each one depends on the others to work.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_engineering-systems.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "technology-and-society",
+              "title": "Technology and Society",
+              "description": "How can a single invention change the way millions of people live? Examine the ripple effects a technology can have on daily life, work, and the environment.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_technology-and-society.html",
+                  "label": "Lesson"
+                }
+              ]
+            },
+            {
+              "slug": "innovation-and-sustainability",
+              "title": "Innovation and Sustainability",
+              "description": "How does technology keep getting better, and at what cost? Explore how engineers improve their designs while meeting human needs without harming the planet.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_innovation-and-sustainability.html",
+                  "label": "Lesson"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "behavioral-science",
+      "gated": true,
+      "gradeBlocks": [
+        {
+          "grade": "6",
+          "units": [
+            {
+              "slug": "ragebaiting",
+              "title": "Rage Baiting & Media Manipulation",
+              "description": "How outrage is engineered online, why your brain falls for it, and how to become a smarter media consumer.",
+              "resources": [
+                {
+                  "type": "lesson",
+                  "filename": "lesson_ragebaiting.html",
+                  "label": "Lesson"
+                }
+              ]
+            }
+          ],
+          "placeholderUnits": 2
+        }
+      ]
+    }
+  ]
+}
