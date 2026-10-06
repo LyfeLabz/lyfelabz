@@ -26,9 +26,9 @@
  *     soda;
  *   - the structured Claim / Evidence / Reasoning model renders into the
  *     uncertified preview while ce-data stays byte-identical;
- *   - the Lab Report Assistant link successor prb4fd72c... keeps the certified
- *     ap1acc72... binding and reproduces byte for byte; both earlier artifacts
- *     stay retained and byte-unchanged.
+ *   - the neutral Tool successor prb5acbc... keeps the certified ap1acc72...
+ *     binding and reproduces byte for byte; all earlier artifacts stay
+ *     retained and byte-unchanged.
  *
  * Nothing here writes to the repository.
  */
@@ -51,9 +51,10 @@ const PR4BD0 = "pr4bd0e1dbe22e7b6db874dd16f4ff7313b19ed1b470acfae3dabbfdc96b3500
 // Historical Quiz Results Polish revision, same ap1acc72... binding.
 const PR7715 = "pr7715ff14a5d647f518fffe2f8af8de8cfd843a2739a3a32172a14d5363465e5e";
 const PRB4FD7 = "prb4fd72c335c360c7c4a6ee8921dd244ad56aa9827526b1fb57d69e6c0d1c5fac";
+const PRB5ACB = "prb5acbc038613c1a3473febc56cc1981ddfa028ff0990e8d4237e8951e6c247a0";
 // The deterministic unbound (declared-r1) build of the proposed configuration.
 // Never retained; it pins the proposed build's exact bytes.
-const PR04FA = "pr04faf965316f9ef944d6bdc2be692b8c8c8dcfad38177cbf8691bbe79e9d7fb4";
+const PR_UNBOUND_CURRENT = "pr90839a00322b1521076f0ca6c88ba5f0c6b9d998c07c2a0cd24a9bb7cde33d4b";
 const DRAFT = path.join(paths.REPO_ROOT, "lesson-sources/variants/conducting-experiments.reading-adapted.assessment.json");
 
 const PROPOSED_VARIANT = {
@@ -143,7 +144,7 @@ describe("proposed variant configuration", () => {
 describe("variant source passes every F5.2 gate against canonical r1", () => {
   test("invariance, equivalence, quiz identity and fidelity, determinism", () => {
     // buildAuthoredVariant throws on any gate failure.
-    expect(built.presentationRevisionId).toBe(PR04FA);
+    expect(built.presentationRevisionId).toBe(PR_UNBOUND_CURRENT);
     expect(built.assessmentRevisions).toEqual(["conducting-experiments.r1.json"]);
     expect(built.assessmentRevisionBasis).toBe("declared");
     expect(built.recordedAssessmentRevisionId).toBe(R1);
@@ -330,6 +331,7 @@ describe("uncertified preview", () => {
 describe("certified and retained", () => {
   const { sha256Hex } = require("../hash.cjs");
   const manifestMod = require("../variantManifest.cjs");
+  const CURRENT = `app/lessons/variants/lesson_${SLUG}__${PRB5ACB}.html`;
   const RETAINED = `app/lessons/variants/lesson_${SLUG}__${PRB4FD7}.html`;
   const PREVIOUS = `app/lessons/variants/lesson_${SLUG}__${PR7715}.html`;
   const HISTORICAL = `app/lessons/variants/lesson_${SLUG}__${PR4BD0}.html`;
@@ -343,15 +345,15 @@ describe("certified and retained", () => {
     expect(AP.loadReview(AP1ACC)).toMatchObject({ reviewer: { role: "owner" }, determination: "approved" });
   });
 
-  test("the declared variant builds to the retained Lab Report Assistant link artifact, byte for byte", () => {
+  test("the declared variant builds to the retained neutral Tool artifact, byte for byte", () => {
     const bound = variantSource.buildAuthoredVariant({ slug: SLUG, variantKey: KEY });
-    expect(bound.presentationRevisionId).toBe(PRB4FD7);
+    expect(bound.presentationRevisionId).toBe(PRB5ACB);
     expect(bound.assessmentBinding).toEqual({ assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
-    const bytes = fs.readFileSync(path.join(paths.REPO_ROOT, RETAINED), "utf8");
+    const bytes = fs.readFileSync(path.join(paths.REPO_ROOT, CURRENT), "utf8");
     expect(bound.bytes).toBe(bytes);
-    expect(`pr${sha256Hex(bytes)}`).toBe(PRB4FD7);
+    expect(`pr${sha256Hex(bytes)}`).toBe(PRB5ACB);
     // The retained bytes are the approved preview without its review marking.
-    expect(preview.projectedPresentationRevisionId).toBe(PRB4FD7);
+    expect(preview.projectedPresentationRevisionId).toBe(PRB5ACB);
     expect(bytes).not.toContain("UNCERTIFIED");
   });
 
@@ -363,6 +365,7 @@ describe("certified and retained", () => {
     const previous = fs.readFileSync(path.join(paths.REPO_ROOT, PREVIOUS), "utf8");
     const current = fs.readFileSync(path.join(paths.REPO_ROOT, RETAINED), "utf8");
     expect(`pr${sha256Hex(previous)}`).toBe(PR7715);
+    expect(`pr${sha256Hex(current)}`).toBe(PRB4FD7);
     const more = (html) => between(html, '<section id="continue">', "</section>");
     expect(more(current)).toContain('href="/tool_lab-report-assistant.html"');
     expect(current.replace(more(current), more(previous)).replaceAll('.cont-card.tool', '.cont-card.ext')).toBe(previous);
@@ -370,18 +373,19 @@ describe("certified and retained", () => {
 
   test("the manifest records the binding, and variants:verify sees it as retained", () => {
     const entries = manifestMod.readManifest().filter((e) => e.lessonSlug === SLUG);
-    // Append-only: the earlier revision first, then its successor, same binding.
-    expect(entries.map((e) => e.presentationRevisionId)).toEqual([PR4BD0, PR7715, PRB4FD7]);
+    // Append-only: each earlier revision precedes the current one, same binding.
+    expect(entries.map((e) => e.presentationRevisionId)).toEqual([PR4BD0, PR7715, PRB4FD7, PRB5ACB]);
     expect(entries[0]).toMatchObject({ variantKey: KEY, path: HISTORICAL, assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
     expect(entries[1]).toMatchObject({ variantKey: KEY, path: PREVIOUS, assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
     expect(entries[2]).toMatchObject({ variantKey: KEY, path: RETAINED, assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
+    expect(entries[3]).toMatchObject({ variantKey: KEY, path: CURRENT, assessmentRevisionId: R1, assessmentPresentationRevisionId: AP1ACC });
     const res = variantSource.checkAuthoredVariants();
     expect(res.failures).toEqual([]);
-    expect(res.checked).toContainEqual({ label: `${SLUG}/${KEY}`, presentationRevisionId: PRB4FD7, retained: true });
+    expect(res.checked).toContainEqual({ label: `${SLUG}/${KEY}`, presentationRevisionId: PRB5ACB, retained: true });
   });
 
   test("the delivered artifact carries the canonical ce-data block and three choices per item", () => {
-    const bytes = fs.readFileSync(path.join(paths.REPO_ROOT, RETAINED), "utf8");
+    const bytes = fs.readFileSync(path.join(paths.REPO_ROOT, CURRENT), "utf8");
     const block = (html) => between(html, '<div class="ce-data" id="ce-data">', '<p class="ce-think-prompt">');
     expect(block(bytes)).toBe(block(canonicalV2));
     const binding = JSON.parse(between(bytes, '<script type="application/json" id="lyfelabz-assessment-presentation">', "</script>").split(">").slice(1).join(">"));
