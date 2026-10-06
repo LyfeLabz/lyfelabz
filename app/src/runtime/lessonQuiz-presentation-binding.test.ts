@@ -76,12 +76,14 @@ function setBinding(content: string, attrs = 'type="application/json"'): void {
     '<div id="xx-quiz-questions"></div>';
 }
 
+const AP_ID = `ap${"a".repeat(64)}`;
+
 function binding(items: Array<{ itemId: string; optionIds: string[] }>): string {
   return JSON.stringify({
     schemaVersion: 1,
     lessonSlug: "synthetic-lesson",
     assessmentRevisionId: "assessment_synthetic-lesson__r1",
-    assessmentPresentationRevisionId: `ap${"a".repeat(64)}`,
+    assessmentPresentationRevisionId: AP_ID,
     items,
   });
 }
@@ -202,7 +204,11 @@ describe("malformed presentation binding fails closed (no positional fallback)",
   it("readPresentationBinding reports none, bound, and malformed precisely", () => {
     expect(__internal.readPresentationBinding(document)).toEqual({ kind: "none" });
     setBinding(binding(good));
-    expect(__internal.readPresentationBinding(document)).toEqual({ kind: "bound", items: good });
+    expect(__internal.readPresentationBinding(document)).toEqual({
+      kind: "bound",
+      items: good,
+      assessmentPresentationRevisionId: AP_ID,
+    });
     setBinding("[]");
     expect(__internal.readPresentationBinding(document)).toMatchObject({ kind: "malformed" });
   });

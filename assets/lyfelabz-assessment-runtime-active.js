@@ -7868,6 +7868,35 @@
     let finalizePromise = null;
     let finalizedState = null;
     let integrityError = null;
+    let persisted = [];
+    function adoptPersisted(state) {
+      if (state.responses.length === 0) {
+        persisted = [];
+        return;
+      }
+      try {
+        persisted = input.adoptPersisted === void 0 ? state.responses : input.adoptPersisted(state);
+      } catch {
+        persisted = [];
+      }
+    }
+    function withPersisted(responses) {
+      if (persisted.length === 0) return responses;
+      const answered = new Set(responses.map((r) => r.itemId));
+      const missing = persisted.filter((r) => !answered.has(r.itemId));
+      return missing.length === 0 ? responses : [...responses, ...missing];
+    }
+    function verifyRevision(serverRevision) {
+      if (input.verifyAssessmentRevision === void 0) return;
+      const verdict = input.verifyAssessmentRevision(
+        isNonEmptyString(serverRevision) ? serverRevision : void 0
+      );
+      if (!verdict.ok) {
+        integrityError = new AssessmentRevisionIntegrityError(verdict.reason);
+        mode = "error";
+        throw integrityError;
+      }
+    }
     function guardActive() {
       if (destroyed) {
         throw new Error("assessment runtime has been destroyed");
@@ -7896,18 +7925,13 @@
           if (!isNonEmptyString(outcome.sessionId)) {
             throw new Error("callable returned an empty sessionId");
           }
-          if (input.verifyAssessmentRevision !== void 0) {
-            const verdict = input.verifyAssessmentRevision(
-              isNonEmptyString(outcome.assessmentRevisionId) ? outcome.assessmentRevisionId : void 0
-            );
-            if (!verdict.ok) {
-              integrityError = new AssessmentRevisionIntegrityError(verdict.reason);
-              mode = "error";
-              throw integrityError;
-            }
-          }
+          verifyRevision(outcome.assessmentRevisionId);
           sessionId = outcome.sessionId;
           mode = "active";
+          adoptPersisted({
+            responses: outcome.responses ?? [],
+            ...isNonEmptyString(outcome.assessmentPresentationRevisionId) ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId } : {}
+          });
         } catch (err) {
           if (err instanceof AssessmentRevisionIntegrityError) throw err;
           if (!destroyed) {
@@ -7939,7 +7963,8 @@
       if (sessionId === null) {
         throw new Error("session was not established");
       }
-      const serialized = serialize(responses, writtenResponse);
+      const payload = withPersisted(responses);
+      const serialized = serialize(payload, writtenResponse);
       if (lastAutosaveSerialized === serialized) {
         return { persisted: false };
       }
@@ -7949,7 +7974,7 @@
       const activeSessionId = sessionId;
       inflightAutosave = (async () => {
         try {
-          const result = writtenResponse === void 0 ? await callables.autosave(activeSessionId, responses) : await callables.autosave(activeSessionId, responses, writtenResponse);
+          const result = writtenResponse === void 0 ? await callables.autosave(activeSessionId, payload) : await callables.autosave(activeSessionId, payload, writtenResponse);
           if (!destroyed) {
             lastAutosaveSerialized = serialized;
           }
@@ -7997,6 +8022,7 @@
           if (!destroyed) {
             finalizedState = { result, idempotencyKey: key };
             mode = "finalized";
+            persisted = [];
           }
           return result;
         } catch (err) {
@@ -8168,7 +8194,8 @@
       }
       items.push({ itemId: item.itemId, optionIds });
     }
-    return { kind: "bound", items };
+    const apId = root.assessmentPresentationRevisionId;
+    return typeof apId === "string" && BINDING_TOKEN_RE.test(apId) ? { kind: "bound", items, assessmentPresentationRevisionId: apId } : { kind: "bound", items };
   }
   function mapSelectionsForBinding(indexSelections, binding) {
     if (binding.kind === "none") return mapIndexSelectionsToResponses(indexSelections);
@@ -8192,6 +8219,82 @@
       out.push({ itemId: item.itemId, response: item.optionIds[idx] });
     }
     return out;
+  }
+  var CANONICAL_ITEM_RE = /^q([1-9][0-9]{0,3})$/;
+  function locatePersistedResponse(response, binding) {
+    if (typeof response.response !== "string") return null;
+    if (binding.kind === "malformed") return null;
+    if (binding.kind === "bound") {
+      const qi = binding.items.findIndex((item) => item.itemId === response.itemId);
+      if (qi < 0) return null;
+      const oi2 = binding.items[qi].optionIds.indexOf(response.response);
+      return oi2 < 0 ? null : { qi, oi: oi2 };
+    }
+    const match = CANONICAL_ITEM_RE.exec(response.itemId);
+    if (match === null) return null;
+    const oi = OPTION_LETTERS.indexOf(response.response);
+    return oi < 0 ? null : { qi: Number(match[1]) - 1, oi };
+  }
+  function presentationMatchesSession(binding, state) {
+    if (binding.kind === "malformed") return false;
+    const page = binding.kind === "bound" ? binding.assessmentPresentationRevisionId : void 0;
+    return (page ?? null) === (state.assessmentPresentationRevisionId ?? null);
+  }
+  var QUIZ_OPTION_ONCLICK_RE = /SelectAnswer\(\s*(\d+)\s*,\s*(\d+)\s*\)/;
+  function quizOptionButtons(doc) {
+    const out = /* @__PURE__ */ new Map();
+    for (const el of Array.from(doc.querySelectorAll("button.quiz-option"))) {
+      const match = QUIZ_OPTION_ONCLICK_RE.exec(el.getAttribute("onclick") ?? "");
+      if (match !== null) out.set(`${match[1]}:${match[2]}`, el);
+    }
+    return out;
+  }
+  function applyRestoredSelections(doc, selections, guard) {
+    const buttons = quizOptionButtons(doc);
+    guard.restoring = true;
+    try {
+      for (const { qi, oi } of selections) {
+        let alreadyChosen = false;
+        for (const [key, el] of buttons) {
+          if (key.startsWith(`${qi}:`) && el.classList.contains("selected")) {
+            alreadyChosen = true;
+            break;
+          }
+        }
+        if (alreadyChosen) continue;
+        const button = buttons.get(`${qi}:${oi}`);
+        if (button === void 0 || button.disabled) continue;
+        button.click();
+      }
+    } finally {
+      guard.restoring = false;
+    }
+  }
+  function adoptPersistedForPage(win, state, guard) {
+    const doc = documentOf(win);
+    if (doc === void 0) return [];
+    const binding = readPresentationBinding(doc);
+    if (!presentationMatchesSession(binding, state)) return [];
+    const kept = [];
+    const selections = [];
+    for (const response of state.responses) {
+      const located = locatePersistedResponse(response, binding);
+      if (located === null) continue;
+      kept.push(response);
+      selections.push(located);
+    }
+    if (selections.length > 0) {
+      if (doc.readyState === "loading") {
+        doc.addEventListener(
+          "DOMContentLoaded",
+          () => applyRestoredSelections(doc, selections, guard),
+          { once: true }
+        );
+      } else {
+        applyRestoredSelections(doc, selections, guard);
+      }
+    }
+    return kept;
   }
   var REVISION_DECLARATION_ELEMENT_ID = "lyfelabz-assessment-revision";
   var FROZEN_REVISION_RE = /^assessment_([a-z0-9]+(?:-[a-z0-9]+)*)__r([1-9][0-9]*)$/;
@@ -8311,7 +8414,7 @@
     } catch {
     }
   }
-  function installLessonQuiz(win, runtime, hasAssignmentContext) {
+  function installLessonQuiz(win, runtime, hasAssignmentContext, restoreGuard = { restoring: false }) {
     const mapSelections = (indexSelections) => mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win)));
     const helper = {
       version: VERSION,
@@ -8320,6 +8423,7 @@
       mapIndexSelectionsToResponses: mapSelections,
       autosave: async (indexSelections) => {
         if (runtime === null || !runtime.hasAssignmentContext) return null;
+        if (restoreGuard.restoring) return null;
         let responses;
         try {
           responses = mapSelections(indexSelections);
@@ -8512,6 +8616,20 @@
     const autosave = httpsCallable(functions, "assessmentSessionsAutosave");
     const finalize = httpsCallable(functions, "assessmentAttemptsFinalize");
     const getAttempt = httpsCallable(functions, "assessmentAttemptGet");
+    const persistedOf = (data) => {
+      const responses = [];
+      if (Array.isArray(data.responses)) {
+        for (const entry of data.responses) {
+          if (!isRecord(entry)) continue;
+          const { itemId, response } = entry;
+          if (typeof itemId !== "string" || itemId.length === 0) continue;
+          if (typeof response !== "string" || response.length === 0) continue;
+          responses.push({ itemId, response });
+        }
+      }
+      const apId = data.assessmentPresentationRevisionId;
+      return typeof apId === "string" && apId.length > 0 ? { responses, assessmentPresentationRevisionId: apId } : { responses };
+    };
     return {
       begin: async (assignmentId, launchRef) => {
         const payload = typeof launchRef === "string" && launchRef.length > 0 ? { assignmentId, launchRef } : { assignmentId };
@@ -8525,7 +8643,8 @@
         return {
           sessionId,
           alreadyLive: data.alreadyLive === true,
-          ...assessmentRevisionId !== void 0 ? { assessmentRevisionId } : {}
+          ...assessmentRevisionId !== void 0 ? { assessmentRevisionId } : {},
+          ...persistedOf(data)
         };
       },
       autosave: async (sessionId, responses, writtenResponse) => {
@@ -8592,7 +8711,7 @@
     ns[LESSON_QUIZ_KEY] = helper;
     win[NAMESPACE] = ns;
   }
-  function attachRuntimeAdapter(win, runtime) {
+  function attachRuntimeAdapter(win, runtime, restoreGuard) {
     const wrapper = {
       version: runtime.version,
       get mode() {
@@ -8608,7 +8727,7 @@
     const ns = win[NAMESPACE] ?? {};
     ns[RUNTIME_KEY] = wrapper;
     win[NAMESPACE] = ns;
-    installLessonQuiz(win, runtime, runtime.hasAssignmentContext);
+    installLessonQuiz(win, runtime, runtime.hasAssignmentContext, restoreGuard);
   }
   async function bootstrap(win) {
     const assignmentId = detectAssignmentId(win);
@@ -8639,6 +8758,7 @@
       return;
     }
     const callables = createBackedCallables(functions);
+    const restoreGuard = { restoring: false };
     const runtime = createAssessmentRuntime({
       version: VERSION,
       assignmentId,
@@ -8647,12 +8767,19 @@
       env: { randomId: randomIdempotencyKey },
       // F5.3 Slice 9D: read at begin time (the deferred runtime runs after the
       // document is parsed), before any response can be sent.
-      verifyAssessmentRevision: (serverRevision) => verifyPageAssessmentRevision(readPageAssessmentRevision(documentOf(win)), serverRevision)
+      verifyAssessmentRevision: (serverRevision) => verifyPageAssessmentRevision(readPageAssessmentRevision(documentOf(win)), serverRevision),
+      // Quiz session continuity: keep and restore only what this page displays.
+      adoptPersisted: (state) => adoptPersistedForPage(win, state, restoreGuard)
     });
-    attachRuntimeAdapter(runtimeWin, runtime);
+    attachRuntimeAdapter(runtimeWin, runtime, restoreGuard);
+    void runtime.begin().catch((err) => {
+      recordLastError(runtimeWin, "begin", err);
+    });
   }
   var __internal = {
     installLessonQuiz,
+    adoptPersistedForPage,
+    locatePersistedResponse,
     readPresentationBinding,
     mapSelectionsForBinding,
     readPageAssessmentRevision,

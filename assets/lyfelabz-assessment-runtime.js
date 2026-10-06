@@ -554,6 +554,64 @@
 
   installStudentNavigation();
 
+  // Quiz session continuity: keep the launch context on the URL across
+  // in-page navigation. The launcher hands the assignment context over in the
+  // URL FRAGMENT (`#assignment=<id>[&launchRef=<ref>]`). Following any
+  // ordinary in-page link (sticky nav "Quiz" is `href="#quiz"`, the skip link
+  // is `#main`) REPLACES the whole fragment, so a later reload of `...#quiz`
+  // carried no assignment context and booted as a standalone lesson: no
+  // session, no restored answers, and answers not saved. When a same-document
+  // navigation drops the launch parameters this re-attaches the ORIGINAL ones
+  // to the current history entry (`#quiz&assignment=<id>`; the runtime reads
+  // the fragment as URL parameters). It never navigates, never scrolls, and
+  // never touches a page that was not launched with fragment context
+  // (standalone, practice, or a legacy query-form launch whose query already
+  // survives in-page links). The fragment never reaches the server.
+  function installLaunchContextPreservation() {
+    try {
+      var loc = window.location;
+      var hist = window.history;
+      if (!loc || !hist || typeof hist.replaceState !== 'function') return;
+      if (typeof window.addEventListener !== 'function') return;
+      var launchHash = (loc.hash || '').replace(/^#/, '');
+      var launchParams = [];
+      var parts = launchHash.split('&');
+      for (var i = 0; i < parts.length; i++) {
+        var key = parts[i].split('=')[0];
+        if (key === 'assignment' || key === 'launchRef') launchParams.push(parts[i]);
+      }
+      var hasFragmentAssignment = false;
+      for (var j = 0; j < launchParams.length; j++) {
+        if (launchParams[j].split('=')[0] === 'assignment') hasFragmentAssignment = true;
+      }
+      if (!hasFragmentAssignment) return;
+
+      window.addEventListener('hashchange', function () {
+        try {
+          var current = (loc.hash || '').replace(/^#/, '');
+          var present = {};
+          var currentParts = current.length > 0 ? current.split('&') : [];
+          for (var k = 0; k < currentParts.length; k++) {
+            present[currentParts[k].split('=')[0]] = true;
+          }
+          var missing = [];
+          for (var m = 0; m < launchParams.length; m++) {
+            if (!present[launchParams[m].split('=')[0]]) missing.push(launchParams[m]);
+          }
+          if (missing.length === 0) return;
+          var restored = current.length > 0 ? current + '&' + missing.join('&') : missing.join('&');
+          hist.replaceState(hist.state, '', loc.pathname + loc.search + '#' + restored);
+        } catch (_err) {
+          // Never let launch-context upkeep break in-page navigation.
+        }
+      });
+    } catch (_err) {
+      // Never let launch-context upkeep break the lesson.
+    }
+  }
+
+  if (hasAssignmentContext) installLaunchContextPreservation();
+
   if (!hasAssignmentContext) return;
 
   try {

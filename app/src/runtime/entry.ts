@@ -15,6 +15,7 @@ import type {
   AttemptItemResult,
   AttemptSummary,
   FinalizeResult,
+  PersistedSessionState,
   RuntimeCallables,
   SessionResponse,
 } from "./types";
@@ -95,7 +96,7 @@ import { getFirebaseClientConfig, isEmulatorHost as detectEmulatorHost } from ".
 // "assessment runtime is in an error state" would otherwise mask.
 // Contains no student PII, no auth token, no lesson answer state.
 type RuntimeLastError = {
-  readonly callable: "autosave" | "finalize";
+  readonly callable: "begin" | "autosave" | "finalize";
   readonly code: string | undefined;
   readonly message: string | undefined;
   readonly at: number;
@@ -168,7 +169,12 @@ type PresentationBindingItem = {
 
 type PresentationBinding =
   | { readonly kind: "none" }
-  | { readonly kind: "bound"; readonly items: readonly PresentationBindingItem[] }
+  | {
+      readonly kind: "bound";
+      readonly items: readonly PresentationBindingItem[];
+      // The certified presentation this page displays (root of the block).
+      readonly assessmentPresentationRevisionId?: string;
+    }
   | { readonly kind: "malformed"; readonly reason: string };
 
 class PresentationBindingError extends Error {
@@ -193,7 +199,11 @@ function readPresentationBinding(doc: Document | undefined): PresentationBinding
   } catch {
     return { kind: "malformed", reason: "binding block is not valid JSON" };
   }
-  const root = parsed as { schemaVersion?: unknown; items?: unknown };
+  const root = parsed as {
+    schemaVersion?: unknown;
+    items?: unknown;
+    assessmentPresentationRevisionId?: unknown;
+  };
   if (parsed === null || typeof parsed !== "object" || root.schemaVersion !== 1) {
     return { kind: "malformed", reason: "binding block has an unsupported schemaVersion" };
   }
@@ -223,7 +233,10 @@ function readPresentationBinding(doc: Document | undefined): PresentationBinding
     }
     items.push({ itemId: item.itemId, optionIds: optionIds as string[] });
   }
-  return { kind: "bound", items };
+  const apId = root.assessmentPresentationRevisionId;
+  return typeof apId === "string" && BINDING_TOKEN_RE.test(apId)
+    ? { kind: "bound", items, assessmentPresentationRevisionId: apId }
+    : { kind: "bound", items };
 }
 
 // Maps the lesson's per-question display-index selections to responses for
@@ -254,6 +267,128 @@ function mapSelectionsForBinding(
     out.push({ itemId: item.itemId, response: item.optionIds[idx]! });
   }
   return out;
+}
+
+// Quiz session continuity - restoring persisted answers after a reload.
+//
+// The inverse of `mapSelectionsForBinding`: a persisted `{itemId, response}`
+// is located on THIS page by stable identity (the binding's itemId and
+// optionId on a presentation-bound page; the canonical `q<n>` item and
+// positional letter on a canonical page, where option ids ARE the letters),
+// never by a guessed position. A response this page does not display is not
+// restorable. A page whose presentation is not the session's frozen
+// presentation restores nothing at all.
+type QuizSelection = { readonly qi: number; readonly oi: number };
+
+const CANONICAL_ITEM_RE = /^q([1-9][0-9]{0,3})$/;
+
+function locatePersistedResponse(
+  response: SessionResponse,
+  binding: PresentationBinding,
+): QuizSelection | null {
+  if (typeof response.response !== "string") return null;
+  if (binding.kind === "malformed") return null;
+  if (binding.kind === "bound") {
+    const qi = binding.items.findIndex((item) => item.itemId === response.itemId);
+    if (qi < 0) return null;
+    const oi = binding.items[qi]!.optionIds.indexOf(response.response);
+    return oi < 0 ? null : { qi, oi };
+  }
+  const match = CANONICAL_ITEM_RE.exec(response.itemId);
+  if (match === null) return null;
+  const oi = (OPTION_LETTERS as readonly string[]).indexOf(response.response);
+  return oi < 0 ? null : { qi: Number(match[1]) - 1, oi };
+}
+
+function presentationMatchesSession(
+  binding: PresentationBinding,
+  state: PersistedSessionState,
+): boolean {
+  if (binding.kind === "malformed") return false;
+  const page = binding.kind === "bound" ? binding.assessmentPresentationRevisionId : undefined;
+  return (page ?? null) === (state.assessmentPresentationRevisionId ?? null);
+}
+
+// Every lesson quiz renders each choice as
+//   <button class="quiz-option" onclick="<prefix>SelectAnswer(qi, oi)">
+// (one shared pattern across every lesson source). Selecting through that
+// button runs the lesson's own handler, so the lesson's state, progress bar,
+// and submit gate update exactly as for a student's click.
+const QUIZ_OPTION_ONCLICK_RE = /SelectAnswer\(\s*(\d+)\s*,\s*(\d+)\s*\)/;
+
+function quizOptionButtons(doc: Document): Map<string, HTMLElement> {
+  const out = new Map<string, HTMLElement>();
+  for (const el of Array.from(doc.querySelectorAll<HTMLElement>("button.quiz-option"))) {
+    const match = QUIZ_OPTION_ONCLICK_RE.exec(el.getAttribute("onclick") ?? "");
+    if (match !== null) out.set(`${match[1]}:${match[2]}`, el);
+  }
+  return out;
+}
+
+// While restoring, the lesson's own handler calls lessonQuiz.autosave with a
+// partially rebuilt selection; those calls are suppressed (the server already
+// holds every restored answer).
+type RestoreGuard = { restoring: boolean };
+
+function applyRestoredSelections(
+  doc: Document,
+  selections: readonly QuizSelection[],
+  guard: RestoreGuard,
+): void {
+  const buttons = quizOptionButtons(doc);
+  guard.restoring = true;
+  try {
+    for (const { qi, oi } of selections) {
+      // The student already chose for this question on this page: keep it.
+      let alreadyChosen = false;
+      for (const [key, el] of buttons) {
+        if (key.startsWith(`${qi}:`) && el.classList.contains("selected")) {
+          alreadyChosen = true;
+          break;
+        }
+      }
+      if (alreadyChosen) continue;
+      const button = buttons.get(`${qi}:${oi}`);
+      if (button === undefined || (button as HTMLButtonElement).disabled) continue;
+      button.click();
+    }
+  } finally {
+    guard.restoring = false;
+  }
+}
+
+// The orchestrator's `adoptPersisted` hook for a lesson page: answers which
+// persisted responses this page can display (the autosave baseline) and
+// restores them into the quiz UI.
+function adoptPersistedForPage(
+  win: Window,
+  state: PersistedSessionState,
+  guard: RestoreGuard,
+): readonly SessionResponse[] {
+  const doc = documentOf(win);
+  if (doc === undefined) return [];
+  const binding = readPresentationBinding(doc);
+  if (!presentationMatchesSession(binding, state)) return [];
+  const kept: SessionResponse[] = [];
+  const selections: QuizSelection[] = [];
+  for (const response of state.responses) {
+    const located = locatePersistedResponse(response, binding);
+    if (located === null) continue;
+    kept.push(response);
+    selections.push(located);
+  }
+  if (selections.length > 0) {
+    if (doc.readyState === "loading") {
+      doc.addEventListener(
+        "DOMContentLoaded",
+        () => applyRestoredSelections(doc, selections, guard),
+        { once: true },
+      );
+    } else {
+      applyRestoredSelections(doc, selections, guard);
+    }
+  }
+  return kept;
 }
 
 // F5.3 Slice 9D (addendum 21.4): the assessment revision a page DISPLAYS.
@@ -472,6 +607,7 @@ function installLessonQuiz(
   win: WindowWithRuntime,
   runtime: AssessmentRuntime | null,
   hasAssignmentContext: boolean,
+  restoreGuard: RestoreGuard = { restoring: false },
 ): void {
   // Read at call time (the lesson DOM is complete by the first answer), so a
   // runtime that loads before the page finishes parsing still sees the block.
@@ -485,6 +621,7 @@ function installLessonQuiz(
     mapIndexSelectionsToResponses: mapSelections,
     autosave: async (indexSelections) => {
       if (runtime === null || !runtime.hasAssignmentContext) return null;
+      if (restoreGuard.restoring) return null;
       let responses: readonly SessionResponse[];
       try {
         responses = mapSelections(indexSelections);
@@ -702,6 +839,27 @@ function createBackedCallables(functions: Functions): RuntimeCallables {
   const autosave = httpsCallable(functions, "assessmentSessionsAutosave");
   const finalize = httpsCallable(functions, "assessmentAttemptsFinalize");
   const getAttempt = httpsCallable(functions, "assessmentAttemptGet");
+  // Quiz session continuity: persisted responses on a Live session's replay.
+  // Only well-formed `{itemId, response}` string pairs are accepted.
+  const persistedOf = (data: Record<string, unknown>): {
+    readonly responses: readonly SessionResponse[];
+    readonly assessmentPresentationRevisionId?: string;
+  } => {
+    const responses: SessionResponse[] = [];
+    if (Array.isArray(data.responses)) {
+      for (const entry of data.responses as unknown[]) {
+        if (!isRecord(entry)) continue;
+        const { itemId, response } = entry;
+        if (typeof itemId !== "string" || itemId.length === 0) continue;
+        if (typeof response !== "string" || response.length === 0) continue;
+        responses.push({ itemId, response });
+      }
+    }
+    const apId = data.assessmentPresentationRevisionId;
+    return typeof apId === "string" && apId.length > 0
+      ? { responses, assessmentPresentationRevisionId: apId }
+      : { responses };
+  };
   return {
     begin: async (assignmentId, launchRef) => {
       // F5.2 §4.3/§8: send the opaque `launchRef` ONLY when one was transported
@@ -729,6 +887,7 @@ function createBackedCallables(functions: Functions): RuntimeCallables {
         sessionId,
         alreadyLive: data.alreadyLive === true,
         ...(assessmentRevisionId !== undefined ? { assessmentRevisionId } : {}),
+        ...persistedOf(data),
       };
     },
     autosave: async (sessionId, responses, writtenResponse) => {
@@ -805,6 +964,7 @@ function installSignedOutLessonQuiz(win: WindowWithRuntime): void {
 function attachRuntimeAdapter(
   win: WindowWithRuntime,
   runtime: AssessmentRuntime,
+  restoreGuard?: RestoreGuard,
 ): void {
   const wrapper: RuntimeGlobal = {
     version: runtime.version,
@@ -822,7 +982,7 @@ function attachRuntimeAdapter(
   const ns = win[NAMESPACE] ?? {};
   ns[RUNTIME_KEY] = wrapper;
   win[NAMESPACE] = ns;
-  installLessonQuiz(win, runtime, runtime.hasAssignmentContext);
+  installLessonQuiz(win, runtime, runtime.hasAssignmentContext, restoreGuard);
 }
 
 async function bootstrap(win: Window): Promise<void> {
@@ -870,6 +1030,7 @@ async function bootstrap(win: Window): Promise<void> {
   }
 
   const callables = createBackedCallables(functions);
+  const restoreGuard: RestoreGuard = { restoring: false };
   const runtime = createAssessmentRuntime({
     version: VERSION,
     assignmentId,
@@ -880,14 +1041,28 @@ async function bootstrap(win: Window): Promise<void> {
     // document is parsed), before any response can be sent.
     verifyAssessmentRevision: (serverRevision) =>
       verifyPageAssessmentRevision(readPageAssessmentRevision(documentOf(win)), serverRevision),
+    // Quiz session continuity: keep and restore only what this page displays.
+    adoptPersisted: (state) => adoptPersistedForPage(win, state, restoreGuard),
   });
-  attachRuntimeAdapter(runtimeWin, runtime);
+  attachRuntimeAdapter(runtimeWin, runtime, restoreGuard);
+  // Quiz session continuity: the assignment session begins when the assigned
+  // page opens (not at the first answer), so "opened" is distinguishable from
+  // "never started" for the teacher. Begin is idempotent: a reload or a second
+  // tab replays the existing Live session, whose persisted answers are then
+  // restored into the page. A refusal is recorded for diagnostics and leaves
+  // the runtime exactly where a first-answer begin would have (a recoverable
+  // failure is retried by the first answer).
+  void runtime.begin().catch((err: unknown) => {
+    recordLastError(runtimeWin, "begin", err);
+  });
 }
 
 // Exported for unit tests of the real lesson adapter and callable payloads.
 // Not part of the public runtime API.
 export const __internal = {
   installLessonQuiz,
+  adoptPersistedForPage,
+  locatePersistedResponse,
   readPresentationBinding,
   mapSelectionsForBinding,
   readPageAssessmentRevision,

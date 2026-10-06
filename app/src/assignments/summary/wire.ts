@@ -2,6 +2,7 @@ import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 
 import type {
+  AssignmentStudentProgress,
   AssignmentSummary,
   AssignmentSummaryCallable,
   LessonSummary,
@@ -62,6 +63,8 @@ function parseSummary(raw: CallableRecord): AssignmentSummary {
     );
   }
 
+  const studentProgress = parseStudentProgress(raw.studentProgress);
+
   return Object.freeze({
     assignmentId,
     classId,
@@ -74,7 +77,35 @@ function parseSummary(raw: CallableRecord): AssignmentSummary {
     highestPercentage,
     lowestPercentage,
     perfectScoreStudents,
+    ...(studentProgress === undefined ? {} : { studentProgress }),
   });
+}
+
+// Opt-in per-student progress. Each row is re-projected to exactly the four
+// count fields; anything else the server might add is dropped, and a
+// malformed row fails the whole parse loudly like the aggregate fields.
+function parseStudentProgress(
+  raw: unknown,
+): ReadonlyArray<AssignmentStudentProgress> | undefined {
+  if (raw === undefined) return undefined;
+  if (!Array.isArray(raw)) {
+    throw new Error("assessmentAssignmentSummary returned an unexpected shape.");
+  }
+  return Object.freeze(
+    raw.map((row: unknown): AssignmentStudentProgress => {
+      const r = (row ?? {}) as CallableRecord;
+      const { studentId, answered, total, retake } = r;
+      if (
+        !isString(studentId) ||
+        !isFiniteNumber(answered) ||
+        !(total === null || isFiniteNumber(total)) ||
+        typeof retake !== "boolean"
+      ) {
+        throw new Error("assessmentAssignmentSummary returned an unexpected shape.");
+      }
+      return Object.freeze({ studentId, answered, total, retake });
+    }),
+  );
 }
 
 export function createAssignmentSummaryCallable(
@@ -82,7 +113,11 @@ export function createAssignmentSummaryCallable(
 ): AssignmentSummaryCallable {
   const callable = httpsCallable(functions, "assessmentAssignmentSummary");
   return async (input) => {
-    const res = await callable({ assignmentId: input.assignmentId });
+    const res = await callable(
+      input.includeStudentProgress === true
+        ? { assignmentId: input.assignmentId, includeStudentProgress: true }
+        : { assignmentId: input.assignmentId },
+    );
     const data = (res.data ?? {}) as CallableRecord;
     return parseSummary(data);
   };

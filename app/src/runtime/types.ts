@@ -65,7 +65,19 @@ export type BeginCallable = (
   // F5.3 Slice 9C-1/9D: the session's frozen assessment revision (server
   // authority). The runtime verifies the page against it; it never selects one.
   readonly assessmentRevisionId?: string;
+  // Quiz session continuity: on an idempotent replay (alreadyLive), the
+  // student's own persisted responses and the session's frozen presentation
+  // id (differentiated sessions only). Absent on a fresh session.
+  readonly responses?: readonly SessionResponse[];
+  readonly assessmentPresentationRevisionId?: string;
 }>;
+
+// The persisted state an idempotent begin returned, offered to the page so it
+// can decide which responses it can display (and restore).
+export type PersistedSessionState = {
+  readonly responses: readonly SessionResponse[];
+  readonly assessmentPresentationRevisionId?: string;
+};
 
 // F5.3 Slice 9D: verifies that the page displays exactly the server's frozen
 // revision. Receives begin's revision (undefined when begin omitted it).

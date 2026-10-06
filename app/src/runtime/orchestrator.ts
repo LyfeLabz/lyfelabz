@@ -2,6 +2,7 @@ import type {
   AssessmentRevisionVerifier,
   AttemptSummary,
   FinalizeResult,
+  PersistedSessionState,
   RuntimeCallables,
   RuntimeEnv,
   RuntimeMode,
@@ -78,6 +79,13 @@ export type CreateAssessmentRuntimeInput = {
   // state and NOTHING is autosaved or finalized (S9-U3). The server revision
   // is authority; page metadata only verifies it.
   readonly verifyAssessmentRevision?: AssessmentRevisionVerifier;
+  // Quiz session continuity: receives the persisted responses a begin
+  // returned and answers which of them this page can display (and may
+  // restore them into the page). The returned set is the baseline every later
+  // autosave/finalize keeps for items the page has not answered yet, so a
+  // reloaded page can never replace persisted progress with a smaller set.
+  // Omitted: every persisted response is kept. Throwing keeps none.
+  readonly adoptPersisted?: (state: PersistedSessionState) => readonly SessionResponse[];
 };
 
 // F5.3 Slice 9D: the page does not display the assignment's frozen assessment
@@ -152,6 +160,47 @@ export function createAssessmentRuntime(
   let finalizePromise: Promise<FinalizeResult> | null = null;
   let finalizedState: FinalizedState | null = null;
   let integrityError: AssessmentRevisionIntegrityError | null = null;
+  // Persisted responses this page adopted from the Live session (see
+  // `adoptPersisted`). Cleared once the session is finalized.
+  let persisted: readonly SessionResponse[] = [];
+
+  function adoptPersisted(state: PersistedSessionState): void {
+    if (state.responses.length === 0) {
+      persisted = [];
+      return;
+    }
+    try {
+      persisted =
+        input.adoptPersisted === undefined
+          ? state.responses
+          : input.adoptPersisted(state);
+    } catch {
+      persisted = [];
+    }
+  }
+
+  // The page's current responses plus every adopted persisted response for an
+  // item the page has not answered. The page's own answer always wins.
+  function withPersisted(
+    responses: readonly SessionResponse[],
+  ): readonly SessionResponse[] {
+    if (persisted.length === 0) return responses;
+    const answered = new Set(responses.map((r) => r.itemId));
+    const missing = persisted.filter((r) => !answered.has(r.itemId));
+    return missing.length === 0 ? responses : [...responses, ...missing];
+  }
+
+  function verifyRevision(serverRevision: unknown): void {
+    if (input.verifyAssessmentRevision === undefined) return;
+    const verdict = input.verifyAssessmentRevision(
+      isNonEmptyString(serverRevision) ? serverRevision : undefined,
+    );
+    if (!verdict.ok) {
+      integrityError = new AssessmentRevisionIntegrityError(verdict.reason);
+      mode = "error";
+      throw integrityError;
+    }
+  }
 
   function guardActive(): void {
     if (destroyed) {
@@ -185,18 +234,15 @@ export function createAssessmentRuntime(
         // F5.3 Slice 9D: the integrity gate runs BEFORE the session becomes
         // active, so no autosave or finalize can be sent for a page that does
         // not display the frozen revision.
-        if (input.verifyAssessmentRevision !== undefined) {
-          const verdict = input.verifyAssessmentRevision(
-            isNonEmptyString(outcome.assessmentRevisionId) ? outcome.assessmentRevisionId : undefined,
-          );
-          if (!verdict.ok) {
-            integrityError = new AssessmentRevisionIntegrityError(verdict.reason);
-            mode = "error";
-            throw integrityError;
-          }
-        }
+        verifyRevision(outcome.assessmentRevisionId);
         sessionId = outcome.sessionId;
         mode = "active";
+        adoptPersisted({
+          responses: outcome.responses ?? [],
+          ...(isNonEmptyString(outcome.assessmentPresentationRevisionId)
+            ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId }
+            : {}),
+        });
       } catch (err) {
         if (err instanceof AssessmentRevisionIntegrityError) throw err;
         if (!destroyed) {
@@ -233,7 +279,8 @@ export function createAssessmentRuntime(
     if (sessionId === null) {
       throw new Error("session was not established");
     }
-    const serialized = serialize(responses, writtenResponse);
+    const payload = withPersisted(responses);
+    const serialized = serialize(payload, writtenResponse);
     if (lastAutosaveSerialized === serialized) {
       return { persisted: false };
     }
@@ -245,8 +292,8 @@ export function createAssessmentRuntime(
       try {
         const result =
           writtenResponse === undefined
-            ? await callables.autosave(activeSessionId, responses)
-            : await callables.autosave(activeSessionId, responses, writtenResponse);
+            ? await callables.autosave(activeSessionId, payload)
+            : await callables.autosave(activeSessionId, payload, writtenResponse);
         if (!destroyed) {
           lastAutosaveSerialized = serialized;
         }
@@ -304,6 +351,7 @@ export function createAssessmentRuntime(
         if (!destroyed) {
           finalizedState = { result, idempotencyKey: key };
           mode = "finalized";
+          persisted = [];
         }
         return result;
       } catch (err) {

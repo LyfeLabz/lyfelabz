@@ -2749,6 +2749,7 @@ describe("renderAssignmentDetail - Sprint 16 Slice 3 progress consistency", () =
       completedStudents: 1,
       inProgressStudents: 1,
       notStartedStudents: 1,
+      studentProgress: [{ studentId: "stu-3", answered: 2, total: 10, retake: false }],
     });
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
@@ -2919,14 +2920,9 @@ describe("renderAssignmentDetail - Sprint 16 Slice 3 progress consistency", () =
   });
 
   test("started mismatch surfacing is exercised at the reconciliation helper layer", () => {
-    // Once recipientsCount and submittedCount both align with the
-    // summary, groupRoster's clamp forces
-    // `inProgress = min(summary.inProgress, remaining)` which reduces to
-    // `summary.inProgress` under a valid summary invariant. That means
-    // the `startedMismatch` branch is not physically reachable through
-    // the DOM plumbing; the reconciliation helper unit tests in
-    // `reconciliation.test.ts` are the authoritative coverage for that
-    // branch.
+    // The `startedMismatch` branch is covered by the reconciliation helper
+    // unit tests in `reconciliation.test.ts`; the DOM plumbing passes the
+    // roster's actual per-student in-progress rows to that helper.
     expect(true).toBe(true);
   });
 
@@ -3789,7 +3785,13 @@ describe("renderAssignmentDetail - Student Progress & Assignment Membership Phas
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(meta()),
       summaryCallable: resolvingSummary(
-        freezeSummary({ completedStudents: 0, inProgressStudents: 1, notStartedStudents: 0, totalStudents: 1 }),
+        freezeSummary({
+          completedStudents: 0,
+          inProgressStudents: 1,
+          notStartedStudents: 0,
+          totalStudents: 1,
+          studentProgress: [{ studentId: "stu-2", answered: 4, total: 10, retake: false }],
+        }),
       ),
       recipientListCallable: spyingRecipients([
         { studentId: "stu-2", studentDisplayName: "Bob" },
@@ -4155,5 +4157,119 @@ describe("renderAssignmentDetail - Sprint 30 roster sort preference", () => {
       "Last name (A-Z)",
       "First name (A-Z)",
     ]);
+  });
+});
+
+describe("renderAssignmentDetail - quiz progress visibility", () => {
+  const recipients = [
+    { studentId: "stu-1", studentDisplayName: "Alice Adams" },
+    { studentId: "stu-2", studentDisplayName: "Bob Brown" },
+    { studentId: "stu-3", studentDisplayName: "Cara Cole" },
+    { studentId: "stu-4", studentDisplayName: "Dan Dunn" },
+    { studentId: "stu-5", studentDisplayName: "Eve Ever" },
+  ];
+
+  async function renderWith(summary: AssignmentSummary, attempts: ReturnType<typeof mkAttempt>[]) {
+    const mount = mkMount();
+    const requests: unknown[] = [];
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: (input) => {
+        requests.push(input);
+        return Promise.resolve(summary);
+      },
+      recipientListCallable: spyingRecipients(recipients).callable,
+      attemptsListForClassCallable: spyingAttemptsList(attempts).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    const text = (id: string) =>
+      mount.querySelector(`[data-testid=assignment-detail-roster-progress-${id}]`)?.textContent ?? null;
+    const group = (key: string) =>
+      Array.from(
+        mount.querySelectorAll(`[data-testid=assignment-detail-roster-group-${key}] li[data-student-id]`),
+      ).map((li) => li.getAttribute("data-student-id"));
+    return { mount, requests, text, group };
+  }
+
+  test("each student shows their actual state, matched by studentId", async () => {
+    const { requests, text, group } = await renderWith(
+      freezeSummary({
+        totalStudents: 5,
+        completedStudents: 1,
+        inProgressStudents: 3,
+        notStartedStudents: 1,
+        studentProgress: [
+          { studentId: "stu-1", answered: 3, total: 10, retake: true },
+          { studentId: "stu-3", answered: 0, total: 10, retake: false },
+          { studentId: "stu-4", answered: 6, total: 10, retake: false },
+          { studentId: "stu-5", answered: 10, total: 10, retake: false },
+        ],
+      }),
+      [mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 80 })],
+    );
+    // The detail surface opts into per-student progress.
+    expect(requests).toEqual([{ assignmentId: "assign-1", includeStudentProgress: true }]);
+    expect(group("submitted")).toEqual(["stu-1"]);
+    expect(group("in-progress")).toEqual(["stu-3", "stu-4", "stu-5"]);
+    expect(group("not-started")).toEqual(["stu-2"]);
+    expect(text("stu-3")).toBe("Started · 0/10");
+    expect(text("stu-4")).toBe("In Progress · 6/10");
+    expect(text("stu-5")).toBe("Ready to Submit · 10/10");
+    expect(text("stu-1")).toBe("Retake In Progress · 3/10");
+    expect(text("stu-2")).toBeNull();
+  });
+
+  test("a retake keeps the best score beside the retake status", async () => {
+    const { mount, text } = await renderWith(
+      freezeSummary({
+        totalStudents: 5,
+        completedStudents: 1,
+        inProgressStudents: 0,
+        notStartedStudents: 4,
+        studentProgress: [{ studentId: "stu-1", answered: 7, total: 10, retake: true }],
+      }),
+      [
+        mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 90 }),
+        mkAttempt({ attemptId: "att-2", studentId: "stu-1", percentage: 40 }),
+      ],
+    );
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-summary-stu-1]")?.textContent,
+    ).toBe("90% · 2 attempts");
+    expect(text("stu-1")).toBe("Retake In Progress · 7/10");
+  });
+
+  test("progress is never inferred from counts when no per-student rows arrive", async () => {
+    const { group } = await renderWith(
+      freezeSummary({
+        totalStudents: 5,
+        completedStudents: 0,
+        inProgressStudents: 2,
+        notStartedStudents: 3,
+      }),
+      [],
+    );
+    expect(group("in-progress")).toEqual([]);
+    expect(group("not-started").length).toBe(5);
+  });
+
+  test("teacher-facing roster text carries no response contents", async () => {
+    const { mount } = await renderWith(
+      freezeSummary({
+        totalStudents: 5,
+        completedStudents: 0,
+        inProgressStudents: 1,
+        notStartedStudents: 4,
+        studentProgress: [{ studentId: "stu-2", answered: 1, total: 10, retake: false }],
+      }),
+      [],
+    );
+    const text = mount.textContent ?? "";
+    for (const forbidden of ["response", "itemId", "optionId", "sessionId"]) {
+      expect(text).not.toContain(forbidden);
+    }
   });
 });

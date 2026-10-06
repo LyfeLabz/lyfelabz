@@ -88,6 +88,17 @@ const mockClassDocRef = jest.fn((): {
 
 const mockLogInfo = jest.fn();
 
+// Frozen assessment revision read only by the opt-in per-student progress
+// projection (item ids give the authoritative total).
+const revisionFixture: { data: Record<string, unknown> | null } = { data: null };
+const mockAssessmentRevisionDocRef = jest.fn(() => ({
+  get: () =>
+    Promise.resolve({
+      exists: revisionFixture.data !== null,
+      data: () => revisionFixture.data ?? undefined,
+    }),
+}));
+
 jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
@@ -102,6 +113,7 @@ jest.mock("../shared", () => {
     assignmentRecipientsCollectionRef: mockAssignmentRecipientsCollectionRef,
     assignmentDocRef: mockAssignmentDocRef,
     classDocRef: mockClassDocRef,
+    assessmentRevisionDocRef: mockAssessmentRevisionDocRef,
   };
 });
 
@@ -1361,5 +1373,191 @@ describe("selectHighestCompletedAttempt (PDR-029 tie-break policy)", () => {
       },
     ]);
     expect(selected?.attemptId).toBe("good");
+  });
+});
+
+describe("assessmentAssignmentSummary - per-student quiz progress (opt-in)", () => {
+  const TEN_ITEMS = Array.from({ length: 10 }, (_, i) => ({
+    itemId: `q${i + 1}`,
+    itemType: "singleChoice",
+    options: [{ optionId: "A" }, { optionId: "B" }, { optionId: "C" }, { optionId: "D" }],
+  }));
+  const answers = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({ itemId: `q${i + 1}`, response: "B" }));
+  const progressRequest = () =>
+    makeRequest({ data: { assignmentId: ASSIGNMENT_ID, includeStudentProgress: true } });
+
+  beforeEach(() => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
+    mockAssessmentRevisionDocRef.mockClear();
+    attemptsFixture.length = 0;
+    sessionsFixture.length = 0;
+    recipientsFixture.length = 0;
+    revisionFixture.data = { items: TEN_ITEMS };
+    seedOwnedActiveClass();
+    seedOwnedAssignment({ assessmentRevisionId: REVISION_ID });
+  });
+
+  it("is absent unless the request opts in, and reads no revision", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: STUDENT_A, responses: answers(3) });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect("studentProgress" in result).toBe(false);
+    expect(mockAssessmentRevisionDocRef).not.toHaveBeenCalled();
+  });
+
+  it("reports 0 answered for a live session with no responses (Started)", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: STUDENT_A });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.studentProgress).toEqual([
+      { studentId: STUDENT_A, answered: 0, total: 10, retake: false },
+    ]);
+  });
+
+  it("reports partial and complete progress per actual student", async () => {
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedRecipient(STUDENT_C);
+    seedSession({ studentId: STUDENT_B, responses: answers(4) });
+    seedSession({ studentId: STUDENT_C, responses: answers(10) });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.studentProgress).toEqual([
+      { studentId: STUDENT_B, answered: 4, total: 10, retake: false },
+      { studentId: STUDENT_C, answered: 10, total: 10, retake: false },
+    ]);
+    expect(result.inProgressStudents).toBe(2);
+    expect(result.notStartedStudents).toBe(1);
+  });
+
+  it("a recipient who never launched has no progress row and stays not started", async () => {
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedSession({ studentId: STUDENT_B });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.studentProgress).toEqual([
+      { studentId: STUDENT_B, answered: 0, total: 10, retake: false },
+    ]);
+    expect(result.notStartedStudents).toBe(1);
+    expect(result.inProgressStudents).toBe(1);
+  });
+
+  it("reopening a submitted assignment reports a 0-answer retake without touching the best score", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A, percentage: 90, score: 9, maxScore: 10 });
+    seedSession({ studentId: STUDENT_A });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.studentProgress).toEqual([
+      { studentId: STUDENT_A, answered: 0, total: 10, retake: true },
+    ]);
+    expect(result.completedStudents).toBe(1);
+    expect(result.inProgressStudents).toBe(0);
+    expect(result.averagePercentage).toBe(90);
+  });
+
+  it("a reload changes nothing; the fifth answer moves the teacher view from 4/10 to 5/10", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: STUDENT_A, sessionId: "cc-session", responses: answers(4) });
+    const before = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(before.studentProgress).toEqual([
+      { studentId: STUDENT_A, answered: 4, total: 10, retake: false },
+    ]);
+    // The next autosave after the restored reload carries all five answers.
+    sessionsFixture[0].data.responses = answers(5);
+    const after = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(after.studentProgress).toEqual([
+      { studentId: STUDENT_A, answered: 5, total: 10, retake: false },
+    ]);
+  });
+
+  it("derives the total from the frozen revision rather than a constant", async () => {
+    revisionFixture.data = { items: TEN_ITEMS.slice(0, 6) };
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: STUDENT_A, responses: answers(2) });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.studentProgress).toEqual([
+      { studentId: STUDENT_A, answered: 2, total: 6, retake: false },
+    ]);
+  });
+
+  it("never counts null, non-string, duplicate, or unknown-item elements", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({
+      studentId: STUDENT_A,
+      responses: [
+        { itemId: "q1", response: "A" },
+        { itemId: "q1", response: "B" },
+        { itemId: "q2", response: null },
+        { itemId: "q3", response: 2 },
+        { itemId: "q99", response: "A" },
+        null,
+        { itemId: "q4", response: "C" },
+      ],
+    });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.studentProgress).toEqual([
+      { studentId: STUDENT_A, answered: 2, total: 10, retake: false },
+    ]);
+  });
+
+  it("flags a retake without changing the completed classification or best score", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A, percentage: 80, score: 8, maxScore: 10 });
+    seedSession({ studentId: STUDENT_A, responses: answers(5) });
+    const withProgress = await __assessmentAssignmentSummaryHandler(progressRequest());
+    const without = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect(withProgress.studentProgress).toEqual([
+      { studentId: STUDENT_A, answered: 5, total: 10, retake: true },
+    ]);
+    const aggregate: Record<string, unknown> = { ...withProgress };
+    delete aggregate.studentProgress;
+    expect(aggregate).toEqual(without);
+    expect(without.completedStudents).toBe(1);
+    expect(without.inProgressStudents).toBe(0);
+    expect(without.averagePercentage).toBe(80);
+  });
+
+  it("excludes sessions of students outside the recipient population", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: OUTSIDE_STUDENT, responses: answers(3) });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.studentProgress).toEqual([]);
+  });
+
+  it("reports a null total when the revision cannot be read", async () => {
+    revisionFixture.data = null;
+    seedRecipient(STUDENT_A);
+    seedSession({ studentId: STUDENT_A, responses: answers(3) });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.studentProgress).toEqual([
+      { studentId: STUDENT_A, answered: 3, total: null, retake: false },
+    ]);
+  });
+
+  it("never exposes response contents, item ids, or session ids", async () => {
+    seedRecipient(STUDENT_A);
+    seedSession({
+      studentId: STUDENT_A,
+      sessionId: "secret-session-id",
+      responses: [{ itemId: "q7", response: "D" }],
+    });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    for (const entry of result.studentProgress ?? []) {
+      expect(Object.keys(entry).sort()).toEqual(["answered", "retake", "studentId", "total"]);
+    }
+    const serialized = JSON.stringify(result);
+    expect(serialized).not.toContain("secret-session-id");
+    expect(serialized).not.toContain("q7");
+    expect(serialized).not.toContain('"D"');
+    expect(serialized).not.toContain("response");
+  });
+
+  it("refuses a non-boolean includeStudentProgress", async () => {
+    await expect(
+      __assessmentAssignmentSummaryHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, includeStudentProgress: "yes" } }),
+      ),
+    ).rejects.toMatchObject({ code: "assignments.invalidRequest" });
   });
 });

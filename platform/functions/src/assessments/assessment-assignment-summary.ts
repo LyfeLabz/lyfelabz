@@ -4,6 +4,7 @@ import { type Timestamp } from "firebase-admin/firestore";
 import {
   platformCallable,
   PlatformError,
+  assessmentRevisionDocRef,
   assessmentSessionsCollectionRef,
   assignmentDocRef,
   assignmentRecipientsCollectionRef,
@@ -29,8 +30,30 @@ import {
 // determine every ownership decision. Any owner-scoping or aggregation key
 // on the request is refused so no laundering path can suggest cross-owner
 // access or hidden scope override.
+//
+// `includeStudentProgress: true` (quiz progress visibility) is the one opt-in
+// flag. It is sent only by the owning teacher's Assignment Detail roster; every
+// other caller omits it and receives the unchanged aggregate projection.
 export type AssessmentAssignmentSummaryRequest = {
   readonly assignmentId: string;
+  readonly includeStudentProgress?: boolean;
+};
+
+// Per-student unsubmitted quiz progress for one Live session, returned only
+// when the request opts in. It names a student the owning teacher already
+// sees on this assignment's recipient roster and carries COUNTS only:
+// `answered` is the number of distinct items of the frozen assessment
+// revision with a stored answer, `total` is the revision's item count (`null`
+// only if the revision cannot be read), and `retake` is true when the student
+// already has a completed attempt (the live session is a retake, which never
+// changes the best score). No response value, option, item id, session id, or
+// answer-key value crosses the boundary; teachers still never read
+// `assessmentSessions` directly (PDR-026).
+export type AssessmentStudentProgress = {
+  readonly studentId: string;
+  readonly answered: number;
+  readonly total: number | null;
+  readonly retake: boolean;
 };
 
 // Aggregate teacher-facing summary of one assignment. Every field is a
@@ -50,6 +73,7 @@ export type AssessmentAssignmentSummaryResponse = {
   readonly highestPercentage: number | null;
   readonly lowestPercentage: number | null;
   readonly perfectScoreStudents: number;
+  readonly studentProgress?: readonly AssessmentStudentProgress[];
 };
 
 const ASSIGNMENT_ID_PATTERN =
@@ -124,7 +148,65 @@ function validateRequest(
       "assignmentId must be a URL-safe token.",
     );
   }
-  return { assignmentId };
+  if (
+    "includeStudentProgress" in payload &&
+    payload.includeStudentProgress !== undefined &&
+    typeof payload.includeStudentProgress !== "boolean"
+  ) {
+    throw new PlatformError(
+      "assignments.invalidRequest",
+      "includeStudentProgress must be a boolean when present.",
+    );
+  }
+  return payload.includeStudentProgress === true
+    ? { assignmentId, includeStudentProgress: true }
+    : { assignmentId };
+}
+
+// Item ids of a frozen assessment revision, or null when it cannot be read.
+// Read once per distinct revision per call (every session of an assignment
+// carries the assignment's frozen revision).
+async function loadRevisionItemIds(
+  revisionId: string,
+): Promise<ReadonlySet<string> | null> {
+  try {
+    const snapshot = await assessmentRevisionDocRef(revisionId).get();
+    const revision = snapshot.exists ? snapshot.data() : undefined;
+    const items: unknown = revision?.items;
+    if (!Array.isArray(items) || items.length === 0) return null;
+    const ids = new Set<string>();
+    for (const item of items as unknown[]) {
+      const itemId =
+        item !== null && typeof item === "object"
+          ? (item as { itemId?: unknown }).itemId
+          : undefined;
+      if (isNonEmptyString(itemId)) ids.add(itemId);
+    }
+    return ids.size > 0 ? ids : null;
+  } catch {
+    return null;
+  }
+}
+
+// Answered = distinct items of the frozen revision with a stored answer.
+// Autosave stores only admissible `{itemId, optionId}` elements (an unanswered
+// item is the ABSENCE of its element), but the count does not rely on that:
+// null, non-string, duplicate, or unknown-item elements never count. When the
+// revision is unavailable the distinct answered elements are counted.
+export function countAnsweredResponses(
+  responses: unknown,
+  itemIds: ReadonlySet<string> | null,
+): number {
+  if (!Array.isArray(responses)) return 0;
+  const answered = new Set<string>();
+  for (const entry of responses) {
+    if (entry === null || typeof entry !== "object") continue;
+    const { itemId, response } = entry as { itemId?: unknown; response?: unknown };
+    if (!isNonEmptyString(itemId) || !isNonEmptyString(response)) continue;
+    if (itemIds !== null && !itemIds.has(itemId)) continue;
+    answered.add(itemId);
+  }
+  return answered.size;
 }
 
 async function assertActiveTeacherInDistrict(
@@ -301,6 +383,11 @@ function safeLog(fn: () => void): void {
 //     No student identifier, name, recipient identifier, attempt
 //     identifier, session identifier, score, response, item result, or
 //     answer-key value is ever returned.
+//   - Exception (opt-in only): `includeStudentProgress: true` adds
+//     `studentProgress`, one `{studentId, answered, total, retake}` count
+//     row per Live session of a recipient. The owning teacher already sees
+//     these recipients by id on the Assignment Detail roster; no response
+//     value, item id, or session id is included.
 async function assessmentAssignmentSummaryHandler(
   request: CallableRequest<unknown>,
 ): Promise<AssessmentAssignmentSummaryResponse> {
@@ -417,6 +504,7 @@ async function assessmentAssignmentSummaryHandler(
   // student with both a completed attempt and a live session is classified
   // as completed because the completed classification takes precedence.
   const inProgressStudentIds = new Set<string>();
+  const liveSessionByStudent = new Map<string, AssessmentSessionRecord>();
   for (const doc of sessionsSnapshot.docs) {
     const data = doc.data() as AssessmentSessionRecord | undefined;
     if (!data) continue;
@@ -429,6 +517,7 @@ async function assessmentAssignmentSummaryHandler(
     if (!isNonEmptyString(data.studentId)) continue;
     if (!population.has(data.studentId)) continue;
     inProgressStudentIds.add(data.studentId);
+    liveSessionByStudent.set(data.studentId, data);
   }
 
   // Classify every student in the population exactly once. Completed
@@ -493,6 +582,36 @@ async function assessmentAssignmentSummaryHandler(
       ? 0
       : roundPercentage((completedStudents / totalStudents) * 100);
 
+  // Opt-in per-student progress for each Live session in the population.
+  // Derived from the stored responses on every read; there is no separate
+  // progress counter to drift.
+  let studentProgress: AssessmentStudentProgress[] | undefined;
+  if (input.includeStudentProgress === true) {
+    studentProgress = [];
+    const itemIdsByRevision = new Map<string, ReadonlySet<string> | null>();
+    for (const [studentId, session] of liveSessionByStudent) {
+      const revisionId = session.assessmentRevisionId;
+      let itemIds: ReadonlySet<string> | null = null;
+      if (isNonEmptyString(revisionId)) {
+        if (!itemIdsByRevision.has(revisionId)) {
+          itemIdsByRevision.set(revisionId, await loadRevisionItemIds(revisionId));
+        }
+        itemIds = itemIdsByRevision.get(revisionId) ?? null;
+      }
+      const total = itemIds === null ? null : itemIds.size;
+      const answered = countAnsweredResponses(session.responses, itemIds);
+      studentProgress.push({
+        studentId,
+        answered: total === null ? answered : Math.min(answered, total),
+        total,
+        retake: selectedByStudent.has(studentId),
+      });
+    }
+    studentProgress.sort((a, b) =>
+      a.studentId < b.studentId ? -1 : a.studentId > b.studentId ? 1 : 0,
+    );
+  }
+
   safeLog(() =>
     log.info("assessmentAssignment.summarized", {
       actorUserId: actor.uid,
@@ -517,6 +636,7 @@ async function assessmentAssignmentSummaryHandler(
     highestPercentage,
     lowestPercentage,
     perfectScoreStudents,
+    ...(studentProgress === undefined ? {} : { studentProgress }),
   };
 }
 

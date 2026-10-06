@@ -423,7 +423,7 @@ describe("assessmentSessionsBegin", () => {
 
     const result = await __assessmentSessionsBeginHandler(makeRequest());
 
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID, responses: [] });
     expect(mockSessionCreate).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
@@ -440,6 +440,82 @@ describe("assessmentSessionsBegin", () => {
     ).rejects.toMatchObject({ code: "assessmentSessions.conflict" });
     expect(mockSessionCreate).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  describe("quiz session continuity", () => {
+    const PERSISTED = [
+      { itemId: "q1", response: "A" },
+      { itemId: "q2", response: "C" },
+      { itemId: "q4", response: "D" },
+    ];
+
+    it("an idempotent replay returns the caller's persisted responses", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(
+        existingLiveSessionSnapshot({ responses: PERSISTED }),
+      );
+
+      const result = await __assessmentSessionsBeginHandler(makeRequest());
+
+      expect(result).toEqual({
+        sessionId: SESSION_ID,
+        alreadyLive: true,
+        assessmentRevisionId: REVISION_ID,
+        responses: PERSISTED,
+      });
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+    });
+
+    it("returns the session's frozen presentation id beside its responses", async () => {
+      const apId = `ap${"a".repeat(64)}`;
+      mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(
+        existingLiveSessionSnapshot({ responses: PERSISTED, assessmentPresentationRevisionId: apId }),
+      );
+
+      const result = await __assessmentSessionsBeginHandler(makeRequest());
+
+      expect(result).toMatchObject({ responses: PERSISTED, assessmentPresentationRevisionId: apId });
+    });
+
+    it("drops malformed or duplicate stored elements instead of echoing them", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(
+        existingLiveSessionSnapshot({
+          responses: [
+            { itemId: "q1", response: "A" },
+            { itemId: "q1", response: "B" },
+            { itemId: "q2", response: null },
+            { itemId: "", response: "C" },
+            null,
+          ],
+        }),
+      );
+
+      const result = await __assessmentSessionsBeginHandler(makeRequest());
+
+      expect(result).toMatchObject({ responses: [{ itemId: "q1", response: "A" }] });
+    });
+
+    it("a reload of a zero-answer session is an idempotent replay with no responses", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(existingLiveSessionSnapshot());
+
+      const result = await __assessmentSessionsBeginHandler(makeRequest());
+
+      expect(result).toEqual({
+        sessionId: SESSION_ID,
+        alreadyLive: true,
+        assessmentRevisionId: REVISION_ID,
+        responses: [],
+      });
+      expect(mockSessionCreate).not.toHaveBeenCalled();
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    });
   });
 
   it("refuses when an archived session already occupies the ordinal", async () => {
@@ -870,7 +946,7 @@ describe("assessmentSessionsBegin", () => {
     mockSessionGet.mockResolvedValueOnce(existingLiveSessionSnapshot());
     mockRecipientCreationSet.mockClear();
     const result = await __assessmentSessionsBeginHandler(makeRequest());
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID, responses: [] });
     expect(mockRecipientCreationSet).not.toHaveBeenCalled();
   });
 
@@ -1071,6 +1147,10 @@ describe("assessmentSessionsBegin", () => {
     mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
     mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    // The race winner is not this caller's matching Live session.
+    mockSessionGet.mockResolvedValueOnce(
+      existingLiveSessionSnapshot({ classId: "other-class" }),
+    );
     const alreadyExists = Object.assign(new Error("already exists"), {
       code: 6,
     });
@@ -1079,6 +1159,36 @@ describe("assessmentSessionsBegin", () => {
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assessmentSessions.conflict" });
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("I-3: an ALREADY_EXISTS race lost to the caller's own matching session is an idempotent replay", async () => {
+    // Two tabs open the assignment at once; both begin at page open.
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockSessionGet.mockResolvedValueOnce(existingLiveSessionSnapshot());
+    mockSessionCreate.mockRejectedValueOnce(
+      Object.assign(new Error("already exists"), { code: "already-exists" }),
+    );
+    const result = await __assessmentSessionsBeginHandler(makeRequest());
+    expect(result).toEqual({
+      sessionId: SESSION_ID,
+      alreadyLive: true,
+      assessmentRevisionId: REVISION_ID,
+      responses: [],
+    });
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("I-3: a failed re-read after ALREADY_EXISTS still refuses with conflict", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    mockSessionGet.mockRejectedValueOnce(new Error("unavailable"));
+    mockSessionCreate.mockRejectedValueOnce(Object.assign(new Error("x"), { code: 6 }));
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentSessions.conflict" });
   });
 
   // -------- F5.2 Slice 6 - session binding + delivery outcome --------
@@ -1269,7 +1379,7 @@ describe("assessmentSessionsBegin", () => {
     const result = await __assessmentSessionsBeginHandler(
       makeRequest({ data: { assignmentId: ASSIGNMENT_ID, launchRef: VALID_LAUNCH_REF } }),
     );
-    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID });
+    expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true, assessmentRevisionId: REVISION_ID, responses: [] });
     // The grant is never read; frozen fields never change on a repeated begin.
     expect(mockGrantGet).not.toHaveBeenCalled();
     expect(mockSessionCreate).not.toHaveBeenCalled();

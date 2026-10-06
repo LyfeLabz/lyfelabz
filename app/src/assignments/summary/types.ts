@@ -26,6 +26,21 @@ export type AssignmentSummary = {
   readonly highestPercentage: number | null;
   readonly lowestPercentage: number | null;
   readonly perfectScoreStudents: number;
+  // Quiz progress visibility (opt-in, Assignment Detail roster only): one
+  // count row per student with a Live session. Absent unless requested.
+  readonly studentProgress?: ReadonlyArray<AssignmentStudentProgress>;
+};
+
+// Per-student unsubmitted quiz progress from `assessmentAssignmentSummary`
+// (`includeStudentProgress: true`). Counts only: `answered` of `total` items
+// (`total` is null when the server could not read the frozen revision), and
+// `retake` when the student already has a completed attempt. It never carries
+// response contents, item ids, or session ids.
+export type AssignmentStudentProgress = {
+  readonly studentId: string;
+  readonly answered: number;
+  readonly total: number | null;
+  readonly retake: boolean;
 };
 
 // Injected callable seam. The reusable summary card never imports from
@@ -34,6 +49,7 @@ export type AssignmentSummary = {
 // AssignmentsCallables in src/settings/integrations/types.ts.
 export type AssignmentSummaryCallable = (input: {
   readonly assignmentId: string;
+  readonly includeStudentProgress?: boolean;
 }) => Promise<AssignmentSummary>;
 
 // Sprint 28.6E lesson-level (cross-assignment) summary. Mirrors the

@@ -1,4 +1,4 @@
-import { groupRoster, selectRepresentativeAttempts } from "./roster";
+import { formatProgressStatus, groupRoster, selectRepresentativeAttempts } from "./roster";
 
 describe("selectRepresentativeAttempts", () => {
   test("picks the highest-percentage completed attempt per student", () => {
@@ -31,7 +31,7 @@ describe("groupRoster", () => {
     const g = groupRoster({
       recipients: [],
       completed: [],
-      inProgressStudentCount: 0,
+      progress: [],
     });
     expect(g.submitted).toEqual([]);
     expect(g.inProgress).toEqual([]);
@@ -42,35 +42,96 @@ describe("groupRoster", () => {
     const g = groupRoster({
       recipients,
       completed: [],
-      inProgressStudentCount: 0,
+      progress: [],
     });
     expect(g.notStarted.map((r) => r.studentId)).toEqual(["a", "b", "c"]);
     expect(g.submitted).toEqual([]);
     expect(g.inProgress).toEqual([]);
   });
 
-  test("mixed: one submitted, one in progress by arithmetic, one not started", () => {
+  test("mixed: one submitted, one in progress, one not started, matched by studentId", () => {
     const g = groupRoster({
       recipients,
       completed: [
         { studentId: "a", percentage: 90, attemptNumber: 1, submittedAt: 1 },
       ],
-      inProgressStudentCount: 1,
+      // Cid (last by name) is the student with a live session; name order
+      // must not decide who is in progress.
+      progress: [{ studentId: "c", answered: 4, total: 10, retake: false }],
     });
     expect(g.submitted.map((r) => r.studentId)).toEqual(["a"]);
     expect(g.submitted[0]?.percentage).toBe(90);
-    expect(g.inProgress.length).toBe(1);
-    expect(g.notStarted.length).toBe(1);
+    expect(g.inProgress).toEqual([
+      { studentId: "c", studentDisplayName: "Cid", status: "In Progress · 4/10" },
+    ]);
+    expect(g.notStarted.map((r) => r.studentId)).toEqual(["b"]);
   });
 
-  test("in-progress count clamps to remaining non-submitted recipients", () => {
+  test("progress rows for students who are not recipients are ignored", () => {
     const g = groupRoster({
       recipients,
       completed: [],
-      inProgressStudentCount: 99,
+      progress: [{ studentId: "zz", answered: 3, total: 10, retake: false }],
     });
-    expect(g.inProgress.length).toBe(3);
-    expect(g.notStarted.length).toBe(0);
+    expect(g.inProgress).toEqual([]);
+    expect(g.notStarted.length).toBe(3);
+  });
+
+  test("every live state carries its actual answered/total status", () => {
+    const g = groupRoster({
+      recipients,
+      completed: [],
+      progress: [
+        { studentId: "a", answered: 0, total: 10, retake: false },
+        { studentId: "b", answered: 7, total: 10, retake: false },
+        { studentId: "c", answered: 10, total: 10, retake: false },
+      ],
+    });
+    expect(new Map(g.inProgress.map((r) => [r.studentId, r.status]))).toEqual(
+      new Map([
+        ["a", "Started · 0/10"],
+        ["b", "In Progress · 7/10"],
+        ["c", "Ready to Submit · 10/10"],
+      ]),
+    );
+    expect(g.notStarted).toEqual([]);
+  });
+
+  test("a submitted student who reopened the assignment shows a 0-answer retake", () => {
+    const g = groupRoster({
+      recipients,
+      completed: [{ studentId: "b", percentage: 70, attemptNumber: 1, submittedAt: 1 }],
+      progress: [{ studentId: "b", answered: 0, total: 10, retake: true }],
+    });
+    expect(g.submitted).toEqual([
+      expect.objectContaining({
+        studentId: "b",
+        percentage: 70,
+        retakeStatus: "Retake In Progress · 0/10",
+      }),
+    ]);
+    expect(g.notStarted.map((r) => r.studentId).sort()).toEqual(["a", "c"]);
+  });
+
+  test("a retake stays Submitted with its best score and shows retake progress", () => {
+    const g = groupRoster({
+      recipients,
+      completed: [
+        { studentId: "a", percentage: 90, attemptNumber: 1, submittedAt: 1 },
+        { studentId: "a", percentage: 60, attemptNumber: 2, submittedAt: 2 },
+      ],
+      progress: [{ studentId: "a", answered: 3, total: 10, retake: true }],
+    });
+    expect(g.submitted).toEqual([
+      {
+        studentId: "a",
+        studentDisplayName: "Ada",
+        percentage: 90,
+        attemptCount: 2,
+        retakeStatus: "Retake In Progress · 3/10",
+      },
+    ]);
+    expect(g.inProgress).toEqual([]);
   });
 
   test("submitted row never leaks anything beyond name, percentage, and attempt count", () => {
@@ -79,7 +140,7 @@ describe("groupRoster", () => {
       completed: [
         { studentId: "a", percentage: 80, attemptNumber: 1, submittedAt: 1 },
       ],
-      inProgressStudentCount: 0,
+      progress: [],
     });
     expect(Object.keys(g.submitted[0] ?? {}).sort()).toEqual([
       "attemptCount",
@@ -107,7 +168,7 @@ describe("Sprint 30 roster polish - teacher sort preference", () => {
       { studentId: "3", studentDisplayName: "Aaron Carter" },
       { studentId: "4", studentDisplayName: "Ben Adams" },
     ];
-    const g = groupRoster({ recipients, completed: [], inProgressStudentCount: 0 });
+    const g = groupRoster({ recipients, completed: [], progress: [] });
     expect(names(g.notStarted)).toEqual([
       "Ben Adams",
       "Zoe Adams",
@@ -131,7 +192,7 @@ describe("Sprint 30 roster polish - teacher sort preference", () => {
         done("b", 40, 3),
         done("c", 60),
       ],
-      inProgressStudentCount: 0,
+      progress: [],
     });
     expect(names(g.submitted)).toEqual(["Zed Baker", "Max Moss", "Amy Young"]);
   });
@@ -143,7 +204,7 @@ describe("Sprint 30 roster polish - teacher sort preference", () => {
         { studentId: "b", studentDisplayName: "Bea Smith" },
       ],
       completed: [done("a", 90), done("a", 60, 2), done("b", 75)],
-      inProgressStudentCount: 0,
+      progress: [],
     });
     const byId = new Map(g.submitted.map((r) => [r.studentId, r]));
     expect(byId.get("a")).toMatchObject({ percentage: 90, attemptCount: 2 });
@@ -157,7 +218,7 @@ describe("Sprint 30 roster polish - teacher sort preference", () => {
         { studentId: "s-1", studentDisplayName: "Sam Lee" },
       ],
       completed: [],
-      inProgressStudentCount: 0,
+      progress: [],
     });
     expect(g.notStarted.map((r) => r.studentId)).toEqual(["s-1", "s-2"]);
   });
@@ -168,7 +229,7 @@ describe("Sprint 30 roster polish - teacher sort preference", () => {
       { studentId: "2", studentDisplayName: "Adrianna Blumberg" },
       { studentId: "3", studentDisplayName: "Name unavailable" },
     ];
-    const base = { recipients, completed: [], inProgressStudentCount: 0 };
+    const base = { recipients, completed: [], progress: [] };
     expect(names(groupRoster(base).notStarted)).toEqual([
       "Zoe Adams",
       "Adrianna Blumberg",
@@ -189,8 +250,9 @@ describe("Sprint 30 roster polish - teacher sort preference", () => {
       { studentId: "4", studentDisplayName: "Di Brown" },
     ];
     const completed = [done("4", 80), done("4", 90, 2), done("3", 50)];
-    const last = groupRoster({ recipients, completed, inProgressStudentCount: 1 });
-    const first = groupRoster({ recipients, completed, inProgressStudentCount: 1, sortOrder: "firstName" });
+    const progress = [{ studentId: "1", answered: 5, total: 10, retake: false }];
+    const last = groupRoster({ recipients, completed, progress });
+    const first = groupRoster({ recipients, completed, progress, sortOrder: "firstName" });
     const ids = (rows: ReadonlyArray<{ studentId: string }>) => rows.map((r) => r.studentId).sort();
     expect(ids(first.submitted)).toEqual(ids(last.submitted));
     expect(ids(first.inProgress)).toEqual(ids(last.inProgress));
@@ -204,15 +266,32 @@ describe("Sprint 30 roster polish - teacher sort preference", () => {
   });
 
   test("which students are in progress vs not started is unchanged by the display order", () => {
-    // The in-progress split is arithmetic over display-name order; display
-    // by last name must not move a student between the two groups.
     const recipients = [
       { studentId: "1", studentDisplayName: "Ann Zimmer" },
       { studentId: "2", studentDisplayName: "Bob Allen" },
       { studentId: "3", studentDisplayName: "Cy Moss" },
     ];
-    const g = groupRoster({ recipients, completed: [], inProgressStudentCount: 1 });
-    expect(g.inProgress.map((r) => r.studentId)).toEqual(["1"]);
-    expect(names(g.notStarted)).toEqual(["Bob Allen", "Cy Moss"]);
+    const progress = [{ studentId: "1", answered: 2, total: 10, retake: false }];
+    for (const sortOrder of ["lastName", "firstName"] as const) {
+      const g = groupRoster({ recipients, completed: [], progress, sortOrder });
+      expect(g.inProgress.map((r) => r.studentId)).toEqual(["1"]);
+      expect(g.notStarted.map((r) => r.studentId).sort()).toEqual(["2", "3"]);
+    }
+  });
+});
+
+describe("formatProgressStatus", () => {
+  test("labels each live state from answered and the frozen total", () => {
+    expect(formatProgressStatus({ answered: 0, total: 10, retake: false })).toBe("Started · 0/10");
+    expect(formatProgressStatus({ answered: 1, total: 10, retake: false })).toBe("In Progress · 1/10");
+    expect(formatProgressStatus({ answered: 9, total: 10, retake: false })).toBe("In Progress · 9/10");
+    expect(formatProgressStatus({ answered: 10, total: 10, retake: false })).toBe("Ready to Submit · 10/10");
+    expect(formatProgressStatus({ answered: 6, total: 6, retake: false })).toBe("Ready to Submit · 6/6");
+    expect(formatProgressStatus({ answered: 4, total: 10, retake: true })).toBe("Retake In Progress · 4/10");
+  });
+
+  test("never invents a total the server could not read", () => {
+    expect(formatProgressStatus({ answered: 0, total: null, retake: false })).toBe("Started");
+    expect(formatProgressStatus({ answered: 3, total: null, retake: false })).toBe("In Progress · 3 answered");
   });
 });

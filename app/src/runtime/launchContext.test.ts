@@ -13,6 +13,8 @@
 
 type Call = { readonly name: string; readonly data: Record<string, unknown> };
 const mockCalls: Call[] = [];
+// Overridable begin outcome (default: a fresh session).
+let mockBeginOutcome: (() => Record<string, unknown>) | null = null;
 
 jest.mock("firebase/app", () => ({ getApps: () => [], initializeApp: jest.fn(() => ({})) }));
 jest.mock("firebase/auth", () => ({
@@ -30,6 +32,7 @@ jest.mock("firebase/functions", () => ({
   httpsCallable: (_functions: unknown, name: string) => async (data: Record<string, unknown>) => {
     mockCalls.push({ name, data });
     if (name === "assessmentSessionsBegin") {
+      if (mockBeginOutcome !== null) return { data: mockBeginOutcome() };
       return { data: { sessionId: "s1", alreadyLive: false, assessmentRevisionId: "assessment_earths-layers__r1" } };
     }
     return { data: { persisted: true } };
@@ -65,11 +68,15 @@ async function beginPayloadAt(url: string): Promise<Record<string, unknown> | un
   expect(quiz.hasAssignmentContext()).toBe(true);
   await quiz.autosave([0]);
   for (let i = 0; i < 5; i++) await flush();
-  return mockCalls.find((c) => c.name === "assessmentSessionsBegin")?.data;
+  // The session begins once, when the page opens; the answer never begins again.
+  const begins = mockCalls.filter((c) => c.name === "assessmentSessionsBegin");
+  expect(begins).toHaveLength(1);
+  return begins[0]?.data;
 }
 
 afterEach(() => {
   mockCalls.length = 0;
+  mockBeginOutcome = null;
   delete (window as unknown as { lyfelabz?: unknown }).lyfelabz;
 });
 
@@ -139,5 +146,64 @@ describe("no assignment context", () => {
     const quiz = await bootAt(`/app/lessons/lesson_what-is-life.html#launchRef=${REF}`);
     expect(quiz.hasAssignmentContext()).toBe(false);
     expect(mockCalls).toEqual([]);
+  });
+});
+
+// Quiz session continuity: opening an assigned page begins (or replays) the
+// assignment session, so the teacher can tell "opened, 0 answered" from
+// "never opened". Nothing else changes about when or what the page sends.
+describe("the assignment session begins when the assigned page opens", () => {
+  const begins = () => mockCalls.filter((c) => c.name === "assessmentSessionsBegin");
+  const autosaves = () => mockCalls.filter((c) => c.name === "assessmentSessionsAutosave");
+  const lastError = () =>
+    (window as unknown as { lyfelabz: { assessmentRuntime: { lastError: unknown } } }).lyfelabz
+      .assessmentRuntime.lastError;
+
+  test("opening without answering begins exactly once and sends no answers", async () => {
+    mockCalls.length = 0;
+    await bootAt("/app/lessons/lesson_what-is-life.html#assignment=asg-1");
+    expect(begins().map((c) => c.data)).toEqual([{ assignmentId: "asg-1" }]);
+    expect(autosaves()).toEqual([]);
+  });
+
+  test("a differentiated launch transports its launchRef on the open-time begin", async () => {
+    mockCalls.length = 0;
+    await bootAt(`/app/lessons/assessment-revisions/lesson_earths-layers__r1.html#assignment=asg-1&launchRef=${REF}`);
+    expect(begins().map((c) => c.data)).toEqual([{ assignmentId: "asg-1", launchRef: REF }]);
+  });
+
+  test("reloading a zero-answer session replays it idempotently and sends nothing", async () => {
+    const url = "/app/lessons/lesson_what-is-life.html#assignment=asg-1";
+    mockCalls.length = 0;
+    await bootAt(url);
+    mockBeginOutcome = () => ({
+      sessionId: "s1",
+      alreadyLive: true,
+      assessmentRevisionId: "assessment_earths-layers__r1",
+      responses: [],
+    });
+    mockCalls.length = 0;
+    await bootAt(url);
+    expect(begins().map((c) => c.data)).toEqual([{ assignmentId: "asg-1" }]);
+    expect(autosaves()).toEqual([]);
+  });
+
+  test("a refused open-time begin is recorded for diagnostics and sends nothing", async () => {
+    jest.spyOn(console, "warn").mockImplementation(() => {});
+    mockBeginOutcome = () => {
+      throw Object.assign(new Error("Assignment window has closed."), { code: "functions/failed-precondition" });
+    };
+    mockCalls.length = 0;
+    await bootAt("/app/lessons/lesson_what-is-life.html#assignment=asg-1");
+    expect(begins()).toHaveLength(1);
+    expect(autosaves()).toEqual([]);
+    expect(lastError()).toMatchObject({ callable: "begin", code: "functions/failed-precondition" });
+  });
+
+  test("standalone and practice pages never begin a session", async () => {
+    mockCalls.length = 0;
+    await bootAt("/app/lessons/lesson_what-is-life.html");
+    await bootAt("/lesson_what-is-life.html?mode=practice");
+    expect(begins()).toEqual([]);
   });
 });

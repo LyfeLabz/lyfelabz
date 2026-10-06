@@ -14,6 +14,7 @@ import {
   writeAuditEvent,
   type AssessmentSessionCreationWrite,
   type AssessmentSessionRecord,
+  type AssessmentSessionResponse,
   type AssignmentRecord,
   type EnrollmentRecord,
   type SessionDeliveryFreeze,
@@ -65,6 +66,16 @@ export type AssessmentSessionsBeginResponse = {
   // the page's declared revision. Informational only: no request field can
   // name a revision (see FORBIDDEN_REQUEST_KEYS).
   readonly assessmentRevisionId: string;
+  // Quiz session continuity (additive, idempotent replay only): the caller's
+  // own persisted in-progress responses, so a reloaded page can restore them
+  // and keep later autosaves from replacing them with a smaller set. Each
+  // element is the stored `{itemId, response}` pair the autosave boundary
+  // already validated; nothing scoring-related is ever stored on a session.
+  // `assessmentPresentationRevisionId` is the session's frozen presentation
+  // (present only for a differentiated session), so the page can refuse to
+  // restore into a presentation it does not display. Informational only.
+  readonly responses?: readonly AssessmentSessionResponse[];
+  readonly assessmentPresentationRevisionId?: string;
 };
 
 const ASSIGNMENT_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
@@ -183,6 +194,40 @@ function validateRequest(data: unknown): {
   }
 
   return launchRef === undefined ? { assignmentId } : { assignmentId, launchRef };
+}
+
+// The caller's own persisted responses, re-projected to the stored element
+// shape. Autosave admits only `{itemId, response}` elements whose response is
+// a canonical optionId string (response-validation.ts), so anything else is a
+// data-invariant violation and is dropped rather than echoed.
+function persistedResponsesOf(
+  session: AssessmentSessionRecord,
+): readonly AssessmentSessionResponse[] {
+  const out: AssessmentSessionResponse[] = [];
+  const seen = new Set<string>();
+  for (const entry of session.responses ?? []) {
+    if (entry === null || typeof entry !== "object") continue;
+    const { itemId, response } = entry as { itemId?: unknown; response?: unknown };
+    if (!isNonEmptyString(itemId) || seen.has(itemId)) continue;
+    if (!isNonEmptyString(response)) continue;
+    seen.add(itemId);
+    out.push({ itemId, response });
+  }
+  return out;
+}
+
+function liveSessionResponse(
+  sessionId: string,
+  existing: AssessmentSessionRecord,
+): AssessmentSessionsBeginResponse {
+  const apId = existing.assessmentPresentationRevisionId;
+  return {
+    sessionId,
+    alreadyLive: true,
+    assessmentRevisionId: existing.assessmentRevisionId,
+    responses: persistedResponsesOf(existing),
+    ...(isNonEmptyString(apId) ? { assessmentPresentationRevisionId: apId } : {}),
+  };
 }
 
 async function loadAssignment(assignmentId: string): Promise<AssignmentRecord> {
@@ -509,7 +554,7 @@ async function assessmentSessionsBeginHandler(
           sessionId,
         }),
       );
-      return { sessionId, alreadyLive: true, assessmentRevisionId: existing.assessmentRevisionId };
+      return liveSessionResponse(sessionId, existing);
     }
     throw new PlatformError(
       "assessmentSessions.conflict",
@@ -576,6 +621,25 @@ async function assessmentSessionsBeginHandler(
       ((err as { code?: unknown }).code === 6 ||
         (err as { code?: unknown }).code === "already-exists")
     ) {
+      // Quiz session continuity: the runtime begins the session when the
+      // assignment page opens, so two tabs (or a double launch) can race the
+      // first begin. When the session that won the race is this caller's own
+      // matching Live session, the loser is an idempotent replay (no write, no
+      // audit event), exactly as if it had arrived a moment later. Anything
+      // else is still the canonical conflict refusal.
+      let racedData: AssessmentSessionRecord | undefined;
+      try {
+        const raced = await assessmentSessionDocRef(sessionId).get();
+        racedData = raced?.exists ? raced.data() : undefined;
+      } catch {
+        racedData = undefined;
+      }
+      if (
+        racedData &&
+        existingMatchesRequest(racedData, actor, input.assignmentId, assignment, derived)
+      ) {
+        return liveSessionResponse(sessionId, racedData);
+      }
       throw new PlatformError(
         "assessmentSessions.conflict",
         "A session for this assignment and student already exists.",

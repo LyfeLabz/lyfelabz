@@ -349,9 +349,15 @@ export function renderAssignmentDetail(
   // guard latches once the title has been focused for the current load.
   let readyTitleFocused = false;
 
+  // Quiz progress visibility: the detail surface (card and roster share one
+  // cached call) opts into per-student progress so the roster can show each
+  // student's actual state instead of inferring it.
   const sharedSummaryCallable: AssignmentSummaryCallable = (input) =>
     detailCache.get(`summary:${input.assignmentId}`, () =>
-      deps.summaryCallable(input),
+      deps.summaryCallable({
+        assignmentId: input.assignmentId,
+        includeStudentProgress: true,
+      }),
     );
   const sharedAttemptsListCallable: AttemptsListForClassCallable | undefined =
     deps.attemptsListForClassCallable === undefined
@@ -1448,7 +1454,7 @@ async function renderRosterPanel(
       attemptNumber: c.attemptNumber,
       submittedAt: c.submittedAt,
     })),
-    inProgressStudentCount: summary.inProgressStudents,
+    progress: summary.studentProgress ?? [],
     sortOrder,
   });
 
@@ -1834,12 +1840,17 @@ function appendRosterGroup(
   label: string,
   headerCount: number,
   rows: ReadonlyArray<
-    | { readonly studentId: string; readonly studentDisplayName: string }
+    | {
+        readonly studentId: string;
+        readonly studentDisplayName: string;
+        readonly status?: string;
+      }
     | {
         readonly studentId: string;
         readonly studentDisplayName: string;
         readonly percentage: number;
         readonly attemptCount: number;
+        readonly retakeStatus?: string;
       }
   >,
   showPercentage: boolean,
@@ -1953,6 +1964,24 @@ function appendRosterGroup(
           summary.appendChild(count);
         }
         li.appendChild(summary);
+      }
+      // Quiz progress visibility: a Live session's actual answered/total
+      // ("In Progress · 4/10"), or a retake beside the unchanged best score.
+      const progressText =
+        "retakeStatus" in row && typeof row.retakeStatus === "string"
+          ? row.retakeStatus
+          : "status" in row && typeof row.status === "string"
+            ? row.status
+            : undefined;
+      if (progressText !== undefined) {
+        const progress = doc.createElement("span");
+        progress.className = "shell-assignment-detail-roster-progress";
+        progress.setAttribute(
+          "data-testid",
+          `assignment-detail-roster-progress-${row.studentId}`,
+        );
+        progress.textContent = progressText;
+        li.appendChild(progress);
       }
       // Sprint 30A.2: render the grade-passback status line + Retry action
       // ONLY when there is something useful to show. A `synced` status
