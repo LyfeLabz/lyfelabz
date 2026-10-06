@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "$comment": "Canonical authored LyfeLabz curriculum registry. Source of app/src/curriculum/curriculum.manifest.json (npm run curriculum:build inside app/). Order is significant. During migration the root index.html is still hand-authored and curriculum:verify requires it to present exactly this curriculum.",
+  "$comment": "Canonical authored LyfeLabz curriculum registry. Source of app/src/curriculum/curriculum.manifest.json (npm run curriculum:build inside app/). Order is significant. Also the source of the generated root index.html curriculum catalog (between the GENERATED CURRICULUM CATALOG markers). placeholderUnits are unregistered coming-soon cards shown only in gated topic groups.",
   "topicGroups": [
     {
       "topic": "life-science",
@@ -739,7 +739,16 @@
               ]
             }
           ],
-          "placeholderUnits": 2
+          "placeholderUnits": [
+            {
+              "title": "Cognitive Biases",
+              "description": "Why does a smart brain still make predictable mistakes? Discover the mental shortcuts, like confirmation bias and anchoring, that quietly shape how you think and decide."
+            },
+            {
+              "title": "Emotional Regulation & Social Influence",
+              "description": "How emotions are processed, why peer pressure works, and strategies for managing your own responses."
+            }
+          ]
         }
       ]
     }

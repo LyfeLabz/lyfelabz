@@ -4,7 +4,7 @@
   "generatedBy": "app/scripts/build-curriculum-manifest.cjs",
   "canonicalSource": "app/src/curriculum/curriculum.registry.json",
   "canonicalSourceRelativeToApp": "src/curriculum/curriculum.registry.json",
-  "canonicalSourceSha256": "e717a08a5c9a4fd037888e8e0cae8a567b94dac004a769f7e49a57e4eabae10b",
+  "canonicalSourceSha256": "6cfdaa450f3ab519f23625427d6a32212cc5aa4b0207621f4fc3cac5938f109d",
   "doNotEditByHand": "This file is generated from the canonical curriculum registry app/src/curriculum/curriculum.registry.json. Do not edit by hand. Regenerate with `npm run curriculum:build` inside app/.",
   "totals": {
     "unitCount": 50,

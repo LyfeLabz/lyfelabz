@@ -13,6 +13,11 @@ const {
   validateManifestEntry,
   validateOutputDirectory
 } = require('./build.cjs');
+const {
+  extractCatalog,
+  renderCatalog,
+  spliceCatalog
+} = require('../../app/scripts/curriculumCatalog.cjs');
 
 const testOutputDirectory = path.join(repositoryRoot, 'dist', `marketing-test-${process.pid}`);
 
@@ -82,6 +87,15 @@ test('only legal-page YAML front matter is removed from marketing output', () =>
     const output = fs.readFileSync(path.join(testOutputDirectory, relativePath));
     assert.deepEqual(output, source, relativePath);
   }
+});
+
+test('published homepage catalog is rendered from the curriculum registry', () => {
+  const output = fs.readFileSync(path.join(testOutputDirectory, 'index.html'), 'utf8');
+  assert.equal(extractCatalog(output), renderCatalog());
+
+  // A stale source catalog is replaced in the published copy, not shipped.
+  const staleSource = spliceCatalog(fs.readFileSync(path.join(repositoryRoot, 'index.html'), 'utf8'), '    <!-- stale -->\n');
+  assert.equal(spliceCatalog(staleSource), output);
 });
 
 test('repository-internal content is absent', () => {

@@ -43,7 +43,6 @@ const registry = require(registryPath) as {
   buildManifest(): unknown;
   parseRegistryText(text: string): unknown;
   readRegistryText(): string;
-  compareRegistryWithIndexHtml(registryText?: string, indexHtml?: string): string | null;
 };
 
 const MANIFEST_JSON_PATH = path.resolve(
@@ -79,10 +78,6 @@ describe("Canonical curriculum manifest (Sprint 6D.0)", () => {
     // keep the content but change the fingerprint.
     const sha = parser.sha256(registry.readRegistryText());
     expect(CURRICULUM_MANIFEST.canonicalSourceSha256).toBe(sha);
-  });
-
-  test("root index.html presents exactly the registered curriculum (migration lockstep)", () => {
-    expect(registry.compareRegistryWithIndexHtml()).toBeNull();
   });
 
   test("every unit slug is unique and every resource href is unique", () => {
@@ -461,8 +456,22 @@ describe("Canonical curriculum registry strict-failure guarantees", () => {
 
   test("fails on placeholder units outside a gated topic group", () => {
     const value = minimal();
-    ((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0].placeholderUnits = 1;
+    ((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0].placeholderUnits = [
+      { title: "Soon", description: "Desc" },
+    ];
     expect(() => parse(value)).toThrow(/placeholder units outside a gated topic group/);
+  });
+
+  test("fails on a placeholder unit that is not a titled, described card", () => {
+    const value = minimal();
+    (value.topicGroups as Json[])[0].gated = true;
+    const block = ((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0];
+    block.placeholderUnits = 2;
+    expect(() => parse(value)).toThrow(/placeholderUnits must be an array/);
+    block.placeholderUnits = [{ title: "Soon" }];
+    expect(() => parse(value)).toThrow(/description must be a non-empty string/);
+    block.placeholderUnits = [{ title: "Soon", description: "Desc", slug: "soon" }];
+    expect(() => parse(value)).toThrow(/unknown key "slug"/);
   });
 
   test("fails on an unsupported grade", () => {
@@ -475,13 +484,5 @@ describe("Canonical curriculum registry strict-failure guarantees", () => {
     const value = minimal();
     firstUnit(value).title = " A";
     expect(() => parse(value)).toThrow(/whitespace/);
-  });
-
-  test("lockstep reports the first divergence from root index.html", () => {
-    const value = JSON.parse(registry.readRegistryText()) as Json;
-    firstUnit(value).title = "Changed Title";
-    expect(registry.compareRegistryWithIndexHtml(JSON.stringify(value))).toBe(
-      "$.topicGroups.0.units.0.title",
-    );
   });
 });

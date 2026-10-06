@@ -5,12 +5,9 @@
  * (`app/src/curriculum/curriculum.registry.json`) and derives the
  * manifest body consumed by `build-curriculum-manifest.cjs`. The registry
  * replaces the root `index.html` as the authored source of curriculum
- * metadata; the generated manifest contract is unchanged.
- *
- * During migration the homepage is still hand-authored, so
- * `compareRegistryWithIndexHtml` keeps the two in lockstep: the registry
- * must describe exactly the curriculum `curriculumParser.cjs` extracts
- * from `index.html`.
+ * metadata; the generated manifest contract is unchanged. The homepage
+ * curriculum catalog is rendered from the same registry by
+ * `curriculumCatalog.cjs`.
  *
  * Validation is deliberately strict and mirrors the parser's guarantees.
  * This module has no external dependencies.
@@ -26,8 +23,6 @@ const {
   TOPIC_LABELS,
   RESOURCE_TYPES,
   HREF_PREFIX_BY_TYPE,
-  parseCurriculumFromIndexHtml,
-  readRootIndexHtml,
   sha256,
   summarize,
 } = require("./curriculumParser.cjs");
@@ -43,6 +38,7 @@ const REGISTRY_KEYS = new Set(["schemaVersion", "$comment", "topicGroups"]);
 const TOPIC_GROUP_KEYS = new Set(["topic", "gated", "gradeBlocks"]);
 const GRADE_BLOCK_KEYS = new Set(["grade", "units", "placeholderUnits"]);
 const UNIT_KEYS = new Set(["slug", "title", "description", "resources"]);
+const PLACEHOLDER_KEYS = new Set(["title", "description"]);
 const RESOURCE_KEYS = new Set(["type", "filename", "label"]);
 
 function fail(message) {
@@ -111,10 +107,16 @@ function deriveCurriculumFromRegistry(registry) {
       }
       const grade = block.grade;
       if (!Array.isArray(block.units)) fail(`${where}/${grade} units must be an array`);
-      const placeholders = block.placeholderUnits === undefined ? 0 : block.placeholderUnits;
-      if (!Number.isInteger(placeholders) || placeholders < 0) {
-        fail(`${where}/${grade} placeholderUnits must be a non-negative integer`);
+      const placeholderUnits = block.placeholderUnits === undefined ? [] : block.placeholderUnits;
+      if (!Array.isArray(placeholderUnits)) {
+        fail(`${where}/${grade} placeholderUnits must be an array`);
       }
+      placeholderUnits.forEach((p, i) => {
+        checkKeys(p, PLACEHOLDER_KEYS, `placeholder unit ${i} in ${where}/${grade}`);
+        checkText(p.title, `placeholder unit ${i} in ${where}/${grade} title`);
+        checkText(p.description, `placeholder unit "${p.title}" description`);
+      });
+      const placeholders = placeholderUnits.length;
       if (placeholders > 0 && !tg.gated) {
         fail(`${where}/${grade} declares placeholder units outside a gated topic group`);
       }
@@ -226,39 +228,6 @@ function buildManifest() {
   };
 }
 
-// First path at which two JSON-compatible values differ, or null.
-function firstDifference(a, b, where = "$") {
-  if (a === b) return null;
-  if (typeof a !== typeof b || a === null || b === null || typeof a !== "object") {
-    return where;
-  }
-  if (Array.isArray(a) !== Array.isArray(b)) return where;
-  const keys = Array.isArray(a)
-    ? [...Array(Math.max(a.length, b.length)).keys()]
-    : [...new Set([...Object.keys(a), ...Object.keys(b)])];
-  if (!Array.isArray(a) && Object.keys(a).join() !== Object.keys(b).join()) {
-    return `${where} (key order)`;
-  }
-  for (const key of keys) {
-    const diff = firstDifference(a[key], b[key], `${where}.${key}`);
-    if (diff) return diff;
-  }
-  return null;
-}
-
-// Migration lockstep: the registry must describe exactly the curriculum
-// the hand-authored homepage presents. Returns null when they agree, or
-// the first differing path.
-function compareRegistryWithIndexHtml(
-  registryText = readRegistryText(),
-  indexHtml = readRootIndexHtml(),
-) {
-  return firstDifference(
-    parseRegistryText(registryText),
-    parseCurriculumFromIndexHtml(indexHtml),
-  );
-}
-
 module.exports = {
   REGISTRY_PATH,
   REGISTRY_RELATIVE_TO_APP,
@@ -266,5 +235,4 @@ module.exports = {
   parseRegistryText,
   readRegistryText,
   buildManifest,
-  compareRegistryWithIndexHtml,
 };

@@ -3,15 +3,16 @@
  *
  * Reads the root `index.html` and returns a deterministic,
  * JSON-serialisable description of every unit and resource the homepage
- * surfaces. The authored source of curriculum metadata is now the
- * curriculum registry (`curriculumRegistry.cjs`); this parser remains as
- * the migration lockstep check that the hand-authored homepage presents
- * exactly the registered curriculum.
+ * surfaces. The authored source of curriculum metadata is the curriculum
+ * registry (`curriculumRegistry.cjs`), and the homepage catalog is
+ * generated from it (`curriculumCatalog.cjs`). This parser is no longer a
+ * source of curriculum: it is an independent reader used by tests to
+ * prove the generated homepage round-trips to exactly the registered
+ * curriculum. It also hosts the shared topic and resource-type constants.
  *
  * The parser is deliberately strict. It fails loudly rather than
  * silently omitting malformed or unrecognized curriculum markup. This
- * module has no external dependencies; it is required by the registry
- * loader and by the drift test in `app/src/curriculum`.
+ * module has no external dependencies.
  */
 
 "use strict";
