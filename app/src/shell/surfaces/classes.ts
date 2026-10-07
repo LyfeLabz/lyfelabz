@@ -2650,7 +2650,7 @@ function renderBackToSettings(
 ): HTMLElement {
   const back = doc.createElement("button");
   back.type = "button";
-  back.className = "shell-classes-back-to-settings";
+  back.className = "shell-back shell-classes-back-to-settings";
   back.setAttribute("data-testid", "classes-back-to-settings");
   back.textContent = "Back to Settings";
   back.setAttribute("aria-label", "Back to Settings");
@@ -3620,7 +3620,7 @@ function renderClassWorkspaceState(
 
   const back = doc.createElement("button");
   back.type = "button";
-  back.className = "shell-class-workspace-back";
+  back.className = "shell-back shell-class-workspace-back";
   back.setAttribute("data-testid", "class-workspace-back");
   back.textContent = "Back to Classes";
   back.setAttribute("aria-label", "Back to Classes");
@@ -4453,7 +4453,7 @@ function renderStudentDetailSurface(
   // students were visited via Previous/Next in between.
   const backBtn = doc.createElement("button");
   backBtn.type = "button";
-  backBtn.className = "shell-student-detail-back";
+  backBtn.className = "shell-back shell-student-detail-back";
   backBtn.setAttribute("data-testid", "student-detail-back");
   if (studentDetailOrigin === "roster") {
     backBtn.textContent = "Back to Students";

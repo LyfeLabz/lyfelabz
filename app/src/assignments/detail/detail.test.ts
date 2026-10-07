@@ -240,6 +240,8 @@ describe("renderAssignmentDetail - navigation", () => {
     // destination in both the visible label and the accessible name.
     expect(back?.getAttribute("aria-label")).toBe("Back to Curriculum");
     expect(back?.textContent).toBe("Back to Curriculum");
+    // Control hierarchy Op 1: the shared Teacher Workspace Back control.
+    expect(back?.classList.contains("shell-back")).toBe(true);
     back?.click();
     expect(clicked).toBe(1);
   });

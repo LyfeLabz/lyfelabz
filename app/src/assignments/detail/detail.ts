@@ -284,7 +284,7 @@ export function renderAssignmentDetail(
   if (deps.onBack !== undefined) {
     const back = doc.createElement("button");
     back.type = "button";
-    back.className = "shell-assignment-detail-back";
+    back.className = "shell-back shell-assignment-detail-back";
     back.setAttribute("data-testid", "assignment-detail-back");
     // Sprint 16 Slice 4 / Sprint 28.6C: the Back control returns to the entry
     // context. The default label is "Back to Curriculum" (the Slice 1 lighter

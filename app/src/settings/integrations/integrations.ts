@@ -72,9 +72,9 @@ export function renderIntegrationsSurface(
 
     const back = doc.createElement("button");
     back.type = "button";
-    back.className = "shell-nav-button shell-integrations-back";
+    back.className = "shell-back shell-integrations-back";
     back.setAttribute("data-testid", "integrations-back");
-    back.textContent = "← Back to Settings";
+    back.textContent = "Back to Settings";
     back.addEventListener("click", () => opts.onExit());
     container.appendChild(back);
 

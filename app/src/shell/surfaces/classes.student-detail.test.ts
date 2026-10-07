@@ -203,10 +203,9 @@ test("back-to-students button leaves student detail and returns to the roster", 
 });
 
 // ---------------------------------------------------------------------------
-// 4b. UX polish: Back to Students carries the compact secondary-control
-// class (shared visual language with the certified shell-ss-back-btn /
-// shell-class-workspace-back pattern) rather than an unstyled default
-// button.
+// 4b. UX polish: Back to Students carries the shared Teacher Workspace Back
+// control class (.shell-back, Control hierarchy Op 1) plus its surface hook
+// class, rather than an unstyled default button.
 // ---------------------------------------------------------------------------
 
 test("back-to-students button carries the compact secondary-control class", async () => {
@@ -218,7 +217,7 @@ test("back-to-students button carries the compact secondary-control class", asyn
     "[data-testid=student-detail-back]",
   );
   expect(back).not.toBeNull();
-  expect(back!.className).toBe("shell-student-detail-back");
+  expect(back!.className).toBe("shell-back shell-student-detail-back");
 });
 
 // ---------------------------------------------------------------------------
@@ -931,6 +930,14 @@ test("Slice 2: the middle student in a three-student roster shows both Previous 
 
   expect(mount.querySelector("[data-testid=student-detail-prev]")).not.toBeNull();
   expect(mount.querySelector("[data-testid=student-detail-next]")).not.toBeNull();
+  // Control hierarchy Op 1: sequential Previous/Next stay a separate family;
+  // only the contextual Back control uses the shared Back pattern.
+  expect(
+    mount.querySelector("[data-testid=student-detail-prev]")!.classList.contains("shell-back"),
+  ).toBe(false);
+  expect(
+    mount.querySelector("[data-testid=student-detail-next]")!.classList.contains("shell-back"),
+  ).toBe(false);
 });
 
 test("Slice 2: the first student in the roster has no Previous control", async () => {

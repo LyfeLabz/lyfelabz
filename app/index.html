@@ -269,6 +269,56 @@
     font-size: 0.9rem;
     color: #555;
   }
+  /* Control hierarchy Op 1: the ONE Teacher Workspace Back/Return control
+     ("where can I return"). Every contextual Back button carries .shell-back
+     beside its surface hook class. A compact outlined pill in navigation teal
+     with a leading arrow - the same family as the student
+     .student-explore-link navigation pill - so it reads as navigation, never
+     as a filter (filters are neutral) or an action (actions are 6px
+     rectangles). The arrow is presentation only (empty alt text), so it is
+     not announced as part of the button name. Sequential Previous/Next and
+     the "Return to public lessons" exit link are deliberately separate. */
+  .shell-back {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 0.4rem;
+    width: auto;
+    min-height: 32px;
+    box-sizing: border-box;
+    margin: 0 0 0.75rem 0;
+    padding: 0.2rem 0.85rem 0.2rem 0.7rem;
+    background: transparent;
+    border: 1px solid var(--tw-nav-edge);
+    border-radius: var(--tw-radius-pill);
+    color: var(--tw-nav-edge);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .shell-back::before {
+    content: "\2190";
+    content: "\2190" / "";
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .shell-back:hover {
+    background: var(--tw-nav-wash);
+    color: var(--tw-nav-edge);
+  }
+  .shell-back:focus-visible {
+    outline: var(--tw-focus-outline);
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  @media (pointer: coarse) {
+    .shell-back { min-height: 44px; }
+  }
   /* Sprint 29B: quiet tertiary legal links on the /app sign-in surface. */
   .auth-legal-links {
     margin-top: 1rem;
@@ -294,24 +344,44 @@
     flex-wrap: wrap;
     gap: 0.35rem;
   }
+  /* Grade / Topic filters (Control hierarchy Op 1): SELECTION controls, not
+     navigation. Neutral ink only - navigation teal is reserved for tabs and
+     Back controls. Unselected is an outlined pill with a visible neutral
+     edge; selected is a solid neutral fill (a fill-vs-outline cue, not hue
+     alone; aria-pressed carries the state). margin: 0 zeroes the global
+     button's 1rem top-margin; spacing is owned by .shell-filter-row. */
   .shell-filter-pill {
+    margin: 0;
     padding: 0.35rem 0.75rem;
-    background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 999px;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-control-edge);
+    border-radius: var(--tw-radius-pill);
     font: inherit;
     font-size: 0.9rem;
-    color: #333;
+    font-weight: 400;
+    color: var(--tw-ink-soft);
     cursor: pointer;
     min-height: 32px;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
   }
-  .shell-filter-pill:hover, .shell-filter-pill:focus-visible {
-    border-color: #666;
+  .shell-filter-pill:hover:not(.shell-filter-pill-active) {
+    background: var(--tw-surface-alt);
+    border-color: var(--tw-ink-soft);
+    color: var(--tw-ink);
   }
   .shell-filter-pill-active {
-    background: #eef1f5;
-    border-color: #666;
+    background: var(--tw-select-bg);
+    border-color: var(--tw-select-bg);
+    color: var(--tw-select-ink);
     font-weight: 600;
+  }
+  .shell-filter-pill-active:hover {
+    background: var(--tw-ink);
+    border-color: var(--tw-ink);
+  }
+  .shell-filter-pill:focus-visible {
+    outline: var(--tw-focus-outline);
+    outline-offset: 2px;
   }
   /* Sprint 28.6H (Finding 6): the Curriculum grid uses an explicit column
      count per breakpoint rather than auto-fill, so wide desktops show 4 cards
@@ -624,42 +694,59 @@
   .shell-settings-intro {
     margin: 0.25rem 0 1rem 0;
   }
-  /* Sprint 28.6H.4 (Task E1): Settings is a scalable tabbed surface. The tab
-     row is a quiet segmented control; only real categories render (one tab -
-     Class Management - today). The selected tab carries a solid underline
-     accent (non-color state also on aria-selected). */
+  /* Sprint 28.6H.4 (Task E1): Settings is a scalable tabbed surface; the
+     Curriculum resource-type tabs reuse this exact rule.
+     Control hierarchy Op 1: the shared INTERNAL SECTION NAVIGATION treatment
+     ("where am I"), modeled on the Class Workspace tab bar. A single-line bar
+     on a visible baseline: never wraps, scrolls horizontally when narrow. No
+     pill, no fill. The selected tab is ink text + a 3px navigation-teal
+     underline (a shape cue plus aria-selected, not color alone); green stays
+     reserved for primary actions. The baseline is an inset shadow so the
+     scroll container never clips the selected underline. */
   .shell-curriculum-tabs,
   .shell-settings-tabs {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
     margin: 0 0 1.25rem 0;
-    border-bottom: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.1));
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    box-shadow: inset 0 -1px 0 var(--tw-tab-baseline);
   }
   .shell-curriculum-tab,
   .shell-settings-tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
     padding: 0.5rem 0.85rem;
     background: transparent;
     border: none;
-    border-bottom: 2px solid transparent;
-    /* margin-top: 0 zeroes the global button's 1rem top-margin. */
-    margin-top: 0;
-    margin-bottom: -1px;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    /* margin: 0 zeroes the global button's 1rem top-margin. */
+    margin: 0;
     font: inherit;
     font-weight: 600;
-    color: var(--tw-ink-muted, #566472);
+    color: var(--tw-ink-muted);
     cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .shell-curriculum-tab:hover:not([aria-selected="true"]),
+  .shell-settings-tab:hover:not([aria-selected="true"]) {
+    color: var(--tw-ink);
+    border-bottom-color: var(--tw-control-edge);
   }
   .shell-curriculum-tab[aria-selected="true"],
   .shell-settings-tab[aria-selected="true"] {
-    color: var(--tw-ink, #1c2733);
-    border-bottom-color: #1f6b3d;
+    color: var(--tw-ink);
+    border-bottom-color: var(--tw-tab-indicator);
   }
+  /* Inset offset keeps the solid outline inside the scrolling bar. */
   .shell-curriculum-tab:focus-visible,
   .shell-settings-tab:focus-visible {
-    outline: none;
-    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
-    border-radius: 4px;
+    outline: var(--tw-focus-outline);
+    outline-offset: -2px;
+    border-radius: 4px 4px 0 0;
   }
   .shell-settings-panel {
     display: block;
@@ -955,27 +1042,6 @@
     outline: none;
     box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
   }
-  /* Back navigation: compact link-style control matching shell-integrations-back */
-  .shell-ss-back-btn {
-    background: transparent;
-    border: none;
-    color: var(--tw-ink-muted, #566472);
-    font: inherit;
-    font-size: 0.9rem;
-    padding: 0.2rem 0;
-    margin: 0 0 0.75rem 0;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-  .shell-ss-back-btn:hover,
-  .shell-ss-back-btn:focus-visible { text-decoration: underline; }
-  .shell-ss-back-btn:focus-visible {
-    outline: none;
-    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
-    border-radius: 3px;
-  }
   .shell-ss-student-detail-name {
     margin: 0 0 0.6rem 0;
     font-size: 1.05rem;
@@ -1047,17 +1113,6 @@
   .shell-integrations {
     display: block;
   }
-  .shell-integrations-back {
-    background: transparent;
-    border: none;
-    color: #444;
-    font: inherit;
-    padding: 0.25rem 0;
-    margin-bottom: 0.5rem;
-    cursor: pointer;
-  }
-  .shell-integrations-back:hover,
-  .shell-integrations-back:focus-visible { text-decoration: underline; }
   .shell-integrations-heading {
     font-size: 1.05rem;
     margin: 0;
@@ -1160,7 +1215,7 @@
     margin: 0.5rem 0 1rem 0;
   }
   @media (pointer: coarse) {
-    .shell-integrations-back, .shell-integrations-select { min-height: 44px; }
+    .shell-integrations-select { min-height: 44px; }
   }
   /* Assign Experience (Sprint 6E, remediated Sprint 20).
      The Curriculum surface builds a modal overlay for the Assign action
@@ -1397,32 +1452,6 @@
     flex-direction: column;
     gap: 0.5rem;
   }
-  .shell-lesson-summary-back {
-    align-self: flex-start;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.3rem 0.1rem;
-    font: inherit;
-    font-size: 0.85rem;
-    font-weight: 600;
-    background: transparent;
-    color: var(--tw-ink-soft, #3a4653);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    min-height: 32px;
-  }
-  .shell-lesson-summary-back::before {
-    content: "\2039";
-    font-size: 1.1rem;
-    line-height: 1;
-  }
-  .shell-lesson-summary-back:hover { color: var(--tw-ink, #1c2733); }
-  .shell-lesson-summary-back:focus-visible {
-    outline: none;
-    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
-  }
   .shell-lesson-summary-title {
     margin: 0.15rem 0 0;
     font-size: 1.35rem;
@@ -1516,7 +1545,6 @@
     .shell-lesson-summary-metrics { grid-template-columns: 1fr; }
   }
   @media (pointer: coarse) {
-    .shell-lesson-summary-back { min-height: 44px; }
     .shell-lesson-summary-retry { min-height: 44px; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -2440,6 +2468,16 @@
     --tw-radius-card:    10px;
     --tw-radius-control: 6px;
     --tw-radius-pill:    999px;
+    /* Teacher Workspace control hierarchy (Op 1): semantic aliases over the
+       existing palette, no new hues. Teal = navigation/location (section
+       tabs, Back controls); neutral ink = selection state (filters);
+       green stays the primary action; gold stays analytics. */
+    --tw-tab-indicator:  var(--tw-nav-edge);
+    --tw-tab-baseline:   var(--tw-workspace-divider);
+    --tw-select-bg:      var(--tw-ink-soft);
+    --tw-select-ink:     #ffffff;
+    --tw-control-edge:   rgba(28, 39, 51, 0.30);
+    --tw-focus-outline:  2px solid var(--tw-nav-edge);
   }
 
   /* Page canvas: warm gray page, white content cards, calmer ink. */
@@ -2538,20 +2576,9 @@
   }
   .shell-status { color: var(--tw-ink-muted); }
 
-  /* Filter chips: softer body, teal-tinted active state to echo the
-     nav language. */
-  .shell-filter-pill {
-    border-color: var(--tw-hairline);
-    color: var(--tw-ink-soft);
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-  .shell-filter-pill:hover,
-  .shell-filter-pill:focus-visible { border-color: var(--tw-nav-edge); }
-  .shell-filter-pill-active {
-    background: var(--tw-nav-wash);
-    border-color: var(--tw-nav-edge);
-    color: var(--tw-nav-edge);
-  }
+  /* Filter chips: owned entirely by the canonical .shell-filter-pill rule
+     (Control hierarchy Op 1); the former teal "echo the nav" override was
+     removed so filters no longer share the navigation language. */
 
   /* Lesson cards on Curriculum: same hairline + elevation contract as
      the primary shell card. Preserves color-coded topic badges. */
@@ -2601,7 +2628,6 @@
      the teacher surface. Preserves keyboard-navigation clarity. */
   .shell-nav-button:focus-visible,
   .shell-signout:focus-visible,
-  .shell-filter-pill:focus-visible,
   .shell-lesson-assign:focus-visible,
   .shell-lesson-view-summary:focus-visible,
   .shell-lesson-toggle:focus-visible,
@@ -2610,8 +2636,7 @@
   .shell-summary-select-choice:focus-visible,
   .shell-classes-create-open:focus-visible,
   .shell-classes-create-actions button:focus-visible,
-  .shell-classes-joincode-dismiss:focus-visible,
-  .shell-integrations-back:focus-visible {
+  .shell-classes-joincode-dismiss:focus-visible {
     outline: none;
     box-shadow: var(--tw-focus-ring);
   }
@@ -2654,6 +2679,9 @@
     .shell-nav-button,
     .shell-signout,
     .shell-filter-pill,
+    .shell-curriculum-tab,
+    .shell-settings-tab,
+    .shell-back,
     .shell-lesson-assign,
     .shell-lesson-view-summary,
     .shell-assign-confirm,
@@ -3193,10 +3221,7 @@
   .shell-btn:focus-visible,
   .shell-class-nav-button:focus-visible,
   .shell-active-assignments-toggle-btn:focus-visible,
-  .shell-assignment-detail-back:focus-visible,
-  .shell-assignment-detail-late-recipients-add:focus-visible,
-  .shell-class-workspace-back:focus-visible,
-  .shell-classes-back-to-settings:focus-visible {
+  .shell-assignment-detail-late-recipients-add:focus-visible {
     outline: none;
     box-shadow: var(--tw-focus-ring);
     border-color: var(--tw-nav-edge);
@@ -3266,19 +3291,6 @@
     margin: 0 0 0.35rem 0;
     outline: none;
   }
-  .shell-assignment-detail-back {
-    display: inline-block;
-    margin: 0 0 0.85rem 0;
-    padding: 0.3rem 0;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: var(--tw-radius-control);
-    color: var(--tw-nav-edge);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .shell-assignment-detail-back:hover { text-decoration: underline; }
   .shell-assignment-detail-body { display: block; }
 
   /* Header groups identity + state + lifecycle in one surface. */
@@ -3944,24 +3956,6 @@
 
   /* ---- D3: class workspace ------------------------------------------ */
 
-  /* Sprint 28.6H.9 (Correction 2): "Back to Settings" on a focused Settings
-     child task shares the certified "Back to Classes" visual language so
-     parent navigation reads identically across the teacher surface. */
-  .shell-class-workspace-back,
-  .shell-classes-back-to-settings {
-    display: inline-block;
-    margin: 0 0 0.75rem 0;
-    padding: 0.3rem 0;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: var(--tw-radius-control);
-    color: var(--tw-nav-edge);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .shell-class-workspace-back:hover,
-  .shell-classes-back-to-settings:hover { text-decoration: underline; }
 
   /* Snapshot / Roster switcher: a compact segmented tab bar with a real
      selected state (underline + weight + color, not color alone) and
@@ -4062,28 +4056,6 @@
     margin: 0.5rem 0 0 0;
   }
 
-  /* Student Detail V1 UX polish: "Back to Students" is a compact,
-     secondary, link-style control - matches shell-ss-back-btn - so it does
-     not visually compete with the student name heading or the class tabs. */
-  .shell-student-detail-back {
-    background: transparent;
-    border: none;
-    color: var(--tw-nav-edge);
-    font: inherit;
-    font-size: 0.9rem;
-    padding: 0.2rem 0;
-    margin: 0 0 0.5rem 0;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-  }
-  .shell-student-detail-back:hover,
-  .shell-student-detail-back:focus-visible { text-decoration: underline; }
-  .shell-student-detail-back:focus-visible {
-    outline: none;
-    box-shadow: var(--tw-focus-ring);
-    border-radius: 3px;
-  }
   .shell-student-detail-name { margin: 0 0 0.5rem 0; }
   /* Student Progress & Assignment Membership Phase A, Slice 2: Previous /
      Next, styled as a small secondary-control pair matching the existing

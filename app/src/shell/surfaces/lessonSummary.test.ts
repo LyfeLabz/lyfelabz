@@ -216,6 +216,8 @@ describe("renderLessonSummarySurface", () => {
     expect(back).not.toBeNull();
     expect(back!.tagName).toBe("BUTTON");
     expect(back!.textContent).toBe("Back to Curriculum");
+    // Control hierarchy Op 1: the shared Teacher Workspace Back control.
+    expect(back!.classList.contains("shell-back")).toBe(true);
     back!.click();
     expect(onBack).toHaveBeenCalledTimes(1);
   });

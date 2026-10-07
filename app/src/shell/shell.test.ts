@@ -1687,9 +1687,12 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     );
     mountTeacherShell(teacher, mount, makeShellDeps({ listClasses }));
     await openC1(mount);
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=class-workspace-back]")
-      ?.click();
+    const workspaceBack = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=class-workspace-back]",
+    );
+    // Control hierarchy Op 1: the shared Teacher Workspace Back control.
+    expect(workspaceBack?.classList.contains("shell-back")).toBe(true);
+    workspaceBack?.click();
     expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
     expect(mount.querySelector("[data-testid=classes-list]")).not.toBeNull();
     // The list fetcher must not be invoked again on Back

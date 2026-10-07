@@ -461,7 +461,12 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     });
     switchToSS(mount);
     await openStudentDetail(mount, "stu-1", lmsClass.id);
-    mount.querySelector<HTMLButtonElement>("[data-testid=ss-back-btn]")!.click();
+    const ssBack = mount.querySelector<HTMLButtonElement>("[data-testid=ss-back-btn]")!;
+    // Control hierarchy Op 1: shared Back control; the arrow is CSS
+    // presentation, not part of the accessible label text.
+    expect(ssBack.classList.contains("shell-back")).toBe(true);
+    expect(ssBack.textContent).toBe("Back to student list");
+    ssBack.click();
     expect(mount.querySelector("[data-testid=ss-student-list]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=ss-student-detail]")).toBeNull();
   });
@@ -700,6 +705,11 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
       "[data-testid=integrations-back]",
     )!;
     expect(backBtn).not.toBeNull();
+    // Control hierarchy Op 1: the shared Back control, no longer borrowing
+    // the sidebar navigation button class; the arrow is CSS presentation.
+    expect(backBtn.classList.contains("shell-back")).toBe(true);
+    expect(backBtn.classList.contains("shell-nav-button")).toBe(false);
+    expect(backBtn.textContent).toBe("Back to Settings");
     backBtn.click();
     await flush();
     // Settings root is restored.

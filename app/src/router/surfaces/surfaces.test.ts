@@ -1110,6 +1110,10 @@ describe("active teacher surface (Step 5 shell)", () => {
       .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
       ?.click();
     expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
+    // Control hierarchy Op 1: the exit link is not a contextual Back control.
+    expect(
+      mount.querySelector("[data-testid=return-link]")!.classList.contains("shell-back"),
+    ).toBe(false);
     // Opaque schoolId is never rendered in the shell (spec §7.2).
     expect(mount.textContent).not.toContain("s1");
   });

@@ -681,9 +681,9 @@ export function renderSettingsSurface(
 
     const backBtn = doc.createElement("button");
     backBtn.type = "button";
-    backBtn.className = "shell-ss-back-btn";
+    backBtn.className = "shell-back shell-ss-back-btn";
     backBtn.setAttribute("data-testid", "ss-back-btn");
-    backBtn.textContent = "← Back to student list";
+    backBtn.textContent = "Back to student list";
     backBtn.addEventListener("click", () => {
       ssSelectedStudentId = null;
       studentDetailState = null;

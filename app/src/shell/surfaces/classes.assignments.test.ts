@@ -506,6 +506,7 @@ describe("Sprint 28.6H.9 (Correction 2) - Back to Settings on focused tasks", ()
     );
     expect(back).not.toBeNull();
     expect(back!.textContent).toBe("Back to Settings");
+    expect(back!.classList.contains("shell-back")).toBe(true);
     expect(
       mount.querySelector("[data-testid=classes-create-form]"),
     ).not.toBeNull();

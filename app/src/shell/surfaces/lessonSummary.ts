@@ -53,7 +53,7 @@ export function renderLessonSummarySurface(
   // focus order so return is always reachable.
   const back = doc.createElement("button");
   back.type = "button";
-  back.className = "shell-lesson-summary-back";
+  back.className = "shell-back shell-lesson-summary-back";
   back.setAttribute("data-testid", "lesson-summary-back");
   back.textContent = "Back to Curriculum";
   back.addEventListener("click", () => {
