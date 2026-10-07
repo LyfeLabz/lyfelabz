@@ -3346,8 +3346,9 @@
   }
   .shell-assignment-detail-body { display: block; }
 
-  /* Header groups identity + state + lifecycle in one surface. */
-  .shell-assignment-detail-header {
+  /* Assignment Overview: one card holds identity, lifecycle action, and
+     the summary metrics, so the teacher reaches the roster sooner. */
+  .shell-assignment-detail-overview {
     background: var(--tw-surface);
     border: 1px solid var(--tw-hairline);
     border-radius: var(--tw-radius-card);
@@ -3355,12 +3356,31 @@
     padding: 1rem 1.15rem;
     margin: 0 0 1rem 0;
   }
+  /* Identity on the left, the lifecycle action on the right; the action
+     wraps beneath the identity when the width runs out. */
+  .shell-assignment-detail-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+  }
+  .shell-assignment-detail-identity {
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
   .shell-assignment-detail-title {
     font-size: 1.35rem;
     font-weight: 600;
     color: var(--tw-ink);
-    margin: 0 0 0.7rem 0;
+    margin: 0 0 0.2rem 0;
     outline: none;
+    overflow-wrap: anywhere;
+  }
+  .shell-assignment-detail-class {
+    margin: 0;
+    color: var(--tw-ink-muted);
+    font-weight: 500;
   }
   /* Meta becomes a row of label-over-value groups instead of
      undifferentiated stacked text (audit §12). */
@@ -3368,8 +3388,9 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem 1.75rem;
-    margin: 0 0 0.85rem 0;
+    margin: 0.6rem 0 0 0;
   }
+  .shell-assignment-detail-meta:empty { display: none; }
   .shell-assignment-detail-meta-pair {
     display: flex;
     flex-direction: column;
@@ -3412,7 +3433,9 @@
     align-items: center;
     gap: 0.5rem;
     margin: 0;
+    flex: 0 1 auto;
   }
+  .shell-assignment-detail-lifecycle-editing { flex-basis: 100%; }
   .shell-assignment-detail-draft-label,
   .shell-assignment-detail-closed-label {
     margin: 0;
@@ -3435,9 +3458,39 @@
   }
 
   /* Section surfaces. The plain (non-draft) summary host is a transparent
-     wrapper because the Assignment Summary card inside it already carries
-     shell-card; every other section is a card in its own right. */
+     wrapper inside the Assignment Overview card; every other section is a
+     card in its own right. */
   .shell-assignment-detail-summary { margin: 0 0 1rem 0; }
+  .shell-assignment-detail-overview .shell-assignment-detail-summary {
+    margin: 0.85rem 0 0 0;
+  }
+  /* Inside the overview the summary card sheds its own card chrome and is
+     separated from the identity row by a hairline. */
+  .shell-assignment-detail-overview .shell-assignment-summary {
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--tw-hairline);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0.85rem 0 0 0;
+    margin: 0;
+  }
+  /* The summary heading stays for screen-reader navigation; the grouped
+     metrics no longer need a visible heading. */
+  .shell-assignment-detail-overview .shell-assignment-summary-headline {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .shell-assignment-detail-overview .shell-assignment-summary-grid {
+    margin: 0;
+  }
   .shell-assignment-detail-roster,
   .shell-assignment-detail-questions,
   .shell-assignment-detail-lms,
@@ -4158,6 +4211,13 @@
     color: var(--tw-ink);
     margin: 0;
     font-variant-numeric: tabular-nums;
+  }
+  /* Attempt N tiles: the count matches the other metric values; the
+     "students" unit reads as a quiet suffix. */
+  .shell-assignment-summary-metric-unit {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--tw-ink-muted);
   }
   .shell-assignment-summary-loading {
     display: flex;

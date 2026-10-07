@@ -43,6 +43,15 @@ export type AssignmentStudentProgress = {
   readonly retake: boolean;
 };
 
+// Assignment Overview retake participation: one entry per canonical
+// attempt number (2 or higher) that actually occurs for the assignment,
+// with the count of unique students who completed that attempt. Counts
+// only; no student, attempt, or response identifier.
+export type AttemptParticipation = {
+  readonly attemptNumber: number;
+  readonly students: number;
+};
+
 // Injected callable seam. The reusable summary card never imports from
 // firebase/* directly; the entry point wires the real callable and
 // tests inject an in-memory fake. Mirrors the pattern established by

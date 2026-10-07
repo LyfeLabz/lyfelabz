@@ -1,6 +1,7 @@
 import {
   aggregatePerQuestion,
   MIN_QUESTION_SUMMARY_ATTEMPTS,
+  summarizeRetakeParticipation,
 } from "./question-summary";
 import type { TeacherVisibleAttempt } from "./attempts-wire";
 
@@ -116,5 +117,65 @@ describe("aggregatePerQuestion", () => {
 
   test("threshold constant is 3", () => {
     expect(MIN_QUESTION_SUMMARY_ATTEMPTS).toBe(3);
+  });
+});
+
+describe("summarizeRetakeParticipation (Assignment Overview attempt tiles)", () => {
+  const member = (studentId: string, attemptNumber: number, attemptId?: string) => ({
+    attemptId: attemptId ?? `${studentId}-${attemptNumber}`,
+    studentId,
+    attemptNumber,
+  });
+
+  test("no retakes: no entries (Attempt 1 is never reported)", () => {
+    expect(
+      summarizeRetakeParticipation([member("s1", 1), member("s2", 1)]),
+    ).toEqual([]);
+  });
+
+  test("counts unique students per canonical attemptNumber, from Attempt 2, ascending", () => {
+    const attempts = [
+      member("s3", 3),
+      member("s1", 1),
+      member("s1", 2),
+      member("s2", 1),
+      member("s2", 2),
+      member("s3", 1),
+      member("s3", 2),
+    ];
+    expect(summarizeRetakeParticipation(attempts)).toEqual([
+      { attemptNumber: 2, students: 3 },
+      { attemptNumber: 3, students: 1 },
+    ]);
+  });
+
+  test("a duplicate record for the same student and attempt number counts once", () => {
+    expect(
+      summarizeRetakeParticipation([
+        member("s1", 2, "dup-a"),
+        member("s1", 2, "dup-b"),
+        member("s2", 2),
+      ]),
+    ).toEqual([{ attemptNumber: 2, students: 2 }]);
+  });
+
+  test("sparse attempt numbers are reported as they occur, never synthesized", () => {
+    expect(
+      summarizeRetakeParticipation([member("s1", 2), member("s1", 4)]),
+    ).toEqual([
+      { attemptNumber: 2, students: 1 },
+      { attemptNumber: 4, students: 1 },
+    ]);
+  });
+
+  test("ignores invalid attempt numbers rather than inferring them", () => {
+    expect(
+      summarizeRetakeParticipation([
+        member("s1", 0),
+        member("s2", 2.5),
+        member("s3", Number.NaN),
+        member("s4", 2),
+      ]),
+    ).toEqual([{ attemptNumber: 2, students: 1 }]);
   });
 });

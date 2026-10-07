@@ -1,6 +1,7 @@
 import type {
   AssignmentSummary,
   AssignmentSummaryCallable,
+  AttemptParticipation,
 } from "./types";
 
 // Sprint 13A reusable Teacher Assignment Summary card. A pure DOM
@@ -18,15 +19,29 @@ import type {
 // exposes no student ids, names, attempt ids, session ids, raw scores,
 // answer information, or ownership metadata. A regression test in
 // card.test.ts asserts absence of the full forbidden-field list.
+//
+// Attempt participation: when the composing surface supplies
+// `attemptParticipation`, one neutral "Attempt N" tile per supplied entry
+// is appended after the nine summary metrics. The card renders the counts
+// as given (the surface derives them from canonical attempt numbers); a
+// failed participation read renders no attempt tiles and never blocks the
+// summary itself.
 
 export type AssignmentSummaryCardDeps = {
   readonly callable: AssignmentSummaryCallable;
   readonly assignmentId: string;
+  readonly attemptParticipation?: () => Promise<
+    ReadonlyArray<AttemptParticipation>
+  >;
 };
 
 type LoadState =
   | { readonly kind: "loading" }
-  | { readonly kind: "ready"; readonly summary: AssignmentSummary }
+  | {
+      readonly kind: "ready";
+      readonly summary: AssignmentSummary;
+      readonly participation: ReadonlyArray<AttemptParticipation>;
+    }
   | { readonly kind: "empty"; readonly summary: AssignmentSummary }
   | { readonly kind: "error" };
 
@@ -41,7 +56,24 @@ type Metric = {
   readonly key: string;
   readonly label: string;
   readonly value: string;
+  // Visually subordinate unit after the value ("students").
+  readonly unit?: string;
 };
+
+// Attempt tiles follow the summary metrics in ascending attempt order.
+// Only attempt numbers that actually occur are supplied; none is invented.
+const buildAttemptMetrics = (
+  participation: ReadonlyArray<AttemptParticipation>,
+): ReadonlyArray<Metric> =>
+  [...participation]
+    .filter((p) => Number.isInteger(p.attemptNumber) && p.attemptNumber >= 2)
+    .sort((a, b) => a.attemptNumber - b.attemptNumber)
+    .map((p) => ({
+      key: `attempt-${p.attemptNumber}`,
+      label: `Attempt ${p.attemptNumber}`,
+      value: formatCount(p.students),
+      unit: p.students === 1 ? "student" : "students",
+    }));
 
 const buildMetrics = (summary: AssignmentSummary): ReadonlyArray<Metric> =>
   Object.freeze([
@@ -132,7 +164,7 @@ export function renderAssignmentSummaryCard(
         renderLoading(doc, body);
         return;
       case "ready":
-        renderMetrics(doc, body, s.summary);
+        renderMetrics(doc, body, s.summary, s.participation);
         return;
       case "empty":
         renderEmpty(doc, body);
@@ -145,17 +177,31 @@ export function renderAssignmentSummaryCard(
     }
   };
 
+  const loadParticipation = async (): Promise<
+    ReadonlyArray<AttemptParticipation>
+  > => {
+    if (deps.attemptParticipation === undefined) return [];
+    try {
+      return await deps.attemptParticipation();
+    } catch {
+      return [];
+    }
+  };
+
   const load = async (): Promise<void> => {
     const token = ++loadToken;
     state = { kind: "loading" };
     rerender();
     try {
-      const summary = await deps.callable({ assignmentId: deps.assignmentId });
+      const [summary, participation] = await Promise.all([
+        deps.callable({ assignmentId: deps.assignmentId }),
+        loadParticipation(),
+      ]);
       if (token !== loadToken) return;
       state =
         summary.totalStudents === 0
           ? { kind: "empty", summary }
-          : { kind: "ready", summary };
+          : { kind: "ready", summary, participation };
       rerender();
     } catch {
       if (token !== loadToken) return;
@@ -192,12 +238,17 @@ function renderMetrics(
   doc: Document,
   mount: HTMLElement,
   summary: AssignmentSummary,
+  participation: ReadonlyArray<AttemptParticipation>,
 ): void {
   const grid = doc.createElement("dl");
   grid.className = "shell-assignment-summary-grid";
   grid.setAttribute("data-testid", "assignment-summary-metrics");
 
-  for (const metric of buildMetrics(summary)) {
+  const metrics = [
+    ...buildMetrics(summary),
+    ...buildAttemptMetrics(participation),
+  ];
+  for (const metric of metrics) {
     const cell = doc.createElement("div");
     cell.className = "shell-assignment-summary-metric";
     cell.setAttribute("data-testid", `assignment-summary-metric-${metric.key}`);
@@ -214,6 +265,14 @@ function renderMetrics(
       `assignment-summary-value-${metric.key}`,
     );
     value.textContent = metric.value;
+    if (metric.unit !== undefined) {
+      cell.classList.add("shell-assignment-summary-metric-attempt");
+      value.append(" ");
+      const unit = doc.createElement("span");
+      unit.className = "shell-assignment-summary-metric-unit";
+      unit.textContent = metric.unit;
+      value.appendChild(unit);
+    }
     cell.appendChild(value);
 
     grid.appendChild(cell);

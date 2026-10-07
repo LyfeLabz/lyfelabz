@@ -55,6 +55,7 @@ import {
   classifyQuestionPerformance,
   groupAttemptCohorts,
   sharedAssessmentRevisionId,
+  summarizeRetakeParticipation,
   type AssessmentRevisionContent,
   type AssessmentRevisionContentReader,
   type PerQuestionAggregate,
@@ -949,22 +950,41 @@ function renderReady(
     readonly onRecipientAdded: () => void;
   },
 ): void {
+  // Assignment Overview: one outer card holding the assignment identity,
+  // its lifecycle action, and (for published and closed assignments) the
+  // Assignment Summary metrics. The header row keeps identity and action in
+  // DOM reading order; the summary card is composed beneath it.
+  const overview = doc.createElement("div");
+  overview.className = "shell-assignment-detail-overview";
+  overview.setAttribute("data-testid", "assignment-detail-overview");
+
   const header = doc.createElement("div");
   header.className = "shell-assignment-detail-header";
   header.setAttribute("data-testid", "assignment-detail-header");
+
+  const identity = doc.createElement("div");
+  identity.className = "shell-assignment-detail-identity";
+  identity.setAttribute("data-testid", "assignment-detail-identity");
+  header.appendChild(identity);
 
   const title = doc.createElement("h3");
   title.className = "shell-assignment-detail-title";
   title.setAttribute("data-testid", "assignment-detail-title");
   title.tabIndex = -1;
   title.textContent = metadata.title;
-  header.appendChild(title);
+  identity.appendChild(title);
+
+  // The class name reads directly beneath the title; the page is already
+  // reached through a class context, so no separate "Class" label renders.
+  const className = doc.createElement("p");
+  className.className = "shell-assignment-detail-class";
+  className.setAttribute("data-testid", "assignment-detail-class-value");
+  className.textContent = metadata.className;
+  identity.appendChild(className);
 
   const meta = doc.createElement("dl");
   meta.className = "shell-assignment-detail-meta";
   meta.setAttribute("data-testid", "assignment-detail-meta");
-
-  appendMetaPair(doc, meta, "class", "Class", metadata.className);
   // Assignment Detail header hierarchy: the ordinary published assignment
   // does not announce its own state, so no Status pair renders for it. Only
   // an exceptional lifecycle state that changes how the teacher reads the
@@ -985,7 +1005,7 @@ function renderReady(
     statusPair.classList.add("shell-assignment-detail-meta-pair-status");
   }
 
-  header.appendChild(meta);
+  identity.appendChild(meta);
 
   // Sprint 13F: a draft assignment renders a calm non-interactive
   // `Draft assignment` label in place of any lifecycle action. Draft
@@ -1060,6 +1080,8 @@ function renderReady(
         lifecycle.appendChild(err);
       }
     } else {
+      // The open editor needs the full overview width, not the action slot.
+      lifecycle.classList.add("shell-assignment-detail-lifecycle-editing");
       renderDraftEditor(doc, lifecycle, editUi, handlers);
     }
 
@@ -1145,7 +1167,8 @@ function renderReady(
     header.appendChild(lifecycle);
   }
 
-  mount.appendChild(header);
+  overview.appendChild(header);
+  mount.appendChild(overview);
 
   // Sprint 25 Phase 3: publication status + retry panel. Rendered only for a
   // published or closed assignment that carries a retry seam (a recorded
@@ -1213,14 +1236,33 @@ function renderReady(
     return;
   }
 
+  // The summary metrics live inside the Assignment Overview card, directly
+  // beneath the identity row.
   const summaryHost = doc.createElement("div");
   summaryHost.className = "shell-assignment-detail-summary";
   summaryHost.setAttribute("data-testid", "assignment-detail-summary-host");
-  mount.appendChild(summaryHost);
+  overview.appendChild(summaryHost);
 
+  // Attempt 2+ participation reuses the same cached class attempts list the
+  // roster and Question results read, so it adds no server call.
+  const attemptsForParticipation = shared.attemptsListForClassCallable;
+  const participationClassId = metadata.classId ?? "";
   renderAssignmentSummaryCard(summaryHost, {
     callable: shared.summaryCallable,
     assignmentId: metadata.assignmentId,
+    attemptParticipation:
+      attemptsForParticipation === undefined || participationClassId.length === 0
+        ? undefined
+        : async () => {
+            const list = await attemptsForParticipation({
+              classId: participationClassId,
+            });
+            return summarizeRetakeParticipation(
+              list.attempts.filter(
+                (a) => a.assignmentId === metadata.assignmentId,
+              ),
+            );
+          },
   });
 
   // Sprint 15 Slice 5: roster grouping beneath the Summary card. The

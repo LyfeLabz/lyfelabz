@@ -1,4 +1,5 @@
 import type { TeacherVisibleAttempt } from "./attempts-wire";
+import type { AttemptParticipation } from "../summary/types";
 
 // Sprint 15 Slice 6: pure per-question factual aggregator. Consumes a
 // list of representative completed attempts and returns the per-question
@@ -306,5 +307,22 @@ export function groupAttemptCohorts<T extends AttemptCohortMember>(
   const ordinals = Array.from(byOrdinal.keys()).sort((a, b) => a - b);
   const out = new Map<number, ReadonlyArray<T>>();
   for (const n of ordinals) out.set(n, Array.from(byOrdinal.get(n)!.values()));
+  return out;
+}
+
+// Assignment Overview retake participation: for each canonical attempt
+// number N >= 2 that actually occurs, the number of unique students with a
+// completed attempt N. Built on the same cohort grouping as Question
+// results, so the counts always agree with its attempt selector. Attempt 1
+// is omitted (the summary's Completed count already covers it), and missing
+// ordinals are never synthesized.
+export function summarizeRetakeParticipation(
+  attempts: ReadonlyArray<AttemptCohortMember>,
+): ReadonlyArray<AttemptParticipation> {
+  const out: AttemptParticipation[] = [];
+  for (const [attemptNumber, cohort] of groupAttemptCohorts(attempts)) {
+    if (attemptNumber < 2) continue;
+    out.push({ attemptNumber, students: cohort.length });
+  }
   return out;
 }

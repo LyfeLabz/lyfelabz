@@ -7,6 +7,7 @@ import { renderAssignmentSummaryCard } from "./card";
 import type {
   AssignmentSummary,
   AssignmentSummaryCallable,
+  AttemptParticipation,
 } from "./types";
 
 const flush = (): Promise<void> =>
@@ -434,6 +435,119 @@ describe("renderAssignmentSummaryCard - accessibility", () => {
         .querySelector("[data-testid=assignment-summary-empty]")
         ?.getAttribute("aria-live"),
     ).toBe("polite");
+  });
+});
+
+describe("renderAssignmentSummaryCard - Attempt N participation tiles", () => {
+  const BASE_KEYS = [
+    "total-students",
+    "completed",
+    "in-progress",
+    "not-started",
+    "completion-percent",
+    "average-percent",
+    "highest-percent",
+    "lowest-percent",
+    "perfect-scores",
+  ];
+
+  const metricKeys = (mount: HTMLElement): string[] =>
+    Array.from(
+      mount.querySelectorAll<HTMLElement>(".shell-assignment-summary-metric"),
+    ).map((el) =>
+      (el.getAttribute("data-testid") ?? "").replace(
+        "assignment-summary-metric-",
+        "",
+      ),
+    );
+
+  const render = async (
+    participation?: () => Promise<ReadonlyArray<AttemptParticipation>>,
+  ): Promise<HTMLElement> => {
+    const mount = mkMount();
+    renderAssignmentSummaryCard(mount, {
+      callable: resolving(freezeSummary()),
+      assignmentId: "assign-1",
+      attemptParticipation: participation,
+    });
+    await flush();
+    return mount;
+  };
+
+  test("no participation seam: exactly the nine summary metrics", async () => {
+    const mount = await render();
+    expect(metricKeys(mount)).toEqual(BASE_KEYS);
+  });
+
+  test("no retakes: no attempt tiles, and never an Attempt 1 tile", async () => {
+    const mount = await render(() => Promise.resolve([]));
+    expect(metricKeys(mount)).toEqual(BASE_KEYS);
+    expect(mount.textContent).not.toMatch(/Attempt 1/);
+  });
+
+  test("attempt tiles append after the nine metrics, sorted numerically, with plural and singular units", async () => {
+    const mount = await render(() =>
+      Promise.resolve([
+        { attemptNumber: 3, students: 1 },
+        { attemptNumber: 2, students: 5 },
+      ]),
+    );
+    expect(metricKeys(mount)).toEqual([...BASE_KEYS, "attempt-2", "attempt-3"]);
+    const label = (key: string): string | null =>
+      mount.querySelector(
+        `[data-testid=assignment-summary-metric-${key}] dt`,
+      )?.textContent ?? null;
+    const value = (key: string): string | null =>
+      mount.querySelector(`[data-testid=assignment-summary-value-${key}]`)
+        ?.textContent ?? null;
+    expect(label("attempt-2")).toBe("Attempt 2");
+    expect(value("attempt-2")).toBe("5 students");
+    expect(label("attempt-3")).toBe("Attempt 3");
+    expect(value("attempt-3")).toBe("1 student");
+    // The unit is a visually subordinate span; the count is the dd text.
+    const unit = mount.querySelector(
+      "[data-testid=assignment-summary-value-attempt-2] .shell-assignment-summary-metric-unit",
+    );
+    expect(unit?.textContent).toBe("students");
+    // Neutral summary styling: same tile class, no performance band.
+    const tile = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-summary-metric-attempt-2]",
+    );
+    expect(tile?.classList.contains("shell-assignment-summary-metric")).toBe(true);
+    expect(tile?.className).not.toMatch(/review|reteach|warn|error|band/i);
+  });
+
+  test("renders only supplied attempt numbers (no synthesized gaps, no Attempt 1)", async () => {
+    const mount = await render(() =>
+      Promise.resolve([
+        { attemptNumber: 4, students: 1 },
+        { attemptNumber: 1, students: 17 },
+        { attemptNumber: 2, students: 2 },
+      ]),
+    );
+    expect(metricKeys(mount)).toEqual([...BASE_KEYS, "attempt-2", "attempt-4"]);
+  });
+
+  test("a failed participation read keeps the summary and shows no attempt tiles", async () => {
+    const mount = await render(() => Promise.reject(new Error("attempts down")));
+    expect(metricKeys(mount)).toEqual(BASE_KEYS);
+    expect(
+      mount.querySelector("[data-testid=assignment-summary-error]"),
+    ).toBeNull();
+  });
+
+  test("existing summary values are unchanged when attempt tiles render", async () => {
+    const mount = await render(() =>
+      Promise.resolve([{ attemptNumber: 2, students: 5 }]),
+    );
+    const value = (key: string): string | null =>
+      mount.querySelector(`[data-testid=assignment-summary-value-${key}]`)
+        ?.textContent ?? null;
+    expect(value("total-students")).toBe("24");
+    expect(value("completed")).toBe("12");
+    expect(value("completion-percent")).toBe("50%");
+    expect(value("average-percent")).toBe("82%");
+    expect(value("perfect-scores")).toBe("3");
   });
 });
 

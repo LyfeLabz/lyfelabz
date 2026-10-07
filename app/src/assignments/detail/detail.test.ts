@@ -4466,3 +4466,257 @@ describe("renderAssignmentDetail - roster information hierarchy", () => {
     expect(mount.querySelector("[data-testid=assignment-detail-roster-header]")).not.toBeNull();
   });
 });
+
+// -----------------------------------------------------------------------------
+// Assignment Overview: identity, lifecycle action, and the summary metrics
+// share one outer card; Attempt 2+ participation tiles come from the same
+// cached class attempts list the roster and Question results read.
+// -----------------------------------------------------------------------------
+
+describe("renderAssignmentDetail - Assignment Overview", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  const settle = async (): Promise<void> => {
+    for (let i = 0; i < 6; i += 1) await flush();
+  };
+
+  const metricKeys = (mount: HTMLElement): string[] =>
+    Array.from(
+      mount.querySelectorAll<HTMLElement>(".shell-assignment-summary-metric"),
+    ).map((el) =>
+      (el.getAttribute("data-testid") ?? "").replace(
+        "assignment-summary-metric-",
+        "",
+      ),
+    );
+
+  const BASE_KEYS = [
+    "total-students",
+    "completed",
+    "in-progress",
+    "not-started",
+    "completion-percent",
+    "average-percent",
+    "highest-percent",
+    "lowest-percent",
+    "perfect-scores",
+  ];
+
+  test("identity, class, lifecycle action, and summary metrics live in one overview card", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      closeCallable: resolvingClose().callable,
+    });
+    await settle();
+    const overviews = mount.querySelectorAll(
+      "[data-testid=assignment-detail-overview]",
+    );
+    expect(overviews.length).toBe(1);
+    const overview = overviews[0] as HTMLElement;
+    const header = overview.querySelector(
+      "[data-testid=assignment-detail-header]",
+    );
+    expect(header).not.toBeNull();
+    expect(
+      overview.querySelector("[data-testid=assignment-detail-title]")
+        ?.textContent,
+    ).toBe("Waves and Signals Check");
+    expect(
+      overview.querySelector("[data-testid=assignment-detail-class-value]")
+        ?.textContent,
+    ).toBe("Period 3 - Grade 7 Physical Science");
+    expect(
+      overview.querySelector("[data-testid=assignment-detail-close-action]")
+        ?.textContent,
+    ).toBe("Close assignment");
+    const summaryCard = overview.querySelector(
+      "[data-testid=assignment-summary]",
+    );
+    expect(summaryCard).not.toBeNull();
+    expect(metricKeys(overview)).toEqual(BASE_KEYS);
+    // DOM reading order: title, class, action, then the metrics.
+    const order = [
+      "assignment-detail-title",
+      "assignment-detail-class-value",
+      "assignment-detail-close-action",
+      "assignment-summary-metrics",
+    ].map((id) => overview.querySelector(`[data-testid=${id}]`)!);
+    for (let i = 1; i < order.length; i += 1) {
+      expect(
+        order[i - 1].compareDocumentPosition(order[i]) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+  });
+
+  test("the redundant CLASS label is gone; the class name reads directly beneath the title", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata()),
+      summaryCallable: resolvingSummary(freezeSummary()),
+    });
+    await settle();
+    expect(mount.querySelector("[data-testid=assignment-detail-class]")).toBeNull();
+    const header = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-header]",
+    )!;
+    const labels = Array.from(header.querySelectorAll("dt")).map(
+      (dt) => dt.textContent,
+    );
+    expect(labels).not.toContain("Class");
+    const title = mount.querySelector("[data-testid=assignment-detail-title]");
+    expect(title?.nextElementSibling?.getAttribute("data-testid")).toBe(
+      "assignment-detail-class-value",
+    );
+  });
+
+  test("the summary heading remains for assistive technology, and the title stays the primary heading", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata()),
+      summaryCallable: resolvingSummary(freezeSummary()),
+    });
+    await settle();
+    const card = mount.querySelector("[data-testid=assignment-summary]");
+    expect(card?.getAttribute("aria-labelledby")).toBe(
+      "assignment-summary-headline",
+    );
+    expect(mount.querySelector("#assignment-summary-headline")).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-title]")?.tagName,
+    ).toBe("H3");
+  });
+
+  test("closed assignment keeps its Reopen action inside the overview", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      reopenCallable: resolvingReopen().callable,
+    });
+    await settle();
+    const overview = mount.querySelector(
+      "[data-testid=assignment-detail-overview]",
+    );
+    expect(
+      overview?.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).not.toBeNull();
+    expect(
+      overview?.querySelector("[data-testid=assignment-detail-status-value]")
+        ?.textContent,
+    ).toBe("Closed");
+  });
+
+  test("no retakes: exactly the nine summary metrics, no attempt tiles", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      attemptsListForClassCallable: spyingAttemptsList([
+        mkAttempt({ attemptId: "a1", studentId: "s1", attemptNumber: 1 }),
+        mkAttempt({ attemptId: "a2", studentId: "s2", attemptNumber: 1 }),
+      ]).callable,
+    });
+    await settle();
+    expect(metricKeys(mount)).toEqual(BASE_KEYS);
+    expect(mount.textContent).not.toMatch(/Attempt 1/);
+  });
+
+  test("Attempt 2+ tiles count unique students per canonical attemptNumber for this assignment only", async () => {
+    const mount = mkMount();
+    const attempts = spyingAttemptsList([
+      // Attempt 1 for three students (covered by Completed; no tile).
+      mkAttempt({ attemptId: "s1-1", studentId: "s1", attemptNumber: 1, submittedAt: 9000 }),
+      mkAttempt({ attemptId: "s2-1", studentId: "s2", attemptNumber: 1 }),
+      mkAttempt({ attemptId: "s3-1", studentId: "s3", attemptNumber: 1 }),
+      // Attempt 2 for two students; attemptNumber, not submission time,
+      // decides the cohort.
+      mkAttempt({ attemptId: "s1-2", studentId: "s1", attemptNumber: 2, submittedAt: 10 }),
+      mkAttempt({ attemptId: "s2-2", studentId: "s2", attemptNumber: 2 }),
+      // Attempt 3 for one student.
+      mkAttempt({ attemptId: "s1-3", studentId: "s1", attemptNumber: 3 }),
+      // Another assignment in the same class is never counted.
+      mkAttempt({ attemptId: "x-2", studentId: "s3", attemptNumber: 2, assignmentId: "assign-other" }),
+      mkAttempt({ attemptId: "x-4", studentId: "s3", attemptNumber: 4, assignmentId: "assign-other" }),
+    ]);
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      attemptsListForClassCallable: attempts.callable,
+    });
+    await settle();
+    expect(metricKeys(mount)).toEqual([...BASE_KEYS, "attempt-2", "attempt-3"]);
+    const value = (key: string): string | null =>
+      mount.querySelector(`[data-testid=assignment-summary-value-${key}]`)
+        ?.textContent ?? null;
+    expect(value("attempt-2")).toBe("2 students");
+    expect(value("attempt-3")).toBe("1 student");
+    // Existing summary values come from the summary callable, unchanged.
+    expect(value("completed")).toBe("12");
+    expect(value("total-students")).toBe("24");
+  });
+
+  test("attempt tiles add no server call: one attempts-list read shared with roster and Question results", async () => {
+    const mount = mkMount();
+    const attempts = spyingAttemptsList([
+      mkAttempt({ attemptId: "s1-1", studentId: "s1", attemptNumber: 1 }),
+      mkAttempt({ attemptId: "s1-2", studentId: "s1", attemptNumber: 2 }),
+    ]);
+    const summary = spyingSummary(freezeSummary());
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: summary.callable,
+      recipientListCallable: spyingRecipients([
+        { studentId: "s1", studentDisplayName: "Alice" },
+      ]).callable,
+      attemptsListForClassCallable: attempts.callable,
+      attemptGetForTeacherCallable: spyingAttemptGet(new Map()).callable,
+    });
+    await settle();
+    expect(attempts.calls).toEqual(["class-1"]);
+    expect(summary.calls).toEqual(["assign-1"]);
+    expect(metricKeys(mount)).toContain("attempt-2");
+  });
+
+  test("a failed attempts read keeps the nine summary metrics and shows no attempt tiles", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+      attemptsListForClassCallable: () => Promise.reject(new Error("down")),
+    });
+    await settle();
+    expect(metricKeys(mount)).toEqual(BASE_KEYS);
+  });
+
+  test("a draft keeps its overview header and separate results panel, with no metrics", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
+    });
+    await settle();
+    expect(
+      mount.querySelector(
+        "[data-testid=assignment-detail-overview] [data-testid=assignment-detail-draft-label]",
+      ),
+    ).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-draft-summary]"),
+    ).not.toBeNull();
+    expect(mount.querySelector("[data-testid=assignment-summary]")).toBeNull();
+  });
+});

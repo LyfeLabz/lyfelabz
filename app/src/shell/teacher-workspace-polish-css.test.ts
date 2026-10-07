@@ -93,11 +93,56 @@ describe("D2B - Assignment Detail is styled inside the shell", () => {
     expect(body).toMatch(/box-shadow:\s*none/);
   });
 
-  test("the header groups identity/state as a card surface", () => {
-    const body = ruleBody(html, ".shell-assignment-detail-header");
+  test("the Assignment Overview groups identity, action, and summary as one card surface", () => {
+    const body = ruleBody(html, ".shell-assignment-detail-overview");
     expect(body).not.toBeNull();
     expect(body).toMatch(/border:\s*1px solid var\(--tw-hairline\)/);
     expect(body).toMatch(/box-shadow:\s*var\(--tw-shadow-card\)/);
+    // The header row inside it is not a second card: identity and the
+    // lifecycle action share a wrapping row.
+    const header = ruleBody(html, ".shell-assignment-detail-header");
+    expect(header).not.toBeNull();
+    expect(header).not.toMatch(/box-shadow:/);
+    expect(header).not.toMatch(/border:/);
+    expect(header).toMatch(/display:\s*flex/);
+    expect(header).toMatch(/flex-wrap:\s*wrap/);
+    expect(ruleBody(html, ".shell-assignment-detail-identity")).toMatch(
+      /min-width:\s*0/,
+    );
+    // An open draft editor takes the full width rather than the action slot.
+    expect(ruleBody(html, ".shell-assignment-detail-lifecycle-editing")).toMatch(
+      /flex-basis:\s*100%/,
+    );
+  });
+
+  test("inside the overview the summary sheds its own card chrome and visible heading", () => {
+    const inner = ruleBody(
+      html,
+      ".shell-assignment-detail-overview .shell-assignment-summary",
+    );
+    expect(inner).not.toBeNull();
+    expect(inner).toMatch(/box-shadow:\s*none/);
+    expect(inner).toMatch(/border-top:\s*1px solid var\(--tw-hairline\)/);
+    // The heading is visually hidden, not removed (screen readers keep it).
+    const headline = ruleBody(
+      html,
+      ".shell-assignment-detail-overview .shell-assignment-summary-headline",
+    );
+    expect(headline).toMatch(/position:\s*absolute/);
+    expect(headline).toMatch(/clip:\s*rect\(0, 0, 0, 0\)/);
+    // An empty meta row (ordinary published assignment) takes no space.
+    expect(ruleBody(html, ".shell-assignment-detail-meta:empty")).toMatch(
+      /display:\s*none/,
+    );
+  });
+
+  test("metric tiles wrap by available width and attempt units stay subordinate and neutral", () => {
+    const grid = ruleBody(html, ".shell-assignment-summary-grid");
+    expect(grid).toMatch(/grid-template-columns:\s*repeat\(auto-fill, minmax\(8rem, 1fr\)\)/);
+    const unit = ruleBody(html, ".shell-assignment-summary-metric-unit");
+    expect(unit).not.toBeNull();
+    expect(unit).toMatch(/color:\s*var\(--tw-ink-muted\)/);
+    expect(unit).not.toMatch(/amber|red|green|callout/);
   });
 
   test("meta renders as label-over-value groups, not undifferentiated stacked text", () => {
