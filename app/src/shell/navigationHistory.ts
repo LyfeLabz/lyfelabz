@@ -20,9 +20,35 @@ import type { WorkspaceSurfaceKey } from "./navigation";
 //   Student Detail (from Students)    shell-student-detail(classId, studentId)
 //   Curriculum                        shell-surface(curriculum)
 //   Lesson Summary (View summary)     shell-lesson-summary(lessonSlug)
+//   Curriculum resource-type tab      shell-curriculum-tab(tab)
 //   Settings                          shell-surface(settings)
 //   Settings > Manage connection      shell-settings-integrations
 export type ClassWorkspaceSection = "assignments" | "roster" | "setup";
+
+// The non-Lesson Curriculum tabs, in display order. Lessons is the ordinary
+// Curriculum landing (`shell-surface(curriculum)`, `#curriculum`), so it has
+// no tab entry of its own. Which of these tabs actually render is decided by
+// the resource-type policy (see curriculumResourceTabs.ts); this list is only
+// the closed set a history entry may name.
+export const CURRICULUM_RESOURCE_TABS = [
+  "investigations",
+  "simulations",
+  "extensions",
+  "challenges",
+] as const;
+
+export type CurriculumResourceTab = (typeof CURRICULUM_RESOURCE_TABS)[number];
+
+export type CurriculumTab = "lessons" | CurriculumResourceTab;
+
+export function isCurriculumResourceTab(
+  value: unknown,
+): value is CurriculumResourceTab {
+  return (
+    typeof value === "string" &&
+    (CURRICULUM_RESOURCE_TABS as ReadonlyArray<string>).includes(value)
+  );
+}
 
 export type ShellHistoryState =
   | { readonly kind: "shell-surface"; readonly surface: WorkspaceSurfaceKey }
@@ -48,6 +74,11 @@ export type ShellHistoryState =
       readonly kind: "shell-lesson-summary";
       readonly surface: "curriculum";
       readonly lessonSlug: string;
+    }
+  | {
+      readonly kind: "shell-curriculum-tab";
+      readonly surface: "curriculum";
+      readonly tab: CurriculumResourceTab;
     }
   | { readonly kind: "shell-settings-integrations"; readonly surface: "settings" };
 
@@ -118,6 +149,13 @@ export function parseShellHistoryState(
   ) {
     return { kind: "shell-lesson-summary", surface: "curriculum", lessonSlug: v.lessonSlug };
   }
+  if (
+    v.kind === "shell-curriculum-tab" &&
+    v.surface === "curriculum" &&
+    isCurriculumResourceTab(v.tab)
+  ) {
+    return { kind: "shell-curriculum-tab", surface: "curriculum", tab: v.tab };
+  }
   if (v.kind === "shell-settings-integrations" && v.surface === "settings") {
     return { kind: "shell-settings-integrations", surface: "settings" };
   }
@@ -177,6 +215,8 @@ export function hashForState(state: ShellHistoryState): string {
       return `#classes/assignment/${encodeURIComponent(state.classId)}/${encodeURIComponent(state.assignmentId)}`;
     case "shell-lesson-summary":
       return `#curriculum/summary/${encodeURIComponent(state.lessonSlug)}`;
+    case "shell-curriculum-tab":
+      return `#curriculum/${state.tab}`;
     case "shell-settings-integrations":
       return "#settings/integrations";
   }
@@ -207,8 +247,12 @@ export type CurriculumHistoryController = {
   // Re-open Lesson Summary for a surfaced lesson; false (no change) for an
   // unknown slug or when summaries are not wired.
   readonly restoreLessonSummary: (lessonSlug: string) => boolean;
-  // Close any open Lesson Summary, showing the lesson grid.
-  readonly restoreTop: () => void;
+  // Return to the Curriculum landing: close any open Lesson Summary and
+  // select the Lessons tab. True when anything changed.
+  readonly restoreTop: () => boolean;
+  // Select a non-Lesson resource tab (closing any open Lesson Summary);
+  // false (no change) when that tab is not surfaced.
+  readonly restoreTab: (tab: CurriculumResourceTab) => boolean;
 };
 
 export type SettingsHistoryController = {

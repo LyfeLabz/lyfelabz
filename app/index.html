@@ -628,6 +628,7 @@
      row is a quiet segmented control; only real categories render (one tab -
      Class Management - today). The selected tab carries a solid underline
      accent (non-color state also on aria-selected). */
+  .shell-curriculum-tabs,
   .shell-settings-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -635,6 +636,7 @@
     margin: 0 0 1.25rem 0;
     border-bottom: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.1));
   }
+  .shell-curriculum-tab,
   .shell-settings-tab {
     padding: 0.5rem 0.85rem;
     background: transparent;
@@ -648,10 +650,12 @@
     color: var(--tw-ink-muted, #566472);
     cursor: pointer;
   }
+  .shell-curriculum-tab[aria-selected="true"],
   .shell-settings-tab[aria-selected="true"] {
     color: var(--tw-ink, #1c2733);
     border-bottom-color: #1f6b3d;
   }
+  .shell-curriculum-tab:focus-visible,
   .shell-settings-tab:focus-visible {
     outline: none;
     box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
@@ -847,7 +851,39 @@
   @media (pointer: coarse) {
     .shell-settings-class-action,
     .shell-settings-tab,
+    .shell-curriculum-tab,
     .shell-class-rostersync-button { min-height: 44px; }
+  }
+  /* Curriculum type tabs reuse the Settings tab row above. The formal-resource
+     cards (Investigations / Simulations / Extensions / Challenges) share the
+     lesson grid and card language, simpler than a lesson card: grade/topic
+     pills, type eyebrow, title, owning lesson, and a single Open action. */
+  .shell-curriculum-tabs { margin: 0.5rem 0 0.75rem 0; }
+  .shell-resource-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0.7rem 0.9rem;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+  .shell-resource-card[hidden] { display: none; }
+  .shell-resource-card .shell-lesson-title { overflow-wrap: anywhere; }
+  .shell-resource-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+    margin-top: auto;
+    padding-top: 0.25rem;
+  }
+  .shell-resource-card-lesson {
+    margin: 0;
+    min-width: 0;
+    font-size: 0.85rem;
+    color: var(--tw-ink-muted, #566472);
+    overflow-wrap: anywhere;
   }
   /* Slice 7: Student Services panel */
   .shell-ss-picker {

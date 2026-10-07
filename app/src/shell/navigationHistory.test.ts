@@ -6,6 +6,8 @@ import {
   hashForStudentDetail,
   parseSurfaceFromHash,
   urlWithHash,
+  hashForState,
+  CURRICULUM_RESOURCE_TABS,
 } from "./navigationHistory";
 
 describe("navigationHistory: parseShellHistoryState", () => {
@@ -134,5 +136,22 @@ describe("navigationHistory: hash/URL helpers", () => {
   test("urlWithHash preserves the given pathname exactly, appending only the hash", () => {
     expect(urlWithHash("/app/teacher", "#curriculum")).toBe("/app/teacher#curriculum");
     expect(urlWithHash("/app/a/xyz", "#classes")).toBe("/app/a/xyz#classes");
+  });
+});
+
+describe("navigationHistory: Curriculum resource-type tab state", () => {
+  test.each(CURRICULUM_RESOURCE_TABS)("accepts the %s tab and maps it to #curriculum/<tab>", (tab) => {
+    const state = parseShellHistoryState({ kind: "shell-curriculum-tab", surface: "curriculum", tab });
+    expect(state).toEqual({ kind: "shell-curriculum-tab", surface: "curriculum", tab });
+    expect(hashForState(state!)).toBe(`#curriculum/${tab}`);
+  });
+
+  test("rejects unknown tabs, Lessons (the plain Curriculum entry), and the wrong surface", () => {
+    for (const tab of ["lessons", "tools", "games", "", "constructor", undefined, 3]) {
+      expect(parseShellHistoryState({ kind: "shell-curriculum-tab", surface: "curriculum", tab })).toBeNull();
+    }
+    expect(
+      parseShellHistoryState({ kind: "shell-curriculum-tab", surface: "settings", tab: "simulations" }),
+    ).toBeNull();
   });
 });

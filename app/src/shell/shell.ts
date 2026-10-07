@@ -446,7 +446,21 @@ export function mountTeacherShell(
     next: WorkspaceSurfaceKey,
     options?: { readonly fromPopstate?: boolean },
   ): void => {
-    if (next === activeKey && !showingDetail) return;
+    if (next === activeKey && !showingDetail) {
+      // Selecting Curriculum while already in Curriculum (on a resource tab
+      // or in Lesson Summary) returns to its landing view, Lessons. That is a
+      // real user navigation, so it pushes one Curriculum entry; it is a
+      // no-op (no push) when Lessons is already showing, so repeated clicks
+      // never grow history.
+      if (
+        next === "curriculum" &&
+        !options?.fromPopstate &&
+        curriculumController?.restoreTop() === true
+      ) {
+        pushShellState({ kind: "shell-surface", surface: "curriculum" });
+      }
+      return;
+    }
     showingDetail = false;
     // Browser Back/Forward support: leaving Classes (for any reason -
     // top nav, `navigateToSurface`, popstate) invalidates any registered
@@ -637,6 +651,10 @@ export function mountTeacherShell(
         case "shell-lesson-summary":
           navigateTo("curriculum", { fromPopstate: true });
           curriculumController?.restoreLessonSummary(parsed.lessonSlug);
+          return;
+        case "shell-curriculum-tab":
+          navigateTo("curriculum", { fromPopstate: true });
+          curriculumController?.restoreTab(parsed.tab);
           return;
         case "shell-settings-integrations":
           navigateTo("settings", { fromPopstate: true });

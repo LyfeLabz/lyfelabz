@@ -5,6 +5,7 @@
  *   Classes -> class (per section) -> Assignment Summary
  *   class Assignments <-> Students
  *   Curriculum -> Lesson Summary
+ *   Curriculum resource-type tabs (and the primary Curriculum nav reset)
  *   Settings -> Manage connection
  * plus modal dialogs never being left open over the page Back restores.
  *
@@ -434,6 +435,149 @@ describe("Curriculum -> Lesson Summary", () => {
     );
     await settle();
     expect(mount.querySelector("[data-testid=lesson-summary-surface]")).toBeNull();
+  });
+});
+
+describe("Curriculum resource-type tabs", () => {
+  const tab = (mount: HTMLElement, key: string): HTMLButtonElement =>
+    mount.querySelector<HTMLButtonElement>(`[data-testid=curriculum-tab-${key}]`)!;
+  const selectedTab = (mount: HTMLElement): string | null =>
+    mount
+      .querySelector('[data-testid=curriculum-tabs] [aria-selected="true"]')
+      ?.getAttribute("data-testid") ?? null;
+  const navCurriculum = async (mount: HTMLElement): Promise<void> => {
+    mount.querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")!.click();
+    await settle();
+  };
+
+  test("tab switches push entries; Back walks Simulations -> Investigations -> Lessons", async () => {
+    const { mount } = await mountShell();
+    await navCurriculum(mount);
+    expect(selectedTab(mount)).toBe("curriculum-tab-lessons");
+    expect(window.location.hash).toBe("#curriculum");
+
+    tab(mount, "investigations").click();
+    await settle();
+    expect(window.history.state).toEqual({
+      kind: "shell-curriculum-tab",
+      surface: "curriculum",
+      tab: "investigations",
+    });
+    expect(window.location.hash).toBe("#curriculum/investigations");
+    tab(mount, "simulations").click();
+    await settle();
+    expect(window.location.hash).toBe("#curriculum/simulations");
+
+    await realBack();
+    expect(activeSurface(mount)).toBe("curriculum");
+    expect(selectedTab(mount)).toBe("curriculum-tab-investigations");
+    expect(mount.querySelector("[data-testid=curriculum-panel-investigations]")).not.toBeNull();
+
+    await realBack();
+    expect(selectedTab(mount)).toBe("curriculum-tab-lessons");
+    expect(window.history.state).toEqual({ kind: "shell-surface", surface: "curriculum" });
+    expect(mount.querySelector<HTMLElement>("[data-testid=curriculum-panel-lessons]")!.hidden).toBe(false);
+
+    await realForward();
+    expect(selectedTab(mount)).toBe("curriculum-tab-investigations");
+  });
+
+  test("re-selecting the active tab pushes nothing; Back from a tab after leaving Curriculum restores it", async () => {
+    const { mount } = await mountShell();
+    await navCurriculum(mount);
+    tab(mount, "extensions").click();
+    await settle();
+    const pushSpy = jest.spyOn(window.history, "pushState");
+    try {
+      tab(mount, "extensions").click();
+      expect(pushSpy).not.toHaveBeenCalled();
+    } finally {
+      pushSpy.mockRestore();
+    }
+    mount.querySelector<HTMLButtonElement>("[data-testid=nav-settings]")!.click();
+    await settle();
+    await realBack();
+    expect(activeSurface(mount)).toBe("curriculum");
+    expect(selectedTab(mount)).toBe("curriculum-tab-extensions");
+  });
+
+  test("a malformed or unknown tab in history state fails closed", async () => {
+    const { mount } = await mountShell();
+    await navCurriculum(mount);
+    for (const bad of ["tools", "games", "lessons", "", 7, "__proto__"]) {
+      window.dispatchEvent(
+        new PopStateEvent("popstate", {
+          state: { kind: "shell-curriculum-tab", surface: "curriculum", tab: bad },
+        }),
+      );
+      await settle();
+      expect(selectedTab(mount)).toBe("curriculum-tab-lessons");
+    }
+  });
+
+  test("primary Curriculum nav returns to Lessons from every resource tab, pushing one entry; repeats push nothing", async () => {
+    const { mount } = await mountShell();
+    await navCurriculum(mount);
+    for (const key of ["investigations", "simulations", "extensions", "challenges"]) {
+      tab(mount, key).click();
+      await settle();
+      expect(selectedTab(mount)).toBe(`curriculum-tab-${key}`);
+      await navCurriculum(mount);
+      expect(selectedTab(mount)).toBe("curriculum-tab-lessons");
+      expect(window.history.state).toEqual({ kind: "shell-surface", surface: "curriculum" });
+      expect(window.location.hash).toBe("#curriculum");
+    }
+    const pushSpy = jest.spyOn(window.history, "pushState");
+    try {
+      await navCurriculum(mount);
+      await navCurriculum(mount);
+      expect(pushSpy).not.toHaveBeenCalled();
+    } finally {
+      pushSpy.mockRestore();
+    }
+    // Back from the nav-driven Lessons entry returns to the tab it left.
+    await realBack();
+    expect(selectedTab(mount)).toBe("curriculum-tab-challenges");
+  });
+
+  test("primary Curriculum nav closes Lesson Summary to Lessons; Back re-opens the summary", async () => {
+    const { mount } = await mountShell();
+    await navCurriculum(mount);
+    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-view-summary-${LESSON.slug}]`)!.click();
+    await settle();
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).not.toBeNull();
+
+    await navCurriculum(mount);
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).toBeNull();
+    expect(mount.querySelector<HTMLElement>("[data-testid=curriculum-view]")!.hidden).toBe(false);
+    expect(selectedTab(mount)).toBe("curriculum-tab-lessons");
+    expect(window.history.state).toEqual({ kind: "shell-surface", surface: "curriculum" });
+
+    await realBack();
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).not.toBeNull();
+    await realBack();
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).toBeNull();
+    expect(selectedTab(mount)).toBe("curriculum-tab-lessons");
+  });
+
+  test("Lesson Summary history still works after a tab round trip", async () => {
+    const { mount } = await mountShell();
+    await navCurriculum(mount);
+    tab(mount, "investigations").click();
+    await settle();
+    tab(mount, "lessons").click();
+    await settle();
+    expect(window.history.state).toEqual({ kind: "shell-surface", surface: "curriculum" });
+    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-view-summary-${LESSON.slug}]`)!.click();
+    await settle();
+    await realBack();
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).toBeNull();
+    expect(selectedTab(mount)).toBe("curriculum-tab-lessons");
+    await realBack();
+    expect(selectedTab(mount)).toBe("curriculum-tab-investigations");
+    await realForward();
+    await realForward();
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).not.toBeNull();
   });
 });
 

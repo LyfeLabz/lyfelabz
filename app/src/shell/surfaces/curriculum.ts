@@ -42,6 +42,7 @@ import type {
   NestedPageHistorySeam,
 } from "../navigationHistory";
 import { renderLessonSummarySurface } from "./lessonSummary";
+import { createCurriculumTabs, type CurriculumTabs } from "./curriculumResourceTabs";
 import { buildLessonBasePath } from "../../assignments/studentList/launch";
 import { attachDeliveryNewTabPreparation } from "../../assignments/studentList/deliveryNavigation";
 import { mintAssignmentId } from "./shared/assignmentId";
@@ -956,17 +957,31 @@ export function renderCurriculumSurface(
     });
   };
 
+  // Assigned below, once the lesson grid exists; every controller method
+  // runs only after this function has returned.
+  let tabs: CurriculumTabs | null = null;
+
   curriculumHistory?.registerController({
     restoreLessonSummary: (lessonSlug) => {
       if (lessonSummary === null) return false;
       const lesson = LESSONS.find((l) => l.slug === lessonSlug);
       if (lesson === undefined) return false;
+      // Lesson Summary is reached only from the Lessons tab.
+      tabs?.select("lessons");
       openLessonSummary(lesson, { fromHistory: true });
       return true;
     },
     restoreTop: () => {
-      if (!curriculumView.hidden) return;
-      closeLessonSummary();
+      const summaryOpen = curriculumView.hidden;
+      if (summaryOpen) closeLessonSummary();
+      const tabChanged = tabs?.select("lessons") ?? false;
+      return summaryOpen || tabChanged;
+    },
+    restoreTab: (tab) => {
+      if (tabs === null) return false;
+      const summaryOpen = curriculumView.hidden;
+      if (summaryOpen) closeLessonSummary();
+      return tabs.select(tab) || summaryOpen;
     },
   });
 
@@ -1042,6 +1057,26 @@ export function renderCurriculumSurface(
   };
   writeSessionFilters(session.uid, state.grade, state.topic);
 
+  // The type tabs sit between the welcome heading and the shared grade /
+  // topic filters. The existing lesson grid and its empty notice become the
+  // Lessons tab panel unchanged; the formal-resource panel follows it.
+  const lessonsPanel = doc.createElement("div");
+  lessonsPanel.className = "shell-curriculum-lessons-panel";
+  const curriculumTabs = createCurriculumTabs({
+    doc,
+    lessonsPanel,
+    getFilters: () => ({ grade: state.grade, topic: state.topic }),
+    onUserSelect: (tab) => {
+      curriculumHistory?.push(
+        tab === "lessons"
+          ? { kind: "shell-surface", surface: "curriculum" }
+          : { kind: "shell-curriculum-tab", surface: "curriculum", tab },
+      );
+    },
+  });
+  tabs = curriculumTabs;
+  curriculumView.appendChild(curriculumTabs.tablist);
+
   const controls = doc.createElement("div");
   controls.className = "shell-curriculum-controls";
   controls.setAttribute("data-testid", "curriculum-filters");
@@ -1051,7 +1086,7 @@ export function renderCurriculumSurface(
   grid.className = "shell-curriculum-grid";
   grid.setAttribute("data-testid", "curriculum-grid");
   grid.setAttribute("role", "list");
-  curriculumView.appendChild(grid);
+  lessonsPanel.appendChild(grid);
 
   const emptyNotice = doc.createElement("p");
   emptyNotice.className = "shell-curriculum-empty";
@@ -1059,7 +1094,9 @@ export function renderCurriculumSurface(
   emptyNotice.hidden = true;
   emptyNotice.textContent =
     "No lessons match the current filters. Adjust a filter to see more.";
-  curriculumView.appendChild(emptyNotice);
+  lessonsPanel.appendChild(emptyNotice);
+  curriculumView.appendChild(lessonsPanel);
+  curriculumView.appendChild(curriculumTabs.resourcePanel);
 
   const gradeRow = doc.createElement("div");
   gradeRow.className = "shell-filter-row";
@@ -1099,6 +1136,7 @@ export function renderCurriculumSurface(
       if (match) visible += 1;
     }
     emptyNotice.hidden = visible > 0;
+    curriculumTabs.applyFilters();
   };
 
   const renderFilterRow = (
