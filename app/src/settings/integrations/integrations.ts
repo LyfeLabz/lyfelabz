@@ -95,7 +95,7 @@ export function renderIntegrationsSurface(
     intro.className = "shell-status";
     intro.setAttribute("data-testid", "integrations-intro");
     intro.textContent =
-      "Integrations is where you manage the accounts LyfeLabz connects to. Class creation and Google Classroom class import now live on your Classes surface.";
+      "Integrations is where you manage the accounts LyfeLabz connects to.";
     container.appendChild(intro);
 
     // Sprint 24B §3.4: no URL-addressable Integrations deep link exists
@@ -103,12 +103,14 @@ export function renderIntegrationsSurface(
     // class workflow, so no actionable redirect target exists to wire.
     // The transitional affordance is plain-language guidance, per the
     // blueprint's second authorized option. It is intentionally not
-    // labeled a redirect because it performs no navigation.
+    // labeled a redirect because it performs no navigation. Sprint 30A:
+    // class import / creation now lives in Settings -> Class Management (Add
+    // a Class), not on the Classes surface.
     const guidance = doc.createElement("p");
     guidance.className = "shell-status shell-integrations-guidance";
     guidance.setAttribute("data-testid", "integrations-classes-guidance");
     guidance.textContent =
-      "To import a class from Google Classroom or to create a LyfeLabz class, open Classes from the left-side navigation.";
+      "To import a class from Google Classroom or create a LyfeLabz class, use Add a Class in Settings → Class Management.";
     container.appendChild(guidance);
 
     if (notice) renderNotice(container, notice);
@@ -536,7 +538,7 @@ export function renderIntegrationsSurface(
 function describeProvider(providerId: string): string {
   switch (providerId) {
     case "googleClassroom":
-      return "Keep your Google Classroom account connected so you can import classes from the Classes surface. Your rosters, streams, and comments in Google Classroom are never modified.";
+      return "Keep your Google Classroom account connected so you can import classes from Google Classroom. Your rosters, streams, and comments in Google Classroom are never modified.";
     default:
       return "Connect this integration so it stays available to the workflows that use it.";
   }

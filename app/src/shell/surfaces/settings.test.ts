@@ -537,14 +537,15 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     expect(text).not.toContain("archive");
   });
 
-  test("renders the Google Classroom section heading inside the panel", () => {
+  test("renders the Google Classroom choice heading inside the panel", () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher, wiredDeps());
     const heading = mount.querySelector(
       "[data-testid=settings-classroom-heading]",
     );
     expect(heading?.textContent).toBe("Google Classroom");
-    expect(heading?.tagName.toLowerCase()).toBe("h3");
+    // Sprint 30A: a choice (h4) under the Add a Class (h3) section.
+    expect(heading?.tagName.toLowerCase()).toBe("h4");
     const panel = mount.querySelector(
       "[data-testid=settings-panel-class-management]",
     )!;
@@ -571,43 +572,151 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     ).toBe("Settings");
   });
 
-  test("Import Class lives in the Google Classroom section; Create LyfeLabz Class in a separate LyfeLabz Classes section (Sprint 28.6H.6 Part D/E)", () => {
+  test("Add a Class offers two parallel choices: Google Classroom (Import Class, primary) and LyfeLabz (Create Class, secondary) (Sprint 30A)", () => {
     const mount = mkMount();
     renderSettingsSurface(mount, teacher, wiredDeps());
-    const importBtn = mount.querySelector(
-      "[data-testid=settings-import-class]",
+    const panel = mount.querySelector(
+      "[data-testid=settings-panel-class-management]",
     )!;
-    const createBtn = mount.querySelector(
-      "[data-testid=settings-create-class]",
+    const addSection = mount.querySelector(
+      "[data-testid=settings-add-class-section]",
     )!;
+    expect(panel.contains(addSection)).toBe(true);
+    const addHeading = mount.querySelector(
+      "[data-testid=settings-add-class-heading]",
+    )!;
+    expect(addHeading.tagName.toLowerCase()).toBe("h3");
+    expect(addHeading.textContent).toBe("Add a Class");
+    expect(addSection.getAttribute("aria-labelledby")).toBe(addHeading.id);
+
+    const gc = mount.querySelector("[data-testid=settings-classroom-section]")!;
+    const ll = mount.querySelector("[data-testid=settings-lyfelabz-section]")!;
+    expect(addSection.contains(gc)).toBe(true);
+    expect(addSection.contains(ll)).toBe(true);
+    // The two choices are siblings (peers) in one choice container.
+    expect(gc.parentElement).toBe(ll.parentElement);
+    const gcHeading = mount.querySelector("[data-testid=settings-classroom-heading]")!;
+    const llHeading = mount.querySelector("[data-testid=settings-lyfelabz-heading]")!;
+    expect(gcHeading.tagName.toLowerCase()).toBe("h4");
+    expect(llHeading.tagName.toLowerCase()).toBe("h4");
+    expect(gcHeading.textContent).toBe("Google Classroom");
+    expect(llHeading.textContent).toBe("LyfeLabz");
+    expect(
+      mount.querySelector("[data-testid=settings-classroom-description]")!.textContent,
+    ).toBe("Import an existing Google Classroom class and roster.");
+    expect(
+      mount.querySelector("[data-testid=settings-lyfelabz-description]")!.textContent,
+    ).toBe("Create a class directly in LyfeLabz without Google Classroom.");
+
+    const importBtn = mount.querySelector("[data-testid=settings-import-class]")!;
+    const createBtn = mount.querySelector("[data-testid=settings-create-class]")!;
     expect(importBtn.textContent).toBe("Import Class");
-    // Task E2: the Settings action names the source explicitly.
-    expect(createBtn.textContent).toBe("Create LyfeLabz Class");
-    // Task E3: Import primary (filled), Create secondary (outlined).
+    // The surrounding heading/description name the source, so the Settings
+    // action is the short "Create Class" (the old label is gone here).
+    expect(createBtn.textContent).toBe("Create Class");
+    expect(mount.textContent ?? "").not.toContain("Create LyfeLabz Class");
+    expect(mount.textContent ?? "").not.toContain("LyfeLabz Classes");
+    // Certified hierarchy: Import primary (filled), Create secondary (outlined).
     expect(importBtn.className).toContain("shell-settings-class-action--primary");
     expect(createBtn.className).toContain(
       "shell-settings-class-action--secondary",
     );
-    // Part E1: Import belongs to the Google Classroom section.
-    const gcSection = mount.querySelector(
-      "[data-testid=settings-classroom-section]",
-    )!;
-    expect(gcSection.contains(importBtn)).toBe(true);
-    expect(gcSection.contains(createBtn)).toBe(false);
-    // Part E2: Create belongs to the separate LyfeLabz Classes section.
-    const llSection = mount.querySelector(
-      "[data-testid=settings-lyfelabz-section]",
-    )!;
+    expect(gc.contains(importBtn)).toBe(true);
+    expect(gc.contains(createBtn)).toBe(false);
+    expect(ll.contains(createBtn)).toBe(true);
+    expect(ll.contains(importBtn)).toBe(false);
+  });
+
+  test("Add a Class accessibility: descriptions describe their actions; headings and DOM order are logical (Sprint 30A)", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps([activeConnection]));
+    const importBtn = mount.querySelector("[data-testid=settings-import-class]")!;
+    const createBtn = mount.querySelector("[data-testid=settings-create-class]")!;
+    const manage = mount.querySelector("[data-testid=settings-manage-connection]")!;
+    const gcDesc = mount.querySelector("[data-testid=settings-classroom-description]")!;
+    const llDesc = mount.querySelector("[data-testid=settings-lyfelabz-description]")!;
+    expect(importBtn.getAttribute("aria-describedby")).toBe(gcDesc.id);
+    expect(createBtn.getAttribute("aria-describedby")).toBe(llDesc.id);
+    // The link name is self-explanatory, so it carries no extra ARIA.
+    expect(manage.textContent).toBe("Manage Google Classroom connection");
+    expect(manage.hasAttribute("aria-describedby")).toBe(false);
+    expect(manage.hasAttribute("aria-label")).toBe(false);
+
+    // Reading / keyboard order: Add a Class -> Google Classroom (heading,
+    // description, Import, Manage) -> LyfeLabz (heading, description, Create)
+    // -> Classes.
+    const ordered = [
+      "settings-add-class-heading",
+      "settings-classroom-heading",
+      "settings-classroom-description",
+      "settings-import-class",
+      "settings-manage-connection",
+      "settings-lyfelabz-heading",
+      "settings-lyfelabz-description",
+      "settings-create-class",
+      "settings-classes-heading",
+    ].map((id) => mount.querySelector(`[data-testid=${id}]`)!);
+    for (let i = 1; i < ordered.length; i += 1) {
+      expect(
+        ordered[i - 1]!.compareDocumentPosition(ordered[i]!) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+    // Classes stays an h3 sibling section below Add a Class, outside it.
+    const classesHeading = mount.querySelector("[data-testid=settings-classes-heading]")!;
+    expect(classesHeading.tagName.toLowerCase()).toBe("h3");
     expect(
-      mount.querySelector("[data-testid=settings-lyfelabz-heading]")!.textContent,
-    ).toBe("LyfeLabz Classes");
-    expect(llSection.contains(createBtn)).toBe(true);
-    expect(llSection.contains(importBtn)).toBe(false);
-    // Import (Google Classroom) precedes Create (LyfeLabz) in the DOM.
-    expect(
-      importBtn.compareDocumentPosition(createBtn) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+      mount
+        .querySelector("[data-testid=settings-add-class-section]")!
+        .contains(classesHeading),
+    ).toBe(false);
+    // Only the three Add a Class controls are focusable in the choice area,
+    // in DOM order (no positive tabindex reordering).
+    const focusables = Array.from(
+      mount
+        .querySelector("[data-testid=settings-add-class-section]")!
+        .querySelectorAll<HTMLElement>("button, a[href], [tabindex]"),
+    );
+    expect(focusables.map((el) => el.getAttribute("data-testid"))).toEqual([
+      "settings-import-class",
+      "settings-manage-connection",
+      "settings-create-class",
+    ]);
+    for (const el of focusables) expect(el.tabIndex).toBe(0);
+  });
+
+  test("Manage Google Classroom connection is a subordinate link under Google Classroom, never a peer class-add action (Sprint 30A)", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps([activeConnection]));
+    const manage = mount.querySelector("[data-testid=settings-manage-connection]")!;
+    const gc = mount.querySelector("[data-testid=settings-classroom-section]")!;
+    const importBtn = mount.querySelector("[data-testid=settings-import-class]")!;
+    expect(gc.contains(manage)).toBe(true);
+    expect(manage.tagName.toLowerCase()).toBe("button");
+    expect(manage.getAttribute("type")).toBe("button");
+    expect(manage.className).toBe("shell-settings-connection-link");
+    expect(manage.className).not.toContain("shell-settings-class-action");
+    // Not in the class-add action row alongside Import Class.
+    expect(importBtn.parentElement!.contains(manage)).toBe(false);
+  });
+
+  test("Manage Google Classroom connection keeps its nested-page history entry (Sprint 30A)", () => {
+    const push = jest.fn();
+    const replace = jest.fn();
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredDeps([activeConnection]),
+      settingsHistory: { push, replace, registerController: () => {} },
+    });
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=settings-manage-connection]")!
+      .click();
+    expect(push).toHaveBeenCalledTimes(1);
+    expect(push).toHaveBeenCalledWith({
+      kind: "shell-settings-integrations",
+      surface: "settings",
+    });
+    expect(mount.querySelector("[data-testid=settings-tabs]")).toBeNull();
   });
 
   test("Import / Create invoke the SHARED class-management opener with the right intent", () => {
@@ -646,11 +755,12 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     const text = mount.textContent ?? "";
     expect(text).not.toContain("Connected");
     expect(text).not.toContain("Not connected");
-    // Manage connection IS now present (Phase 8F.1 restore).
+    // Manage connection IS now present (Phase 8F.1 restore; Sprint 30A
+    // wording names the integration so the link reads out of context).
     expect(
       mount.querySelector("[data-testid=settings-manage-connection]"),
     ).not.toBeNull();
-    expect(text).toContain("Manage connection");
+    expect(text).toContain("Manage Google Classroom connection");
     // The Google Classroom section still exists and Import Class is present.
     expect(
       mount.querySelector("[data-testid=settings-classroom-heading]")!.textContent,

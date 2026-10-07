@@ -2749,6 +2749,50 @@ describe("Settings class-management CSS ships with the shell host page (Sprint 2
     expect(primary).not.toBe(secondary);
   });
 
+  test("Add a Class: two columns at wide widths, stacked at the 960px breakpoint, no card chrome (Sprint 30A)", () => {
+    const choices = ruleBody("shell-settings-add-choices");
+    expect(choices).not.toBeNull();
+    expect(choices as string).toMatch(/display:\s*grid/);
+    expect(choices as string).toMatch(
+      /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+    );
+    // The narrow rule collapses the same grid to one column (same DOM order).
+    const narrow = shellHtml.match(
+      /@media \(max-width: 960px\)\s*\{\s*\.shell-settings-add-choices\s*\{([^}]+)\}/,
+    );
+    expect(narrow).not.toBeNull();
+    expect(narrow![1]).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+    // Lightweight: no shadow, background card, or rounded box on the choices.
+    for (const cls of [
+      "shell-settings-add",
+      "shell-settings-add-choices",
+      "shell-settings-add-choice \\+ \\.shell-settings-add-choice",
+    ]) {
+      const m = shellHtml.match(new RegExp(`\\.${cls}\\s*\\{([^}]+)\\}`));
+      expect(m).not.toBeNull();
+      expect(m![1]).not.toMatch(/box-shadow|background|border-radius/);
+    }
+  });
+
+  test("Manage Google Classroom connection is a quiet link, subordinate to the Import/Create actions (Sprint 30A)", () => {
+    const link = ruleBody("shell-settings-connection-link");
+    expect(link).not.toBeNull();
+    expect(link as string).toMatch(/background:\s*none/);
+    expect(link as string).toMatch(/border:\s*none/);
+    expect(link as string).toMatch(/text-decoration:\s*underline/);
+    expect(link as string).not.toMatch(/box-shadow/);
+    // Import stays the filled primary; Create stays the outlined secondary.
+    const primary = ruleBody("shell-settings-class-action--primary") as string;
+    const secondary = ruleBody("shell-settings-class-action--secondary") as string;
+    expect(primary).toMatch(/background:\s*#1f6b3d/);
+    expect(secondary).toMatch(/background:\s*#fff/);
+    expect(secondary).toMatch(/border:\s*1px solid/);
+    // Touch targets: the link joins the coarse-pointer 44px minimum.
+    expect(shellHtml).toMatch(
+      /@media \(pointer: coarse\)\s*\{[^}]*\.shell-settings-connection-link[^}]*min-height:\s*44px/,
+    );
+  });
+
   test("the old future-category button rule is gone", () => {
     // Sprint 28.6F removed the future-facing Settings category previews; the
     // dead `.shell-settings-category-button` rule must not linger.

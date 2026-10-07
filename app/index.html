@@ -751,12 +751,10 @@
   .shell-settings-panel {
     display: block;
   }
-  /* Sprint 28.6H.4 (Task E2/E7): the Class Management panel. The Google
-     Classroom connection block and the compact Classes list stack within it;
-     no repeated "Class Management" heading (that is the tab). */
-  .shell-settings-classroom,
-  .shell-settings-classes,
-  .shell-settings-lyfelabz {
+  /* Sprint 28.6H.4 (Task E2/E7): the Class Management panel. The Add a Class
+     choices and the compact Classes list stack within it; no repeated
+     "Class Management" heading (that is the tab). */
+  .shell-settings-classes {
     display: block;
     max-width: 34rem;
   }
@@ -766,16 +764,71 @@
   .shell-settings-classes {
     margin-top: 1rem;
   }
-  /* Sprint 28.6H.6 (Part E2): the separate LyfeLabz Classes source area. A
-     restrained heading + a single secondary action; clearly its own section,
-     without heavy card chrome. */
-  .shell-settings-lyfelabz {
-    margin-top: 1.4rem;
+  /* Sprint 30A: Add a Class. Two parallel class sources (Google Classroom |
+     LyfeLabz) side by side, separated by whitespace and a single hairline - no
+     cards, no shadows, no new color. They stack (same DOM order) at the 960px
+     breakpoint, where the persistent sidebar leaves too little content width
+     for two comfortable columns. */
+  .shell-settings-add {
+    display: block;
+    max-width: 46rem;
   }
-  /* The Import Class action sits just under the Google Classroom connection row
-     inside its own section. */
-  .shell-settings-classroom .shell-settings-class-actions {
-    margin-top: 0.15rem;
+  .shell-settings-add-choices {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.75rem;
+  }
+  .shell-settings-add-choice + .shell-settings-add-choice {
+    padding-left: 1.75rem;
+    border-left: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.06));
+  }
+  .shell-settings-choice-heading {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.2rem 0;
+    color: #222;
+  }
+  .shell-settings-choice-description {
+    margin: 0 0 0.6rem 0;
+    font-size: 0.9rem;
+    color: var(--tw-ink-soft, #3a4653);
+  }
+  /* Connection maintenance is subordinate to Import Class: a quiet
+     navigation-teal text link (it opens a nested Settings page), never a
+     third peer action button. */
+  .shell-settings-connection-link {
+    display: inline-block;
+    margin: 0.6rem 0 0 0;
+    padding: 0.15rem 0;
+    background: none;
+    border: none;
+    border-radius: 2px;
+    font: inherit;
+    font-size: 0.875rem;
+    text-align: left;
+    color: var(--tw-nav-edge);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .shell-settings-connection-link:hover {
+    color: var(--tw-ink);
+  }
+  .shell-settings-connection-link:focus-visible {
+    outline: var(--tw-focus-outline);
+    outline-offset: 2px;
+  }
+  @media (max-width: 960px) {
+    .shell-settings-add-choices {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .shell-settings-add-choice + .shell-settings-add-choice {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      padding-left: 0;
+      border-left: none;
+      border-top: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.06));
+    }
   }
   .shell-settings-section-heading {
     font-size: 1.02rem;
@@ -937,6 +990,7 @@
   }
   @media (pointer: coarse) {
     .shell-settings-class-action,
+    .shell-settings-connection-link,
     .shell-settings-tab,
     .shell-curriculum-tab,
     .shell-class-rostersync-button { min-height: 44px; }

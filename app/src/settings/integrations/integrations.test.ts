@@ -112,16 +112,29 @@ describe("Sprint 24B Phase 1: Settings > Integrations account-level scope", () =
       mount.querySelector("[data-testid=integrations-status-googleClassroom]"),
     ).not.toBeNull();
 
-    // Transitional guidance sentence pointing teachers to Classes.
-    // Blueprint §3.4 authorizes plain-language guidance as an option
-    // because no URL-addressable Integrations deep link exists. The
-    // sentence is intentionally not a redirect: it performs no
-    // navigation, only informs.
+    // Transitional guidance sentence pointing teachers to where class
+    // import / creation lives. Blueprint §3.4 authorizes plain-language
+    // guidance as an option because no URL-addressable Integrations deep
+    // link exists. The sentence is intentionally not a redirect: it
+    // performs no navigation, only informs. Sprint 30A: import / create
+    // lives in Settings -> Class Management (Add a Class), so the stale
+    // "Classes surface" / left-side-navigation wording is gone.
     const guidance = mount.querySelector<HTMLElement>(
       "[data-testid=integrations-classes-guidance]",
     );
     expect(guidance).not.toBeNull();
-    expect(guidance!.textContent).toMatch(/Classes/);
+    expect(guidance!.textContent).toBe(
+      "To import a class from Google Classroom or create a LyfeLabz class, use Add a Class in Settings → Class Management.",
+    );
+    const intro = mount.querySelector<HTMLElement>(
+      "[data-testid=integrations-intro]",
+    );
+    expect(intro!.textContent).toBe(
+      "Integrations is where you manage the accounts LyfeLabz connects to.",
+    );
+    const surfaceText = mount.textContent ?? "";
+    expect(surfaceText).not.toContain("left-side navigation");
+    expect(surfaceText).not.toContain("Classes surface");
     // The prior redirect testid must not linger.
     expect(
       mount.querySelector("[data-testid=integrations-classes-redirect]"),

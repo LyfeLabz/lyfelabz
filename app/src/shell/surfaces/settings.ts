@@ -37,17 +37,15 @@ import type {
 //
 //   [ Class Management ]  (the single tab)
 //
-//   ## Google Classroom
-//     - concise connection state ("Connected" / "Not connected"), read from
-//       the existing Integrations seam
-//     - Manage connection (connect / reconnect / disconnect stay in the
-//       existing Integrations experience)
-//
-//   Import Class (primary) · Create Class (secondary) - shortened openers that
-//   invoke the SAME certified class-creation / import workflow that lives on
-//   the Classes surface (one implementation, two entry points, via the shared
-//   one-shot class-management intent). No second create/import implementation
-//   is introduced here.
+//   ## Add a Class (Sprint 30A) - two parallel class sources:
+//     Google Classroom: Import Class (primary), plus a quiet
+//       "Manage Google Classroom connection" link (connect / reconnect /
+//       disconnect stay in the existing Integrations experience)
+//     LyfeLabz: Create Class (secondary)
+//   Both are openers that invoke the SAME certified class-creation / import
+//   workflow hosted by the Classes surface (one implementation, two entry
+//   points, via the shared one-shot class-management intent). No second
+//   create/import implementation is introduced here.
 //
 //   ## Classes
 //     - compact administrative ROWS for every active class (name + a
@@ -199,39 +197,81 @@ export function renderSettingsSurface(
     drawRoot();
   };
 
-  const renderGoogleClassroomSection = (): HTMLElement => {
+  // Sprint 30A: the Class Management panel opens with ONE teacher goal - Add a
+  // Class - offered as two parallel class sources (Google Classroom | LyfeLabz)
+  // rather than two implementation-shaped sections. Each source is a plain
+  // group (h4 + description + action); the description is associated with its
+  // action via aria-describedby so the short button names stay clear out of
+  // context. Import (primary) and Create (secondary) keep the certified
+  // hierarchy and still invoke the SHARED class-management opener (one
+  // implementation, two entry points).
+  //
+  // Google Classroom authorization stays CONTEXTUAL to Import Class (Sprint
+  // 28.6H.7): the certified import flow checks for a usable active connection
+  // and runs the existing OAuth / reconsent only when required. No connection
+  // status is shown here (an "active" record can hold a broken credential).
+  // Connection maintenance (Reconnect / Disconnect / account switch) remains
+  // reachable as a quiet, subordinate link under the Google Classroom choice -
+  // never a third peer class-add action.
+  const renderAddClassSection = (): HTMLElement => {
     const section = doc.createElement("section");
-    section.className = "shell-settings-classroom";
-    section.setAttribute("data-testid", "settings-classroom-section");
-    section.setAttribute("aria-labelledby", "settings-classroom-heading");
+    section.className = "shell-settings-add";
+    section.setAttribute("data-testid", "settings-add-class-section");
+    section.setAttribute("aria-labelledby", "settings-add-class-heading");
 
     const heading = doc.createElement("h3");
-    heading.id = "settings-classroom-heading";
+    heading.id = "settings-add-class-heading";
     heading.className = "shell-settings-section-heading";
-    heading.setAttribute("data-testid", "settings-classroom-heading");
-    heading.textContent = "Google Classroom";
+    heading.setAttribute("data-testid", "settings-add-class-heading");
+    heading.textContent = "Add a Class";
     section.appendChild(heading);
 
-    // Sprint 28.6H.7 (Part C/E): the permanent "Connected / Not connected /
-    // Manage connection" presentation is removed from this primary Class
-    // Management decision surface - it exposed the OAuth/connection model as a
-    // proactive management task. Google Classroom authorization is now handled
-    // CONTEXTUALLY by Import Class: the certified import flow (Classes surface)
-    // checks for a usable active connection and runs the existing OAuth /
-    // reconsent only when required, then continues into course discovery. The
-    // underlying connection/OAuth implementation is unchanged and preserved;
-    // only this surface's proactive connection-management UI is removed.
-    // Import Class is the teacher-facing entry point (primary), under the
-    // Google Classroom heading (which establishes the source); the manual
-    // creation action lives in the separate LyfeLabz Classes section (Part E2).
+    const choices = doc.createElement("div");
+    choices.className = "shell-settings-add-choices";
+    section.appendChild(choices);
+
+    const makeChoice = (
+      key: "classroom" | "lyfelabz",
+      title: string,
+      description: string,
+    ): { readonly group: HTMLElement; readonly descriptionId: string } => {
+      const group = doc.createElement("div");
+      group.className = "shell-settings-add-choice";
+      group.setAttribute("data-testid", `settings-${key}-section`);
+
+      const h = doc.createElement("h4");
+      h.id = `settings-${key}-heading`;
+      h.className = "shell-settings-choice-heading";
+      h.setAttribute("data-testid", `settings-${key}-heading`);
+      h.textContent = title;
+      group.appendChild(h);
+
+      const descriptionId = `settings-${key}-description`;
+      const desc = doc.createElement("p");
+      desc.id = descriptionId;
+      desc.className = "shell-settings-choice-description";
+      desc.setAttribute("data-testid", descriptionId);
+      desc.textContent = description;
+      group.appendChild(desc);
+
+      choices.appendChild(group);
+      return { group, descriptionId };
+    };
+
+    // Google Classroom choice: Import Class (primary) + quiet connection link.
+    const classroom = makeChoice(
+      "classroom",
+      "Google Classroom",
+      "Import an existing Google Classroom class and roster.",
+    );
     const importActions = doc.createElement("div");
     importActions.className = "shell-settings-class-actions";
-
     const importBtn = doc.createElement("button");
     importBtn.type = "button";
     importBtn.className =
       "shell-settings-class-action shell-settings-class-action--primary";
     importBtn.setAttribute("data-testid", "settings-import-class");
+    importBtn.setAttribute("aria-describedby", classroom.descriptionId);
     importBtn.textContent = "Import Class";
     const importReady = openClassManagement !== null && canImportClasses;
     importBtn.disabled = !importReady;
@@ -241,14 +281,14 @@ export function renderSettingsSurface(
       openClassManagement?.("import");
     });
     importActions.appendChild(importBtn);
+    classroom.group.appendChild(importActions);
 
     if (deps.integrations !== null) {
       const manageBtn = doc.createElement("button");
       manageBtn.type = "button";
-      manageBtn.className =
-        "shell-settings-class-action shell-settings-class-action--secondary";
+      manageBtn.className = "shell-settings-connection-link";
       manageBtn.setAttribute("data-testid", "settings-manage-connection");
-      manageBtn.textContent = "Manage connection";
+      manageBtn.textContent = "Manage Google Classroom connection";
       manageBtn.addEventListener("click", () => {
         subview = "integrations";
         draw();
@@ -259,43 +299,26 @@ export function renderSettingsSurface(
           surface: "settings",
         });
       });
-      importActions.appendChild(manageBtn);
+      classroom.group.appendChild(manageBtn);
     }
 
-    section.appendChild(importActions);
-
-    return section;
-  };
-
-  // Sprint 28.6H.6 (Part E2): the separate manual-class source. A simple
-  // heading + a single Create LyfeLabz Class action (secondary hierarchy) - no
-  // Google Classroom action here, so the teacher never confuses manual creation
-  // with a Google Classroom operation.
-  const renderLyfeLabzClassesSection = (): HTMLElement => {
-    const section = doc.createElement("section");
-    section.className = "shell-settings-lyfelabz";
-    section.setAttribute("data-testid", "settings-lyfelabz-section");
-    section.setAttribute("aria-labelledby", "settings-lyfelabz-heading");
-
-    const heading = doc.createElement("h3");
-    heading.id = "settings-lyfelabz-heading";
-    heading.className = "shell-settings-section-heading";
-    heading.setAttribute("data-testid", "settings-lyfelabz-heading");
-    heading.textContent = "LyfeLabz Classes";
-    section.appendChild(heading);
-
-    const actions = doc.createElement("div");
-    actions.className = "shell-settings-class-actions";
-
+    // LyfeLabz choice: Create Class (secondary). The heading and description
+    // establish the source, so the action uses the short "Create Class"; the
+    // focused create task keeps its own "Create LyfeLabz Class" heading.
+    const lyfelabz = makeChoice(
+      "lyfelabz",
+      "LyfeLabz",
+      "Create a class directly in LyfeLabz without Google Classroom.",
+    );
+    const createActions = doc.createElement("div");
+    createActions.className = "shell-settings-class-actions";
     const createBtn = doc.createElement("button");
     createBtn.type = "button";
     createBtn.className =
       "shell-settings-class-action shell-settings-class-action--secondary";
     createBtn.setAttribute("data-testid", "settings-create-class");
-    // The action names the source explicitly (the heading is "LyfeLabz
-    // Classes"); the focused create TASK form later submits with the shorter
-    // "Create Class" (Part F4).
-    createBtn.textContent = "Create LyfeLabz Class";
+    createBtn.setAttribute("aria-describedby", lyfelabz.descriptionId);
+    createBtn.textContent = "Create Class";
     const createReady = openClassManagement !== null && canCreateClasses;
     createBtn.disabled = !createReady;
     if (!createReady) createBtn.setAttribute("aria-disabled", "true");
@@ -303,8 +326,8 @@ export function renderSettingsSurface(
       if (!createReady) return;
       openClassManagement?.("create");
     });
-    actions.appendChild(createBtn);
-    section.appendChild(actions);
+    createActions.appendChild(createBtn);
+    lyfelabz.group.appendChild(createActions);
 
     return section;
   };
@@ -933,13 +956,10 @@ export function renderSettingsSurface(
     panel.setAttribute("role", "tabpanel");
     panel.setAttribute("aria-labelledby", "settings-tab-class-management");
 
-    // Sprint 28.6H.6 (Part D/E): the Class Management panel is a DECISION
-    // surface with two clearly distinct class-source areas - Google Classroom
-    // (connection + Import Class) and LyfeLabz Classes (Create LyfeLabz Class) -
-    // followed by the compact managed-class list. Import / Create no longer sit
-    // together as an ambiguous pair.
-    panel.appendChild(renderGoogleClassroomSection());
-    panel.appendChild(renderLyfeLabzClassesSection());
+    // Sprint 30A: the Class Management panel is a DECISION surface - Add a
+    // Class (two parallel class sources: Google Classroom | LyfeLabz) -
+    // followed by the compact managed-class list.
+    panel.appendChild(renderAddClassSection());
     panel.appendChild(renderClassesList());
     return panel;
   };
