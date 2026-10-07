@@ -17,7 +17,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { buildPair } = require('./build-pair.cjs');
+const { APP_BUNDLE_BUILD, buildPair } = require('./build-pair.cjs');
 const {
   TARGETS,
   environmentForProject,
@@ -73,11 +73,29 @@ function preflight({ project, expectSha, allowDirty, offline }, { git = gitState
   return { contract, environment, source, sites, message: releaseMessage(source.sha, source.dirty) };
 }
 
-function runChecks(log = console.log) {
-  log('[hosting-release] npm --prefix app run verify');
-  execFileSync('npm', ['--prefix', 'app', 'run', 'verify'], { cwd: repositoryRoot, stdio: 'inherit' });
-  log('[hosting-release] Hosting tests');
-  execFileSync(process.execPath, ['--test', ...HOSTING_TEST_FILES], { cwd: repositoryRoot, stdio: 'inherit' });
+// The check commands, in order. The application bundle (ignored build output
+// app/dist/bundle.js) is built FIRST: app verify and the Hosting suites build
+// the app artifact, which requires it, so a pristine release checkout must
+// not depend on a bundle left behind by an earlier run or on test order.
+function checkCommands() {
+  return [
+    APP_BUNDLE_BUILD,
+    ['npm', ['--prefix', 'app', 'run', 'verify']],
+    [process.execPath, ['--test', ...HOSTING_TEST_FILES]]
+  ];
+}
+
+function runChecks({ run = execFileSync, log = console.log } = {}) {
+  for (const [command, args] of checkCommands()) {
+    log(`[hosting-release] ${command === process.execPath ? 'node' : command} ${args.join(' ')}`);
+    run(command, args, { cwd: repositoryRoot, stdio: 'inherit' });
+  }
+}
+
+// Checks, then the pair build that produces the artifacts to deploy.
+function checkAndBuild({ run = execFileSync, build = buildPair, log = console.log } = {}) {
+  runChecks({ run, log });
+  return build();
 }
 
 async function liveComparison({ environment, sites, built, run }) {
@@ -141,8 +159,7 @@ function summarize({ environment, source, message, built, surfaces }) {
 async function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv, { values: ['project', 'expect-sha'], flags: ['allow-dirty', 'offline'] });
   const gate = preflight({ project: args.project, expectSha: args['expect-sha'], allowDirty: Boolean(args['allow-dirty']), offline: Boolean(args.offline) });
-  runChecks();
-  const built = buildPair();
+  const built = checkAndBuild();
   const surfaces = args.offline ? null : await liveComparison({ environment: gate.environment, sites: gate.sites, built });
   const record = {
     kind: 'lyfelabz.hostingPreparedRelease',
@@ -167,4 +184,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { HOSTING_TEST_FILES, liveComparison, preflight, summarize };
+module.exports = { HOSTING_TEST_FILES, checkAndBuild, checkCommands, liveComparison, preflight, summarize };

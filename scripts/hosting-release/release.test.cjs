@@ -32,7 +32,8 @@ const {
   rollbackCommand,
   shellQuote
 } = require('./release.cjs');
-const { HOSTING_TEST_FILES, preflight } = require('./prepare.cjs');
+const { APP_BUNDLE_BUILD } = require('./build-pair.cjs');
+const { HOSTING_TEST_FILES, checkAndBuild, checkCommands, preflight } = require('./prepare.cjs');
 const { verifyLocalPair } = require('./certify.cjs');
 
 const SHA = '1169d4db5411697840d080cdd4b6e9d1e66190d1';
@@ -134,6 +135,39 @@ test('prepare runs every Hosting suite, including these release tests', () => {
   for (const file of HOSTING_TEST_FILES) assert.ok(fs.existsSync(path.join(repositoryRoot, file)), file);
   const suites = fs.readdirSync(__dirname).filter((name) => name.endsWith('.test.cjs')).map((name) => `scripts/hosting-release/${name}`);
   for (const suite of suites) assert.ok(HOSTING_TEST_FILES.includes(suite), suite);
+});
+
+test('prepare builds the application bundle before app verify, then the Hosting suites, then the pair build', () => {
+  // A pristine checkout has no app/dist/bundle.js; app verify and the Hosting
+  // suites build the app artifact, which requires it.
+  assert.deepEqual(checkCommands(), [
+    APP_BUNDLE_BUILD,
+    ['npm', ['--prefix', 'app', 'run', 'verify']],
+    [process.execPath, ['--test', ...HOSTING_TEST_FILES]]
+  ]);
+  const order = [];
+  const run = (command, args, options) => {
+    assert.equal(options.cwd, repositoryRoot);
+    order.push(`${command === process.execPath ? 'node' : command} ${args.join(' ')}`);
+  };
+  const built = checkAndBuild({ run, build: () => { order.push('pair build'); return 'built'; }, log: () => {} });
+  assert.equal(built, 'built');
+  assert.deepEqual(order.map((step) => step.split(' --test ')[0]), [
+    'npm --prefix app run build',
+    'npm --prefix app run verify',
+    'node',
+    'pair build'
+  ]);
+});
+
+test('a failing check stops prepare before the pair build', () => {
+  const order = [];
+  const run = (command, args) => {
+    order.push(args.join(' '));
+    if (args.includes('verify')) throw new Error('verify failed');
+  };
+  assert.throws(() => checkAndBuild({ run, build: () => order.push('pair build'), log: () => {} }), /verify failed/);
+  assert.deepEqual(order, ['--prefix app run build', '--prefix app run verify']);
 });
 
 test('the live release is read from hosting:channel:list, with its version, message, and routing config', () => {
