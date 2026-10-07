@@ -833,3 +833,154 @@ describe("Settings tabbed administrative surface (Sprint 28.6H.4, Part E)", () =
     ).toBe("Google Classroom");
   });
 });
+
+// Sprint 30A: Settings tab keyboard accessibility. Roving tabindex with
+// AUTOMATIC activation: ArrowLeft/ArrowRight (wrapping), Home, and End both
+// focus and select the destination tab. Click behavior is unchanged.
+describe("Settings tabs keyboard navigation (Sprint 30A)", () => {
+  const CM = "settings-tab-class-management";
+  const SS = "settings-tab-student-services";
+
+  const tabEl = (mount: HTMLElement, testid: string): HTMLButtonElement =>
+    mount.querySelector<HTMLButtonElement>(`[data-testid=${testid}]`)!;
+
+  const press = (mount: HTMLElement, testid: string, key: string): KeyboardEvent => {
+    const ev = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+    tabEl(mount, testid).dispatchEvent(ev);
+    return ev;
+  };
+
+  // Asserts exactly one selected tab, roving tabindex, focus, and a coherent
+  // tab/panel relationship for the expected selection.
+  const expectSelected = (mount: HTMLElement, selected: string): void => {
+    const tabs = Array.from(mount.querySelectorAll<HTMLButtonElement>("[role=tab]"));
+    expect(tabs).toHaveLength(2);
+    for (const t of tabs) {
+      const isSel = t.getAttribute("data-testid") === selected;
+      expect(t.getAttribute("aria-selected")).toBe(isSel ? "true" : "false");
+      expect(t.tabIndex).toBe(isSel ? 0 : -1);
+    }
+    const active = tabEl(mount, selected);
+    expect(document.activeElement).toBe(active);
+    const panels = mount.querySelectorAll("[role=tabpanel]");
+    expect(panels).toHaveLength(1);
+    const panel = panels[0]!;
+    expect(panel.getAttribute("aria-labelledby")).toBe(active.id);
+    for (const t of tabs) expect(t.getAttribute("aria-controls")).toBe(panel.id);
+    expect(panel.getAttribute("data-testid")).toBe(
+      selected === CM ? "settings-panel-class-management" : "settings-panel-student-services",
+    );
+  };
+
+  const focusTab = (mount: HTMLElement, testid: string): void => {
+    tabEl(mount, testid).focus();
+  };
+
+  test("initial state: selected tab is the single Tab stop (tabIndex 0), inactive tab is -1", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps());
+    focusTab(mount, CM);
+    expectSelected(mount, CM);
+    // Inactive tabs are not additional sequential Tab stops.
+    const tabStops = Array.from(
+      mount.querySelectorAll<HTMLElement>("[role=tablist] [role=tab]"),
+    ).filter((t) => t.tabIndex >= 0);
+    expect(tabStops).toHaveLength(1);
+  });
+
+  test("ArrowRight focuses and activates the next tab, and wraps last to first", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps());
+    focusTab(mount, CM);
+    const ev = press(mount, CM, "ArrowRight");
+    expect(ev.defaultPrevented).toBe(true);
+    expectSelected(mount, SS);
+    press(mount, SS, "ArrowRight");
+    expectSelected(mount, CM);
+  });
+
+  test("ArrowLeft focuses and activates the previous tab, and wraps first to last", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps());
+    focusTab(mount, CM);
+    press(mount, CM, "ArrowLeft");
+    expectSelected(mount, SS);
+    press(mount, SS, "ArrowLeft");
+    expectSelected(mount, CM);
+  });
+
+  test("Home activates the first tab; End activates the final tab", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps());
+    focusTab(mount, CM);
+    const endEv = press(mount, CM, "End");
+    expect(endEv.defaultPrevented).toBe(true);
+    expectSelected(mount, SS);
+    press(mount, SS, "Home");
+    expectSelected(mount, CM);
+    // Home on the already-first tab keeps selection and focus.
+    const homeEv = press(mount, CM, "Home");
+    expect(homeEv.defaultPrevented).toBe(true);
+    expectSelected(mount, CM);
+  });
+
+  test("unrelated keys (Tab, Enter, Space, ArrowDown, letters) are not hijacked", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps());
+    focusTab(mount, CM);
+    for (const key of ["Tab", "Enter", " ", "ArrowDown", "ArrowUp", "a"]) {
+      const ev = press(mount, CM, key);
+      expect(ev.defaultPrevented).toBe(false);
+    }
+    expectSelected(mount, CM);
+  });
+
+  test("click selection still works and updates the roving tabindex", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, wiredDeps());
+    tabEl(mount, SS).click();
+    expectSelected(mount, SS);
+    tabEl(mount, CM).click();
+    expectSelected(mount, CM);
+    // Keyboard continues from the clicked tab.
+    press(mount, CM, "End");
+    expectSelected(mount, SS);
+  });
+
+  test("keyboard-selected tab is remembered across the Settings Back/Forward subview round trip, with no history entry", () => {
+    let controller: { restoreIntegrations: () => boolean; restoreRoot: () => void } | null =
+      null;
+    const push = jest.fn();
+    const replace = jest.fn();
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher, {
+      ...wiredDeps([activeConnection]),
+      settingsHistory: {
+        push,
+        replace,
+        registerController: (c) => {
+          controller = c;
+        },
+      },
+    });
+    focusTab(mount, CM);
+    press(mount, CM, "ArrowRight");
+    press(mount, SS, "ArrowLeft");
+    press(mount, CM, "End");
+    expectSelected(mount, SS);
+    // Tab switching never touches browser history.
+    expect(push).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
+    // Browser Forward into Manage connection, then Back to the Settings root.
+    expect(controller!.restoreIntegrations()).toBe(true);
+    expect(mount.querySelector("[data-testid=settings-tabs]")).toBeNull();
+    controller!.restoreRoot();
+    const ss = tabEl(mount, SS);
+    expect(ss.getAttribute("aria-selected")).toBe("true");
+    expect(ss.tabIndex).toBe(0);
+    expect(tabEl(mount, CM).tabIndex).toBe(-1);
+    expect(
+      mount.querySelector("[data-testid=settings-panel-student-services]"),
+    ).not.toBeNull();
+  });
+});

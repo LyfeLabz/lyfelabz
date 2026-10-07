@@ -972,6 +972,15 @@ export function renderSettingsSurface(
     tablist.setAttribute("role", "tablist");
     tablist.setAttribute("aria-label", "Settings categories");
 
+    // Sprint 30A: roving-tabindex keyboard model with AUTOMATIC activation.
+    // ArrowLeft/ArrowRight (wrapping), Home, and End select the destination
+    // tab and move focus onto it via the same redraw path a click uses. Panels
+    // are local UI (no fetch on switch, no routing, no history entry).
+    const tabOrder: readonly SettingsTab[] = [
+      "class-management",
+      "student-services",
+    ];
+
     const makeTab = (
       tab: SettingsTab,
       testid: string,
@@ -997,6 +1006,22 @@ export function renderSettingsSurface(
         if (settingsTab === tab) return;
         settingsTab = tab;
         pendingTabFocus = tab;
+        draw();
+      });
+      btn.addEventListener("keydown", (ev: KeyboardEvent) => {
+        const i = tabOrder.indexOf(tab);
+        let target: number | null = null;
+        if (ev.key === "ArrowRight") target = (i + 1) % tabOrder.length;
+        else if (ev.key === "ArrowLeft")
+          target = (i - 1 + tabOrder.length) % tabOrder.length;
+        else if (ev.key === "Home") target = 0;
+        else if (ev.key === "End") target = tabOrder.length - 1;
+        if (target === null) return;
+        ev.preventDefault();
+        const next = tabOrder[target]!;
+        if (next === settingsTab) return;
+        settingsTab = next;
+        pendingTabFocus = next;
         draw();
       });
       return btn;
