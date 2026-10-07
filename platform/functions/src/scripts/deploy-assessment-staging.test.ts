@@ -297,17 +297,33 @@ describe("committed payload resolution", () => {
     );
   });
 
-  test("every single-revision payload resolves uniquely and plans to its own identity; only Earth's Layers and Water Cycle have several", () => {
+  test("every single-revision payload resolves uniquely and plans to its own identity; multi-revision lessons are well-formed and refused as ambiguous", () => {
     const repoRoot = repoRootFromCompiled();
     const resolve = makeRepositoryLessonResolver(repoRoot);
-    const all = fs
+    const files = fs
       .readdirSync(committedPayloadDirectory(repoRoot))
-      .filter((fileName) => fileName.endsWith(".json"))
-      .map((fileName) => fileName.replace(/\.r\d+\.json$/, ""));
+      .filter((fileName) => fileName.endsWith(".json"));
+    for (const fileName of files) {
+      expect(fileName).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*\.r[1-9]\d*\.json$/);
+    }
+    const all = files.map((fileName) => fileName.replace(/\.r\d+\.json$/, ""));
     const multi = [...new Set(all.filter((slug, i) => all.indexOf(slug) !== i))];
-    expect(multi).toEqual(["earths-layers", "water-cycle"]);
+    // Lessons known to carry several committed revisions. Any other lesson may
+    // legitimately gain revisions; the invariant below covers it.
+    for (const slug of ["earths-layers", "renewable-and-nonrenewable-resources", "water-cycle"]) {
+      expect(multi).toContain(slug);
+    }
+    for (const slug of multi) {
+      const ordinals = files
+        .filter((fileName) => fileName.replace(/\.r\d+\.json$/, "") === slug)
+        .map((fileName) => Number(/\.r(\d+)\.json$/.exec(fileName)?.[1]))
+        .sort((a, b) => a - b);
+      expect(ordinals).toEqual(ordinals.map((_, i) => i + 1));
+      expect(() => resolve(slug, null)).toThrow(LessonResolutionError);
+      expect(() => resolve(slug, null)).toThrow(/ambiguous/);
+    }
     const slugs = all.filter((slug) => !multi.includes(slug));
-    expect(slugs.length).toBeGreaterThanOrEqual(47);
+    expect(new Set(all).size).toBeGreaterThanOrEqual(49);
     expect(new Set(slugs).size).toBe(slugs.length);
     for (const slug of slugs) {
       const result = resolve(slug, null);
