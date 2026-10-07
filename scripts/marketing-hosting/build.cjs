@@ -3,15 +3,16 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { spliceCatalog } = require('../../app/scripts/curriculumCatalog.cjs');
+const { assertCatalogCurrent } = require('../../app/scripts/curriculumCatalog.cjs');
 
 const repositoryRoot = path.resolve(__dirname, '..', '..');
 const distributionRoot = path.join(repositoryRoot, 'dist');
 const defaultOutputDirectory = path.join(distributionRoot, 'marketing');
 const manifestPath = path.join(__dirname, 'public-files.json');
 const frontMatterFiles = new Set(['privacy.html', 'terms.html']);
-// The homepage curriculum catalog is rendered from the canonical
-// curriculum registry, so a release never ships a stale catalog.
+// The homepage ships the committed, reviewed bytes. Its generated curriculum
+// catalog must already match the registry; a drifted catalog fails the build
+// rather than being silently regenerated here.
 const curriculumCatalogFile = 'index.html';
 
 function isInside(parent, candidate) {
@@ -74,6 +75,9 @@ function stripLeadingFrontMatter(contents, relativePath) {
 function buildMarketingArtifact(options = {}) {
   const outputDirectory = validateOutputDirectory(options.outputDirectory || defaultOutputDirectory);
   const files = readManifest();
+  if (files.includes(curriculumCatalogFile)) {
+    assertCatalogCurrent(fs.readFileSync(path.join(repositoryRoot, curriculumCatalogFile), 'utf8'));
+  }
 
   fs.rmSync(outputDirectory, { recursive: true, force: true });
   fs.mkdirSync(outputDirectory, { recursive: true });
@@ -90,8 +94,6 @@ function buildMarketingArtifact(options = {}) {
     if (frontMatterFiles.has(relativePath)) {
       const sourceContents = fs.readFileSync(sourcePath, 'utf8');
       fs.writeFileSync(destinationPath, stripLeadingFrontMatter(sourceContents, relativePath), 'utf8');
-    } else if (relativePath === curriculumCatalogFile) {
-      fs.writeFileSync(destinationPath, spliceCatalog(fs.readFileSync(sourcePath, 'utf8')), 'utf8');
     } else {
       fs.copyFileSync(sourcePath, destinationPath);
     }

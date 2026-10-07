@@ -1,5 +1,14 @@
 # Public lesson delivery investigation — October 4, 2026
 
+> **Superseded release procedure (October 2026).** The redirect architecture
+> recorded here remains in force. Its release commands do not: they deploy the
+> marketing site alone with `firebase.marketing.json` or ad hoc `--config`
+> files, which no longer exist. Both Hosting sites are now released together
+> from `firebase.json` targets (`app`, `marketing`) after
+> `scripts/hosting-release/prepare.cjs`, and certified with
+> `scripts/hosting-release/certify.cjs`, which includes this report's catalog
+> navigation gate. See `DOMAIN_AND_HOSTING_CONTRACT.md`.
+
 Status: implemented and staging-preview certified; UNCOMMITTED. No production deployment.
 The accepted architecture and four implementation/test files are unchanged in the continuation;
 only this report was updated with the two completed certification gates.

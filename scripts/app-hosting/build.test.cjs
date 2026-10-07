@@ -24,6 +24,15 @@ const {
 } = require('./build.cjs');
 
 const repositoryRoot = path.resolve(__dirname, '..', '..');
+
+// The application target of the two-target repository-root firebase.json.
+function appHosting() {
+  const firebase = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
+  assert.ok(Array.isArray(firebase.hosting), 'firebase.json hosting is the two-target array');
+  const apps = firebase.hosting.filter((entry) => entry.target === 'app');
+  assert.equal(apps.length, 1);
+  return apps[0];
+}
 const outputDirectory = path.join(repositoryRoot, 'dist', `app-hosting-test-${process.pid}`);
 const fixtureRoot = path.join(repositoryRoot, 'dist', `app-hosting-fixture-${process.pid}`);
 const marketingDirectory = path.join(repositoryRoot, 'dist', 'marketing');
@@ -336,9 +345,12 @@ test('repository, source, configuration, tooling, and private files are absent',
 });
 
 test('application Hosting config is curated and routes only the certified SPA paths', () => {
-  const firebase = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
+  const firebase = { hosting: appHosting() };
+  assert.equal(firebase.hosting.site, undefined);
   assert.equal(firebase.hosting.public, 'dist/app-hosting');
-  assert.deepEqual(firebase.hosting.predeploy, ['npm --prefix app run build && node scripts/app-hosting/build.cjs']);
+  // The pair build runs `npm --prefix app run build` and this builder (see
+  // scripts/hosting-release/build-pair.cjs and its tests).
+  assert.deepEqual(firebase.hosting.predeploy, ['node scripts/hosting-release/build-pair.cjs']);
   assert.deepEqual(firebase.hosting.redirects, [
     { source: '/privacy', destination: 'https://lyfelabz.com/privacy', type: 301 },
     { source: '/terms', destination: 'https://lyfelabz.com/terms', type: 301 }
@@ -410,9 +422,8 @@ const UNGRANTED_SCRIPT_FEATURES = /\beval\(|new Function\(|new (?:Shared)?Worker
 // cannot silently diverge from Hosting's glob semantics (the emulator test below
 // verifies the real served headers).
 function configuredHeadersFor(requestPath) {
-  const firebase = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
   const headers = {};
-  for (const rule of firebase.hosting.headers) {
+  for (const rule of appHosting().headers) {
     const match = /^(\/[a-z0-9/-]*?)\/\*\*$/.exec(rule.source);
     assert.ok(match, `unsupported header source shape: ${rule.source}`);
     if (!requestPath.startsWith(`${match[1]}/`)) continue;
@@ -432,8 +443,7 @@ function cspScriptSources() {
 }
 
 test('application Hosting config declares exactly the analytics-boundary headers', () => {
-  const firebase = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
-  assert.deepEqual(firebase.hosting.headers, [
+  assert.deepEqual(appHosting().headers, [
     { source: '/app/**', headers: [{ key: 'Referrer-Policy', value: APP_REFERRER_POLICY }] },
     { source: '/app/lessons/**', headers: [{ key: 'Content-Security-Policy', value: LESSON_DELIVERY_CSP }] }
   ]);
@@ -578,12 +588,14 @@ test('Policy E: the application shell states the /app/** referrer policy in the 
   }
 });
 
-test('application artifact build leaves the certified marketing artifact and config unchanged', () => {
+test('application artifact build leaves the certified marketing artifact and target unchanged', () => {
   assert.deepEqual(directorySnapshot(marketingDirectory), marketingBefore);
-  const marketing = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.marketing.json'), 'utf8'));
-  assert.equal(marketing.hosting.target, 'marketing');
-  assert.equal(marketing.hosting.public, 'dist/marketing');
-  assert.deepEqual(marketing.hosting.predeploy, ['node scripts/marketing-hosting/build.cjs']);
+  const firebase = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
+  const marketing = firebase.hosting.filter((entry) => entry.target === 'marketing');
+  assert.equal(marketing.length, 1);
+  assert.equal(marketing[0].public, 'dist/marketing');
+  assert.deepEqual(marketing[0].predeploy, ['node scripts/hosting-release/build-pair.cjs']);
+  assert.equal(fs.existsSync(path.join(repositoryRoot, 'firebase.marketing.json')), false);
 });
 
 test('Firebase Hosting emulator serves certified routes and rejects forbidden paths', { skip: !emulatorUrl }, async () => {

@@ -50,14 +50,17 @@ const ruleBody = (css: string, selector: string): string | null => {
 describe("B6 - /app/teacher served document is the file we assert on", () => {
   test("curated hosting includes app/index.html and rewrites /app/teacher to it", () => {
     const cfg = JSON.parse(fs.readFileSync(FIREBASE_JSON, "utf8"));
-    expect(cfg.hosting.public).toBe("dist/app-hosting");
-    const rewrite = cfg.hosting.rewrites.find(
+    const apps = cfg.hosting.filter((h: { target?: string }) => h.target === "app");
+    expect(apps).toHaveLength(1);
+    const app = apps[0];
+    expect(app.public).toBe("dist/app-hosting");
+    const rewrite = app.rewrites.find(
       (r: { source: string }) => r.source === "/app/teacher",
     );
     expect(rewrite).toBeDefined();
     expect(rewrite.destination).toBe("/app/index.html");
     expect(
-      cfg.hosting.rewrites.some(
+      app.rewrites.some(
         (r: { source: string }) => r.source === "/app/**",
       ),
     ).toBe(false);

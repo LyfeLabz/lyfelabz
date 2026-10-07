@@ -20,6 +20,22 @@ This runbook never overrides F5.2.
 
 Staging Hosting site (default): `https://lyfelabz-staging.web.app`.
 
+**Hosting deploy commands (October 2026).** `firebase.json` now declares two
+Hosting targets (`app`, `marketing`), so a bare `firebase deploy --only hosting`
+deploys BOTH sites. Historical records below that quote that command describe
+what ran at the time; do not reuse them. For staging use the Hosting-only
+`firebase.staging.json`:
+
+- Paired staging release (both sites):
+  `firebase deploy --only hosting:app,hosting:marketing --config firebase.staging.json --project lyfelabz-staging --message "release <sha>" --non-interactive`,
+  after `node scripts/hosting-release/prepare.cjs --project lyfelabz-staging`
+  and followed by `node scripts/hosting-release/certify.cjs --project lyfelabz-staging`.
+- App-only staging deploy (what `publish-variant` runs):
+  `firebase deploy --only hosting:app --config firebase.staging.json --project lyfelabz-staging --non-interactive`.
+
+The staging marketing site `lyfelabz-staging-marketing` must exist before a
+paired staging release. See `DOMAIN_AND_HOSTING_CONTRACT.md`.
+
 Safety rule for every staging operation: an alias name is not a trust boundary.
 Every deploy or Firestore mutation must positively resolve to the literal
 project id `lyfelabz-staging` and fail closed otherwise. Production is never a
@@ -39,8 +55,11 @@ a real, fail-closed `staging` target:
 - `configureStagingEnv` forces `GCLOUD_PROJECT` and `GOOGLE_CLOUD_PROJECT` to the
   verified staging id so the Admin SDK index write can never bind to production.
   The legacy emulator-path default to `lyfelabz-prod` does not apply to staging.
-- The real deploy runs `firebase deploy --only hosting --project lyfelabz-staging`
-  via `execFileSync` with an argument array (no shell, no injection).
+- The real deploy runs `firebase deploy --only hosting:app --config
+  <repo>/firebase.staging.json --project lyfelabz-staging --non-interactive`
+  (`stagingHostingDeployArgs`) via `execFileSync` with an argument array (no
+  shell, no injection), from the repository root. It deploys only the
+  application site; it never deploys the marketing target.
   `makeStagingDeployHosting` refuses to invoke the runner unless the project id
   is exactly `lyfelabz-staging`.
 - Staging refuses to run while `FIRESTORE_EMULATOR_HOST` is set, requires
@@ -371,7 +390,7 @@ These amend §2 and §3 for revision-scoped coverage. Where they differ, this se
   - The §2 description "INDEX_UPDATED" now means the scoped create or repoint.
   - The §3 fixture history ("index points to B") describes pre-Slice-9 pointer semantics.
 - **Publish is create-only (S9-D9).** `--op=publish` creates the scoped record, or reconciles an identical one without writing. Any other existing record is refused before any side effect.
-  - A staging `--op=publish` also runs `firebase deploy --only hosting --project lyfelabz-staging` (HOSTING_DEPLOYED) from the current working directory, so run it from the release worktree root.
+  - A staging `--op=publish` also runs `firebase deploy --only hosting:app --config firebase.staging.json --project lyfelabz-staging` (HOSTING_DEPLOYED) from the repository root of the checkout that holds the compiled CLI, so run it from the release worktree.
 - **Rollback is the explicit repoint.** `--op=rollback --revision=<retained pr>` repoints or re-activates the scoped record of the same lesson, variant and assessment revision. It needs hosted-byte liveness and never redeploys. It is used only under an owner ruling.
 - **Retire names the revision.** `--op=retire --assessment-revision=assessment_<slug>__r<N>` flips only that scoped record. A retired scoped record never falls through to the legacy one.
 - **C8 Functions deploy (exactly three).** Run from the release worktree root:
@@ -430,7 +449,7 @@ Owner ruling R2-D6 (addendum §21.12). Each stage is its own owner-approved exec
    - the scoped r1 and legacy records are as in C8 §18.3;
    - attempts `a1`–`a4`, no live session, 0 passbacks, the flag.
    - Also record the Function update times and the Hosting release.
-6. **Hosting.** Run `firebase deploy --only hosting --project lyfelabz-staging` from the release worktree root. Record the release time from the Hosting API.
+6. **Hosting.** Run `firebase deploy --only hosting --project lyfelabz-staging` from the release worktree root. Record the release time from the Hosting API. (Historical step. Today use the paired staging release command at the top of this runbook; a bare `--only hosting` now deploys both sites.)
 7. **Served bytes.**
    - Every served file equals the artifact.
    - Against the C8 release `b292073a482b032b`:

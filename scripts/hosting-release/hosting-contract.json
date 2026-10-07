@@ -1,0 +1,59 @@
+{
+  "$comment": "Canonical LyfeLabz Hosting contract (docs/platform/DOMAIN_AND_HOSTING_CONTRACT.md). Read by scripts/hosting-release/contract.cjs. Target-to-site mappings live only in .firebaserc and file inventories only in the two public-files.json manifests; this file holds what neither owns. Origins are exact https origins with no trailing slash. Paths are artifact-relative POSIX paths and globs use minimatch, the engine Firebase Hosting uses for ignore. Sample locations use {app} and {marketing} for the environment's origins.",
+  "schemaVersion": 1,
+  "targets": ["app", "marketing"],
+  "environments": {
+    "production": {
+      "project": "lyfelabz-prod",
+      "config": "firebase.json",
+      "origins": {
+        "app": "https://app.lyfelabz.com",
+        "marketing": "https://lyfelabz.com"
+      },
+      "entryAliases": ["https://www.lyfelabz.com"]
+    },
+    "staging": {
+      "project": "lyfelabz-staging",
+      "config": "firebase.staging.json",
+      "origins": {
+        "app": "https://lyfelabz-staging.web.app",
+        "marketing": "https://lyfelabz-staging-marketing.web.app"
+      },
+      "entryAliases": []
+    }
+  },
+  "paths": {
+    "marketingOnly": ["blog/**", "wonderbox/**"],
+    "appOnly": ["app/**"],
+    "appRequired": ["app/index.html", "app/dist/bundle.js", "app/lms-callback.html"],
+    "hostSpecific": []
+  },
+  "redirectSamples": [
+    { "target": "marketing", "path": "/app", "status": 301, "location": "{app}/app/" },
+    { "target": "marketing", "path": "/app/", "status": 301, "location": "{app}/app/" },
+    { "target": "marketing", "path": "/lesson_carbon-cycle.html", "status": 301, "location": "{app}/lesson_carbon-cycle.html" },
+    { "target": "marketing", "path": "/lesson_renewable-and-nonrenewable-resources.html?delivery-cert=pair", "status": 301, "location": "{app}/lesson_renewable-and-nonrenewable-resources.html?delivery-cert=pair" },
+    { "target": "app", "path": "/privacy", "status": 301, "location": "{marketing}/privacy" },
+    { "target": "app", "path": "/terms", "status": 301, "location": "{marketing}/terms" }
+  ],
+  "routeSamples": [
+    { "target": "marketing", "path": "/", "status": 200 },
+    { "target": "marketing", "path": "/privacy", "status": 200 },
+    { "target": "marketing", "path": "/terms", "status": 200 },
+    { "target": "marketing", "path": "/blog/", "status": 200 },
+    { "target": "marketing", "path": "/wonderbox/", "status": 200 },
+    { "target": "marketing", "path": "/investigation_gray-zone.html", "status": 200 },
+    { "target": "marketing", "path": "/app/lessons/lesson_carbon-cycle.html", "status": 404 },
+    { "target": "marketing", "path": "/app/a/pair-certification", "status": 404 },
+    { "target": "app", "path": "/", "status": 200 },
+    { "target": "app", "path": "/app/", "status": 200 },
+    { "target": "app", "path": "/app/student", "status": 200 },
+    { "target": "app", "path": "/app/a/pair-certification", "status": 200 },
+    { "target": "app", "path": "/lesson_carbon-cycle.html", "status": 200 },
+    { "target": "app", "path": "/app/lessons/lesson_carbon-cycle.html", "status": 200 },
+    { "target": "app", "path": "/blog/", "status": 404 },
+    { "target": "app", "path": "/wonderbox/", "status": 404 },
+    { "target": "app", "path": "/app/lessons/variants/manifest.json", "status": 404 },
+    { "target": "app", "path": "/firebase.json", "status": 404 }
+  ]
+}

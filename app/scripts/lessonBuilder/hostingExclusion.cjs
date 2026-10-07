@@ -27,7 +27,7 @@
  * For the legacy repository-root layout, `firebase-tools` enumerates the deployable file set with
  * `glob.sync("**\/*", { cwd, dot:true, follow:true, ignore, nodir:true,
  * posix:true })` (firebase-tools `listFiles`), where `ignore` is a small set
- * of built-in defaults concatenated with `hosting.ignore` from
+ * of built-in defaults concatenated with the `app` target's `ignore` from
  * `firebase.json`. `glob`'s `ignore` option is evaluated with `minimatch`.
  * We reproduce exactly that decision with `minimatch` (the same engine
  * `glob` uses), so a path is "would-be-served" iff `glob` would NOT ignore
@@ -82,6 +82,25 @@ function isHostingIgnored(relPosixPath, ignorePatterns) {
   });
 }
 
+// The Hosting entry that serves the application artifact. The repository-root
+// firebase.json declares two targets (`app`, `marketing`); the retained
+// variants and the private manifest only ever concern the `app` target. A
+// legacy single-object layout is still read as the application entry.
+function appHostingConfig(parsed) {
+  const hosting = parsed && parsed.hosting;
+  if (Array.isArray(hosting)) {
+    const apps = hosting.filter((entry) => entry && entry.target === "app");
+    if (apps.length !== 1) {
+      fail(`firebase.json hosting must declare exactly one "app" target (found ${apps.length})`);
+    }
+    return apps[0];
+  }
+  if (!hosting || typeof hosting !== "object") {
+    fail("firebase.json has no hosting configuration");
+  }
+  return hosting;
+}
+
 function readHostingIgnore(repoRoot = paths.REPO_ROOT) {
   const firebaseJsonPath = path.join(repoRoot, "firebase.json");
   if (!fs.existsSync(firebaseJsonPath)) {
@@ -93,10 +112,7 @@ function readHostingIgnore(repoRoot = paths.REPO_ROOT) {
   } catch (err) {
     fail(`firebase.json is not valid JSON: ${err.message}`);
   }
-  const hosting = parsed && parsed.hosting;
-  if (!hosting || typeof hosting !== "object") {
-    fail("firebase.json has no hosting configuration");
-  }
+  const hosting = appHostingConfig(parsed);
   // Support both the historical repository-root layout and the curated
   // Phase 7B artifact. In the curated layout, the app-hosting builder and
   // its tests prove retained HTML inclusion; this verifier preserves the
@@ -161,6 +177,7 @@ function verifyManifestHostingExclusion({ repoRoot = paths.REPO_ROOT } = {}) {
 
 module.exports = {
   FIREBASE_BUILTIN_IGNORES,
+  appHostingConfig,
   MANIFEST_REL_PATH,
   SAMPLE_REVISION_REL_PATH,
   isHostingIgnored,

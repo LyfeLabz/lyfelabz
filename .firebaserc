@@ -6,8 +6,21 @@
   "targets": {
     "lyfelabz-prod": {
       "hosting": {
+        "app": [
+          "lyfelabz-prod"
+        ],
         "marketing": [
           "lyfelabz-marketing"
+        ]
+      }
+    },
+    "lyfelabz-staging": {
+      "hosting": {
+        "app": [
+          "lyfelabz-staging"
+        ],
+        "marketing": [
+          "lyfelabz-staging-marketing"
         ]
       }
     }

@@ -13,6 +13,7 @@ const catalog = require(path.join(scripts, "curriculumCatalog.cjs")) as {
   extractCatalog(html: string): string;
   spliceCatalog(html: string, catalog?: string): string;
   readRootIndexHtml(): string;
+  assertCatalogCurrent(html?: string): void;
 };
 const registry = require(path.join(scripts, "curriculumRegistry.cjs")) as {
   parseRegistryText(text: string): unknown;
@@ -139,5 +140,14 @@ describe("Homepage curriculum catalog generated from the registry", () => {
     expect(catalog.extractCatalog(spliced)).toBe("    new\n");
     expect(() => catalog.spliceCatalog("<p>no markers</p>", "x")).toThrow(/missing/);
     expect(() => catalog.spliceCatalog(`${html}${html}`, "x")).toThrow(/duplicate/);
+  });
+
+  test("assertCatalogCurrent accepts the committed homepage and rejects drift", () => {
+    const html = catalog.readRootIndexHtml();
+    expect(() => catalog.assertCatalogCurrent()).not.toThrow();
+    expect(() => catalog.assertCatalogCurrent(html)).not.toThrow();
+    const stale = catalog.spliceCatalog(html, "    <!-- stale -->\n");
+    expect(() => catalog.assertCatalogCurrent(stale)).toThrow(/DRIFT/);
+    expect(() => catalog.assertCatalogCurrent("<p>no markers</p>")).toThrow(/missing/);
   });
 });

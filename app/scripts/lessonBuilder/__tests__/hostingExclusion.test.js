@@ -40,10 +40,26 @@ describe("retention manifest is excluded from Firebase Hosting (Slice 2 carry-fo
 
   test("the exclusion is a hosting.ignore entry for the exact manifest path, not a rename", () => {
     const firebaseJson = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "firebase.json"), "utf8"));
-    expect(firebaseJson.hosting.ignore).toContain("app/lessons/variants/manifest.json");
+    const app = firebaseJson.hosting.find((entry) => entry.target === "app");
+    expect(app.ignore).toContain("app/lessons/variants/manifest.json");
+    expect(hostingExclusion.appHostingConfig(firebaseJson)).toBe(app);
     // The manifest keeps its canonical name; the module and build tooling
     // still read app/lessons/variants/manifest.json locally.
     expect(hostingExclusion.MANIFEST_REL_PATH).toBe("app/lessons/variants/manifest.json");
+  });
+
+  test("the ignore model reads only the app target of the two-target config", () => {
+    const twoTargets = {
+      hosting: [
+        { target: "app", public: "dist/app-hosting", ignore: ["app/lessons/variants/manifest.json"] },
+        { target: "marketing", public: "dist/marketing", ignore: [] },
+      ],
+    };
+    expect(hostingExclusion.appHostingConfig(twoTargets)).toBe(twoTargets.hosting[0]);
+    expect(() => hostingExclusion.appHostingConfig({ hosting: [twoTargets.hosting[1]] })).toThrow(/exactly one "app" target/);
+    expect(() =>
+      hostingExclusion.appHostingConfig({ hosting: [twoTargets.hosting[0], twoTargets.hosting[0]] }),
+    ).toThrow(/exactly one "app" target/);
   });
 
   test("a real retained artifact (built via the Slice 2 pipeline) would still be served", () => {

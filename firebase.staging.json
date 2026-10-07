@@ -1,11 +1,4 @@
 {
-  "firestore": {
-    "rules": "platform/firebase/firestore.rules",
-    "indexes": "platform/firebase/firestore.indexes.json"
-  },
-  "storage": {
-    "rules": "platform/firebase/storage.rules"
-  },
   "hosting": [
     {
       "target": "app",
@@ -38,12 +31,12 @@
       "redirects": [
         {
           "source": "/privacy",
-          "destination": "https://lyfelabz.com/privacy",
+          "destination": "https://lyfelabz-staging-marketing.web.app/privacy",
           "type": 301
         },
         {
           "source": "/terms",
-          "destination": "https://lyfelabz.com/terms",
+          "destination": "https://lyfelabz-staging-marketing.web.app/terms",
           "type": 301
         }
       ],
@@ -104,17 +97,17 @@
       "redirects": [
         {
           "source": "/app",
-          "destination": "https://app.lyfelabz.com/app/",
+          "destination": "https://lyfelabz-staging.web.app/app/",
           "type": 301
         },
         {
           "source": "/app/",
-          "destination": "https://app.lyfelabz.com/app/",
+          "destination": "https://lyfelabz-staging.web.app/app/",
           "type": 301
         },
         {
           "regex": "^/(lesson_[a-z0-9-]+\\.html)$",
-          "destination": "https://app.lyfelabz.com/:1",
+          "destination": "https://lyfelabz-staging.web.app/:1",
           "type": 301
         }
       ],
@@ -127,17 +120,6 @@
           "source": "/terms",
           "destination": "/terms.html"
         }
-      ]
-    }
-  ],
-  "functions": [
-    {
-      "source": "platform/functions",
-      "codebase": "default",
-      "runtime": "nodejs22",
-      "ignore": ["node_modules", ".git", "*.log"],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
     }
   ]

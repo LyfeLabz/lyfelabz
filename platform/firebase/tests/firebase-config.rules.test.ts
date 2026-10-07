@@ -2,8 +2,9 @@
  * Exactly one legitimate production Hosting path.
  *
  * Production Hosting deploys only from the repository-root `firebase.json`,
- * which publishes the curated artifact (`dist/app-hosting`) built by
- * `scripts/app-hosting/build.cjs`. `platform/firebase/firebase.json` keeps a
+ * whose two targets publish the curated artifacts (`app`: `dist/app-hosting`,
+ * `marketing`: `dist/marketing`) built together by
+ * `scripts/hosting-release/build-pair.cjs`. `platform/firebase/firebase.json` keeps a
  * Hosting block solely for the local UX-review emulator
  * (`scripts/ux-review/start.sh`), which serves the repository root. That block
  * must never be deployable: its Hosting `predeploy` hook refuses, and
@@ -63,9 +64,15 @@ describe("platform/firebase/firebase.json Hosting is emulator-only", () => {
 });
 
 describe("the repository-root firebase.json is the one production Hosting path", () => {
-  test("publishes only the curated artifact, built by the app-hosting builder", () => {
-    expect(rootConfig.hosting.public).toBe("dist/app-hosting");
-    expect(rootConfig.hosting.predeploy.join(" ")).toContain("node scripts/app-hosting/build.cjs");
+  test("publishes only the two curated artifacts, built together by the pair build", () => {
+    const hosting: HostingConfig[] = rootConfig.hosting;
+    expect(hosting.map((entry) => entry.target)).toEqual(["app", "marketing"]);
+    expect(hosting.map((entry) => entry.public)).toEqual(["dist/app-hosting", "dist/marketing"]);
+    for (const entry of hosting) {
+      expect(entry.site).toBeUndefined();
+      expect(entry.predeploy).toEqual(["node scripts/hosting-release/build-pair.cjs"]);
+    }
+    expect(fs.existsSync(path.join(REPO_ROOT, "firebase.marketing.json"))).toBe(false);
   });
 
   test("both configs share the one Firestore indexes declaration", () => {

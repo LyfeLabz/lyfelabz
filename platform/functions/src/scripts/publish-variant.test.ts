@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as path from "path";
 import {
   configureEmulatorEnv,
   configureProductionEnv,
@@ -11,6 +13,7 @@ import {
   PRODUCTION_HOSTING_ORIGINS,
   PRODUCTION_PROJECT_ID,
   STAGING_PROJECT_ID,
+  stagingHostingDeployArgs,
   type CliArgs,
   type CliDeps,
   type PublishContext,
@@ -391,6 +394,46 @@ describe("makeStagingDeployHosting (fail-closed deploy port)", () => {
     const result = await port();
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toContain("firebase exited 1");
+  });
+});
+
+describe("stagingHostingDeployArgs (app-only staging Hosting deploy)", () => {
+  const repoRoot = path.resolve(__dirname, "..", "..", "..", "..");
+
+  test("deploys only the app Hosting target with the Hosting-only staging config", () => {
+    expect(stagingHostingDeployArgs(STAGING_PROJECT_ID, repoRoot)).toEqual([
+      "deploy",
+      "--only",
+      "hosting:app",
+      "--config",
+      path.join(repoRoot, "firebase.staging.json"),
+      "--project",
+      STAGING_PROJECT_ID,
+      "--non-interactive",
+    ]);
+  });
+
+  test("never a bare --only hosting, which now means both Hosting sites", () => {
+    const args = stagingHostingDeployArgs(STAGING_PROJECT_ID, repoRoot);
+    expect(args).not.toContain("hosting");
+    expect(args[args.indexOf("--only") + 1]).toBe("hosting:app");
+  });
+
+  test("the named staging config exists, is Hosting-only, and maps an app target", () => {
+    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, "firebase.staging.json"), "utf8")) as {
+      hosting: Array<{ target?: string; site?: string }>;
+    };
+    expect(Object.keys(config)).toEqual(["hosting"]);
+    expect(config.hosting.filter((entry) => entry.target === "app")).toHaveLength(1);
+    expect(config.hosting.every((entry) => entry.site === undefined)).toBe(true);
+    const rc = JSON.parse(fs.readFileSync(path.join(repoRoot, ".firebaserc"), "utf8")) as {
+      targets: Record<string, { hosting: Record<string, string[]> }>;
+    };
+    expect(rc.targets[STAGING_PROJECT_ID].hosting.app).toEqual([STAGING_PROJECT_ID]);
+  });
+
+  test("refuses any project other than staging", () => {
+    expect(() => stagingHostingDeployArgs(PRODUCTION_PROJECT_ID, repoRoot)).toThrow("not the authorized staging project");
   });
 });
 

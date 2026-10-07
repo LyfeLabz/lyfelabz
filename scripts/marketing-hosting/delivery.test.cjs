@@ -14,8 +14,8 @@ const { buildApplicationArtifact } = require('../app-hosting/build.cjs');
 // capture substitution, redirect precedence and query-string handling.
 const firebaseBin = fs.realpathSync(execFileSync('which', ['firebase'], { encoding: 'utf8' }).trim());
 const { server: superstatic } = require(require.resolve('superstatic', { paths: [path.dirname(firebaseBin)] }));
-const marketingConfig = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.marketing.json'))).hosting;
-const appConfig = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'))).hosting;
+const { readConfigFile, readHostingTargets } = require('../hosting-release/contract.cjs');
+const { app: appConfig, marketing: marketingConfig } = readHostingTargets(readConfigFile('firebase.json'));
 const directory = path.join(repositoryRoot, 'dist', `delivery-test-${process.pid}`);
 const marketingArtifact = path.join(directory, 'marketing');
 const appArtifact = path.join(directory, 'app');

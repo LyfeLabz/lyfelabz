@@ -36,7 +36,7 @@ Major surfaces in the current build:
 - **Google Classroom integration:** connect, import classes, roster sync, one-way assignment publication, deep-link student launch.
 - **Assessment system:** server-authoritative sessions → attempts → scoring against confidential answer keys.
 
-Hosting: **Firebase Hosting is the sole production origin, `https://lyfelabz.com/`.** The application site (`app.lyfelabz.com`, default site `lyfelabz-prod`) serves release `2331d5a45fa23f9f` (October 1, 2026 catch-up; source commit `d2e3278a115973b01e0dd1138fc61b0656ea965c`; previously `1fdb7d3ff3ead2aa`, 2026-09-30, commit `6930452`). The marketing site is a separate target and was intentionally NOT updated: `lyfelabz.com` marketing/public Hosting remains on `fa5173a7c8c6457f`, and its catch-up is a separate future certified release. Public V1 pages on the marketing origin are therefore not current merely because their app-hosted copies are (`RELEASE_2026-10-01_PRODUCTION_APP_CATCHUP.md`). Public curriculum from the repo root; the authenticated platform under `/app/**` (path-based routing). GitHub Pages is retained only as a migration safety net and is being retired.
+Hosting: **two Firebase Hosting sites in `lyfelabz-prod`, released together as one paired operation** (`DOMAIN_AND_HOSTING_CONTRACT.md`). `lyfelabz.com` and `www` (site `lyfelabz-marketing`, target `marketing`) are the public brand front door: homepage, About, privacy, terms, blog, Wonder Box. `app.lyfelabz.com` (default site `lyfelabz-prod`, target `app`) is the instructional and application origin: `/app/**`, assignment deep links, the LMS callback, lessons, revisions, variants, and instructional resources; it also serves a same-origin homepage copy whose canonical is the apex. Root `lesson_<slug>.html` requests on the apex 301 to the app host; other instructional resources are still served by both sites until a later phase. Both targets deploy from the repository-root `firebase.json` with `--only hosting:app,hosting:marketing` after `scripts/hosting-release/prepare.cjs`; there is no `firebase.marketing.json`. Live versions observed 2026-10-07: app `8f5bb67475554e40` (source `1169d4d`), marketing `809b39fe932e23ac` (2026-10-06, source not recorded; its homepage and shared runtime assets lag the app copies). Public curriculum from the repo root; the authenticated platform under `/app/**` (path-based routing). GitHub Pages is retained only as a migration safety net and is being retired.
 
 ---
 
@@ -132,7 +132,7 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
 
 ## 8. Student Launch and Access Control (security-sensitive)
 
-- **Deep-link URL shape (only):** `https://lyfelabz.com/app/a/{assignmentId}`. `https` only, canonical host only, no query/fragment. The URL **must not** carry a student/teacher/school/district id, token, OAuth code, score, session id, Classroom coursework id, answer-key material, or lesson slug. `assignmentId` is not a secret but **confers no authorization on its own**.
+- **Deep-link URL shape (only):** `https://app.lyfelabz.com/app/a/{assignmentId}` (the single producer is `CANONICAL_APP_ORIGIN` in `platform/functions/src/lms/deep-link-url.ts`; the apex does not serve `/app/a/**`). `https` only, canonical host only, no query/fragment. The URL **must not** carry a student/teacher/school/district id, token, OAuth code, score, session id, Classroom coursework id, answer-key material, or lesson slug. `assignmentId` is not a secret but **confers no authorization on its own**.
 - **Resolver `lmsDeepLinkResolve`** (student callable, **read-only** — never creates/mutates a session or attempt) enforces, in order: authenticated → `role === student` → `status === active` → assignment exists → `districtId` claim matches assignment → **active enrollment in the assignment's class** → assignment `status` is `published` or `closed` (refuse `draft`/`archived`). It returns `internalTarget` and `attemptContext` (`authorized` | `informational`).
 - **Signed-out arrival:** the `/app/**` bootstrap establishes identity first, **preserves the arriving URL through the sign-in round trip**, then dispatches. Silent arrival = no class/assignment picker, but identity is still established.
 - **Recipient enforcement / closed assignments:** a non-enrolled caller is refused (`enrollment-inactive`); a closed window without grace and an archived assignment are informational/refused, not attemptable. `Referer` is never trusted as authorization.
@@ -268,7 +268,8 @@ Read this document first, then route to the single strongest canonical source fo
 | Ratified platform decisions (PDR index) | `LYFELABZ_PLATFORM_DECISIONS.md` |
 | Account lifecycle states | `PLATFORM_STATE_MACHINE.md` |
 | First platform administrator bootstrap, admin role transition, rollback | `PLATFORM_ADMIN_BOOTSTRAP_RUNBOOK.md` |
-| Hosting, environments, release/rollback, session policy | `PLATFORM_OPERATIONS_SPECIFICATION.md` |
+| Domain ownership, Hosting targets, paired Hosting release, certification, rollback | `DOMAIN_AND_HOSTING_CONTRACT.md` (+ `scripts/hosting-release/`) |
+| Environments, session policy | `PLATFORM_OPERATIONS_SPECIFICATION.md` |
 | Lesson build system, markers, equivalence | `CLAUDE.md`; `app/scripts/lessonBuilder/lessons/<slug>.cjs` |
 | Lesson content standards, voice, quiz/vocab rules | `CLAUDE.md` |
 

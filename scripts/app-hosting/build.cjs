@@ -9,6 +9,7 @@ const {
   repositoryRoot,
   stripLeadingFrontMatter
 } = require('../marketing-hosting/build.cjs');
+const { assertCatalogCurrent } = require('../../app/scripts/curriculumCatalog.cjs');
 
 const distributionRoot = path.join(repositoryRoot, 'dist');
 const defaultOutputDirectory = path.join(distributionRoot, 'app-hosting');
@@ -349,6 +350,10 @@ function buildApplicationArtifact(options = {}) {
   const repoRoot = options.repositoryRoot || repositoryRoot;
   const outputDirectory = validateOutputDirectory(options.outputDirectory || defaultOutputDirectory);
   const approved = collectApprovedCopies(repoRoot);
+  // The homepage ships the committed bytes, exactly as the marketing builder
+  // does; a catalog that disagrees with the registry fails before any output.
+  const homepage = approved.find((entry) => entry.destination === 'index.html');
+  if (homepage) assertCatalogCurrent(fs.readFileSync(path.join(repoRoot, homepage.source), 'utf8'));
 
   if (fs.existsSync(outputDirectory) && fs.lstatSync(outputDirectory).isSymbolicLink()) {
     fail(`output directory must not be a symlink: ${outputDirectory}`);

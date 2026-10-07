@@ -9,6 +9,18 @@ This specification supersedes prior operational statements distributed across th
 
 ---
 
+## Hosting Reconciliation Notice (October 2026)
+
+`DOMAIN_AND_HOSTING_CONTRACT.md` is the canonical source for domain ownership, Firebase Hosting targets, and the Hosting release, certification, and rollback procedure. It supersedes this document wherever they differ, in particular:
+
+- Production Hosting is **two sites in `lyfelabz-prod`**, not one origin: `lyfelabz.com`/`www` (site `lyfelabz-marketing`, target `marketing`) is the public brand front door, and `app.lyfelabz.com` (site `lyfelabz-prod`, target `app`) is the instructional and application origin, including `/app/**` and assignment deep links (`https://app.lyfelabz.com/app/a/{assignmentId}`). Statements below that `https://lyfelabz.com/` is the single production origin, or that `/app/**` is served from the apex, describe the original design, not the current system.
+- Both sites are released together from one commit: `node scripts/hosting-release/prepare.cjs --project <project>`, then `firebase deploy --only hosting:app,hosting:marketing --project <project> --message "release <sha>"`, then `node scripts/hosting-release/certify.cjs --project <project>`. Never a bare `--only hosting`.
+- The two-site deploy is **not atomic**: firebase-tools releases the two sites concurrently and one can fail after the other succeeds. Each Hosting version is atomic within its own site only.
+- Rollback restores both sites to the previous certified pair with `firebase hosting:clone <site>@<version> <site>:live --project <project>`.
+- No Hosting deploy automation exists; releases are run by an operator after `prepare` and are certified with `certify`.
+
+---
+
 ## Sprint 9D Reconciliation Notice
 
 Section 22 (Pilot Readiness Certification) of this document is the operational readiness bar for the pilot. Sprint 9D adds a product readiness bar in `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §10.1 and PDR-024q. Both bars must be satisfied before the pilot begins. The operational readiness bar in Section 22 is preserved without amendment. The product readiness bar defers to Section 22 for all operational, security, deployment, rollback, monitoring, and recovery obligations.
@@ -70,7 +82,7 @@ The load-bearing hosting decisions are:
 - The single production origin is `https://lyfelabz.com/`, served by Firebase Hosting.
 - The public curriculum surface and the authenticated platform surface share the same origin. Path-based routing separates them. See Section 5.
 - Permanent subdomains are not introduced. Cross-surface navigation must not change origin.
-- Firebase Hosting release history is the atomic, versioned deploy channel. Every deploy is a release. Every rollback is a release re-selection.
+- Firebase Hosting release history is the versioned deploy channel. Each site's release is atomic for that site; the paired two-site release is not atomic (see the Hosting Reconciliation Notice and `DOMAIN_AND_HOSTING_CONTRACT.md` §7). Every deploy is a release. Every rollback is a release re-selection.
 - Firebase Hosting Preview Channels are the certified preview environment. See Section 5.
 - The custom domain (`lyfelabz.com`) is bound to Firebase Hosting only after preview and production certification have been achieved.
 
@@ -268,7 +280,7 @@ The deployment workflow, at operational level of detail, is:
 3. Reviewers exercise the preview deployment against the certification criteria in Section 12. Automated preview smoke tests run against the preview URL.
 4. When preview verification is complete, the release candidate is presented to the Platform Administrator with the certification record.
 5. The Platform Administrator approves the promotion. Approval is recorded.
-6. Production deployment is triggered. The release is deployed atomically. Firebase Hosting produces a new release in the release history.
+6. Production deployment is triggered. Firebase Hosting produces a new release for each site in its release history. The paired Hosting release is not atomic across the two sites; follow `DOMAIN_AND_HOSTING_CONTRACT.md` §6-§8 for the release, certification, and recovery.
 7. Post-deployment health verification runs against production. See Section 22.
 8. The release is recorded in the operational changelog and tagged in git.
 
@@ -298,7 +310,7 @@ the production release is immediately rolled back to the previous Certified Rele
 
 Rollback rules:
 
-- Rollback is a re-selection of a previous Certified Release from Firebase Hosting's release history. Rollback is not a re-deploy of the prior source tree.
+- Rollback is a re-selection of a previous Certified Release from Firebase Hosting's release history. Rollback is not a re-deploy of the prior source tree. Hosting rollback restores both sites to the previous certified pair (`firebase hosting:clone <site>@<version> <site>:live --project <project>` for each site; `DOMAIN_AND_HOSTING_CONTRACT.md` §8).
 - Rollback is one action. It is performed by the Platform Administrator or by an on-call operator explicitly authorized by the Platform Administrator.
 - Rollback preserves in-progress classroom sessions to the extent the retiring release supported them. See Section 19.
 - Cloud Functions rollback is a re-selection of the prior deployed version.

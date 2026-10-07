@@ -139,8 +139,17 @@ with `--only`.
 
 Separate deployment surfaces (authorization for one never authorizes another):
 
-- Hosting (`firebase.json` app hosting from `dist/app-hosting`; marketing site
-  via `firebase.marketing.json`, target `marketing`)
+- Hosting: one paired surface. `firebase.json` declares two targets, `app`
+  (site `lyfelabz-prod`, `app.lyfelabz.com`, `dist/app-hosting`) and
+  `marketing` (site `lyfelabz-marketing`, apex and www, `dist/marketing`),
+  mapped in `.firebaserc`. There is no `firebase.marketing.json`. Release both
+  together, after `node scripts/hosting-release/prepare.cjs --project
+  <project>`, with `firebase deploy --only hosting:app,hosting:marketing
+  --project <project> --message "release <sha>"` (staging adds `--config
+  firebase.staging.json`), then `certify.cjs`. Never use a bare `--only
+  hosting` (it now means both sites). The two-site deploy is NOT atomic; see
+  `docs/platform/DOMAIN_AND_HOSTING_CONTRACT.md` for recovery and paired
+  rollback.
 - Functions (`platform/functions`)
 - Firestore Rules (`platform/firebase/firestore.rules`)
 - Firestore indexes (`platform/firebase/firestore.indexes.json`)
@@ -224,7 +233,9 @@ Non-negotiable invariants:
   authenticated** `app/lessons/lesson_<slug>.html` (no legacy classroom;
   consumes platform identity + the certified assessment runtime).
 - Generated artifacts begin with `<!-- GENERATED FILE. -->`. Direct edits to
-  them are prohibited and caught by `lessons:verify` in CI.
+  them are prohibited and caught by `lessons:verify` (part of `npm --prefix
+  app run verify`, which Hosting `prepare` runs; current GitHub Actions CI
+  runs only for `platform/**` changes and does not run it).
 - Markers gate `V1-ONLY` / `V2-ONLY` regions inside the source and are
   context-strict (HTML vs `<script>`/`<style>`).
 - Build: `npm --prefix app run lessons:build`. Verify:
@@ -484,8 +495,9 @@ bare number, so it is not read as a lesson number.
 Pages are flat static files published from explicit manifests
 (`scripts/marketing-hosting/public-files.json`,
 `scripts/app-hosting/public-files.json`). The Hosting configs
-(`firebase.json`, `firebase.marketing.json`) contain only a few specific
-redirects (`/app`, `/privacy`, `/terms`), not a general rename mechanism, so a
+(the `app` and `marketing` targets in `firebase.json`) contain only a few
+specific redirects (`/app`, `/privacy`, `/terms`, root lessons to the app
+host), not a general rename mechanism, so a
 renamed file 404s its old URL unless compatibility is preserved. Before
 renaming, check the relevant Hosting config, publish manifest, and inbound
 references. A rename is a deliberate, compatibility-preserving change that

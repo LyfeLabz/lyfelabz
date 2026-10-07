@@ -515,8 +515,8 @@ export async function main(argv: readonly string[], deps: CliDeps): Promise<numb
   }
 }
 
-// Runs the actual `firebase deploy --only hosting` for a proven project id and
-// throws on any non-zero/failed invocation. Injected into
+// Runs the actual staging app Hosting deploy (see stagingHostingDeployArgs) for
+// a proven project id and throws on any non-zero/failed invocation. Injected into
 // makeStagingDeployHosting so the guard logic is unit-testable without spawning
 // a process; the entry point supplies the real execFileSync-backed runner.
 export type DeployRunner = (projectId: string) => void;
@@ -548,6 +548,30 @@ export function makeStagingDeployHosting(
       });
     }
   };
+}
+
+// The exact staging Hosting deploy arguments. The repository-root firebase.json
+// declares two Hosting targets (app, marketing), so a bare `--only hosting`
+// would also deploy the marketing site. Variant publication only ever changes
+// the application artifact, so it names `hosting:app` and uses the generated
+// Hosting-only staging config (staging redirect origins; no Functions, Rules,
+// or Storage blocks). Refuses any project other than staging.
+export function stagingHostingDeployArgs(projectId: string, repoRoot: string): string[] {
+  if (projectId !== STAGING_PROJECT_ID) {
+    throw new Error(
+      `refusing hosting deploy arguments: project '${projectId}' is not the authorized staging project '${STAGING_PROJECT_ID}'`,
+    );
+  }
+  return [
+    "deploy",
+    "--only",
+    "hosting:app",
+    "--config",
+    path.join(repoRoot, "firebase.staging.json"),
+    "--project",
+    projectId,
+    "--non-interactive",
+  ];
 }
 
 // --------------------------------------------------------------------------
@@ -840,18 +864,18 @@ if (require.main === module) {
   const preTarget = preParsed.ok ? preParsed.args.target : "emulator";
   const preProject = preParsed.ok ? preParsed.args.project : null;
 
-  // The real staging Hosting deploy: `firebase deploy --only hosting` scoped to
-  // the proven staging project. execFileSync with an argument array (no shell)
-  // means no user value is ever interpolated into a shell; projectId is the
-  // validated STAGING_PROJECT_ID literal in any case. A non-zero exit throws,
-  // which makeStagingDeployHosting turns into an { ok: false } that stops
-  // publication before the index is touched.
+  // The real staging Hosting deploy: `firebase deploy --only hosting:app` with
+  // the Hosting-only staging config, scoped to the proven staging project.
+  // execFileSync with an argument array (no shell) means no user value is ever
+  // interpolated into a shell; projectId is the validated STAGING_PROJECT_ID
+  // literal in any case. A non-zero exit throws, which makeStagingDeployHosting
+  // turns into an { ok: false } that stops publication before the index is
+  // touched.
   const stagingDeployRunner: DeployRunner = (projectId) => {
-    execFileSync(
-      "firebase",
-      ["deploy", "--only", "hosting", "--project", projectId, "--non-interactive"],
-      { stdio: "inherit" },
-    );
+    execFileSync("firebase", stagingHostingDeployArgs(projectId, repoRoot), {
+      stdio: "inherit",
+      cwd: repoRoot,
+    });
   };
 
   // Staging gets a REAL, fail-closed deploy port. Emulator and production keep

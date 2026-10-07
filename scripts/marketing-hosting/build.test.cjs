@@ -14,6 +14,7 @@ const {
   validateOutputDirectory
 } = require('./build.cjs');
 const {
+  assertCatalogCurrent,
   extractCatalog,
   renderCatalog,
   spliceCatalog
@@ -89,13 +90,15 @@ test('only legal-page YAML front matter is removed from marketing output', () =>
   }
 });
 
-test('published homepage catalog is rendered from the curriculum registry', () => {
-  const output = fs.readFileSync(path.join(testOutputDirectory, 'index.html'), 'utf8');
-  assert.equal(extractCatalog(output), renderCatalog());
+test('published homepage is the committed bytes, whose catalog matches the curriculum registry', () => {
+  const output = fs.readFileSync(path.join(testOutputDirectory, 'index.html'));
+  assert.deepEqual(output, fs.readFileSync(path.join(repositoryRoot, 'index.html')));
+  assert.equal(extractCatalog(output.toString('utf8')), renderCatalog());
 
-  // A stale source catalog is replaced in the published copy, not shipped.
-  const staleSource = spliceCatalog(fs.readFileSync(path.join(repositoryRoot, 'index.html'), 'utf8'), '    <!-- stale -->\n');
-  assert.equal(spliceCatalog(staleSource), output);
+  // A stale catalog is never regenerated or shipped: the build gate rejects it.
+  const staleSource = spliceCatalog(output.toString('utf8'), '    <!-- stale -->\n');
+  assert.throws(() => assertCatalogCurrent(staleSource), /DRIFT/);
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, 'build.cjs'), 'utf8'), /spliceCatalog/);
 });
 
 test('repository-internal content is absent', () => {
@@ -132,15 +135,18 @@ test('public artifact makes no anonymous GitHub repository API request', () => {
   }
 });
 
-test('marketing Hosting config is isolated from the existing application config', () => {
-  const marketing = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.marketing.json'), 'utf8'));
-  const application = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
+test('marketing Hosting target is isolated from the application target', () => {
+  const firebase = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'firebase.json'), 'utf8'));
   const firebaseRc = JSON.parse(fs.readFileSync(path.join(repositoryRoot, '.firebaserc'), 'utf8'));
+  assert.equal(fs.existsSync(path.join(repositoryRoot, 'firebase.marketing.json')), false);
+  assert.deepEqual(firebase.hosting.map((entry) => entry.target), ['app', 'marketing']);
+  const [application, marketing] = firebase.hosting.map((hosting) => ({ hosting }));
 
-  assert.deepEqual(Object.keys(marketing), ['hosting']);
   assert.equal(marketing.hosting.target, 'marketing');
+  assert.equal(marketing.hosting.site, undefined);
   assert.equal(marketing.hosting.public, 'dist/marketing');
-  assert.deepEqual(marketing.hosting.predeploy, ['node scripts/marketing-hosting/build.cjs']);
+  assert.deepEqual(marketing.hosting.predeploy, ['node scripts/hosting-release/build-pair.cjs']);
+  assert.deepEqual(marketing.hosting.ignore, []);
   assert.equal(marketing.hosting.rewrites.some((rule) => rule.source === '**'), false);
   assert.deepEqual(marketing.hosting.rewrites, [
     { source: '/privacy', destination: '/privacy.html' },
@@ -158,7 +164,8 @@ test('marketing Hosting config is isolated from the existing application config'
   assert.equal(marketing.hosting.redirects.some((rule) => rule.source === '/app/foo/bar'), false);
 
   assert.equal(application.hosting.public, 'dist/app-hosting');
-  assert.equal(application.hosting.target, undefined);
+  assert.equal(application.hosting.target, 'app');
+  assert.equal(application.hosting.site, undefined);
   assert.deepEqual(application.hosting.rewrites, [
     { source: '/app/signin', destination: '/app/index.html' },
     { source: '/app/onboarding', destination: '/app/index.html' },
@@ -173,4 +180,5 @@ test('marketing Hosting config is isolated from the existing application config'
   assert.equal(application.hosting.ignore.includes('dist/marketing/**'), true);
   assert.equal(firebaseRc.projects.default, 'lyfelabz-prod');
   assert.deepEqual(firebaseRc.targets['lyfelabz-prod'].hosting.marketing, ['lyfelabz-marketing']);
+  assert.deepEqual(firebaseRc.targets['lyfelabz-prod'].hosting.app, ['lyfelabz-prod']);
 });

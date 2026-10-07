@@ -123,39 +123,42 @@ describe("Sprint 29E.2 public legal surfaces", () => {
 
   // ── Firebase Hosting configuration ─────────────────────────────────────────
 
+  // The application target of the two-target repository-root firebase.json.
+  type AppHosting = {
+    predeploy?: string[];
+    redirects?: Array<{ source: string; destination: string; type: number }>;
+    rewrites?: Array<{ source: string; destination: string }>;
+  };
+  const appHosting = (): AppHosting => {
+    const config = JSON.parse(read("firebase.json")) as { hosting: Array<AppHosting & { target?: string }> };
+    const apps = config.hosting.filter((entry) => entry.target === "app");
+    expect(apps).toHaveLength(1);
+    return apps[0];
+  };
+
   test("Firebase Hosting has a predeploy hook that builds the App bundle", () => {
-    const config = JSON.parse(read("firebase.json")) as {
-      hosting?: { predeploy?: string[] };
-    };
-    const predeploy = config.hosting?.predeploy ?? [];
-    expect(predeploy.some((cmd) => cmd.includes("npm --prefix app run build"))).toBe(true);
+    const predeploy = appHosting().predeploy ?? [];
+    // The pair build runs `npm --prefix app run build` before both artifacts.
+    expect(predeploy).toEqual(["node scripts/hosting-release/build-pair.cjs"]);
+    expect(read("scripts/hosting-release/build-pair.cjs")).toContain("['npm', ['--prefix', 'app', 'run', 'build']]");
   });
 
   test("Firebase Hosting redirects /privacy to the canonical apex URL (301)", () => {
-    const config = JSON.parse(read("firebase.json")) as {
-      hosting?: { redirects?: Array<{ source: string; destination: string; type: number }> };
-    };
-    const redirects = config.hosting?.redirects ?? [];
+    const redirects = appHosting().redirects ?? [];
     const privacy = redirects.find((r) => r.source === "/privacy");
     expect(privacy?.destination).toBe("https://lyfelabz.com/privacy");
     expect(privacy?.type).toBe(301);
   });
 
   test("Firebase Hosting redirects /terms to the canonical apex URL (301)", () => {
-    const config = JSON.parse(read("firebase.json")) as {
-      hosting?: { redirects?: Array<{ source: string; destination: string; type: number }> };
-    };
-    const redirects = config.hosting?.redirects ?? [];
+    const redirects = appHosting().redirects ?? [];
     const terms = redirects.find((r) => r.source === "/terms");
     expect(terms?.destination).toBe("https://lyfelabz.com/terms");
     expect(terms?.type).toBe(301);
   });
 
   test("Firebase Hosting does not rewrite /privacy or /terms to local files", () => {
-    const config = JSON.parse(read("firebase.json")) as {
-      hosting?: { rewrites?: Array<{ source: string; destination: string }> };
-    };
-    const rewrites = config.hosting?.rewrites ?? [];
+    const rewrites = appHosting().rewrites ?? [];
     const privacy = rewrites.find((r) => r.source === "/privacy");
     const terms = rewrites.find((r) => r.source === "/terms");
     expect(privacy).toBeUndefined();
@@ -163,10 +166,7 @@ describe("Sprint 29E.2 public legal surfaces", () => {
   });
 
   test("only the certified application shell routes rewrite to /app/index.html", () => {
-    const config = JSON.parse(read("firebase.json")) as {
-      hosting?: { rewrites?: Array<{ source: string; destination: string }> };
-    };
-    const rewrites = config.hosting?.rewrites ?? [];
+    const rewrites = appHosting().rewrites ?? [];
     const applicationRewrites = rewrites.filter(
       (r) => r.destination === "/app/index.html",
     );

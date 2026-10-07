@@ -11,8 +11,9 @@
  * markers in `index.html`. Everything outside the markers (heading,
  * pill legend, filters, empty-state message, scripts) stays
  * hand-authored. `build-curriculum-manifest.cjs` writes and checks the
- * region; the marketing Hosting build re-renders it into the published
- * copy so a release always reflects the registry.
+ * region. Both Hosting builders publish the committed `index.html` bytes
+ * unchanged and call `assertCatalogCurrent` first, so a release fails
+ * instead of shipping a catalog that disagrees with the registry.
  *
  * Output is deterministic. This module has no external dependencies.
  */
@@ -176,6 +177,18 @@ function readRootIndexHtml() {
   return fs.readFileSync(ROOT_INDEX_PATH, "utf8");
 }
 
+// Throws unless the generated region of `html` (the committed root
+// index.html by default) is exactly what the registry renders. Hosting
+// builds call this and then copy the committed bytes; they never regenerate.
+function assertCatalogCurrent(html = readRootIndexHtml()) {
+  if (extractCatalog(html) !== renderCatalog()) {
+    fail(
+      "DRIFT: the generated curriculum catalog in root index.html does not match the curriculum registry. " +
+        "Edit the registry, not index.html, and regenerate with `npm --prefix app run curriculum:build`.",
+    );
+  }
+}
+
 module.exports = {
   BEGIN_MARKER,
   END_MARKER,
@@ -185,4 +198,5 @@ module.exports = {
   extractCatalog,
   spliceCatalog,
   readRootIndexHtml,
+  assertCatalogCurrent,
 };
