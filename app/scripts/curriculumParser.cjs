@@ -8,7 +8,8 @@
  * generated from it (`curriculumCatalog.cjs`). This parser is no longer a
  * source of curriculum: it is an independent reader used by tests to
  * prove the generated homepage round-trips to exactly the registered
- * curriculum. It also hosts the shared topic and resource-type constants.
+ * curriculum. It also hosts the shared topic and resource-type constants
+ * (the latter derived from `curriculum.resource-types.json`).
  *
  * The parser is deliberately strict. It fails loudly rather than
  * silently omitting malformed or unrecognized curriculum markup. This
@@ -41,45 +42,86 @@ const TOPIC_LABELS = Object.freeze({
   "behavioral-science": "Behavioral Science",
 });
 
+// Canonical resource-type policy (`curriculum.resource-types.json`). It is
+// the single source of each type's filename prefix, homepage ulink class,
+// registry placement, formal status, Teacher Workspace visibility, and
+// assignability; the constants below are derived from it.
+const RESOURCE_TYPE_POLICY_RELATIVE_TO_APP = path.posix.join(
+  "src",
+  "curriculum",
+  "curriculum.resource-types.json",
+);
+const RESOURCE_TYPE_POLICY = loadResourceTypePolicy(
+  JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, "..", RESOURCE_TYPE_POLICY_RELATIVE_TO_APP), "utf8"),
+  ),
+);
+
+function loadResourceTypePolicy(raw) {
+  const flags = ["formal", "teacherVisible", "assignable"];
+  const keys = new Set(["filenamePrefix", "ulinkClass", "placement", ...flags]);
+  if (!raw || typeof raw.types !== "object" || raw.types === null) {
+    fail("resource-type policy must declare a types object");
+  }
+  const seenClasses = new Set();
+  const out = {};
+  for (const [type, p] of Object.entries(raw.types)) {
+    if (!/^[a-z]+$/.test(type)) fail(`invalid resource type name "${type}"`);
+    for (const key of Object.keys(p)) {
+      if (!keys.has(key)) fail(`resource type "${type}" has unknown policy key "${key}"`);
+    }
+    if (p.filenamePrefix !== `${type}_`) {
+      fail(`resource type "${type}" filenamePrefix must be "${type}_"`);
+    }
+    if (p.placement !== "unit" && p.placement !== "shared") {
+      fail(`resource type "${type}" placement must be "unit" or "shared"`);
+    }
+    if (p.placement === "unit" && typeof p.ulinkClass !== "string") {
+      fail(`unit-placed resource type "${type}" needs a homepage ulinkClass`);
+    }
+    if (p.placement === "shared" && p.ulinkClass !== null) {
+      fail(`shared resource type "${type}" must not declare a homepage ulinkClass`);
+    }
+    if (p.ulinkClass !== null) {
+      if (seenClasses.has(p.ulinkClass)) fail(`duplicate ulinkClass "${p.ulinkClass}"`);
+      seenClasses.add(p.ulinkClass);
+    }
+    for (const flag of flags) {
+      if (typeof p[flag] !== "boolean") fail(`resource type "${type}" ${flag} must be boolean`);
+    }
+    if (p.assignable && !p.teacherVisible) {
+      fail(`resource type "${type}" cannot be assignable without being teacher-visible`);
+    }
+    out[type] = Object.freeze({ ...p });
+  }
+  return Object.freeze(out);
+}
+
+// Every supported resource type, in policy order.
+const RESOURCE_TYPES = Object.freeze(Object.keys(RESOURCE_TYPE_POLICY));
+
+// Types a registry unit may own (and the homepage catalog may render).
+// These fix the manifest `resourceCountsByType` keys and order.
+const UNIT_RESOURCE_TYPES = Object.freeze(
+  RESOURCE_TYPES.filter((t) => RESOURCE_TYPE_POLICY[t].placement === "unit"),
+);
+
+// Types that live in the registry's top-level `sharedResources`.
+const SHARED_RESOURCE_TYPES = Object.freeze(
+  RESOURCE_TYPES.filter((t) => RESOURCE_TYPE_POLICY[t].placement === "shared"),
+);
+
 // Canonical ulink resource-type classes -> internal type identifiers.
 // Every anchor inside `.unit-links` must map to one of these.
-const RESOURCE_TYPE_BY_ULINK_CLASS = Object.freeze({
-  live: "lesson",
-  sim: "simulation",
-  inv: "investigation",
-  ext: "extension",
-  chal: "challenge",
-  activity: "activity",
-  game: "game",
-  map: "map",
-  dis: "disease",
-});
-
-const RESOURCE_TYPES = Object.freeze([
-  "lesson",
-  "simulation",
-  "investigation",
-  "extension",
-  "challenge",
-  "activity",
-  "game",
-  "map",
-  "disease",
-]);
+const RESOURCE_TYPE_BY_ULINK_CLASS = Object.freeze(
+  Object.fromEntries(UNIT_RESOURCE_TYPES.map((t) => [RESOURCE_TYPE_POLICY[t].ulinkClass, t])),
+);
 
 // Filename prefix expected for each resource type. Used to detect
 // href/type disagreements the extractor must not silently accept.
-const HREF_PREFIX_BY_TYPE = Object.freeze({
-  lesson: "lesson_",
-  simulation: "simulation_",
-  investigation: "investigation_",
-  extension: "extension_",
-  challenge: "challenge_",
-  activity: "activity_",
-  game: "game_",
-  map: "map_",
-  disease: "disease_",
-});
+const HREF_PREFIX_BY_TYPE = Object.freeze(
+  Object.fromEntries(RESOURCE_TYPES.map((t) => [t, RESOURCE_TYPE_POLICY[t].filenamePrefix])),
+);
 
 // ---------------------------------------------------------------------
 // String scanning helpers.
@@ -406,7 +448,7 @@ function parseCurriculumFromIndexHtml(indexHtml) {
 }
 
 function summarize(topicGroups) {
-  const byType = Object.fromEntries(RESOURCE_TYPES.map((t) => [t, 0]));
+  const byType = Object.fromEntries(UNIT_RESOURCE_TYPES.map((t) => [t, 0]));
   const byGrade = {};
   const byTopic = {};
   const byTopicAndGrade = {};
@@ -447,7 +489,11 @@ module.exports = {
   ROOT_INDEX_RELATIVE,
   TOPIC_ORDER,
   TOPIC_LABELS,
+  RESOURCE_TYPE_POLICY_RELATIVE_TO_APP,
+  RESOURCE_TYPE_POLICY,
   RESOURCE_TYPES,
+  UNIT_RESOURCE_TYPES,
+  SHARED_RESOURCE_TYPES,
   RESOURCE_TYPE_BY_ULINK_CLASS,
   HREF_PREFIX_BY_TYPE,
   parseCurriculumFromIndexHtml,

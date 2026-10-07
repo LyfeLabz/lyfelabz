@@ -15,6 +15,8 @@ import {
   getOrphanUnits,
   getUnitBySlug,
   getFormalResourcesForLesson,
+  getSharedResources,
+  RESOURCE_TYPE_POLICY,
 } from "./curriculumManifest";
 
 const parserPath = path.resolve(
@@ -444,8 +446,14 @@ describe("Canonical curriculum registry strict-failure guarantees", () => {
 
   test("fails on an unrecognized resource type", () => {
     const value = minimal();
+    firstUnit(value).resources = [{ type: "widget", filename: "widget_a.html", label: "Widget" }];
+    expect(() => parse(value)).toThrow(/unrecognized resource type "widget"/);
+  });
+
+  test("rejects a shared-placement type (tool) as a unit-owned resource", () => {
+    const value = minimal();
     firstUnit(value).resources = [{ type: "tool", filename: "tool_a.html", label: "Tool" }];
-    expect(() => parse(value)).toThrow(/unrecognized resource type "tool"/);
+    expect(() => parse(value)).toThrow(/resource type "tool" is not permitted on unit "a"/);
   });
 
   test("fails when a filename does not match its declared type prefix", () => {
@@ -484,5 +492,249 @@ describe("Canonical curriculum registry strict-failure guarantees", () => {
     const value = minimal();
     firstUnit(value).title = " A";
     expect(() => parse(value)).toThrow(/whitespace/);
+  });
+});
+
+describe("Resource-type policy (taxonomy foundation)", () => {
+  const typesPolicy = require(
+    path.resolve(__dirname, "curriculum.resource-types.json"),
+  ) as { types: Record<string, unknown> };
+  const parserTypes = require(parserPath) as {
+    RESOURCE_TYPES: string[];
+    UNIT_RESOURCE_TYPES: string[];
+    SHARED_RESOURCE_TYPES: string[];
+    RESOURCE_TYPE_BY_ULINK_CLASS: Record<string, string>;
+    HREF_PREFIX_BY_TYPE: Record<string, string>;
+  };
+
+  test("preserves the pre-policy unit resource-type mappings exactly", () => {
+    expect(parserTypes.UNIT_RESOURCE_TYPES).toEqual([
+      "lesson",
+      "simulation",
+      "investigation",
+      "extension",
+      "challenge",
+      "activity",
+      "game",
+      "map",
+      "disease",
+    ]);
+    expect(parserTypes.RESOURCE_TYPE_BY_ULINK_CLASS).toEqual({
+      live: "lesson",
+      sim: "simulation",
+      inv: "investigation",
+      ext: "extension",
+      chal: "challenge",
+      activity: "activity",
+      game: "game",
+      map: "map",
+      dis: "disease",
+    });
+    for (const t of parserTypes.RESOURCE_TYPES) {
+      expect(parserTypes.HREF_PREFIX_BY_TYPE[t]).toBe(`${t}_`);
+    }
+    // Manifest totals keep exactly the pre-policy keys and order.
+    expect(Object.keys(CURRICULUM_MANIFEST.totals.resourceCountsByType)).toEqual(
+      parserTypes.UNIT_RESOURCE_TYPES,
+    );
+  });
+
+  test("preserves formal, Teacher Workspace, and assignability semantics", () => {
+    const formal = ["lesson", "simulation", "investigation", "extension", "challenge"];
+    for (const [type, p] of Object.entries(RESOURCE_TYPE_POLICY)) {
+      expect(p.formal).toBe(formal.includes(type));
+      expect(p.teacherVisible).toBe(formal.includes(type));
+      expect(p.assignable).toBe(type === "lesson");
+    }
+  });
+
+  test("tool is a supported shared type: non-formal, not teacher-visible, not assignable", () => {
+    expect(parserTypes.SHARED_RESOURCE_TYPES).toEqual(["tool"]);
+    expect(RESOURCE_TYPE_POLICY.tool).toEqual({
+      filenamePrefix: "tool_",
+      ulinkClass: null,
+      placement: "shared",
+      formal: false,
+      teacherVisible: false,
+      assignable: false,
+    });
+    // A tool has no homepage pill class.
+    expect(Object.values(parserTypes.RESOURCE_TYPE_BY_ULINK_CLASS)).not.toContain("tool");
+  });
+
+  test("the TS accessor and the build scripts read the same policy", () => {
+    expect(Object.keys(RESOURCE_TYPE_POLICY)).toEqual(parserTypes.RESOURCE_TYPES);
+    expect(RESOURCE_TYPE_POLICY).toEqual(typesPolicy.types);
+    expect(Object.keys(FORMAL_RESOURCE_LABEL).sort()).toEqual(
+      Object.entries(RESOURCE_TYPE_POLICY)
+        .filter(([t, p]) => t !== "lesson" && p.teacherVisible)
+        .map(([t]) => t)
+        .sort(),
+    );
+  });
+});
+
+describe("Shared resources: Lab Report Assistant", () => {
+  test("is registered as a first-class tool related to Conducting Experiments", () => {
+    expect(getSharedResources()).toEqual([
+      {
+        id: "lab-report-assistant",
+        type: "tool",
+        href: "/tool_lab-report-assistant.html",
+        filename: "tool_lab-report-assistant.html",
+        label: "Lab Report Assistant",
+        description:
+          "Organize your ideas and build each section of your lab report step by step.",
+        relatedUnits: ["conducting-experiments"],
+        displayOrder: 0,
+      },
+    ]);
+    expect(getUnitBySlug("conducting-experiments")).not.toBeNull();
+  });
+
+  test("is non-formal, not Teacher Workspace-visible, and not assignable", () => {
+    const tool = getSharedResources()[0]!;
+    const policy = RESOURCE_TYPE_POLICY[tool.type];
+    expect(policy.formal).toBe(false);
+    expect(policy.teacherVisible).toBe(false);
+    expect(policy.assignable).toBe(false);
+  });
+
+  test("does not leak into unit resources, Teacher Workspace selectors, or totals", () => {
+    for (const u of getAllUnits()) {
+      for (const r of u.resources) {
+        expect(r.filename).not.toBe("tool_lab-report-assistant.html");
+      }
+    }
+    const conducting = getFormalResourcesForLesson("conducting-experiments");
+    expect(conducting).toEqual([]);
+    expect(getSurfaceableLessons().some((l) => l.href.includes("tool_"))).toBe(false);
+    expect(
+      Object.keys(CURRICULUM_MANIFEST.totals.resourceCountsByType),
+    ).not.toContain("tool");
+  });
+});
+
+describe("Shared resource registry validation", () => {
+  type Json = Record<string, unknown>;
+  const base = (shared: unknown[]): Json => ({
+    schemaVersion: 1,
+    topicGroups: [
+      {
+        topic: "life-science",
+        gated: false,
+        gradeBlocks: [
+          {
+            grade: "6",
+            units: [
+              {
+                slug: "a",
+                title: "A",
+                description: "Desc",
+                resources: [{ type: "lesson", filename: "lesson_a.html", label: "Lesson" }],
+              },
+              {
+                slug: "b",
+                title: "B",
+                description: "Desc",
+                resources: [{ type: "lesson", filename: "lesson_b.html", label: "Lesson" }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    sharedResources: shared,
+  });
+  const tool = (over: Json = {}): Json => ({
+    id: "t",
+    type: "tool",
+    filename: "tool_t.html",
+    label: "T",
+    description: "Desc",
+    ...over,
+  });
+  const parse = (value: Json): { sharedResources: unknown[]; topicGroups: unknown } =>
+    registry.parseRegistryText(JSON.stringify(value)) as {
+      sharedResources: unknown[];
+      topicGroups: unknown;
+    };
+
+  test("sharedResources is optional and defaults to empty", () => {
+    const value = base([]);
+    delete value.sharedResources;
+    expect(parse(value).sharedResources).toEqual([]);
+  });
+
+  test("accepts a tool with and without relatedUnits", () => {
+    const out = parse(base([tool(), tool({ id: "u", filename: "tool_u.html", relatedUnits: ["a", "b"] })]));
+    expect(out.sharedResources).toEqual([
+      { id: "t", type: "tool", href: "/tool_t.html", filename: "tool_t.html", label: "T", description: "Desc", relatedUnits: [], displayOrder: 0 },
+      { id: "u", type: "tool", href: "/tool_u.html", filename: "tool_u.html", label: "T", description: "Desc", relatedUnits: ["a", "b"], displayOrder: 1 },
+    ]);
+  });
+
+  test("shared resources do not change the unit-derived curriculum", () => {
+    const without = base([]);
+    delete without.sharedResources;
+    expect(parse(base([tool({ relatedUnits: ["a"] })])).topicGroups).toEqual(
+      parse(without).topicGroups,
+    );
+  });
+
+  test("rejects a tool filename that does not match the tool prefix", () => {
+    expect(() => parse(base([tool({ filename: "lesson_t.html" })]))).toThrow(
+      /does not match its declared type "tool"/,
+    );
+    expect(() => parse(base([tool({ filename: "tools/tool_t.html" })]))).toThrow(
+      /must be a bare filename/,
+    );
+  });
+
+  test("rejects unit-placement and unknown types at the top level", () => {
+    expect(() =>
+      parse(base([tool({ type: "simulation", filename: "simulation_t.html" })])),
+    ).toThrow(/resource type "simulation" is not permitted on shared resource "t"/);
+    expect(() => parse(base([tool({ type: "explore", filename: "explore_t.html" })]))).toThrow(
+      /unrecognized resource type "explore"/,
+    );
+  });
+
+  test("rejects duplicate and malformed ids", () => {
+    expect(() => parse(base([tool(), tool({ filename: "tool_u.html" })]))).toThrow(
+      /duplicate shared resource id "t"/,
+    );
+    expect(() => parse(base([tool({ id: "Bad Id" })]))).toThrow(/invalid shared resource id/);
+  });
+
+  test("rejects an href already registered (unit-owned or shared)", () => {
+    expect(() => parse(base([tool({ id: "u" }), tool()]))).toThrow(/duplicate resource href/);
+  });
+
+  test("rejects unknown, duplicate, malformed, or empty relatedUnits", () => {
+    expect(() => parse(base([tool({ relatedUnits: ["zzz"] })]))).toThrow(
+      /relates to unknown unit "zzz"/,
+    );
+    expect(() => parse(base([tool({ relatedUnits: ["a", "a"] })]))).toThrow(
+      /lists related unit "a" more than once/,
+    );
+    expect(() => parse(base([tool({ relatedUnits: [" a"] })]))).toThrow(
+      /malformed related unit/,
+    );
+    expect(() => parse(base([tool({ relatedUnits: "a" })]))).toThrow(
+      /relatedUnits must be a non-empty array/,
+    );
+    expect(() => parse(base([tool({ relatedUnits: [] })]))).toThrow(
+      /relatedUnits must be a non-empty array/,
+    );
+  });
+
+  test("rejects unknown keys and uncollapsed whitespace", () => {
+    expect(() => parse(base([tool({ parent: "a" })]))).toThrow(/unknown key "parent"/);
+    expect(() => parse(base([tool({ label: "T " })]))).toThrow(/whitespace/);
+    expect(() => parse(base([tool({ description: "" })]))).toThrow(/non-empty string/);
+    expect(() => parse({ ...base([]), sharedResources: {} })).toThrow(
+      /sharedResources must be an array/,
+    );
   });
 });

@@ -19,6 +19,7 @@
 // exactly the registered curriculum; do not edit the manifest directly.
 
 import manifestJson from "./curriculum.manifest.json";
+import resourceTypePolicyJson from "./curriculum.resource-types.json";
 
 export type LessonTopic =
   | "life-science"
@@ -29,7 +30,8 @@ export type LessonTopic =
 
 export type LessonGrade = "6" | "7";
 
-export type ResourceType =
+// Types a curriculum unit may own (policy placement "unit").
+export type UnitResourceType =
   | "lesson"
   | "simulation"
   | "investigation"
@@ -40,8 +42,32 @@ export type ResourceType =
   | "map"
   | "disease";
 
+// Types that live in the manifest's top-level `sharedResources` (policy
+// placement "shared"). No unit owns them.
+export type SharedResourceType = "tool";
+
+export type ResourceType = UnitResourceType | SharedResourceType;
+
+// Canonical code-level resource-type policy, read from
+// `curriculum.resource-types.json` (shared with the registry build).
+export type ResourceTypePolicy = {
+  readonly filenamePrefix: string;
+  readonly ulinkClass: string | null;
+  readonly placement: "unit" | "shared";
+  readonly formal: boolean;
+  readonly teacherVisible: boolean;
+  readonly assignable: boolean;
+};
+
+export const RESOURCE_TYPE_POLICY: Readonly<
+  Record<ResourceType, ResourceTypePolicy>
+> = resourceTypePolicyJson.types as unknown as Record<
+  ResourceType,
+  ResourceTypePolicy
+>;
+
 export type CurriculumResource = {
-  readonly type: ResourceType;
+  readonly type: UnitResourceType;
   readonly href: string;
   readonly filename: string;
   readonly label: string;
@@ -68,6 +94,20 @@ export type CurriculumTopicGroup = {
   readonly units: ReadonlyArray<CurriculumUnit>;
 };
 
+// A top-level registry resource no unit owns (e.g. a reusable tool).
+// `relatedUnits` is a conceptual relationship to unit slugs; it implies
+// no homepage nesting and no Teacher Workspace placement.
+export type CurriculumSharedResource = {
+  readonly id: string;
+  readonly type: SharedResourceType;
+  readonly href: string;
+  readonly filename: string;
+  readonly label: string;
+  readonly description: string;
+  readonly relatedUnits: ReadonlyArray<string>;
+  readonly displayOrder: number;
+};
+
 export type CurriculumOrphanUnit = {
   readonly topic: LessonTopic;
   readonly grade: LessonGrade;
@@ -85,13 +125,14 @@ export type CurriculumManifest = {
   readonly totals: {
     readonly unitCount: number;
     readonly gatedUnitCount: number;
-    readonly resourceCountsByType: Readonly<Record<ResourceType, number>>;
+    readonly resourceCountsByType: Readonly<Record<UnitResourceType, number>>;
     readonly unitsByGrade: Readonly<Record<LessonGrade, number>>;
     readonly unitsByTopic: Readonly<Record<LessonTopic, number>>;
     readonly unitsByTopicAndGrade: Readonly<Record<string, number>>;
   };
   readonly topicGroups: ReadonlyArray<CurriculumTopicGroup>;
   readonly orphanUnits: ReadonlyArray<CurriculumOrphanUnit>;
+  readonly sharedResources: ReadonlyArray<CurriculumSharedResource>;
 };
 
 export const CURRICULUM_MANIFEST: CurriculumManifest =
@@ -112,7 +153,8 @@ export function getAllUnits(): ReadonlyArray<CurriculumUnit> {
   return out;
 }
 
-// Units that have at least one `lesson` resource and are not gated.
+// Units that have an assignable (policy) resource, i.e. a `lesson`, and
+// are not gated.
 // This is the read-only bridge the Sprint 6D curriculum surface
 // consumes; gated (behavioral-science) units remain in the manifest but
 // are not surfaced by the teacher landing page. PDR-010 activation is
@@ -130,7 +172,9 @@ export function getSurfaceableLessons(): ReadonlyArray<SurfaceableLesson> {
   const out: SurfaceableLesson[] = [];
   for (const u of getAllUnits()) {
     if (u.gated) continue;
-    const lesson = u.resources.find((r) => r.type === "lesson");
+    const lesson = u.resources.find(
+      (r) => RESOURCE_TYPE_POLICY[r.type].assignable,
+    );
     if (!lesson) continue;
     out.push(
       Object.freeze({
@@ -154,20 +198,13 @@ export function getTopicGroups(): ReadonlyArray<CurriculumTopicGroup> {
 // lesson card's Resources disclosure. Legacy `game` (and `activity`,
 // `map`, `disease`) are deliberately excluded: games are not formal
 // LyfeLabz curriculum (Blueprint §9) and the manifest already carries
-// `game: 0`. This is a presentation-time filter over the existing
-// manifest; no manifest field is added or regenerated.
+// `game: 0`. Membership is decided by the resource-type policy
+// (`teacherVisible`); this union and its labels must stay in step with it.
 export type FormalResourceType =
   | "simulation"
   | "investigation"
   | "extension"
   | "challenge";
-
-const FORMAL_RESOURCE_TYPES: ReadonlySet<ResourceType> = new Set<ResourceType>([
-  "simulation",
-  "investigation",
-  "extension",
-  "challenge",
-]);
 
 // Human-readable, teacher-facing labels for each formal resource type.
 // Derived from the canonical type; never exposes a raw filename, path,
@@ -204,7 +241,9 @@ export function getFormalResourcesForLesson(
   if (unit === null) return Object.freeze([]);
   return Object.freeze(
     unit.resources
-      .filter((r) => FORMAL_RESOURCE_TYPES.has(r.type))
+      .filter(
+        (r) => r.type !== "lesson" && RESOURCE_TYPE_POLICY[r.type].teacherVisible,
+      )
       .slice()
       .sort((a, b) => a.displayOrder - b.displayOrder),
   );
@@ -212,4 +251,10 @@ export function getFormalResourcesForLesson(
 
 export function getOrphanUnits(): ReadonlyArray<CurriculumOrphanUnit> {
   return CURRICULUM_MANIFEST.orphanUnits;
+}
+
+// Top-level shared resources (e.g. tools), in registry order. Read-only;
+// no Teacher Workspace surface consumes these yet.
+export function getSharedResources(): ReadonlyArray<CurriculumSharedResource> {
+  return CURRICULUM_MANIFEST.sharedResources;
 }

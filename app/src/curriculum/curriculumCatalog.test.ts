@@ -44,9 +44,26 @@ describe("Homepage curriculum catalog generated from the registry", () => {
   });
 
   test("the generated homepage parses back to exactly the registered curriculum", () => {
+    // Shared (top-level) resources are deliberately not homepage entries,
+    // so the homepage round-trips to the unit-derived curriculum only.
+    const { sharedResources, ...unitCurriculum } = registry.parseRegistryText(
+      registryText,
+    ) as Json;
     expect(parser.parseCurriculumFromIndexHtml(catalog.readRootIndexHtml())).toEqual(
-      registry.parseRegistryText(registryText),
+      unitCurriculum,
     );
+    expect(Array.isArray(sharedResources)).toBe(true);
+  });
+
+  test("registered shared resources never render in the homepage catalog", () => {
+    const shared = (registry.parseRegistryText(registryText) as Json)
+      .sharedResources as Array<{ filename: string; label: string }>;
+    expect(shared.length).toBeGreaterThan(0);
+    for (const r of shared) {
+      expect(rendered).not.toContain(r.filename);
+      expect(rendered).not.toContain(r.label);
+    }
+    expect(rendered).not.toMatch(/class="ulink tool"/);
   });
 
   test("renders a representative lesson card with its child resource", () => {

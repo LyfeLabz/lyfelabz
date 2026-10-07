@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "$comment": "Canonical authored LyfeLabz curriculum registry. Source of app/src/curriculum/curriculum.manifest.json (npm run curriculum:build inside app/). Order is significant. Also the source of the generated root index.html curriculum catalog (between the GENERATED CURRICULUM CATALOG markers). placeholderUnits are unregistered coming-soon cards shown only in gated topic groups.",
+  "$comment": "Canonical authored LyfeLabz curriculum registry. Source of app/src/curriculum/curriculum.manifest.json (npm run curriculum:build inside app/). Order is significant. Also the source of the generated root index.html curriculum catalog (between the GENERATED CURRICULUM CATALOG markers). placeholderUnits are unregistered coming-soon cards shown only in gated topic groups. sharedResources are top-level resources no unit owns (e.g. reusable tools); relatedUnits records a conceptual relationship to existing units and implies no homepage nesting. sharedResources are carried into the manifest but are not rendered in the homepage catalog, not shown in Teacher Workspace, and not assignable; those behaviors come from the type policy in curriculum.resource-types.json.",
   "topicGroups": [
     {
       "topic": "life-science",
@@ -750,6 +750,18 @@
             }
           ]
         }
+      ]
+    }
+  ],
+  "sharedResources": [
+    {
+      "id": "lab-report-assistant",
+      "type": "tool",
+      "filename": "tool_lab-report-assistant.html",
+      "label": "Lab Report Assistant",
+      "description": "Organize your ideas and build each section of your lab report step by step.",
+      "relatedUnits": [
+        "conducting-experiments"
       ]
     }
   ]

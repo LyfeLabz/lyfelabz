@@ -5,9 +5,10 @@
  * (`app/src/curriculum/curriculum.registry.json`) and derives the
  * manifest body consumed by `build-curriculum-manifest.cjs`. The registry
  * replaces the root `index.html` as the authored source of curriculum
- * metadata; the generated manifest contract is unchanged. The homepage
- * curriculum catalog is rendered from the same registry by
- * `curriculumCatalog.cjs`.
+ * metadata. The homepage curriculum catalog is rendered from the same
+ * registry by `curriculumCatalog.cjs`. Top-level `sharedResources` (types
+ * whose policy placement is "shared", e.g. tools) are carried into the
+ * manifest but never into the homepage catalog.
  *
  * Validation is deliberately strict and mirrors the parser's guarantees.
  * This module has no external dependencies.
@@ -22,6 +23,8 @@ const {
   TOPIC_ORDER,
   TOPIC_LABELS,
   RESOURCE_TYPES,
+  UNIT_RESOURCE_TYPES,
+  SHARED_RESOURCE_TYPES,
   HREF_PREFIX_BY_TYPE,
   sha256,
   summarize,
@@ -34,12 +37,14 @@ const REGISTRY_RELATIVE_TO_APP = path.posix.join(
 );
 const REGISTRY_PATH = path.resolve(__dirname, "..", REGISTRY_RELATIVE_TO_APP);
 
-const REGISTRY_KEYS = new Set(["schemaVersion", "$comment", "topicGroups"]);
+const REGISTRY_KEYS = new Set(["schemaVersion", "$comment", "topicGroups", "sharedResources"]);
 const TOPIC_GROUP_KEYS = new Set(["topic", "gated", "gradeBlocks"]);
 const GRADE_BLOCK_KEYS = new Set(["grade", "units", "placeholderUnits"]);
 const UNIT_KEYS = new Set(["slug", "title", "description", "resources"]);
 const PLACEHOLDER_KEYS = new Set(["title", "description"]);
 const RESOURCE_KEYS = new Set(["type", "filename", "label"]);
+const SHARED_RESOURCE_KEYS = new Set(["id", "type", "filename", "label", "description", "relatedUnits"]);
+const SLUG_PATTERN = /^[a-z][a-z0-9-]*$/;
 
 function fail(message) {
   throw new Error(`[curriculum-registry] ${message}`);
@@ -71,8 +76,9 @@ function readRegistryText() {
 }
 
 // Validate an authored registry and derive the manifest body
-// ({ topicGroups, orphanUnits, totals }) in the exact shape and key order
-// `parseCurriculumFromIndexHtml` produces.
+// ({ topicGroups, orphanUnits, totals, sharedResources }). The first three
+// are in the exact shape and key order `parseCurriculumFromIndexHtml`
+// produces; `sharedResources` has no homepage counterpart.
 function deriveCurriculumFromRegistry(registry) {
   checkKeys(registry, REGISTRY_KEYS, "registry");
   if (registry.schemaVersion !== 1) fail("schemaVersion must be 1");
@@ -127,7 +133,7 @@ function deriveCurriculumFromRegistry(registry) {
       let inBlockOrder = 0;
       for (const u of block.units) {
         checkKeys(u, UNIT_KEYS, `unit in ${where}/${grade}`);
-        if (typeof u.slug !== "string" || !/^[a-z][a-z0-9-]*$/.test(u.slug)) {
+        if (typeof u.slug !== "string" || !SLUG_PATTERN.test(u.slug)) {
           fail(`invalid slug "${u.slug}" in ${where}/${grade}`);
         }
         checkText(u.title, `unit "${u.slug}" title`);
@@ -140,23 +146,10 @@ function deriveCurriculumFromRegistry(registry) {
 
         const resources = u.resources.map((r, order) => {
           checkKeys(r, RESOURCE_KEYS, `resource on unit "${u.slug}"`);
-          if (!RESOURCE_TYPES.includes(r.type)) {
-            fail(`unrecognized resource type "${r.type}" on unit "${u.slug}"`);
-          }
-          if (typeof r.filename !== "string" || !/^[a-z][a-z0-9_-]*\.html$/.test(r.filename)) {
-            fail(`unexpected canonical curriculum filename "${r.filename}" (must be a bare filename)`);
-          }
-          if (!r.filename.startsWith(HREF_PREFIX_BY_TYPE[r.type])) {
-            fail(
-              `resource filename "${r.filename}" does not match its declared type "${r.type}" (expected prefix "${HREF_PREFIX_BY_TYPE[r.type]}")`,
-            );
-          }
+          checkResourceType(r.type, UNIT_RESOURCE_TYPES, `unit "${u.slug}"`);
+          checkFilename(r.filename, r.type);
           checkText(r.label, `resource "${r.filename}" label`);
-          const href = `/${r.filename}`;
-          if (seenHrefs.has(href)) {
-            fail(`duplicate resource href "${href}" (also on ${seenHrefs.get(href)})`);
-          }
-          seenHrefs.set(href, u.slug);
+          const href = claimHref(seenHrefs, r.filename, u.slug);
           return {
             type: r.type,
             href,
@@ -193,11 +186,98 @@ function deriveCurriculumFromRegistry(registry) {
     });
   }
 
+  const sharedResources = deriveSharedResources(registry.sharedResources, seenSlugs, seenHrefs);
+
   return {
     topicGroups: outGroups,
     orphanUnits,
     totals: summarize(outGroups),
+    sharedResources,
   };
+}
+
+// Top-level resources no unit owns (e.g. reusable tools). They are never
+// rendered by the homepage catalog. `relatedUnits` records a conceptual
+// relationship to existing units; it implies no homepage nesting.
+function deriveSharedResources(entries, unitSlugs, seenHrefs) {
+  if (entries === undefined) return [];
+  if (!Array.isArray(entries)) fail("sharedResources must be an array");
+  const seenIds = new Set();
+  return entries.map((r, order) => {
+    checkKeys(r, SHARED_RESOURCE_KEYS, `shared resource ${order}`);
+    if (typeof r.id !== "string" || !SLUG_PATTERN.test(r.id)) {
+      fail(`invalid shared resource id "${r.id}"`);
+    }
+    if (seenIds.has(r.id)) fail(`duplicate shared resource id "${r.id}"`);
+    seenIds.add(r.id);
+    checkResourceType(r.type, SHARED_RESOURCE_TYPES, `shared resource "${r.id}"`);
+    checkFilename(r.filename, r.type);
+    checkText(r.label, `shared resource "${r.id}" label`);
+    checkText(r.description, `shared resource "${r.id}" description`);
+    const href = claimHref(seenHrefs, r.filename, `shared resource "${r.id}"`);
+
+    let relatedUnits = [];
+    if (r.relatedUnits !== undefined) {
+      if (!Array.isArray(r.relatedUnits) || r.relatedUnits.length === 0) {
+        fail(`shared resource "${r.id}" relatedUnits must be a non-empty array when present`);
+      }
+      const seenRelated = new Set();
+      for (const slug of r.relatedUnits) {
+        if (typeof slug !== "string" || !SLUG_PATTERN.test(slug)) {
+          fail(`shared resource "${r.id}" has malformed related unit "${slug}"`);
+        }
+        if (!unitSlugs.has(slug)) {
+          fail(`shared resource "${r.id}" relates to unknown unit "${slug}"`);
+        }
+        if (seenRelated.has(slug)) {
+          fail(`shared resource "${r.id}" lists related unit "${slug}" more than once`);
+        }
+        seenRelated.add(slug);
+      }
+      relatedUnits = r.relatedUnits.slice();
+    }
+
+    return {
+      id: r.id,
+      type: r.type,
+      href,
+      filename: r.filename,
+      label: r.label,
+      description: r.description,
+      relatedUnits,
+      displayOrder: order,
+    };
+  });
+}
+
+function checkResourceType(type, allowed, where) {
+  if (!RESOURCE_TYPES.includes(type)) {
+    fail(`unrecognized resource type "${type}" on ${where}`);
+  }
+  if (!allowed.includes(type)) {
+    fail(`resource type "${type}" is not permitted on ${where}`);
+  }
+}
+
+function checkFilename(filename, type) {
+  if (typeof filename !== "string" || !/^[a-z][a-z0-9_-]*\.html$/.test(filename)) {
+    fail(`unexpected canonical curriculum filename "${filename}" (must be a bare filename)`);
+  }
+  if (!filename.startsWith(HREF_PREFIX_BY_TYPE[type])) {
+    fail(
+      `resource filename "${filename}" does not match its declared type "${type}" (expected prefix "${HREF_PREFIX_BY_TYPE[type]}")`,
+    );
+  }
+}
+
+// Every registered href (unit-owned or shared) is unique.
+function claimHref(seenHrefs, filename, owner) {
+  const href = `/${filename}`;
+  if (seenHrefs.has(href)) {
+    fail(`duplicate resource href "${href}" (also on ${seenHrefs.get(href)})`);
+  }
+  seenHrefs.set(href, owner);
+  return href;
 }
 
 function parseRegistryText(text) {
@@ -225,6 +305,7 @@ function buildManifest() {
     totals: derived.totals,
     topicGroups: derived.topicGroups,
     orphanUnits: derived.orphanUnits,
+    sharedResources: derived.sharedResources,
   };
 }
 

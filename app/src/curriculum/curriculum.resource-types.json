@@ -1,0 +1,85 @@
+{
+  "$comment": "Canonical code-level LyfeLabz resource-type policy. The single source for each type's filename prefix, homepage ulink class, registry placement, formal curriculum status, Teacher Workspace visibility, and assignability. Read by app/scripts/curriculumParser.cjs (registry validation, homepage catalog, manifest) and app/src/curriculum/curriculumManifest.ts (teacher application). Key order is significant: unit-placed types fix the manifest totals key order. placement \"unit\" types are owned by a registry unit and render as homepage pills; placement \"shared\" types live in the registry's top-level sharedResources and never render in the homepage catalog. ulinkClass is null when the type has no generated homepage presentation.",
+  "types": {
+    "lesson": {
+      "filenamePrefix": "lesson_",
+      "ulinkClass": "live",
+      "placement": "unit",
+      "formal": true,
+      "teacherVisible": true,
+      "assignable": true
+    },
+    "simulation": {
+      "filenamePrefix": "simulation_",
+      "ulinkClass": "sim",
+      "placement": "unit",
+      "formal": true,
+      "teacherVisible": true,
+      "assignable": false
+    },
+    "investigation": {
+      "filenamePrefix": "investigation_",
+      "ulinkClass": "inv",
+      "placement": "unit",
+      "formal": true,
+      "teacherVisible": true,
+      "assignable": false
+    },
+    "extension": {
+      "filenamePrefix": "extension_",
+      "ulinkClass": "ext",
+      "placement": "unit",
+      "formal": true,
+      "teacherVisible": true,
+      "assignable": false
+    },
+    "challenge": {
+      "filenamePrefix": "challenge_",
+      "ulinkClass": "chal",
+      "placement": "unit",
+      "formal": true,
+      "teacherVisible": true,
+      "assignable": false
+    },
+    "activity": {
+      "filenamePrefix": "activity_",
+      "ulinkClass": "activity",
+      "placement": "unit",
+      "formal": false,
+      "teacherVisible": false,
+      "assignable": false
+    },
+    "game": {
+      "filenamePrefix": "game_",
+      "ulinkClass": "game",
+      "placement": "unit",
+      "formal": false,
+      "teacherVisible": false,
+      "assignable": false
+    },
+    "map": {
+      "filenamePrefix": "map_",
+      "ulinkClass": "map",
+      "placement": "unit",
+      "formal": false,
+      "teacherVisible": false,
+      "assignable": false
+    },
+    "disease": {
+      "filenamePrefix": "disease_",
+      "ulinkClass": "dis",
+      "placement": "unit",
+      "formal": false,
+      "teacherVisible": false,
+      "assignable": false
+    },
+    "tool": {
+      "filenamePrefix": "tool_",
+      "ulinkClass": null,
+      "placement": "shared",
+      "formal": false,
+      "teacherVisible": false,
+      "assignable": false
+    }
+  }
+}
