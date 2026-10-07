@@ -40,6 +40,12 @@ export type TeacherVisibleAttempt = {
   readonly attemptNumber: number;
   readonly percentage: number;
   readonly itemResults: ReadonlyArray<TeacherVisibleItemResult>;
+  // Question results analytics: the immutable assessment revision this
+  // attempt was scored against, frozen on the attempt and already returned
+  // by `assessmentAttemptGetForTeacher`. Used only to pair question text
+  // with the responses it was asked with; never shown in teacher UI.
+  // Absent or null when the response omits it.
+  readonly assessmentRevisionId?: string | null;
   // Sprint 30 Show Your Thinking: the written response frozen on this
   // attempt, or null when it carries none (or predates the field).
   readonly writtenResponse?: string | null;
@@ -138,6 +144,9 @@ export function createAttemptGetForTeacherCallable(
         : 0,
       percentage: isNumber(attempt.percentage) ? attempt.percentage : 0,
       itemResults,
+      assessmentRevisionId: isString(attempt.assessmentRevisionId)
+        ? attempt.assessmentRevisionId
+        : null,
       writtenResponse: isString(attempt.writtenResponse)
         ? attempt.writtenResponse
         : null,

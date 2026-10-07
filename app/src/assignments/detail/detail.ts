@@ -51,7 +51,15 @@ import {
 import {
   MIN_QUESTION_SUMMARY_ATTEMPTS,
   aggregatePerQuestion,
+  buildQuestionDetail,
+  classifyQuestionPerformance,
+  groupAttemptCohorts,
+  sharedAssessmentRevisionId,
+  type AssessmentRevisionContent,
+  type AssessmentRevisionContentReader,
   type PerQuestionAggregate,
+  type QuestionPerformanceBand,
+  type QuestionSummary,
 } from "./question-summary";
 import { createDetailFetchCache, type DetailFetchCache } from "./fetch-cache";
 
@@ -162,6 +170,12 @@ export type AssignmentDetailDeps = {
   // fetches each representative attempt and renders the per-question
   // factual summary. When absent no per-question panel is rendered.
   readonly attemptGetForTeacherCallable?: AttemptGetForTeacherCallable;
+  // Question results analytics: optional read seam for the immutable
+  // assessment revision the summarized attempts were scored against. When
+  // supplied and every counted attempt shares one revision, the question
+  // detail shows that revision's question and answer text. Absent, the
+  // detail shows option letters and statistics only.
+  readonly assessmentRevisionContentReader?: AssessmentRevisionContentReader;
   // Sprint 25 Phase 3: retry entry point for a Google Classroom
   // publication that did not succeed (blueprint §8). When supplied, the
   // surface renders a single calm publication-status line beneath the
@@ -388,6 +402,17 @@ export function renderAssignmentDetail(
           detailCache.get(`attemptGet:${input.attemptId}`, () =>
             deps.attemptGetForTeacherCallable!(input),
           );
+  // Revision documents are immutable, so one read per revision per render
+  // cache is enough.
+  const sharedRevisionContentReader:
+    | AssessmentRevisionContentReader
+    | undefined =
+    deps.assessmentRevisionContentReader === undefined
+      ? undefined
+      : (revisionId) =>
+          detailCache.get(`revisionContent:${revisionId}`, () =>
+            deps.assessmentRevisionContentReader!(revisionId),
+          );
   // Sprint 27 Phase 5: route the late-recipient candidate enumeration through
   // the same per-render fetch cache. `refreshDetailCache()` on a successful
   // add drops this entry so the section (and the roster above it) re-fetch
@@ -455,6 +480,7 @@ export function renderAssignmentDetail(
             attemptsListForClassCallable: sharedAttemptsListCallable,
             recipientListCallable: sharedRecipientListCallable,
             attemptGetForTeacherCallable: sharedAttemptGetCallable,
+            revisionContentReader: sharedRevisionContentReader,
             recipientCandidatesListCallable: sharedCandidatesListCallable,
             currentForFamily: sharedCurrentForFamily,
           },
@@ -877,6 +903,7 @@ type SharedDetailCallables = {
   readonly attemptsListForClassCallable: AttemptsListForClassCallable | undefined;
   readonly recipientListCallable: AssignmentRecipientListCallable | undefined;
   readonly attemptGetForTeacherCallable: AttemptGetForTeacherCallable | undefined;
+  readonly revisionContentReader: AssessmentRevisionContentReader | undefined;
   readonly recipientCandidatesListCallable:
     | AssignmentRecipientCandidatesListCallable
     | undefined;
@@ -1282,6 +1309,7 @@ function renderReady(
       metadata,
       shared.attemptsListForClassCallable,
       shared.attemptGetForTeacherCallable,
+      shared.revisionContentReader,
     );
   }
 }
@@ -2149,6 +2177,7 @@ async function renderQuestionSummaryPanel(
   metadata: AssignmentDetailMetadata,
   attemptsCallable: AttemptsListForClassCallable,
   attemptGetCallable: AttemptGetForTeacherCallable,
+  revisionContentReader: AssessmentRevisionContentReader | undefined,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -2190,89 +2219,373 @@ async function renderQuestionSummaryPanel(
   }
   loading.remove();
 
-  // Representative attempt per student per PDR-029a: highest percentage,
-  // then most recent submission, then highest attemptNumber.
-  const repByStudent = new Map<string, CompletedAttemptSummary>();
-  for (const attempt of completed) {
-    const existing = repByStudent.get(attempt.studentId);
-    if (existing === undefined) {
-      repByStudent.set(attempt.studentId, attempt);
-      continue;
-    }
-    if (
-      attempt.percentage > existing.percentage ||
-      (attempt.percentage === existing.percentage &&
-        attempt.submittedAt > existing.submittedAt) ||
-      (attempt.percentage === existing.percentage &&
-        attempt.submittedAt === existing.submittedAt &&
-        attempt.attemptNumber > existing.attemptNumber)
-    ) {
-      repByStudent.set(attempt.studentId, attempt);
-    }
-  }
-  const representative = Array.from(repByStudent.values());
-
-  if (representative.length < MIN_QUESTION_SUMMARY_ATTEMPTS) {
-    const deferred = doc.createElement("p");
-    deferred.className = "shell-assignment-detail-questions-deferred";
-    deferred.setAttribute(
-      "data-testid",
-      "assignment-detail-questions-deferred",
-    );
-    deferred.setAttribute("role", "status");
-    deferred.setAttribute("aria-live", "polite");
-    deferred.textContent =
-      "Question-level results will appear after more students submit.";
-    host.appendChild(deferred);
+  // Question results analytics use numbered attempt cohorts, never a
+  // best or latest attempt: Attempt N is every student's canonical attempt
+  // number N. Attempt 1 is the default. The roster and summary keep their
+  // own representative-attempt policy; this panel does not touch it.
+  const cohorts = groupAttemptCohorts(completed);
+  const ordinals = Array.from(cohorts.keys());
+  if (ordinals.length === 0) {
+    host.appendChild(createQuestionsDeferred(doc));
     return;
   }
 
+  // One persistent polite status for attempt switches and question
+  // selection, so updates are announced even as the cohort body re-renders.
+  const announcer = doc.createElement("p");
+  announcer.className = "shell-assignment-detail-questions-sr";
+  announcer.setAttribute("data-testid", "assignment-detail-question-announcer");
+  announcer.setAttribute("role", "status");
+  announcer.setAttribute("aria-live", "polite");
+
+  const cohortHost = doc.createElement("div");
+  cohortHost.className = "shell-assignment-detail-questions-cohort";
+  cohortHost.setAttribute("data-testid", "assignment-detail-questions-cohort");
+
+  let token = 0;
+  const showCohort = async (ordinal: number, announce: boolean): Promise<void> => {
+    const mine = ++token;
+    cohortHost.textContent = "";
+    announcer.textContent = "";
+    const members = cohorts.get(ordinal) ?? [];
+    if (members.length < MIN_QUESTION_SUMMARY_ATTEMPTS) {
+      cohortHost.appendChild(createQuestionsDeferred(doc));
+      if (announce) {
+        announcer.textContent = `Attempt ${ordinal}: question-level results will appear after more students submit.`;
+      }
+      return;
+    }
+    const result = await loadCohortResults(
+      members,
+      attemptGetCallable,
+      revisionContentReader,
+    );
+    if (mine !== token) return;
+    if (result === null) {
+      const err = doc.createElement("p");
+      err.className = "shell-assignment-detail-questions-error";
+      err.setAttribute("data-testid", "assignment-detail-questions-error");
+      err.setAttribute("role", "alert");
+      err.textContent = "Question results temporarily unavailable";
+      cohortHost.appendChild(err);
+      return;
+    }
+    renderQuestionResults(
+      cohortHost,
+      announcer,
+      result.aggregate.questions,
+      result.content,
+    );
+    if (announce) {
+      announcer.textContent = `Showing Attempt ${ordinal} results for ${studentsLabel(members.length)}.`;
+    }
+  };
+
+  const initial = ordinals[0]!;
+  // The attempt choice appears only when a student has completed a later
+  // attempt; a single-option dropdown is never shown.
+  if (ordinals.some((n) => n >= 2)) {
+    const controls = doc.createElement("div");
+    controls.className = "shell-assignment-detail-questions-attempt";
+    const label = doc.createElement("label");
+    label.className = "shell-assignment-detail-questions-attempt-label";
+    label.htmlFor = QUESTION_ATTEMPT_SELECT_ID;
+    label.textContent = "View question results:";
+    controls.appendChild(label);
+    const select = doc.createElement("select");
+    select.id = QUESTION_ATTEMPT_SELECT_ID;
+    select.className = "shell-assignment-detail-questions-attempt-select";
+    select.setAttribute("data-testid", "assignment-detail-questions-attempt-select");
+    select.setAttribute("aria-describedby", QUESTION_ATTEMPT_NOTE_ID);
+    for (const n of ordinals) {
+      const option = doc.createElement("option");
+      option.value = String(n);
+      option.textContent = `Attempt ${n}`;
+      select.appendChild(option);
+    }
+    select.value = String(initial);
+    select.addEventListener("change", () => {
+      const n = Number(select.value);
+      if (cohorts.has(n)) void showCohort(n, true);
+    });
+    controls.appendChild(select);
+    host.appendChild(controls);
+    const note = doc.createElement("p");
+    note.id = QUESTION_ATTEMPT_NOTE_ID;
+    note.className = "shell-assignment-detail-questions-attempt-note";
+    note.setAttribute("data-testid", "assignment-detail-questions-attempt-note");
+    note.textContent = "Results include students who completed the selected attempt.";
+    host.appendChild(note);
+  }
+
+  host.appendChild(cohortHost);
+  host.appendChild(announcer);
+  await showCohort(initial, false);
+}
+
+const QUESTION_ATTEMPT_SELECT_ID = "assignment-detail-questions-attempt-select";
+const QUESTION_ATTEMPT_NOTE_ID = "assignment-detail-questions-attempt-note";
+
+function createQuestionsDeferred(doc: Document): HTMLElement {
+  const deferred = doc.createElement("p");
+  deferred.className = "shell-assignment-detail-questions-deferred";
+  deferred.setAttribute("data-testid", "assignment-detail-questions-deferred");
+  deferred.setAttribute("role", "status");
+  deferred.setAttribute("aria-live", "polite");
+  deferred.textContent =
+    "Question-level results will appear after more students submit.";
+  return deferred;
+}
+
+// Fetch one cohort's attempts and aggregate them. Question text comes only
+// from the one immutable revision every attempt in THIS cohort was scored
+// against; a cohort spanning revisions (or missing one) shows results
+// without text, so text from one revision is never paired with responses
+// to another. Null when any attempt cannot be fetched.
+async function loadCohortResults(
+  members: ReadonlyArray<CompletedAttemptSummary>,
+  attemptGetCallable: AttemptGetForTeacherCallable,
+  revisionContentReader: AssessmentRevisionContentReader | undefined,
+): Promise<{
+  readonly aggregate: PerQuestionAggregate;
+  readonly content: AssessmentRevisionContent | null;
+} | null> {
   let detailed: TeacherVisibleAttempt[];
   try {
     detailed = await Promise.all(
-      representative.map((r) =>
-        attemptGetCallable({ attemptId: r.attemptId }),
-      ),
+      members.map((m) => attemptGetCallable({ attemptId: m.attemptId })),
     );
   } catch {
-    const err = doc.createElement("p");
-    err.className = "shell-assignment-detail-questions-error";
-    err.setAttribute("data-testid", "assignment-detail-questions-error");
-    err.setAttribute("role", "alert");
-    err.textContent = "Question results temporarily unavailable";
-    host.appendChild(err);
-    return;
+    return null;
   }
+  const aggregate = aggregatePerQuestion(detailed);
+  let content: AssessmentRevisionContent | null = null;
+  const revisionId = sharedAssessmentRevisionId(detailed);
+  if (revisionContentReader !== undefined && revisionId !== null) {
+    try {
+      content = await revisionContentReader(revisionId);
+    } catch {
+      content = null;
+    }
+  }
+  if (content !== null && content.revisionId !== revisionId) content = null;
+  return { aggregate, content };
+}
 
-  const aggregate: PerQuestionAggregate = aggregatePerQuestion(detailed);
+const QUESTION_BAND_LABEL: Readonly<Record<QuestionPerformanceBand, string>> = {
+  strong: "Strong",
+  review: "Review",
+  reteach: "Reteach",
+};
+
+const QUESTION_DETAIL_ID = "assignment-detail-question-detail";
+const QUESTION_DETAIL_HEADING_ID = "assignment-detail-question-detail-heading";
+
+const studentsLabel = (count: number): string =>
+  `${count} ${count === 1 ? "student" : "students"}`;
+
+// Question results analytics: a scannable overview grid of compact
+// question tiles, plus one detail region beneath it for the selected
+// question. Tiles are ordinary toggle buttons (aria-pressed); no question
+// is selected initially. Performance bands are supplemental: the
+// percentage stays dominant and Review / Reteach carry visible text.
+function renderQuestionResults(
+  host: HTMLElement,
+  announcer: HTMLElement,
+  questions: ReadonlyArray<QuestionSummary>,
+  content: AssessmentRevisionContent | null,
+): void {
+  const doc = host.ownerDocument;
   const list = doc.createElement("ol");
   list.className = "shell-assignment-detail-questions-list";
   list.setAttribute("data-testid", "assignment-detail-questions-list");
-  for (const q of aggregate.questions) {
+  host.appendChild(list);
+
+  const detail = doc.createElement("div");
+  detail.id = QUESTION_DETAIL_ID;
+  detail.className = "shell-assignment-detail-question-detail";
+  detail.setAttribute("data-testid", "assignment-detail-question-detail");
+  detail.setAttribute("role", "region");
+  detail.setAttribute("aria-labelledby", QUESTION_DETAIL_HEADING_ID);
+  detail.hidden = true;
+  host.appendChild(detail);
+
+  const tiles: HTMLButtonElement[] = [];
+  let selected = -1;
+
+  const select = (index: number): void => {
+    selected = selected === index ? -1 : index;
+    tiles.forEach((tile, i) => {
+      tile.setAttribute("aria-pressed", i === selected ? "true" : "false");
+    });
+    detail.textContent = "";
+    if (selected === -1) {
+      detail.hidden = true;
+      announcer.textContent = "";
+      return;
+    }
+    renderQuestionDetail(detail, selected + 1, questions[selected]!, content);
+    detail.hidden = false;
+    announcer.textContent = `Showing question ${selected + 1} details below.`;
+  };
+
+  questions.forEach((q, index) => {
+    const number = index + 1;
+    const band = classifyQuestionPerformance(q.correctPercentage);
     const li = doc.createElement("li");
     li.className = "shell-assignment-detail-question";
-    li.setAttribute("data-testid", `assignment-detail-question-${q.itemId}`);
-    const prompt = doc.createElement("p");
-    prompt.className = "shell-assignment-detail-question-prompt";
-    prompt.textContent = q.itemId;
-    li.appendChild(prompt);
-    const rate = doc.createElement("p");
+    const tile = doc.createElement("button");
+    tile.type = "button";
+    tile.className = `shell-assignment-detail-question-tile shell-assignment-detail-question-${band}`;
+    tile.setAttribute("data-testid", `assignment-detail-question-tile-${number}`);
+    tile.setAttribute("data-item-id", q.itemId);
+    tile.setAttribute("data-band", band);
+    tile.setAttribute("aria-pressed", "false");
+    tile.setAttribute("aria-controls", QUESTION_DETAIL_ID);
+
+    const head = doc.createElement("span");
+    head.className = "shell-assignment-detail-question-tile-head";
+    const label = doc.createElement("span");
+    label.className = "shell-assignment-detail-question-number";
+    label.textContent = `Q${number}`;
+    head.appendChild(label);
+    // Visible restrained text for the two attention bands; the Strong
+    // band stays quiet and is exposed to assistive technology only.
+    const status = doc.createElement("span");
+    status.className =
+      band === "strong"
+        ? "shell-assignment-detail-questions-sr"
+        : "shell-assignment-detail-question-band";
+    status.setAttribute("data-testid", `assignment-detail-question-band-${number}`);
+    status.textContent = QUESTION_BAND_LABEL[band];
+    head.appendChild(status);
+    tile.appendChild(head);
+
+    const rate = doc.createElement("span");
     rate.className = "shell-assignment-detail-question-rate";
-    rate.textContent = `${q.correctPercentage}% correct (${q.correctCount} of ${q.totalResponses})`;
-    li.appendChild(rate);
-    const options = doc.createElement("ul");
-    options.className = "shell-assignment-detail-question-options";
-    for (const opt of q.options) {
-      const oli = doc.createElement("li");
-      oli.className = "shell-assignment-detail-question-option";
-      const marker = opt.optionId === q.correctOptionId ? " (correct)" : "";
-      oli.textContent = `${opt.optionId}: ${opt.chosenPercentage}%${marker}`;
-      options.appendChild(oli);
-    }
-    li.appendChild(options);
+    rate.textContent = `${q.correctPercentage}% correct`;
+    tile.appendChild(rate);
+
+    const count = doc.createElement("span");
+    count.className = "shell-assignment-detail-question-count";
+    count.textContent = `${q.correctCount} of ${studentsLabel(q.totalResponses)}`;
+    tile.appendChild(count);
+
+    tile.addEventListener("click", () => select(index));
+    tiles.push(tile);
+    li.appendChild(tile);
     list.appendChild(li);
+  });
+}
+
+function renderQuestionDetail(
+  detail: HTMLElement,
+  number: number,
+  question: QuestionSummary,
+  content: AssessmentRevisionContent | null,
+): void {
+  const doc = detail.ownerDocument;
+  const model = buildQuestionDetail(question, content);
+
+  const heading = doc.createElement("h4");
+  heading.id = QUESTION_DETAIL_HEADING_ID;
+  heading.className = "shell-assignment-detail-question-detail-heading";
+  heading.textContent = `Question ${number}`;
+  detail.appendChild(heading);
+
+  const stem = doc.createElement("p");
+  stem.setAttribute("data-testid", "assignment-detail-question-stem");
+  if (model.stem !== null) {
+    stem.className = "shell-assignment-detail-question-stem";
+    stem.textContent = model.stem;
+  } else {
+    stem.className = "shell-assignment-detail-question-stem-unavailable";
+    stem.textContent = "Question text is not available for these results.";
   }
-  host.appendChild(list);
+  detail.appendChild(stem);
+
+  const rate = doc.createElement("p");
+  rate.className = "shell-assignment-detail-question-detail-rate";
+  rate.setAttribute("data-testid", "assignment-detail-question-detail-rate");
+  rate.textContent = `${question.correctPercentage}% correct (${question.correctCount} of ${studentsLabel(question.totalResponses)})`;
+  detail.appendChild(rate);
+
+  const choices = doc.createElement("ul");
+  choices.className = "shell-assignment-detail-question-choices";
+  choices.setAttribute("aria-label", "Answer choices and responses");
+  const addRow = (
+    key: string,
+    labelText: string,
+    choiceText: string | null,
+    count: number,
+    percentage: number,
+    isCorrect: boolean,
+  ): void => {
+    const li = doc.createElement("li");
+    li.className = isCorrect
+      ? "shell-assignment-detail-question-choice shell-assignment-detail-question-choice-correct"
+      : "shell-assignment-detail-question-choice";
+    li.setAttribute("data-testid", `assignment-detail-question-choice-${key}`);
+
+    const text = doc.createElement("span");
+    text.className = "shell-assignment-detail-question-choice-text";
+    const letter = doc.createElement("span");
+    letter.className = "shell-assignment-detail-question-choice-letter";
+    letter.textContent = labelText;
+    text.appendChild(letter);
+    if (choiceText !== null) {
+      text.appendChild(doc.createTextNode(` ${choiceText}`));
+    }
+    if (isCorrect) {
+      const mark = doc.createElement("span");
+      mark.className = "shell-assignment-detail-question-choice-correct-mark";
+      mark.setAttribute("data-testid", "assignment-detail-question-correct-mark");
+      const icon = doc.createElement("span");
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = "\u2713 ";
+      mark.appendChild(icon);
+      mark.appendChild(doc.createTextNode("Correct answer"));
+      text.appendChild(mark);
+    }
+    li.appendChild(text);
+
+    const stat = doc.createElement("span");
+    stat.className = "shell-assignment-detail-question-choice-stat";
+    stat.textContent = `${percentage}% (${studentsLabel(count)})`;
+    li.appendChild(stat);
+
+    const bar = doc.createElement("span");
+    bar.className = "shell-assignment-detail-question-choice-bar";
+    bar.setAttribute("aria-hidden", "true");
+    const fill = doc.createElement("span");
+    fill.className = "shell-assignment-detail-question-choice-fill";
+    fill.style.width = `${Math.max(0, Math.min(100, percentage))}%`;
+    bar.appendChild(fill);
+    li.appendChild(bar);
+
+    choices.appendChild(li);
+  };
+  for (const choice of model.choices) {
+    addRow(
+      choice.optionId,
+      choice.text === null ? choice.optionId : `${choice.optionId}.`,
+      choice.text,
+      choice.chosenCount,
+      choice.chosenPercentage,
+      choice.isCorrect,
+    );
+  }
+  if (model.noAnswerCount > 0) {
+    addRow(
+      "none",
+      "No answer",
+      null,
+      model.noAnswerCount,
+      model.noAnswerPercentage,
+      false,
+    );
+  }
+  detail.appendChild(choices);
 }
 
 type CloseConfirmController = {

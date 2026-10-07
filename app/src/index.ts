@@ -139,6 +139,7 @@ import {
   type AttemptGetForTeacherCallable,
   type AttemptsListForClassCallable,
 } from "./assignments/detail/attempts-wire";
+import { createFirestoreAssessmentRevisionContentReader } from "./assignments/detail/revision-content-wire";
 import { createRosterSortPreference } from "./teacherPreferences/rosterSortStorage";
 import {
   createAssessmentStudentAssignmentsForClassCallable,
@@ -470,6 +471,13 @@ async function run(): Promise<void> {
       recipientListCallable: assignmentRecipientList ?? undefined,
       attemptsListForClassCallable: attemptsListForClass ?? undefined,
       attemptGetForTeacherCallable: attemptGetForTeacher ?? undefined,
+      // Question results analytics: question and answer text for the
+      // overview's detail region, read from the immutable assessment
+      // revision the attempts were scored against (Rules: active-user get).
+      assessmentRevisionContentReader:
+        attemptGetForTeacher === null
+          ? undefined
+          : createFirestoreAssessmentRevisionContentReader(db),
       // Sprint 27 Phase 5: late-recipient affordance. Both seams are wired
       // only for an active-teacher session; the detail surface renders the
       // "Students not yet assigned" section only for a published assignment

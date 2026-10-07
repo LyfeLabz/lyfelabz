@@ -3805,43 +3805,251 @@
     font-size: 0.9rem;
   }
 
-  /* Question results. */
+  /* Question results. A scannable overview grid of compact question tiles
+     (five across on a wide workspace, fewer as the workspace narrows) plus
+     one detail region for the selected question. The column count follows
+     the section's own width, so the Teacher Workspace sidebar is accounted
+     for: each column is at least 9rem and never narrower than a fifth of
+     the row, which caps the grid at five columns.
+     Performance cues are scoped aliases over the existing roster status
+     washes (In Progress amber, Not Started rose), so no new hue is
+     introduced. Color is supplemental: Review and Reteach also carry text,
+     and the percentage stays the dominant information. */
+  .shell-assignment-detail-questions {
+    --tw-question-gap:         0.6rem;
+    --tw-question-review-bg:   rgba(255, 176, 32, 0.08);
+    --tw-question-review-edge: rgba(153, 105, 4, 0.3);
+    --tw-question-review-ink:  var(--tw-topic-tech-ink);
+    --tw-question-reteach-bg:  rgba(220, 61, 61, 0.05);
+    --tw-question-reteach-edge: rgba(153, 30, 30, 0.22);
+    --tw-question-reteach-ink: var(--tw-callout-error-ink);
+  }
+  /* Attempt cohort choice: a native select styled like the roster Sort
+     control. Label and select wrap onto separate lines when narrow; the
+     note stays visually subordinate. */
+  .shell-assignment-detail-questions-attempt {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.25rem 0 0.2rem 0;
+  }
+  .shell-assignment-detail-questions-attempt-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--tw-ink-soft);
+  }
+  .shell-assignment-detail-questions-attempt-select {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.4rem;
+    min-height: 32px;
+    min-width: 8.5rem;
+    max-width: 100%;
+    color: var(--tw-ink);
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-control-edge);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-assignment-detail-questions-attempt-select:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+  }
+  @media (pointer: coarse) {
+    .shell-assignment-detail-questions-attempt-select { min-height: 44px; }
+  }
+  .shell-assignment-detail-questions-attempt-note {
+    margin: 0 0 0.6rem 0;
+    font-size: 0.82rem;
+    color: var(--tw-ink-muted);
+  }
   .shell-assignment-detail-questions-list {
     list-style: none;
     padding: 0;
     margin: 0.25rem 0 0 0;
+    display: grid;
+    gap: var(--tw-question-gap);
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(max(9rem, calc((100% - 4 * var(--tw-question-gap)) / 5)), 1fr)
+    );
+  }
+  .shell-assignment-detail-question { display: flex; min-width: 0; }
+  .shell-assignment-detail-question-tile {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-  }
-  .shell-assignment-detail-question {
+    align-items: flex-start;
+    gap: 0.1rem;
+    width: 100%;
+    min-width: 0;
     padding: 0.6rem 0.75rem;
     background: var(--tw-surface-alt);
     border: 1px solid var(--tw-hairline);
     border-radius: var(--tw-radius-control);
-  }
-  .shell-assignment-detail-question-prompt {
-    margin: 0 0 0.2rem 0;
-    font-weight: 600;
     color: var(--tw-ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .shell-assignment-detail-question-tile:hover {
+    border-color: var(--tw-control-edge);
+  }
+  .shell-assignment-detail-question-tile:focus-visible {
+    outline: var(--tw-focus-outline);
+    outline-offset: 2px;
+  }
+  .shell-assignment-detail-question-review {
+    background: var(--tw-question-review-bg);
+    border-color: var(--tw-question-review-edge);
+  }
+  .shell-assignment-detail-question-reteach {
+    background: var(--tw-question-reteach-bg);
+    border-color: var(--tw-question-reteach-edge);
+  }
+  /* Selected: a heavier teal edge (shape, not hue alone). */
+  .shell-assignment-detail-question-tile[aria-pressed="true"] {
+    border-color: var(--tw-nav-edge);
+    box-shadow: inset 0 0 0 1px var(--tw-nav-edge);
+  }
+  .shell-assignment-detail-question-tile-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.4rem;
+    width: 100%;
+  }
+  .shell-assignment-detail-question-number {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--tw-ink-soft);
+  }
+  .shell-assignment-detail-question-band {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .shell-assignment-detail-question-review .shell-assignment-detail-question-band {
+    color: var(--tw-question-review-ink);
+  }
+  .shell-assignment-detail-question-reteach .shell-assignment-detail-question-band {
+    color: var(--tw-question-reteach-ink);
   }
   .shell-assignment-detail-question-rate {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--tw-ink);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .shell-assignment-detail-question-count {
+    font-size: 0.82rem;
+    color: var(--tw-ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .shell-assignment-detail-questions-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .shell-assignment-detail-question-detail {
+    margin: 0.85rem 0 0 0;
+    padding: 0.85rem 1rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-assignment-detail-question-detail[hidden] { display: none; }
+  .shell-assignment-detail-question-detail-heading {
     margin: 0 0 0.35rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--tw-ink);
+  }
+  .shell-assignment-detail-question-stem {
+    margin: 0 0 0.4rem 0;
+    color: var(--tw-ink);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .shell-assignment-detail-question-stem-unavailable {
+    margin: 0 0 0.4rem 0;
+    color: var(--tw-ink-muted);
+    font-style: italic;
+  }
+  .shell-assignment-detail-question-detail-rate {
+    margin: 0 0 0.6rem 0;
     color: var(--tw-ink-soft);
     font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
   }
-  .shell-assignment-detail-question-options {
+  .shell-assignment-detail-question-choices {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.5rem;
   }
-  .shell-assignment-detail-question-option {
-    color: var(--tw-ink-muted);
-    font-size: 0.88rem;
+  .shell-assignment-detail-question-choice {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
+    align-items: baseline;
+  }
+  .shell-assignment-detail-question-choice-text {
+    color: var(--tw-ink-soft);
+    font-size: 0.92rem;
+    overflow-wrap: anywhere;
+  }
+  .shell-assignment-detail-question-choice-letter {
+    font-weight: 700;
+    color: var(--tw-ink);
+  }
+  .shell-assignment-detail-question-choice-correct-mark {
+    display: inline-block;
+    margin-left: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--tw-primary-strong);
+    white-space: nowrap;
+  }
+  .shell-assignment-detail-question-choice-stat {
+    color: var(--tw-ink);
+    font-size: 0.9rem;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .shell-assignment-detail-question-choice-bar {
+    grid-column: 1 / -1;
+    display: block;
+    height: 6px;
+    background: var(--tw-hairline);
+    border-radius: var(--tw-radius-pill);
+    overflow: hidden;
+  }
+  .shell-assignment-detail-question-choice-fill {
+    display: block;
+    height: 100%;
+    background: var(--tw-ink-muted);
+    border-radius: var(--tw-radius-pill);
+  }
+  .shell-assignment-detail-question-choice-correct
+    .shell-assignment-detail-question-choice-fill {
+    background: var(--tw-primary);
+  }
+  @media (pointer: coarse) {
+    .shell-assignment-detail-question-tile { min-height: 44px; }
   }
   .shell-assignment-detail-questions-loading,
   .shell-assignment-detail-questions-deferred {
