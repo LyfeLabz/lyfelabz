@@ -258,3 +258,81 @@ export function getOrphanUnits(): ReadonlyArray<CurriculumOrphanUnit> {
 export function getSharedResources(): ReadonlyArray<CurriculumSharedResource> {
   return CURRICULUM_MANIFEST.sharedResources;
 }
+
+// Policy lookup that tolerates an arbitrary runtime string: an unknown
+// type (or an inherited Object key) yields null rather than a policy.
+function policyFor(type: string): ResourceTypePolicy | null {
+  return Object.prototype.hasOwnProperty.call(RESOURCE_TYPE_POLICY, type)
+    ? RESOURCE_TYPE_POLICY[type as ResourceType]
+    : null;
+}
+
+// A unit-owned resource paired with its owning unit, for a future
+// type-organized Teacher Workspace view. Both members are the manifest's
+// own (read-only) objects; nothing is copied or re-derived.
+export type SurfaceableUnitResource = {
+  readonly resource: CurriculumResource;
+  readonly unit: CurriculumUnit;
+};
+
+// Every teacher-surfaceable, non-assignable unit-owned resource of `type`,
+// in canonical registry order (topic group, then unit, then the unit's
+// resource `displayOrder`). Surfaceability is decided entirely by the
+// resource-type policy: the type must be unit-placed, `teacherVisible`, and
+// not `assignable` (assignable resources are surfaced, with their
+// assignment semantics, by `getSurfaceableLessons`). Any other or unknown
+// type yields an empty array. Gated units are skipped, consistent with
+// `getSurfaceableLessons`.
+export function getResourcesByType(
+  type: UnitResourceType,
+): ReadonlyArray<SurfaceableUnitResource> {
+  const policy = policyFor(type);
+  if (
+    policy === null ||
+    policy.placement !== "unit" ||
+    !policy.teacherVisible ||
+    policy.assignable
+  ) {
+    return Object.freeze([]);
+  }
+  const out: SurfaceableUnitResource[] = [];
+  for (const unit of getAllUnits()) {
+    if (unit.gated) continue;
+    const owned = unit.resources
+      .filter((r) => r.type === type)
+      .slice()
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+    for (const resource of owned) out.push(Object.freeze({ resource, unit }));
+  }
+  return Object.freeze(out);
+}
+
+// Teacher-surfaceable shared resources of `type`, in registry order. Empty
+// unless the type's policy is shared-placed and `teacherVisible`; tools are
+// currently `teacherVisible: false`, so this returns nothing for them.
+// `getSharedResources` remains the unfiltered canonical lookup.
+export function getTeacherVisibleSharedResources(
+  type: SharedResourceType,
+): ReadonlyArray<CurriculumSharedResource> {
+  const policy = policyFor(type);
+  if (policy === null || policy.placement !== "shared" || !policy.teacherVisible) {
+    return Object.freeze([]);
+  }
+  return Object.freeze(
+    CURRICULUM_MANIFEST.sharedResources.filter((r) => r.type === type),
+  );
+}
+
+// Resolve a shared resource's `relatedUnits` slugs to their canonical
+// units, in the resource's declared order. Unknown slugs and gated units
+// are omitted, consistent with `getSurfaceableLessons`.
+export function getSurfaceableRelatedUnits(
+  resource: CurriculumSharedResource,
+): ReadonlyArray<CurriculumUnit> {
+  const out: CurriculumUnit[] = [];
+  for (const slug of resource.relatedUnits) {
+    const unit = getUnitBySlug(slug);
+    if (unit !== null && !unit.gated) out.push(unit);
+  }
+  return Object.freeze(out);
+}

@@ -16,8 +16,12 @@ import {
   getUnitBySlug,
   getFormalResourcesForLesson,
   getSharedResources,
+  getResourcesByType,
+  getTeacherVisibleSharedResources,
+  getSurfaceableRelatedUnits,
   RESOURCE_TYPE_POLICY,
 } from "./curriculumManifest";
+import type * as CurriculumManifestModule from "./curriculumManifest";
 
 const parserPath = path.resolve(
   __dirname,
@@ -736,5 +740,170 @@ describe("Shared resource registry validation", () => {
     expect(() => parse({ ...base([]), sharedResources: {} })).toThrow(
       /sharedResources must be an array/,
     );
+  });
+});
+
+describe("Resource-type accessors (Teacher Resource Browser foundation)", () => {
+  const browseRows = (type: Parameters<typeof getResourcesByType>[0]) =>
+    getResourcesByType(type).map((r) => [r.unit.slug, r.resource.label]);
+
+  test("investigations are returned with owning-unit context", () => {
+    expect(browseRows("investigation")).toEqual([
+      ["what-is-life", "The Gray Zone"],
+      ["cell-types", "Cell Energy"],
+      ["organelles", "Protein Pathway"],
+      ["nature-of-waves", "Amplitude Challenge"],
+    ]);
+  });
+
+  test("simulations are returned in canonical order", () => {
+    expect(browseRows("simulation")).toEqual([
+      ["continental-drift", "Floatlandia Fracture"],
+      ["gravity", "Gravity Wells"],
+      ["eclipses", "Eclipse Alignment"],
+    ]);
+  });
+
+  test("extensions are returned in canonical order", () => {
+    expect(browseRows("extension")).toEqual([
+      ["body-systems", "Medical Mysteries"],
+      ["biological-evolution", "Chernobyl Frogs"],
+      ["layers-of-time", "Fossil Hunt"],
+      ["phases-of-the-moon", "Moon Tonight"],
+      ["chemical-reactions", "Hidden World"],
+    ]);
+  });
+
+  test("challenges are returned once, under their owning unit", () => {
+    const rows = getResourcesByType("challenge");
+    expect(rows).toHaveLength(1);
+    const { resource, unit } = rows[0]!;
+    expect(resource).toEqual({
+      type: "challenge",
+      href: "/challenge_welcome-to-floatia.html",
+      filename: "challenge_welcome-to-floatia.html",
+      label: "Build-a-Boat",
+      displayOrder: resource.displayOrder,
+    });
+    expect(unit).toBe(getUnitBySlug("engineering-design"));
+    expect([unit.slug, unit.grade, unit.topic]).toEqual([
+      "engineering-design",
+      "6",
+      "tech-engineering",
+    ]);
+    expect(unit.title.length).toBeGreaterThan(0);
+  });
+
+  test("rows reference the manifest's own unit/resource objects", () => {
+    for (const { resource, unit } of getResourcesByType("investigation")) {
+      expect(getUnitBySlug(unit.slug)).toBe(unit);
+      expect(unit.resources).toContain(resource);
+      expect(resource.type).toBe("investigation");
+    }
+  });
+
+  test("type rows match the existing per-lesson formal-resource rows exactly", () => {
+    const fromTypes = (["simulation", "investigation", "extension", "challenge"] as const)
+      .flatMap((t) => getResourcesByType(t))
+      .map((r) => `${r.unit.slug}|${r.resource.href}`)
+      .sort();
+    const fromLessons = getSurfaceableLessons()
+      .flatMap((l) => getFormalResourcesForLesson(l.slug).map((r) => `${l.slug}|${r.href}`))
+      .sort();
+    expect(fromTypes).toEqual(fromLessons);
+    expect(new Set(fromTypes).size).toBe(fromTypes.length);
+  });
+
+  test("assignable, non-teacher-visible, shared, and unknown types yield nothing", () => {
+    expect(getResourcesByType("lesson")).toEqual([]);
+    expect(getResourcesByType("game")).toEqual([]);
+    expect(getResourcesByType("activity")).toEqual([]);
+    const loose = getResourcesByType as (t: string) => ReadonlyArray<unknown>;
+    expect(loose("tool")).toEqual([]);
+    expect(loose("not-a-type")).toEqual([]);
+    expect(loose("toString")).toEqual([]);
+  });
+
+  test("does not mutate the manifest", () => {
+    const before = JSON.stringify(CURRICULUM_MANIFEST);
+    getResourcesByType("extension");
+    getTeacherVisibleSharedResources("tool");
+    getSurfaceableRelatedUnits(getSharedResources()[0]!);
+    expect(JSON.stringify(CURRICULUM_MANIFEST)).toBe(before);
+  });
+
+  test("Lab Report Assistant's relatedUnits resolve to Conducting Experiments", () => {
+    const lra = getSharedResources().find((r) => r.id === "lab-report-assistant");
+    expect(lra).toBeDefined();
+    const related = getSurfaceableRelatedUnits(lra!);
+    expect(related).toHaveLength(1);
+    expect(related[0]).toBe(getUnitBySlug("conducting-experiments"));
+  });
+
+  test("Lab Report Assistant is not teacher-surfaceable while Tool is teacherVisible: false", () => {
+    expect(RESOURCE_TYPE_POLICY.tool.teacherVisible).toBe(false);
+    expect(getTeacherVisibleSharedResources("tool")).toEqual([]);
+  });
+
+  // Policy, not resource-specific special casing, controls surfaceability:
+  // a module instance whose policy differs changes the result.
+  const withMocks = (mocks: {
+    policy?: (p: typeof RESOURCE_TYPE_POLICY) => void;
+    manifest?: (m: typeof CURRICULUM_MANIFEST) => void;
+  }): typeof CurriculumManifestModule => {
+    let mod: typeof CurriculumManifestModule | undefined;
+    jest.isolateModules(() => {
+      const policyJson = JSON.parse(
+        JSON.stringify(require("./curriculum.resource-types.json")),
+      );
+      mocks.policy?.(policyJson.types);
+      const manifestJson = JSON.parse(JSON.stringify(CURRICULUM_MANIFEST));
+      mocks.manifest?.(manifestJson);
+      jest.doMock("./curriculum.resource-types.json", () => policyJson);
+      jest.doMock("./curriculum.manifest.json", () => manifestJson);
+      mod = require("./curriculumManifest");
+    });
+    jest.dontMock("./curriculum.resource-types.json");
+    jest.dontMock("./curriculum.manifest.json");
+    return mod!;
+  };
+
+  test("flipping Tool teacherVisible in policy surfaces Lab Report Assistant", () => {
+    const mod = withMocks({
+      policy: (p) => {
+        (p.tool as { teacherVisible: boolean }).teacherVisible = true;
+      },
+    });
+    expect(mod.getTeacherVisibleSharedResources("tool").map((r) => r.id)).toEqual([
+      "lab-report-assistant",
+    ]);
+  });
+
+  test("hiding a unit type in policy removes it from type rows", () => {
+    const mod = withMocks({
+      policy: (p) => {
+        (p.simulation as { teacherVisible: boolean }).teacherVisible = false;
+      },
+    });
+    expect(mod.getResourcesByType("simulation")).toEqual([]);
+  });
+
+  test("gated units are excluded from type rows and related units", () => {
+    const mod = withMocks({
+      manifest: (m) => {
+        const unit = m.topicGroups
+          .flatMap((g) => g.units)
+          .find((u) => u.slug === "what-is-life") as { gated: boolean };
+        unit.gated = true;
+        const conducting = m.topicGroups
+          .flatMap((g) => g.units)
+          .find((u) => u.slug === "conducting-experiments") as { gated: boolean };
+        conducting.gated = true;
+      },
+    });
+    const slugs = mod.getResourcesByType("investigation").map((r) => r.unit.slug);
+    expect(slugs).not.toContain("what-is-life");
+    expect(slugs).toHaveLength(3);
+    expect(mod.getSurfaceableRelatedUnits(mod.getSharedResources()[0]!)).toEqual([]);
   });
 });
