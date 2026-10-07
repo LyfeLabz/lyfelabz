@@ -1991,9 +1991,7 @@
   .shell-assign-row-set-current[hidden] {
     display: none;
   }
-  .shell-assign-disambig-current-marker,
-  /* Assignment Details: the same canonical Current marker beside Status. */
-  .shell-assignment-detail-current-marker {
+  .shell-assign-disambig-current-marker {
     /* Historical Assignment Resolution, post-release UX patch. The marker
        is the last child of the flex-row `.shell-assign-disambig-option`
        (see curriculum.ts), so it naturally follows the recipient metadata
@@ -3253,6 +3251,7 @@
     border-color: var(--tw-pill-verified-edge);
   }
   .shell-assignment-detail-status-closed,
+  .shell-assignment-detail-status-previous,
   .shell-snapshot-status-archived,
   .shell-class-status-archived {
     background: var(--tw-badge-neutral-bg);
@@ -3409,7 +3408,6 @@
     margin: 0 0 0.6rem 0;
   }
   .shell-assignment-detail-draft-summary-body,
-  .shell-assignment-detail-roster-empty,
   .shell-assignment-detail-roster-empty-recipients,
   .shell-assignment-detail-roster-discrepancy,
   .shell-assignment-detail-loading-label,
@@ -3436,34 +3434,107 @@
   }
   .shell-assignment-detail-error-message { margin: 0 0 0.6rem 0; }
 
-  /* Roster rows. */
-  .shell-assignment-detail-roster-group { margin: 0 0 0.75rem 0; }
+  /* Roster information hierarchy. Header row: the Roster heading and the
+     shared Sort control share one row on wide screens and wrap naturally
+     (Sort below the heading) when space runs out. Detail-scoped, so the
+     shared control and the Classes Students list are unchanged. */
+  .shell-assignment-detail-roster-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
+    margin: 0 0 0.75rem 0;
+  }
+  .shell-assignment-detail-roster-header .shell-assignment-detail-roster-heading {
+    margin: 0;
+  }
+  .shell-assignment-detail-roster-header .shell-roster-sort {
+    margin: 0;
+  }
+
+  /* Status groups. Informational containers (not navigation, actions,
+     filters, or pills): every group shows its status word and count; a
+     NON-EMPTY group adds a pale status tint. The tints are scoped aliases
+     over the existing LyfeLabz status washes already used for the same
+     three states (the completed assignment card and the Student Detail
+     in-progress / not-started cards), so no new hue is introduced. Color is
+     supplemental: the heading text always carries the state. */
+  .shell-assignment-detail-roster {
+    --tw-roster-completed-bg:   rgba(61, 220, 132, 0.07);
+    --tw-roster-completed-edge: rgba(31, 107, 61, 0.28);
+    --tw-roster-progress-bg:    rgba(255, 176, 32, 0.08);
+    --tw-roster-progress-edge:  rgba(153, 105, 4, 0.3);
+    --tw-roster-notstarted-bg:  rgba(220, 61, 61, 0.05);
+    --tw-roster-notstarted-edge: rgba(153, 30, 30, 0.22);
+  }
+  .shell-assignment-detail-roster-group {
+    margin: 0 0 0.5rem 0;
+    padding: 0.2rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: var(--tw-radius-control);
+  }
   .shell-assignment-detail-roster-group:last-child { margin-bottom: 0; }
+  .shell-assignment-detail-roster-group-tinted {
+    padding: 0.45rem 0.75rem 0.25rem 0.75rem;
+  }
+  .shell-assignment-detail-roster-submitted.shell-assignment-detail-roster-group-tinted {
+    background: var(--tw-roster-completed-bg);
+    border-color: var(--tw-roster-completed-edge);
+  }
+  .shell-assignment-detail-roster-in-progress.shell-assignment-detail-roster-group-tinted {
+    background: var(--tw-roster-progress-bg);
+    border-color: var(--tw-roster-progress-edge);
+  }
+  .shell-assignment-detail-roster-not-started.shell-assignment-detail-roster-group-tinted {
+    background: var(--tw-roster-notstarted-bg);
+    border-color: var(--tw-roster-notstarted-edge);
+  }
+  /* Group heading: a small uppercase status label with its count as a
+     plain, slightly stronger number beside it (never a pill or filter). */
   .shell-assignment-detail-roster-group-heading {
-    font-size: 0.85rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0.2rem 0;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--tw-ink-soft);
-    margin: 0.5rem 0 0.25rem 0;
+  }
+  .shell-assignment-detail-roster-group-label {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .shell-assignment-detail-roster-group-count {
+    font-size: 0.9rem;
+    color: var(--tw-ink);
+    font-variant-numeric: tabular-nums;
   }
   .shell-assignment-detail-roster-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-  /* Sprint 30 roster polish: name, score, and attempt count read as one
-     group from the left edge instead of name and score sitting at opposite
-     ends of a wide row. Wraps (never overflows) when space runs out. */
+  /* Compact student rows (never a card per student). Wide screens read as
+     Student | Score | Attempts with columns aligned across rows; the score
+     and attempt cells come from the summary wrapper, which steps out of
+     layout (`display: contents`) so its two cells sit in the row grid.
+     Secondary content (Live progress, a retake, grade-sync status and its
+     separate Retry button) takes the remaining columns or wraps to its own
+     line. DOM order equals visual order; no CSS reordering. */
   .shell-assignment-detail-roster-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 4.5rem 7.5rem;
+    column-gap: 1rem;
+    row-gap: 0.2rem;
     align-items: baseline;
-    gap: 0.25rem 1rem;
     padding: 0.4rem 0;
     border-bottom: 1px solid var(--tw-hairline-soft);
   }
   .shell-assignment-detail-roster-row:last-child { border-bottom: 0; }
   .shell-assignment-detail-roster-name {
+    grid-column: 1;
+    justify-self: start;
     color: var(--tw-ink);
     background: transparent;
     border: none;
@@ -3496,13 +3567,21 @@
     border-radius: 3px;
   }
   .shell-assignment-detail-roster-summary {
-    color: var(--tw-ink-muted);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+    display: contents;
   }
   .shell-assignment-detail-roster-percentage {
-    color: var(--tw-ink-soft);
-    font-weight: 600;
+    grid-column: 2;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--tw-ink);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .shell-assignment-detail-roster-attempts {
+    grid-column: 3;
+    white-space: nowrap;
+    color: var(--tw-ink-muted);
+    font-size: 0.88rem;
     font-variant-numeric: tabular-nums;
   }
   /* Sprint 30 roster sort: the compact, shared "Sort" control above both
@@ -3542,17 +3621,29 @@
      A failure on an assignment that is no longer Current is history: muted
      and never paired with Retry. */
   .shell-assignment-detail-roster-grade-status {
+    grid-column: 1 / 3;
     color: var(--tw-ink-soft);
     font-size: 0.88rem;
+  }
+  /* Retry stays its own sibling control, beside the status line. */
+  .shell-assignment-detail-roster-grade-retry {
+    grid-column: 3;
+    justify-self: start;
   }
   .shell-assignment-detail-roster-grade-status-historical {
     color: var(--tw-ink-muted);
   }
   /* Quiz progress: a Live session's answered/total, secondary to the name. */
   .shell-assignment-detail-roster-progress {
+    grid-column: 2 / -1;
     color: var(--tw-ink-soft);
     font-size: 0.88rem;
     font-variant-numeric: tabular-nums;
+  }
+  /* A retake beside a Completed score wraps to its own line under the
+     row's columns rather than squeezing them. */
+  .shell-assignment-detail-roster-summary ~ .shell-assignment-detail-roster-progress {
+    grid-column: 1 / -1;
   }
 
   /* Late recipients: each name and its Add action are one scannable row. */
@@ -4676,10 +4767,32 @@
      full-width. */
   @media (max-width: 480px) {
     .shell-assignment-detail-meta { gap: 0.5rem 1rem; }
-    .shell-assignment-detail-late-recipients-row,
-    .shell-assignment-detail-roster-row {
+    .shell-assignment-detail-late-recipients-row {
       flex-wrap: wrap;
       gap: 0.35rem;
+    }
+    /* Roster rows reflow: the name takes the first line; score and
+       attempts (or progress, or grade-sync status and Retry) sit beneath
+       it. No horizontal scrolling table. */
+    .shell-assignment-detail-roster-row {
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: 0.75rem;
+    }
+    .shell-assignment-detail-roster-name,
+    .shell-assignment-detail-roster-progress,
+    .shell-assignment-detail-roster-grade-status {
+      grid-column: 1 / -1;
+    }
+    .shell-assignment-detail-roster-percentage {
+      grid-column: 1;
+      text-align: left;
+    }
+    .shell-assignment-detail-roster-attempts { grid-column: 2; }
+    .shell-assignment-detail-roster-grade-retry { grid-column: 1 / -1; }
+    .shell-assignment-detail-roster-group,
+    .shell-assignment-detail-roster-group-tinted {
+      padding-left: 0.6rem;
+      padding-right: 0.6rem;
     }
     .shell-active-assignments-list,
     .shell-classes-list,

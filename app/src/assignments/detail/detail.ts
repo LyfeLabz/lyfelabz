@@ -138,8 +138,8 @@ export type AssignmentDetailDeps = {
   readonly onStatusChange?: (metadata: AssignmentDetailMetadata) => void;
   // Sprint 15 Slice 5: certified recipient enumeration + completed
   // attempts list. When both are supplied, published and closed
-  // assignments render a roster grouped into Submitted, In progress,
-  // and Not started beneath the Assignment Summary card.
+  // assignments render a roster grouped into Completed, In Progress,
+  // and Not Started beneath the Assignment Summary card.
   readonly recipientListCallable?: AssignmentRecipientListCallable;
   readonly attemptsListForClassCallable?: AttemptsListForClassCallable;
   // Sprint 27 Phase 5: late-recipient affordance seams. When both are
@@ -173,7 +173,7 @@ export type AssignmentDetailDeps = {
   // unchanged.
   readonly lmsRetry?: AssignmentLmsRetrySeam;
   // Sprint 30A.2: optional per-student Google Classroom grade-passback
-  // retry seam. When supplied, the Submitted roster group reads the
+  // retry seam. When supplied, the Completed roster group reads the
   // coarse current status for each student and renders a small inline
   // status line + Retry action ONLY for a student whose sync is
   // `pending`/`syncing`/`failed`; a `synced` or absent status renders
@@ -184,7 +184,7 @@ export type AssignmentDetailDeps = {
   readonly gradePassback?: AssignmentGradePassbackSeam;
   // Student Progress & Assignment Membership Phase A, Slice 3: optional
   // student-navigation seam. When supplied, every roster row's student
-  // name (Submitted, In Progress, and Not Started alike) becomes a
+  // name (Completed, In Progress, and Not Started alike) becomes a
   // clickable control that invokes this with enough to open that
   // student's Student Detail and let its Back control return to this
   // exact assignment. Independent of `gradePassback`: the name control and
@@ -938,16 +938,25 @@ function renderReady(
   meta.setAttribute("data-testid", "assignment-detail-meta");
 
   appendMetaPair(doc, meta, "class", "Class", metadata.className);
-  const statusPair = appendMetaPair(
-    doc,
-    meta,
-    "status",
-    "Status",
-    STATUS_LABEL[metadata.status],
-    `shell-assignment-detail-status shell-assignment-detail-status-${metadata.status}`,
-  );
-  statusPair.classList.add("shell-assignment-detail-meta-pair-status");
-  appendCurrentMarkerWhenCurrent(doc, statusPair, metadata, shared);
+  // Assignment Detail header hierarchy: the ordinary published assignment
+  // does not announce its own state, so no Status pair renders for it. Only
+  // an exceptional lifecycle state that changes how the teacher reads the
+  // page (Closed, Draft) is shown, plus "Previous assignment" when Current
+  // resolution positively names a different assignment. The underlying
+  // status and Current resolution are unchanged; this is presentation only.
+  if (metadata.status === "published") {
+    appendPreviousAssignmentWhenSuperseded(doc, meta, metadata, shared);
+  } else {
+    const statusPair = appendMetaPair(
+      doc,
+      meta,
+      "status",
+      "Status",
+      STATUS_LABEL[metadata.status],
+      `shell-assignment-detail-status shell-assignment-detail-status-${metadata.status}`,
+    );
+    statusPair.classList.add("shell-assignment-detail-meta-pair-status");
+  }
 
   header.appendChild(meta);
 
@@ -1317,12 +1326,19 @@ async function renderRosterPanel(
   // and error branches without leaning on a hand-composed aria-label.
   const headingId = "assignment-detail-roster-heading";
   host.setAttribute("aria-labelledby", headingId);
+  // Roster header row: the heading, and (once the roster has loaded) the
+  // shared Sort control beside it on wide screens. Detail-scoped wrapper so
+  // the shared control and the Classes Students list are unaffected.
+  const rosterHeader = doc.createElement("div");
+  rosterHeader.className = "shell-assignment-detail-roster-header";
+  rosterHeader.setAttribute("data-testid", "assignment-detail-roster-header");
+  host.appendChild(rosterHeader);
   const heading = doc.createElement("h3");
   heading.id = headingId;
   heading.className = "shell-assignment-detail-roster-heading";
   heading.setAttribute("data-testid", "assignment-detail-roster-heading");
   heading.textContent = "Roster";
-  host.appendChild(heading);
+  rosterHeader.appendChild(heading);
 
   const loading = doc.createElement("p");
   loading.className = "shell-assignment-detail-roster-loading";
@@ -1422,7 +1438,7 @@ async function renderRosterPanel(
   const groupsHost = doc.createElement("div");
   groupsHost.className = "shell-assignment-detail-roster-groups";
   groupsHost.setAttribute("data-testid", "assignment-detail-roster-groups");
-  host.appendChild(
+  rosterHeader.appendChild(
     createRosterSortControl(doc, "assignment-detail-roster", sortOrder, (next) => {
       rosterSort?.write(next);
       const byName = compareRosterNames(next);
@@ -1468,7 +1484,7 @@ async function renderRosterPanel(
     doc,
     groupsHost,
     "submitted",
-    "Submitted",
+    "Completed",
     summary.completedStudents,
     grouping.submitted,
     true,
@@ -1488,7 +1504,7 @@ async function renderRosterPanel(
     doc,
     groupsHost,
     "in-progress",
-    "In progress",
+    "In Progress",
     summary.inProgressStudents,
     grouping.inProgress,
     false,
@@ -1500,7 +1516,7 @@ async function renderRosterPanel(
     doc,
     groupsHost,
     "not-started",
-    "Not started",
+    "Not Started",
     summary.notStartedStudents,
     grouping.notStarted,
     false,
@@ -1868,6 +1884,9 @@ function appendRosterGroup(
   const group = doc.createElement("div");
   group.className = `shell-assignment-detail-roster-group shell-assignment-detail-roster-${key}`;
   group.setAttribute("data-testid", `assignment-detail-roster-group-${key}`);
+  // The internal `key` (submitted / in-progress / not-started) stays the
+  // stable hook for test ids and tint classes; only the visible label uses
+  // the page-wide status vocabulary (Completed / In Progress / Not Started).
   // Sprint 16 Slice 6: expose the wrapping div as a labeled group so the
   // heading names the roster group programmatically. The count is part of
   // the heading text, so it is announced as part of the group name.
@@ -1881,19 +1900,30 @@ function appendRosterGroup(
     "data-testid",
     `assignment-detail-roster-group-heading-${key}`,
   );
-  groupHeading.textContent = `${label} (${headerCount})`;
+  // The status word and its count are separate spans so the count reads as
+  // a distinct number (not a pill or filter); the space between them keeps
+  // the accessible heading text "Completed 3".
+  const groupLabel = doc.createElement("span");
+  groupLabel.className = "shell-assignment-detail-roster-group-label";
+  groupLabel.textContent = label;
+  groupHeading.appendChild(groupLabel);
+  groupHeading.appendChild(doc.createTextNode(" "));
+  const groupCount = doc.createElement("span");
+  groupCount.className = "shell-assignment-detail-roster-group-count";
+  groupCount.setAttribute(
+    "data-testid",
+    `assignment-detail-roster-group-count-${key}`,
+  );
+  groupCount.textContent = String(headerCount);
+  groupHeading.appendChild(groupCount);
   group.appendChild(groupHeading);
 
-  if (rows.length === 0) {
-    const empty = doc.createElement("p");
-    empty.className = "shell-assignment-detail-roster-empty";
-    empty.setAttribute(
-      "data-testid",
-      `assignment-detail-roster-empty-${key}`,
-    );
-    empty.textContent = "No students in this group.";
-    group.appendChild(empty);
-  } else {
+  // A zero group is just its compact heading and count: the "0" already says
+  // the group is empty, so no explanatory sentence and no empty tinted box.
+  // A non-empty group becomes a subtle status-tinted container (supplemental
+  // to the visible status word, never the only signal).
+  if (rows.length > 0) {
+    group.classList.add("shell-assignment-detail-roster-group-tinted");
     const list = doc.createElement("ul");
     list.className = "shell-assignment-detail-roster-list";
     list.setAttribute("role", "list");
@@ -1929,10 +1959,11 @@ function appendRosterGroup(
       }
       li.appendChild(name);
       presentRosterName(li, row.studentDisplayName, sortOrder);
-      // Sprint 30 roster polish: the score and attempt count sit together
-      // right beside the name ("Ada Lovelace  90% · 2 attempts") so a row
-      // scans as one unit. The score is unchanged (the representative
-      // attempt's percentage); the summary is plain text, not a control.
+      // Roster information hierarchy: the score and attempt count are
+      // separate cells (Student | Score | Attempts on wide screens, stacked
+      // under the name on narrow ones). The score is unchanged (the
+      // representative attempt's percentage); the summary is plain text,
+      // not a control. The wrapper keeps both cells addressable as one unit.
       if (
         showPercentage &&
         "percentage" in row &&
@@ -1949,11 +1980,10 @@ function appendRosterGroup(
         pct.textContent = `${Math.round(row.percentage * 10) / 10}%`;
         summary.appendChild(pct);
         if ("attemptCount" in row && row.attemptCount > 0) {
-          const sep = doc.createElement("span");
-          sep.className = "shell-assignment-detail-roster-summary-sep";
-          sep.setAttribute("aria-hidden", "true");
-          sep.textContent = " · ";
-          summary.appendChild(sep);
+          // Score and attempts occupy separate columns, so no visual
+          // separator. The space keeps the text run "90% 2 attempts" for
+          // assistive technology reading the row as one line.
+          summary.appendChild(doc.createTextNode(" "));
           const count = doc.createElement("span");
           count.className = "shell-assignment-detail-roster-attempts";
           count.setAttribute(
@@ -2703,16 +2733,18 @@ function appendMetaPair(
   return cell;
 }
 
-// Informational Current marker beside the Status value. Status is the
-// lifecycle (Published/Closed); Current is the operational selection - two
-// distinct facts, so the marker is a second value of the same Status term
-// ("Status: Published, Current"), never a control. Shown ONLY when the
-// canonical resolution is `valid` and names this exact assignment; every
-// other state (another Current, no pointer, invalid, managed-but-inactive
-// whose pointer id is not exposed, or an unknown lookup) fails closed.
-function appendCurrentMarkerWhenCurrent(
+// Informational "Previous assignment" state for a published assignment that
+// is no longer the family's Current (an older occurrence, for example one
+// reopened after a newer assignment was published). The record is neither
+// deleted nor closed; students simply work through the Current occurrence.
+// Shown ONLY when the canonical resolution is `valid` AND names a different
+// assignment; the valid Current itself, no pointer (legacy, still
+// operational), invalid, managed-but-inactive, and an unknown lookup all
+// render nothing, so the surface never claims a state it does not know.
+// Uses the same cached Current read the roster's grade-sync context shares.
+function appendPreviousAssignmentWhenSuperseded(
   doc: Document,
-  statusPair: HTMLElement,
+  meta: HTMLElement,
   metadata: AssignmentDetailMetadata,
   shared: SharedDetailCallables,
 ): void {
@@ -2722,16 +2754,22 @@ function appendCurrentMarkerWhenCurrent(
     (current) => {
       if (
         current.resolution !== "valid" ||
-        current.currentAssignmentId !== metadata.assignmentId ||
-        !statusPair.isConnected
+        current.currentAssignmentId === null ||
+        current.currentAssignmentId === metadata.assignmentId ||
+        !meta.isConnected
       ) {
         return;
       }
-      const marker = doc.createElement("dd");
-      marker.className = "shell-assignment-detail-current-marker";
-      marker.setAttribute("data-testid", "assignment-detail-current-marker");
-      marker.textContent = "Current";
-      statusPair.appendChild(marker);
+      const pair = appendMetaPair(
+        doc,
+        meta,
+        "status",
+        "Status",
+        "Previous assignment",
+        "shell-assignment-detail-status shell-assignment-detail-status-previous",
+      );
+      pair.classList.add("shell-assignment-detail-meta-pair-status");
+      pair.setAttribute("data-assignment-state", "previous");
     },
     () => undefined,
   );

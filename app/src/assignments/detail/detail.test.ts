@@ -157,7 +157,7 @@ describe("renderAssignmentDetail - loading state", () => {
 });
 
 describe("renderAssignmentDetail - success rendering", () => {
-  test("renders the assignment title, class, and status", async () => {
+  test("renders the assignment title and class; an ordinary published assignment shows no Status pair", async () => {
     const mount = mkMount();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
@@ -173,10 +173,13 @@ describe("renderAssignmentDetail - success rendering", () => {
       mount.querySelector("[data-testid=assignment-detail-class-value]")
         ?.textContent,
     ).toBe("Period 3 - Grade 7 Physical Science");
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-status-value]")
-        ?.textContent,
-    ).toBe("Published");
+    // The ordinary published state does not announce itself: no Status
+    // label, no Published pill, no Current marker. The lifecycle status is
+    // still carried by the metadata (and drives the Close action).
+    expect(mount.querySelector("[data-testid=assignment-detail-status]")).toBeNull();
+    expect(mount.querySelector("[data-testid=assignment-detail-status-value]")).toBeNull();
+    const header = mount.querySelector<HTMLElement>("[data-testid=assignment-detail-header]");
+    expect(header?.textContent).not.toMatch(/Published|Current|Status/);
   });
 
   test("mounts the Sprint 13A summary card exactly once", async () => {
@@ -714,10 +717,10 @@ describe("renderAssignmentDetail - close lifecycle (Sprint 13D)", () => {
       document.querySelector("[data-testid=assignment-detail-close-dialog]"),
     ).toBeNull();
     expect(close.calls).toEqual([]);
+    // Published is the ordinary state: no Status pair is shown for it.
     expect(
-      mount.querySelector("[data-testid=assignment-detail-status-value]")
-        ?.textContent,
-    ).toBe("Published");
+      mount.querySelector("[data-testid=assignment-detail-status-value]"),
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=assignment-detail-close-action]"),
     ).not.toBeNull();
@@ -795,10 +798,10 @@ describe("renderAssignmentDetail - close lifecycle (Sprint 13D)", () => {
     await flush();
     await flush();
     expect(close.calls).toEqual(["assign-1"]);
+    // Published is the ordinary state: no Status pair is shown for it.
     expect(
-      mount.querySelector("[data-testid=assignment-detail-status-value]")
-        ?.textContent,
-    ).toBe("Published");
+      mount.querySelector("[data-testid=assignment-detail-status-value]"),
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=assignment-detail-close-action]"),
     ).not.toBeNull();
@@ -1084,10 +1087,10 @@ describe("renderAssignmentDetail - reopen lifecycle (Sprint 13E)", () => {
     await flush();
     await flush();
     expect(reopen.calls).toEqual(["assign-1"]);
+    // Published is the ordinary state: no Status pair is shown for it.
     expect(
-      mount.querySelector("[data-testid=assignment-detail-status-value]")
-        ?.textContent,
-    ).toBe("Published");
+      mount.querySelector("[data-testid=assignment-detail-status-value]"),
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
     ).toBeNull();
@@ -2244,10 +2247,10 @@ describe("renderAssignmentDetail - publish lifecycle (Sprint 13H)", () => {
     await flush();
     await flush();
     expect(publish.calls).toEqual(["assign-1"]);
+    // Published is the ordinary state: no Status pair is shown for it.
     expect(
-      mount.querySelector("[data-testid=assignment-detail-status-value]")
-        ?.textContent,
-    ).toBe("Published");
+      mount.querySelector("[data-testid=assignment-detail-status-value]"),
+    ).toBeNull();
     // Draft-only affordances are removed on success.
     expect(
       mount.querySelector("[data-testid=assignment-detail-edit-action]"),
@@ -2582,7 +2585,7 @@ describe("renderAssignmentDetail - Sprint 16 Slice 2 shared fetch cache", () => 
       "[data-testid=assignment-detail-roster-group-submitted]",
     );
     expect(submittedGroup).not.toBeNull();
-    expect(submittedGroup?.textContent ?? "").toContain("Submitted (3)");
+    expect(submittedGroup?.textContent ?? "").toContain("Completed 3");
   });
 
   test("second independent Detail render performs its own fresh fetch cycle", async () => {
@@ -2777,17 +2780,17 @@ describe("renderAssignmentDetail - Sprint 16 Slice 3 progress consistency", () =
       mount.querySelector(
         "[data-testid=assignment-detail-roster-group-submitted]",
       )?.textContent ?? "",
-    ).toContain("Submitted (1)");
+    ).toContain("Completed 1");
     expect(
       mount.querySelector(
         "[data-testid=assignment-detail-roster-group-in-progress]",
       )?.textContent ?? "",
-    ).toContain("In progress (1)");
+    ).toContain("In Progress 1");
     expect(
       mount.querySelector(
         "[data-testid=assignment-detail-roster-group-not-started]",
       )?.textContent ?? "",
-    ).toContain("Not started (1)");
+    ).toContain("Not Started 1");
     expect(
       mount.querySelector(
         "[data-testid=assignment-detail-roster-discrepancy]",
@@ -2827,17 +2830,17 @@ describe("renderAssignmentDetail - Sprint 16 Slice 3 progress consistency", () =
       mount.querySelector(
         "[data-testid=assignment-detail-roster-group-submitted]",
       )?.textContent ?? "",
-    ).toContain("Submitted (2)");
+    ).toContain("Completed 2");
     expect(
       mount.querySelector(
         "[data-testid=assignment-detail-roster-group-in-progress]",
       )?.textContent ?? "",
-    ).toContain("In progress (2)");
+    ).toContain("In Progress 2");
     expect(
       mount.querySelector(
         "[data-testid=assignment-detail-roster-group-not-started]",
       )?.textContent ?? "",
-    ).toContain("Not started (1)");
+    ).toContain("Not Started 1");
   });
 
   test("recipient-total mismatch renders the calm discrepancy note", async () => {
@@ -3953,16 +3956,24 @@ describe("renderAssignmentDetail - Sprint 30 roster polish (score + attempts bes
       ],
       2,
     );
-    expect(rowText(mount, "stu-1")).toBe("100% · 2 attempts");
-    expect(rowText(mount, "stu-2")).toBe("72.3% · 1 attempt");
+    expect(rowText(mount, "stu-1")).toBe("100% 2 attempts");
+    expect(rowText(mount, "stu-2")).toBe("72.3% 1 attempt");
     expect(
       mount.querySelector("[data-testid=assignment-detail-roster-attempts-stu-2]")?.textContent,
     ).toBe("1 attempt");
-    // The separator is decorative; the score and count are separate text.
-    const sep = mount.querySelector(
-      "[data-testid=assignment-detail-roster-summary-stu-1] .shell-assignment-detail-roster-summary-sep",
-    );
-    expect(sep?.getAttribute("aria-hidden")).toBe("true");
+    // Score and attempts are separate cells; the old visual "·" separator
+    // is gone because the two occupy distinct layout columns.
+    const summary = mount.querySelector<HTMLElement>(
+      "[data-testid=assignment-detail-roster-summary-stu-1]",
+    )!;
+    expect(summary.querySelector(".shell-assignment-detail-roster-summary-sep")).toBeNull();
+    expect(summary.textContent).not.toContain("·");
+    const cells = Array.from(summary.children).map((c) => c.className);
+    expect(cells).toEqual([
+      "shell-assignment-detail-roster-percentage",
+      "shell-assignment-detail-roster-attempts",
+    ]);
+    expect(summary.querySelector(".shell-assignment-detail-roster-percentage")?.textContent).toBe("100%");
   });
 
   test("rows are ordered by last name regardless of score or attempts", async () => {
@@ -4112,7 +4123,7 @@ describe("renderAssignmentDetail - Sprint 30 roster sort preference", () => {
     expect(btn.getAttribute("aria-label")).toBe("Open student detail for Zimmer, Adrianna");
     expect(
       mount.querySelector("[data-testid=assignment-detail-roster-summary-s-adr]")?.textContent,
-    ).toBe("100% · 2 attempts");
+    ).toBe("100% 2 attempts");
     btn.click();
     expect(selections).toEqual([
       {
@@ -4143,7 +4154,7 @@ describe("renderAssignmentDetail - Sprint 30 roster sort preference", () => {
     expect(mount.querySelector("[data-testid=assignment-detail-roster-row-s-adr]")).toBe(adrRow);
     expect(
       mount.querySelector("[data-testid=assignment-detail-roster-summary-s-adr]")?.textContent,
-    ).toBe("100% · 2 attempts");
+    ).toBe("100% 2 attempts");
     expect(
       mount.querySelector("[data-testid=assignment-detail-roster-group-not-started]")?.textContent,
     ).toContain("Dee Brown");
@@ -4240,7 +4251,7 @@ describe("renderAssignmentDetail - quiz progress visibility", () => {
     );
     expect(
       mount.querySelector("[data-testid=assignment-detail-roster-summary-stu-1]")?.textContent,
-    ).toBe("90% · 2 attempts");
+    ).toBe("90% 2 attempts");
     expect(text("stu-1")).toBe("Retake In Progress · 7/10");
   });
 
@@ -4273,5 +4284,185 @@ describe("renderAssignmentDetail - quiz progress visibility", () => {
     for (const forbidden of ["response", "itemId", "optionId", "sessionId"]) {
       expect(text).not.toContain(forbidden);
     }
+  });
+});
+
+describe("renderAssignmentDetail - roster information hierarchy", () => {
+  const recipients = [
+    { studentId: "stu-1", studentDisplayName: "Christopher Brown" },
+    { studentId: "stu-2", studentDisplayName: "Maya Chen" },
+    { studentId: "stu-3", studentDisplayName: "Liam Johnson" },
+  ];
+
+  async function renderWith(
+    summary: AssignmentSummary,
+    attempts: ReturnType<typeof mkAttempt>[],
+    onSelectStudent?: (selection: unknown) => void,
+  ) {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: resolvingSummary(summary),
+      recipientListCallable: spyingRecipients(recipients).callable,
+      attemptsListForClassCallable: spyingAttemptsList(attempts).callable,
+      onSelectStudent,
+    });
+    await flush();
+    await flush();
+    await flush();
+    const group = (key: string) =>
+      mount.querySelector<HTMLElement>(`[data-testid=assignment-detail-roster-group-${key}]`)!;
+    return { mount, group };
+  }
+
+  const allCompleted = () =>
+    renderWith(
+      freezeSummary({ totalStudents: 3, completedStudents: 3, inProgressStudents: 0, notStartedStudents: 0 }),
+      [
+        mkAttempt({ attemptId: "a1", studentId: "stu-1", percentage: 50, attemptNumber: 1, submittedAt: 1 }),
+        mkAttempt({ attemptId: "a2", studentId: "stu-1", percentage: 40, attemptNumber: 2, submittedAt: 2 }),
+        mkAttempt({ attemptId: "b1", studentId: "stu-2", percentage: 90 }),
+        mkAttempt({ attemptId: "c1", studentId: "stu-3", percentage: 100 }),
+      ],
+    );
+
+  test("Roster heading and the shared Sort control share the Detail-scoped header row", async () => {
+    const { mount } = await allCompleted();
+    const host = mount.querySelector<HTMLElement>("[data-testid=assignment-detail-roster-host]")!;
+    const header = mount.querySelector<HTMLElement>("[data-testid=assignment-detail-roster-header]")!;
+    expect(header.parentElement).toBe(host);
+    expect(header.firstElementChild?.getAttribute("data-testid")).toBe("assignment-detail-roster-heading");
+    const sort = mount.querySelector<HTMLElement>("[data-testid=assignment-detail-roster-sort]")!;
+    expect(sort.parentElement).toBe(header);
+    // The section is still named by the Roster heading.
+    expect(host.getAttribute("aria-labelledby")).toBe("assignment-detail-roster-heading");
+    // Groups follow the header, in the fixed order.
+    expect(
+      Array.from(mount.querySelectorAll("[data-testid^=assignment-detail-roster-group-heading-]")).map(
+        (h) => h.textContent,
+      ),
+    ).toEqual(["Completed 3", "In Progress 0", "Not Started 0"]);
+  });
+
+  test("zero groups stay visible as compact headings: no sentence, no list, no tint", async () => {
+    const { mount, group } = await allCompleted();
+    expect(mount.textContent).not.toContain("No students in this group");
+    for (const key of ["in-progress", "not-started"]) {
+      const g = group(key);
+      expect(g).not.toBeNull();
+      expect(g.getAttribute("role")).toBe("group");
+      expect(g.querySelector("ul")).toBeNull();
+      expect(g.querySelector("p")).toBeNull();
+      expect(g.classList.contains("shell-assignment-detail-roster-group-tinted")).toBe(false);
+      expect(
+        mount.querySelector(`[data-testid=assignment-detail-roster-group-count-${key}]`)?.textContent,
+      ).toBe("0");
+    }
+    const completed = group("submitted");
+    expect(completed.classList.contains("shell-assignment-detail-roster-group-tinted")).toBe(true);
+    expect(completed.querySelector("ul[role=list]")).not.toBeNull();
+  });
+
+  test("group heading: status word and count are separate spans inside the labelled h4", async () => {
+    const { group } = await allCompleted();
+    const h = group("submitted").querySelector("h4")!;
+    expect(group("submitted").getAttribute("aria-labelledby")).toBe(h.id);
+    expect(h.querySelector(".shell-assignment-detail-roster-group-label")?.textContent).toBe("Completed");
+    expect(h.querySelector(".shell-assignment-detail-roster-group-count")?.textContent).toBe("3");
+    expect(h.textContent).toBe("Completed 3");
+  });
+
+  test("each group renders only the fields it has: no placeholders", async () => {
+    const { mount } = await renderWith(
+      freezeSummary({
+        totalStudents: 3,
+        completedStudents: 1,
+        inProgressStudents: 1,
+        notStartedStudents: 1,
+        studentProgress: [{ studentId: "stu-3", answered: 4, total: 10, retake: false }],
+      }),
+      [mkAttempt({ attemptId: "a1", studentId: "stu-1", percentage: 50 })],
+      () => undefined,
+    );
+    const row = (id: string) =>
+      mount.querySelector<HTMLElement>(`[data-testid=assignment-detail-roster-row-${id}]`)!;
+    // Completed: name button, then the score + attempts cells.
+    expect(Array.from(row("stu-1").children).map((c) => c.className)).toEqual([
+      "shell-assignment-detail-roster-name",
+      "shell-assignment-detail-roster-summary",
+    ]);
+    expect(row("stu-1").textContent).toBe("Brown, Christopher50% 1 attempt");
+    // In Progress: name + the unchanged progress string.
+    expect(Array.from(row("stu-3").children).map((c) => c.className)).toEqual([
+      "shell-assignment-detail-roster-name",
+      "shell-assignment-detail-roster-progress",
+    ]);
+    expect(row("stu-3").textContent).toBe("Johnson, LiamIn Progress · 4/10");
+    // Not Started: the name only.
+    expect(row("stu-2").children.length).toBe(1);
+    expect(row("stu-2").textContent).toBe("Chen, Maya");
+    expect(mount.querySelector("[data-testid=assignment-detail-roster-groups]")?.textContent).not.toMatch(
+      /\u2014|--|N\/A/,
+    );
+    // Every non-empty group is tinted.
+    for (const key of ["submitted", "in-progress", "not-started"]) {
+      expect(
+        mount
+          .querySelector(`[data-testid=assignment-detail-roster-group-${key}]`)
+          ?.classList.contains("shell-assignment-detail-roster-group-tinted"),
+      ).toBe(true);
+    }
+  });
+
+  test("the student-name button stays the only Student Detail affordance; rows are not clickable", async () => {
+    const selections: unknown[] = [];
+    const { mount } = await renderWith(
+      freezeSummary({ totalStudents: 3, completedStudents: 1, inProgressStudents: 0, notStartedStudents: 2 }),
+      [mkAttempt({ attemptId: "a1", studentId: "stu-1", percentage: 50 })],
+      (s) => selections.push(s),
+    );
+    const row = mount.querySelector<HTMLElement>("[data-testid=assignment-detail-roster-row-stu-1]")!;
+    expect(row.tagName).toBe("LI");
+    expect(row.getAttribute("role")).toBeNull();
+    expect(row.tabIndex).toBe(-1);
+    row.click();
+    row.querySelector<HTMLElement>(".shell-assignment-detail-roster-percentage")!.click();
+    expect(selections).toEqual([]);
+    const name = mount.querySelector<HTMLButtonElement>("[data-testid=assignment-detail-roster-name-stu-1]")!;
+    expect(name.getAttribute("aria-label")).toBe("Open student detail for Brown, Christopher");
+    name.click();
+    expect(selections).toEqual([
+      {
+        classId: "class-1",
+        studentId: "stu-1",
+        studentDisplayName: "Christopher Brown",
+        returnToAssignmentId: "assign-1",
+      },
+    ]);
+    // No nested interactive elements inside the name button.
+    expect(name.querySelector("button, a, input")).toBeNull();
+  });
+
+  test("no recipients: the distinct empty state remains and no groups or Sort render", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      summaryCallable: resolvingSummary(
+        freezeSummary({ totalStudents: 0, completedStudents: 0, inProgressStudents: 0, notStartedStudents: 0 }),
+      ),
+      recipientListCallable: spyingRecipients([]).callable,
+      attemptsListForClassCallable: spyingAttemptsList([]).callable,
+    });
+    await flush();
+    await flush();
+    await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-empty-recipients]")?.textContent,
+    ).toBe("No students are assigned yet.");
+    expect(mount.querySelector("[data-testid=assignment-detail-roster-groups]")).toBeNull();
+    expect(mount.querySelector("[data-testid=assignment-detail-roster-sort]")).toBeNull();
+    expect(mount.querySelector("[data-testid=assignment-detail-roster-header]")).not.toBeNull();
   });
 });

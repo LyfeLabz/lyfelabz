@@ -154,18 +154,36 @@ describe("D2B - Assignment Detail is styled inside the shell", () => {
     expect(has(".shell-assignment-summary-grid")).toBe(true);
   });
 
-  test("roster rows keep name, score, and attempts grouped instead of at opposite edges", () => {
+  test("roster rows are compact Student | Score | Attempts grid rows, never cards", () => {
     const row = ruleBody(html, ".shell-assignment-detail-roster-row");
     expect(row).not.toBeNull();
-    expect(row).not.toMatch(/space-between/);
-    expect(row).toMatch(/flex-wrap:\s*wrap/);
-    // Long names wrap instead of overflowing; the summary stays on one line.
+    expect(row).toMatch(/display:\s*grid/);
+    // Three columns: a flexible name column plus fixed score/attempt columns
+    // so values align across rows.
+    expect(row).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)\s+\S+\s+\S+;/);
+    // A divider row, not a card: no per-student background, shadow, or radius.
+    expect(row).not.toMatch(/background|box-shadow|border-radius/);
+    // Long names wrap instead of overflowing.
     expect(ruleBody(html, ".shell-assignment-detail-roster-name")).toMatch(
       /overflow-wrap:\s*anywhere/,
     );
+    // The summary wrapper steps out of layout so its two cells join the grid.
     expect(ruleBody(html, ".shell-assignment-detail-roster-summary")).toMatch(
-      /white-space:\s*nowrap/,
+      /display:\s*contents/,
     );
+    const score = ruleBody(html, ".shell-assignment-detail-roster-percentage");
+    expect(score).toMatch(/grid-column:\s*2/);
+    expect(score).toMatch(/white-space:\s*nowrap/);
+    expect(score).toMatch(/font-weight:\s*700/);
+    const attempts = ruleBody(html, ".shell-assignment-detail-roster-attempts");
+    expect(attempts).toMatch(/grid-column:\s*3/);
+    expect(attempts).toMatch(/color:\s*var\(--tw-ink-muted\)/);
+    // No CSS reordering: DOM order is visual order.
+    const rosterCss = html.slice(
+      html.indexOf(".shell-assignment-detail-roster-header {"),
+      html.indexOf(".shell-assignment-detail-late-recipients-status"),
+    );
+    expect(rosterCss).not.toMatch(/\border:\s*-?\d/);
   });
 
   test("the shared roster Sort control is styled with a visible focus ring and touch target", () => {
@@ -242,5 +260,93 @@ describe("Curriculum density (Sprint 28.6H, Finding 6)", () => {
     const stripped = html.replace(/\/\*[\s\S]*?\*\//g, "");
     expect(stripped).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
     expect(stripped).toMatch(/repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  });
+});
+
+// Assignment Detail Roster information hierarchy: Roster + Sort header row,
+// status-tinted NON-EMPTY groups (pale green / amber / rose), compact zero
+// groups, and narrow-screen reflow. Contracts, not exact decoration.
+describe("Assignment Detail roster information hierarchy", () => {
+  const alpha = (value: string | undefined): number => {
+    const m = /rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([\d.]+)\s*\)/.exec(value ?? "");
+    return m ? Number(m[1]) : NaN;
+  };
+  const rgb = (value: string | undefined): [number, number, number] => {
+    const m = /rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(value ?? "");
+    return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [NaN, NaN, NaN];
+  };
+  // The aliases are declared once, scoped to the roster section.
+  const token = (name: string): string | undefined =>
+    new RegExp(`${name}:\\s*([^;]+);`).exec(html)?.[1]?.trim();
+
+  test("Roster heading and Sort share a wrapping, Detail-scoped header row", () => {
+    const header = ruleBody(html, ".shell-assignment-detail-roster-header");
+    expect(header).toMatch(/display:\s*flex/);
+    expect(header).toMatch(/flex-wrap:\s*wrap/);
+    expect(header).toMatch(/justify-content:\s*space-between/);
+    // Scoped override: the shared .shell-roster-sort base rule is unchanged.
+    expect(has(".shell-assignment-detail-roster-header .shell-roster-sort")).toBe(true);
+    expect(ruleBody(html, ".shell-roster-sort")).toMatch(/margin:\s*0\.25rem 0 0\.5rem 0/);
+  });
+
+  test.each([
+    ["Completed", "submitted", "completed", "green"],
+    ["In Progress", "in-progress", "progress", "amber"],
+    ["Not Started", "not-started", "notstarted", "rose"],
+  ] as const)("non-empty %s group (%s) gets a pale status tint via scoped aliases", (_l, key, alias, hue) => {
+    const body = ruleBody(
+      html,
+      `.shell-assignment-detail-roster-${key}.shell-assignment-detail-roster-group-tinted`,
+    );
+    expect(body).toMatch(new RegExp(`background:\\s*var\\(--tw-roster-${alias}-bg\\)`));
+    expect(body).toMatch(new RegExp(`border-color:\\s*var\\(--tw-roster-${alias}-edge\\)`));
+    // Text stays normal ink: the tint never changes the text color.
+    expect(body).not.toMatch(/(^|[^-])color:/);
+    const bg = token(`--tw-roster-${alias}-bg`);
+    const edge = token(`--tw-roster-${alias}-edge`);
+    // Genuinely pale: a very low-alpha wash and a soft edge.
+    expect(alpha(bg)).toBeGreaterThan(0);
+    expect(alpha(bg)).toBeLessThanOrEqual(0.08);
+    expect(alpha(edge)).toBeLessThanOrEqual(0.3);
+    const [r, g, b] = rgb(bg);
+    if (hue === "green") expect(g).toBeGreaterThan(r);
+    if (hue === "amber") expect(r > b && g > b).toBe(true);
+    if (hue === "rose") expect(r).toBeGreaterThan(g);
+  });
+
+  test("Not Started is the calmest tint so it never reads as an error", () => {
+    expect(alpha(token("--tw-roster-notstarted-bg"))).toBeLessThan(
+      alpha(token("--tw-roster-progress-bg")),
+    );
+    // Distinct from the red error callout family.
+    expect(token("--tw-roster-notstarted-bg")).not.toBe("var(--tw-callout-error-bg)");
+  });
+
+  test("only a non-empty group is tinted: the base group carries no fill", () => {
+    const base = ruleBody(html, ".shell-assignment-detail-roster-group");
+    expect(base).not.toMatch(/background/);
+    expect(base).toMatch(/border:\s*1px solid transparent/);
+    // Containers, not pills: control radius, never the pill radius.
+    expect(base).toMatch(/border-radius:\s*var\(--tw-radius-control\)/);
+    expect(has(".shell-assignment-detail-roster-empty")).toBe(false);
+  });
+
+  test("group heading shows a text status label and a distinct count", () => {
+    expect(ruleBody(html, ".shell-assignment-detail-roster-group-label")).toMatch(
+      /text-transform:\s*uppercase/,
+    );
+    const count = ruleBody(html, ".shell-assignment-detail-roster-group-count");
+    expect(count).toMatch(/font-variant-numeric:\s*tabular-nums/);
+    expect(count).not.toMatch(/border-radius|background/);
+  });
+
+  test("narrow screens (480px) reflow rows: name first, values beneath, no horizontal table", () => {
+    const narrow = /@media \(max-width: 480px\) \{[\s\S]*?Roster rows reflow[\s\S]*?\n {2}\}/.exec(html)?.[0] ?? "";
+    expect(narrow).toMatch(
+      /\.shell-assignment-detail-roster-row \{\s*grid-template-columns:\s*auto minmax\(0, 1fr\);/,
+    );
+    expect(narrow).toMatch(/\.shell-assignment-detail-roster-name,[\s\S]*?grid-column:\s*1 \/ -1/);
+    expect(narrow).toMatch(/\.shell-assignment-detail-roster-grade-retry \{ grid-column: 1 \/ -1; \}/);
+    expect(html).not.toMatch(/\.shell-assignment-detail-roster[^{]*\{[^}]*overflow-x:\s*(auto|scroll)/);
   });
 });
