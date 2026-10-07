@@ -166,17 +166,17 @@ describe("D2B - Assignment Detail is styled inside the shell", () => {
   test("lifecycle error lines are real red callouts", () => {
     const stripped = html.replace(/\/\*[\s\S]*?\*\//g, "");
     const rule = stripped.match(
-      /\.shell-assignment-detail-close-error[^{}]*\{[^{}]*\}/,
+      /\.shell-assignment-detail-reopen-error[^{}]*\{[^{}]*\}/,
     )?.[0];
     expect(rule).toBeTruthy();
     expect(rule).toMatch(/var\(--tw-callout-error-bg\)/);
   });
 
-  test("Close assignment is NOT given an alarming destructive treatment", () => {
-    // Close reuses the calm secondary shell-btn; there is no rule turning the
-    // close action into a loud red/danger button (audit: it is a reversible
-    // lifecycle control).
+  test("retired Close assignment leaves no styling behind", () => {
+    // Teacher-controlled closing is retired; neither the Close action nor
+    // its error line has any rule (legacy Reopen keeps its error callout).
     expect(has(".shell-assignment-detail-close-action")).toBe(false);
+    expect(has(".shell-assignment-detail-close-error")).toBe(false);
   });
 
   test("Publish is the single primary lifecycle action", () => {

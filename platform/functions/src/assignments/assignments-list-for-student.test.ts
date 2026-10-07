@@ -862,6 +862,34 @@ describe("assignmentsListForStudent - strict Current + scheduled availability", 
     expect(res.supersededAssignmentIds).toEqual(["a-A", "a-B"]);
   });
 
+  test("different lessons in one class: publishing a newer lesson never supersedes an older lesson, and only a same-lesson reassignment does", async () => {
+    // Lesson A published first; lesson B published later and then
+    // deliberately reassigned (b-old -> b-cur). Each lesson has its own
+    // managed Current. Older lesson A stays published, listed, and
+    // launchable; only b-old (the same-lesson earlier occurrence) is
+    // superseded.
+    const OTHER = "lesson_g7_water-cycle";
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a-1"), recipientDoc("b-old"), recipientDoc("b-cur")],
+    });
+    seedAssignment("a-1", { lessonSlug: LESSON, publishedAt: at(1) });
+    seedAssignment("b-old", { lessonSlug: OTHER, publishedAt: at(2) });
+    seedAssignment("b-cur", { lessonSlug: OTHER, publishedAt: at(3) });
+    seedPointer(CLASS_ID, LESSON, "a-1");
+    seedPointer(CLASS_ID, OTHER, "b-cur");
+
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+
+    // Newest publish first; attempt activity never participates in order.
+    expect(res.items.map((i) => i.assignmentId)).toEqual(["b-cur", "a-1"]);
+    const older = res.items.find((i) => i.assignmentId === "a-1");
+    expect(older?.status).toBe("published");
+    expect(older?.relatedAssignmentIds).toBeUndefined();
+    expect(res.items.find((i) => i.assignmentId === "b-cur")?.relatedAssignmentIds).toEqual(["b-old"]);
+    expect(res.supersededAssignmentIds).toEqual(["b-old"]);
+    expect(res.historyOnlyGroups).toEqual([]);
+  });
+
   test("an occurrence in another class sharing the lesson is never pulled into this group", async () => {
     mockRecipientsGet.mockResolvedValue({
       docs: [

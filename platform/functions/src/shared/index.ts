@@ -93,7 +93,6 @@ export {
   attemptDocRef,
   attemptsCollectionRef,
   assignmentArchiveDocRef,
-  assignmentCloseDocRef,
   assignmentCreationDocRef,
   assignmentDocRef,
   assignmentDraftUpdateDocRef,
@@ -216,7 +215,6 @@ export { roundHalfToEven2 } from "./math/round-half-to-even";
 export {
   ASSIGNMENTS_COLLECTION,
   type AssignmentArchiveWrite,
-  type AssignmentCloseWrite,
   type AssignmentCreationWrite,
   type AssignmentDraftUpdateWrite,
   type AssignmentLmsPublicationWrite,

@@ -51,23 +51,23 @@ const emptySummary: AssignmentSummary = Object.freeze({
 type LifecycleSpy = {
   createDraft: number;
   publish: number;
-  close: number;
+  reopen: number;
 };
 
 const renderWithRetry = (
   seam: AssignmentLmsRetrySeam,
 ): { mount: HTMLElement; lifecycle: LifecycleSpy } => {
-  const lifecycle: LifecycleSpy = { createDraft: 0, publish: 0, close: 0 };
+  const lifecycle: LifecycleSpy = { createDraft: 0, publish: 0, reopen: 0 };
   const mount = mkMount();
   renderAssignmentDetail(mount, {
     assignmentId: "a1",
     loadMetadata: async () => publishedMeta,
     summaryCallable: async () => emptySummary,
-    // Wire a close/publish callable spy so a retry that (incorrectly)
+    // Wire a reopen/publish callable spy so a retry that (incorrectly)
     // re-ran the LyfeLabz lifecycle would be observable.
-    closeCallable: async () => {
-      lifecycle.close += 1;
-      return { assignmentId: "a1", status: "closed", alreadyClosed: false };
+    reopenCallable: async () => {
+      lifecycle.reopen += 1;
+      return { assignmentId: "a1", status: "published", alreadyPublished: false };
     },
     publishCallable: async () => {
       lifecycle.publish += 1;
@@ -137,7 +137,7 @@ describe("assignment detail - LMS publication retry (Sprint 25 Phase 3)", () => 
     // The LyfeLabz lifecycle is never re-run by a publication retry.
     expect(lifecycle.createDraft).toBe(0);
     expect(lifecycle.publish).toBe(0);
-    expect(lifecycle.close).toBe(0);
+    expect(lifecycle.reopen).toBe(0);
   });
 
   test("failed retry keeps the retry control available", async () => {

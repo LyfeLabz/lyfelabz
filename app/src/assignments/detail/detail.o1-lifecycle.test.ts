@@ -6,10 +6,11 @@
 //
 // Phase 2A established, with deterministic and browser evidence, that the
 // Assignment Detail lifecycle controls are provenance-agnostic: an
-// LMS-linked assignment receives the same Close / Reopen controls as a
-// manual-class assignment, both in-session and after a full reload. There is
-// no reproduced LMS-specific Close-control defect, so the Close/Reopen
-// production rendering logic is NOT modified.
+// LMS-linked assignment receives the same lifecycle controls as a
+// manual-class assignment, both in-session and after a full reload.
+// Teacher-controlled closing has since been retired: a published assignment
+// (LMS-linked or not) renders no Close control, and a legacy closed record
+// keeps Reopen as its recovery path.
 //
 // This file pins that verified contract so it cannot silently regress. It
 // exercises the real production path a reload/hydration follows - the Phase 1
@@ -42,7 +43,6 @@ import {
 import { createAssignmentDetailRegistry } from "./registry";
 import { createAssignmentDetailMetadataReader } from "./wire";
 import type {
-  AssignmentsCloseCallable,
   AssignmentsReopenCallable,
 } from "./types";
 import type { AssignmentSummary, AssignmentSummaryCallable } from "../summary/types";
@@ -106,11 +106,6 @@ const freezeSummary = (): AssignmentSummary =>
 const summaryCallable: AssignmentSummaryCallable = () =>
   Promise.resolve(freezeSummary());
 
-const resolvingClose = (): AssignmentsCloseCallable => ({ assignmentId }) =>
-  Promise.resolve(
-    Object.freeze({ assignmentId, status: "closed" as const, alreadyClosed: false }),
-  );
-
 const resolvingReopen = (): AssignmentsReopenCallable => ({ assignmentId }) =>
   Promise.resolve(
     Object.freeze({
@@ -134,7 +129,6 @@ const renderAfterHydration = async (
     assignmentId: "assign-lms-1",
     loadMetadata: createAssignmentDetailMetadataReader(registry),
     summaryCallable,
-    closeCallable: resolvingClose(),
     reopenCallable: resolvingReopen(),
   });
   await flush();
@@ -164,7 +158,7 @@ describe("Sprint 28 O1 - LMS-linked lifecycle controls survive hydration (proven
     expect("lms" in (parsed as object)).toBe(false);
   });
 
-  test("a hydrated LMS-published assignment renders the header and Close, not Reopen", async () => {
+  test("a hydrated LMS-published assignment renders the header with no Close and no Reopen", async () => {
     const mount = await renderAfterHydration([lmsTeacherListItem("published")]);
 
     // Header rendered (not the empty state).
@@ -175,18 +169,17 @@ describe("Sprint 28 O1 - LMS-linked lifecycle controls survive hydration (proven
       mount.querySelector("[data-testid=assignment-detail-title]")?.textContent,
     ).toBe("Earth's Layers Check");
 
-    // Close present, Reopen absent.
-    const close = mount.querySelector(
-      "[data-testid=assignment-detail-close-action]",
-    );
-    expect(close).not.toBeNull();
-    expect(close?.textContent).toBe("Close assignment");
+    // Teacher-controlled closing is retired: no Close, and Reopen only
+    // ever applies to a legacy closed record.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-close-action]"),
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
     ).toBeNull();
   });
 
-  test("a hydrated LMS-closed assignment renders the header and Reopen, not Close", async () => {
+  test("a hydrated legacy LMS-closed assignment renders the header and Reopen, not Close", async () => {
     const mount = await renderAfterHydration([lmsTeacherListItem("closed")]);
 
     expect(

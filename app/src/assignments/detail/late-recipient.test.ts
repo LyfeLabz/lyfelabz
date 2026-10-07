@@ -802,20 +802,17 @@ describe("late-recipient section - Sprint 28 O5 confirmation and accessibility",
     const fake = candidatesFake([
       { studentId: "s-a", studentDisplayName: "Ada" },
     ]);
-    const close = {
-      callable: (input: { assignmentId: string }) =>
-        Promise.resolve({
-          assignmentId: input.assignmentId,
-          status: "closed" as const,
-          alreadyClosed: false,
-        }),
-    };
     renderAssignmentDetail(
       mount,
       baseDeps({
         recipientCandidatesListCallable: fake.callable,
         recipientAddCallable: addFake().callable,
-        closeCallable: close.callable,
+        // A teacher-initiated publication retry is an ordinary later
+        // rerender of a published assignment (no lifecycle change).
+        lmsRetry: {
+          initialState: "failed",
+          retry: () => Promise.resolve("succeeded"),
+        },
       }),
     );
     await flush();
@@ -832,26 +829,23 @@ describe("late-recipient section - Sprint 28 O5 confirmation and accessibility",
         "[data-testid=assignment-detail-late-recipients-confirmation]",
       )?.textContent,
     ).toBe("Added to assignment.");
-    // A subsequent lifecycle transition rerenders the surface; the stale
-    // confirmation must not reappear, and a closed assignment renders no
-    // late-recipient UI at all.
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
-      )
-      ?.click();
-    const confirm = document.querySelector<HTMLButtonElement>(
-      "[data-testid=assignment-detail-close-confirm]",
+    // A subsequent rerender (the publication retry) must not resurface the
+    // stale confirmation.
+    const retry = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=assignment-detail-lms-retry]",
     );
-    confirm?.click();
+    expect(retry).not.toBeNull();
+    retry?.click();
     await flush();
     await flush();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-lms-retry]"),
+    ).toBeNull();
     expect(
       mount.querySelector(
         "[data-testid=assignment-detail-late-recipients-confirmation]",
       ),
     ).toBeNull();
-    expectNoLateRecipientUi(mount);
   });
 
   test("O5.3: the in-flight state is announced through the live region", async () => {

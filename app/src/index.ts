@@ -97,7 +97,6 @@ import {
   readConnectionReconnectNeeded,
 } from "./shell/surfaces/shared/lmsPublication";
 import { createAssignmentsTeacherListCallable } from "./assignments/detail/hydrate-wire";
-import { createAssignmentsCloseCallable } from "./assignments/detail/close-wire";
 import { createAssignmentsReopenCallable } from "./assignments/detail/reopen-wire";
 import { createAssignmentsUpdateDraftCallable } from "./assignments/detail/update-wire";
 import { createAssignmentsPublishCallable } from "./assignments/detail/publish-wire";
@@ -146,7 +145,6 @@ import {
   type AssessmentStudentAssignmentsForClassCallable,
 } from "./assignments/detail/studentAssignments-wire";
 import type {
-  AssignmentsCloseCallable,
   AssignmentsPublishCallable,
   AssignmentsReopenCallable,
   AssignmentsUpdateDraftCallable,
@@ -230,14 +228,10 @@ async function run(): Promise<void> {
     typeof window !== "undefined" && window.location
       ? parseDeepLinkAssignmentId(window.location.pathname)
       : null;
-  // Sprint 13D: certified `assignmentsClose` callable seam consumed by
-  // the Assignment Detail surface. Rebound per active-teacher session so
-  // cross-session state cannot leak. Null before an active-teacher
-  // session resolves; the detail surface renders no close action when
-  // null.
-  let assignmentClose: AssignmentsCloseCallable | null = null;
   // Sprint 13E: certified `assignmentsReopen` callable seam consumed by
-  // the Assignment Detail surface. Rebound per active-teacher session so
+  // the Assignment Detail surface as the legacy recovery path for an
+  // already-closed assignment (teacher-controlled closing is retired, so
+  // no close seam is wired). Rebound per active-teacher session so
   // cross-session state cannot leak. Null before an active-teacher
   // session resolves; the detail surface renders no reopen action when
   // null.
@@ -440,14 +434,8 @@ async function run(): Promise<void> {
         remountCurriculum();
       },
       backLabel: options?.backLabel,
-      // Sprint 13D: wire the certified close callable and register the
-      // updated metadata into the session-scoped registry so a later
-      // navigation to Curriculum reflects the new `closed` status
-      // through the existing Sprint 13C selection interface without a
-      // page reload.
-      closeCallable: assignmentClose ?? undefined,
-      // Sprint 13E: inverse lifecycle wire. The certified reopen
-      // callable transitions a closed assignment back to published and
+      // Sprint 13E: legacy recovery wire. The certified reopen callable
+      // transitions an already-closed assignment back to published and
       // re-registers the updated metadata into the session-scoped
       // registry so a later navigation to Curriculum reflects the new
       // `published` status through the existing Sprint 13C selection
@@ -720,7 +708,6 @@ async function run(): Promise<void> {
       updateClassColor = createFirebaseUpdateClassColor(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
       lessonSummary = createLessonSummaryCallable(functions);
-      assignmentClose = createAssignmentsCloseCallable(functions);
       assignmentReopen = createAssignmentsReopenCallable(functions);
       assignmentUpdateDraft = createAssignmentsUpdateDraftCallable(functions);
       assignmentPublish = createAssignmentsPublishCallable(functions);
@@ -797,7 +784,6 @@ async function run(): Promise<void> {
       assignments = null;
       assignmentSummary = null;
       lessonSummary = null;
-      assignmentClose = null;
       assignmentReopen = null;
       assignmentUpdateDraft = null;
       assignmentPublish = null;
@@ -820,7 +806,6 @@ async function run(): Promise<void> {
       assignments = null;
       assignmentSummary = null;
       lessonSummary = null;
-      assignmentClose = null;
       assignmentReopen = null;
       assignmentUpdateDraft = null;
       assignmentPublish = null;

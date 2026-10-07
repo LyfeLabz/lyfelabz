@@ -18,7 +18,6 @@ import type {
   AssignmentLmsPublicationState,
   AssignmentLmsRetrySeam,
   AssignmentStatus,
-  AssignmentsCloseCallable,
   AssignmentsPublishCallable,
   AssignmentsReopenCallable,
   AssignmentsUpdateDraftCallable,
@@ -92,30 +91,22 @@ export type AssignmentDetailDeps = {
   // class-centered workflow. Only the label changes; the return behavior is
   // provided entirely by the injected `onBack`.
   readonly backLabel?: string;
-  // Sprint 13D: optional close-assignment lifecycle seam. When supplied
-  // and the loaded metadata is `published`, the surface renders a
-  // secondary `Close assignment` action that opens a confirmation
-  // dialog and, on confirm, invokes the callable exactly once. On
-  // success the header status transitions to `Closed`, the action is
-  // replaced with a non-interactive `Assignment closed` label, and
-  // `onStatusChange` (when supplied) is invoked with the updated
-  // metadata so the session-scoped registry can be re-registered. When
-  // the seam is not supplied, the surface renders no close action; the
-  // remainder of the surface is unchanged.
-  readonly closeCallable?: AssignmentsCloseCallable;
-  // Sprint 13E: optional reopen-assignment lifecycle seam and inverse
-  // of `closeCallable`. When supplied and the loaded metadata is
-  // `closed`, the surface renders a secondary `Reopen assignment`
-  // action in place of the `Assignment closed` label. Activating the
-  // action opens a confirmation dialog and, on confirm, invokes the
-  // callable exactly once. On success the header status transitions to
-  // `Published`, the action is replaced with the Sprint 13D
-  // `Close assignment` action (when `closeCallable` is also supplied),
-  // and `onStatusChange` (when supplied) fires with the updated
-  // metadata so the session-scoped registry can be re-registered.
-  // When the seam is not supplied, the surface renders no reopen
-  // action; the Sprint 13D `Assignment closed` label continues to
-  // render.
+  // Teacher-controlled closing is retired: a published assignment stays
+  // available for the lifetime of its class, so a published assignment
+  // renders no lifecycle action at all (the server also refuses
+  // `assignmentsClose` for a published record). `closed` survives only as
+  // a legacy compatibility state.
+  //
+  // Sprint 13E: optional reopen-assignment seam, the legacy recovery path
+  // for an assignment whose stored status is already `closed`. When
+  // supplied and the loaded metadata is `closed`, the surface renders a
+  // secondary `Reopen assignment` action. Activating the action opens a
+  // confirmation dialog and, on confirm, invokes the callable exactly
+  // once. On success the header returns to the ordinary published state
+  // (no lifecycle action) and `onStatusChange` (when supplied) fires with
+  // the updated metadata so the session-scoped registry can be
+  // re-registered. When the seam is not supplied, a legacy closed
+  // assignment renders the non-interactive `Assignment closed` label.
   readonly reopenCallable?: AssignmentsReopenCallable;
   // Sprint 13G: optional draft-editing seam. When supplied and the loaded
   // metadata is `draft`, the surface renders an `Edit draft` action that
@@ -228,11 +219,6 @@ type LoadState =
   | { readonly kind: "empty" }
   | { readonly kind: "error" };
 
-type CloseUiState =
-  | { readonly kind: "idle" }
-  | { readonly kind: "pending" }
-  | { readonly kind: "error" };
-
 type ReopenUiState =
   | { readonly kind: "idle" }
   | { readonly kind: "pending" }
@@ -323,7 +309,6 @@ export function renderAssignmentDetail(
 
   let state: LoadState = { kind: "loading" };
   let loadToken = 0;
-  let closeUi: CloseUiState = { kind: "idle" };
   let reopenUi: ReopenUiState = { kind: "idle" };
   let editUi: EditUiState = { kind: "closed" };
   let publishUi: PublishUiState = { kind: "idle" };
@@ -485,7 +470,6 @@ export function renderAssignmentDetail(
             recipientCandidatesListCallable: sharedCandidatesListCallable,
             currentForFamily: sharedCurrentForFamily,
           },
-          closeUi,
           reopenUi,
           editUi,
           publishUi,
@@ -493,9 +477,6 @@ export function renderAssignmentDetail(
           shouldFocusTitle,
           justAdded,
           {
-            onCloseRequest: () => {
-              openCloseConfirmation(s.metadata);
-            },
             onLmsRetryRequest: () => {
               void performLmsRetry();
             },
@@ -553,26 +534,6 @@ export function renderAssignmentDetail(
     }
   };
 
-  const openCloseConfirmation = (metadata: AssignmentDetailMetadata): void => {
-    if (deps.closeCallable === undefined) return;
-    if (metadata.status !== "published") return;
-    const confirmController: CloseConfirmController = {
-      onCancel: () => {
-        confirmController.close();
-      },
-      onConfirm: () => {
-        confirmController.close();
-        void performClose(metadata);
-      },
-      close: () => undefined,
-    };
-    confirmController.close = renderCloseConfirmDialog(
-      doc,
-      metadata,
-      confirmController,
-    );
-  };
-
   const openReopenConfirmation = (metadata: AssignmentDetailMetadata): void => {
     if (deps.reopenCallable === undefined) return;
     if (metadata.status !== "closed") return;
@@ -609,46 +570,12 @@ export function renderAssignmentDetail(
       });
       state = { kind: "ready", metadata: nextMetadata };
       reopenUi = { kind: "idle" };
-      // A successful reopen also clears any stale close error surfaced
-      // from a previous close attempt on this assignment; the two
-      // lifecycle actions never render at the same time, so the close
-      // error UI would otherwise be attached to a Published header.
-      closeUi = { kind: "idle" };
       refreshDetailCache();
       rerender();
       deps.onStatusChange?.(nextMetadata);
       void result;
     } catch {
       reopenUi = { kind: "error" };
-      rerender();
-    }
-  };
-
-  const performClose = async (
-    metadata: AssignmentDetailMetadata,
-  ): Promise<void> => {
-    const callable = deps.closeCallable;
-    if (callable === undefined) return;
-    closeUi = { kind: "pending" };
-    rerender();
-    try {
-      const result = await callable({ assignmentId: metadata.assignmentId });
-      if (state.kind !== "ready") return;
-      const nextMetadata = Object.freeze({
-        ...metadata,
-        status: "closed" as AssignmentStatus,
-      });
-      state = { kind: "ready", metadata: nextMetadata };
-      closeUi = { kind: "idle" };
-      // Symmetric to performReopen: clear any stale reopen error so the
-      // Closed header never carries a Reopen error banner.
-      reopenUi = { kind: "idle" };
-      refreshDetailCache();
-      rerender();
-      deps.onStatusChange?.(nextMetadata);
-      void result;
-    } catch {
-      closeUi = { kind: "error" };
       rerender();
     }
   };
@@ -692,10 +619,8 @@ export function renderAssignmentDetail(
       });
       state = { kind: "ready", metadata: nextMetadata };
       publishUi = { kind: "idle" };
-      // Symmetric to performClose / performReopen: clear any stale
-      // lifecycle-error UI so the Published header never carries a
-      // publish error banner.
-      closeUi = { kind: "idle" };
+      // Symmetric to performReopen: clear any stale lifecycle-error UI so
+      // the Published header never carries a stale error banner.
       reopenUi = { kind: "idle" };
       refreshDetailCache();
       rerender();
@@ -922,7 +847,6 @@ function renderReady(
   metadata: AssignmentDetailMetadata,
   deps: AssignmentDetailDeps,
   shared: SharedDetailCallables,
-  closeUi: CloseUiState,
   reopenUi: ReopenUiState,
   editUi: EditUiState,
   publishUi: PublishUiState,
@@ -937,7 +861,6 @@ function renderReady(
   // "Added to assignment." confirmation.
   justAdded: boolean,
   handlers: {
-    readonly onCloseRequest: () => void;
     readonly onLmsRetryRequest: () => void;
     readonly onReconnectRequest: () => void;
     readonly onReopenRequest: () => void;
@@ -1086,37 +1009,16 @@ function renderReady(
     }
 
     header.appendChild(lifecycle);
-  } else if (
-    deps.closeCallable !== undefined ||
-    deps.reopenCallable !== undefined
-  ) {
+  } else if (metadata.status === "closed") {
+    // Legacy compatibility only. A published assignment renders no
+    // lifecycle action (teacher-controlled closing is retired), so the
+    // header identity fills the row. A record whose stored status is
+    // already `closed` keeps its recovery path: Reopen when the seam is
+    // wired, otherwise the calm non-interactive closed label.
     const lifecycle = doc.createElement("div");
     lifecycle.className = "shell-assignment-detail-lifecycle";
     lifecycle.setAttribute("data-testid", "assignment-detail-lifecycle");
-    if (metadata.status === "published" && deps.closeCallable !== undefined) {
-      const closeButton = doc.createElement("button");
-      closeButton.type = "button";
-      closeButton.className =
-        "shell-btn shell-assignment-detail-close-action";
-      closeButton.setAttribute(
-        "data-testid",
-        "assignment-detail-close-action",
-      );
-      closeButton.textContent = "Close assignment";
-      if (closeUi.kind === "pending") {
-        closeButton.disabled = true;
-        closeButton.setAttribute("aria-busy", "true");
-      }
-      closeButton.addEventListener("click", () => {
-        handlers.onCloseRequest();
-      });
-      lifecycle.appendChild(closeButton);
-    } else if (
-      metadata.status === "closed" &&
-      deps.reopenCallable !== undefined
-    ) {
-      // Sprint 13E: reopen action supersedes the Sprint 13D closed-state
-      // label so exactly one lifecycle action is visible.
+    if (deps.reopenCallable !== undefined) {
       const reopenButton = doc.createElement("button");
       reopenButton.type = "button";
       reopenButton.className =
@@ -1134,7 +1036,7 @@ function renderReady(
         handlers.onReopenRequest();
       });
       lifecycle.appendChild(reopenButton);
-    } else if (metadata.status === "closed") {
+    } else {
       const closedLabel = doc.createElement("p");
       closedLabel.className = "shell-assignment-detail-closed-label";
       closedLabel.setAttribute(
@@ -1145,15 +1047,6 @@ function renderReady(
       closedLabel.setAttribute("aria-live", "polite");
       closedLabel.textContent = "Assignment closed";
       lifecycle.appendChild(closedLabel);
-    }
-    if (closeUi.kind === "error") {
-      const err = doc.createElement("p");
-      err.className = "shell-assignment-detail-close-error";
-      err.setAttribute("data-testid", "assignment-detail-close-error");
-      err.setAttribute("role", "alert");
-      err.textContent =
-        "We could not close this assignment right now. Try again in a moment.";
-      lifecycle.appendChild(err);
     }
     if (reopenUi.kind === "error") {
       const err = doc.createElement("p");
@@ -2628,104 +2521,6 @@ function renderQuestionDetail(
     );
   }
   detail.appendChild(choices);
-}
-
-type CloseConfirmController = {
-  onCancel: () => void;
-  onConfirm: () => void;
-  close: () => void;
-};
-
-function renderCloseConfirmDialog(
-  doc: Document,
-  metadata: AssignmentDetailMetadata,
-  controller: CloseConfirmController,
-): () => void {
-  const overlay = doc.createElement("div");
-  overlay.className = "shell-assign-overlay shell-assignment-close-overlay";
-  overlay.setAttribute("data-testid", "assignment-detail-close-overlay");
-
-  const dialog = doc.createElement("div");
-  dialog.className = "shell-assign-dialog shell-assignment-close-dialog";
-  dialog.setAttribute("role", "dialog");
-  dialog.setAttribute("aria-modal", "true");
-  dialog.setAttribute("aria-labelledby", "assignment-detail-close-title");
-  dialog.setAttribute(
-    "aria-describedby",
-    "assignment-detail-close-description",
-  );
-  dialog.setAttribute("data-testid", "assignment-detail-close-dialog");
-  dialog.setAttribute("data-assignment-id", metadata.assignmentId);
-
-  const title = doc.createElement("h3");
-  title.id = "assignment-detail-close-title";
-  title.className = "shell-assign-title";
-  title.setAttribute("data-testid", "assignment-detail-close-title");
-  title.textContent = "Close this assignment?";
-  dialog.appendChild(title);
-
-  const description = doc.createElement("p");
-  description.id = "assignment-detail-close-description";
-  description.className = "shell-assign-body";
-  description.setAttribute(
-    "data-testid",
-    "assignment-detail-close-description",
-  );
-  description.textContent =
-    "Students will no longer be able to submit new work. Existing submissions and summaries will remain available.";
-  dialog.appendChild(description);
-
-  const footer = doc.createElement("div");
-  footer.className = "shell-assign-footer";
-  dialog.appendChild(footer);
-
-  const cancel = doc.createElement("button");
-  cancel.type = "button";
-  cancel.className = "shell-assign-cancel";
-  cancel.setAttribute("data-testid", "assignment-detail-close-cancel");
-  cancel.textContent = "Cancel";
-  cancel.addEventListener("click", () => {
-    controller.onCancel();
-  });
-  footer.appendChild(cancel);
-
-  const confirm = doc.createElement("button");
-  confirm.type = "button";
-  confirm.className = "shell-assign-confirm";
-  confirm.setAttribute("data-testid", "assignment-detail-close-confirm");
-  confirm.textContent = "Close assignment";
-  confirm.addEventListener("click", () => {
-    controller.onConfirm();
-  });
-  footer.appendChild(confirm);
-
-  overlay.appendChild(dialog);
-  doc.body.appendChild(overlay);
-
-  const onKey = (ev: KeyboardEvent): void => {
-    if (ev.key === "Escape") {
-      ev.preventDefault();
-      controller.onCancel();
-    }
-  };
-  doc.addEventListener("keydown", onKey);
-  overlay.addEventListener("click", (ev) => {
-    if (ev.target === overlay) controller.onCancel();
-  });
-
-  try {
-    cancel.focus({ preventScroll: true });
-  } catch {
-    // ignored
-  }
-
-  let closed = false;
-  return () => {
-    if (closed) return;
-    closed = true;
-    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    doc.removeEventListener("keydown", onKey);
-  };
 }
 
 type ReopenConfirmController = {

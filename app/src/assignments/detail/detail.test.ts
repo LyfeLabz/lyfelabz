@@ -175,7 +175,8 @@ describe("renderAssignmentDetail - success rendering", () => {
     ).toBe("Period 3 - Grade 7 Physical Science");
     // The ordinary published state does not announce itself: no Status
     // label, no Published pill, no Current marker. The lifecycle status is
-    // still carried by the metadata (and drives the Close action).
+    // still carried by the metadata (and drives the legacy Reopen action
+    // for a record that is already closed).
     expect(mount.querySelector("[data-testid=assignment-detail-status]")).toBeNull();
     expect(mount.querySelector("[data-testid=assignment-detail-status-value]")).toBeNull();
     const header = mount.querySelector<HTMLElement>("[data-testid=assignment-detail-header]");
@@ -549,100 +550,60 @@ describe("renderAssignmentDetail - request posture", () => {
 });
 
 // -----------------------------------------------------------------------------
-// Sprint 13D: Close assignment lifecycle
+// Assignment lifecycle: teacher-controlled closing is retired. A published
+// assignment stays available for the lifetime of its class, so Assignment
+// Detail never offers Close. `closed` survives only as a legacy state whose
+// recovery path is Reopen (Sprint 13E, below).
 // -----------------------------------------------------------------------------
 
 import type {
-  AssignmentsCloseCallable,
-  AssignmentsCloseResult,
   AssignmentsReopenCallable,
   AssignmentsReopenResult,
 } from "./types";
 
-const resolvingClose = (
-  result?: Partial<AssignmentsCloseResult>,
-): {
-  readonly callable: AssignmentsCloseCallable;
-  readonly calls: Array<string>;
-} => {
-  const calls: Array<string> = [];
-  const callable: AssignmentsCloseCallable = ({ assignmentId }) => {
-    calls.push(assignmentId);
-    return Promise.resolve(
-      Object.freeze({
-        assignmentId,
-        status: "closed" as const,
-        alreadyClosed: false,
-        ...(result ?? {}),
-      }),
-    );
-  };
-  return { callable, calls };
-};
-
-const rejectingClose = (): {
-  readonly callable: AssignmentsCloseCallable;
-  readonly calls: Array<string>;
-} => {
-  const calls: Array<string> = [];
-  const callable: AssignmentsCloseCallable = ({ assignmentId }) => {
-    calls.push(assignmentId);
-    return Promise.reject(new Error("close failed"));
-  };
-  return { callable, calls };
-};
-
-describe("renderAssignmentDetail - close lifecycle (Sprint 13D)", () => {
+describe("renderAssignmentDetail - Close is retired", () => {
   beforeEach(() => {
-    // Detach any prior mounts and dialog overlays so cross-test document
-    // pollution (a prior test that intentionally left the confirmation
-    // dialog on-screen) cannot mask lifecycle assertions.
     document.body.innerHTML = "";
   });
 
-  test("published assignment shows the Close assignment action when the callable is wired", async () => {
+  test("published assignment renders no Close action and no lifecycle scaffold, even with Reopen wired", async () => {
     const mount = mkMount();
-    const close = resolvingClose();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
-    });
-    await flush();
-    await flush();
-    const action = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=assignment-detail-close-action]",
-    );
-    expect(action).not.toBeNull();
-    expect(action?.textContent).toBe("Close assignment");
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-closed-label]"),
-    ).toBeNull();
-  });
-
-  test("closed assignment shows the Assignment closed label and no action", async () => {
-    const mount = mkMount();
-    const close = resolvingClose();
-    renderAssignmentDetail(mount, {
-      assignmentId: "assign-1",
-      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
-      summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
+      reopenCallable: resolvingReopen().callable,
     });
     await flush();
     await flush();
     expect(
       mount.querySelector("[data-testid=assignment-detail-close-action]"),
     ).toBeNull();
-    const label = mount.querySelector(
-      "[data-testid=assignment-detail-closed-label]",
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-closed-label]"),
+    ).toBeNull();
+    // The header holds only the identity column, so it fills the row; no
+    // placeholder control is rendered in the former action slot.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-lifecycle]"),
+    ).toBeNull();
+    const header = mount.querySelector(
+      "[data-testid=assignment-detail-header]",
     );
-    expect(label?.textContent).toBe("Assignment closed");
-    expect(label?.getAttribute("role")).toBe("status");
+    expect(header?.children.length).toBe(1);
+    expect(
+      header?.firstElementChild?.getAttribute("data-testid"),
+    ).toBe("assignment-detail-identity");
+    // No button anywhere on the surface reads as a Close control.
+    for (const btn of Array.from(mount.querySelectorAll("button"))) {
+      expect(btn.textContent ?? "").not.toMatch(/close assignment/i);
+    }
   });
 
-  test("no lifecycle scaffold is rendered when the callable is not wired", async () => {
+  test("published assignment renders no lifecycle scaffold when no lifecycle seam is wired", async () => {
     const mount = mkMount();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
@@ -659,220 +620,51 @@ describe("renderAssignmentDetail - close lifecycle (Sprint 13D)", () => {
     ).toBeNull();
   });
 
-  test("clicking Close assignment opens the confirmation dialog", async () => {
+  test("legacy closed assignment without a Reopen seam keeps the calm Assignment closed label", async () => {
     const mount = mkMount();
-    const close = resolvingClose();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
-      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
     });
     await flush();
     await flush();
-    const action = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=assignment-detail-close-action]",
-    );
-    action?.click();
-    const dialog = document.querySelector(
-      "[data-testid=assignment-detail-close-dialog]",
-    );
-    expect(dialog).not.toBeNull();
-    expect(dialog?.getAttribute("role")).toBe("dialog");
-    expect(dialog?.getAttribute("aria-modal")).toBe("true");
-    expect(
-      document.querySelector("[data-testid=assignment-detail-close-title]")
-        ?.textContent,
-    ).toBe("Close this assignment?");
-    expect(
-      document.querySelector(
-        "[data-testid=assignment-detail-close-description]",
-      )?.textContent,
-    ).toContain("Students will no longer be able to submit new work.");
-    expect(close.calls).toEqual([]);
-  });
-
-  test("Cancel leaves the assignment unchanged and never invokes the callable", async () => {
-    const mount = mkMount();
-    const close = resolvingClose();
-    renderAssignmentDetail(mount, {
-      assignmentId: "assign-1",
-      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
-      summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
-    });
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
-      )
-      ?.click();
-    const cancel = document.querySelector<HTMLButtonElement>(
-      "[data-testid=assignment-detail-close-cancel]",
-    );
-    cancel?.click();
-    await flush();
-    expect(
-      document.querySelector("[data-testid=assignment-detail-close-dialog]"),
-    ).toBeNull();
-    expect(close.calls).toEqual([]);
-    // Published is the ordinary state: no Status pair is shown for it.
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-status-value]"),
-    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=assignment-detail-close-action]"),
-    ).not.toBeNull();
-  });
-
-  test("Confirm invokes the callable exactly once and updates the header to Closed", async () => {
-    const mount = mkMount();
-    const close = resolvingClose();
-    const statusChanges: Array<AssignmentDetailMetadata> = [];
-    renderAssignmentDetail(mount, {
-      assignmentId: "assign-1",
-      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
-      summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
-      onStatusChange: (m) => {
-        statusChanges.push(m);
-      },
-    });
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
-      )
-      ?.click();
-    document
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-confirm]",
-      )
-      ?.click();
-    await flush();
-    await flush();
-    expect(close.calls).toEqual(["assign-1"]);
+    ).toBeNull();
+    const label = mount.querySelector(
+      "[data-testid=assignment-detail-closed-label]",
+    );
+    expect(label?.textContent).toBe("Assignment closed");
+    expect(label?.getAttribute("role")).toBe("status");
+    // The legacy Closed status pair still renders for an actually closed
+    // record.
     expect(
       mount.querySelector("[data-testid=assignment-detail-status-value]")
         ?.textContent,
     ).toBe("Closed");
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-close-action]"),
-    ).toBeNull();
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-closed-label]")
-        ?.textContent,
-    ).toBe("Assignment closed");
-    expect(statusChanges).toHaveLength(1);
-    expect(statusChanges[0]?.status).toBe("closed");
-    expect(statusChanges[0]?.assignmentId).toBe("assign-1");
   });
 
-  test("Failure preserves the Published state and renders a generic error message", async () => {
+  test("no Close confirmation dialog can be opened from a published assignment", async () => {
     const mount = mkMount();
-    const close = rejectingClose();
-    const statusChanges: Array<AssignmentDetailMetadata> = [];
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
-      onStatusChange: (m) => {
-        statusChanges.push(m);
-      },
+      reopenCallable: resolvingReopen().callable,
     });
     await flush();
     await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
-      )
-      ?.click();
-    document
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-confirm]",
-      )
-      ?.click();
-    await flush();
-    await flush();
-    expect(close.calls).toEqual(["assign-1"]);
-    // Published is the ordinary state: no Status pair is shown for it.
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-status-value]"),
-    ).toBeNull();
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-close-action]"),
-    ).not.toBeNull();
-    const err = mount.querySelector(
-      "[data-testid=assignment-detail-close-error]",
-    );
-    expect(err).not.toBeNull();
-    expect(err?.getAttribute("role")).toBe("alert");
-    expect(err?.textContent).not.toMatch(/firestore|callable|assignments\.|stack/i);
-    expect(statusChanges).toHaveLength(0);
-  });
-
-  test("Escape closes the confirmation dialog without invoking the callable", async () => {
-    const mount = mkMount();
-    const close = resolvingClose();
-    renderAssignmentDetail(mount, {
-      assignmentId: "assign-1",
-      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
-      summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
-    });
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
-      )
-      ?.click();
-    document.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }),
-    );
+    for (const btn of Array.from(mount.querySelectorAll("button"))) {
+      btn.click();
+    }
     await flush();
     expect(
       document.querySelector("[data-testid=assignment-detail-close-dialog]"),
     ).toBeNull();
-    expect(close.calls).toEqual([]);
-  });
-
-  test("Back button remains functional in the closed state after a successful close", async () => {
-    const mount = mkMount();
-    const close = resolvingClose();
-    let backClicks = 0;
-    renderAssignmentDetail(mount, {
-      assignmentId: "assign-1",
-      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
-      summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
-      onBack: () => {
-        backClicks += 1;
-      },
-    });
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
-      )
-      ?.click();
-    document
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-confirm]",
-      )
-      ?.click();
-    await flush();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-back]",
-      )
-      ?.click();
-    expect(backClicks).toBe(1);
+    expect(
+      document.querySelector("[data-testid=assignment-detail-close-confirm]"),
+    ).toBeNull();
   });
 });
 
@@ -920,13 +712,11 @@ describe("renderAssignmentDetail - reopen lifecycle (Sprint 13E)", () => {
 
   test("closed assignment shows Reopen assignment when the reopen callable is wired", async () => {
     const mount = mkMount();
-    const close = resolvingClose();
     const reopen = resolvingReopen();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
       reopenCallable: reopen.callable,
     });
     await flush();
@@ -946,36 +736,43 @@ describe("renderAssignmentDetail - reopen lifecycle (Sprint 13E)", () => {
     ).toBeNull();
   });
 
-  test("published assignment continues to show Close assignment", async () => {
+  test("a legacy closed assignment that is reopened returns to the ordinary published header with no Close action", async () => {
     const mount = mkMount();
-    const close = resolvingClose();
     const reopen = resolvingReopen();
-    renderAssignmentDetail(mount, {
-      assignmentId: "assign-1",
-      loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
-      summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
-      reopenCallable: reopen.callable,
-    });
-    await flush();
-    await flush();
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-close-action]")
-        ?.textContent,
-    ).toBe("Close assignment");
-    expect(
-      mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
-    ).toBeNull();
-  });
-
-  test("closed assignment falls back to the Sprint 13D label when reopen is not wired", async () => {
-    const mount = mkMount();
-    const close = resolvingClose();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
+    });
+    await flush();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-action]",
+      )
+      ?.click();
+    document
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=assignment-detail-reopen-confirm]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    expect(reopen.calls).toEqual(["assign-1"]);
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-close-action]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-lifecycle]"),
+    ).toBeNull();
+  });
+  test("closed assignment falls back to the Assignment closed label when reopen is not wired", async () => {
+    const mount = mkMount();
+    renderAssignmentDetail(mount, {
+      assignmentId: "assign-1",
+      loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
+      summaryCallable: resolvingSummary(freezeSummary()),
     });
     await flush();
     await flush();
@@ -1059,14 +856,12 @@ describe("renderAssignmentDetail - reopen lifecycle (Sprint 13E)", () => {
 
   test("Confirm invokes the callable exactly once and updates the header to Published", async () => {
     const mount = mkMount();
-    const close = resolvingClose();
     const reopen = resolvingReopen();
     const statusChanges: Array<AssignmentDetailMetadata> = [];
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(freezeMetadata({ status: "closed" })),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
       reopenCallable: reopen.callable,
       onStatusChange: (m) => {
         statusChanges.push(m);
@@ -1094,12 +889,11 @@ describe("renderAssignmentDetail - reopen lifecycle (Sprint 13E)", () => {
     expect(
       mount.querySelector("[data-testid=assignment-detail-reopen-action]"),
     ).toBeNull();
-    // Sprint 13E lifecycle swap: after a successful reopen, the Sprint
-    // 13D Close assignment action is the visible lifecycle action.
+    // Teacher-controlled closing is retired: the reopened (now published)
+    // assignment renders no lifecycle action at all.
     expect(
-      mount.querySelector("[data-testid=assignment-detail-close-action]")
-        ?.textContent,
-    ).toBe("Close assignment");
+      mount.querySelector("[data-testid=assignment-detail-close-action]"),
+    ).toBeNull();
     expect(statusChanges).toHaveLength(1);
     expect(statusChanges[0]?.status).toBe("published");
     expect(statusChanges[0]?.assignmentId).toBe("assign-1");
@@ -1250,14 +1044,12 @@ describe("renderAssignmentDetail - draft state (Sprint 13F)", () => {
   });
 
   test("draft assignment does not expose Close or Reopen actions", async () => {
-    const closer = resolvingClose();
     const reopener = resolvingReopen();
     const mount = mkMount();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-draft",
       loadMetadata: resolvingMeta(freezeMetadata({ status: "draft" })),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: closer.callable,
       reopenCallable: reopener.callable,
     });
     await flush();
@@ -1273,18 +1065,17 @@ describe("renderAssignmentDetail - draft state (Sprint 13F)", () => {
   });
 
   test("published workflow is unchanged when neither draft nor closed", async () => {
-    const closer = resolvingClose();
     const mount = mkMount();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: closer.callable,
+      reopenCallable: resolvingReopen().callable,
     });
     await flush();
     expect(
       mount.querySelector("[data-testid=assignment-detail-close-action]"),
-    ).not.toBeNull();
+    ).toBeNull();
     expect(
       mount.querySelector("[data-testid=assignment-detail-draft-label]"),
     ).toBeNull();
@@ -2334,13 +2125,11 @@ describe("renderAssignmentDetail - publish lifecycle (Sprint 13H)", () => {
   test("Published workflow is unchanged when publishCallable is wired for a published assignment", async () => {
     const mount = mkMount();
     const publish = resolvingPublish();
-    const close = resolvingClose();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(freezeMetadata({ status: "published" })),
       summaryCallable: resolvingSummary(freezeSummary()),
       publishCallable: publish.callable,
-      closeCallable: close.callable,
     });
     await flush();
     await flush();
@@ -2349,7 +2138,7 @@ describe("renderAssignmentDetail - publish lifecycle (Sprint 13H)", () => {
     ).toBeNull();
     expect(
       mount.querySelector("[data-testid=assignment-detail-close-action]"),
-    ).not.toBeNull();
+    ).toBeNull();
   });
 
   test("Closed workflow is unchanged when publishCallable is wired for a closed assignment", async () => {
@@ -2655,20 +2444,20 @@ describe("renderAssignmentDetail - Sprint 16 Slice 2 shared fetch cache", () => 
 
   test("lifecycle-triggered rerender refreshes the cache and refetches", async () => {
     const mount = mkMount();
-    const meta = freezeMetadata({ status: "published", classId: "class-1" });
+    const meta = freezeMetadata({ status: "closed", classId: "class-1" });
     const summary = spyingSummary(freezeSummary());
     const recipients = spyingRecipients([
       { studentId: "stu-1", studentDisplayName: "Alice" },
     ]);
     const attempts = spyingAttemptsList([]);
-    const close = resolvingClose();
+    const reopen = resolvingReopen();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(meta),
       summaryCallable: summary.callable,
       recipientListCallable: recipients.callable,
       attemptsListForClassCallable: attempts.callable,
-      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
     });
     await flush();
     await flush();
@@ -2678,18 +2467,18 @@ describe("renderAssignmentDetail - Sprint 16 Slice 2 shared fetch cache", () => 
 
     mount
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
+        "[data-testid=assignment-detail-reopen-action]",
       )
       ?.click();
     document
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-confirm]",
+        "[data-testid=assignment-detail-reopen-confirm]",
       )
       ?.click();
     await flush();
     await flush();
     await flush();
-    // After the successful close the cache is invalidated; the recomposed
+    // After the successful reopen the cache is invalidated; the recomposed
     // sub-surfaces observe fresh callable responses. One additional call
     // per callable identity, not two.
     expect(summary.calls).toEqual(["assign-1", "assign-1"]);
@@ -3298,14 +3087,14 @@ describe("renderAssignmentDetail - Sprint 16 Slice 4 workflow polish", () => {
 
   test("lifecycle rerender does not repeatedly refocus the title if focus is elsewhere", async () => {
     const mount = mkMount();
-    const close = resolvingClose();
+    const reopen = resolvingReopen();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(
-        freezeMetadata({ classId: "class-1", status: "published" }),
+        freezeMetadata({ classId: "class-1", status: "closed" }),
       ),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
       onBack: () => undefined,
     });
     await flush();
@@ -3321,12 +3110,12 @@ describe("renderAssignmentDetail - Sprint 16 Slice 4 workflow polish", () => {
     expect(document.activeElement).toBe(backBtn);
     mount
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
+        "[data-testid=assignment-detail-reopen-action]",
       )
       ?.click();
     document
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-confirm]",
+        "[data-testid=assignment-detail-reopen-confirm]",
       )
       ?.click();
     await flush();
@@ -3363,42 +3152,42 @@ describe("renderAssignmentDetail - Sprint 16 Slice 5 performance guards", () => 
 
   test("one Detail render issues exactly one recipient-list call across pending-state rerenders", async () => {
     const mount = mkMount();
-    const meta = freezeMetadata({ classId: "class-1", status: "published" });
+    const meta = freezeMetadata({ classId: "class-1", status: "closed" });
     const recipients = spyingRecipients([
       { studentId: "stu-1", studentDisplayName: "Alice" },
     ]);
     const attempts = spyingAttemptsList([]);
-    const close = resolvingClose();
+    const reopen = resolvingReopen();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(meta),
       summaryCallable: resolvingSummary(freezeSummary()),
       recipientListCallable: recipients.callable,
       attemptsListForClassCallable: attempts.callable,
-      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
     });
     await flush();
     await flush();
     await flush();
     expect(recipients.calls).toEqual(["assign-1"]);
-    // Clicking Close fires a pending-state rerender before the callable
+    // Clicking Reopen fires a pending-state rerender before the callable
     // resolves. The shared cache must serve the pending rerender's roster
     // panel from the already-resolved recipient snapshot rather than
     // re-issuing the call.
     mount
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
+        "[data-testid=assignment-detail-reopen-action]",
       )
       ?.click();
     document
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-confirm]",
+        "[data-testid=assignment-detail-reopen-confirm]",
       )
       ?.click();
     await flush();
     await flush();
     await flush();
-    // Exactly one additional recipient call: the successful close
+    // Exactly one additional recipient call: the successful reopen
     // invalidates the shared cache so the recomposed roster observes a
     // fresh recipient snapshot. Never two per transition.
     expect(recipients.calls).toEqual(["assign-1", "assign-1"]);
@@ -3406,7 +3195,7 @@ describe("renderAssignmentDetail - Sprint 16 Slice 5 performance guards", () => 
 
   test("one Detail render fetches each representative attempt exactly once even across a pending-state rerender", async () => {
     const mount = mkMount();
-    const meta = freezeMetadata({ classId: "class-1", status: "published" });
+    const meta = freezeMetadata({ classId: "class-1", status: "closed" });
     const shared = [
       mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 90 }),
       mkAttempt({ attemptId: "att-2", studentId: "stu-2", percentage: 80 }),
@@ -3427,7 +3216,7 @@ describe("renderAssignmentDetail - Sprint 16 Slice 5 performance guards", () => 
         ]),
       ),
     );
-    const close = resolvingClose();
+    const reopen = resolvingReopen();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(meta),
@@ -3446,7 +3235,7 @@ describe("renderAssignmentDetail - Sprint 16 Slice 5 performance guards", () => 
       ]).callable,
       attemptsListForClassCallable: spyingAttemptsList(shared).callable,
       attemptGetForTeacherCallable: attemptGet.callable,
-      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
     });
     await flush();
     await flush();
@@ -3456,17 +3245,17 @@ describe("renderAssignmentDetail - Sprint 16 Slice 5 performance guards", () => 
     // render, regardless of any pending panel rerender.
     expect(attemptGet.calls.slice().sort()).toEqual(["att-1", "att-2", "att-3"]);
 
-    // A lifecycle-triggered rerender (close success) invalidates the
+    // A lifecycle-triggered rerender (reopen success) invalidates the
     // shared cache so a subsequent render observes fresh per-attempt
     // snapshots; still exactly once per attemptId, not twice.
     mount
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
+        "[data-testid=assignment-detail-reopen-action]",
       )
       ?.click();
     document
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-confirm]",
+        "[data-testid=assignment-detail-reopen-confirm]",
       )
       ?.click();
     await flush();
@@ -3695,36 +3484,36 @@ describe("renderAssignmentDetail - Sprint 16 Slice 6 accessibility", () => {
 
   test("lifecycle transition preserves the labeled Roster region and does not orphan focus", async () => {
     const mount = mkMount();
-    const close = resolvingClose();
+    const reopen = resolvingReopen();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
       loadMetadata: resolvingMeta(
-        freezeMetadata({ classId: "class-1", status: "published" }),
+        freezeMetadata({ classId: "class-1", status: "closed" }),
       ),
       summaryCallable: resolvingSummary(freezeSummary()),
       recipientListCallable: spyingRecipients([
         { studentId: "stu-1", studentDisplayName: "Alice" },
       ]).callable,
       attemptsListForClassCallable: spyingAttemptsList([]).callable,
-      closeCallable: close.callable,
+      reopenCallable: reopen.callable,
     });
     await flush();
     await flush();
     await flush();
     mount
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-action]",
+        "[data-testid=assignment-detail-reopen-action]",
       )
       ?.click();
     document
       .querySelector<HTMLButtonElement>(
-        "[data-testid=assignment-detail-close-confirm]",
+        "[data-testid=assignment-detail-reopen-confirm]",
       )
       ?.click();
     await flush();
     await flush();
     await flush();
-    // After the close resolves the Roster heading is still present and
+    // After the reopen resolves the Roster heading is still present and
     // labels its host section, so screen-reader users keep the landmark.
     const heading = mount.querySelector(
       "[data-testid=assignment-detail-roster-heading]",
@@ -4508,9 +4297,11 @@ describe("renderAssignmentDetail - Assignment Overview", () => {
     const mount = mkMount();
     renderAssignmentDetail(mount, {
       assignmentId: "assign-1",
-      loadMetadata: resolvingMeta(freezeMetadata({ classId: "class-1" })),
+      loadMetadata: resolvingMeta(
+        freezeMetadata({ classId: "class-1", status: "closed" }),
+      ),
       summaryCallable: resolvingSummary(freezeSummary()),
-      closeCallable: resolvingClose().callable,
+      reopenCallable: resolvingReopen().callable,
     });
     await settle();
     const overviews = mount.querySelectorAll(
@@ -4531,9 +4322,9 @@ describe("renderAssignmentDetail - Assignment Overview", () => {
         ?.textContent,
     ).toBe("Period 3 - Grade 7 Physical Science");
     expect(
-      overview.querySelector("[data-testid=assignment-detail-close-action]")
+      overview.querySelector("[data-testid=assignment-detail-reopen-action]")
         ?.textContent,
-    ).toBe("Close assignment");
+    ).toBe("Reopen assignment");
     const summaryCard = overview.querySelector(
       "[data-testid=assignment-summary]",
     );
@@ -4543,7 +4334,7 @@ describe("renderAssignmentDetail - Assignment Overview", () => {
     const order = [
       "assignment-detail-title",
       "assignment-detail-class-value",
-      "assignment-detail-close-action",
+      "assignment-detail-reopen-action",
       "assignment-summary-metrics",
     ].map((id) => overview.querySelector(`[data-testid=${id}]`)!);
     for (let i = 1; i < order.length; i += 1) {

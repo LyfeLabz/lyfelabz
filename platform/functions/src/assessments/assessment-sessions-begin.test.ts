@@ -1526,6 +1526,45 @@ describe("assessmentSessionsBegin", () => {
       expect(mockSessionCreate).not.toHaveBeenCalled();
     });
 
+    it("an older lesson stays launchable after a DIFFERENT lesson is published and becomes its own Current", async () => {
+      // Lesson rule: only a same-lesson reassignment supersedes. A newer
+      // assignment of another lesson carries its own pointer, which the
+      // begin gate never consults for this lesson.
+      const NEWER_OTHER_LESSON_ID = "assign-other-lesson";
+      routeAssignments({
+        [ASSIGNMENT_ID]: assignmentSnapshot(),
+        [NEWER_OTHER_LESSON_ID]: assignmentSnapshot({ lessonSlug: "lesson_g7_water-cycle" }),
+      });
+      const pointerReads: Array<string> = [];
+      mockAssignmentsCurrentDocRef.mockImplementation(((classId: string, lessonSlug: string) => {
+        pointerReads.push(`${classId}/${lessonSlug}`);
+        return {
+          get: () =>
+            Promise.resolve(
+              lessonSlug === LESSON_SLUG
+                ? pointerTo(ASSIGNMENT_ID)
+                : {
+                    exists: true,
+                    data: () => ({
+                      ...pointerTo(NEWER_OTHER_LESSON_ID).data(),
+                      lessonSlug,
+                    }),
+                  },
+            ),
+        };
+      }) as never);
+      try {
+        mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+        mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+        await __assessmentSessionsBeginHandler(makeRequest());
+        expect(mockSessionCreate).toHaveBeenCalledTimes(1);
+        expect(pointerReads.length).toBeGreaterThan(0);
+        expect(pointerReads.every((key) => key === `${CLASS_ID}/${LESSON_SLUG}`)).toBe(true);
+      } finally {
+        mockAssignmentsCurrentDocRef.mockImplementation(() => ({ get: mockCurrentPointerGet }));
+      }
+    });
+
     it("never-managed legacy scope (no pointer): an occurrence still begins exactly as before", async () => {
       routeAssignments({ [ASSIGNMENT_ID]: assignmentSnapshot() });
       mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());

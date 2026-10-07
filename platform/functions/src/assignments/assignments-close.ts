@@ -3,12 +3,9 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 import {
   platformCallable,
   PlatformError,
-  assignmentCloseDocRef,
   assignmentDocRef,
   log,
   requireDistrictContext,
-  writeAuditEvent,
-  type AssignmentCloseWrite,
   type AssignmentRecord,
 } from "../shared";
 
@@ -19,14 +16,13 @@ export type AssignmentsCloseRequest = {
   readonly assignmentId: string;
 };
 
-// Return payload of a successful close call. `alreadyClosed` is `true`
-// when the record is already in `closed` and no write is required; `false`
-// when this call advanced the lifecycle field from `published` to
-// `closed`.
+// Return payload of a successful close call. Only a legacy record that is
+// already `closed` can succeed, so `alreadyClosed` is always `true`. The
+// field keeps the established response shape for cached legacy clients.
 export type AssignmentsCloseResponse = {
   readonly assignmentId: string;
   readonly status: "closed";
-  readonly alreadyClosed: boolean;
+  readonly alreadyClosed: true;
 };
 
 const ASSIGNMENT_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
@@ -100,19 +96,27 @@ function safeLog(fn: () => void): void {
 
 // assignmentsClose
 //
-// Canonical close transition for assignments/{assignmentId} per Data Model
-// §3.6 lifecycle: `published` -> `closed`. Callable by the owning teacher
-// only.
+// Retired lifecycle transition, kept exported for compatibility only.
 //
-// Every side effect flows through the canonical shared helpers:
-//   - record read via `assignmentDocRef(...).get()`               (typed ref)
-//   - narrow close write via `assignmentCloseDocRef(...).update(...)`
-//                                                                 (typed ref)
-//   - audit event via `writeAuditEvent({...})`                    (§5 helper)
+// Teacher-controlled closing is no longer part of the assignment
+// lifecycle: a published assignment stays available to its recipients for
+// the lifetime of the active class (same-lesson reassignment, not closing,
+// is what makes an earlier occurrence historical). The Teacher Workspace no
+// longer offers Close, but a stale cached client may still invoke this
+// callable, so it remains deployed (deleting it would be a Functions
+// deletion operation) and can NEVER perform a `published` -> `closed`
+// transition. This handler holds no write capability at all: no
+// assignment write ref and no audit write.
 //
-// Idempotency: an already-`closed` record returns `alreadyClosed: true`
-// with no second write and no second audit event. Every other current
-// status (draft, archived) is rejected with `assignments.invalidTransition`.
+// Behavior, in order:
+//   - teacher role, district context, request shape, existence, and
+//     ownership are validated exactly as before;
+//   - a legacy record that is already `closed` returns
+//     `alreadyClosed: true` (the established idempotent response, no
+//     write, no audit event); `assignmentsReopen` remains its recovery path;
+//   - a `published` record is refused with `assignments.closeRetired`;
+//   - every other status (draft, archived) is still refused with
+//     `assignments.invalidTransition`.
 async function assignmentsCloseHandler(
   request: CallableRequest<unknown>,
 ): Promise<AssignmentsCloseResponse> {
@@ -145,39 +149,23 @@ async function assignmentsCloseHandler(
     };
   }
 
-  if (existing.status !== "published") {
+  if (existing.status === "published") {
+    safeLog(() =>
+      log.info("assignments.closeRetiredRefused", {
+        actorUserId: actor.uid,
+        assignmentId: input.assignmentId,
+      }),
+    );
     throw new PlatformError(
-      "assignments.invalidTransition",
-      `Cannot transition from "${existing.status}" to "closed".`,
+      "assignments.closeRetired",
+      "Assignments can no longer be closed. A published assignment stays available for the life of its class.",
     );
   }
 
-  const write: AssignmentCloseWrite = { status: "closed" };
-  await assignmentCloseDocRef(input.assignmentId).update(write);
-
-  await writeAuditEvent({
-    actorUserId: actor.uid,
-    actorRole: "teacher",
-    action: "assignments.closed",
-    targetType: "assignment",
-    targetId: input.assignmentId,
-    schoolId: actor.schoolId,
-    districtId: actor.districtId,
-    payload: { classId: existing.classId },
-  });
-
-  safeLog(() =>
-    log.info("assignments.closed", {
-      actorUserId: actor.uid,
-      assignmentId: input.assignmentId,
-    }),
+  throw new PlatformError(
+    "assignments.invalidTransition",
+    `Cannot transition from "${existing.status}" to "closed".`,
   );
-
-  return {
-    assignmentId: input.assignmentId,
-    status: "closed",
-    alreadyClosed: false,
-  };
 }
 
 export const assignmentsClose = platformCallable(assignmentsCloseHandler);

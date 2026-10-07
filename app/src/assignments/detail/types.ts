@@ -49,23 +49,6 @@ export type AssignmentDetailMetadata = {
   readonly publishedAt?: number;
 };
 
-// Sprint 13D: injected close-callable seam. The Assignment Detail
-// surface never imports from firebase/*; the entry point wires the
-// real `assignmentsClose` callable and tests inject an in-memory fake.
-// The callable resolves on the canonical
-// `{ assignmentId, status: "closed", alreadyClosed }` response and
-// rejects on any failure. UI failure messaging never reveals Firestore,
-// callable names, stack traces, or document paths.
-export type AssignmentsCloseResult = {
-  readonly assignmentId: string;
-  readonly status: "closed";
-  readonly alreadyClosed: boolean;
-};
-
-export type AssignmentsCloseCallable = (input: {
-  readonly assignmentId: string;
-}) => Promise<AssignmentsCloseResult>;
-
 // Sprint 13E: injected reopen-callable seam. The Assignment Detail
 // surface never imports from firebase/*; the entry point wires the
 // real `assignmentsReopen` callable and tests inject an in-memory fake.

@@ -648,6 +648,8 @@ The current implementation writes `sessionOrdinal = 1` at `assessmentSessionsBeg
 
 ## 33. Sprint 13E Reconciliations (Assignment Close and Reopen Lifecycle)
 
+> **Amendment (2026-10-07): teacher-controlled Close is retired.** The `published` -> `closed` row in §33.1 no longer occurs. `assignmentsClose` remains deployed for compatibility but refuses a `published` record with `assignments.closeRetired` and holds no write capability (no `assignmentCloseDocRef`, no `assignments.closed` audit event). A published assignment remains available to its recipients for the lifetime of the active class. `closed` survives only as a legacy compatibility state: every read and refusal behavior below for an existing closed record (§33.2 onward, including the grace-period finalize rule) still applies to such a record, and `assignmentsReopen` is its recovery path. Same-lesson reassignment (an earlier occurrence superseded by the `assignmentsCurrent` pointer, not independently launchable) is unchanged and is not a status transition. The remainder of §33 is retained as the historical record of the Sprint 13D/13E behavior.
+
 The following clarifications narrow §17 (Assignment Relationship) against the certified Sprint 13D `assignmentsClose` and Sprint 13E `assignmentsReopen` implementations. No new pipeline requirement is introduced; §33 records the assignment-lifecycle semantics the assessment pipeline already depends on, in one place, so the assessment surface can rely on them without reconstructing behavior from the assignment domain.
 
 The assessment pipeline is unchanged by §33. Session expiration (§6), grace-period (§17 and `ASSESSMENT_PIPELINE_SPECIFICATION.md` §7.1), autosave, attempt numbering (§8, §12), representative-attempt selection under PDR-029, and the frozen recipient population under PDR-029l all continue to apply verbatim.
@@ -659,7 +661,7 @@ The certified `assignments/{assignmentId}.status` field admits the enumeration n
 | From | To | Callable | Audit action |
 | --- | --- | --- | --- |
 | `draft` | `published` | `assignmentsPublish` | `assignments.published` |
-| `published` | `closed` | `assignmentsClose` | `assignments.closed` |
+| `published` | `closed` | `assignmentsClose` (retired 2026-10-07; now refused with `assignments.closeRetired`) | `assignments.closed` (historical) |
 | `closed` | `published` | `assignmentsReopen` | `assignments.reopened` |
 | `draft` / `published` / `closed` | `archived` | `assignmentsArchive` | `assignments.archived` |
 
@@ -880,3 +882,4 @@ No lesson may receive a second deployed assessment revision until F5.3 Slice 9 i
 - 2026-07-18 - Sprint 16 reconciliation. Added §36 recording the client-side per-render fetch deduplication on Assignment Detail, the summary-anchored group counts with a calm synchronization note on disagreement, and the targeted read-only teacher-facing refresh path. No new callable, Firestore field, custom claim, Rules relaxation, composite index, or schema change was introduced; §36 narrows §35 against the certified Sprint 16 client hardening.
 - 2026-09-25 - Sprint 30 reconciliation. Added §37 recording the unscored Show Your Thinking `writtenResponse` carried by autosave onto the session, frozen onto the attempt at finalize, and projected to the owning teacher. No scoring, Rules, index, or callable change.
 - 2026-09-27 - F5.3 Slice 9.0 reconciliation under PDR-031. Added the F5.3 Slice 9.0 Reconciliation Notice and §38. Superseded the §16 statement that the revision current at submission applies (the canonical rule is publish-time freezing, current behavior since commit `b294e65`). Reconciled §6, §15 (the D7 condition and its inheritance by Slice 9 renditions), §16, §17 and §33.3 (`lessonVersion` replaced by `assessmentRevisionId`). No Rules, index, collection, or callable change.
+- 2026-10-07 - Assignment lifecycle amendment. Added the §33 amendment notice: teacher-controlled Close is retired (`assignmentsClose` refuses a `published` record with `assignments.closeRetired`); `closed` is a legacy compatibility state recovered through `assignmentsReopen`; same-lesson reassignment is unchanged.

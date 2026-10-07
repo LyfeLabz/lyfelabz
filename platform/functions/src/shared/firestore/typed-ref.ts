@@ -8,7 +8,6 @@ import type {
 import {
   ASSIGNMENTS_COLLECTION,
   type AssignmentArchiveWrite,
-  type AssignmentCloseWrite,
   type AssignmentReopenWrite,
   type AssignmentCreationWrite,
   type AssignmentDraftUpdateWrite,
@@ -526,19 +525,10 @@ export function assignmentPublishDocRef(
     .doc(assignmentId) as DocumentReference<AssignmentPublishWrite>;
 }
 
-// Close-write typed reference for assignments/{assignmentId}. The
-// assignmentsClose callable uses this reference to `.update()` a narrow
-// `AssignmentCloseWrite` payload that advances the lifecycle field from
-// `published` to `closed` and modifies no other field.
-export function assignmentCloseDocRef(
-  assignmentId: string,
-): DocumentReference<AssignmentCloseWrite> {
-  return getAdminFirestore()
-    .collection(ASSIGNMENTS_COLLECTION)
-    .doc(assignmentId) as DocumentReference<AssignmentCloseWrite>;
-}
-
-// Reopen-write typed reference for assignments/{assignmentId}. The
+// Reopen-write typed reference for assignments/{assignmentId}. There is
+// deliberately no close-write counterpart: teacher-controlled closing is
+// retired (`assignmentsClose` holds no write capability), and reopen is the
+// legacy recovery path for an already-closed record. The
 // assignmentsReopen callable uses this reference to `.update()` a narrow
 // `AssignmentReopenWrite` payload that moves the lifecycle field from
 // `closed` back to `published` and modifies no other field.

@@ -2,9 +2,13 @@ import type { CallableRequest } from "firebase-functions/v2/https";
 
 const mockAssignmentGet = jest.fn();
 const mockAssignmentUpdate = jest.fn();
-const mockAssignmentDocRef = jest.fn(() => ({ get: mockAssignmentGet }));
-const mockAssignmentCloseDocRef = jest.fn(() => ({
+const mockAssignmentSet = jest.fn();
+// The doc ref exposes write methods only so the tests can prove the retired
+// handler never calls them.
+const mockAssignmentDocRef = jest.fn(() => ({
+  get: mockAssignmentGet,
   update: mockAssignmentUpdate,
+  set: mockAssignmentSet,
 }));
 
 const mockWriteAuditEvent = jest.fn();
@@ -29,7 +33,6 @@ jest.mock("../shared", () => {
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assignmentDocRef: mockAssignmentDocRef,
-    assignmentCloseDocRef: mockAssignmentCloseDocRef,
     requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
   };
@@ -88,8 +91,8 @@ describe("assignmentsClose", () => {
   beforeEach(() => {
     mockAssignmentGet.mockReset();
     mockAssignmentUpdate.mockReset();
+    mockAssignmentSet.mockReset();
     mockAssignmentDocRef.mockClear();
-    mockAssignmentCloseDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
     mockRequireDistrictContext.mockReset();
     mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
@@ -98,33 +101,42 @@ describe("assignmentsClose", () => {
     mockLogError.mockReset();
   });
 
-  it("advances published to closed and emits a single audit event", async () => {
+  it("refuses a published assignment with closeRetired and never writes or audits", async () => {
     mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
-    mockAssignmentUpdate.mockResolvedValueOnce(undefined);
-    mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
 
-    const result = await __assignmentsCloseHandler(makeRequest());
+    await expect(
+      __assignmentsCloseHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.closeRetired" });
 
     expect(mockRequireDistrictContext).toHaveBeenCalledTimes(1);
-    expect(mockAssignmentUpdate).toHaveBeenCalledWith({ status: "closed" });
-    expect(mockWriteAuditEvent).toHaveBeenCalledWith({
-      actorUserId: TEACHER_UID,
-      actorRole: "teacher",
-      action: "assignments.closed",
-      targetType: "assignment",
-      targetId: ASSIGNMENT_ID,
-      schoolId: SCHOOL_ID,
-      districtId: DISTRICT_ID,
-      payload: { classId: "class-abc" },
-    });
-    expect(result).toEqual({
-      assignmentId: ASSIGNMENT_ID,
-      status: "closed",
-      alreadyClosed: false,
-    });
+    expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    expect(mockAssignmentSet).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
-  it("is idempotent when already closed", async () => {
+  it("can never produce a published -> closed transition, even on repeated calls", async () => {
+    for (let i = 0; i < 3; i++) {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      await expect(
+        __assignmentsCloseHandler(makeRequest()),
+      ).rejects.toBeInstanceOf(PlatformError);
+    }
+    expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    expect(mockAssignmentSet).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("keeps ownership enforcement ahead of the retired refusal", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(
+      existingSnapshot({ teacherId: "someone-else" }),
+    );
+    await expect(
+      __assignmentsCloseHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignments.forbidden" });
+    expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+  });
+
+  it("keeps the idempotent response for a legacy already-closed record", async () => {
     mockAssignmentGet.mockResolvedValueOnce(
       existingSnapshot({ status: "closed" }),
     );

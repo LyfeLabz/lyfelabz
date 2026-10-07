@@ -8,8 +8,11 @@ export const ASSIGNMENTS_COLLECTION = "assignments";
 // only lifecycle field" invariant established for users in Sprint 2 and
 // preserved through Sprint 4C. The enumeration follows §3.6 exactly:
 // `draft` on creation, `published` after the teacher publishes the
-// assignment to enrolled students, `closed` after the window closes or the
-// teacher closes the assignment, and `archived` as the terminal state that
+// assignment to enrolled students (it then stays available for the
+// lifetime of the active class), `closed` as a LEGACY compatibility state
+// only (teacher-controlled closing is retired: no current workflow
+// creates it, existing closed records stay readable and recoverable
+// through `assignmentsReopen`), and `archived` as the terminal state that
 // removes the record from active teacher views while preserving history so
 // past submissions remain resolvable. No additional lifecycle values are
 // introduced without a documented architecture amendment.
@@ -199,18 +202,12 @@ export type AssignmentPublishWrite = {
   readonly assessmentRevisionId: string;
 };
 
-// Write shape for the close callable (assignmentsClose). Conforms to Data
-// Model §3.6 lifecycle: `status` advances from `published` to `closed` and
-// no other field is modified.
-export type AssignmentCloseWrite = {
-  readonly status: "closed";
-};
-
 // Write shape for the reopen callable (assignmentsReopen). Conforms to
 // Data Model 3.6 lifecycle: `status` moves from `closed` back to
-// `published` and no other field is modified. This is the inverse of
-// AssignmentCloseWrite and preserves the same field-narrowness posture,
-// so the reopen path cannot be laundered into a metadata edit or an
+// `published` and no other field is modified. Reopen is the legacy
+// recovery path for an already-closed record (teacher-controlled closing
+// is retired, so no close write shape exists). The write stays narrow so
+// the reopen path cannot be laundered into a metadata edit or an
 // ownership change.
 export type AssignmentReopenWrite = {
   readonly status: "published";

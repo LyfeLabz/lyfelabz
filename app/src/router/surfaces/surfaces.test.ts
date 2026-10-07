@@ -1453,6 +1453,32 @@ describe("My Science (28.6G) - status, results & ordering", () => {
     ]);
   });
 
+  test("retaking an older lesson never reorders it above a newer one: order is by publish time, not attempt time", async () => {
+    // Both lessons stay published and launchable. The student retakes the
+    // OLDER lesson most recently; it must not move above the newer lesson.
+    const { deps } = makeDeps({
+      studentAssignmentsList: assignmentsSeam([
+        okItem({ assignmentId: "a-old", lessonSlug: "what-is-life", publishedAt: 100 }),
+        okItem({ assignmentId: "a-new", lessonSlug: "cell-types", publishedAt: 200 }),
+      ]),
+      studentResultsList: resultsSeam([
+        okAttempt({ attemptId: "n-1", assignmentId: "a-new", submittedAt: 1_000 }),
+        okAttempt({ attemptId: "o-1", assignmentId: "a-old", submittedAt: 2_000 }),
+        okAttempt({ attemptId: "o-2", assignmentId: "a-old", attemptNumber: 2, submittedAt: 9_000 }),
+      ]),
+    });
+    const table = createRouteTable(deps);
+    const mount = mkMount();
+    table.activeStudent(studentSession(), mount);
+    await flush();
+    const cards = cardsInDomain(mount, "life-science");
+    expect(cardTitles(cards)).toEqual(["Cell Types", "What Is Life?"]);
+    // The older lesson remains re-launchable alongside the newer one.
+    for (const card of cards) {
+      expect(card.querySelector("[data-testid=assignments-launch]")).not.toBeNull();
+    }
+  });
+
   test("completed work whose assignment is no longer listed stays visible in Other with its result and no launch control", async () => {
     const { deps } = makeDeps({
       // No published assignment for the completed attempt (e.g. closed after
