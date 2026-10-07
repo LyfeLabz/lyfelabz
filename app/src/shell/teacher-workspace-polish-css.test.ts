@@ -350,3 +350,63 @@ describe("Assignment Detail roster information hierarchy", () => {
     expect(html).not.toMatch(/\.shell-assignment-detail-roster[^{]*\{[^}]*overflow-x:\s*(auto|scroll)/);
   });
 });
+
+// Assignment Detail "Students to add": a rare actionable repair section that
+// is visually subordinate to the Summary and Roster, with no zero-state,
+// read-error, loading, or lifecycle-note styling left behind.
+describe("Assignment Detail Students to add section", () => {
+  test("is a plain bordered block, not another dashboard card", () => {
+    const body = ruleBody(html, ".shell-assignment-detail-late-recipients");
+    expect(body).toMatch(/border:\s*1px solid var\(--tw-hairline\)/);
+    expect(body).toMatch(/border-radius:\s*var\(--tw-radius-control\)/);
+    expect(body).not.toMatch(/box-shadow/);
+    // It no longer shares the major section-card rule.
+    const card = ruleBody(html, ".shell-assignment-detail-roster");
+    expect(card).toMatch(/box-shadow:\s*var\(--tw-shadow-card\)/);
+    expect(html).not.toMatch(
+      /\.shell-assignment-detail-roster,\s*\.shell-assignment-detail-late-recipients,/,
+    );
+  });
+
+  test("heading is a label plus a plain count, like the Roster group headings", () => {
+    expect(ruleBody(html, ".shell-assignment-detail-late-recipients-heading-label")).toMatch(
+      /text-transform:\s*uppercase/,
+    );
+    const count = ruleBody(html, ".shell-assignment-detail-late-recipients-heading-count");
+    expect(count).toMatch(/font-variant-numeric:\s*tabular-nums/);
+    expect(count).not.toMatch(/border-radius|background/);
+  });
+
+  test("rows are compact dividers and the Add action stays a neutral content control", () => {
+    const row = ruleBody(html, ".shell-assignment-detail-late-recipients-row");
+    expect(row).toMatch(/border-bottom:\s*1px solid var\(--tw-hairline-soft\)/);
+    expect(row).not.toMatch(/background|border-radius/);
+    const add = ruleBody(html, ".shell-assignment-detail-late-recipients-add");
+    expect(add).toMatch(/border-radius:\s*var\(--tw-radius-control\)/);
+    expect(add).not.toMatch(/--tw-primary|--tw-gold/);
+  });
+
+  test("the post-add confirmation takes no space until it has text", () => {
+    expect(ruleBody(html, ".shell-assignment-detail-late-recipients-confirmation:empty")).toMatch(
+      /margin:\s*0;/,
+    );
+    expect(ruleBody(html, ".shell-assignment-detail-late-recipients-status")).not.toMatch(
+      /min-height/,
+    );
+  });
+
+  test("dead zero-state, read-error, loading, and lifecycle-note styling is removed", () => {
+    for (const sel of [
+      ".shell-assignment-detail-late-recipients-empty",
+      ".shell-assignment-detail-late-recipients-info-note",
+      ".shell-assignment-detail-late-recipients-loading",
+      ".shell-assignment-detail-late-recipients-error",
+    ]) {
+      expect(has(sel)).toBe(false);
+    }
+    // The explicit Add failure keeps its error callout.
+    expect(ruleBody(html, ".shell-assignment-detail-late-recipients-action-error")).toMatch(
+      /background:\s*var\(--tw-callout-error-bg\)/,
+    );
+  });
+});

@@ -3385,7 +3385,6 @@
      shell-card; every other section is a card in its own right. */
   .shell-assignment-detail-summary { margin: 0 0 1rem 0; }
   .shell-assignment-detail-roster,
-  .shell-assignment-detail-late-recipients,
   .shell-assignment-detail-questions,
   .shell-assignment-detail-lms,
   .shell-assignment-detail-draft-summary {
@@ -3397,7 +3396,6 @@
     margin: 0 0 1rem 0;
   }
   .shell-assignment-detail-roster-heading,
-  .shell-assignment-detail-late-recipients-heading,
   .shell-assignment-detail-questions-heading,
   .shell-assignment-detail-lms-heading,
   .shell-assignment-detail-draft-summary-heading,
@@ -3646,35 +3644,70 @@
     grid-column: 1 / -1;
   }
 
-  /* Late recipients: each name and its Add action are one scannable row. */
-  .shell-assignment-detail-late-recipients-status,
-  .shell-assignment-detail-late-recipients-loading {
-    color: var(--tw-ink-muted);
-    margin: 0 0 0.5rem 0;
-    min-height: 1.2em;
+  /* Students to add: a rare, actionable repair section (normal late
+     enrollment is reconciled automatically). Rendered only when someone can
+     actually be added, and kept visually subordinate to the Summary and
+     Roster: a plain bordered block, no card shadow, no new color family. */
+  .shell-assignment-detail-late-recipients {
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+    padding: 0.6rem 1rem 0.4rem 1rem;
+    margin: 0 0 1rem 0;
   }
-  .shell-assignment-detail-late-recipients-empty {
-    color: var(--tw-ink-muted);
-    margin: 0.25rem 0 0 0;
+  /* Heading mirrors the Roster group headings: an uppercase label and a
+     separate plain count (never a pill or filter). */
+  .shell-assignment-detail-late-recipients-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0 0 0.25rem 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--tw-ink-soft);
   }
+  .shell-assignment-detail-late-recipients-heading-label {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .shell-assignment-detail-late-recipients-heading-count {
+    font-size: 0.9rem;
+    color: var(--tw-ink);
+    font-variant-numeric: tabular-nums;
+  }
+  /* In-flight "Adding..." line; takes no space while empty. */
+  .shell-assignment-detail-late-recipients-status {
+    color: var(--tw-ink-muted);
+    font-size: 0.88rem;
+    margin: 0;
+  }
+  /* Post-add confirmation: one quiet line that remains (and is announced)
+     even after the final student is added and the section is gone. Takes no
+     space until it has text. */
+  .shell-assignment-detail-late-recipients-confirmation {
+    color: var(--tw-ink-soft);
+    font-size: 0.9rem;
+    margin: 0 0 1rem 0;
+  }
+  .shell-assignment-detail-late-recipients-confirmation:empty {
+    margin: 0;
+  }
+  /* Compact divider rows, the same row grammar as the Roster: name, then the
+     Add content action. */
   .shell-assignment-detail-late-recipients-list {
     list-style: none;
     padding: 0;
-    margin: 0.25rem 0 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+    margin: 0;
   }
   .shell-assignment-detail-late-recipients-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
-    padding: 0.5rem 0.7rem;
-    background: var(--tw-surface-alt);
-    border: 1px solid var(--tw-hairline);
-    border-radius: var(--tw-radius-control);
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--tw-hairline-soft);
   }
+  .shell-assignment-detail-late-recipients-row:last-child { border-bottom: 0; }
   .shell-assignment-detail-late-recipients-name {
     color: var(--tw-ink);
     font-weight: 500;
@@ -3707,18 +3740,7 @@
     opacity: 0.6;
     cursor: default;
   }
-  /* Closed/draft "add" note is informational, not broken. */
-  .shell-assignment-detail-late-recipients-info-note {
-    margin: 0.25rem 0 0 0;
-    padding: 0.5rem 0.75rem;
-    background: var(--tw-callout-info-bg);
-    border: 1px solid var(--tw-callout-info-edge);
-    border-radius: var(--tw-radius-control);
-    color: var(--tw-callout-info-ink);
-    font-size: 0.9rem;
-  }
   /* Add failure is a real error. */
-  .shell-assignment-detail-late-recipients-error,
   .shell-assignment-detail-late-recipients-action-error {
     margin: 0.35rem 0 0 0;
     padding: 0.5rem 0.75rem;
