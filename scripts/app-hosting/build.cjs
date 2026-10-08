@@ -310,7 +310,7 @@ function writeApprovedFile(repoRoot, outputDirectory, entry) {
 // module keys relative to the build's working directory; when a dependency
 // resolves outside it (for example a symlinked node_modules in an isolated
 // release checkout) those strings become the developer's real filesystem path.
-const bundledOutputs = ['app/dist/bundle.js', 'assets/lyfelabz-assessment-runtime-active.js'];
+const bundledOutputs = ['app/dist/bundle.js', 'assets/lyfelabz-assessment-runtime-active.js', 'assets/lyfelabz-lab-report-cloud.js'];
 
 // A leaked development path must be anchored like a filesystem path: a
 // leading "/" or a run of "../", then a home or temp root; or a Windows drive

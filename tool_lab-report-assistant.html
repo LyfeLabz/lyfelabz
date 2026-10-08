@@ -380,6 +380,42 @@ progress { display: block; width: 100%; height: .8rem; accent-color: var(--gold)
 .high-contrast #reset-report { color: #ffb7b5; border-color: #ffb7b5; background: #000; }
 .high-contrast #reset-report:hover, .high-contrast #reset-report:focus-visible { color: #fff; border-color: #fff; background: #471515; }
 
+/* Cloud saving: status, account, alerts, and version choice. */
+.sticky-progress { flex-wrap: wrap; }
+.cloud-status { display: inline-flex; align-items: center; gap: .4rem; margin-right: auto; font-weight: 800; white-space: nowrap; color: var(--text); }
+.cloud-status::before { content: ''; width: .6rem; height: .6rem; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
+.cloud-status[data-state="cloud"]::before { background: var(--green); }
+.cloud-status[data-state="saving"]::before, .cloud-status[data-state="loading"]::before { background: var(--gold); }
+.cloud-status[data-state="device"]::before { background: var(--orange); }
+.cloud-status[data-state="action"] { color: #ffaaa9; }
+.cloud-status[data-state="action"]::before { background: var(--red); }
+#cloud-message, #cloud-note { color: var(--text-muted); font-size: .95rem; }
+#cloud-message:empty, #cloud-note:empty { display: none; }
+.cloud-panel { margin-top: 1rem; padding: .9rem 1.2rem; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+.cloud-panel p { margin: 0; }
+.cloud-panel .tool-controls { margin: .6rem 0 0; }
+.cloud-panel a, .origin-notice a { color: var(--gold); font-weight: 700; overflow-wrap: anywhere; }
+.origin-notice { margin-top: 1rem; }
+.origin-notice p { margin-bottom: .4rem; }
+.report-alert { margin: 1rem 0; border-left-color: #ff8a80; }
+.report-alert p { font-weight: 700; }
+.report-alert .tool-controls { margin-bottom: 0; }
+body[data-report-lock] #step-content { opacity: .6; }
+body[data-report-lock="loading"] #step-content { opacity: 1; }
+body[data-report-lock="loading"] #step-links, body[data-report-lock="loading"] .page-actions { visibility: hidden; }
+body[data-report-lock="choosing"] #step-number, body[data-report-lock="choosing"] #step-title, body[data-report-lock="choosing"] #step-intro,
+body[data-report-lock="choosing"] #step-content, body[data-report-lock="choosing"] .page-actions, body[data-report-lock="choosing"] #review-tools { display: none !important; }
+.version-choice { margin-bottom: 1.5rem; }
+.version-choice .section-title:focus { outline: none; }
+.version-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1rem; }
+.version-card h3 { margin-bottom: .4rem; }
+.version-card p { margin: .2rem 0; }
+.version-preview { margin: .6rem 0; }
+.version-preview summary { cursor: pointer; font-weight: 700; padding: .4rem 0; }
+.version-preview .response { max-height: 16rem; overflow: auto; font-size: .9rem; color: var(--text-muted); }
+.high-contrast .cloud-status[data-state="action"] { color: #fff; }
+.high-contrast .cloud-panel, .high-contrast .report-alert { border-color: #fff; }
+
 footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 @media (max-width: 600px) { footer { padding-left: max(1.2rem, env(safe-area-inset-left)); padding-right: max(1.2rem, env(safe-area-inset-right)); } }
 @media (pointer: coarse) { .footer-links a { min-height: 44px; display: inline-flex; align-items: center; } }
@@ -417,6 +453,7 @@ body.ls-active .ls-focus { display: flex; justify-content: center; flex-wrap: wr
   #print-report .data-table tr { break-inside: avoid-page; page-break-inside: avoid; }
 }
 </style>
+<script defer src="assets/lab-report-cloud-sync.js"></script>
 <script defer src="assets/lab-report-assistant.js"></script>
 </head>
 <body>
@@ -441,6 +478,13 @@ body.ls-active .ls-focus { display: flex; justify-content: center; flex-wrap: wr
     <div class="container">
       <p class="bridge-callout">This tool helps organize your thinking. Your scientific ideas and responses come from you.</p>
       <p id="local-notice">One active report is saved on this browser and device only. It does not sync or submit to your teacher. Download your work before starting over.</p>
+      <div id="origin-notice" class="bridge-callout origin-notice" hidden></div>
+      <div id="cloud-panel" class="cloud-panel" role="region" aria-label="Saving to your LyfeLabz account" hidden></div>
+      <div class="tool-controls backup-controls" role="group" aria-label="Back up or move your report">
+        <button type="button" class="nav-back" id="backup-download">Download backup file</button>
+        <button type="button" class="nav-back" id="backup-open">Open backup file</button>
+        <input type="file" id="backup-file" accept=".json,application/json" hidden>
+      </div>
       <noscript><p class="bridge-callout">JavaScript is needed to write and save a report in this tool. Enable JavaScript or write your report in a document using the seven lab report sections.</p></noscript>
       <div class="tool-controls" role="group" aria-label="Reading and display options">
         <button type="button" class="nav-back" id="toggle-focus" aria-pressed="false">Focus Mode</button>
@@ -452,11 +496,15 @@ body.ls-active .ls-focus { display: flex; justify-content: center; flex-wrap: wr
       </div>
       <p id="speech-status" role="status"></p>
       <p id="save-status" role="status" aria-live="polite"></p>
+      <div id="report-alert" class="bridge-callout report-alert" role="alert" hidden></div>
+      <p id="cloud-message" role="status" aria-live="polite"></p>
+      <p id="cloud-note" role="status" aria-live="polite"></p>
       <div id="report-navigation" role="region" aria-label="Report progress and navigation">
-        <div class="sticky-progress"><label id="progress-label" for="report-progress">0 of 7 sections filled in</label>
+        <div class="sticky-progress"><span id="cloud-status" class="cloud-status" hidden></span><label id="progress-label" for="report-progress">0 of 7 sections filled in</label>
         <progress id="report-progress" max="7" value="0"></progress></div>
         <div id="step-links" class="step-links" role="navigation" aria-label="Report sections"></div>
       </div>
+      <div id="version-choice" class="version-choice" role="region" aria-labelledby="version-choice-title" hidden></div>
       <span id="step-number" class="section-label">Step 1 of 8</span>
       <h2 id="step-title" class="section-title" tabindex="-1">Investigation Question + Scientific Background</h2>
       <p id="step-intro" class="section-desc"></p>

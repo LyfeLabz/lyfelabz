@@ -138,12 +138,17 @@ test('bundle hygiene fails the artifact build closed on a leaked path', () => {
   try {
     fs.mkdirSync(path.join(dir, 'app/dist'), { recursive: true });
     fs.writeFileSync(path.join(dir, 'app/dist/bundle.js'), '// src/index.ts\nconsole.log(1);\n');
-    assert.deepEqual(validateBundleHygiene(dir), { bundlesChecked: 2, clean: true });
+    assert.deepEqual(validateBundleHygiene(dir), { bundlesChecked: 3, clean: true });
     fs.writeFileSync(
       path.join(dir, 'app/dist/bundle.js'),
       '// ../../../../Users/dev/repo/app/node_modules/@firebase/util/dist/index.esm2017.js\n',
     );
     assert.throws(() => validateBundleHygiene(dir), /embeds a local development path/);
+    // The Lab Report Assistant cloud bundle is checked the same way.
+    fs.writeFileSync(path.join(dir, 'app/dist/bundle.js'), '// src/index.ts\n');
+    fs.mkdirSync(path.join(dir, 'assets'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'assets/lyfelabz-lab-report-cloud.js'), '// /Users/dev/repo/app/node_modules/firebase/x.js\n');
+    assert.throws(() => validateBundleHygiene(dir), /lyfelabz-lab-report-cloud\.js/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

@@ -87,6 +87,13 @@ import {
   type StudentAccommodationUpdateWrite,
 } from "../types/student-accommodation";
 import {
+  STUDENT_LAB_REPORTS_COLLECTION,
+  STUDENT_LAB_REPORT_ITEMS_SUBCOLLECTION,
+  type StudentLabReportCreationWrite,
+  type StudentLabReportRecord,
+  type StudentLabReportUpdateWrite,
+} from "../types/student-lab-report";
+import {
   PRESENTATION_VARIANTS_COLLECTION,
   presentationVariantIndexDocId,
   presentationVariantScopedIndexDocId,
@@ -1128,6 +1135,48 @@ export function studentAccommodationHistoryDocRef(
     .doc(studentId)
     .collection(ACCOMMODATION_HISTORY_SUBCOLLECTION)
     .doc(accommodationHistoryDocId(revision)) as DocumentReference<AccommodationHistoryWrite>;
+}
+
+// -------------------- Student lab report references --------------------
+//
+// Typed Firestore references for the Lab Report Assistant cloud autosave
+// record family `studentLabReports/{studentId}/reports/{reportId}`. Server-
+// owned: zero direct client access (see the paired Rules deny-all block).
+// `labReportsGet` and `labReportsSave` are the only callables that touch
+// these references. The student id is always the caller's verified uid.
+
+function studentLabReportDocPath(studentId: string, reportId: string) {
+  return getAdminFirestore()
+    .collection(STUDENT_LAB_REPORTS_COLLECTION)
+    .doc(studentId)
+    .collection(STUDENT_LAB_REPORT_ITEMS_SUBCOLLECTION)
+    .doc(reportId);
+}
+
+export function studentLabReportDocRef(
+  studentId: string,
+  reportId: string,
+): DocumentReference<StudentLabReportRecord> {
+  return studentLabReportDocPath(studentId, reportId) as DocumentReference<StudentLabReportRecord>;
+}
+
+// Used with `Transaction.create()` for the first save (revision 0 -> 1), so
+// a concurrent first save is resolved by Firestore's ALREADY_EXISTS
+// precondition and transaction retry.
+export function studentLabReportCreationDocRef(
+  studentId: string,
+  reportId: string,
+): DocumentReference<StudentLabReportCreationWrite> {
+  return studentLabReportDocPath(studentId, reportId) as DocumentReference<StudentLabReportCreationWrite>;
+}
+
+// Used with `Transaction.update()` for every later save. The narrow write
+// shape cannot touch the ownership stamp.
+export function studentLabReportUpdateDocRef(
+  studentId: string,
+  reportId: string,
+): DocumentReference<StudentLabReportUpdateWrite> {
+  return studentLabReportDocPath(studentId, reportId) as DocumentReference<StudentLabReportUpdateWrite>;
 }
 
 // -------------------- Presentation variant index references --------------------

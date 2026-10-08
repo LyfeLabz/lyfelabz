@@ -6,6 +6,7 @@
   "scripts": {
     "build": "esbuild src/index.ts --bundle --format=esm --target=es2022 --outfile=dist/bundle.js",
     "build:runtime": "esbuild src/runtime/entry.ts --bundle --format=iife --target=es2020 --outfile=../assets/lyfelabz-assessment-runtime-active.js",
+    "build:lab-report-cloud": "esbuild src/labReport/cloudEntry.ts --bundle --format=iife --target=es2020 --outfile=../assets/lyfelabz-lab-report-cloud.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --ext .ts src",
     "test": "jest",

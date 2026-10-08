@@ -811,6 +811,28 @@ service cloud.firestore {
       }
     }
 
+    // ---------- studentLabReports/{studentId}/reports/{reportId} ----------
+    //
+    // Lab Report Assistant cloud autosave. A student's private working
+    // draft. Zero direct client read/write for ANY role, including the
+    // owning student: `labReportsGet` and `labReportsSave` are the sole
+    // readers/writers, identify the student from the verified ID token, and
+    // run through the Admin SDK, bypassing Rules. No teacher or
+    // administrator surface reads these records.
+    //
+    // This block restates the terminal default-deny explicitly (the same
+    // `allow read, write: if false;` pattern as `studentAccommodations`) so
+    // the server-only intent is documented at the surface and cannot be
+    // relaxed by a broader accidental edit. Behavior is identical to the
+    // default-deny that already covers this path.
+    match /studentLabReports/{studentId} {
+      allow read, write: if false;
+
+      match /reports/{reportId} {
+        allow read, write: if false;
+      }
+    }
+
     // ---------- presentationVariants/{indexId} ----------
     //
     // F5.2 Persistent Student Differentiation, Slice 3 (publication state

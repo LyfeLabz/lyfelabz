@@ -62,6 +62,17 @@ export {
   type StudentAccommodationUpdateWrite,
 } from "./types/student-accommodation";
 export {
+  ACTIVE_LAB_REPORT_ID,
+  LAB_REPORT_FORMAT_VERSION,
+  STUDENT_LAB_REPORTS_COLLECTION,
+  STUDENT_LAB_REPORT_ITEMS_SUBCOLLECTION,
+  STUDENT_LAB_REPORT_SCHEMA_VERSION,
+  type StudentLabReportCreationWrite,
+  type StudentLabReportRecord,
+  type StudentLabReportScope,
+  type StudentLabReportUpdateWrite,
+} from "./types/student-lab-report";
+export {
   assessmentIdForLessonSlug,
   revisionIdForOrdinal,
   parseAssessmentIdFromRevisionId,
@@ -158,6 +169,9 @@ export {
   studentAccommodationCreationDocRef,
   studentAccommodationUpdateDocRef,
   studentAccommodationHistoryDocRef,
+  studentLabReportDocRef,
+  studentLabReportCreationDocRef,
+  studentLabReportUpdateDocRef,
 } from "./firestore/typed-ref";
 export {
   launchGrantCreationDocRef,

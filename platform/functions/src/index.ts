@@ -46,6 +46,7 @@ export {
   enrollmentsSetStatus,
   enrollmentsTeacherAdd,
 } from "./enrollments";
+export { labReportsGet, labReportsSave } from "./labReports";
 export {
   lmsAssignmentsPublish,
   lmsGradePassbacksRetry,

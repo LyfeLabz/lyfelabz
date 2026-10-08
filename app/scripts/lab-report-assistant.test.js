@@ -722,14 +722,28 @@ test('storage write/removal failures are visible and reset failure retains work'
   expect(el('save-status').textContent).toContain('could not be cleared');
 });
 
-test('another tab changing the report pauses writes so current work can be exported', () => {
+test('another tab changing the report locks editing here, then reloads the latest saved report on request', () => {
   input('investigationQuestion', 'First version');
-  const before = w.localStorage.getItem(KEY);
+  w.localStorage.setItem(KEY, JSON.stringify({ ...JSON.parse(w.localStorage.getItem(KEY)), responses: { investigationQuestion: 'Other tab version' } }));
+  const otherTab = w.localStorage.getItem(KEY);
   w.dispatchEvent(new w.StorageEvent('storage', {key: KEY}));
-  input('investigationQuestion', 'Unsaved local edit');
-  expect(w.localStorage.getItem(KEY)).toBe(before);
-  expect(el('save-status').textContent).toContain('another tab');
-  jump(7); expect(el('step-content').textContent).toContain('Unsaved local edit');
+  // Editing is visibly paused: the editor is inert and the alert explains why.
+  expect(el('step-content').inert).toBe(true);
+  expect(w.document.body.dataset.reportLock).toBe('otherTab');
+  expect(el('report-alert').hidden).toBe(false);
+  expect(el('report-alert').getAttribute('role')).toBe('alert');
+  expect(el('report-alert').textContent).toContain('changed in another tab. Editing is paused here');
+  expect([...el('report-alert').querySelectorAll('button')].map(item => item.textContent)).toEqual(['Load the latest saved report', 'Download this tab’s work']);
+  expect(el('reset-report').disabled).toBe(true);
+  // Even a programmatic edit cannot overwrite the other tab's report.
+  input('investigationQuestion', 'Paused edit');
+  expect(w.localStorage.getItem(KEY)).toBe(otherTab);
+  el('report-alert').querySelector('button').click();
+  expect(el('step-content').inert).toBe(false);
+  expect(el('report-alert').hidden).toBe(true);
+  expect(el('field-investigationQuestion').value).toBe('Other tab version');
+  input('investigationQuestion', 'Continue here');
+  expect(JSON.parse(w.localStorage.getItem(KEY)).responses.investigationQuestion).toBe('Continue here');
 });
 
 

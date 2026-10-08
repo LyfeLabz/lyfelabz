@@ -275,6 +275,7 @@ Read this document first, then route to the single strongest canonical source fo
 | Account lifecycle states | `PLATFORM_STATE_MACHINE.md` |
 | First platform administrator bootstrap, admin role transition, rollback | `PLATFORM_ADMIN_BOOTSTRAP_RUNBOOK.md` |
 | Domain ownership, Hosting targets, paired Hosting release, certification, rollback | `DOMAIN_AND_HOSTING_CONTRACT.md` (+ `scripts/hosting-release/`) |
+| Lab Report Assistant cloud autosave (`studentLabReports`, `labReportsGet`/`labReportsSave`, host gating, activation, rollback). Status: implemented, not deployed, production gate closed. | `LAB_REPORT_CLOUD_AUTOSAVE.md` |
 | Environments, session policy | `PLATFORM_OPERATIONS_SPECIFICATION.md` |
 | Lesson build system, markers, equivalence | `CLAUDE.md`; `app/scripts/lessonBuilder/lessons/<slug>.cjs` |
 | Lesson content standards, voice, quiz/vocab rules | `CLAUDE.md` |

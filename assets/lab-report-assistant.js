@@ -1,7 +1,35 @@
-/* LyfeLabz Lab Report Assistant. Browser-local scaffold; no service or account dependency. */
+/* LyfeLabz Lab Report Assistant. Saves in the browser; on hosts where cloud
+ * saving is enabled, a signed-in student's report also autosaves to their
+ * LyfeLabz account through assets/lab-report-cloud-sync.js. */
 (() => {
   'use strict';
   const STORAGE_KEY = 'lyfelabz:lab-report-assistant:v1';
+  // Cloud saving is enabled per host. The browser storage of one hostname is
+  // invisible to another, so cloud saving lives on the app origin only, where
+  // students already sign in. Production stays off until the labReports
+  // callables are deployed and staging is verified
+  // (docs/platform/LAB_REPORT_CLOUD_AUTOSAVE.md).
+  const CLOUD_PRODUCTION_ENABLED = false;
+  const CLOUD_HOSTS = {
+    'app.lyfelabz.com': CLOUD_PRODUCTION_ENABLED,
+    'lyfelabz-staging.web.app': true,
+    'lyfelabz-staging.firebaseapp.com': true,
+    'localhost': true,
+    '127.0.0.1': true
+  };
+  // Hosts that serve this page but cannot reach the student's sign-in. They
+  // point students to the app origin; reports never travel in the URL.
+  const CLOUD_HOME = {
+    'lyfelabz.com': 'app.lyfelabz.com',
+    'www.lyfelabz.com': 'app.lyfelabz.com',
+    'lyfelabz-staging-marketing.web.app': 'lyfelabz-staging.web.app'
+  };
+  const pageHost = window.location.hostname;
+  const cloudHost = CLOUD_HOSTS[pageHost] === true && !!window.LyfeLabzLabReportSync;
+  const cloudHome = CLOUD_HOSTS[CLOUD_HOME[pageHost]] === true ? CLOUD_HOME[pageHost] : null;
+  const BACKUP_MARKER = 'lyfelabzLabReportBackup';
+  const DEVICE_NOTICE = 'One active report is saved on this browser and device only. It does not sync or submit to your teacher. Download your work before starting over.';
+  const CLOUD_NOTICE = 'Your report saves to your LyfeLabz account, so you can keep working on any device where you sign in. Only you can see it. It is not submitted to your teacher.';
   const outcomes = ['Supported by the results', 'Not supported by the results', 'Partially supported by the results'];
   const field = (key, label, prompt, starter, definition = '') => ({ key, label, prompt, starter, definition });
   // This schema is shared by the editor, review, Read Aloud, and print view.
@@ -135,11 +163,19 @@
       return fieldReady(item.key) ? [] : [item];
     });
   }
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved !== null) {
-      const parsed = JSON.parse(saved);
-      if (!parsed || parsed.version !== 1 || !parsed.responses || typeof parsed.responses !== 'object' || Array.isArray(parsed.responses) || (parsed.checkSchema !== undefined && parsed.checkSchema !== 2)) throw new Error('Invalid report');
+  // Validates a saved report (browser storage, the cloud, or a backup file)
+  // and returns a complete editor state. Throws on anything unreadable; an
+  // unsupported newer version is marked so it is never overwritten.
+  function parseReport(parsed) {
+    if (parsed && typeof parsed === 'object' && typeof parsed.version === 'number' && parsed.version > 1) {
+      const error = new Error('Newer report');
+      error.unsupported = true;
+      throw error;
+    }
+    if (!parsed || parsed.version !== 1 || !parsed.responses || typeof parsed.responses !== 'object' || Array.isArray(parsed.responses) || (parsed.checkSchema !== undefined && parsed.checkSchema !== 2)) throw new Error('Invalid report');
+    const previous = state;
+    state = blank();
+    try {
       for (const item of allFields) {
         const response = parsed.responses[item.key];
         if (response !== undefined && typeof response !== 'string') throw new Error('Invalid response');
@@ -169,21 +205,69 @@
       if (restoredStep >= 0) {
         state.step = restoredStep;
         state.activeSection = parsed.activeSection;
-        restoredActiveSection = restoredStep > 0;
       }
       for (const key of ['focus', 'large', 'contrast', 'starters']) state.settings[key] = parsed.settings?.[key] === true;
+      return state;
+    } finally {
+      state = previous;
     }
-  } catch (_) {
-    // Do not silently overwrite unreadable or newer-version saved work.
-    state = blank();
-    saveBlocked = true;
-    loadMessage = 'The saved report could not be opened. Saving is paused to protect it. Download any new work before leaving. Start over can clear the saved report.';
   }
-  function save() {
-    if (saveBlocked) return;
+  // The unowned report saved in this browser (the original single-report
+  // storage). Used directly when there is no signed-in student.
+  function loadDevice() {
+    saveBlocked = false;
+    loadMessage = '';
+    restoredActiveSection = false;
+    let next = blank();
     try {
-      const { step, ...savedReport } = state;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReport));
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved !== null) {
+        next = parseReport(JSON.parse(saved));
+        restoredActiveSection = next.step > 0;
+      }
+    } catch (_) {
+      // Do not silently overwrite unreadable or newer-version saved work.
+      next = blank();
+      saveBlocked = true;
+      loadMessage = 'The saved report could not be opened. Saving is paused to protect it. Download any new work before leaving. Start over can clear the saved report.';
+    }
+    state = next;
+  }
+  const withoutStep = report => {
+    const { step, ...rest } = report;
+    return JSON.parse(JSON.stringify(rest));
+  };
+  function snapshot() { return withoutStep(state); }
+  function readDeviceReport() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved === null ? null : withoutStep(parseReport(JSON.parse(saved)));
+    } catch (_) { return null; }
+  }
+  // Student work only: responses, confirmed checks, and a table with content.
+  function contentKey(report) {
+    const responses = {};
+    Object.keys(report.responses || {}).sort().forEach(key => {
+      const response = report.responses[key];
+      if (typeof response === 'string' && response.trim()) responses[key] = response;
+    });
+    const checks = Object.keys(report.checks || {}).filter(key => report.checks[key] === true).sort();
+    const table = report.quantitativeTable;
+    const hasTable = !!table && (!!table.title.trim() || table.cells.some(row => row.some(cell => cell.trim())));
+    return JSON.stringify({ responses, checks, table: hasTable ? table : null });
+  }
+  const blankContent = contentKey(blank());
+  const isBlankReport = report => contentKey({ ...report, checks: {} }) === blankContent;
+  let cloud = null;
+  let cloudPending = cloudHost;
+  let deviceEdited = false;
+  function save() {
+    if (cloudPending) return;
+    if (cloud && cloud.edited(snapshot())) return;
+    if (saveBlocked) return;
+    deviceEdited = true;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot()));
       el('save-status').textContent = '';
     } catch (_) {
       el('save-status').textContent = 'Not saved: browser storage is unavailable or full. Download your report before leaving.';
@@ -677,19 +761,397 @@
   speechIdle(speechAvailable ? '' : 'Read aloud is unavailable in this browser.');
   el('read-aloud').addEventListener('click', readAloud);
   el('reset-report').addEventListener('click', () => {
+    if (cloud && cloud.mode() === 'cloud') {
+      if (!cloud.isEditable()) return;
+      if (!window.confirm('Start over? This permanently clears your report from your LyfeLabz account and this browser. Download your work first if you want to keep it.')) return;
+      stopSpeech(); state = blank();
+      applySettings(); render(); revealActivePill(); refreshPrint();
+      cloud.reset(snapshot());
+      el('step-title').focus();
+      return;
+    }
+    if (cloudPending || (cloud && cloud.handles())) return;
     if (!window.confirm('Start over? This permanently clears the active report and checklists in this browser. Download your work first if you want to keep it.')) return;
     try { localStorage.removeItem(STORAGE_KEY); }
     catch (_) { el('save-status').textContent = 'The saved report could not be cleared. Your current work has been kept.'; return; }
-    stopSpeech(); state = blank(); saveBlocked = false;
+    stopSpeech(); state = blank(); saveBlocked = false; pausedByOtherTab = false;
+    unlockEditor(); showAlert('', []);
     applySettings(); render(); revealActivePill(); refreshPrint();
     save();
     el('step-title').focus();
   });
-  // Prevent a second tab from silently overwriting this tab's work.
+
+  // ---------- Editor lock ----------
+  // A locked editor cannot be typed in (inert), so a student never keeps
+  // writing in a tab whose work is not being saved.
+  function lockEditor(reason) {
+    document.body.dataset.reportLock = reason;
+    el('step-content').inert = true;
+    el('step-content').setAttribute('aria-disabled', 'true');
+    el('reset-report').disabled = true;
+    el('backup-open').disabled = true;
+    if (reason === 'loading') {
+      el('step-content').replaceChildren(node('p', 'Opening your report...', 'bridge-callout'));
+    }
+  }
+  function unlockEditor() {
+    const wasLoading = document.body.dataset.reportLock === 'loading';
+    delete document.body.dataset.reportLock;
+    el('step-content').inert = false;
+    el('step-content').removeAttribute('aria-disabled');
+    el('reset-report').disabled = false;
+    el('backup-open').disabled = false;
+    if (wasLoading) render();
+  }
+  function showAlert(text, actions) {
+    const alert = el('report-alert');
+    alert.replaceChildren();
+    if (text) alert.append(node('p', text));
+    if (actions.length) {
+      const group = node('div', undefined, 'tool-controls');
+      actions.forEach(([label, action]) => group.append(button(label, action)));
+      alert.append(group);
+    }
+    alert.hidden = !text && !actions.length;
+  }
+
+  // ---------- Backup files ----------
+  // A backup file moves a report between browsers or hostnames without any
+  // cross-origin messaging and without putting student text in a URL.
+  function downloadBackup(report) {
+    try {
+      const data = JSON.stringify({ [BACKUP_MARKER]: 1, savedAt: new Date().toISOString(), report }, null, 2);
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+      const link = node('a');
+      link.href = url;
+      link.download = 'lab-report-backup.json';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      note('Backup file downloaded. Keep it somewhere you can find it.');
+    } catch (_) {
+      note('The backup file could not be downloaded. Use Download as PDF in Review & Export to keep a copy.');
+    }
+  }
+  function parseBackupFile(text) {
+    const parsed = JSON.parse(text);
+    if (!parsed || parsed[BACKUP_MARKER] !== 1 || !parsed.report) throw new Error('Not a backup');
+    return withoutStep(parseReport(parsed.report));
+  }
+  function adoptLocally(report) {
+    stopSpeech();
+    state = { ...JSON.parse(JSON.stringify(report)), step: Math.max(0, sectionIndex(report.activeSection)) };
+    applySettings(); render(); revealActivePill(); refreshPrint(); updateStickyOffsets();
+  }
+  function importBackup(report) {
+    if (cloud && cloud.mode() === 'cloud') { cloud.importReport(report); return; }
+    if (cloudPending || (cloud && cloud.handles()) || saveBlocked) {
+      note('Opening a backup file is paused right now. Try again in a moment.');
+      return;
+    }
+    if (contentKey(report) === contentKey(snapshot())) { note('This backup file matches your current report.'); return; }
+    if (isBlankReport(snapshot())) { adoptLocally(report); save(); note('Your backup file is open.'); return; }
+    lockEditor('choosing');
+    chooseVersion({ kind: 'import', versions: [
+      { id: 'tab', source: 'tab', report: snapshot(), updatedAt: null },
+      { id: 'file', source: 'file', report, updatedAt: null }
+    ] }).then(id => {
+      unlockEditor();
+      if (id === 'file') { adoptLocally(report); save(); }
+    });
+  }
+  el('backup-download').addEventListener('click', () => downloadBackup(snapshot()));
+  el('backup-open').addEventListener('click', () => el('backup-file').click());
+  el('backup-file').addEventListener('change', () => {
+    const file = el('backup-file').files && el('backup-file').files[0];
+    el('backup-file').value = '';
+    if (!file) return;
+    if (file.size > 1024 * 1024) { note('This file is too large to be a Lab Report Assistant backup file.'); return; }
+    file.text().then(text => {
+      let report;
+      try { report = parseBackupFile(text); }
+      catch (_) { note('This file is not a Lab Report Assistant backup file.'); return; }
+      importBackup(report);
+    }, () => note('The file could not be opened.'));
+  });
+
+  // ---------- Choosing between versions ----------
+  const SOURCE_LABELS = {
+    cloud: 'Saved in your LyfeLabz account',
+    browser: 'Unsaved changes in this browser',
+    device: 'Saved in this browser, not in your account',
+    tab: 'Your work in this tab',
+    otherTab: 'Unsaved work from your other tab',
+    file: 'From the backup file'
+  };
+  const CHOICE_COPY = {
+    restore: { title: 'Choose which version to keep', text: 'This browser has changes that were not saved to your account, and your account has a different version. Choose the one to keep working on. The version you do not choose will be replaced, so download a copy first if you need parts of it.' },
+    conflict: { title: 'Your report was changed somewhere else', text: 'Your report was saved from another tab or device while you were working here. Choose the version to keep working on. The version you do not choose will be replaced, so download a copy first if you need parts of it.' },
+    takeover: { title: 'Choose which version to keep', text: 'Your report has more than one version. Choose the one to keep working on in this tab. The versions you do not choose will be replaced, so download a copy first if you need parts of them.' },
+    'migrate-empty': { title: 'Is this your report?', text: 'This browser has a lab report that is not saved to any account. If it is yours, add it to your account so you can open it on any device. If it is not yours, leave it in this browser.' },
+    'migrate-both': { title: 'Two reports found', text: 'Your account has a lab report, and this browser also has a lab report that is not in your account. Choose which one to keep working on. The report in this browser stays saved here either way.' },
+    import: { title: 'Use the backup file?', text: 'Choose which report to keep working on. The version you do not choose will be replaced, so download a copy first if you need parts of it.' }
+  };
+  function describeReport(report) {
+    const previous = state;
+    state = { ...blank(), ...JSON.parse(JSON.stringify(report)) };
+    try {
+      return { title: value('labTitle').trim(), filled: sections.filter(section => missing(section).length === 0).length, text: reportText() };
+    } finally { state = previous; }
+  }
+  function savedTime(millis) {
+    try { return new Date(millis).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }); }
+    catch (_) { return new Date(millis).toLocaleString(); }
+  }
+  let closeChoice = null;
+  function chooseVersion(request) {
+    if (closeChoice) closeChoice(null);
+    stopSpeech();
+    return new Promise(resolve => {
+      const box = el('version-choice');
+      const copy = CHOICE_COPY[request.kind] || CHOICE_COPY.takeover;
+      const finish = id => {
+        closeChoice = null;
+        box.hidden = true;
+        box.replaceChildren();
+        resolve(id);
+      };
+      closeChoice = finish;
+      const heading = node('h2', copy.title, 'section-title');
+      heading.id = 'version-choice-title';
+      heading.tabIndex = -1;
+      box.replaceChildren(heading, node('p', copy.text, 'section-desc'));
+      const grid = node('div', undefined, 'version-grid');
+      const shown = request.kind === 'migrate-empty' ? request.versions.filter(version => version.id === 'device') : request.versions;
+      shown.forEach((version, index) => {
+        const info = describeReport(version.report);
+        const card = node('section', undefined, 'goal-card version-card');
+        const title = node('h3', SOURCE_LABELS[version.source] || 'Another version');
+        title.id = `version-${index}-title`;
+        card.setAttribute('aria-labelledby', title.id);
+        card.append(title);
+        card.append(node('p', version.updatedAt ? `Last saved ${savedTime(version.updatedAt)}` : version.source === 'cloud' ? 'Saved in your account' : 'Not saved to your account yet', 'field-help'));
+        card.append(node('p', `Lab title: ${info.title || '[Not answered yet]'}`));
+        card.append(node('p', `${info.filled} of 7 sections filled in`));
+        const preview = node('details', undefined, 'version-preview');
+        preview.append(node('summary', 'Show this version'), node('p', info.text, 'response'));
+        card.append(preview);
+        const actions = node('div', undefined, 'tool-controls');
+        let keepLabel = 'Keep this version';
+        if (request.kind === 'migrate-empty') keepLabel = 'Yes, add it to my account';
+        if (request.kind === 'migrate-both') keepLabel = version.id === 'device' ? 'Use this browser’s report' : 'Keep my account report';
+        actions.append(button(keepLabel, () => finish(version.id)));
+        actions.append(button('Download a copy', () => downloadBackup(version.report)));
+        card.append(actions);
+        grid.append(card);
+      });
+      box.append(grid);
+      if (request.kind === 'migrate-empty') {
+        const decline = node('div', undefined, 'tool-controls');
+        decline.append(button('No, leave it in this browser', () => finish('cloud')));
+        box.append(decline);
+      }
+      box.hidden = false;
+      heading.focus();
+      heading.scrollIntoView({ block: 'start' });
+    });
+  }
+
+  // ---------- Cloud saving status and account ----------
+  let noteTimer = null;
+  function note(text) {
+    el('cloud-note').textContent = text;
+    clearTimeout(noteTimer);
+    if (text) noteTimer = setTimeout(() => { el('cloud-note').textContent = ''; }, 8000);
+  }
+  const NOTICES = {
+    updated: 'Your report was updated with your latest saved work.',
+    importSame: 'This backup file matches your current report.',
+    takeOverFailed: 'We could not load your report. Check your internet connection, then try again.',
+    signedInReload: 'You are signed in. Reload the page to open the report in your account.'
+  };
+  const ACTION_LABELS = { retry: 'Try again', signIn: 'Sign in again', takeOver: 'Edit in this tab instead', reload: 'Reload page' };
+  function runAction(action) {
+    if (!cloud) return;
+    if (action === 'retry') cloud.retry();
+    if (action === 'takeOver') cloud.takeOver();
+    if (action === 'signIn') signIn();
+    if (action === 'reload') window.location.reload();
+  }
+  function signIn() {
+    if (!cloud) return;
+    Promise.resolve(cloud.signIn()).catch(() => note('Sign-in did not finish. Try again.'));
+  }
+  function signOut() {
+    if (!cloud) return;
+    cloud.signOut(() => window.confirm('Your newest changes have not reached your account yet. If you sign out now, they stay saved in this browser for your account and will be saved the next time you sign in here. Sign out anyway?'))
+      .catch(() => note('Sign-out did not finish. Try again.'));
+  }
+  const DEVICE_PANELS = {
+    signedOut: ['Sign in to save your report to your LyfeLabz account so you can keep working on any device.', [['Sign in with Google', signIn]]],
+    authExpired: ['Your sign-in expired. Sign in again to open the report in your account. This page is showing the report saved in this browser.', [['Sign in again', signIn]]],
+    notStudent: ['Cloud saving is for LyfeLabz student accounts. Your report is saved in this browser only.', [['Sign out', signOut]]],
+    notActive: ['Finish setting up your LyfeLabz student account in My Science, then reload this page. Until then, your report is saved in this browser only.', [['Sign out', signOut]]],
+    authTimeout: ['We could not check your LyfeLabz sign-in, so your report is saved in this browser only. Reload the page to try again.', []],
+    unavailable: ['Cloud saving could not start, so your report is saved in this browser only. Reload the page to try again.', []]
+  };
+  function showPanel(text, actions, link) {
+    const panel = el('cloud-panel');
+    const copy = node('p', text);
+    if (link) {
+      const anchor = node('a', link.text);
+      anchor.href = link.href;
+      copy.append(' ', anchor);
+    }
+    const group = node('div', undefined, 'tool-controls');
+    actions.forEach(([label, action]) => group.append(button(label, action)));
+    panel.replaceChildren(copy);
+    if (actions.length) panel.append(group);
+    panel.hidden = false;
+  }
+  function showStatus(info) {
+    const status = el('cloud-status');
+    status.hidden = !cloudHost;
+    status.dataset.state = info.state;
+    status.textContent = info.text;
+    el('local-notice').textContent = info.mode === 'cloud' ? CLOUD_NOTICE : DEVICE_NOTICE;
+    const message = el('cloud-message');
+    const detail = info.state === 'action' ? '' : info.detail;
+    if (message.textContent !== detail) message.textContent = detail;
+    if (info.mode === 'cloud' || info.state === 'action') {
+      showAlert(info.state === 'action' ? info.detail : '', info.actions.map(action => [ACTION_LABELS[action], () => runAction(action)]));
+    }
+  }
+  let firstCloudRender = true;
+  const cloudUi = {
+    status: showStatus,
+    account(info) {
+      if (info.signedIn) showPanel(`Saving to the LyfeLabz account for ${info.user.label}.`, [['Sign out', signOut]]);
+      else showPanel('Checking your LyfeLabz sign-in...', []);
+    },
+    render(report) {
+      adoptLocally(report);
+      if (firstCloudRender && state.step > 0) el('step-title').scrollIntoView({ block: 'start' });
+      firstCloudRender = false;
+    },
+    lock(reason) { lockEditor(reason || 'paused'); },
+    unlock() { if (document.body.dataset.reportLock) unlockEditor(); },
+    choose: chooseVersion,
+    notice(kind) { note(NOTICES[kind] || ''); },
+    clear() {
+      // Account changed or signed out: remove the previous student's report
+      // from the page before anything else happens.
+      if (closeChoice) closeChoice(null);
+      stopSpeech();
+      state = blank();
+      applySettings(); render(); refreshPrint();
+      lockEditor('loading');
+      showAlert('', []);
+      note('');
+    },
+    device(info) {
+      cloudPending = false;
+      loadDevice();
+      deviceEdited = false;
+      el('save-status').textContent = loadMessage;
+      showAlert('', []);
+      unlockEditor();
+      applySettings(); render(); revealActivePill(); refreshPrint(); updateStickyOffsets();
+      const [text, actions] = DEVICE_PANELS[info.reason] || DEVICE_PANELS.unavailable;
+      showPanel(text, actions, info.reason === 'notActive' ? { text: 'Open My Science', href: '/app/' } : null);
+      if (restoredActiveSection) el('step-title').scrollIntoView({ block: 'start' });
+    }
+  };
+  function loadCloudTransport() {
+    return new Promise(resolve => {
+      const ready = () => window.lyfelabz && window.lyfelabz.labReportCloud;
+      if (ready()) { resolve(ready()); return; }
+      let settled = false;
+      const done = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(ready() || null);
+      };
+      const timer = setTimeout(done, 15000);
+      window.addEventListener('lyfelabz:lab-report-cloud-ready', done, { once: true });
+      const add = (src, next) => {
+        const script = node('script');
+        script.src = src;
+        script.onload = next;
+        script.onerror = done;
+        document.head.append(script);
+      };
+      add('assets/lyfelabz-firebase-config.js', () => add('assets/lyfelabz-lab-report-cloud.js', () => { if (ready()) done(); }));
+    });
+  }
+  function startCloud() {
+    lockEditor('loading');
+    showPanel('Checking your LyfeLabz sign-in...', []);
+    let storage = null;
+    try { storage = window.localStorage; } catch (_) { storage = null; }
+    let tabId = 't';
+    for (let i = 0; i < 16; i++) tabId += Math.floor(Math.random() * 36).toString(36);
+    loadCloudTransport().then(transport => {
+      cloud = window.LyfeLabzLabReportSync.create({
+        transport,
+        storage,
+        tabId,
+        timers: { setTimeout: (fn, ms) => window.setTimeout(fn, ms), clearTimeout: id => window.clearTimeout(id), now: () => Date.now() },
+        random: Math.random,
+        parse: raw => withoutStep(parseReport(raw)),
+        blank: () => withoutStep(blank()),
+        isBlank: isBlankReport,
+        contentKey,
+        readDeviceReport,
+        deviceEdited: () => deviceEdited,
+        ui: cloudUi
+      });
+      cloudPending = false;
+      cloud.start();
+    });
+  }
+
+  // Another tab writing this browser's report: pause editing here so the
+  // student never keeps typing in a tab whose work is not being saved.
+  let pausedByOtherTab = false;
+  function loadLatestDeviceReport() {
+    pausedByOtherTab = false;
+    loadDevice();
+    el('save-status').textContent = loadMessage;
+    showAlert('', []);
+    unlockEditor();
+    applySettings(); render(); revealActivePill(); refreshPrint();
+    el('step-title').focus();
+  }
   window.addEventListener('storage', event => {
+    if (cloud && cloud.mode() === 'cloud') { cloud.onStorage(event); return; }
+    if (cloudPending || (cloud && cloud.handles())) return;
     if (event.key !== STORAGE_KEY && event.key !== null) return;
     saveBlocked = true;
-    el('save-status').textContent = 'The saved report changed in another tab. Saving here is paused. Download this tab’s work, then reload to use the saved report.';
+    if (pausedByOtherTab) return;
+    pausedByOtherTab = true;
+    lockEditor('otherTab');
+    el('save-status').textContent = '';
+    showAlert('The saved report changed in another tab. Editing is paused here so your work is not overwritten.', [
+      ['Load the latest saved report', loadLatestDeviceReport],
+      ['Download this tab’s work', () => downloadBackup(snapshot())]
+    ]);
+  });
+  window.addEventListener('beforeunload', event => {
+    if (!cloud || !cloud.hasUnsavedWork()) return;
+    cloud.flushNow();
+    event.preventDefault();
+    event.returnValue = '';
+  });
+  window.addEventListener('pagehide', () => { if (cloud) cloud.flushNow(); });
+  window.addEventListener('pageshow', event => { if (cloud && event.persisted) cloud.refresh(true); });
+  window.addEventListener('online', () => { if (cloud) cloud.onOnline(); });
+  document.addEventListener('visibilitychange', () => {
+    if (!cloud) return;
+    if (document.visibilityState === 'hidden') cloud.flushNow();
+    else cloud.refresh(false);
   });
   try { if (sessionStorage.getItem('lyfelabz-ls') === 'on') document.body.classList.add('ls-active'); } catch (_) { /* Optional educator context. */ }
   function updateStickyOffsets() {
@@ -708,7 +1170,24 @@
   window.addEventListener('resize', updateStickyOffsets);
   try { history.scrollRestoration = 'manual'; } catch (_) { /* Browsers may restrict this setting. */ }
   updateStickyOffsets();
-  el('save-status').textContent = loadMessage;
-  applySettings(); render(); revealActivePill(); refreshPrint();
-  if (restoredActiveSection) el('step-title').scrollIntoView({ block: 'start' });
+  if (cloudHome) {
+    const link = node('a', `${cloudHome}/tool_lab-report-assistant.html`);
+    link.href = `https://${cloudHome}/tool_lab-report-assistant.html`;
+    const notice = el('origin-notice');
+    notice.replaceChildren(
+      node('p', 'To save your report to your LyfeLabz account, use the Lab Report Assistant on the LyfeLabz app site. A report on this page stays in this browser only. To move it: 1. Choose Download backup file. 2. Open the link below and sign in. 3. Choose Open backup file.'),
+      link
+    );
+    notice.hidden = false;
+  }
+  if (cloudHost) {
+    state = blank();
+    applySettings(); render(); revealActivePill(); refreshPrint();
+    startCloud();
+  } else {
+    loadDevice();
+    el('save-status').textContent = loadMessage;
+    applySettings(); render(); revealActivePill(); refreshPrint();
+    if (restoredActiveSection) el('step-title').scrollIntoView({ block: 'start' });
+  }
 })();
