@@ -3438,10 +3438,13 @@
     top: calc(100% + 0.25rem);
     left: -0.4rem;
     z-index: 20;
-    min-width: 14rem;
-    max-width: min(22rem, calc(100vw - 2rem));
+    /* Sized to the longest class name (up to the cap) so ordinary names
+       stay on one line and the list stays short. */
+    width: max-content;
+    min-width: 12rem;
+    max-width: min(26rem, calc(100vw - 2rem));
     margin: 0;
-    padding: 0.3rem;
+    padding: 0.25rem;
     list-style: none;
     background: var(--tw-surface);
     border: 1px solid var(--tw-hairline);
@@ -3450,10 +3453,14 @@
   }
   .shell-assignment-detail-class-options[hidden] { display: none; }
   .shell-assignment-detail-class-option-button {
-    display: block;
+    display: flex;
+    align-items: center;
     width: 100%;
-    min-height: 2.5rem;
-    padding: 0.45rem 0.7rem;
+    min-height: 2.75rem;
+    /* A global button rule adds a top margin; options sit flush. */
+    margin: 0;
+    padding: 0.5rem 1rem;
+    line-height: 1.35;
     background: transparent;
     border: 0;
     border-radius: var(--tw-radius-control);
@@ -3480,6 +3487,7 @@
     .shell-assignment-detail-class-options {
       left: 0;
       right: 0;
+      width: auto;
       min-width: 0;
       max-width: none;
     }
