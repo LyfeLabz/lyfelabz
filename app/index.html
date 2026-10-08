@@ -3382,6 +3382,108 @@
     color: var(--tw-ink-muted);
     font-weight: 500;
   }
+  /* Same-assignment class selector: the class name itself becomes a small
+     disclosure in the same position, keeping the label's typography. The
+     list of other classes opens beneath it. The caret mirrors the
+     Resources disclosure (a single CSS chevron turned by aria-expanded,
+     state carried by shape, never color; no icon library). */
+  .shell-assignment-detail-class-switcher {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+  .shell-assignment-detail-class-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2rem;
+    padding: 0.1rem 0.4rem;
+    margin: 0 0 0 -0.4rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--tw-radius-control);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .shell-assignment-detail-class-toggle:hover {
+    color: var(--tw-ink);
+    background: var(--tw-surface-alt);
+    border-color: var(--tw-hairline);
+  }
+  .shell-assignment-detail-class-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-assignment-detail-class-toggle::after {
+    content: "\203A";
+    flex: none;
+    font-size: 1.1rem;
+    line-height: 1;
+    transform: rotate(90deg);
+    transition: transform 0.15s ease;
+  }
+  .shell-assignment-detail-class-toggle[aria-expanded="true"]::after {
+    transform: rotate(-90deg);
+  }
+  .shell-assignment-detail-class-toggle[aria-expanded="true"] {
+    color: var(--tw-ink);
+    border-color: var(--tw-hairline);
+  }
+  .shell-assignment-detail-class-name {
+    overflow-wrap: anywhere;
+  }
+  .shell-assignment-detail-class-options {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    left: -0.4rem;
+    z-index: 20;
+    min-width: 14rem;
+    max-width: min(22rem, calc(100vw - 2rem));
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow: var(--tw-shadow-elev);
+  }
+  .shell-assignment-detail-class-options[hidden] { display: none; }
+  .shell-assignment-detail-class-option-button {
+    display: block;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.45rem 0.7rem;
+    background: transparent;
+    border: 0;
+    border-radius: var(--tw-radius-control);
+    color: var(--tw-ink);
+    font: inherit;
+    font-weight: 500;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+  }
+  .shell-assignment-detail-class-option-button:hover {
+    background: var(--tw-nav-wash);
+  }
+  .shell-assignment-detail-class-option-button:focus-visible {
+    outline: none;
+    box-shadow: inset var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-assignment-detail-class-option-button:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+  @media (max-width: 480px) {
+    .shell-assignment-detail-class-switcher { display: block; }
+    .shell-assignment-detail-class-options {
+      left: 0;
+      right: 0;
+      min-width: 0;
+      max-width: none;
+    }
+  }
   /* Meta becomes a row of label-over-value groups instead of
      undifferentiated stacked text (audit §12). */
   .shell-assignment-detail-meta {

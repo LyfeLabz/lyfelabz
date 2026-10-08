@@ -359,6 +359,21 @@ export function mountTeacherShell(
                 classId: input.classId,
                 assignmentId: input.assignmentId,
               });
+            } else if (input.kind === "switch-to-class-assignments") {
+              // Assignment Detail class switcher fallback: leave the Summary
+              // overlay for a fresh Classes mount, which consumes the
+              // `classesReturn` one-shot the switcher recorded and lands on
+              // the target class's Assignments section. PUSHED, unlike
+              // exit-assignment-detail, so Back returns to the Summary the
+              // teacher switched from.
+              navigateTo("classes", { fromPopstate: true });
+              currentWorkspaceClassId = input.classId;
+              pushShellState({
+                kind: "shell-classes-workspace",
+                surface: "classes",
+                classId: input.classId,
+                section: "assignments",
+              });
             } else {
               // exit-assignment-detail (in-app "Back to class"): leave the
               // Summary overlay for a fresh Classes mount, which consumes the

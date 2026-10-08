@@ -62,6 +62,10 @@ import {
   type QuestionSummary,
 } from "./question-summary";
 import { createDetailFetchCache, type DetailFetchCache } from "./fetch-cache";
+import type {
+  AssignmentDetailClassSwitcher,
+  ClassSwitchOption,
+} from "./class-switcher";
 
 // Sprint 13B Teacher Assignment Detail surface. A pure DOM builder
 // that composes the certified Sprint 13A `renderAssignmentSummaryCard`
@@ -205,6 +209,13 @@ export type AssignmentDetailDeps = {
   // with the Classes Students list). Absent: the default order is used and
   // a change applies to this render only.
   readonly rosterSort?: RosterSortPreference;
+  // Same-assignment class selector: optional. When supplied and another
+  // eligible class has the same lesson, the class name beneath the title
+  // becomes a small disclosure listing those classes; selecting one opens
+  // that class's Assignment Detail through the caller's navigation path.
+  // Absent, or with no other eligible class, the static class label renders
+  // exactly as before.
+  readonly classSwitcher?: AssignmentDetailClassSwitcher;
 };
 
 const STATUS_LABEL: Readonly<Record<AssignmentStatus, string>> = Object.freeze({
@@ -432,7 +443,10 @@ export function renderAssignmentDetail(
 
   const rerender = (): void => {
     body.textContent = "";
-    if (!mount.isConnected) return;
+    // The outlet host is reused when another Assignment Detail replaces this
+    // one (for example a class switch), so the mount stays connected; a late
+    // response for this replaced surface must not render anything.
+    if (!mount.isConnected || !surface.isConnected) return;
     const s: LoadState = state;
     switch (s.kind) {
       case "loading":
@@ -899,11 +913,9 @@ function renderReady(
 
   // The class name reads directly beneath the title; the page is already
   // reached through a class context, so no separate "Class" label renders.
-  const className = doc.createElement("p");
-  className.className = "shell-assignment-detail-class";
-  className.setAttribute("data-testid", "assignment-detail-class-value");
-  className.textContent = metadata.className;
-  identity.appendChild(className);
+  // When another eligible class has the same lesson, the name becomes the
+  // class-switcher disclosure in the same position.
+  appendClassIdentity(doc, identity, metadata, deps.classSwitcher);
 
   const meta = doc.createElement("dl");
   meta.className = "shell-assignment-detail-meta";
@@ -2820,6 +2832,169 @@ function renderLmsPublicationPanel(
   }
 
   mount.appendChild(panel);
+}
+
+// The static class label, or the class-switcher disclosure when another
+// eligible class has the same lesson. The switcher's options come from data
+// already in memory; while its class list is still loading, the static label
+// renders and is upgraded in place once `ready` settles.
+function appendClassIdentity(
+  doc: Document,
+  identity: HTMLElement,
+  metadata: AssignmentDetailMetadata,
+  switcher: AssignmentDetailClassSwitcher | undefined,
+): void {
+  const readOptions = (): ReadonlyArray<ClassSwitchOption> | null => {
+    if (switcher === undefined) return [];
+    try {
+      return switcher.options(metadata);
+    } catch {
+      return [];
+    }
+  };
+  const options = readOptions();
+  if (switcher !== undefined && options !== null && options.length > 0) {
+    identity.appendChild(renderClassSwitcher(doc, metadata, options, switcher));
+    return;
+  }
+  const label = doc.createElement("p");
+  label.className = "shell-assignment-detail-class";
+  label.setAttribute("data-testid", "assignment-detail-class-value");
+  label.textContent = metadata.className;
+  identity.appendChild(label);
+  if (switcher === undefined || options !== null || switcher.ready === undefined) {
+    return;
+  }
+  void switcher.ready.then(
+    () => {
+      if (!label.isConnected) return;
+      const later = readOptions();
+      if (later === null || later.length === 0) return;
+      label.replaceWith(renderClassSwitcher(doc, metadata, later, switcher));
+    },
+    () => undefined,
+  );
+}
+
+function renderClassSwitcher(
+  doc: Document,
+  metadata: AssignmentDetailMetadata,
+  options: ReadonlyArray<ClassSwitchOption>,
+  switcher: AssignmentDetailClassSwitcher,
+): HTMLElement {
+  const wrap = doc.createElement("div");
+  wrap.className = "shell-assignment-detail-class-switcher";
+  wrap.setAttribute("data-testid", "assignment-detail-class-switcher");
+
+  const listId = "assignment-detail-class-options";
+  const toggle = doc.createElement("button");
+  toggle.type = "button";
+  toggle.className =
+    "shell-assignment-detail-class shell-assignment-detail-class-toggle";
+  toggle.setAttribute("data-testid", "assignment-detail-class-toggle");
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", listId);
+  // The accessible name starts with the visible class name.
+  toggle.setAttribute(
+    "aria-label",
+    `${metadata.className}. Switch class for this lesson`,
+  );
+  const name = doc.createElement("span");
+  name.className = "shell-assignment-detail-class-name";
+  name.setAttribute("data-testid", "assignment-detail-class-value");
+  name.textContent = metadata.className;
+  toggle.appendChild(name);
+  // The chevron is a CSS caret turned by `aria-expanded` (see index.html).
+  wrap.appendChild(toggle);
+
+  const list = doc.createElement("ul");
+  list.id = listId;
+  list.className = "shell-assignment-detail-class-options";
+  list.setAttribute("data-testid", "assignment-detail-class-options");
+  list.setAttribute("aria-label", "Other classes with this lesson");
+  list.hidden = true;
+  wrap.appendChild(list);
+
+  const optionButtons: HTMLButtonElement[] = [];
+  let pending = false;
+
+  const onOutsideClick = (ev: Event): void => {
+    if (!wrap.isConnected) {
+      doc.removeEventListener("click", onOutsideClick, true);
+      return;
+    }
+    if (ev.target instanceof Node && wrap.contains(ev.target)) return;
+    setOpen(false);
+  };
+
+  const setOpen = (open: boolean): void => {
+    list.hidden = !open;
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      doc.addEventListener("click", onOutsideClick, true);
+    } else {
+      doc.removeEventListener("click", onOutsideClick, true);
+    }
+  };
+
+  toggle.addEventListener("click", () => {
+    setOpen(list.hidden);
+  });
+
+  wrap.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Escape" || list.hidden) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    setOpen(false);
+    toggle.focus();
+  });
+
+  // Tabbing out of the open disclosure closes it.
+  wrap.addEventListener("focusout", (ev) => {
+    const next = ev.relatedTarget;
+    if (next instanceof Node && !wrap.contains(next)) setOpen(false);
+  });
+
+  for (const option of options) {
+    const item = doc.createElement("li");
+    item.className = "shell-assignment-detail-class-option";
+    const button = doc.createElement("button");
+    button.type = "button";
+    button.className = "shell-assignment-detail-class-option-button";
+    button.setAttribute(
+      "data-testid",
+      `assignment-detail-class-option-${option.classId}`,
+    );
+    button.setAttribute(
+      "aria-label",
+      `Open ${metadata.title} for ${option.className}`,
+    );
+    button.textContent = option.className;
+    button.addEventListener("click", () => {
+      if (pending) return;
+      pending = true;
+      wrap.setAttribute("aria-busy", "true");
+      for (const b of optionButtons) b.disabled = true;
+      const settle = (): void => {
+        pending = false;
+        wrap.removeAttribute("aria-busy");
+        for (const b of optionButtons) b.disabled = false;
+      };
+      let result: Promise<void>;
+      try {
+        result = switcher.select(option, { isActive: () => wrap.isConnected });
+      } catch {
+        settle();
+        return;
+      }
+      void result.then(settle, settle);
+    });
+    optionButtons.push(button);
+    item.appendChild(button);
+    list.appendChild(item);
+  }
+
+  return wrap;
 }
 
 function appendMetaPair(

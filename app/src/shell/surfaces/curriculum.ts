@@ -57,6 +57,8 @@ import {
   _resetLmsPublicationStateForTest,
 } from "./shared/lmsPublication";
 import type { AssignmentLmsPublicationState } from "../../assignments/detail/types";
+import type { AssignmentDetailClassSwitcher } from "../../assignments/detail/class-switcher";
+import type { CurrentForFamily } from "../../assignments/detail/grade-sync-context";
 
 // Sprint 13B remediation: narrow visible entry-point seam so an
 // authenticated teacher can reach the certified Assignment Detail
@@ -75,6 +77,9 @@ import type { AssignmentLmsPublicationState } from "../../assignments/detail/typ
 export type AssignmentDetailOpenOptions = {
   readonly onBack?: () => void;
   readonly backLabel?: string;
+  // Same-assignment class selector: supplied by the Classes path so the class
+  // name beneath the title can switch to the same lesson in another class.
+  readonly classSwitcher?: AssignmentDetailClassSwitcher;
 };
 
 export type CurriculumAssignmentDetailSeam = {
@@ -118,6 +123,14 @@ export type CurriculumAssignmentDetailSeam = {
   readonly setStudentSelectionController?: (
     controller: TeacherShellStudentSelectionController | null,
   ) => void;
+  // Same-assignment class selector: the canonical Current for a class +
+  // lesson (the certified `assignmentsLifecycleState` read). Used only when a
+  // target class holds more than one published occurrence of the lesson.
+  // Absent: such a class falls back to its Assignments list.
+  readonly resolveCurrent?: (input: {
+    readonly classId: string;
+    readonly lessonSlug: string;
+  }) => Promise<CurrentForFamily>;
 };
 
 // Sprint 28.5D (D2A): the bounded surface-render seam exposed by the

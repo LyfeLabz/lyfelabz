@@ -70,6 +70,13 @@ import {
   formatLocalDate,
 } from "./shared/activeAssignments";
 import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
+import {
+  chooseCurrentTarget,
+  listClassSwitchOptions,
+  type AssignmentDetailClassSwitcher,
+  type ClassSwitchOption,
+} from "../../assignments/detail/class-switcher";
+import type { CurrentForFamily } from "../../assignments/detail/grade-sync-context";
 import type {
   AttemptGetForTeacherCallable,
   AttemptsListForClassCallable,
@@ -160,6 +167,10 @@ export type ClassManagementIntent = "create" | "import";
 // - "enter-assignment-detail" / "exit-assignment-detail": Assignment
 //   Summary opening from a class's Assignments section / its in-app "Back
 //   to class" returning there (a replace, never `history.back()`).
+// - "switch-to-class-assignments": the Assignment Detail class switcher
+//   falling back to another class's Assignments section when that class's
+//   Current cannot be resolved safely. Pushed (not replaced) so Back
+//   returns to the Assignment Detail the teacher switched from.
 // - "enter-detail" / "exit-detail": Student Detail opening (from the
 //   roster OR via Previous/Next, which is real navigation to a different
 //   student and therefore its own history entry) / closing back to the
@@ -188,7 +199,8 @@ export type StudentDetailHistorySeam = {
           readonly classId: string;
           readonly assignmentId: string;
         }
-      | { readonly kind: "exit-assignment-detail"; readonly classId: string },
+      | { readonly kind: "exit-assignment-detail"; readonly classId: string }
+      | { readonly kind: "switch-to-class-assignments"; readonly classId: string },
   ) => void;
   readonly registerController: (controller: {
     readonly restoreWorkspace: (
@@ -516,6 +528,82 @@ export function renderClassesSurface(
     return n;
   };
 
+  // Same-assignment class selector. The teacher's authorized class list as
+  // this mount last loaded it (already in the saved class order). Read from
+  // the live surface state when available; otherwise from the initial load,
+  // which a history restore can race (Detail may open before the list
+  // resolves). `classesKnown` settles once that initial load finishes so a
+  // Detail rendered first can upgrade its static class label.
+  let knownClasses: ReadonlyArray<ClassSummary> | null = null;
+  let markClassesKnown: () => void = () => undefined;
+  const classesKnown = new Promise<void>((resolve) => {
+    markClassesKnown = resolve;
+  });
+  const currentClassList = (): ReadonlyArray<ClassSummary> | null =>
+    state.kind === "list" || state.kind === "workspace"
+      ? state.classes
+      : knownClasses;
+
+  // Fallback when a target class's Current cannot be resolved safely: land on
+  // that class's Assignments section (never an arbitrary occurrence), as a
+  // new history entry above the originating Assignment Detail.
+  const openClassAssignmentsList = (classId: string): void => {
+    setClassesReturn?.({ classId, tab: "assignments" });
+    if (studentDetailHistory !== null) {
+      studentDetailHistory.notify({ kind: "switch-to-class-assignments", classId });
+      return;
+    }
+    navigateToSurface?.("classes");
+  };
+
+  const switchClassAssignment = async (
+    option: ClassSwitchOption,
+    context: { readonly isActive: () => boolean },
+  ): Promise<void> => {
+    const target = option.target;
+    if (target.kind === "assignment") {
+      openClassAssignment(option.classId, target.assignmentId);
+      return;
+    }
+    let current: CurrentForFamily | null = null;
+    const resolveCurrent = assignmentDetail?.resolveCurrent;
+    if (resolveCurrent !== undefined) {
+      try {
+        current = await resolveCurrent({
+          classId: option.classId,
+          lessonSlug: target.lessonSlug,
+        });
+      } catch {
+        current = null;
+      }
+    }
+    // The teacher left the originating Detail while Current was resolving.
+    if (!context.isActive()) return;
+    const assignmentId = chooseCurrentTarget(
+      target.publishedAssignmentIds,
+      current,
+    );
+    if (assignmentId !== null) {
+      openClassAssignment(option.classId, assignmentId);
+      return;
+    }
+    openClassAssignmentsList(option.classId);
+  };
+
+  const classSwitcher: AssignmentDetailClassSwitcher = {
+    options: (metadata) => {
+      const classes = currentClassList();
+      if (classes === null) return null;
+      return listClassSwitchOptions({
+        source: metadata,
+        classes,
+        assignments: listAllAssignments(),
+      });
+    },
+    ready: classesKnown,
+    select: switchClassAssignment,
+  };
+
   // Sprint 28.6C: open the existing Assignment Detail from the class-centered
   // workflow. Records the return location on the shell so the Back control (and
   // returning nav) re-lands in this class's Assignments section rather than
@@ -543,6 +631,7 @@ export function renderClassesSurface(
         }
         navigateToSurface?.("classes");
       },
+      classSwitcher,
     };
     assignmentDetail.open(assignmentId, options);
     if (opts?.fromHistory !== true) {
@@ -1834,6 +1923,8 @@ export function renderClassesSurface(
   void deps
     .listClasses(session.uid)
     .then((classes) => {
+      knownClasses = classes;
+      markClassesKnown();
       if (!mount.isConnected) return;
       // Student Progress & Assignment Membership Phase A, Slice 3: one-shot
       // student-selection restore. When the teacher just arrived from an
@@ -1948,6 +2039,7 @@ export function renderClassesSurface(
       if (openImport) onStartImport();
     })
     .catch(() => {
+      markClassesKnown();
       if (!mount.isConnected) return;
       state = { kind: "error" };
       rerender();

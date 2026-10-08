@@ -434,6 +434,8 @@ async function run(): Promise<void> {
         remountCurriculum();
       },
       backLabel: options?.backLabel,
+      // Same-assignment class selector: supplied only by the Classes path.
+      classSwitcher: options?.classSwitcher,
       // Sprint 13E: legacy recovery wire. The certified reopen callable
       // transitions an already-closed assignment back to published and
       // re-registers the updated metadata into the session-scoped
@@ -617,6 +619,22 @@ async function run(): Promise<void> {
       controller: TeacherShellStudentSelectionController | null,
     ) => {
       teacherShellStudentSelectionController = controller;
+    },
+    // Same-assignment class selector: canonical Current for a class + lesson
+    // through the certified `assignmentsLifecycleState` callable, read only
+    // when a target class holds more than one published occurrence.
+    resolveCurrent: async (input: {
+      readonly classId: string;
+      readonly lessonSlug: string;
+    }) => {
+      if (assignments === null) {
+        throw new Error("Current is unavailable.");
+      }
+      const out = await assignments.lifecycleState(input);
+      return {
+        resolution: out.currentAssignmentResolution,
+        currentAssignmentId: out.currentAssignmentId,
+      };
     },
   });
   // Firebase Functions instance for this page, with the local-emulator
