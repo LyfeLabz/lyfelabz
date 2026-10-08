@@ -6,10 +6,11 @@
   const STORAGE_KEY = 'lyfelabz:lab-report-assistant:v1';
   // Cloud saving is enabled per host. The browser storage of one hostname is
   // invisible to another, so cloud saving lives on the app origin only, where
-  // students already sign in. Production stays off until the labReports
-  // callables are deployed and staging is verified
+  // students already sign in. Production opened after the labReports
+  // callables were deployed to lyfelabz-prod and staging was verified; set
+  // this to false and release Hosting to roll back to browser-only saving
   // (docs/platform/LAB_REPORT_CLOUD_AUTOSAVE.md).
-  const CLOUD_PRODUCTION_ENABLED = false;
+  const CLOUD_PRODUCTION_ENABLED = true;
   const CLOUD_HOSTS = {
     'app.lyfelabz.com': CLOUD_PRODUCTION_ENABLED,
     'lyfelabz-staging.web.app': true,

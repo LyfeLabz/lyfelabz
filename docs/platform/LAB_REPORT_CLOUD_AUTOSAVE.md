@@ -1,6 +1,7 @@
 # Lab Report Assistant Cloud Autosave
 
-**Status:** Implemented in the repository, inactive in production. Not deployed.
+**Status:** Production gate opened in the repository, not yet live in
+production (see Deployment state).
 **Established:** October 8, 2026.
 **Surfaces:** `tool_lab-report-assistant.html`, `assets/lab-report-assistant.js`,
 `assets/lab-report-cloud-sync.js`, `assets/lyfelabz-lab-report-cloud.js`
@@ -10,6 +11,18 @@
 This document is the canonical reference for how the Lab Report Assistant
 saves a signed-in student's report to their LyfeLabz account, and for
 activating, verifying, and rolling it back.
+
+## Deployment state (October 8, 2026)
+
+| Surface | State |
+| --- | --- |
+| Staging (`lyfelabz-staging`) | Functions, Rules, and Hosting deployed; human verification passed (section 10). |
+| Production Functions | `labReportsGet` and `labReportsSave` deployed from `e46371f` and ACTIVE (us-central1); unauthenticated calls are rejected. |
+| Production Rules | Unchanged by deliberate release decision. The released ruleset equals `a31643e` and has no explicit `studentLabReports` block; the terminal default-deny already denies all client access to the collection. |
+| Production Hosting | Not yet updated. It still serves the browser-only tool (no cloud scripts). |
+| Production gate | `CLOUD_PRODUCTION_ENABLED = true` in the repository (activation step 8), not yet released. |
+| Production cloud autosave | Not live. It becomes live only with the Hosting release of the gate change (step 9). |
+| Production smoke test | Pending (step 10). |
 
 ---
 
@@ -51,7 +64,7 @@ hostname at runtime:
 
 | Host | Behavior |
 | --- | --- |
-| `app.lyfelabz.com` | Cloud saving when `CLOUD_PRODUCTION_ENABLED` is `true` (currently `false`). |
+| `app.lyfelabz.com` | Cloud saving when `CLOUD_PRODUCTION_ENABLED` is `true` (`true` in the repository; production Hosting not yet released). |
 | `lyfelabz-staging.web.app`, `lyfelabz-staging.firebaseapp.com` | Cloud saving (staging project config from `assets/lyfelabz-firebase-config.js`). |
 | `localhost`, `127.0.0.1` | Cloud saving against the local emulators. |
 | `lyfelabz.com`, `www.lyfelabz.com`, `lyfelabz-staging-marketing.web.app` | Browser-only. When the matching app host has cloud saving, a notice explains how to move a report there with a backup file. |
@@ -203,9 +216,11 @@ Confirm against the billing account's actual rates before activation.
   automatic expiration. Long-term retention and deletion governance for this
   collection remain a separate future decision.
 
-## 9. Activation sequence (not executed)
+## 9. Activation sequence
 
-Every step is a separately authorized action.
+Every step is a separately authorized action. Steps 1 to 6 are complete;
+step 7 was deliberately skipped; step 8 is prepared in the repository and not
+committed; steps 9 and 10 are pending.
 
 1. Review and commit the change set.
 2. **Staging Functions:** `firebase deploy --only functions:labReportsGet,functions:labReportsSave --project lyfelabz-staging`.
@@ -213,7 +228,7 @@ Every step is a separately authorized action.
 4. **Staging Hosting:** the normal paired release from a clean checkout of the commit (`prepare.cjs --project lyfelabz-staging`, `--config firebase.staging.json`, `--only hosting:app,hosting:marketing`, then `certify.cjs`). Staging hosts are cloud-enabled without any gate change.
 5. **Staging verification** (section 10).
 6. **Production Functions:** same deploy with `--project lyfelabz-prod`. Hosting has not changed, so students see nothing new.
-7. **Production Rules (optional):** as step 3 with `--project lyfelabz-prod`.
+7. **Production Rules (optional):** as step 3 with `--project lyfelabz-prod`. Skipped by release decision. Note that production's baseline is `a31643e`, not `87fe7c1`, so a later production Rules deploy also ships the `assessmentPresentations` deny block.
 8. **Open the gate:** set `CLOUD_PRODUCTION_ENABLED = true` in `assets/lab-report-assistant.js` (update the host-gating test), commit.
 9. **Production Hosting:** paired release of that commit, then certify.
 10. Production smoke test with a designated test student.

@@ -326,22 +326,37 @@ describe('moving reports between browsers and hostnames', () => {
 });
 
 describe('host gating', () => {
-  test('production app host stays browser-only until the production gate opens', () => {
-    mount({ host: 'app.lyfelabz.com' });
-    expect(toolScript).toContain('const CLOUD_PRODUCTION_ENABLED = false;');
-    expect([...w.document.querySelectorAll('script[src]')].map(item => item.getAttribute('src'))).toEqual(['assets/lab-report-cloud-sync.js', 'assets/lab-report-assistant.js']);
-    expect(el('cloud-status').hidden).toBe(true);
-    expect(el('cloud-panel').hidden).toBe(true);
+  test('the production app host is a cloud host and loads the shared Firebase config before the cloud bundle', () => {
+    mount({ host: 'app.lyfelabz.com', storage: { [KEY]: JSON.stringify(savedReport({ investigationQuestion: 'Existing browser work' })) } });
+    expect(toolScript).toContain('const CLOUD_PRODUCTION_ENABLED = true;');
+    expect([...w.document.head.querySelectorAll('script[src]')].map(item => item.getAttribute('src'))).toEqual(['assets/lab-report-cloud-sync.js', 'assets/lab-report-assistant.js', 'assets/lyfelabz-firebase-config.js']);
+    w.document.head.querySelector('script[src="assets/lyfelabz-firebase-config.js"]').onload();
+    expect(w.document.head.querySelector('script[src="assets/lyfelabz-lab-report-cloud.js"]')).not.toBe(null);
+    expect(w.document.body.dataset.reportLock).toBe('loading');
     expect(el('origin-notice').hidden).toBe(true);
-    input('investigationQuestion', 'Browser only');
-    expect(JSON.parse(w.localStorage.getItem(KEY)).responses.investigationQuestion).toBe('Browser only');
+    expect(JSON.parse(w.localStorage.getItem(KEY)).responses.investigationQuestion).toBe('Existing browser work');
   });
 
-  test.each(['lyfelabz.com', 'www.lyfelabz.com'])('%s gets no cloud code and no redirect while production is gated', host => {
-    mount({ host });
-    expect(el('origin-notice').hidden).toBe(true);
+  test('the production app host opens a signed-in student report from the cloud', async () => {
+    const cloud = fakeCloud();
+    cloud.seed('student-a', savedReport({ investigationQuestion: 'Production cloud question' }));
+    mount({ host: 'app.lyfelabz.com', cloud, user: STUDENT_A });
+    await settle();
+    expect(el('field-investigationQuestion').value).toBe('Production cloud question');
+    expect(el('cloud-status').textContent).toBe('Saved to cloud');
+  });
+
+  test.each(['lyfelabz.com', 'www.lyfelabz.com'])('%s stays browser-only and points to the production app host without a redirect', host => {
+    mount({ host, storage: { [KEY]: JSON.stringify(savedReport({ claim: SECRET })) } });
+    const link = el('origin-notice').querySelector('a');
+    expect(el('origin-notice').hidden).toBe(false);
+    expect(link.href).toBe('https://app.lyfelabz.com/tool_lab-report-assistant.html');
+    expect(link.href).not.toContain('?');
+    expect(link.href).not.toContain('#');
     expect(w.location.hostname).toBe(host);
-    expect(w.document.querySelectorAll('script[src*="lab-report-cloud.js"]')).toHaveLength(0);
+    expect(el('cloud-status').hidden).toBe(true);
+    expect(w.document.querySelectorAll('script[src*="firebase-config"], script[src*="lab-report-cloud.js"]')).toHaveLength(0);
+    expect(w.localStorage.getItem(KEY)).toContain(SECRET);
   });
 
   test('a host that cannot sign in points to the app host without putting the report in the link', () => {
