@@ -54,6 +54,18 @@ export type ClassroomGradingConfig =
       readonly mode: "ungraded";
     };
 
+// Resource Expansion Phase 1 - the kind of activity an assignment
+// delivers. The record's `lessonSlug` remains the activity identifier for
+// every type; its grammar (`shared/activity-identifiers.ts`) reserves a
+// `<type>-` prefix for each non-lesson type, so the identifier and this
+// type must agree. Only `lesson` is currently assignable.
+export type AssignmentResourceType =
+  | "lesson"
+  | "simulation"
+  | "investigation"
+  | "extension"
+  | "challenge";
+
 // Canonical assignment record shape per Data Model §3.6.
 //
 // Required fields: classId, teacherId, schoolId, lessonSlug, mode, status,
@@ -126,6 +138,16 @@ export type AssignmentRecord = {
   // record for every publication attempt (initial and retry), so it is
   // durable assignment configuration rather than request state.
   readonly dueDate?: string;
+  // Resource Expansion Phase 1 - additive optional activity type. Absent
+  // means "lesson": every existing record is a lesson assignment and needs
+  // no migration or backfill. Written only by `assignmentsCreateDraft`, and
+  // only for a non-lesson type (a lesson record keeps its historical
+  // shape); fixed at creation. Readers default an absent value to
+  // "lesson": update and publish use `parseAssignmentResourceType` (which
+  // also refuses an unsupported stored value), and the create-draft replay
+  // comparison uses `resourceType ?? "lesson"`. All other readers ignore
+  // the field.
+  readonly resourceType?: AssignmentResourceType;
 };
 
 // Write shape for the draft-creation callable (assignmentsCreateDraft).
@@ -155,6 +177,8 @@ export type AssignmentCreationWrite = {
   readonly classroomGrading?: ClassroomGradingConfig;
   // See the field comment on `AssignmentRecord.dueDate`.
   readonly dueDate?: string;
+  // See the field comment on `AssignmentRecord.resourceType`.
+  readonly resourceType?: AssignmentResourceType;
 };
 
 // Write shape for the draft-update callable (assignmentsUpdateDraft).

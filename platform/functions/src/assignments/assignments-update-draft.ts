@@ -2,6 +2,8 @@ import { Timestamp } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertAssignableActivity,
+  parseAssignmentResourceType,
   platformCallable,
   PlatformError,
   assignmentDocRef,
@@ -12,6 +14,7 @@ import {
   type AssignmentDraftUpdateWrite,
   type AssignmentMode,
   type AssignmentRecord,
+  type AssignmentResourceType,
   type ClassroomGradingConfig,
 } from "../shared";
 
@@ -35,6 +38,12 @@ export type AssignmentsUpdateDraftRequest = {
   // Writable here only while the record is still `draft` (enforced below,
   // same gate as every other field on this callable).
   readonly classroomGrading?: ClassroomGradingConfig;
+  // Resource Expansion Phase 1 - optional assertion of the record's
+  // activity type. The type is fixed at creation: a value that differs
+  // from the record's (absent means "lesson") is refused, and a new
+  // `lessonSlug` must belong to the record's type. Not an update field on
+  // its own.
+  readonly resourceType?: AssignmentResourceType;
 };
 
 // Return payload of a successful draft-update call. `alreadyUpdated` is
@@ -145,6 +154,7 @@ type ValidatedRequest = {
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
   readonly classroomGrading?: ClassroomGradingConfig;
+  readonly resourceType?: AssignmentResourceType;
 };
 
 function validateRequest(data: unknown): ValidatedRequest {
@@ -179,6 +189,7 @@ function validateRequest(data: unknown): ValidatedRequest {
     windowClosesAt?: Timestamp;
     availableAt?: Timestamp;
     classroomGrading?: ClassroomGradingConfig;
+    resourceType?: AssignmentResourceType;
   } = { assignmentId };
 
   if (payload.title !== undefined) {
@@ -254,6 +265,10 @@ function validateRequest(data: unknown): ValidatedRequest {
 
   if (payload.classroomGrading !== undefined) {
     out.classroomGrading = validateClassroomGradingConfig(payload.classroomGrading);
+  }
+
+  if (payload.resourceType !== undefined) {
+    out.resourceType = parseAssignmentResourceType(payload.resourceType);
   }
 
   if (
@@ -430,6 +445,19 @@ async function assignmentsUpdateDraftHandler(
       "assignments.invalidStatus",
       `Draft update requires status "draft" (current: "${existing.status}").`,
     );
+  }
+
+  if (input.resourceType !== undefined || input.lessonSlug !== undefined) {
+    const recordResourceType = parseAssignmentResourceType(existing.resourceType);
+    if (input.resourceType !== undefined && input.resourceType !== recordResourceType) {
+      throw new PlatformError(
+        "assignments.resourceTypeMismatch",
+        "resourceType is fixed when the assignment is created.",
+      );
+    }
+    if (input.lessonSlug !== undefined) {
+      assertAssignableActivity(input.lessonSlug, recordResourceType);
+    }
   }
 
   const { write, changedFields } = computeDiff(existing, input);

@@ -497,6 +497,74 @@ describe("Canonical curriculum registry strict-failure guarantees", () => {
     firstUnit(value).title = " A";
     expect(() => parse(value)).toThrow(/whitespace/);
   });
+
+  // Resource Expansion Phase 1: assignment activity identifiers
+  // (app/scripts/activityIdentifiers.cjs).
+  test("accepts formal resources whose filenames yield activity identifiers", () => {
+    const value = minimal();
+    firstUnit(value).resources = [
+      { type: "lesson", filename: "lesson_a.html", label: "Lesson" },
+      { type: "simulation", filename: "simulation_a.html", label: "Sim" },
+      { type: "investigation", filename: "investigation_a-b.html", label: "Inv" },
+    ];
+    expect(() => parse(value)).not.toThrow();
+  });
+
+  test("fails when a unit slug begins with a reserved activity identifier prefix", () => {
+    const value = minimal();
+    firstUnit(value).slug = "simulation-a";
+    firstUnit(value).resources = [
+      { type: "lesson", filename: "lesson_simulation-a.html", label: "Lesson" },
+    ];
+    expect(() => parse(value)).toThrow(/begins with a reserved activity identifier prefix/);
+  });
+
+  test("rejects a lesson that would collide with a resource activity identifier", () => {
+    const value = minimal();
+    const block = ((value.topicGroups as Json[])[0].gradeBlocks as Json[])[0];
+    block.units = [
+      {
+        slug: "a",
+        title: "A",
+        description: "Desc",
+        resources: [
+          { type: "lesson", filename: "lesson_a.html", label: "Lesson" },
+          { type: "simulation", filename: "simulation_gravity-wells.html", label: "Sim" },
+        ],
+      },
+      {
+        slug: "simulation-gravity-wells",
+        title: "B",
+        description: "Desc",
+        resources: [{ type: "lesson", filename: "lesson_simulation-gravity-wells.html", label: "Lesson" }],
+      },
+    ];
+    expect(() => parse(value)).toThrow(/reserved activity identifier prefix/);
+  });
+
+  test("fails when a formal resource filename cannot yield an activity identifier", () => {
+    const value = minimal();
+    firstUnit(value).resources = [
+      { type: "lesson", filename: "lesson_a.html", label: "Lesson" },
+      { type: "simulation", filename: "simulation_a_b.html", label: "Sim" },
+    ];
+    expect(() => parse(value)).toThrow(/does not yield a valid assignment activity identifier/);
+  });
+
+  test("fails when a lesson's activity identifier differs from its unit slug", () => {
+    const value = minimal();
+    firstUnit(value).resources = [{ type: "lesson", filename: "lesson_b.html", label: "Lesson" }];
+    expect(() => parse(value)).toThrow(/does not match unit slug "a"/);
+  });
+
+  test("does not require activity identifiers for non-formal resource types", () => {
+    const value = minimal();
+    firstUnit(value).resources = [
+      { type: "lesson", filename: "lesson_a.html", label: "Lesson" },
+      { type: "game", filename: "game_a_b.html", label: "Game" },
+    ];
+    expect(() => parse(value)).not.toThrow();
+  });
 });
 
 describe("Resource-type policy (taxonomy foundation)", () => {

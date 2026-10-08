@@ -36,6 +36,7 @@ jest.mock("../shared", () => {
     "../shared/errors/platform-error",
   );
   return {
+    ...jest.requireActual("../shared/activity-identifiers"),
     platformCallable: (handler: unknown) => handler,
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
@@ -548,5 +549,66 @@ describe("assignmentsUpdateDraft", () => {
     await __assignmentsUpdateDraftHandler(makeRequest());
 
     expect(calls).toEqual(["update", "audit"]);
+  });
+
+  describe("resourceType (Resource Expansion Phase 1)", () => {
+    it("a lesson slug edit on a lesson record (no resourceType) is unchanged", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
+      mockAssignmentUpdate.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+
+      await __assignmentsUpdateDraftHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, lessonSlug: "gravity", resourceType: "lesson" } }),
+      );
+
+      expect(mockAssignmentUpdate).toHaveBeenCalledWith({ lessonSlug: "gravity" });
+    });
+
+    it("refuses a lesson record's slug moving to a resource identifier", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({ data: { assignmentId: ASSIGNMENT_ID, lessonSlug: "simulation-gravity-wells" } }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.resourceTypeMismatch" });
+      expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    });
+
+    it("refuses a resourceType that differs from the record's (fixed at creation)", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({ data: { assignmentId: ASSIGNMENT_ID, title: "T", resourceType: "simulation" } }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.resourceTypeMismatch" });
+      expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    });
+
+    it("rejects an unsupported resourceType before any read", async () => {
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({ data: { assignmentId: ASSIGNMENT_ID, title: "T", resourceType: "game" } }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidResourceType" });
+      expect(mockAssignmentGet).not.toHaveBeenCalled();
+    });
+
+    it("resourceType alone is not an update field", async () => {
+      await expect(
+        __assignmentsUpdateDraftHandler(
+          makeRequest({ data: { assignmentId: ASSIGNMENT_ID, resourceType: "lesson" } }),
+        ),
+      ).rejects.toMatchObject({ code: "assignments.invalidRequest" });
+    });
+
+    it("never writes resourceType through the draft-update path", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
+      mockAssignmentUpdate.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+      await __assignmentsUpdateDraftHandler(
+        makeRequest({ data: { assignmentId: ASSIGNMENT_ID, title: "T", resourceType: "lesson" } }),
+      );
+      expect(mockAssignmentUpdate).toHaveBeenCalledWith({ title: "T" });
+    });
   });
 });

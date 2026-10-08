@@ -80,6 +80,17 @@ export {
   resolveCurrentAssessmentRevisionId,
 } from "./assessment-identifiers";
 export {
+  ASSIGNMENT_RESOURCE_TYPES,
+  DEFAULT_ASSIGNMENT_RESOURCE_TYPE,
+  RESERVED_ACTIVITY_ID_PREFIXES,
+  assertActivityIdMatchesResourceType,
+  assertAssignableActivity,
+  isAssignmentResourceType,
+  isResourceTypeAssignable,
+  parseAssignmentResourceType,
+  reservedResourceTypeForActivityId,
+} from "./activity-identifiers";
+export {
   mapPlatformCodeToHttpsCode,
   platformCallable,
   translateThrown,
@@ -233,6 +244,7 @@ export {
   type AssignmentDraftUpdateWrite,
   type AssignmentLmsPublicationWrite,
   type AssignmentMode,
+  type AssignmentResourceType,
   type AssignmentPublishWrite,
   type AssignmentReopenWrite,
   type AssignmentRecord,

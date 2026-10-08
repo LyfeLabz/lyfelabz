@@ -2,6 +2,8 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 import { FieldValue } from "firebase-admin/firestore";
 
 import {
+  assertAssignableActivity,
+  parseAssignmentResourceType,
   platformCallable,
   PlatformError,
   assignmentDocRef,
@@ -249,6 +251,15 @@ async function assignmentsPublishHandler(
       "Assignment record is missing its lesson slug.",
     );
   }
+
+  // Resource Expansion Phase 1 - defense in depth behind the draft
+  // callables: a record publishes only when its activity identifier
+  // belongs to its type (absent means "lesson") and that type is
+  // assignable. Every existing lesson record passes unchanged.
+  assertAssignableActivity(
+    existing.lessonSlug,
+    parseAssignmentResourceType(existing.resourceType),
+  );
 
   // Immutable grading contract per ASSESSMENT_SCORING_CONTRACT.md §12.1.
   // Publication is refused unless the referenced assessment has already

@@ -44,6 +44,7 @@ jest.mock("../shared", () => {
     "../shared/classes/eligibility",
   );
   return {
+    ...jest.requireActual("../shared/activity-identifiers"),
     platformCallable: (handler: unknown) => handler,
     PlatformError,
     assertClassSupports,
@@ -689,5 +690,118 @@ describe("assignmentsCreateDraft", () => {
         ),
       ).rejects.toMatchObject({ code: "assignments.conflict" });
     });
+  });
+
+  describe("resourceType (Resource Expansion Phase 1)", () => {
+    function primeSuccessfulCreate(): void {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(absentAssignmentSnapshot());
+      mockAssignmentSet.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+    }
+
+    it("missing resourceType keeps the historical lesson write shape", async () => {
+      primeSuccessfulCreate();
+      await __assignmentsCreateDraftHandler(
+        makeRequest({ data: { ...VALID_DATA, lessonSlug: "gravity" } }),
+      );
+      const written = mockAssignmentSet.mock.calls[0][0];
+      expect(written.lessonSlug).toBe("gravity");
+      expect(written).not.toHaveProperty("resourceType");
+    });
+
+    it('an explicit "lesson" is accepted and writes the identical lesson shape', async () => {
+      primeSuccessfulCreate();
+      await __assignmentsCreateDraftHandler(
+        makeRequest({ data: { ...VALID_DATA, resourceType: "lesson" } }),
+      );
+      expect(mockAssignmentSet).toHaveBeenCalledWith({
+        classId: "class-abc",
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        lessonSlug: "lesson_g7_earths-layers",
+        mode: "classroom",
+        status: "draft",
+        createdAt: SERVER_TIMESTAMP_SENTINEL,
+      });
+    });
+
+    it('an explicit "lesson" replays idempotently against an existing record without resourceType', async () => {
+      mockClassGet.mockResolvedValueOnce(classSnapshot());
+      mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
+      const result = await __assignmentsCreateDraftHandler(
+        makeRequest({ data: { ...VALID_DATA, resourceType: "lesson" } }),
+      );
+      expect(result.alreadyCreated).toBe(true);
+      expect(mockAssignmentSet).not.toHaveBeenCalled();
+    });
+
+    it.each<unknown>(["game", "tool", "Lesson", "", 7, null, { type: "lesson" }])(
+      "rejects an unsupported resourceType (%p) before any read or write",
+      async (resourceType) => {
+        await expect(
+          __assignmentsCreateDraftHandler(makeRequest({ data: { ...VALID_DATA, resourceType } })),
+        ).rejects.toMatchObject({ code: "assignments.invalidResourceType" });
+        expect(mockClassGet).not.toHaveBeenCalled();
+        expect(mockAssignmentSet).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each<[string, string | undefined]>([
+      ["simulation-gravity-wells", undefined],
+      ["simulation-gravity-wells", "lesson"],
+      ["investigation-protein-pathway", undefined],
+      ["gravity", "simulation"],
+      ["investigation-protein-pathway", "simulation"],
+      ["simulation-gravity-wells", "investigation"],
+    ])(
+      "rejects identifier %p claimed as %p with assignments.resourceTypeMismatch",
+      async (lessonSlug, resourceType) => {
+        await expect(
+          __assignmentsCreateDraftHandler(
+            makeRequest({
+              data: {
+                ...VALID_DATA,
+                lessonSlug,
+                ...(resourceType !== undefined ? { resourceType } : {}),
+              },
+            }),
+          ),
+        ).rejects.toMatchObject({ code: "assignments.resourceTypeMismatch" });
+        expect(mockClassGet).not.toHaveBeenCalled();
+        expect(mockAssignmentSet).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each<[string, string]>([
+      ["simulation-gravity-wells", "simulation"],
+      ["investigation-protein-pathway", "investigation"],
+      ["extension-fossil-hunt", "extension"],
+      ["challenge-welcome-to-floatia", "challenge"],
+    ])(
+      "keeps a valid %p %p unassignable (assignments.resourceTypeNotAssignable)",
+      async (lessonSlug, resourceType) => {
+        await expect(
+          __assignmentsCreateDraftHandler(
+            makeRequest({ data: { ...VALID_DATA, lessonSlug, resourceType } }),
+          ),
+        ).rejects.toMatchObject({ code: "assignments.resourceTypeNotAssignable" });
+        expect(mockClassGet).not.toHaveBeenCalled();
+        expect(mockAssignmentSet).not.toHaveBeenCalled();
+        expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each<string>(["simulation-Gravity-Wells", "simulation-gravity_wells", "simulation--gravity"])(
+      "rejects a malformed resource identifier (%p)",
+      async (lessonSlug) => {
+        await expect(
+          __assignmentsCreateDraftHandler(
+            makeRequest({ data: { ...VALID_DATA, lessonSlug, resourceType: "simulation" } }),
+          ),
+        ).rejects.toMatchObject({ code: "assignments.invalidLessonSlug" });
+        expect(mockAssignmentSet).not.toHaveBeenCalled();
+      },
+    );
   });
 });

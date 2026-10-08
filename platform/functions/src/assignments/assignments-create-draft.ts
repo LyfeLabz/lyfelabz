@@ -2,7 +2,10 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  assertAssignableActivity,
   assertClassSupports,
+  DEFAULT_ASSIGNMENT_RESOURCE_TYPE,
+  parseAssignmentResourceType,
   platformCallable,
   PlatformError,
   assignmentCreationDocRef,
@@ -14,6 +17,7 @@ import {
   type AssignmentCreationWrite,
   type AssignmentMode,
   type AssignmentRecord,
+  type AssignmentResourceType,
   type ClassRecord,
   type ClassroomGradingConfig,
 } from "../shared";
@@ -44,6 +48,10 @@ export type AssignmentsCreateDraftRequest = {
   // Optional teacher-selected Classroom due date, ISO calendar date
   // "YYYY-MM-DD" (see `AssignmentRecord.dueDate`). Absent means none.
   readonly dueDate?: string;
+  // Resource Expansion Phase 1 - optional activity type; absent means
+  // "lesson". Verified against `lessonSlug` (the activity identifier) and
+  // refused unless the type is currently assignable (lessons only).
+  readonly resourceType?: AssignmentResourceType;
 };
 
 // Return payload of a successful draft-creation call. `alreadyCreated` is
@@ -165,6 +173,7 @@ type ValidatedRequest = {
   readonly availableAt?: Timestamp;
   readonly classroomGrading?: ClassroomGradingConfig;
   readonly dueDate?: string;
+  readonly resourceType: AssignmentResourceType;
 };
 
 function validateRequest(data: unknown): ValidatedRequest {
@@ -229,6 +238,9 @@ function validateRequest(data: unknown): ValidatedRequest {
   }
   const mode = payload.mode as AssignmentMode;
 
+  const resourceType = parseAssignmentResourceType(payload.resourceType);
+  assertAssignableActivity(lessonSlug, resourceType);
+
   const out: {
     assignmentId: string;
     classId: string;
@@ -240,7 +252,8 @@ function validateRequest(data: unknown): ValidatedRequest {
     availableAt?: Timestamp;
     classroomGrading?: ClassroomGradingConfig;
     dueDate?: string;
-  } = { assignmentId, classId, lessonSlug, mode };
+    resourceType: AssignmentResourceType;
+  } = { assignmentId, classId, lessonSlug, mode, resourceType };
 
   if (payload.title !== undefined) {
     if (!isNonEmptyString(payload.title)) {
@@ -349,6 +362,9 @@ function existingMatchesRequest(
   if (existing.schoolId !== actor.schoolId) return false;
   if (existing.classId !== input.classId) return false;
   if (existing.lessonSlug !== input.lessonSlug) return false;
+  if ((existing.resourceType ?? DEFAULT_ASSIGNMENT_RESOURCE_TYPE) !== input.resourceType) {
+    return false;
+  }
   if (existing.mode !== input.mode) return false;
   if (existing.status !== "draft") return false;
   if ((existing.title ?? undefined) !== (input.title ?? undefined)) return false;
@@ -457,6 +473,10 @@ async function assignmentsCreateDraftHandler(
       ? { classroomGrading: input.classroomGrading }
       : {}),
     ...(input.dueDate !== undefined ? { dueDate: input.dueDate } : {}),
+    // A lesson record keeps its historical shape: absent means "lesson".
+    ...(input.resourceType !== DEFAULT_ASSIGNMENT_RESOURCE_TYPE
+      ? { resourceType: input.resourceType }
+      : {}),
   };
 
   await assignmentCreationDocRef(input.assignmentId).set(creation);

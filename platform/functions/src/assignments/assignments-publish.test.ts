@@ -74,6 +74,7 @@ jest.mock("../shared", () => {
     "../shared/errors/platform-error",
   );
   return {
+    ...jest.requireActual("../shared/activity-identifiers"),
     platformCallable: (handler: unknown) => handler,
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
@@ -765,6 +766,50 @@ describe("assignmentsPublish", () => {
         .filter(([ref]) => (ref as { __kind?: string }).__kind === "currentPointerRef")
         .map(([, data]) => (data as { assignmentId: string }).assignmentId);
       expect(pointerWrites).toEqual([Y, Z]);
+    });
+  });
+
+  describe("resourceType (Resource Expansion Phase 1)", () => {
+    it("refuses a non-lesson record before resolving any assessment or writing", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingSnapshot({ lessonSlug: "simulation-gravity-wells", resourceType: "simulation" }),
+      );
+      await expect(__assignmentsPublishHandler(makeRequest())).rejects.toMatchObject({
+        code: "assignments.resourceTypeNotAssignable",
+      });
+      expect(mockResolveCurrentAssessmentRevisionId).not.toHaveBeenCalled();
+      expect(mockBatchCommit).not.toHaveBeenCalled();
+    });
+
+    it("refuses a lesson record whose identifier names a resource", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingSnapshot({ lessonSlug: "investigation-protein-pathway" }),
+      );
+      await expect(__assignmentsPublishHandler(makeRequest())).rejects.toMatchObject({
+        code: "assignments.resourceTypeMismatch",
+      });
+      expect(mockResolveCurrentAssessmentRevisionId).not.toHaveBeenCalled();
+      expect(mockBatchCommit).not.toHaveBeenCalled();
+    });
+
+    it("refuses an unsupported stored resourceType", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot({ resourceType: "game" }));
+      await expect(__assignmentsPublishHandler(makeRequest())).rejects.toMatchObject({
+        code: "assignments.invalidResourceType",
+      });
+      expect(mockBatchCommit).not.toHaveBeenCalled();
+    });
+
+    it('an explicit stored "lesson" publishes exactly like a record without resourceType', async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot({ resourceType: "lesson" }));
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockBatchCommit.mockResolvedValueOnce(undefined);
+      mockWriteAuditEvent.mockResolvedValue({ eventId: "evt-1", record: {} });
+
+      await __assignmentsPublishHandler(makeRequest());
+
+      expect(mockResolveCurrentAssessmentRevisionId).toHaveBeenCalledWith(LESSON_SLUG);
+      expect(mockBatchCommit).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -29,6 +29,11 @@ const {
   sha256,
   summarize,
 } = require("./curriculumParser.cjs");
+const {
+  ACTIVITY_RESOURCE_TYPES,
+  activityIdForResource,
+  reservedTypeForActivityId,
+} = require("./activityIdentifiers.cjs");
 
 const REGISTRY_RELATIVE_TO_APP = path.posix.join(
   "src",
@@ -89,6 +94,7 @@ function deriveCurriculumFromRegistry(registry) {
   const seenTopics = new Set();
   const seenSlugs = new Map();
   const seenHrefs = new Map();
+  const seenActivityIds = new Map();
   const orphanUnits = [];
   const outGroups = [];
   let topicDisplayOrder = 0;
@@ -136,6 +142,9 @@ function deriveCurriculumFromRegistry(registry) {
         if (typeof u.slug !== "string" || !SLUG_PATTERN.test(u.slug)) {
           fail(`invalid slug "${u.slug}" in ${where}/${grade}`);
         }
+        if (reservedTypeForActivityId(u.slug) !== null) {
+          fail(`unit slug "${u.slug}" begins with a reserved activity identifier prefix`);
+        }
         checkText(u.title, `unit "${u.slug}" title`);
         checkText(u.description, `unit "${u.slug}" description`);
         if (seenSlugs.has(u.slug)) {
@@ -150,6 +159,7 @@ function deriveCurriculumFromRegistry(registry) {
           checkFilename(r.filename, r.type);
           checkText(r.label, `resource "${r.filename}" label`);
           const href = claimHref(seenHrefs, r.filename, u.slug);
+          claimActivityId(seenActivityIds, r, u.slug);
           return {
             type: r.type,
             href,
@@ -268,6 +278,24 @@ function checkFilename(filename, type) {
       `resource filename "${filename}" does not match its declared type "${type}" (expected prefix "${HREF_PREFIX_BY_TYPE[type]}")`,
     );
   }
+}
+
+// Every resource that carries an assignment activity identifier
+// (`activityIdentifiers.cjs`) must yield a valid one, unique across all
+// resource types; a lesson's identifier must be its unit's slug.
+function claimActivityId(seenActivityIds, resource, unitSlug) {
+  if (!ACTIVITY_RESOURCE_TYPES.includes(resource.type)) return;
+  const activityId = activityIdForResource(resource.type, resource.filename);
+  if (activityId === null) {
+    fail(`resource "${resource.filename}" does not yield a valid assignment activity identifier`);
+  }
+  if (resource.type === "lesson" && activityId !== unitSlug) {
+    fail(`lesson "${resource.filename}" activity identifier "${activityId}" does not match unit slug "${unitSlug}"`);
+  }
+  if (seenActivityIds.has(activityId)) {
+    fail(`duplicate activity identifier "${activityId}" (also on ${seenActivityIds.get(activityId)})`);
+  }
+  seenActivityIds.set(activityId, resource.filename);
 }
 
 // Every registered href (unit-owned or shared) is unique.
