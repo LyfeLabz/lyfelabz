@@ -221,14 +221,22 @@ test('Start over alone has restrained destructive styling across display modes',
   expect(el('reset-report').getAttribute('type')).toBe('button');
 });
 
-test('main controls end with Start over, recovery copies sit in a collapsed disclosure below, and no Focus Mode', () => {
+test('main controls end with Start over, recovery copies sit in a collapsed disclosure in the storage panel above, and no Focus Mode', () => {
   const group = el('reset-report').parentElement;
   expect([...group.querySelectorAll('button')].map(item => item.id)).toEqual(['toggle-large', 'toggle-contrast', 'toggle-starters', 'read-aloud', 'reset-report']);
   expect(group.getAttribute('role')).toBe('group');
   const panel = el('recovery-panel');
   expect(panel.tagName).toBe('DETAILS');
   expect(panel.open).toBe(false);
-  expect(group.nextElementSibling).toBe(panel);
+  const storage = el('storage-panel');
+  expect(storage.contains(panel)).toBe(true);
+  expect(storage.contains(el('cloud-panel'))).toBe(true);
+  expect(storage.firstElementChild).toBe(el('cloud-panel'));
+  expect(storage.hidden).toBe(false);
+  expect(storage.compareDocumentPosition(group) & w.Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(w.document.querySelectorAll('#recovery-panel, #backup-download, #backup-open, #backup-file')).toHaveLength(4);
+  const ids = [...w.document.querySelectorAll('[id]')].map(item => item.id);
+  expect(new Set(ids).size).toBe(ids.length);
   expect(panel.querySelector('summary').textContent).toBe('Backup & Recovery');
   expect(panel.querySelector('.recovery-note').textContent).toBe('Recovery copies help restore your work in LyfeLabz. They are not for submitting your lab report.');
   expect([...panel.querySelectorAll('button')].map(item => [item.id, item.textContent])).toEqual([['backup-download', 'Save recovery copy'], ['backup-open', 'Restore recovery copy']]);
@@ -241,6 +249,9 @@ test('main controls end with Start over, recovery copies sit in a collapsed disc
     expect(el(id).classList.contains('backup-action')).toBe(true);
     expect(el(id).getAttribute('type')).toBe('button');
   }
+  // Account status and its button share a wrapping row; the panel border holds in High Contrast.
+  for (const rule of ['.cloud-account { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;', '.cloud-panel p { margin: 0; flex: 1 1 16rem; min-width: 0; overflow-wrap: anywhere; }',
+    '.cloud-panel .tool-controls { margin: 0; flex: 0 0 auto; }', '.high-contrast .storage-panel']) expect(html).toContain(rule);
   for (const rule of ['.high-contrast .recovery-panel > summary', '.backup-action {', '.backup-action:hover', '.backup-action:focus-visible', '.high-contrast .backup-action {', '.high-contrast .backup-action:hover']) expect(html).toContain(rule);
 });
 

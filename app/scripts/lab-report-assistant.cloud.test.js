@@ -86,6 +86,15 @@ function mount({ host = 'localhost', cloud = null, user, storage = {}, setup = (
   w.eval(syncScript);
   w.eval(toolScript);
 }
+function expectRecoveryInStoragePanel() {
+  const panel = el('recovery-panel');
+  expect(el('storage-panel').hidden).toBe(false);
+  expect(el('storage-panel').contains(panel)).toBe(true);
+  expect(panel.hidden).toBe(false);
+  expect(panel.querySelector('summary')).not.toBe(null);
+  expect(w.document.querySelectorAll('#backup-download, #backup-open')).toHaveLength(2);
+  for (const id of ['backup-download', 'backup-open']) expect(el(id).disabled).toBe(false);
+}
 const bodyText = () => w.document.body.textContent + [...w.document.querySelectorAll('input, textarea')].map(item => item.value).join(' ');
 
 beforeEach(() => { jest.useFakeTimers(); jest.setSystemTime(Date.UTC(2026, 9, 8, 15, 0)); });
@@ -109,6 +118,47 @@ describe('signed-in student', () => {
     expect(el('local-notice').textContent).toBe('Your report saves to your LyfeLabz account and is accessible on any device. It is private and is not submitted to your teacher.');
     expect(el('cloud-panel').textContent).toContain('Saving to the LyfeLabz account for Student A.');
     expect([...el('cloud-panel').querySelectorAll('button')].map(item => item.textContent)).toEqual(['Sign out']);
+    const row = el('cloud-panel').querySelector('.cloud-account');
+    expect([...row.children].map(item => item.tagName)).toEqual(['P', 'DIV']);
+    expect(row.lastElementChild.textContent).toBe('Sign out');
+    expectRecoveryInStoragePanel();
+  });
+
+  test('recovery stays reachable and working when signed out', async () => {
+    const cloud = fakeCloud();
+    const createUrl = jest.fn(() => 'blob:backup');
+    mount({ cloud, user: null, setup: win => {
+      win.Blob = function () {};
+      win.URL.createObjectURL = createUrl;
+      win.URL.revokeObjectURL = () => {};
+    } });
+    await settle();
+    expect(el('cloud-panel').textContent).toContain('Sign in to save your report');
+    expectRecoveryInStoragePanel();
+    el('backup-download').click();
+    expect(createUrl).toHaveBeenCalled();
+    const fileClick = jest.fn();
+    el('backup-file').click = fileClick;
+    el('backup-open').click();
+    expect(fileClick).toHaveBeenCalled();
+  });
+
+  test('recovery stays reachable when cloud saving cannot start', async () => {
+    mount({ host: 'lyfelabz-staging.web.app' });
+    await advance(16000);
+    expect(el('cloud-panel').textContent).toContain('Cloud saving could not start');
+    expectRecoveryInStoragePanel();
+  });
+
+  test('recovery stays reachable while the account is offline', async () => {
+    const cloud = fakeCloud();
+    mount({ cloud, user: STUDENT_A });
+    await settle();
+    cloud.down = true;
+    input('investigationQuestion', 'Offline words');
+    await advance(2500);
+    expect(el('cloud-status').textContent).toBe('Saved on this device only');
+    expectRecoveryInStoragePanel();
   });
 
   test('typing autosaves after a short pause and leaves the browser report untouched', async () => {
@@ -284,6 +334,8 @@ describe('moving reports between browsers and hostnames', () => {
       win.URL.revokeObjectURL = () => {};
     } });
     expect(el('cloud-status').hidden).toBe(true);
+    expect(el('cloud-panel').hidden).toBe(true);
+    expectRecoveryInStoragePanel();
     el('backup-download').click();
     expect(JSON.parse(downloaded)).toEqual(expect.objectContaining({ lyfelabzLabReportBackup: 1 }));
     expect(JSON.parse(downloaded).report.responses.investigationQuestion).toBe('Apex work');

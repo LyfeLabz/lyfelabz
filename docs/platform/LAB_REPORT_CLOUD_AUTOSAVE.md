@@ -1,7 +1,7 @@
 # Lab Report Assistant Cloud Autosave
 
-**Status:** Production gate opened in the repository, not yet live in
-production (see Deployment state).
+**Status:** Live in production since Hosting release `5c42814` (see
+Deployment state).
 **Established:** October 8, 2026.
 **Surfaces:** `tool_lab-report-assistant.html`, `assets/lab-report-assistant.js`,
 `assets/lab-report-cloud-sync.js`, `assets/lyfelabz-lab-report-cloud.js`
@@ -19,9 +19,9 @@ activating, verifying, and rolling it back.
 | Staging (`lyfelabz-staging`) | Functions, Rules, and Hosting deployed; human verification passed (section 10). |
 | Production Functions | `labReportsGet` and `labReportsSave` deployed from `e46371f` and ACTIVE (us-central1); unauthenticated calls are rejected. |
 | Production Rules | Unchanged by deliberate release decision. The released ruleset equals `a31643e` and has no explicit `studentLabReports` block; the terminal default-deny already denies all client access to the collection. |
-| Production Hosting | Not yet updated. It still serves the browser-only tool (no cloud scripts). |
-| Production gate | `CLOUD_PRODUCTION_ENABLED = true` in the repository (activation step 8), not yet released. |
-| Production cloud autosave | Not live. It becomes live only with the Hosting release of the gate change (step 9). |
+| Production Hosting | Released from `5c42814` (October 8, 2026), paired `app` and `marketing` release. |
+| Production gate | `CLOUD_PRODUCTION_ENABLED = true` (activation step 8), released in `5c42814`. |
+| Production cloud autosave | Live. Activated by the Hosting release of `5c42814` (step 9). |
 | Production smoke test | Pending (step 10). |
 
 ---
@@ -64,7 +64,7 @@ hostname at runtime:
 
 | Host | Behavior |
 | --- | --- |
-| `app.lyfelabz.com` | Cloud saving when `CLOUD_PRODUCTION_ENABLED` is `true` (`true` in the repository; production Hosting not yet released). |
+| `app.lyfelabz.com` | Cloud saving when `CLOUD_PRODUCTION_ENABLED` is `true` (`true`; released to production in `5c42814`). |
 | `lyfelabz-staging.web.app`, `lyfelabz-staging.firebaseapp.com` | Cloud saving (staging project config from `assets/lyfelabz-firebase-config.js`). |
 | `localhost`, `127.0.0.1` | Cloud saving against the local emulators. |
 | `lyfelabz.com`, `www.lyfelabz.com`, `lyfelabz-staging-marketing.web.app` | Browser-only. When the matching app host has cloud saving, a notice explains how to move a report there with a backup file. |

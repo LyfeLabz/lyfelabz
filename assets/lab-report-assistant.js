@@ -1005,10 +1005,14 @@
       anchor.href = link.href;
       copy.append(' ', anchor);
     }
-    const group = node('div', undefined, 'tool-controls');
-    actions.forEach(([label, action]) => group.append(button(label, action)));
-    panel.replaceChildren(copy);
-    if (actions.length) panel.append(group);
+    const row = node('div', undefined, 'cloud-account');
+    row.append(copy);
+    if (actions.length) {
+      const group = node('div', undefined, 'tool-controls');
+      actions.forEach(([label, action]) => group.append(button(label, action)));
+      row.append(group);
+    }
+    panel.replaceChildren(row);
     panel.hidden = false;
   }
   function showStatus(info) {
