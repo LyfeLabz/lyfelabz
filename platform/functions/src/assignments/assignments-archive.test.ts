@@ -10,6 +10,29 @@ const mockAssignmentArchiveDocRef = jest.fn(() => ({
 const mockWriteAuditEvent = jest.fn();
 const mockRequireDistrictContext = jest.fn();
 
+// RA-3B certification: archive runs in one Firestore transaction. The fake
+// transaction routes the read and update through the existing ref mocks,
+// records the in-transaction audit event on `mockWriteAuditEvent`, and
+// commits (`mockCommit`) only after the transaction function returns.
+const mockCommit = jest.fn();
+const mockTx = {
+  get: (ref: { get: () => unknown }) => ref.get(),
+  update: (ref: { update: (w: unknown) => unknown }, write: unknown) => {
+    ref.update(write);
+  },
+};
+const mockRunFirestoreTransaction = jest.fn(
+  async (fn: (tx: typeof mockTx) => Promise<unknown>) => {
+    const result = await fn(mockTx);
+    await mockCommit();
+    return result;
+  },
+);
+const mockWriteAuditEventInTransaction = jest.fn((_tx: unknown, input: unknown) => {
+  void mockWriteAuditEvent(input);
+  return { eventId: "evt-tx", record: {} };
+});
+
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
@@ -30,8 +53,12 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assignmentDocRef: mockAssignmentDocRef,
     assignmentArchiveDocRef: mockAssignmentArchiveDocRef,
+    isTransactionContention: jest.requireActual("../shared/firestore/transaction")
+      .isTransactionContention,
     requireDistrictContext: mockRequireDistrictContext,
+    runFirestoreTransaction: mockRunFirestoreTransaction,
     writeAuditEvent: mockWriteAuditEvent,
+    writeAuditEventInTransaction: mockWriteAuditEventInTransaction,
   };
 });
 
@@ -88,6 +115,9 @@ describe("assignmentsArchive", () => {
   beforeEach(() => {
     mockAssignmentGet.mockReset();
     mockAssignmentUpdate.mockReset();
+    mockCommit.mockReset();
+    mockRunFirestoreTransaction.mockClear();
+    mockWriteAuditEventInTransaction.mockClear();
     mockAssignmentDocRef.mockClear();
     mockAssignmentArchiveDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
@@ -252,7 +282,7 @@ describe("assignmentsArchive", () => {
     ).rejects.toMatchObject({ code: "assignments.invalidAssignmentId" });
   });
 
-  it("orders side effects: archive write, then audit event", async () => {
+  it("orders side effects: archive write, then audit event, both before the one commit", async () => {
     const calls: string[] = [];
     mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
     mockAssignmentUpdate.mockImplementationOnce(() => {
@@ -263,9 +293,88 @@ describe("assignmentsArchive", () => {
       calls.push("audit");
       return Promise.resolve({ eventId: "evt-1", record: {} });
     });
+    mockCommit.mockImplementationOnce(() => {
+      calls.push("commit");
+      return Promise.resolve();
+    });
 
     await __assignmentsArchiveHandler(makeRequest());
 
-    expect(calls).toEqual(["update", "audit"]);
+    expect(calls).toEqual(["update", "audit", "commit"]);
+    expect(mockRunFirestoreTransaction).toHaveBeenCalledTimes(1);
+    expect(mockWriteAuditEventInTransaction).toHaveBeenCalledWith(mockTx, expect.anything());
+  });
+
+  // RA-3B certification correction: lifecycle read, transition, and audit
+  // are one transaction.
+  describe("transactional archive (RA-3B certification)", () => {
+    it("takes previousStatus from the snapshot of the attempt that commits", async () => {
+      // Attempt 1 reads draft and loses its commit to a publication; the
+      // retried attempt reads published.
+      mockAssignmentGet
+        .mockResolvedValueOnce(existingSnapshot({ status: "draft" }))
+        .mockResolvedValueOnce(existingSnapshot({ status: "published" }));
+      mockRunFirestoreTransaction.mockImplementationOnce(async (fn) => {
+        await fn(mockTx); // attempt 1: commit lost
+        mockAssignmentUpdate.mockClear();
+        mockWriteAuditEvent.mockClear();
+        const result = await fn(mockTx); // attempt 2
+        await mockCommit();
+        return result;
+      });
+
+      await expect(__assignmentsArchiveHandler(makeRequest())).resolves.toEqual({
+        assignmentId: ASSIGNMENT_ID,
+        status: "archived",
+        alreadyArchived: false,
+      });
+      expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
+      expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ payload: { classId: "class-abc", previousStatus: "published" } }),
+      );
+    });
+
+    it("a retried attempt that observes a concurrent archive is idempotent and writes nothing", async () => {
+      mockAssignmentGet
+        .mockResolvedValueOnce(existingSnapshot({ status: "published" }))
+        .mockResolvedValueOnce(existingSnapshot({ status: "archived" }));
+      mockRunFirestoreTransaction.mockImplementationOnce(async (fn) => {
+        await fn(mockTx);
+        mockAssignmentUpdate.mockClear();
+        mockWriteAuditEvent.mockClear();
+        return fn(mockTx);
+      });
+
+      await expect(__assignmentsArchiveHandler(makeRequest())).resolves.toMatchObject({ alreadyArchived: true });
+      expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it("refuses with the stable archiveConflict when contention outlasts retries", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockCommit.mockRejectedValueOnce(Object.assign(new Error("10 ABORTED: contention"), { code: 10 }));
+      await expect(__assignmentsArchiveHandler(makeRequest())).rejects.toMatchObject({
+        code: "assignments.archiveConflict",
+      });
+    });
+
+    it("an audit write failure aborts the transaction before commit", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockWriteAuditEventInTransaction.mockImplementationOnce(() => {
+        throw new PlatformError("audit.invalidActorUserId", "bad audit");
+      });
+      await expect(__assignmentsArchiveHandler(makeRequest())).rejects.toMatchObject({
+        code: "audit.invalidActorUserId",
+      });
+      // The staged update belonged to the transaction that never committed.
+      expect(mockCommit).not.toHaveBeenCalled();
+    });
+
+    it("a refused caller never writes inside the transaction", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot({ teacherId: "other" }));
+      await expect(__assignmentsArchiveHandler(makeRequest())).rejects.toMatchObject({ code: "assignments.forbidden" });
+      expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    });
   });
 });

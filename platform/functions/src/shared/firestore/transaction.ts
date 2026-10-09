@@ -17,3 +17,14 @@ export async function runFirestoreTransaction<T>(
 ): Promise<T> {
   return firestore.runTransaction(fn);
 }
+
+// gRPC ABORTED. The admin SDK retries a transaction whose commit loses to
+// concurrent writes; this is what surfaces when every attempt lost. Callers
+// translate it into a stable, retryable PlatformError of their own.
+const FIRESTORE_ABORTED = 10;
+
+export function isTransactionContention(err: unknown): boolean {
+  if (err === null || typeof err !== "object") return false;
+  const code = (err as { code?: unknown }).code;
+  return code === FIRESTORE_ABORTED || code === "aborted" || code === "ABORTED";
+}

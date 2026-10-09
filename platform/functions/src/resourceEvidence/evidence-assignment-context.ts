@@ -3,7 +3,8 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 
 import { isSupersededOccurrence } from "../assignments/current-occurrence-group";
 import {
-  validateCompletionDefinition,
+  parseAssignmentCompletionBinding,
+  verifyFrozenCompletionBinding,
   type CompletionDefinition,
   type CompletionResourceType,
 } from "../resourceCompletion";
@@ -13,7 +14,11 @@ import {
 } from "../shared/activity-identifiers";
 import { requireDistrictContext } from "../shared/auth/require-district-context";
 import { PlatformError } from "../shared/errors/platform-error";
-import { assignmentDocRef, enrollmentDocRef } from "../shared/firestore/typed-ref";
+import {
+  assignmentDocRef,
+  completionDefinitionDocRef,
+  enrollmentDocRef,
+} from "../shared/firestore/typed-ref";
 import { frozenRevisionOrdinal } from "../shared/presentation/revision-coverage";
 import type { AssignmentRecord } from "../shared/types/assignment";
 import {
@@ -33,43 +38,60 @@ import {
 //     rule for writes;
 //   - the resource and frozen assessment revision, from the assignment
 //     record (`lessonSlug`, `resourceType`, `assessmentRevisionId`);
-//   - the frozen completion-definition version and the published
-//     definition, through two explicit ports (below).
+//   - the frozen completion binding and the immutable completion
+//     definition it names, through two explicit ports (below).
 //
-// Integration boundary. Two prerequisites do not exist in the platform yet:
-//   1. Assignments do not freeze a completion-definition version at
-//      publication (`assignmentsPublish` freezes only the assessment
-//      revision, and refuses every non-lesson type today).
-//   2. No immutable, published completion-definition store exists. The
-//      Gravity Wells definition is a DRAFT TypeScript constant, which does
-//      not establish publication immutability.
-// They are therefore ports. The production implementations fail closed:
-// every call is refused with `resourceEvidence.completionBindingUnavailable`.
-// Tests inject fixtures. The Gravity Wells DRAFT definition is never
-// registered by production code.
+// Ports (RA-3B). Publication now freezes a namespaced `completionBinding`
+// on a published non-lesson assignment, and deployment stores one
+// immutable definition per assessment revision in
+// `completionDefinitions/{assessmentRevisionId}`. The ports return raw,
+// unverified data; `resolveEvidenceContext` verifies all of it with the
+// one canonical verifier (`verifyFrozenCompletionBinding`): binding shape
+// and schema, assignment occurrence (id and class), resource and type,
+// frozen revision, record hash, RA-2 schema, registered validators,
+// definition version, and the validator list. A fixture cannot skip that.
+//
+// The Firestore adapters (`ASSIGNMENT_RECORD_COMPLETION_BINDING`,
+// `FIRESTORE_COMPLETION_DEFINITION_STORE`) are implemented and tested but
+// NOT active: `PRODUCTION_RESOURCE_EVIDENCE_DEPS` still fails closed, and
+// none of these handlers is exported or deployed. Switching the production
+// ports is an RA-5 activation step behind the activation blockers in
+// docs/platform/FROZEN_COMPLETION_DEFINITIONS.md.
 
 export interface FrozenCompletionBindingSource {
-  // The completion-definition version frozen with this assignment
-  // occurrence at publication, or null when none was frozen.
-  frozenDefinitionVersion(assignmentId: string, assignment: AssignmentRecord): Promise<number | null>;
+  // The completion binding frozen on this assignment occurrence at
+  // publication (raw, unverified), or null when none was frozen.
+  frozenBinding(assignmentId: string, assignment: AssignmentRecord): Promise<unknown>;
 }
 
 export interface CompletionDefinitionStore {
-  // The immutable published definition for exactly this binding, or null.
-  // Never "the newest" definition: callers pass the frozen version.
-  publishedDefinition(
-    resourceId: string,
-    assessmentRevisionId: string,
-    definitionVersion: number,
-  ): Promise<unknown>;
+  // The stored completion-definition record for exactly this assessment
+  // revision (raw, unverified), or null. Addressed only by the frozen
+  // revision id, so the newest definition is never substituted.
+  publishedDefinition(assessmentRevisionId: string): Promise<unknown>;
 }
 
 export const UNAVAILABLE_FROZEN_COMPLETION_BINDING: FrozenCompletionBindingSource = Object.freeze({
-  frozenDefinitionVersion: () => Promise.resolve(null),
+  frozenBinding: () => Promise.resolve(null),
 });
 
 export const NO_PUBLISHED_COMPLETION_DEFINITIONS: CompletionDefinitionStore = Object.freeze({
   publishedDefinition: () => Promise.resolve(null),
+});
+
+// Reads the binding `assignmentsPublish` froze on the assignment record
+// itself (the record `resolveEvidenceContext` already loaded).
+export const ASSIGNMENT_RECORD_COMPLETION_BINDING: FrozenCompletionBindingSource = Object.freeze({
+  frozenBinding: (_assignmentId: string, assignment: AssignmentRecord) =>
+    Promise.resolve(assignment.completionBinding ?? null),
+});
+
+// Reads `completionDefinitions/{assessmentRevisionId}`.
+export const FIRESTORE_COMPLETION_DEFINITION_STORE: CompletionDefinitionStore = Object.freeze({
+  publishedDefinition: async (assessmentRevisionId: string) => {
+    const snapshot = await completionDefinitionDocRef(assessmentRevisionId).get();
+    return snapshot.exists ? (snapshot.data() ?? null) : null;
+  },
 });
 
 export type ResourceEvidenceDeps = {
@@ -77,10 +99,18 @@ export type ResourceEvidenceDeps = {
   readonly definitionStore: CompletionDefinitionStore;
 };
 
-// The only deps production code may construct today.
+// The only deps production code may construct today. Fail closed.
 export const PRODUCTION_RESOURCE_EVIDENCE_DEPS: ResourceEvidenceDeps = Object.freeze({
   bindingSource: UNAVAILABLE_FROZEN_COMPLETION_BINDING,
   definitionStore: NO_PUBLISHED_COMPLETION_DEFINITIONS,
+});
+
+// RA-3B frozen-publication adapters. Implemented and emulator-tested, not
+// wired into any production path. Activation is a separate, authorized
+// change (RA-5).
+export const FROZEN_PUBLICATION_RESOURCE_EVIDENCE_DEPS: ResourceEvidenceDeps = Object.freeze({
+  bindingSource: ASSIGNMENT_RECORD_COMPLETION_BINDING,
+  definitionStore: FIRESTORE_COMPLETION_DEFINITION_STORE,
 });
 
 export type EvidenceActor = {
@@ -123,8 +153,13 @@ export function assertWritable(ctx: ResolvedEvidenceContext): void {
   }
 }
 
-function bindingUnavailable(message: string): never {
-  throw new PlatformError("resourceEvidence.completionBindingUnavailable", message);
+function bindingUnavailable(message: string, issue?: string): never {
+  throw new PlatformError(
+    "resourceEvidence.completionBindingUnavailable",
+    message,
+    undefined,
+    issue === undefined ? undefined : { issue },
+  );
 }
 
 export async function resolveEvidenceContext(
@@ -175,30 +210,25 @@ export async function resolveEvidenceContext(
     writeRefusal = "The assignment has been superseded by the current assignment.";
   }
 
-  const definitionVersion = await deps.bindingSource.frozenDefinitionVersion(assignmentId, assignment);
-  if (definitionVersion === null) {
-    bindingUnavailable("The assignment has no frozen completion definition.");
-  }
-  const rawDefinition = await deps.definitionStore.publishedDefinition(
-    assignment.lessonSlug,
-    assessmentRevisionId as string,
-    definitionVersion,
+  const parsedBinding = parseAssignmentCompletionBinding(
+    await deps.bindingSource.frozenBinding(assignmentId, assignment),
   );
-  const validated = rawDefinition === null || rawDefinition === undefined
-    ? undefined
-    : validateCompletionDefinition(rawDefinition);
-  if (!validated || !validated.ok) {
-    bindingUnavailable("The frozen completion definition is unavailable.");
+  if (!parsedBinding.ok) {
+    bindingUnavailable("The assignment has no frozen completion definition.", parsedBinding.issue);
   }
-  const definition = validated.definition;
-  if (
-    definition.resourceId !== assignment.lessonSlug ||
-    definition.resourceType !== resourceType ||
-    definition.assessmentRevisionId !== assessmentRevisionId ||
-    definition.definitionVersion !== definitionVersion
-  ) {
-    bindingUnavailable("The completion definition does not match the assignment binding.");
+  const verified = verifyFrozenCompletionBinding({
+    assignmentId,
+    classId: assignment.classId,
+    resourceId: assignment.lessonSlug,
+    resourceType,
+    assessmentRevisionId: assessmentRevisionId as string,
+    binding: parsedBinding.binding,
+    record: await deps.definitionStore.publishedDefinition(parsedBinding.binding.assessmentRevisionId),
+  });
+  if (!verified.ok) {
+    bindingUnavailable("The frozen completion definition does not match the assignment binding.", verified.issue);
   }
+  const definition = verified.definition;
 
   return {
     actor,
@@ -217,6 +247,7 @@ export async function resolveEvidenceContext(
       resourceType: definition.resourceType,
       assessmentRevisionId: definition.assessmentRevisionId,
       definitionVersion: definition.definitionVersion,
+      definitionHash: verified.binding.definitionHash,
     },
     definition,
   };

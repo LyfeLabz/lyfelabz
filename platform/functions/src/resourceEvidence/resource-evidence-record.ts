@@ -53,13 +53,17 @@ export type ResourceEvidenceOwnership = {
   readonly districtId: string;
 };
 
-// Frozen completion binding, taken from the server-held assignment and its
-// frozen completion-definition version, never from the client.
+// Frozen completion binding, taken from the server-held assignment's
+// verified `completionBinding` (RA-3B), never from the client.
+// `definitionHash` is the content hash of the immutable definition the
+// evidence was gathered and evaluated against, so historical evidence
+// stays tied to the exact frozen content.
 export type ResourceEvidenceBinding = {
   readonly resourceId: string;
   readonly resourceType: CompletionResourceType;
   readonly assessmentRevisionId: string;
   readonly definitionVersion: number;
+  readonly definitionHash: string;
 };
 
 export type StoredOutcomeRun = {

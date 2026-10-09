@@ -1,3 +1,5 @@
+import type { Transaction } from "firebase-admin/firestore";
+
 import { PlatformError } from "./errors/platform-error";
 import { assessmentDocRef } from "./firestore/typed-ref";
 
@@ -65,12 +67,16 @@ export function parseAssessmentIdFromRevisionId(
 // and returns its `currentRevisionId`. Throws `assessments.notDeployed`
 // when the assessment document does not exist or does not carry a
 // currentRevisionId, so assignment publish can refuse a lesson whose
-// scorable content has never been deployed.
+// scorable content has never been deployed. When `tx` is supplied the read
+// joins that transaction, so the resolved revision is the one current at
+// the transaction's commit (assignment publish, RA-3B).
 export async function resolveCurrentAssessmentRevisionId(
   lessonSlug: string,
+  tx?: Transaction,
 ): Promise<string> {
   const assessmentId = assessmentIdForLessonSlug(lessonSlug);
-  const snapshot = await assessmentDocRef(assessmentId).get();
+  const ref = assessmentDocRef(assessmentId);
+  const snapshot = tx ? await tx.get(ref) : await ref.get();
   if (!snapshot.exists) {
     throw new PlatformError(
       "assessments.notDeployed",

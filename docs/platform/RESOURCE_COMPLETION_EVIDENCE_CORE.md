@@ -241,7 +241,14 @@ validator's behavior is a new `definitionVersion` (and, for physics or
 rules, a new validator version beside the old one), and existing
 assignments keep the binding they were published with. RA-2 does not build
 a publication or versioning system; this is a rule for the phase that
-stores definitions. `gravity-wells.orbit@1` is pre-release: its contract
+stores definitions.
+
+RA-3B (`FROZEN_COMPLETION_DEFINITIONS.md`) implemented it with one
+refinement: a definition is frozen with exactly one assessment revision,
+so a requirement change is a new assessment revision, and
+`definitionVersion` must equal that revision's ordinal (no separate
+numeric progression). Stored definitions are identified by revision and a
+SHA-256 content hash. `gravity-wells.orbit@1` is pre-release: its contract
 changed in RA-2 (`observedInvocations` added) because nothing has been
 published against it yet.
 

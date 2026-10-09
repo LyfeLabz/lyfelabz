@@ -33,6 +33,15 @@ const mockAssessmentAnswerKeyDeploymentDocRef = jest.fn((id: string) => ({
   id,
 }));
 
+const mockCompletionDefinitionDocRef = jest.fn((id: string) => ({
+  __kind: "completionDefinition",
+  id,
+}));
+const mockCompletionDefinitionCreationDocRef = jest.fn((id: string) => ({
+  __kind: "completionDefinitionCreation",
+  id,
+}));
+
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
@@ -56,6 +65,8 @@ jest.mock("../shared", () => {
     assessmentDeploymentDocRef: mockAssessmentDeploymentDocRef,
     assessmentRevisionDeploymentDocRef: mockAssessmentRevisionDeploymentDocRef,
     assessmentAnswerKeyDeploymentDocRef: mockAssessmentAnswerKeyDeploymentDocRef,
+    completionDefinitionDocRef: mockCompletionDefinitionDocRef,
+    completionDefinitionCreationDocRef: mockCompletionDefinitionCreationDocRef,
     assessmentIdForLessonSlug: (slug: string) => `assessment_${slug}`,
     revisionIdForOrdinal: (assessmentId: string, ordinal: number) =>
       `${assessmentId}__r${String(ordinal)}`,
@@ -73,6 +84,12 @@ jest.mock("../shared", () => {
 
 import { PlatformError } from "../shared/errors/platform-error";
 import type { Firestore } from "firebase-admin/firestore";
+import {
+  GRAVITY_WELLS_COMPLETION_DEFINITION,
+  computeCompletionDefinitionHash,
+  verifyCompletionDefinitionRecord,
+  type CompletionDefinition,
+} from "../resourceCompletion";
 import {
   assessmentIdFor,
   deployAssessmentRevision,
@@ -128,6 +145,7 @@ type Fixture = {
   assessment?: { activityId: string; currentRevisionId: string; assessmentId: string };
   revision?: unknown;
   answerKey?: unknown;
+  completionDefinition?: unknown;
 };
 
 const fixture: Fixture = {};
@@ -150,6 +168,12 @@ function installTransactionRunner() {
         }
         if (ref.__kind === "answerKey") {
           return makeSnap(fixture.answerKey !== undefined, () => fixture.answerKey);
+        }
+        if (ref.__kind === "completionDefinition") {
+          return makeSnap(
+            fixture.completionDefinition !== undefined,
+            () => fixture.completionDefinition,
+          );
         }
         throw new Error(`Unexpected ref: ${JSON.stringify(ref)}`);
       },
@@ -190,6 +214,9 @@ describe("deployAssessmentRevision", () => {
     fixture.assessment = undefined;
     fixture.revision = undefined;
     fixture.answerKey = undefined;
+    fixture.completionDefinition = undefined;
+    mockCompletionDefinitionDocRef.mockClear();
+    mockCompletionDefinitionCreationDocRef.mockClear();
     installTransactionRunner();
   });
 
@@ -651,5 +678,169 @@ describe("deployAssessmentRevision", () => {
       "activityId",
       "currentRevisionId",
     ]);
+  });
+
+  // RA-3B: non-lesson revisions freeze a completion definition in the same
+  // transaction; lessons are unchanged.
+  describe("non-lesson completion definitions (RA-3B)", () => {
+    const GW = "simulation-gravity-wells";
+    const GW_R1 = `assessment_${GW}__r1`;
+
+    function fiveItems() {
+      return [1, 2, 3, 4, 5].map((n) => ({
+        itemId: `q${String(n)}`,
+        itemType: "singleChoice" as const,
+        stem: `Question ${String(n)}?`,
+        options: [
+          { optionId: "A", text: "One" },
+          { optionId: "B", text: "Two" },
+        ],
+        points: 1 as const,
+        correctOptionId: "A",
+        explanation: "Because.",
+      }));
+    }
+
+    function gwInput(overrides: Record<string, unknown> = {}): AssessmentDeploymentInput {
+      return {
+        ...baseInput(),
+        activityId: GW,
+        items: fiveItems(),
+        completionDefinition: GRAVITY_WELLS_COMPLETION_DEFINITION,
+        ...overrides,
+      };
+    }
+
+    function definitionWrite() {
+      return txSets.find(
+        (w) => (w.ref as { __kind: string }).__kind === "completionDefinitionCreation",
+      );
+    }
+
+    it("creates the revision, answer key, and completion definition in one transaction", async () => {
+      const result = await deployAssessmentRevision(gwInput());
+
+      expect(mockRunTransaction).toHaveBeenCalledTimes(1);
+      expect(mockCompletionDefinitionDocRef).toHaveBeenCalledWith(GW_R1, undefined);
+      expect(txSets.map((w) => (w.ref as { __kind: string }).__kind).sort()).toEqual([
+        "answerKeyDeployment",
+        "assessmentDeployment",
+        "completionDefinitionCreation",
+        "revisionDeployment",
+      ]);
+      const write = definitionWrite()?.data as Record<string, unknown>;
+      expect(write).toMatchObject({
+        recordSchemaVersion: 1,
+        assessmentId: `assessment_${GW}`,
+        assessmentRevisionId: GW_R1,
+        revisionOrdinal: 1,
+        resourceId: GW,
+        resourceType: "simulation",
+        definitionSchemaVersion: 1,
+        definitionVersion: 1,
+        validators: [{ validatorId: "gravity-wells.orbit", validatorVersion: 1 }],
+        publishedBy: "deployment",
+        publishedAt: SERVER_TIMESTAMP_SENTINEL,
+      });
+      expect(write.definitionHash).toBe(computeCompletionDefinitionHash(write.definitionJson as string));
+      expect(result).toEqual({
+        assessmentId: `assessment_${GW}`,
+        revisionId: GW_R1,
+        revisionOrdinal: 1,
+        assessmentCreated: true,
+        completionDefinitionHash: write.definitionHash,
+      });
+      // The written record verifies on read, once the server has resolved
+      // the timestamp sentinel into a stored timestamp.
+      const stored = { ...write, publishedAt: { seconds: 1, nanoseconds: 0 } };
+      const verified = verifyCompletionDefinitionRecord(GW_R1, stored, { resourceId: GW, resourceType: "simulation" });
+      expect(verified.ok).toBe(true);
+    });
+
+    it("hashes the canonical definition, independent of authored key order", async () => {
+      await deployAssessmentRevision(gwInput());
+      const first = (definitionWrite()?.data as { definitionHash: string }).definitionHash;
+      txSets.length = 0;
+      const reordered = Object.fromEntries(
+        Object.entries(GRAVITY_WELLS_COMPLETION_DEFINITION).reverse(),
+      );
+      await deployAssessmentRevision(gwInput({ completionDefinition: reordered }));
+      expect((definitionWrite()?.data as { definitionHash: string }).definitionHash).toBe(first);
+    });
+
+    it("refuses a duplicate completion definition and writes nothing", async () => {
+      fixture.completionDefinition = { any: "existing" };
+      await expect(deployAssessmentRevision(gwInput())).rejects.toMatchObject({
+        code: "assessmentDeployment.duplicateCompletionDefinition",
+      });
+      expect(txSets).toHaveLength(0);
+    });
+
+    it("requires a completion definition for a non-lesson resource", async () => {
+      await expect(
+        deployAssessmentRevision(gwInput({ completionDefinition: undefined })),
+      ).rejects.toMatchObject({ code: "assessmentDeployment.missingCompletionDefinition" });
+      expect(mockRunTransaction).not.toHaveBeenCalled();
+    });
+
+    it.each([4, 6, 10])("requires exactly five items for a non-lesson resource (%i refused)", async (count) => {
+      const items = Array.from({ length: count }, (_, i) => ({ ...fiveItems()[0], itemId: `q${String(i + 1)}` }));
+      await expect(deployAssessmentRevision(gwInput({ items }))).rejects.toMatchObject({
+        code: "assessmentDeployment.invalidItemCount",
+      });
+      expect(mockRunTransaction).not.toHaveBeenCalled();
+    });
+
+    it("keeps lesson deployments unchanged: no item-count rule, no definition read or write", async () => {
+      await deployAssessmentRevision(baseInput());
+      expect(mockCompletionDefinitionDocRef).not.toHaveBeenCalled();
+      expect(definitionWrite()).toBeUndefined();
+    });
+
+    it("refuses a completion definition on a lesson", async () => {
+      await expect(
+        deployAssessmentRevision(baseInput({ completionDefinition: GRAVITY_WELLS_COMPLETION_DEFINITION })),
+      ).rejects.toMatchObject({ code: "assessmentDeployment.unexpectedCompletionDefinition" });
+    });
+
+    it("refuses a non-canonical resource identifier", async () => {
+      await expect(
+        deployAssessmentRevision(gwInput({ activityId: "simulation-Gravity_Wells" })),
+      ).rejects.toMatchObject({ code: "assessmentDeployment.invalidActivityId" });
+    });
+
+    const gwWith = (patch: Partial<CompletionDefinition>) => ({ ...GRAVITY_WELLS_COMPLETION_DEFINITION, ...patch });
+    it.each([
+      ["an unregistered validator version", gwWith({ outcomes: GRAVITY_WELLS_COMPLETION_DEFINITION.outcomes.map((o) => ({ ...o, validatorVersion: 2 })) }), "unregisteredValidator"],
+      ["an unsupported schema version", { ...GRAVITY_WELLS_COMPLETION_DEFINITION, schemaVersion: 2 }, "unsupportedDefinitionSchema"],
+      ["a definition for another revision", gwWith({ assessmentRevisionId: `assessment_${GW}__r2` }), "revisionMismatch"],
+      ["a definition version that is not the revision ordinal", gwWith({ definitionVersion: 2 }), "versionMismatch"],
+      ["a definition for another resource", gwWith({ resourceId: "simulation-eclipse-alignment", assessmentRevisionId: "assessment_simulation-eclipse-alignment__r1" }), "resourceMismatch"],
+      ["a structurally invalid definition", gwWith({ stages: [] }), "invalidDefinition"],
+      ["a non-NFC prompt", gwWith({ evidence: [{ ...GRAVITY_WELLS_COMPLETION_DEFINITION.evidence[0], prompt: "Cafe\u0301 orbit" }] }), "invalidDefinition"],
+    ])("refuses %s before any transaction", async (_label, definition, issue) => {
+      await expect(deployAssessmentRevision(gwInput({ completionDefinition: definition }))).rejects.toMatchObject({
+        code: "assessmentDeployment.invalidCompletionDefinition",
+        details: expect.objectContaining({ issue }),
+      });
+      expect(mockRunTransaction).not.toHaveBeenCalled();
+    });
+
+    it("performs no partial write when the transaction fails after the definition is enqueued", async () => {
+      mockRunTransaction.mockImplementationOnce(async (fn: (tx: unknown) => unknown) => {
+        const staged: unknown[] = [];
+        const tx = {
+          get: () => makeSnap(false),
+          set: (ref: unknown) => staged.push(ref),
+          create: (ref: unknown) => staged.push(ref),
+          delete: () => {},
+        };
+        await fn(tx);
+        expect(staged).toHaveLength(4);
+        throw new Error("commit failed"); // nothing staged is applied
+      });
+      await expect(deployAssessmentRevision(gwInput())).rejects.toThrow("commit failed");
+      expect(txSets).toHaveLength(0);
+    });
   });
 });

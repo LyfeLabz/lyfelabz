@@ -105,6 +105,8 @@ export {
   assessmentAnswerKeyDocRef,
   assessmentDeploymentDocRef,
   assessmentDocRef,
+  completionDefinitionCreationDocRef,
+  completionDefinitionDocRef,
   assessmentRevisionDeploymentDocRef,
   assessmentRevisionDocRef,
   assessmentSessionAutosaveDocRef,
@@ -233,7 +235,7 @@ export {
   buildLaunchPresentationResolverPorts,
   createRequestLaunchPresentationResolver,
 } from "./presentation/launch-presentation-deps";
-export { runFirestoreTransaction } from "./firestore/transaction";
+export { isTransactionContention, runFirestoreTransaction } from "./firestore/transaction";
 export { createFirestoreBatch } from "./firestore/batch";
 export { log, type LogPayload } from "./logging/logger";
 export { roundHalfToEven2 } from "./math/round-half-to-even";
@@ -251,6 +253,16 @@ export {
   type AssignmentStatus,
   type ClassroomGradingConfig,
 } from "./types/assignment";
+export {
+  ASSIGNMENT_COMPLETION_BINDING_SCHEMA_VERSION,
+  COMPLETION_DEFINITIONS_COLLECTION,
+  COMPLETION_DEFINITION_RECORD_SCHEMA_VERSION,
+  type AssignmentCompletionBinding,
+  type CompletionBindingResourceType,
+  type CompletionDefinitionCreationWrite,
+  type CompletionDefinitionRecord,
+  type CompletionValidatorRef,
+} from "./types/completion-definition";
 export {
   ASSIGNMENT_RECIPIENTS_SUBCOLLECTION,
   type AssignmentRecipientCreationWrite,

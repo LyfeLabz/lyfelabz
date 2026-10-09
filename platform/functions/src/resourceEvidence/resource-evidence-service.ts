@@ -124,7 +124,8 @@ function assertRecordMatchesContext(record: ResourceEvidenceRecord, ctx: Resolve
     record.resourceId !== b.resourceId ||
     record.resourceType !== b.resourceType ||
     record.assessmentRevisionId !== b.assessmentRevisionId ||
-    record.definitionVersion !== b.definitionVersion
+    record.definitionVersion !== b.definitionVersion ||
+    record.definitionHash !== b.definitionHash
   ) {
     throw new PlatformError(
       "resourceEvidence.bindingMismatch",

@@ -27,6 +27,11 @@ import {
 } from "../types/assignment-current";
 import { AUDIT_EVENTS_COLLECTION, type AuditEventWrite } from "../types/audit-event";
 import {
+  COMPLETION_DEFINITIONS_COLLECTION,
+  type CompletionDefinitionCreationWrite,
+  type CompletionDefinitionRecord,
+} from "../types/completion-definition";
+import {
   PLATFORM_ADMIN_BOOTSTRAP_COLLECTION,
   INITIAL_BOOTSTRAP_DOC_ID,
   type PlatformAdminBootstrapRecord,
@@ -824,6 +829,30 @@ export function assessmentAnswerKeyDeploymentDocRef(
   return firestore
     .collection(ASSESSMENT_ANSWER_KEYS_COLLECTION)
     .doc(revisionId) as DocumentReference<AssessmentAnswerKeyDeploymentWrite>;
+}
+
+// RA-3B frozen completion definitions, keyed by assessment revision id.
+// `deployAssessmentRevision` is the sole writer and uses the creation
+// reference with `create` inside its deployment transaction. Readers verify
+// the stored content against its hash before honoring it
+// (`resourceCompletion/completion-definition-record.ts`).
+
+export function completionDefinitionDocRef(
+  assessmentRevisionId: string,
+  firestore: Firestore = getAdminFirestore(),
+): DocumentReference<CompletionDefinitionRecord> {
+  return firestore
+    .collection(COMPLETION_DEFINITIONS_COLLECTION)
+    .doc(assessmentRevisionId) as DocumentReference<CompletionDefinitionRecord>;
+}
+
+export function completionDefinitionCreationDocRef(
+  assessmentRevisionId: string,
+  firestore: Firestore = getAdminFirestore(),
+): DocumentReference<CompletionDefinitionCreationWrite> {
+  return firestore
+    .collection(COMPLETION_DEFINITIONS_COLLECTION)
+    .doc(assessmentRevisionId) as DocumentReference<CompletionDefinitionCreationWrite>;
 }
 
 // -------------------- Assessment attempt references --------------------

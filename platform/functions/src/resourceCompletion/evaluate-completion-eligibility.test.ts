@@ -523,11 +523,24 @@ describe("evaluateCompletionEligibility: optional stages and attestations", () =
 
 describe("module boundaries", () => {
   it("imports only pure modules and uses no clock, randomness, or network", () => {
-    const allowed = new Set(["../shared/activity-identifiers", "../shared/assessment-identifiers"]);
+    // RA-3B adds three pure dependencies for the frozen definition record:
+    // the shared canonical JSON (dependency-free), the record/binding type
+    // module (type-only), and Node's deterministic SHA-256 (`createHash`
+    // only, checked below).
+    const allowed = new Set([
+      "../shared/activity-identifiers",
+      "../shared/assessment-identifiers",
+      "../shared/types/assessment-presentation",
+      "../shared/types/completion-definition",
+      "crypto",
+    ]);
     for (const file of fs.readdirSync(__dirname).filter((f) => f.endsWith(".ts") && !f.endsWith(".test.ts"))) {
       const src = fs.readFileSync(path.join(__dirname, file), "utf8");
       for (const m of src.matchAll(/from "([^"]+)"/g)) {
         expect({ file, from: m[1], allowed: m[1].startsWith("./") || allowed.has(m[1]) }).toMatchObject({ allowed: true });
+      }
+      for (const m of src.matchAll(/import \{([^}]*)\} from "crypto"/g)) {
+        expect(m[1].trim()).toBe("createHash");
       }
       const code = src.replace(/\/\/.*$/gm, "");
       expect(code).not.toMatch(/Date\.now|new Date|Math\.random|fetch\(|require\(|process\./);

@@ -49,6 +49,35 @@ const mockBatch = {
 };
 const mockCreateFirestoreBatch = jest.fn(() => mockBatch);
 
+// RA-3B: publication runs in one Firestore transaction. The fake
+// transaction routes reads through each ref's own `get` (so the existing
+// read mocks apply) and records writes on the same update/set mocks the
+// batch tests used; the commit happens after the transaction function
+// returns, exactly once per call.
+type MockTx = { get: (ref: { get: () => unknown }) => unknown; update: jest.Mock; set: jest.Mock };
+const mockTx: MockTx = {
+  get: (ref) => ref.get(),
+  update: mockBatchUpdate,
+  set: mockBatchSet,
+};
+const mockRunFirestoreTransaction = jest.fn(
+  async (fn: (tx: MockTx) => Promise<unknown>) => {
+    const result = await fn(mockTx);
+    await mockBatchCommit();
+    return result;
+  },
+);
+const mockWriteAuditEventInTransaction = jest.fn((_tx: unknown, input: unknown) => {
+  void mockWriteAuditEvent(input);
+  return { eventId: "evt-tx", record: {} };
+});
+const mockCompletionDefinitionGet = jest.fn();
+const mockCompletionDefinitionDocRef = jest.fn((revisionId: string) => ({
+  __kind: "completionDefinitionRef",
+  revisionId,
+  get: mockCompletionDefinitionGet,
+}));
+
 const mockWriteAuditEvent = jest.fn();
 const mockRequireDistrictContext = jest.fn();
 const mockResolveCurrentAssessmentRevisionId = jest.fn();
@@ -85,14 +114,30 @@ jest.mock("../shared", () => {
     assignmentsCurrentSetDocRef: mockAssignmentsCurrentSetDocRef,
     enrollmentsCollectionRef: mockEnrollmentsCollectionRef,
     createFirestoreBatch: mockCreateFirestoreBatch,
+    completionDefinitionDocRef: mockCompletionDefinitionDocRef,
+    isTransactionContention: jest.requireActual("../shared/firestore/transaction")
+      .isTransactionContention,
     requireDistrictContext: mockRequireDistrictContext,
     resolveCurrentAssessmentRevisionId: mockResolveCurrentAssessmentRevisionId,
+    runFirestoreTransaction: mockRunFirestoreTransaction,
     writeAuditEvent: mockWriteAuditEvent,
+    writeAuditEventInTransaction: mockWriteAuditEventInTransaction,
   };
 });
 
+import {
+  GRAVITY_WELLS_COMPLETION_DEFINITION,
+  prepareCompletionDefinitionRecord,
+  type CompletionDefinition,
+} from "../resourceCompletion";
+import { assertActivityIdMatchesResourceType } from "../shared/activity-identifiers";
 import { PlatformError } from "../shared/errors/platform-error";
-import { __assignmentsPublishHandler } from "./assignments-publish";
+import {
+  PRODUCTION_ASSIGNMENT_PUBLICATION_POLICY,
+  __assignmentsPublishHandler,
+  __publishAssignmentWithPolicy,
+  type AssignmentPublicationPolicy,
+} from "./assignments-publish";
 
 const TEACHER_UID = "teacher-uid";
 const SCHOOL_ID = "school-a";
@@ -191,6 +236,10 @@ describe("assignmentsPublish", () => {
     mockBatchSet.mockReset();
     mockBatchCommit.mockReset();
     mockCreateFirestoreBatch.mockClear();
+    mockRunFirestoreTransaction.mockClear();
+    mockWriteAuditEventInTransaction.mockClear();
+    mockCompletionDefinitionGet.mockReset();
+    mockCompletionDefinitionDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
     mockRequireDistrictContext.mockReset();
     mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
@@ -218,13 +267,16 @@ describe("assignmentsPublish", () => {
 
       const result = await __assignmentsPublishHandler(makeRequest());
 
-      expect(mockCreateFirestoreBatch).toHaveBeenCalledTimes(1);
+      expect(mockRunFirestoreTransaction).toHaveBeenCalledTimes(1);
+      expect(mockCreateFirestoreBatch).not.toHaveBeenCalled();
+      // A lesson publish write carries no completion binding.
       expect(mockBatchUpdate).toHaveBeenCalledWith(mockPublishRefSentinel, {
         status: "published",
         publishedAt: SERVER_TIMESTAMP_SENTINEL,
         assessmentRevisionId: ASSESSMENT_REVISION_ID,
       });
-      // 3 recipients + 1 Current pointer, all through the same batch.
+      expect(mockCompletionDefinitionDocRef).not.toHaveBeenCalled();
+      // 3 recipients + 1 Current pointer, all through the same transaction.
       expect(mockBatchSet).toHaveBeenCalledTimes(4);
       for (const studentId of ["student-1", "student-2", "student-3"]) {
         expect(mockBatchSet).toHaveBeenCalledWith(
@@ -403,7 +455,6 @@ describe("assignmentsPublish", () => {
         __assignmentsPublishHandler(makeRequest()),
       ).rejects.toMatchObject({ code: "assessments.notDeployed" });
 
-      expect(mockCreateFirestoreBatch).not.toHaveBeenCalled();
       expect(mockBatchUpdate).not.toHaveBeenCalled();
       expect(mockBatchSet).not.toHaveBeenCalled();
       expect(mockBatchCommit).not.toHaveBeenCalled();
@@ -411,7 +462,10 @@ describe("assignmentsPublish", () => {
       expect(mockWriteAuditEvent).not.toHaveBeenCalled();
     });
 
-    it("propagates a batch commit failure without emitting the audit event", async () => {
+    // RA-3B: the audit event is enqueued on the publication transaction,
+    // so a failed commit rolls it back together with the transition: no
+    // audit event can describe a transition that did not happen.
+    it("propagates a transaction commit failure; the audit event was part of the failed commit", async () => {
       mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
       mockEnrollmentsGet.mockResolvedValueOnce(
         enrollmentSnapshot([activeEnrollment("student-1")]),
@@ -421,7 +475,8 @@ describe("assignmentsPublish", () => {
       await expect(
         __assignmentsPublishHandler(makeRequest()),
       ).rejects.toThrow("firestore unavailable");
-      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      expect(mockWriteAuditEventInTransaction).toHaveBeenCalledWith(mockTx, expect.anything());
+      expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
     });
 
     // Requirement 8 (Slice 5): there is no publication-success/pointer-
@@ -430,7 +485,7 @@ describe("assignmentsPublish", () => {
     // pointer set was already enqueued (proving it was part of what failed
     // to commit, not skipped or deferred), and the caller never observes
     // the assignment as published when the shared commit fails.
-    it("a failed batch commit means neither the publish transition nor the Current pointer was applied", async () => {
+    it("a failed transaction commit means neither the publish transition nor the Current pointer was applied", async () => {
       mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
       mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
       mockBatchCommit.mockRejectedValueOnce(new Error("firestore unavailable"));
@@ -439,13 +494,46 @@ describe("assignmentsPublish", () => {
         __assignmentsPublishHandler(makeRequest()),
       ).rejects.toThrow("firestore unavailable");
 
-      // The pointer write was enqueued onto the batch before the commit
-      // that failed - it was never a separate, independently-committed
-      // operation that could have "succeeded anyway."
+      // The pointer write was enqueued onto the transaction before the
+      // commit that failed - it was never a separate, independently-
+      // committed operation that could have "succeeded anyway."
       expect(mockBatchSet).toHaveBeenCalledWith(
         expect.objectContaining({ __kind: "currentPointerRef" }),
         expect.objectContaining({ source: "publish" }),
       );
+      expect(mockWriteAuditEventInTransaction).toHaveBeenCalledWith(mockTx, expect.anything());
+    });
+
+    it("refuses with the stable publishConflict when transaction contention outlasts retries", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
+      mockBatchCommit.mockRejectedValueOnce(Object.assign(new Error("10 ABORTED: contention"), { code: 10 }));
+
+      await expect(__assignmentsPublishHandler(makeRequest())).rejects.toMatchObject({
+        code: "assignments.publishConflict",
+      });
+    });
+
+    it("a retried attempt that observes a concurrent winner returns alreadyPublished and writes nothing", async () => {
+      // First attempt reads draft and loses its commit; Firestore re-runs the
+      // function, which now reads the winner's published record.
+      mockAssignmentGet
+        .mockResolvedValueOnce(existingSnapshot())
+        .mockResolvedValueOnce(existingSnapshot({ status: "published", assessmentRevisionId: ASSESSMENT_REVISION_ID }));
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([activeEnrollment("student-1")]));
+      mockRunFirestoreTransaction.mockImplementationOnce(async (fn) => {
+        await fn(mockTx); // attempt 1: commit lost
+        mockBatchUpdate.mockClear();
+        mockBatchSet.mockClear();
+        mockWriteAuditEvent.mockClear();
+        return fn(mockTx); // attempt 2
+      });
+
+      const result = await __assignmentsPublishHandler(makeRequest());
+
+      expect(result).toEqual({ assignmentId: ASSIGNMENT_ID, status: "published", alreadyPublished: true });
+      expect(mockBatchUpdate).not.toHaveBeenCalled();
+      expect(mockBatchSet).not.toHaveBeenCalled();
       expect(mockWriteAuditEvent).not.toHaveBeenCalled();
     });
   });
@@ -463,10 +551,10 @@ describe("assignmentsPublish", () => {
         status: "published",
         alreadyPublished: true,
       });
-      expect(mockCreateFirestoreBatch).not.toHaveBeenCalled();
       expect(mockBatchUpdate).not.toHaveBeenCalled();
       expect(mockBatchSet).not.toHaveBeenCalled();
       expect(mockEnrollmentsGet).not.toHaveBeenCalled();
+      expect(mockResolveCurrentAssessmentRevisionId).not.toHaveBeenCalled();
       expect(mockWriteAuditEvent).not.toHaveBeenCalled();
     });
 
@@ -597,7 +685,7 @@ describe("assignmentsPublish", () => {
       expect(mockBatchSet).not.toHaveBeenCalled();
     });
 
-    it("orders side effects: batch commit, then audit", async () => {
+    it("orders side effects: the audit event is enqueued in the transaction before its commit", async () => {
       const calls: string[] = [];
       mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
       mockEnrollmentsGet.mockResolvedValueOnce(
@@ -614,7 +702,7 @@ describe("assignmentsPublish", () => {
 
       await __assignmentsPublishHandler(makeRequest());
 
-      expect(calls).toEqual(["commit", "audit"]);
+      expect(calls).toEqual(["audit", "commit"]);
     });
   });
 
@@ -695,39 +783,34 @@ describe("assignmentsPublish", () => {
     });
 
     // Requirement 6: structural atomicity proof, not merely "two mock calls
-    // both happened to succeed." A fresh batch object is created per call
-    // (rather than reusing the shared `mockBatch` singleton used elsewhere
-    // in this file) so this test can prove the publish-transition update
-    // and the Current-pointer set are both method calls on the SAME single
-    // object instance returned by the ONE `createFirestoreBatch()` call for
-    // this handler invocation - not two independently-created atomic
-    // regions that merely both happened to succeed.
-    it("issues the publish transition and the Current pointer set on the identical batch instance from one createFirestoreBatch() call", async () => {
-      const freshBatch = {
+    // both happened to succeed." A fresh transaction object is passed to the
+    // ONE `runFirestoreTransaction()` call for this handler invocation, and
+    // the publish-transition update, the Current-pointer set, and the audit
+    // event are all method calls on that SAME instance - not independently
+    // created atomic regions that merely both happened to succeed.
+    it("issues the publish transition, the Current pointer set, and the audit event on the identical transaction from one runFirestoreTransaction() call", async () => {
+      const freshTx = {
+        get: (ref: { get: () => unknown }) => ref.get(),
         update: jest.fn(),
         set: jest.fn(),
-        commit: jest.fn().mockResolvedValue(undefined),
       };
-      mockCreateFirestoreBatch.mockReset();
-      mockCreateFirestoreBatch.mockImplementationOnce(() => freshBatch);
+      mockRunFirestoreTransaction.mockImplementationOnce(async (fn) => fn(freshTx));
       mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
       mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([]));
-      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "e", record: {} });
 
       await __assignmentsPublishHandler(makeRequest());
 
-      expect(mockCreateFirestoreBatch).toHaveBeenCalledTimes(1);
-      expect(freshBatch.update).toHaveBeenCalledTimes(1);
+      expect(mockRunFirestoreTransaction).toHaveBeenCalledTimes(1);
+      expect(mockCreateFirestoreBatch).not.toHaveBeenCalled();
+      expect(freshTx.update).toHaveBeenCalledTimes(1);
       // Zero recipients + exactly 1 Current pointer set, both via the same
-      // `freshBatch.set` method.
-      expect(freshBatch.set).toHaveBeenCalledTimes(1);
-      expect(freshBatch.set).toHaveBeenCalledWith(
+      // `freshTx.set` method.
+      expect(freshTx.set).toHaveBeenCalledTimes(1);
+      expect(freshTx.set).toHaveBeenCalledWith(
         expect.objectContaining({ __kind: "currentPointerRef" }),
         expect.objectContaining({ source: "publish" }),
       );
-      expect(freshBatch.commit).toHaveBeenCalledTimes(1);
-
-      mockCreateFirestoreBatch.mockImplementation(() => mockBatch);
+      expect(mockWriteAuditEventInTransaction).toHaveBeenCalledWith(freshTx, expect.anything());
     });
 
     // Race semantics (locked, not a defect): two distinct, independently
@@ -808,8 +891,136 @@ describe("assignmentsPublish", () => {
 
       await __assignmentsPublishHandler(makeRequest());
 
-      expect(mockResolveCurrentAssessmentRevisionId).toHaveBeenCalledWith(LESSON_SLUG);
+      expect(mockResolveCurrentAssessmentRevisionId).toHaveBeenCalledWith(LESSON_SLUG, mockTx);
       expect(mockBatchCommit).toHaveBeenCalledTimes(1);
+    });
+  });
+  // RA-3B. Non-lesson publication is refused by the production gate (above);
+  // these cases exercise the binding path through the explicit test seam
+  // with a policy that keeps the identifier/type check but allows the
+  // simulation type. The production policy is never modified.
+  describe("frozen completion binding (RA-3B, test seam)", () => {
+    const GW = "simulation-gravity-wells";
+    const GW_R1 = `assessment_${GW}__r1`;
+    const TEST_POLICY: AssignmentPublicationPolicy = {
+      assertAssignable: (activityId, resourceType) =>
+        assertActivityIdMatchesResourceType(activityId, resourceType),
+    };
+
+    function storedRecord(def: CompletionDefinition = GRAVITY_WELLS_COMPLETION_DEFINITION) {
+      const prepared = prepareCompletionDefinitionRecord(def, {
+        resourceId: def.resourceId,
+        resourceType: def.resourceType,
+        assessmentRevisionId: def.assessmentRevisionId,
+        publishedBy: "unit-test",
+      });
+      if (!prepared.ok) throw new Error(prepared.issue);
+      // firebase-admin/firestore is mocked in this file; any stored value
+      // stands in for the server timestamp.
+      return { ...prepared.write, publishedAt: { seconds: 0, nanoseconds: 0 } };
+    }
+
+    function arrange(record: unknown) {
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingSnapshot({ lessonSlug: GW, resourceType: "simulation" }),
+      );
+      mockResolveCurrentAssessmentRevisionId.mockReset();
+      mockResolveCurrentAssessmentRevisionId.mockResolvedValue(GW_R1);
+      mockCompletionDefinitionGet.mockResolvedValueOnce(
+        record === undefined ? { exists: false, data: () => undefined } : { exists: true, data: () => record },
+      );
+      mockEnrollmentsGet.mockResolvedValueOnce(enrollmentSnapshot([activeEnrollment("student-1")]));
+    }
+
+    it("the production policy is the canonical lesson-only gate", () => {
+      expect(() =>
+        PRODUCTION_ASSIGNMENT_PUBLICATION_POLICY.assertAssignable(GW, "simulation"),
+      ).toThrow(expect.objectContaining({ code: "assignments.resourceTypeNotAssignable" }));
+    });
+
+    it("freezes the verified binding atomically with the transition, the pointer, recipients, and audit", async () => {
+      const record = storedRecord();
+      arrange(record);
+
+      const result = await __publishAssignmentWithPolicy(makeRequest(), TEST_POLICY);
+
+      expect(result).toEqual({ assignmentId: ASSIGNMENT_ID, status: "published", alreadyPublished: false });
+      expect(mockCompletionDefinitionDocRef).toHaveBeenCalledWith(GW_R1);
+      expect(mockBatchUpdate).toHaveBeenCalledWith(mockPublishRefSentinel, {
+        status: "published",
+        publishedAt: SERVER_TIMESTAMP_SENTINEL,
+        assessmentRevisionId: GW_R1,
+        completionBinding: {
+          bindingSchemaVersion: 1,
+          assignmentId: ASSIGNMENT_ID,
+          classId: CLASS_ID,
+          resourceId: GW,
+          resourceType: "simulation",
+          assessmentRevisionId: GW_R1,
+          definitionSchemaVersion: 1,
+          definitionVersion: 1,
+          definitionHash: record.definitionHash,
+          validators: [{ validatorId: "gravity-wells.orbit", validatorVersion: 1 }],
+        },
+      });
+      expect(mockBatchSet).toHaveBeenCalledTimes(2); // 1 recipient + Current pointer
+      expect(mockWriteAuditEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "assignments.published",
+          payload: expect.objectContaining({
+            assessmentRevisionId: GW_R1,
+            completionDefinitionHash: record.definitionHash,
+          }),
+        }),
+      );
+      expect(mockBatchCommit).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ["a missing definition", () => undefined, "missing"],
+      ["a corrupted definition (hash mismatch)", () => ({ ...storedRecord(), definitionHash: "0".repeat(64) }), "hashMismatch"],
+      [
+        "a definition whose content no longer reproduces its hash",
+        () => ({ ...storedRecord(), definitionJson: storedRecord().definitionJson.replace("Explain", "Describe") }),
+        "hashMismatch",
+      ],
+      ["an unsupported record schema", () => ({ ...storedRecord(), recordSchemaVersion: 2 }), "unsupportedRecordSchema"],
+      [
+        "a definition for another revision",
+        () => storedRecord({ ...GRAVITY_WELLS_COMPLETION_DEFINITION, assessmentRevisionId: `assessment_${GW}__r2`, definitionVersion: 2 }),
+        "revisionMismatch",
+      ],
+    ])("refuses %s and writes nothing", async (_label, record, issue) => {
+      arrange(record());
+
+      await expect(__publishAssignmentWithPolicy(makeRequest(), TEST_POLICY)).rejects.toMatchObject({
+        code: "assignments.completionDefinitionUnavailable",
+        details: { issue },
+      });
+      expect(mockBatchUpdate).not.toHaveBeenCalled();
+      expect(mockBatchSet).not.toHaveBeenCalled();
+      expect(mockEnrollmentsGet).not.toHaveBeenCalled();
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+      expect(mockBatchCommit).not.toHaveBeenCalled();
+    });
+
+    it("the production handler still refuses the same record before reading any definition", async () => {
+      arrange(storedRecord());
+      await expect(__assignmentsPublishHandler(makeRequest())).rejects.toMatchObject({
+        code: "assignments.resourceTypeNotAssignable",
+      });
+      expect(mockCompletionDefinitionDocRef).not.toHaveBeenCalled();
+      expect(mockBatchUpdate).not.toHaveBeenCalled();
+    });
+
+    it("never repairs a published non-lesson record: an already-published record is a no-op", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(
+        existingSnapshot({ lessonSlug: GW, resourceType: "simulation", status: "published", assessmentRevisionId: GW_R1 }),
+      );
+      const result = await __publishAssignmentWithPolicy(makeRequest(), TEST_POLICY);
+      expect(result.alreadyPublished).toBe(true);
+      expect(mockCompletionDefinitionDocRef).not.toHaveBeenCalled();
+      expect(mockBatchUpdate).not.toHaveBeenCalled();
     });
   });
 });

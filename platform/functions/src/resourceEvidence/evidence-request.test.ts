@@ -18,6 +18,9 @@ import {
   payloadHash,
 } from "./evidence-request";
 import {
+  ASSIGNMENT_RECORD_COMPLETION_BINDING,
+  FIRESTORE_COMPLETION_DEFINITION_STORE,
+  FROZEN_PUBLICATION_RESOURCE_EVIDENCE_DEPS,
   NO_PUBLISHED_COMPLETION_DEFINITIONS,
   PRODUCTION_RESOURCE_EVIDENCE_DEPS,
   UNAVAILABLE_FROZEN_COMPLETION_BINDING,
@@ -77,6 +80,8 @@ describe("evidence request parsing", () => {
     "resourceType",
     "assessmentRevisionId",
     "definitionVersion",
+    "definitionHash",
+    "completionBinding",
     "validatorId",
     "validatorVersion",
     "outcomes",
@@ -346,17 +351,22 @@ describe("deployment boundary", () => {
 
   it("production deps fail closed for every assignment and binding", async () => {
     await expect(
-      UNAVAILABLE_FROZEN_COMPLETION_BINDING.frozenDefinitionVersion("any", {} as never),
+      UNAVAILABLE_FROZEN_COMPLETION_BINDING.frozenBinding("any", {} as never),
     ).resolves.toBeNull();
     await expect(
       NO_PUBLISHED_COMPLETION_DEFINITIONS.publishedDefinition(
-        GRAVITY_WELLS_RESOURCE_ID,
         GRAVITY_WELLS_COMPLETION_DEFINITION.assessmentRevisionId,
-        1,
       ),
     ).resolves.toBeNull();
     expect(PRODUCTION_RESOURCE_EVIDENCE_DEPS.bindingSource).toBe(UNAVAILABLE_FROZEN_COMPLETION_BINDING);
     expect(PRODUCTION_RESOURCE_EVIDENCE_DEPS.definitionStore).toBe(NO_PUBLISHED_COMPLETION_DEFINITIONS);
+  });
+
+  it("RA-3B adapters exist but production deps are not switched to them", () => {
+    expect(PRODUCTION_RESOURCE_EVIDENCE_DEPS.bindingSource).not.toBe(ASSIGNMENT_RECORD_COMPLETION_BINDING);
+    expect(PRODUCTION_RESOURCE_EVIDENCE_DEPS.definitionStore).not.toBe(FIRESTORE_COMPLETION_DEFINITION_STORE);
+    expect(FROZEN_PUBLICATION_RESOURCE_EVIDENCE_DEPS.bindingSource).toBe(ASSIGNMENT_RECORD_COMPLETION_BINDING);
+    expect(FROZEN_PUBLICATION_RESOURCE_EVIDENCE_DEPS.definitionStore).toBe(FIRESTORE_COMPLETION_DEFINITION_STORE);
   });
 
   it("no Firestore Rules block opens the evidence collection", () => {
