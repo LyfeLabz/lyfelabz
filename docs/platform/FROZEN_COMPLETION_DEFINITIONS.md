@@ -74,7 +74,10 @@ the stored record is.
 
 Every reader (`verifyCompletionDefinitionRecord`) checks, in order: present;
 exact key set; supported record schema; `publishedAt` is a stored
-timestamp (integer `seconds` and `nanoseconds`; null refused); hash format; the hash reproduces
+timestamp (a non-array object with safe-integer `seconds` inside
+Firestore's range 0001-01-01 through 9999-12-31 and integer `nanoseconds`
+in [0, 1e9); null, arrays, and `serverTimestamp()` sentinels refused,
+RA-3C); hash format; the hash reproduces
 from `definitionJson`; the JSON parses; RA-2 `validateCompletionDefinition`
 accepts it (which refuses an unsupported definition schema or unregistered
 validator); the stored string is exactly the canonical form of what it
@@ -233,42 +236,57 @@ side effect (logging follows commit). Exhausted contention is
 and the untouched Current pointer are unchanged. `archived` stays terminal
 for publish and draft update.
 
-Emulator tests force interleavings with test-only hooks
-(`__archiveAssignmentWithHooks`, awaited inside the transaction): a
-publication started inside the archive's read window cannot commit first
-and is refused afterwards; a publication that commits first is recorded as
+The invariant is serializability, not a fixed winner: whichever of a
+concurrent archive and publication commits first, the final committed
+history is lifecycle-consistent and the archive audit names the state that
+was actually archived. The Firestore scheduler decides the order; neither
+transaction is promised to win. Emulator tests force interleavings with
+test-only hooks (`__archiveAssignmentWithHooks`, awaited inside the
+transaction) and assert committed outcomes: when a publication commits
+before the archive, the archive retries, re-reads, and records
 `previousStatus: "published"` with the frozen revision and binding
-preserved; concurrent archives yield one transition and one audit; a
-failure after staging leaves no change.
+preserved; when the archive commits first, the publication re-reads
+`archived` and is refused with nothing written. Concurrent archives yield
+one transition and one audit; a failure after staging leaves no change.
 
-## Open lifecycle races (deployment blockers, not fixed here)
+## Reopen (RA-3C lifecycle hardening)
 
-`assignmentsReopen` and `assignmentsClose` were not changed.
+Sol reproduced a P1 race in `assignmentsReopen`: it read the record outside
+any transaction, required `closed`, then wrote `published` and a separate
+audit event unconditionally. Reopen reads `closed`, archive commits
+`archived`, reopen writes `published`: the archived assignment was
+resurrected. Two concurrent reopens could also both write and produce two
+`assignments.reopened` audits for one transition.
 
-- **Reopen** (`assignments-reopen.ts`): reads the record, requires
-  `closed`, then `update({ status: "published" })` and a separate audit
-  write, with no transaction or precondition. Sol reproduced: reopen reads
-  `closed`, archive commits `archived`, reopen writes `published`. This
-  resurrects an archived assignment, so `archived` is not terminal against
-  reopen today. **P1, deployment blocker** for lifecycle changes. Archive
-  itself is now transactional, so it cannot be the stale writer, and its
-  correctness does not depend on reopen.
-- **Reopen vs reopen:** two concurrent reopens of one `closed` record can
-  both read `closed` and both write, producing two
-  `assignments.reopened` audit events for one transition.
-- **Close** (`assignments-close.ts`, verified): teacher closing is retired
-  and the handler holds no assignment write ref and no audit write. A stale
-  read can only change which refusal or idempotent response it returns, so
-  it has no lifecycle race.
-- **Smallest safe correction:** run reopen's read, the `closed` check, the
-  transition, and its audit event in one transaction, exactly like archive,
-  so a concurrent archive either commits first (reopen re-reads `archived`
-  and refuses) or waits for reopen.
-- **Recommended tests:** emulator interleavings with the same hook pattern:
-  reopen reads `closed` while archive is launched (archive must win cleanly
-  or reopen must refuse); archive first then reopen (refused, nothing
-  written); concurrent reopens (one transition, one audit); reopen retry
-  idempotency.
+Reopen now follows the archive convention in one `runFirestoreTransaction`:
+it reads the record, enforces ownership against that snapshot, treats
+`published` as idempotent (`alreadyPublished: true`, no write, no audit),
+refuses every status other than `closed` (including `archived`) with
+`assignments.invalidTransition`, stages the narrow `status: "published"`
+write and the audit event (`writeAuditEventInTransaction`, payload
+`{ classId, previousStatus }` with `previousStatus` from the snapshot), and
+commits both together. A write that lands after the read forces a retry
+that re-reads, so a concurrent archive either commits first (reopen re-reads
+`archived` and refuses) or commits after the reopen (archive records
+`previousStatus: "published"`). `archived` is terminal under every
+interleaving. Exhausted contention is `assignments.reopenConflict` and
+writes nothing. The response shape and authorization are unchanged; the
+audit payload gains `previousStatus` (additive). Reopen never reads or
+writes recipients, the frozen revision or `completionBinding`, or the
+Current pointer.
+
+`assignmentsClose` was verified and not changed: teacher closing is retired
+and the handler holds no assignment write ref and no audit write, so a
+stale read can only change which refusal or idempotent response it
+returns.
+
+Emulator tests (`__reopenAssignmentWithHooks`, test-only, not exported from
+`src/index.ts`) cover reopen-reads-then-archive and archive-reads-then-reopen
+(final state `archived`, audits consistent with whichever committed first),
+archive before reopen, reopen before archive, concurrent reopens (one
+transition, one audit), idempotency, failure after staging, a competing
+write mid-transaction, ownership, frozen binding, recipient, and Current
+preservation, and unchanged lesson reopen.
 
 ## RA-3A adapter integration
 
@@ -374,8 +392,9 @@ authorized change.
 
 ## Deployment surfaces
 
-When separately authorized: Functions only (`assignmentsPublish` and
-`assignmentsUpdateDraft` behavior change for lessons; deployment code is
+When separately authorized: Functions only (`assignmentsPublish`,
+`assignmentsUpdateDraft`, `assignmentsArchive`, and, from RA-3C,
+`assignmentsReopen` behavior change for lessons; deployment code is
 used by the operator CLI). No Rules, index, Hosting, or configuration
 deployment is needed. No migration: existing assignments, lesson
 publications, and assessment revisions are read unchanged.

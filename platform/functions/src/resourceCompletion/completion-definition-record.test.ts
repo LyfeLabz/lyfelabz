@@ -1,5 +1,7 @@
 import { createHash } from "crypto";
 
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
+
 import {
   buildAssignmentCompletionBinding,
   canonicalCompletionDefinitionJson,
@@ -178,6 +180,40 @@ describe("stored record verification (fail closed)", () => {
     ["content edited without rehashing", { ...record(), definitionJson: (record().definitionJson as string).replace("sideways", "upward") }, "hashMismatch"],
   ])("refuses a record that is %s", (_label, raw, issue) => {
     expect(issueOf(raw)).toBe(issue);
+  });
+
+  // RA-3C timestamp provenance: the stored `publishedAt` must be a real,
+  // representable Firestore Timestamp.
+  const MIN_S = -62_135_596_800;
+  const MAX_S = 253_402_300_799;
+  it.each([
+    ["a firebase-admin Timestamp instance", Timestamp.fromMillis(1_760_000_000_000)],
+    ["a structural timestamp at the minimum", { seconds: MIN_S, nanoseconds: 0 }],
+    ["a structural timestamp at the maximum", { seconds: MAX_S, nanoseconds: 999_999_999 }],
+    ["Timestamp at the minimum", new Timestamp(MIN_S, 0)],
+    ["Timestamp at the maximum", new Timestamp(MAX_S, 999_999_999)],
+  ])("accepts publishedAt as %s", (_label, publishedAt) => {
+    expect(issueOf({ ...record(), publishedAt })).toBe("ok");
+  });
+
+  it.each([
+    ["an array carrying seconds and nanoseconds", Object.assign([], { seconds: 1, nanoseconds: 0 })],
+    ["seconds below Firestore's range", { seconds: MIN_S - 1, nanoseconds: 0 }],
+    ["seconds above Firestore's range", { seconds: MAX_S + 1, nanoseconds: 0 }],
+    ["unsafe integer seconds", { seconds: Number.MAX_SAFE_INTEGER + 1, nanoseconds: 0 }],
+    ["infinite seconds", { seconds: Infinity, nanoseconds: 0 }],
+    ["NaN seconds", { seconds: NaN, nanoseconds: 0 }],
+    ["string seconds", { seconds: "1", nanoseconds: 0 }],
+    ["missing nanoseconds", { seconds: 1 }],
+    ["negative nanoseconds", { seconds: 1, nanoseconds: -1 }],
+    ["nanoseconds of one full second", { seconds: 1, nanoseconds: 1_000_000_000 }],
+    ["fractional nanoseconds", { seconds: 1, nanoseconds: 0.5 }],
+    ["an empty object", {}],
+    ["a serverTimestamp sentinel", FieldValue.serverTimestamp()],
+    ["a Date", new Date(0)],
+    ["epoch milliseconds", 1_760_000_000_000],
+  ])("refuses publishedAt as %s", (_label, publishedAt) => {
+    expect(issueOf({ ...record(), publishedAt })).toBe("malformed");
   });
 
   it("refuses unparseable or non-canonical content even when the hash matches", () => {

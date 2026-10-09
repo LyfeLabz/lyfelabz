@@ -41,6 +41,7 @@ import {
 } from "./assignments-publish";
 import { __assignmentsUpdateDraftHandler } from "./assignments-update-draft";
 import { __archiveAssignmentWithHooks, __assignmentsArchiveHandler } from "./assignments-archive";
+import { __assignmentsReopenHandler, __reopenAssignmentWithHooks } from "./assignments-reopen";
 
 const PROJECT = "demo-bootstrap";
 const hasEmulator = !!process.env.FIRESTORE_EMULATOR_HOST;
@@ -202,6 +203,15 @@ async function archivedAudits(assignmentId: string) {
 async function recipients(assignmentId: string) {
   const snap = await db.collection(`assignments/${assignmentId}/recipients`).get();
   return snap.docs.map((doc) => doc.id).sort();
+}
+
+async function reopenedAudits(assignmentId: string) {
+  const snap = await db
+    .collection("auditEvents")
+    .where("targetId", "==", assignmentId)
+    .where("action", "==", "assignments.reopened")
+    .get();
+  return snap.docs.map((doc) => doc.data());
 }
 
 const settle = <T>(ps: Array<Promise<T>>) => Promise.allSettled(ps);
@@ -729,6 +739,246 @@ d("RA-3B frozen completion-definition publication (Firestore emulator)", () => {
       const audits = await archivedAudits(id);
       expect(audits).toHaveLength(1);
       expect(audits[0]).toMatchObject({ actorUserId: w.teacher, actorRole: "teacher", targetType: "assignment", targetId: id });
+    });
+  });
+
+  // RA-3C: reopen reads, validates, transitions, and audits in one
+  // transaction. Interleavings are forced with the reopen and archive test
+  // hooks (awaited inside the transaction), not with sleeps. Assertions are
+  // on committed outcomes; no particular transaction winner is assumed.
+  describe("reopen lifecycle concurrency", () => {
+    const reopen = (w: World, id: string) => __assignmentsReopenHandler(req(w, w.teacher, { assignmentId: id }));
+    const archive = (w: World, id: string) => __assignmentsArchiveHandler(req(w, w.teacher, { assignmentId: id }));
+
+    // A legacy `closed` occurrence. `assignmentsClose` can no longer write
+    // `closed`, so the legacy state is seeded directly after a real publish.
+    async function closedLesson(w: World, id: string) {
+      const lesson = `emu-reo-${w.ns}`;
+      await deployLesson(lesson);
+      await seedDraft(w, id, { lessonSlug: lesson, resourceType: undefined });
+      await __assignmentsPublishHandler(req(w, w.teacher, { assignmentId: id }));
+      await db.doc(`assignments/${id}`).update({ status: "closed" });
+      return lesson;
+    }
+
+    // Archive must be terminal and the audit trail must describe one
+    // serial history, whichever transaction committed first.
+    async function expectSerializableArchivedHistory(id: string, classId: string, reopenResult: PromiseSettledResult<unknown>) {
+      expect((await data(`assignments/${id}`))?.status).toBe("archived");
+      const archived = await archivedAudits(id);
+      const reopened = await reopenedAudits(id);
+      expect(archived).toHaveLength(1);
+      if (reopenResult.status === "fulfilled") {
+        expect(reopenResult.value).toMatchObject({ alreadyPublished: false });
+        expect(reopened).toHaveLength(1);
+        expect(reopened[0].payload).toEqual({ classId, previousStatus: "closed" });
+        expect(archived[0].payload).toEqual({ classId, previousStatus: "published" });
+      } else {
+        expect(["assignments.invalidTransition", "assignments.reopenConflict"]).toContain(
+          (reopenResult.reason as { code?: string }).code,
+        );
+        expect(reopened).toHaveLength(0);
+        expect(archived[0].payload).toEqual({ classId, previousStatus: "closed" });
+      }
+    }
+
+    it("A and O: reopen reads closed, then a concurrent archive commits; the archive is never resurrected", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-a-${w.ns}`;
+      await closedLesson(w, id);
+      let archiving: Promise<unknown> | undefined;
+      const reads: string[] = [];
+
+      const reopenResult = (await settle([
+        __reopenAssignmentWithHooks(req(w, w.teacher, { assignmentId: id }), {
+          afterRead: async (attempt) => {
+            reads.push(String((await data(`assignments/${id}`))?.status));
+            // Barrier: start the archive while this transaction holds its
+            // read of `closed`. Not awaited here.
+            if (attempt === 1) archiving = archive(w, id);
+          },
+        }),
+      ]))[0];
+      await expect(archiving).resolves.toMatchObject({ status: "archived", alreadyArchived: false });
+
+      expect(reads[0]).toBe("closed");
+      await expectSerializableArchivedHistory(id, w.classId, reopenResult);
+    });
+
+    it("A' and O: archive reads closed, then a concurrent reopen commits; the final state is still archived", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-a2-${w.ns}`;
+      await closedLesson(w, id);
+      let reopening: Promise<unknown> | undefined;
+
+      await __archiveAssignmentWithHooks(req(w, w.teacher, { assignmentId: id }), {
+        afterRead: (attempt) => {
+          if (attempt === 1) reopening = reopen(w, id);
+          return Promise.resolve();
+        },
+      });
+      const reopenResult = (await settle([reopening as Promise<unknown>]))[0];
+      await expectSerializableArchivedHistory(id, w.classId, reopenResult);
+    });
+
+    it("B and F: archive commits before reopen reads; reopen is refused and writes nothing", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-b-${w.ns}`;
+      await closedLesson(w, id);
+      await archive(w, id);
+      const before = await data(`assignments/${id}`);
+
+      await expect(reopen(w, id)).rejects.toMatchObject({ code: "assignments.invalidTransition" });
+      expect(await data(`assignments/${id}`)).toEqual(before);
+      expect(await reopenedAudits(id)).toHaveLength(0);
+    });
+
+    it("C: reopen commits first, then archive; both audits describe the real history", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-c-${w.ns}`;
+      await closedLesson(w, id);
+
+      await expect(reopen(w, id)).resolves.toEqual({ assignmentId: id, status: "published", alreadyPublished: false });
+      await expect(archive(w, id)).resolves.toMatchObject({ alreadyArchived: false });
+      await expectSerializableArchivedHistory(id, w.classId, { status: "fulfilled", value: { alreadyPublished: false } });
+      await expect(reopen(w, id)).rejects.toMatchObject({ code: "assignments.invalidTransition" });
+      expect((await data(`assignments/${id}`))?.status).toBe("archived");
+    });
+
+    it("D: concurrent reopens produce exactly one transition and one audit", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-d-${w.ns}`;
+      await closedLesson(w, id);
+      const results = await settle([reopen(w, id), reopen(w, id), reopen(w, id)]);
+      const values = results
+        .filter((r) => r.status === "fulfilled")
+        .map((r) => (r as PromiseFulfilledResult<{ alreadyPublished: boolean }>).value);
+      const reasons = results.filter((r) => r.status === "rejected").map((r) => (r.reason as { code?: string }).code);
+      expect(values.filter((v) => !v.alreadyPublished)).toHaveLength(1);
+      for (const code of reasons) expect(code).toBe("assignments.reopenConflict");
+      expect(await reopenedAudits(id)).toHaveLength(1);
+      expect((await data(`assignments/${id}`))?.status).toBe("published");
+    });
+
+    it("E: reopening an already-published assignment is idempotent with no write and no audit", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-e-${w.ns}`;
+      await closedLesson(w, id);
+      await reopen(w, id);
+      const after = await data(`assignments/${id}`);
+      await expect(reopen(w, id)).resolves.toEqual({ assignmentId: id, status: "published", alreadyPublished: true });
+      expect(await data(`assignments/${id}`)).toEqual(after);
+      expect(await reopenedAudits(id)).toHaveLength(1);
+    });
+
+    it("H: a failure after the transition and audit are staged leaves no status or audit change", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-h-${w.ns}`;
+      await closedLesson(w, id);
+      const before = await data(`assignments/${id}`);
+
+      await expect(
+        __reopenAssignmentWithHooks(req(w, w.teacher, { assignmentId: id }), {
+          afterWrites: () => Promise.reject(new Error("audit write failed")),
+        }),
+      ).rejects.toThrow("audit write failed");
+      expect(await data(`assignments/${id}`)).toEqual(before);
+      expect(await reopenedAudits(id)).toHaveLength(0);
+    });
+
+    it("I: a competing write during the reopen transaction never yields a duplicate transition or audit", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-i-${w.ns}`;
+      await closedLesson(w, id);
+      const attempts: number[] = [];
+      let competing: Promise<unknown> | undefined;
+
+      const result = await __reopenAssignmentWithHooks(req(w, w.teacher, { assignmentId: id }), {
+        afterRead: (attempt) => {
+          attempts.push(attempt);
+          // A competing non-transactional write to the record this
+          // transaction read. Not awaited: the emulator decides ordering.
+          if (attempt === 1) competing = db.doc(`assignments/${id}`).update({ status: "closed" });
+          return Promise.resolve();
+        },
+      });
+      await competing;
+
+      // Whatever ordering the emulator chose, exactly one committed
+      // transition and one audit exist.
+      expect(result).toMatchObject({ status: "published" });
+      const a = await data(`assignments/${id}`);
+      const audits = await reopenedAudits(id);
+      if (a?.status === "published") {
+        expect(result).toMatchObject({ alreadyPublished: false });
+        expect(audits).toHaveLength(1);
+      } else {
+        // The competing write landed after the reopen committed.
+        expect(a?.status).toBe("closed");
+        expect(audits).toHaveLength(1);
+      }
+      expect(attempts[0]).toBe(1);
+    });
+
+    it("K: a different teacher and a student cannot reopen", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-k-${w.ns}`;
+      await closedLesson(w, id);
+      const before = await data(`assignments/${id}`);
+      const other = `teacher-other-${w.ns}`;
+      await db.doc(`users/${other}`).set({ status: "active", role: "teacher", schoolId: w.schoolId });
+
+      await expect(__assignmentsReopenHandler(req(w, other, { assignmentId: id }))).rejects.toMatchObject({
+        code: "assignments.forbidden",
+      });
+      await expect(
+        __assignmentsReopenHandler(req(w, w.students[0], { assignmentId: id }, "student")),
+      ).rejects.toMatchObject({ code: "role-forbidden" });
+      expect(await data(`assignments/${id}`)).toEqual(before);
+      expect(await reopenedAudits(id)).toHaveLength(0);
+    });
+
+    it("L and M: reopen preserves the frozen revision, completion binding, recipients, and Current pointer", async () => {
+      const w = await seedWorld(2);
+      await deployResource(w.resourceId, 1);
+      const id = `asg-reo-l-${w.ns}`;
+      await seedDraft(w, id);
+      await publish(w, id);
+      await db.doc(`assignments/${id}`).update({ status: "closed" });
+      const before = await data(`assignments/${id}`);
+      const recipientsBefore = await recipients(id);
+      const pointerBefore = await data(`classes/${w.classId}/assignmentsCurrent/${w.resourceId}`);
+      expect(before?.completionBinding).toBeDefined();
+
+      await expect(reopen(w, id)).resolves.toMatchObject({ alreadyPublished: false });
+
+      expect(await data(`assignments/${id}`)).toEqual({ ...before, status: "published" });
+      expect(await recipients(id)).toEqual(recipientsBefore);
+      expect(recipientsBefore).toHaveLength(2);
+      expect(await data(`classes/${w.classId}/assignmentsCurrent/${w.resourceId}`)).toEqual(pointerBefore);
+    });
+
+    it("N: lesson reopen is unchanged: only status changes and the audit carries the established fields", async () => {
+      const w = await seedWorld(1);
+      const id = `asg-reo-n-${w.ns}`;
+      const lesson = await closedLesson(w, id);
+      const before = await data(`assignments/${id}`);
+      const pointerBefore = await data(`classes/${w.classId}/assignmentsCurrent/${lesson}`);
+
+      await expect(reopen(w, id)).resolves.toEqual({ assignmentId: id, status: "published", alreadyPublished: false });
+      expect(await data(`assignments/${id}`)).toEqual({ ...before, status: "published" });
+      expect(await data(`classes/${w.classId}/assignmentsCurrent/${lesson}`)).toEqual(pointerBefore);
+      const audits = await reopenedAudits(id);
+      expect(audits).toHaveLength(1);
+      expect(audits[0]).toMatchObject({
+        actorUserId: w.teacher,
+        actorRole: "teacher",
+        targetType: "assignment",
+        targetId: id,
+        schoolId: w.schoolId,
+        districtId: w.districtId,
+        payload: { classId: w.classId, previousStatus: "closed" },
+      });
     });
   });
 });

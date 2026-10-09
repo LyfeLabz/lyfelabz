@@ -114,15 +114,25 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
 }
 
+// Firestore's representable Timestamp range: 0001-01-01T00:00:00Z through
+// 9999-12-31T23:59:59.999999999Z (the bounds `Timestamp` itself enforces).
+const MIN_TIMESTAMP_SECONDS = -62_135_596_800;
+const MAX_TIMESTAMP_SECONDS = 253_402_300_799;
+
 // `publishedAt` is a server timestamp. Checked structurally (Firestore
 // `Timestamp` exposes integer `seconds` and `nanoseconds`) so this module
-// stays free of firebase-admin; null or any other value is malformed.
+// stays free of firebase-admin; null, arrays, or any other value is
+// malformed. `seconds` must be a safe integer inside Firestore's valid
+// range and `nanoseconds` an integer in [0, 1e9). A deployment-time
+// `serverTimestamp()` sentinel is never a stored value and fails here.
 function isStoredTimestamp(value: unknown): boolean {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const { seconds, nanoseconds } = value as { seconds?: unknown; nanoseconds?: unknown };
   return (
     typeof seconds === "number" &&
-    Number.isInteger(seconds) &&
+    Number.isSafeInteger(seconds) &&
+    seconds >= MIN_TIMESTAMP_SECONDS &&
+    seconds <= MAX_TIMESTAMP_SECONDS &&
     typeof nanoseconds === "number" &&
     Number.isInteger(nanoseconds) &&
     nanoseconds >= 0 &&

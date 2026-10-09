@@ -10,6 +10,29 @@ const mockAssignmentReopenDocRef = jest.fn(() => ({
 const mockWriteAuditEvent = jest.fn();
 const mockRequireDistrictContext = jest.fn();
 
+// RA-3C: reopen runs in one Firestore transaction. The fake transaction
+// routes the read and update through the existing ref mocks, records the
+// in-transaction audit event on `mockWriteAuditEvent`, and commits
+// (`mockCommit`) only after the transaction function returns.
+const mockCommit = jest.fn();
+const mockTx = {
+  get: (ref: { get: () => unknown }) => ref.get(),
+  update: (ref: { update: (w: unknown) => unknown }, write: unknown) => {
+    ref.update(write);
+  },
+};
+const mockRunFirestoreTransaction = jest.fn(
+  async (fn: (tx: typeof mockTx) => Promise<unknown>) => {
+    const result = await fn(mockTx);
+    await mockCommit();
+    return result;
+  },
+);
+const mockWriteAuditEventInTransaction = jest.fn((_tx: unknown, input: unknown) => {
+  void mockWriteAuditEvent(input);
+  return { eventId: "evt-tx", record: {} };
+});
+
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
@@ -30,8 +53,12 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assignmentDocRef: mockAssignmentDocRef,
     assignmentReopenDocRef: mockAssignmentReopenDocRef,
+    isTransactionContention: jest.requireActual("../shared/firestore/transaction")
+      .isTransactionContention,
     requireDistrictContext: mockRequireDistrictContext,
+    runFirestoreTransaction: mockRunFirestoreTransaction,
     writeAuditEvent: mockWriteAuditEvent,
+    writeAuditEventInTransaction: mockWriteAuditEventInTransaction,
   };
 });
 
@@ -88,6 +115,9 @@ describe("assignmentsReopen", () => {
   beforeEach(() => {
     mockAssignmentGet.mockReset();
     mockAssignmentUpdate.mockReset();
+    mockCommit.mockReset();
+    mockRunFirestoreTransaction.mockClear();
+    mockWriteAuditEventInTransaction.mockClear();
     mockAssignmentDocRef.mockClear();
     mockAssignmentReopenDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
@@ -115,13 +145,80 @@ describe("assignmentsReopen", () => {
       targetId: ASSIGNMENT_ID,
       schoolId: SCHOOL_ID,
       districtId: DISTRICT_ID,
-      payload: { classId: "class-abc" },
+      payload: { classId: "class-abc", previousStatus: "closed" },
     });
+    expect(mockRunFirestoreTransaction).toHaveBeenCalledTimes(1);
+    expect(mockWriteAuditEventInTransaction).toHaveBeenCalledWith(
+      mockTx,
+      expect.objectContaining({ action: "assignments.reopened" }),
+    );
+    expect(mockCommit).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       assignmentId: ASSIGNMENT_ID,
       status: "published",
       alreadyPublished: false,
     });
+  });
+
+  it("reads the record inside the transaction, not before it", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+    await __assignmentsReopenHandler(makeRequest());
+    expect(mockAssignmentGet).toHaveBeenCalledTimes(1);
+    expect(mockRunFirestoreTransaction.mock.invocationCallOrder[0]).toBeLessThan(
+      mockAssignmentGet.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("refuses an archived record with no write and no audit (archive is terminal)", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(existingSnapshot({ status: "archived" }));
+    await expect(__assignmentsReopenHandler(makeRequest())).rejects.toMatchObject({
+      code: "assignments.invalidTransition",
+    });
+    expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    expect(mockCommit).not.toHaveBeenCalled();
+  });
+
+  it("re-validates on a transaction retry: a retry that reads archived refuses", async () => {
+    mockAssignmentGet
+      .mockResolvedValueOnce(existingSnapshot({ status: "closed" }))
+      .mockResolvedValueOnce(existingSnapshot({ status: "archived" }));
+    // Simulate the SDK re-running the function after losing a commit race.
+    mockRunFirestoreTransaction.mockImplementationOnce(async (fn) => {
+      await fn(mockTx);
+      return fn(mockTx);
+    });
+    await expect(__assignmentsReopenHandler(makeRequest())).rejects.toMatchObject({
+      code: "assignments.invalidTransition",
+    });
+  });
+
+  it("translates retry exhaustion into assignments.reopenConflict", async () => {
+    mockRunFirestoreTransaction.mockImplementationOnce(() =>
+      Promise.reject(Object.assign(new Error("aborted"), { code: 10 })),
+    );
+    await expect(__assignmentsReopenHandler(makeRequest())).rejects.toMatchObject({
+      code: "assignments.reopenConflict",
+    });
+    expect(mockLogInfo).not.toHaveBeenCalled();
+  });
+
+  it("propagates an audit construction failure without committing", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(existingSnapshot());
+    mockWriteAuditEventInTransaction.mockImplementationOnce(() => {
+      throw new PlatformError("audit.invalidSchoolId", "bad");
+    });
+    await expect(__assignmentsReopenHandler(makeRequest())).rejects.toMatchObject({
+      code: "audit.invalidSchoolId",
+    });
+    expect(mockCommit).not.toHaveBeenCalled();
+  });
+
+  it("does not translate a non-contention failure into reopenConflict", async () => {
+    mockRunFirestoreTransaction.mockImplementationOnce(() =>
+      Promise.reject(new Error("deadline exceeded")),
+    );
+    await expect(__assignmentsReopenHandler(makeRequest())).rejects.toThrow("deadline exceeded");
   });
 
   it("is idempotent when already published", async () => {
