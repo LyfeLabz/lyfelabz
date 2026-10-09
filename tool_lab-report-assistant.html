@@ -298,6 +298,17 @@ button:disabled { opacity: .6; cursor: default; }
 #reset-report { color: #ffaaa9; border-color: #dd7775; background: rgba(194, 66, 65, .08); }
 #reset-report:hover { color: #fff0ef; border-color: #ffaaa9; background: rgba(194, 66, 65, .2); }
 #reset-report:focus-visible { outline-color: #ffaaa9 !important; background: rgba(194, 66, 65, .18); }
+.backup-action { color: #a9e8c4; border-color: #4f9a72; background: rgba(46, 125, 82, .14); }
+.backup-action:hover { color: #e3f8ec; border-color: #a9e8c4; background: rgba(46, 125, 82, .28); }
+.backup-action:focus-visible { outline-color: #a9e8c4 !important; background: rgba(46, 125, 82, .26); }
+.recovery-panel { margin: -.35rem 0 1rem; }
+.recovery-panel > summary { display: inline-flex; align-items: center; gap: .45rem; min-height: 44px; padding: 0 .2rem; color: #a9e8c4; font-weight: 800; font-size: .9rem; cursor: pointer; list-style: none; border-radius: 8px; }
+.recovery-panel > summary::-webkit-details-marker { display: none; }
+.recovery-panel > summary::after { content: '\25BE'; }
+.recovery-panel[open] > summary::after { content: '\25B4'; }
+.recovery-panel > summary:hover { color: #e3f8ec; }
+.recovery-note { color: var(--text-muted); font-size: .95rem; margin: .25rem 0 0; }
+.recovery-panel .tool-controls { margin: .65rem 0 0; }
 button[aria-pressed="true"], button[aria-pressed="true"]:hover, .step-links button[aria-current="step"], .step-links button[aria-current="step"]:hover { background: var(--gold); color: var(--dark); border-color: var(--gold); }
 .step-links { flex-wrap: nowrap; justify-content: space-between; gap: .25rem; padding: .4rem .15rem; overflow-x: auto; scrollbar-width: thin; }
 .step-links button.nav-back { flex: 0 0 auto; white-space: nowrap; padding: .35rem; font-size: .8rem; letter-spacing: 0; }
@@ -369,7 +380,6 @@ progress { display: block; width: 100%; height: .8rem; accent-color: var(--gold)
 .incomplete { color: var(--gold); font-weight: 800; }
 .report-section button { margin-top: 1rem; }
 #print-report { display: none; }
-.focus-mode .hero, .focus-mode .support, .focus-mode .self-check, .focus-mode .ls-focus { display: none; }
 .hide-starters .sentence-starter { display: none; }
 .high-contrast { --dark: #000; --dark2: #000; --card: #000; --text: #fff; --text-muted: #fff; --border: #fff; --teal: #9defff; }
 .high-contrast .hero, .high-contrast .site-nav, .high-contrast footer { background: #000; }
@@ -379,6 +389,10 @@ progress { display: block; width: 100%; height: .8rem; accent-color: var(--gold)
 .high-contrast button[aria-pressed="true"], .high-contrast .step-links button[aria-current="step"] { color: #000; }
 .high-contrast #reset-report { color: #ffb7b5; border-color: #ffb7b5; background: #000; }
 .high-contrast #reset-report:hover, .high-contrast #reset-report:focus-visible { color: #fff; border-color: #fff; background: #471515; }
+.high-contrast .backup-action { color: #b5f5cf; border-color: #b5f5cf; background: #000; }
+.high-contrast .backup-action:hover, .high-contrast .backup-action:focus-visible { color: #fff; border-color: #fff; background: #12381f; }
+.high-contrast .recovery-panel > summary { color: #b5f5cf; }
+.high-contrast .recovery-panel > summary:hover { color: #fff; }
 
 /* Cloud saving: status, account, alerts, and version choice. */
 .sticky-progress { flex-wrap: wrap; }
@@ -441,7 +455,6 @@ body.ls-active .ls-focus { display: flex; justify-content: center; flex-wrap: wr
   #print-report h2 { font-size: 12.5pt; line-height: 1.25; margin: 0 0 .35rem; }
   #print-report h3 { font-size: 10.5pt; line-height: 1.3; margin: .4rem 0 .1rem; }
   #print-report h1, #print-report h2, #print-report h3 { break-after: avoid-page; page-break-after: avoid; }
-  #print-report .draft-purpose { margin: 0 0 .55rem; }
   #print-report .report-detail { margin: .1rem 0; }
   #print-report .report-section { margin-top: .8rem; border: 0; border-top: 1px solid #888; border-radius: 0; padding: .5rem 0 0; }
   #print-report .report-entry { break-inside: avoid-page; page-break-inside: avoid; }
@@ -480,20 +493,23 @@ body.ls-active .ls-focus { display: flex; justify-content: center; flex-wrap: wr
       <p id="local-notice">One active report is saved on this browser and device only. It does not sync or submit to your teacher. Download your work before starting over.</p>
       <div id="origin-notice" class="bridge-callout origin-notice" hidden></div>
       <div id="cloud-panel" class="cloud-panel" role="region" aria-label="Saving to your LyfeLabz account" hidden></div>
-      <div class="tool-controls backup-controls" role="group" aria-label="Back up or move your report">
-        <button type="button" class="nav-back" id="backup-download">Download backup file</button>
-        <button type="button" class="nav-back" id="backup-open">Open backup file</button>
-        <input type="file" id="backup-file" accept=".json,application/json" hidden>
-      </div>
       <noscript><p class="bridge-callout">JavaScript is needed to write and save a report in this tool. Enable JavaScript or write your report in a document using the seven lab report sections.</p></noscript>
       <div class="tool-controls" role="group" aria-label="Reading and display options">
-        <button type="button" class="nav-back" id="toggle-focus" aria-pressed="false">Focus Mode</button>
         <button type="button" class="nav-back" id="toggle-large" aria-pressed="false">Larger text</button>
         <button type="button" class="nav-back" id="toggle-contrast" aria-pressed="false">High contrast</button>
         <button type="button" class="nav-back" id="toggle-starters" aria-pressed="false">Hide starters</button>
         <button type="button" class="nav-back" id="read-aloud" aria-pressed="false">Read aloud</button>
         <button type="button" class="nav-back destructive-action" id="reset-report">Start over</button>
       </div>
+      <details class="recovery-panel" id="recovery-panel">
+        <summary>Backup &amp; Recovery</summary>
+        <p class="recovery-note">Recovery copies help restore your work in LyfeLabz. They are not for submitting your lab report.</p>
+        <div class="tool-controls" role="group" aria-label="Backup and recovery">
+          <button type="button" class="nav-back backup-action" id="backup-download">Save recovery copy</button>
+          <button type="button" class="nav-back backup-action" id="backup-open">Restore recovery copy</button>
+          <input type="file" id="backup-file" accept=".json,application/json" hidden>
+        </div>
+      </details>
       <p id="speech-status" role="status"></p>
       <p id="save-status" role="status" aria-live="polite"></p>
       <div id="report-alert" class="bridge-callout report-alert" role="alert" hidden></div>

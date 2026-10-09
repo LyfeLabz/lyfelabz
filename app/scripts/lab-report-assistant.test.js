@@ -208,7 +208,7 @@ test('reset cancels safely, then clears only the namespaced report after confirm
 test('Start over alone has restrained destructive styling across display modes', () => {
   expect(el('reset-report').textContent).toBe('Start over');
   expect(el('reset-report').classList.contains('destructive-action')).toBe(true);
-  for (const id of ['toggle-focus', 'toggle-large', 'toggle-contrast', 'toggle-starters', 'read-aloud']) {
+  for (const id of ['toggle-large', 'toggle-contrast', 'toggle-starters', 'read-aloud', 'backup-download', 'backup-open']) {
     expect(el(id).classList.contains('destructive-action')).toBe(false);
   }
   expect(html).toMatch(/#reset-report \{ color: #[0-9a-f]+; border-color: #[0-9a-f]+; background: rgba/);
@@ -219,6 +219,51 @@ test('Start over alone has restrained destructive styling across display modes',
   expect(w.document.body.classList.contains('high-contrast')).toBe(true);
   expect(w.document.documentElement.classList.contains('large-text')).toBe(true);
   expect(el('reset-report').getAttribute('type')).toBe('button');
+});
+
+test('main controls end with Start over, recovery copies sit in a collapsed disclosure below, and no Focus Mode', () => {
+  const group = el('reset-report').parentElement;
+  expect([...group.querySelectorAll('button')].map(item => item.id)).toEqual(['toggle-large', 'toggle-contrast', 'toggle-starters', 'read-aloud', 'reset-report']);
+  expect(group.getAttribute('role')).toBe('group');
+  const panel = el('recovery-panel');
+  expect(panel.tagName).toBe('DETAILS');
+  expect(panel.open).toBe(false);
+  expect(group.nextElementSibling).toBe(panel);
+  expect(panel.querySelector('summary').textContent).toBe('Backup & Recovery');
+  expect(panel.querySelector('.recovery-note').textContent).toBe('Recovery copies help restore your work in LyfeLabz. They are not for submitting your lab report.');
+  expect([...panel.querySelectorAll('button')].map(item => [item.id, item.textContent])).toEqual([['backup-download', 'Save recovery copy'], ['backup-open', 'Restore recovery copy']]);
+  expect(panel.contains(el('backup-file'))).toBe(true);
+  expect(el('toggle-focus')).toBe(null);
+  expect(html).not.toMatch(/Focus Mode|focus-mode|backup-controls/);
+  expect(script).not.toContain('focus-mode');
+  for (const id of ['backup-download', 'backup-open']) {
+    expect(el(id).classList.contains('nav-back')).toBe(true);
+    expect(el(id).classList.contains('backup-action')).toBe(true);
+    expect(el(id).getAttribute('type')).toBe('button');
+  }
+  for (const rule of ['.high-contrast .recovery-panel > summary', '.backup-action {', '.backup-action:hover', '.backup-action:focus-visible', '.high-contrast .backup-action {', '.high-contrast .backup-action:hover']) expect(html).toContain(rule);
+});
+
+test('an existing report saved with Focus Mode on restores, edits, and keeps its saved shape', () => {
+  dom.window.close();
+  const existing = { version: 1, checkSchema: 2, responses: { labTitle: 'Ramp lab', investigationQuestion: 'Does ramp height change speed?', materials: 'Ramp, car' },
+    checks: {}, quantitativeTable: { title: 'Trials', cells: [['Height (cm)', 'Time (s)'], ['10', '2.1']] }, activeSection: 'materials',
+    settings: { focus: true, large: true, contrast: false, starters: false } };
+  mount(JSON.stringify(existing));
+  expect(w.document.body.className).not.toContain('focus-mode');
+  expect(w.document.documentElement.classList.contains('large-text')).toBe(true);
+  expect(el('toggle-large').getAttribute('aria-pressed')).toBe('true');
+  expect(el('step-title').textContent).toBe(titles[3]);
+  expect(el('field-materials').value).toBe('Ramp, car');
+  input('materials', 'Ramp, car, stopwatch');
+  const saved = JSON.parse(w.localStorage.getItem(KEY));
+  expect(saved.settings).toEqual({ focus: true, large: true, contrast: false, starters: false });
+  expect(saved.responses.investigationQuestion).toBe('Does ramp height change speed?');
+  expect(saved.responses.materials).toBe('Ramp, car, stopwatch');
+  expect(saved.quantitativeTable).toEqual(existing.quantitativeTable);
+  jump(7); w.dispatchEvent(new w.Event('beforeprint'));
+  expect(el('print-report').querySelector('h1').textContent).toBe('Lab Report Assistant');
+  expect(el('print-report').textContent).toContain('Ramp, car, stopwatch');
 });
 
 test('Review exposes one PDF action using the existing print workflow', () => {
@@ -234,8 +279,8 @@ test('Review exposes one PDF action using the existing print workflow', () => {
   expect(script).not.toContain('Report download requested.');
   click('print-button');
   expect(w.print).toHaveBeenCalledTimes(1);
-  expect(el('print-report').querySelector('h1').textContent).toBe('Lab Report Assistant — Working Draft');
-  expect(el('print-report').querySelector('.draft-purpose').textContent).toBe('Use this organized draft to help you write your lab report.');
+  expect(el('print-report').querySelector('h1').textContent).toBe('Lab Report Assistant');
+  expect(el('print-report').querySelector('.draft-purpose')).toBe(null);
 });
 
 test('Discussion has exactly six fields with one combined challenge/improvement and a distinct future experiment', () => {
@@ -349,7 +394,7 @@ test('all responses, metadata, and safe literal text appear in review and print 
   expect(html).toContain('body > :not(#print-report) { display: none !important; }');
 });
 
-test('print is a compact working draft with intact responses and protected table and field pagination', () => {
+test('print is a compact lab report with intact responses and protected table and field pagination', () => {
   input('labTitle', 'Basketball bounce lab'); input('studentName', 'A student');
   jump(3); input('materials', 'Basketball, meter stick, masking tape');
   jump(4); input('procedure', '1. Drop the ball from 25 cm.\n2. Measure the bounce.');
@@ -363,11 +408,12 @@ test('print is a compact working draft with intact responses and protected table
   input('hypothesisOutcomeExplanation', 'The measured bounce followed my prediction.');
   jump(7);
   expect(el('review-tools').textContent.trim()).toBe('Download as PDF');
-  expect(el('step-intro').textContent).toBe('Review your organized work, then download it as a PDF to help you write your lab report.');
+  expect(el('step-intro').textContent).toBe('Review your lab report, then download it as a PDF.');
   w.dispatchEvent(new w.Event('beforeprint'));
   const printed = el('print-report');
-  expect(printed.querySelector('h1').textContent).toBe('Lab Report Assistant — Working Draft');
-  expect(printed.querySelector('.draft-purpose').textContent).toBe('Use this organized draft to help you write your lab report.');
+  expect(printed.querySelector('h1').textContent).toBe('Lab Report Assistant');
+  expect(printed.querySelector('.draft-purpose')).toBe(null);
+  expect(printed.textContent).not.toMatch(/Working Draft|organized draft|help you write your lab report/i);
   expect(printed.textContent).not.toContain('For a cleaner PDF');
   expect(printed.textContent).not.toMatch(/Ready to Submit|Finished Report|final submitted report/i);
   expect(printed.textContent).toContain('Basketball, meter stick, masking tape');
@@ -400,11 +446,10 @@ test('review flags exact empty and whitespace-only required fields without block
 });
 
 test('display options, labelled fields, glossary and starters work without replacing student ideas', () => {
-  ['focus', 'large', 'contrast', 'starters'].forEach(key => { click(`toggle-${key}`); expect(el(`toggle-${key}`).getAttribute('aria-pressed')).toBe('true'); });
-  expect(w.document.body.className).toContain('focus-mode');
+  ['large', 'contrast', 'starters'].forEach(key => { click(`toggle-${key}`); expect(el(`toggle-${key}`).getAttribute('aria-pressed')).toBe('true'); });
   expect(w.document.body.className).toContain('high-contrast');
   expect(w.document.body.className).toContain('hide-starters');
-  click('toggle-focus'); click('toggle-starters');
+  click('toggle-starters');
   input('investigationQuestion', 'Original idea');
   w.document.querySelector('.sentence-starter button').click();
   expect(el('field-investigationQuestion').value).toBe('Original idea\nHow does ... affect ...?');
@@ -969,7 +1014,7 @@ test('sticky region includes progress and all eight controls, excluding accessib
   expect(sticky.getAttribute('aria-label')).toBe('Report progress and navigation');
   expect(sticky.contains(el('report-progress'))).toBe(true);
   expect(sticky.querySelectorAll('#step-links button')).toHaveLength(8);
-  expect(sticky.contains(el('toggle-focus'))).toBe(false);
+  expect(sticky.contains(el('toggle-large'))).toBe(false);
   expect(html).toMatch(/#report-navigation \{ position: sticky; top: var\(--site-nav-height/);
   expect(html).toContain('overflow-x: auto');
   jump(6); expect(el('step-number').textContent).toBe('Step 7 of 8');

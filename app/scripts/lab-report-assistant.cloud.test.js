@@ -106,8 +106,7 @@ describe('signed-in student', () => {
     expect(el('cloud-status').textContent).toBe('Saved to cloud');
     expect(el('cloud-status').dataset.state).toBe('cloud');
     expect(el('report-navigation').contains(el('cloud-status'))).toBe(true);
-    expect(el('local-notice').textContent).toContain('saves to your LyfeLabz account');
-    expect(el('local-notice').textContent).toContain('not submitted to your teacher');
+    expect(el('local-notice').textContent).toBe('Your report saves to your LyfeLabz account and is accessible on any device. It is private and is not submitted to your teacher.');
     expect(el('cloud-panel').textContent).toContain('Saving to the LyfeLabz account for Student A.');
     expect([...el('cloud-panel').querySelectorAll('button')].map(item => item.textContent)).toEqual(['Sign out']);
   });
@@ -366,7 +365,8 @@ describe('host gating', () => {
     expect(link.href).toBe('https://lyfelabz-staging.web.app/tool_lab-report-assistant.html');
     expect(link.href).not.toContain('?');
     expect(link.href).not.toContain('#');
-    expect(el('origin-notice').textContent).toContain('Download backup file');
+    expect(el('origin-notice').textContent).toContain('Open Backup & Recovery and choose Save recovery copy');
+    expect(el('origin-notice').textContent).toContain('choose Restore recovery copy');
     expect(el('field-claim')).toBe(null); // still on step 1; the stored report remains in this browser
     expect(w.localStorage.getItem(KEY)).toContain(SECRET);
   });

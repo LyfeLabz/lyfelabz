@@ -30,7 +30,7 @@
   const cloudHome = CLOUD_HOSTS[CLOUD_HOME[pageHost]] === true ? CLOUD_HOME[pageHost] : null;
   const BACKUP_MARKER = 'lyfelabzLabReportBackup';
   const DEVICE_NOTICE = 'One active report is saved on this browser and device only. It does not sync or submit to your teacher. Download your work before starting over.';
-  const CLOUD_NOTICE = 'Your report saves to your LyfeLabz account, so you can keep working on any device where you sign in. Only you can see it. It is not submitted to your teacher.';
+  const CLOUD_NOTICE = 'Your report saves to your LyfeLabz account and is accessible on any device. It is private and is not submitted to your teacher.';
   const outcomes = ['Supported by the results', 'Not supported by the results', 'Partially supported by the results'];
   const field = (key, label, prompt, starter, definition = '') => ({ key, label, prompt, starter, definition });
   // This schema is shared by the editor, review, Read Aloud, and print view.
@@ -207,6 +207,8 @@
         state.step = restoredStep;
         state.activeSection = parsed.activeSection;
       }
+      // 'focus' (the retired Focus Mode) is still read and written so the
+      // saved report shape is unchanged; it no longer affects the page.
       for (const key of ['focus', 'large', 'contrast', 'starters']) state.settings[key] = parsed.settings?.[key] === true;
       return state;
     } finally {
@@ -297,11 +299,10 @@
     });
   }
   function applySettings() {
-    document.body.classList.toggle('focus-mode', !!state.settings.focus);
     document.documentElement.classList.toggle('large-text', !!state.settings.large);
     document.body.classList.toggle('high-contrast', !!state.settings.contrast);
     document.body.classList.toggle('hide-starters', !!state.settings.starters);
-    for (const key of ['focus', 'large', 'contrast', 'starters']) el(`toggle-${key}`).setAttribute('aria-pressed', String(!!state.settings[key]));
+    for (const key of ['large', 'contrast', 'starters']) el(`toggle-${key}`).setAttribute('aria-pressed', String(!!state.settings[key]));
   }
   function makeField(item, singleLine = false, headingLabel = false) {
     const wrapper = node('div', undefined, 'report-field');
@@ -576,8 +577,7 @@
   }
   function reportArticle(print = false) {
     const article = node('article', undefined, 'report-output');
-    article.append(node(print ? 'h1' : 'h3', 'Lab Report Assistant — Working Draft'));
-    if (print) article.append(node('p', 'Use this organized draft to help you write your lab report.', 'draft-purpose'));
+    article.append(node(print ? 'h1' : 'h3', 'Lab Report Assistant'));
     for (const item of metadata) article.append(node('p', `${item.label}: ${value(item.key).trim() || '[Not answered yet]'}`, 'report-detail'));
     sections.forEach((section, index) => {
       const block = node('section', undefined, 'report-section goal-card');
@@ -597,7 +597,7 @@
     return article;
   }
   function reportText() {
-    return ['Lab Report Assistant — Working Draft',
+    return ['Lab Report Assistant',
       ...metadata.map(item => `${item.label}: ${value(item.key).trim() || '[Not answered yet]'}`),
       ...sections.map((section, index) => `\n${index + 1}. ${section.title}\n${'-'.repeat(40)}\n` + section.fields.map(item => `${reportLabel(item)}\n${item.key === 'quantitativeData' ? tableText() : value(item.key).trim() || '[Not answered yet]'}`).join('\n\n'))
     ].join('\n');
@@ -606,8 +606,8 @@
     const missingGroups = sections.map((section, index) => ({ section, index, fields: missing(section) })).filter(group => group.fields.length);
     const missingCount = missingGroups.reduce((count, group) => count + group.fields.length, 0);
     const warning = node('p', missingCount
-      ? `${missingCount} ${missingCount === 1 ? 'item is' : 'items are'} still missing. Review ${missingCount === 1 ? 'it' : 'them'} as you write your lab report. You can export your organized work now.`
-      : 'All required fields contain information. You can review and export your organized work.', 'bridge-callout');
+      ? `${missingCount} ${missingCount === 1 ? 'item is' : 'items are'} still missing. Fill ${missingCount === 1 ? 'it' : 'them'} in to complete your lab report. You can download it as a PDF at any time.`
+      : 'All required fields contain information. Review your lab report, then download it as a PDF.', 'bridge-callout');
     const missingCard = node('div', undefined, 'goal-card review-summary');
     missingCard.append(node('h3', 'Missing information'));
     if (!missingGroups.length) missingCard.append(node('p', 'No required fields are blank.'));
@@ -690,7 +690,7 @@
     const section = sections[state.step];
     el('step-number').textContent = `Step ${state.step + 1} of 8`;
     el('step-title').textContent = section?.title || 'Review & Export';
-    el('step-intro').textContent = section?.intro || 'Review your organized work, then download it as a PDF to help you write your lab report.';
+    el('step-intro').textContent = section?.intro || 'Review your lab report, then download it as a PDF.';
     el('review-tools').hidden = !!section;
     if (section) {
       const guide = node('div', undefined, 'bridge-callout support');
@@ -750,7 +750,7 @@
     el('step-title').scrollIntoView({ block: 'start' });
   }
   [...sections, { short: 'Review & Export' }].forEach((_, index) => el('step-links').append(button('', () => goTo(index))));
-  for (const key of ['focus', 'large', 'contrast', 'starters']) el(`toggle-${key}`).addEventListener('click', () => {
+  for (const key of ['large', 'contrast', 'starters']) el(`toggle-${key}`).addEventListener('click', () => {
     state.settings[key] = !state.settings[key]; applySettings(); revealActivePill(); save();
   });
   el('previous').addEventListener('click', () => goTo(state.step - 1));
@@ -1176,7 +1176,7 @@
     link.href = `https://${cloudHome}/tool_lab-report-assistant.html`;
     const notice = el('origin-notice');
     notice.replaceChildren(
-      node('p', 'To save your report to your LyfeLabz account, use the Lab Report Assistant on the LyfeLabz app site. A report on this page stays in this browser only. To move it: 1. Choose Download backup file. 2. Open the link below and sign in. 3. Choose Open backup file.'),
+      node('p', 'To save your report to your LyfeLabz account, use the Lab Report Assistant on the LyfeLabz app site. A report on this page stays in this browser only. To move it: 1. Open Backup & Recovery and choose Save recovery copy. 2. Open the link below and sign in. 3. Open Backup & Recovery and choose Restore recovery copy.'),
       link
     );
     notice.hidden = false;
