@@ -1180,7 +1180,7 @@
     link.href = `https://${cloudHome}/tool_lab-report-assistant.html`;
     const notice = el('origin-notice');
     notice.replaceChildren(
-      node('p', 'To save your report to your LyfeLabz account, use the Lab Report Assistant on the LyfeLabz app site. A report on this page stays in this browser only. To move it: 1. Open Backup & Recovery and choose Save recovery copy. 2. Open the link below and sign in. 3. Open Backup & Recovery and choose Restore recovery copy.'),
+      node('p', 'To save your report to your LyfeLabz account, use the Lab Report Assistant on the LyfeLabz app site. A report on this page stays in this browser only. To move it: 1. Open Backup & Recovery and choose Save backup. 2. Open the link below and sign in. 3. Open Backup & Recovery and choose Restore backup.'),
       link
     );
     notice.hidden = false;

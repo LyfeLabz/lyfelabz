@@ -88,8 +88,9 @@ function mount({ host = 'localhost', cloud = null, user, storage = {}, setup = (
 }
 function expectRecoveryInStoragePanel() {
   const panel = el('recovery-panel');
-  expect(el('storage-panel').hidden).toBe(false);
-  expect(el('storage-panel').contains(panel)).toBe(true);
+  expect(panel.parentElement.classList.contains('recovery-footer')).toBe(true);
+  expect(panel.parentElement.nextElementSibling).toBe(null);
+  expect(panel.closest('main').nextElementSibling.tagName).toBe('FOOTER');
   expect(panel.hidden).toBe(false);
   expect(panel.querySelector('summary')).not.toBe(null);
   expect(w.document.querySelectorAll('#backup-download, #backup-open')).toHaveLength(2);
@@ -417,8 +418,8 @@ describe('host gating', () => {
     expect(link.href).toBe('https://lyfelabz-staging.web.app/tool_lab-report-assistant.html');
     expect(link.href).not.toContain('?');
     expect(link.href).not.toContain('#');
-    expect(el('origin-notice').textContent).toContain('Open Backup & Recovery and choose Save recovery copy');
-    expect(el('origin-notice').textContent).toContain('choose Restore recovery copy');
+    expect(el('origin-notice').textContent).toContain('Open Backup & Recovery and choose Save backup');
+    expect(el('origin-notice').textContent).toContain('choose Restore backup');
     expect(el('field-claim')).toBe(null); // still on step 1; the stored report remains in this browser
     expect(w.localStorage.getItem(KEY)).toContain(SECRET);
   });

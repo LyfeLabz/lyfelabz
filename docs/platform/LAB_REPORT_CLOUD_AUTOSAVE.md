@@ -177,8 +177,8 @@ Browser storage cannot be read across origins; the tool does not try.
    is not asked again or imported twice. Shared-device risk is why this is
    never automatic.
 2. **Other hostnames (`lyfelabz.com`, `www`).** Reports stay where they are;
-   there is no redirect. Under Backup & Recovery, "Save recovery copy" saves a
-   JSON file; on `app.lyfelabz.com`, "Restore recovery copy" loads it
+   there is no redirect. Under Backup & Recovery, "Save backup" saves a
+   JSON file; on `app.lyfelabz.com`, "Restore backup" loads it
    (asking first if it would replace different work), and it then autosaves. When production cloud
    saving is active, apex and `www` show these steps with a plain link to the
    app host (no report data in the URL, no cross-origin messaging).

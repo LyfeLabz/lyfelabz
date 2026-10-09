@@ -301,14 +301,15 @@ button:disabled { opacity: .6; cursor: default; }
 .backup-action { color: #a9e8c4; border-color: #4f9a72; background: rgba(46, 125, 82, .14); }
 .backup-action:hover { color: #e3f8ec; border-color: #a9e8c4; background: rgba(46, 125, 82, .28); }
 .backup-action:focus-visible { outline-color: #a9e8c4 !important; background: rgba(46, 125, 82, .26); }
-.recovery-panel { margin: 0; }
+.recovery-footer { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 1.5rem; display: flex; justify-content: flex-end; }
+.recovery-panel { margin: 0; max-width: 32rem; text-align: right; }
 .recovery-panel > summary { display: inline-flex; align-items: center; gap: .45rem; min-height: 44px; padding: 0 .2rem; color: #a9e8c4; font-weight: 800; font-size: .9rem; cursor: pointer; list-style: none; border-radius: 8px; }
 .recovery-panel > summary::-webkit-details-marker { display: none; }
 .recovery-panel > summary::after { content: '\25BE'; }
 .recovery-panel[open] > summary::after { content: '\25B4'; }
 .recovery-panel > summary:hover { color: #e3f8ec; }
 .recovery-note { color: var(--text-muted); font-size: .95rem; margin: .25rem 0 0; }
-.recovery-panel .tool-controls { margin: .65rem 0 0; }
+.recovery-panel .tool-controls { margin: .65rem 0 0; justify-content: flex-end; }
 button[aria-pressed="true"], button[aria-pressed="true"]:hover, .step-links button[aria-current="step"], .step-links button[aria-current="step"]:hover { background: var(--gold); color: var(--dark); border-color: var(--gold); }
 .step-links { flex-wrap: nowrap; justify-content: space-between; gap: .25rem; padding: .4rem .15rem; overflow-x: auto; scrollbar-width: thin; }
 .step-links button.nav-back { flex: 0 0 auto; white-space: nowrap; padding: .35rem; font-size: .8rem; letter-spacing: 0; }
@@ -405,13 +406,11 @@ progress { display: block; width: 100%; height: .8rem; accent-color: var(--gold)
 .cloud-status[data-state="action"]::before { background: var(--red); }
 #cloud-message, #cloud-note { color: var(--text-muted); font-size: .95rem; }
 #cloud-message:empty, #cloud-note:empty { display: none; }
-/* One storage panel holds the account status (app host) and Backup & Recovery (every host). */
-.storage-panel { margin-top: 1rem; padding: .5rem 1.2rem; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
-.cloud-panel { padding: .4rem 0 .65rem; border-bottom: 1px solid var(--border); }
+/* The account status card (app host only). Backup & Recovery sits above the footer on every host. */
+.cloud-panel { margin-top: 1rem; padding: .9rem 1.2rem; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
 .cloud-account { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; }
 .cloud-panel p { margin: 0; flex: 1 1 16rem; min-width: 0; overflow-wrap: anywhere; }
 .cloud-panel .tool-controls { margin: 0; flex: 0 0 auto; }
-.storage-panel .recovery-panel[open] { padding-bottom: .7rem; }
 .cloud-panel a, .origin-notice a { color: var(--gold); font-weight: 700; overflow-wrap: anywhere; }
 .origin-notice { margin-top: 1rem; }
 .origin-notice p { margin-bottom: .4rem; }
@@ -432,7 +431,7 @@ body[data-report-lock="choosing"] #step-content, body[data-report-lock="choosing
 .version-preview summary { cursor: pointer; font-weight: 700; padding: .4rem 0; }
 .version-preview .response { max-height: 16rem; overflow: auto; font-size: .9rem; color: var(--text-muted); }
 .high-contrast .cloud-status[data-state="action"] { color: #fff; }
-.high-contrast .storage-panel, .high-contrast .cloud-panel, .high-contrast .report-alert { border-color: #fff; }
+.high-contrast .cloud-panel, .high-contrast .report-alert { border-color: #fff; }
 
 footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 @media (max-width: 600px) { footer { padding-left: max(1.2rem, env(safe-area-inset-left)); padding-right: max(1.2rem, env(safe-area-inset-right)); } }
@@ -496,18 +495,7 @@ body.ls-active .ls-focus { display: flex; justify-content: center; flex-wrap: wr
       <p class="bridge-callout">This tool helps organize your thinking. Your scientific ideas and responses come from you.</p>
       <p id="local-notice">One active report is saved on this browser and device only. It does not sync or submit to your teacher. Download your work before starting over.</p>
       <div id="origin-notice" class="bridge-callout origin-notice" hidden></div>
-      <div id="storage-panel" class="storage-panel">
-        <div id="cloud-panel" class="cloud-panel" role="region" aria-label="Saving to your LyfeLabz account" hidden></div>
-        <details class="recovery-panel" id="recovery-panel">
-          <summary>Backup &amp; Recovery</summary>
-          <p class="recovery-note">Recovery copies help restore your work in LyfeLabz. They are not for submitting your lab report.</p>
-          <div class="tool-controls" role="group" aria-label="Backup and recovery">
-            <button type="button" class="nav-back backup-action" id="backup-download">Save recovery copy</button>
-            <button type="button" class="nav-back backup-action" id="backup-open">Restore recovery copy</button>
-            <input type="file" id="backup-file" accept=".json,application/json" hidden>
-          </div>
-        </details>
-      </div>
+      <div id="cloud-panel" class="cloud-panel" role="region" aria-label="Saving to your LyfeLabz account" hidden></div>
       <noscript><p class="bridge-callout">JavaScript is needed to write and save a report in this tool. Enable JavaScript or write your report in a document using the seven lab report sections.</p></noscript>
       <div class="tool-controls" role="group" aria-label="Reading and display options">
         <button type="button" class="nav-back" id="toggle-large" aria-pressed="false">Larger text</button>
@@ -542,6 +530,17 @@ body.ls-active .ls-focus { display: flex; justify-content: center; flex-wrap: wr
       </div>
     </div>
   </section>
+  <div class="recovery-footer">
+    <details class="recovery-panel" id="recovery-panel">
+      <summary>Backup &amp; Recovery</summary>
+      <p class="recovery-note">Save a backup of your work or restore your work from a backup you saved earlier.</p>
+      <div class="tool-controls" role="group" aria-label="Backup and recovery">
+        <button type="button" class="nav-back backup-action" id="backup-download">Save backup</button>
+        <button type="button" class="nav-back backup-action" id="backup-open">Restore backup</button>
+        <input type="file" id="backup-file" accept=".json,application/json" hidden>
+      </div>
+    </details>
+  </div>
 </main>
 <footer>
   <div class="footer-logo">LYFELABZ™</div>
