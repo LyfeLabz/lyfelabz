@@ -277,6 +277,7 @@ Read this document first, then route to the single strongest canonical source fo
 | Domain ownership, Hosting targets, paired Hosting release, certification, rollback | `DOMAIN_AND_HOSTING_CONTRACT.md` (+ `scripts/hosting-release/`) |
 | Lab Report Assistant cloud autosave (`studentLabReports`, `labReportsGet`/`labReportsSave`, host gating, activation, rollback). Status: staging deployed and verified; production Functions deployed; production gate opened in the repository; production Hosting not yet released, so not live in production. | `LAB_REPORT_CLOUD_AUTOSAVE.md` |
 | Non-lesson resources (investigations, simulations, extensions, challenges): five-question assessment, required work and evidence, quiz gating. Status: approved standard, not implemented; only `lesson` is assignable. | `LYFELABZ_NON_LESSON_ASSESSMENT_EVIDENCE_STANDARD.md`; `LYFELABZ_NON_LESSON_RESOURCE_INVENTORY.md` |
+| Non-lesson completion definitions, evidence trust boundaries, eligibility evaluator, Gravity Wells verifier (`gravity-wells.orbit@1`). Status: pure code and tests only (RA-2); not called, not deployed, no storage. | `RESOURCE_COMPLETION_EVIDENCE_CORE.md` |
 | Environments, session policy | `PLATFORM_OPERATIONS_SPECIFICATION.md` |
 | Lesson build system, markers, equivalence | `CLAUDE.md`; `app/scripts/lessonBuilder/lessons/<slug>.cjs` |
 | Lesson content standards, voice, quiz/vocab rules | `CLAUDE.md` |
