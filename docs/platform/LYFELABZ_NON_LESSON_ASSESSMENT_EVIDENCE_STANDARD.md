@@ -504,6 +504,8 @@ allowlist (rather than a whole type at once) is recommended for the pilot
   and existing assignments keep their original requirements.
 - The alternative, a separate resource revision identifier, is more flexible
   but adds a second freeze. Decide in the focused design review (§16, Q2).
+- **Implemented (RA-3B):** bound to the assessment revision, with a content
+  hash. See `FROZEN_COMPLETION_DEFINITIONS.md`.
 
 ### 11.4 Requirements definition (conceptual content)
 
@@ -782,7 +784,7 @@ owner prefers a stronger evidence exemplar, are in
 | ID | Question | Recommendation |
 | --- | --- | --- |
 | Q1 | Open a whole resource type, or allowlist individual resources? | Per-resource allowlist for the pilot and early batches. |
-| Q2 | Bind the requirements definition to the assessment revision, or to a separate resource revision? | Bind to the assessment revision (one freeze). |
+| Q2 | Bind the requirements definition to the assessment revision, or to a separate resource revision? | Bind to the assessment revision (one freeze). Implemented in RA-3B (`FROZEN_COMPLETION_DEFINITIONS.md`). |
 | Q3 | Separate authenticated artifact or host-gated single page? | Decide in Phase 2; host gating has a working precedent (Lab Report Assistant). |
 | Q4 | New evidence record family, or extend `studentLabReports` with `scope: "assignment"`? | Likely a dedicated family with the same patterns; lab reports are a personal tool with a different lifecycle. |
 | Q5 | After evidence submission, can students edit it? If so, is history kept? | Pilot: evidence is frozen at submission (simplest, matches what preceded the quiz). Revisit with teacher feedback. |

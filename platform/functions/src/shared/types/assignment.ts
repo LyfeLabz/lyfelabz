@@ -1,5 +1,7 @@
 import type { FieldValue, Timestamp } from "firebase-admin/firestore";
 
+import type { AssignmentCompletionBinding } from "./completion-definition";
+
 export const ASSIGNMENTS_COLLECTION = "assignments";
 
 // Canonical assignment lifecycle field per Data Model §3.6. `status` is the
@@ -148,6 +150,15 @@ export type AssignmentRecord = {
   // comparison uses `resourceType ?? "lesson"`. All other readers ignore
   // the field.
   readonly resourceType?: AssignmentResourceType;
+  // RA-3B - frozen completion binding for a non-lesson assignment. Written
+  // exactly once by `assignmentsPublish` on the `draft` -> `published`
+  // transition, atomically with `assessmentRevisionId`, and never on a
+  // lesson record. Names the immutable
+  // `completionDefinitions/{assessmentRevisionId}` record by revision and
+  // content hash. Absent on every lesson assignment and every draft. No
+  // other write shape carries it, so no later path can replace it. See
+  // `shared/types/completion-definition.ts`.
+  readonly completionBinding?: AssignmentCompletionBinding;
 };
 
 // Write shape for the draft-creation callable (assignmentsCreateDraft).
@@ -224,6 +235,10 @@ export type AssignmentPublishWrite = {
   // revision. Never rewritten by close/reopen cycles or by the idempotent
   // already-published path.
   readonly assessmentRevisionId: string;
+  // RA-3B - frozen completion binding, present only when a non-lesson
+  // assignment is published; never written for a lesson. Stamped in the
+  // same transaction as `assessmentRevisionId` and never rewritten.
+  readonly completionBinding?: AssignmentCompletionBinding;
 };
 
 // Write shape for the reopen callable (assignmentsReopen). Conforms to

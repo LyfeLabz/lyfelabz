@@ -5,6 +5,8 @@ import {
   assessmentAnswerKeyDeploymentDocRef,
   assessmentAnswerKeyDocRef,
   assessmentDeploymentDocRef,
+  completionDefinitionCreationDocRef,
+  completionDefinitionDocRef,
   assessmentDocRef,
   assessmentIdForLessonSlug,
   assessmentRevisionDeploymentDocRef,
@@ -23,7 +25,13 @@ import {
   type AssessmentRevisionItem,
   type AssessmentRevisionItemOption,
   type AssessmentSchemaVersion,
+  type CompletionDefinitionCreationWrite,
 } from "../shared";
+import { prepareCompletionDefinitionRecord } from "../resourceCompletion";
+import {
+  assertActivityIdMatchesResourceType,
+  reservedResourceTypeForActivityId,
+} from "../shared/activity-identifiers";
 
 // Canonical deployment input for a single assessment revision publication
 // per ASSESSMENT_SCORING_CONTRACT.md §13 and
@@ -49,6 +57,12 @@ export type AssessmentDeploymentItemInput = {
   readonly explanation: string;
 };
 
+// RA-3B. `completionDefinition` is required for a non-lesson resource
+// (an `activityId` carrying a reserved "<type>-" prefix) and refused for a
+// lesson. It is authored data, validated with the RA-2 core and frozen in
+// `completionDefinitions/{revisionId}` by the same transaction that writes
+// the revision and its answer key. A non-lesson revision also carries
+// exactly five items (standard D-A); lesson item rules are unchanged.
 export type AssessmentDeploymentInput = {
   readonly activityId: string;
   readonly revisionOrdinal: number;
@@ -56,7 +70,14 @@ export type AssessmentDeploymentInput = {
   readonly schemaVersion: AssessmentSchemaVersion;
   readonly publishedBy: string;
   readonly items: readonly AssessmentDeploymentItemInput[];
+  readonly completionDefinition?: unknown;
 };
+
+// Exactly five objective, server-scored items for every non-lesson
+// assessment revision (LYFELABZ_NON_LESSON_ASSESSMENT_EVIDENCE_STANDARD.md
+// D-A, section 3). Not a registry-wide rule: lessons keep their own
+// contract.
+export const NON_LESSON_ASSESSMENT_ITEM_COUNT = 5;
 
 // Return payload of a successful deployment. Every identifier follows the
 // deterministic construction in ASSESSMENT_IMPLEMENTATION_CONTRACT.md §12.
@@ -65,6 +86,8 @@ export type AssessmentDeploymentResult = {
   readonly revisionId: string;
   readonly revisionOrdinal: number;
   readonly assessmentCreated: boolean;
+  // RA-3B. Present only for a non-lesson revision.
+  readonly completionDefinitionHash?: string;
 };
 
 // Pure, timestamp-free projection of a deployment candidate. Administrative
@@ -79,6 +102,8 @@ export type AssessmentDeploymentPlan = {
   readonly assessmentWrite: AssessmentDeploymentWrite;
   readonly revisionWrite: Omit<AssessmentRevisionDeploymentWrite, "publishedAt">;
   readonly answerKeyWrite: Omit<AssessmentAnswerKeyDeploymentWrite, "publishedAt">;
+  // RA-3B. Present exactly when the activity is a non-lesson resource.
+  readonly completionDefinitionWrite?: Omit<CompletionDefinitionCreationWrite, "publishedAt">;
 };
 
 const ACTIVITY_ID_PATTERN =
@@ -156,6 +181,31 @@ function validateDeploymentInput(input: unknown): AssessmentDeploymentInput {
     throw new PlatformError(
       "assessmentDeployment.invalidActivityId",
       "activityId must be a URL-safe token.",
+    );
+  }
+
+  // RA-3B. A reserved "<type>-" prefix makes this a non-lesson resource,
+  // whose identifier must follow the resource grammar exactly.
+  const resourceType = reservedResourceTypeForActivityId(activityId);
+  if (resourceType !== undefined) {
+    try {
+      assertActivityIdMatchesResourceType(activityId, resourceType);
+    } catch {
+      throw new PlatformError(
+        "assessmentDeployment.invalidActivityId",
+        `activityId must be a canonical ${resourceType} identifier.`,
+      );
+    }
+    if (raw.completionDefinition === undefined) {
+      throw new PlatformError(
+        "assessmentDeployment.missingCompletionDefinition",
+        "A non-lesson assessment revision requires a completion definition.",
+      );
+    }
+  } else if (raw.completionDefinition !== undefined) {
+    throw new PlatformError(
+      "assessmentDeployment.unexpectedCompletionDefinition",
+      "A lesson assessment revision does not carry a completion definition.",
     );
   }
 
@@ -319,6 +369,13 @@ function validateDeploymentInput(input: unknown): AssessmentDeploymentInput {
     });
   }
 
+  if (resourceType !== undefined && items.length !== NON_LESSON_ASSESSMENT_ITEM_COUNT) {
+    throw new PlatformError(
+      "assessmentDeployment.invalidItemCount",
+      `A non-lesson assessment revision must carry exactly ${String(NON_LESSON_ASSESSMENT_ITEM_COUNT)} items.`,
+    );
+  }
+
   return {
     activityId,
     revisionOrdinal,
@@ -326,6 +383,7 @@ function validateDeploymentInput(input: unknown): AssessmentDeploymentInput {
     schemaVersion: ASSESSMENT_SCHEMA_VERSION_V1,
     publishedBy: raw.publishedBy.trim(),
     items,
+    ...(resourceType !== undefined ? { completionDefinition: raw.completionDefinition } : {}),
   };
 }
 
@@ -359,6 +417,30 @@ export function planAssessmentRevision(
   const assessmentId = assessmentIdFor(input.activityId);
   const revisionId = revisionIdFor(assessmentId, input.revisionOrdinal);
 
+  // RA-3B. Validate the completion definition against the exact revision it
+  // will be frozen with (RA-2 core, registered validators, resource and
+  // revision identity, definitionVersion == revisionOrdinal) and project the
+  // immutable record with its content hash.
+  let completionDefinitionWrite: AssessmentDeploymentPlan["completionDefinitionWrite"];
+  const resourceType = reservedResourceTypeForActivityId(input.activityId);
+  if (resourceType !== undefined) {
+    const prepared = prepareCompletionDefinitionRecord(input.completionDefinition, {
+      resourceId: input.activityId,
+      resourceType,
+      assessmentRevisionId: revisionId,
+      publishedBy: input.publishedBy,
+    });
+    if (!prepared.ok) {
+      throw new PlatformError(
+        "assessmentDeployment.invalidCompletionDefinition",
+        `Completion definition refused: ${prepared.issue}.`,
+        undefined,
+        { issue: prepared.issue, issues: [...prepared.details] },
+      );
+    }
+    completionDefinitionWrite = prepared.write;
+  }
+
   return {
     input,
     assessmentId,
@@ -384,6 +466,7 @@ export function planAssessmentRevision(
       publishedBy: input.publishedBy,
       schemaVersion: input.schemaVersion,
     },
+    ...(completionDefinitionWrite !== undefined ? { completionDefinitionWrite } : {}),
   };
 }
 
@@ -392,8 +475,9 @@ export function planAssessmentRevision(
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §11, §12, §16.
 //
 // Sole writer of `assessments/{assessmentId}`,
-// `assessmentRevisions/{revisionId}`, and `assessmentAnswerKeys/{revisionId}`.
-// The three writes occur inside a single Firestore transaction so partial
+// `assessmentRevisions/{revisionId}`, `assessmentAnswerKeys/{revisionId}`,
+// and (RA-3B, non-lesson resources only) `completionDefinitions/{revisionId}`.
+// Every write occurs inside a single Firestore transaction so partial
 // publication is impossible per §13.1. Every field is server-validated
 // before any write; a validation failure refuses the entire publication.
 //
@@ -425,6 +509,11 @@ export async function deployAssessmentRevision(
         tx.get(revisionRef),
         tx.get(answerKeyRef),
       ]);
+      // RA-3B. A non-lesson revision also reads its completion-definition
+      // slot; every read precedes every write in this transaction.
+      const completionDefinitionSnap = plan.completionDefinitionWrite
+        ? await tx.get(completionDefinitionDocRef(revisionId, firestore))
+        : undefined;
 
       if (revisionSnap.exists) {
         throw new PlatformError(
@@ -436,6 +525,12 @@ export async function deployAssessmentRevision(
         throw new PlatformError(
           "assessmentDeployment.duplicateAnswerKey",
           `Answer key "${revisionId}" already exists.`,
+        );
+      }
+      if (completionDefinitionSnap?.exists) {
+        throw new PlatformError(
+          "assessmentDeployment.duplicateCompletionDefinition",
+          `Completion definition "${revisionId}" already exists.`,
         );
       }
 
@@ -511,6 +606,19 @@ export async function deployAssessmentRevision(
         assessmentAnswerKeyDeploymentDocRef(revisionId, firestore),
         answerKeyWrite,
       );
+      // RA-3B. The frozen completion definition is created in the same
+      // transaction as the revision and answer key, with the same
+      // must-not-exist `create` precondition. It is never updated.
+      if (plan.completionDefinitionWrite) {
+        const completionDefinitionWrite: CompletionDefinitionCreationWrite = {
+          ...plan.completionDefinitionWrite,
+          publishedAt: FieldValue.serverTimestamp(),
+        };
+        tx.create(
+          completionDefinitionCreationDocRef(revisionId, firestore),
+          completionDefinitionWrite,
+        );
+      }
       tx.set(assessmentDeploymentDocRef(assessmentId, firestore), assessmentWrite, {
         merge: true,
       });
@@ -520,6 +628,9 @@ export async function deployAssessmentRevision(
         revisionId,
         revisionOrdinal: input.revisionOrdinal,
         assessmentCreated,
+        ...(plan.completionDefinitionWrite
+          ? { completionDefinitionHash: plan.completionDefinitionWrite.definitionHash }
+          : {}),
       };
     },
     firestore,
@@ -532,6 +643,9 @@ export async function deployAssessmentRevision(
       revisionOrdinal: outcome.revisionOrdinal,
       assessmentCreated: outcome.assessmentCreated,
       publishedBy: input.publishedBy,
+      ...(outcome.completionDefinitionHash
+        ? { completionDefinitionHash: outcome.completionDefinitionHash }
+        : {}),
     });
   } catch {
     // Logging is observability, not lifecycle.

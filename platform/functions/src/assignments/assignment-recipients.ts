@@ -2,6 +2,7 @@ import {
   FieldValue,
   type DocumentReference,
   type DocumentSnapshot,
+  type Transaction,
 } from "firebase-admin/firestore";
 
 import {
@@ -280,13 +281,16 @@ export async function reconcileRecipientsForNewEnrollment(input: {
 //
 // The returned array is sorted lexicographically so batch commits are
 // deterministic and unit tests can assert exact write ordering.
+//
+// RA-3B: when `tx` is supplied the query joins that transaction, so first
+// publication freezes the population as of its own commit.
 export async function loadInitialRecipientPopulation(
   assignmentClassId: string,
   assignmentSchoolId: string,
+  tx?: Transaction,
 ): Promise<readonly string[]> {
-  const snapshot = await enrollmentsCollectionRef()
-    .where("classId", "==", assignmentClassId)
-    .get();
+  const query = enrollmentsCollectionRef().where("classId", "==", assignmentClassId);
+  const snapshot = tx ? await tx.get(query) : await query.get();
   const seen = new Set<string>();
   for (const doc of snapshot.docs) {
     const data = doc.data() as EnrollmentRecord | undefined;

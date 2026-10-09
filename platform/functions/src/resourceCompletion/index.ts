@@ -1,6 +1,8 @@
-// Pure completion and evidence core (RA-2). Types and pure functions only:
-// no callable, trigger, Firestore access, or side effect. Not exported from
-// `src/index.ts`, so nothing here is deployed.
+// Pure completion and evidence core (RA-2), plus the frozen
+// completion-definition record and binding identity (RA-3B). Types and pure
+// functions only: no callable, trigger, Firestore access, or side effect.
+// Not exported from `src/index.ts`. RA-3B's deployment and publication
+// callers live in `assessments/` and `assignments/`.
 
 export {
   COMPLETION_DEFINITION_LIMITS,
@@ -65,3 +67,20 @@ export {
   GRAVITY_WELLS_COMPLETION_DEFINITION,
   GRAVITY_WELLS_RESOURCE_ID,
 } from "./gravity-wells-completion-definition";
+export {
+  buildAssignmentCompletionBinding,
+  canonicalCompletionDefinitionJson,
+  completionDefinitionValidators,
+  computeCompletionDefinitionHash,
+  parseAssignmentCompletionBinding,
+  prepareCompletionDefinitionRecord,
+  verifyCompletionDefinitionRecord,
+  verifyFrozenCompletionBinding,
+  type CompletionBindingIssue,
+  type CompletionDefinitionIdentity,
+  type CompletionDefinitionRecordIssue,
+  type CompletionDefinitionRecordVerification,
+  type FrozenCompletionBindingVerification,
+  type PreparedCompletionDefinitionRecord,
+  type VerifiedCompletionDefinitionRecord,
+} from "./completion-definition-record";

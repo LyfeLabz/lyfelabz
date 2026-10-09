@@ -10,6 +10,19 @@ const mockAssignmentDraftUpdateDocRef = jest.fn(() => ({
 const mockWriteAuditEvent = jest.fn();
 const mockRequireDistrictContext = jest.fn();
 
+// RA-3B: the read, checks, and narrow update run in one Firestore
+// transaction. The fake transaction routes reads and updates through the
+// existing ref mocks so every assertion below keeps its meaning.
+const mockTx = {
+  get: (ref: { get: () => unknown }) => ref.get(),
+  update: (ref: { update: (w: unknown) => unknown }, write: unknown) => {
+    ref.update(write);
+  },
+};
+const mockRunFirestoreTransaction = jest.fn(
+  async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
+);
+
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
 const mockLogError = jest.fn();
@@ -42,7 +55,10 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assignmentDocRef: mockAssignmentDocRef,
     assignmentDraftUpdateDocRef: mockAssignmentDraftUpdateDocRef,
+    isTransactionContention: jest.requireActual("../shared/firestore/transaction")
+      .isTransactionContention,
     requireDistrictContext: mockRequireDistrictContext,
+    runFirestoreTransaction: mockRunFirestoreTransaction,
     writeAuditEvent: mockWriteAuditEvent,
   };
 });
@@ -101,6 +117,7 @@ describe("assignmentsUpdateDraft", () => {
   beforeEach(() => {
     mockAssignmentGet.mockReset();
     mockAssignmentUpdate.mockReset();
+    mockRunFirestoreTransaction.mockClear();
     mockAssignmentDocRef.mockClear();
     mockAssignmentDraftUpdateDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
@@ -609,6 +626,44 @@ describe("assignmentsUpdateDraft", () => {
         makeRequest({ data: { assignmentId: ASSIGNMENT_ID, title: "T", resourceType: "lesson" } }),
       );
       expect(mockAssignmentUpdate).toHaveBeenCalledWith({ title: "T" });
+    });
+  });
+  // RA-3B publication concurrency: an update can never land on a record
+  // that publication moved out of `draft` after the update first read it.
+  describe("publication concurrency (RA-3B)", () => {
+    it("a retried attempt that observes a concurrent publication refuses and writes nothing", async () => {
+      mockAssignmentGet
+        .mockResolvedValueOnce(existingAssignmentSnapshot())
+        .mockResolvedValueOnce(existingAssignmentSnapshot({ status: "published" }));
+      mockRunFirestoreTransaction.mockImplementationOnce(async (fn) => {
+        await fn(mockTx); // attempt 1 loses its commit to the publication
+        mockAssignmentUpdate.mockClear();
+        return fn(mockTx); // attempt 2 re-reads the published record
+      });
+
+      await expect(__assignmentsUpdateDraftHandler(makeRequest())).rejects.toMatchObject({
+        code: "assignments.invalidStatus",
+      });
+      expect(mockAssignmentUpdate).not.toHaveBeenCalled();
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it("refuses with the stable updateConflict when contention outlasts retries", async () => {
+      mockRunFirestoreTransaction.mockRejectedValueOnce(
+        Object.assign(new Error("10 ABORTED: contention"), { code: 10 }),
+      );
+      await expect(__assignmentsUpdateDraftHandler(makeRequest())).rejects.toMatchObject({
+        code: "assignments.updateConflict",
+      });
+      expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it("reads and writes inside one transaction", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(existingAssignmentSnapshot());
+      mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
+      await __assignmentsUpdateDraftHandler(makeRequest());
+      expect(mockRunFirestoreTransaction).toHaveBeenCalledTimes(1);
+      expect(mockAssignmentUpdate).toHaveBeenCalledWith({ title: "New Title" });
     });
   });
 });

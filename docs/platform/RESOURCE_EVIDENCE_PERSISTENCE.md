@@ -13,6 +13,12 @@ only production dependencies fail closed (below). No Rules, index, or
 assignment change was made. Gravity Wells and every other non-lesson
 resource remain unassignable.
 
+RA-3B (`FROZEN_COMPLETION_DEFINITIONS.md`) supplied both integration
+prerequisites: immutable `completionDefinitions/{assessmentRevisionId}`
+records and a `completionBinding` frozen at publication. It replaced the
+two ports' shapes, added inactive Firestore adapters, and added
+`definitionHash` to the stored binding. Production deps still fail closed.
+
 ## Location
 
 `platform/functions/src/resourceEvidence/`:
@@ -38,8 +44,8 @@ Tests: `evidence-request.test.ts` (hermetic) and
 | Current occurrence | `isSupersededOccurrence` (`assignments/current-occurrence-group.ts`); writes refused on a superseded or inactive occurrence |
 | Resource identity | Assignment `lessonSlug` + `resourceType`, checked with `assertActivityIdMatchesResourceType`; lessons refused |
 | Assessment revision | Assignment `assessmentRevisionId` (frozen at publication, PDR-031), checked with `frozenRevisionOrdinal` |
-| Definition version | **Port** `FrozenCompletionBindingSource` (no platform source exists) |
-| Definition content | **Port** `CompletionDefinitionStore`, validated with RA-2 `validateCompletionDefinition` and required to match the binding exactly |
+| Frozen binding | **Port** `FrozenCompletionBindingSource`: the assignment's `completionBinding` (RA-3B adapter `ASSIGNMENT_RECORD_COMPLETION_BINDING`, inactive) |
+| Definition content | **Port** `CompletionDefinitionStore`: `completionDefinitions/{assessmentRevisionId}` (RA-3B adapter `FIRESTORE_COMPLETION_DEFINITION_STORE`, inactive), verified with `verifyFrozenCompletionBinding` (hash, RA-2 schema, validators, identity) |
 
 A client assignment id is only a lookup key. Not found, another school,
 not enrolled, withdrawn, draft, archived, practice mode, lesson, and a
@@ -48,7 +54,10 @@ type that disagrees with its identifier all return one refusal,
 
 ## Integration boundary (why nothing is operational)
 
-Two prerequisites do not exist:
+Historical record of the RA-3A boundary. RA-3B has since implemented both
+prerequisites (see `FROZEN_COMPLETION_DEFINITIONS.md`); the operational
+path stays disabled behind the activation blockers listed there. As
+originally written, two prerequisites did not exist:
 
 1. **Frozen definition version.** `assignmentsPublish` freezes only
    `assessmentRevisionId`, and `assertAssignableActivity` refuses every
@@ -302,15 +311,15 @@ uses `evidenceEligibleAt` and the snapshot. Retakes neither read nor write
 evidence (tested: evidence services never touch `assessmentSessions` or
 `attempts`).
 
-**Publication prerequisite:** freeze the completion-definition version at
-publication and provide an immutable definition store (above); open
-per-resource assignability (standard §16 Q1).
+**Publication prerequisite:** done in RA-3B (frozen binding and immutable
+store). Still open: per-resource assignability (standard §16 Q1).
 
 **RA-5 (authenticated delivery):** host the evidence-capable page under the
 authenticated path, call these services, and implement the flight contract
 above. Wrap the handlers with `platformCallable`, export them, move the
-typed refs into `shared/firestore/typed-ref.ts`, and replace the production
-ports. Each step is a separate, authorized change.
+typed refs into `shared/firestore/typed-ref.ts`, and switch the production
+ports to `FROZEN_PUBLICATION_RESOURCE_EVIDENCE_DEPS`. Each step is a
+separate, authorized change, gated on the RA-3B activation blockers.
 
 **Teacher evidence read:** a future owning-teacher read of the submitted
 snapshot (standard §9). Not built.

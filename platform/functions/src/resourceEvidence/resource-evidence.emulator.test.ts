@@ -7,8 +7,12 @@
 // `create` semantics, and contention are real. Only the two integration
 // ports that have no platform implementation yet (the frozen
 // completion-definition version and the published definition store) are
-// test fixtures. The Gravity Wells DRAFT definition is used as a fixture
-// here only; production code never registers it.
+// test fixtures here (RA-3B's real Firestore adapters are proven in
+// `assignments/frozen-completion-publication.emulator.test.ts`). Fixture
+// ports still go through the canonical verifier, so every fixture record
+// and binding is built with the real RA-3B record and binding helpers. The
+// Gravity Wells DRAFT definition is used as a fixture here only;
+// production code never registers it.
 //
 // Every record below is synthetic emulator data. Nothing contacts a live
 // project. Skips when the emulator host is absent.
@@ -20,6 +24,9 @@ import type { CallableRequest } from "firebase-functions/v2/https";
 import {
   GRAVITY_WELLS_COMPLETION_DEFINITION,
   GRAVITY_WELLS_RESOURCE_ID,
+  buildAssignmentCompletionBinding,
+  prepareCompletionDefinitionRecord,
+  verifyCompletionDefinitionRecord,
   type CompletionDefinition,
 } from "../resourceCompletion";
 import {
@@ -51,24 +58,43 @@ if (hasEmulator) {
 const db = hasEmulator ? getFirestore() : (undefined as never);
 
 const REVISION_R1 = GRAVITY_WELLS_COMPLETION_DEFINITION.assessmentRevisionId;
-const DEFINITION_V2: CompletionDefinition = { ...GRAVITY_WELLS_COMPLETION_DEFINITION, definitionVersion: 2 };
+// Same resource, revision, and version, different content (so a different
+// hash): what an unauthorized rewrite of a frozen definition would look like.
+const ALTERED_DEFINITION: CompletionDefinition = {
+  ...GRAVITY_WELLS_COMPLETION_DEFINITION,
+  evidence: [{ ...GRAVITY_WELLS_COMPLETION_DEFINITION.evidence[0], prompt: "Explain orbits." }],
+};
 
-// Fixture ports. `frozen` stands in for a publication-time freeze that does
-// not exist yet; `definitions` for an immutable published store.
-const frozen = new Map<string, number>();
-let definitions: CompletionDefinition[] = [GRAVITY_WELLS_COMPLETION_DEFINITION, DEFINITION_V2];
+function definitionRecord(def: CompletionDefinition): Record<string, unknown> {
+  const prepared = prepareCompletionDefinitionRecord(def, {
+    resourceId: def.resourceId,
+    resourceType: def.resourceType,
+    assessmentRevisionId: def.assessmentRevisionId,
+    publishedBy: "emulator-fixture",
+  });
+  if (!prepared.ok) throw new Error(`fixture definition refused: ${prepared.issue}`);
+  return { ...prepared.write, publishedAt: Timestamp.now() };
+}
+
+function bindingFor(assignmentId: string, classId: string, def: CompletionDefinition) {
+  const verified = verifyCompletionDefinitionRecord(def.assessmentRevisionId, definitionRecord(def), {
+    resourceId: def.resourceId,
+    resourceType: def.resourceType,
+  });
+  if (!verified.ok) throw new Error(`fixture record refused: ${verified.issue}`);
+  return buildAssignmentCompletionBinding({ assignmentId, classId }, verified);
+}
+
+const GRAVITY_WELLS_HASH = bindingFor("fixture", "fixture", GRAVITY_WELLS_COMPLETION_DEFINITION).definitionHash;
+
+// Fixture ports: `frozen` stands in for the binding publication freezes on
+// the assignment, `stored` for `completionDefinitions/{revisionId}`.
+const frozen = new Map<string, unknown>();
+let stored = new Map<string, unknown>();
 const DEPS: ResourceEvidenceDeps = {
-  bindingSource: { frozenDefinitionVersion: (id) => Promise.resolve(frozen.get(id) ?? null) },
+  bindingSource: { frozenBinding: (id) => Promise.resolve(frozen.get(id) ?? null) },
   definitionStore: {
-    publishedDefinition: (resourceId, revisionId, version) =>
-      Promise.resolve(
-        definitions.find(
-          (def) =>
-            def.resourceId === resourceId &&
-            def.assessmentRevisionId === revisionId &&
-            def.definitionVersion === version,
-        ) ?? null,
-      ),
+    publishedDefinition: (revisionId) => Promise.resolve(stored.get(revisionId) ?? null),
   },
 };
 
@@ -148,7 +174,7 @@ async function seedAssignment(w: World, assignmentId: string, overrides: Record<
     assessmentRevisionId: REVISION_R1,
     ...overrides,
   });
-  frozen.set(assignmentId, 1);
+  frozen.set(assignmentId, bindingFor(assignmentId, w.classId, GRAVITY_WELLS_COMPLETION_DEFINITION));
 }
 
 function req(w: World, uid: string, data: unknown, role = "student"): CallableRequest<unknown> {
@@ -212,7 +238,7 @@ d("RA-3A resource evidence persistence (Firestore emulator)", () => {
   });
   afterAll(() => jest.restoreAllMocks());
   beforeEach(async () => {
-    definitions = [GRAVITY_WELLS_COMPLETION_DEFINITION, DEFINITION_V2];
+    stored = new Map([[REVISION_R1, definitionRecord(GRAVITY_WELLS_COMPLETION_DEFINITION)]]);
     w = await seedWorld();
   });
 
@@ -324,17 +350,19 @@ d("RA-3A resource evidence persistence (Firestore emulator)", () => {
     it("refuses a store that returns a definition for a different binding", async () => {
       const lying: ResourceEvidenceDeps = {
         bindingSource: DEPS.bindingSource,
-        definitionStore: { publishedDefinition: () => Promise.resolve(DEFINITION_V2) },
+        definitionStore: { publishedDefinition: () => Promise.resolve(definitionRecord(ALTERED_DEFINITION)) },
       };
       await expect(get(w, w.studentA, w.assignmentId, lying)).rejects.toMatchObject({
         code: "resourceEvidence.completionBindingUnavailable",
+        details: { issue: "bindingHashMismatch" },
       });
     });
 
-    it("refuses a wrong completion-definition version without touching stored evidence", async () => {
+    it("refuses a rebound definition (different hash) without touching stored evidence", async () => {
       await save(w, w.studentA, EXPLANATION, 0);
       const before = await rawRecord(w);
-      frozen.set(w.assignmentId, 2);
+      stored.set(REVISION_R1, definitionRecord(ALTERED_DEFINITION));
+      frozen.set(w.assignmentId, bindingFor(w.assignmentId, w.classId, ALTERED_DEFINITION));
       await expect(save(w, w.studentA, "changed", 1)).rejects.toMatchObject({ code: "resourceEvidence.bindingMismatch" });
       await expect(record(w, w.studentA, EARTH_ORBIT)).rejects.toMatchObject({ code: "resourceEvidence.bindingMismatch" });
       await expect(get(w, w.studentA)).rejects.toMatchObject({ code: "resourceEvidence.bindingMismatch" });
@@ -355,6 +383,7 @@ d("RA-3A resource evidence persistence (Firestore emulator)", () => {
         resourceType: "simulation",
         assessmentRevisionId: REVISION_R1,
         definitionVersion: 1,
+        definitionHash: GRAVITY_WELLS_HASH,
         status: "working",
         evidenceEligibleAt: null,
       });

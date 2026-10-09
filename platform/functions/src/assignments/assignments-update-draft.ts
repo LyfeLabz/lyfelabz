@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase-admin/firestore";
+import { Timestamp, type Transaction } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
@@ -8,8 +8,10 @@ import {
   PlatformError,
   assignmentDocRef,
   assignmentDraftUpdateDocRef,
+  isTransactionContention,
   log,
   requireDistrictContext,
+  runFirestoreTransaction,
   writeAuditEvent,
   type AssignmentDraftUpdateWrite,
   type AssignmentMode,
@@ -289,8 +291,11 @@ function validateRequest(data: unknown): ValidatedRequest {
   return out;
 }
 
-async function loadAssignment(assignmentId: string): Promise<AssignmentRecord> {
-  const snapshot = await assignmentDocRef(assignmentId).get();
+async function loadAssignment(
+  tx: Transaction,
+  assignmentId: string,
+): Promise<AssignmentRecord> {
+  const snapshot = await tx.get(assignmentDocRef(assignmentId));
   if (!snapshot.exists) {
     throw new PlatformError(
       "assignments.notFound",
@@ -414,9 +419,9 @@ function safeLog(fn: () => void): void {
 // published, closed, or archived assignment can never be silently mutated.
 //
 // Every side effect flows through the canonical shared helpers:
-//   - record read via `assignmentDocRef(...).get()`               (typed ref)
-//   - narrow update via `assignmentDraftUpdateDocRef(...).update(...)`
-//                                                                 (typed ref)
+//   - record read and narrow update via `assignmentDocRef(...)` and
+//     `assignmentDraftUpdateDocRef(...)` inside one
+//     `runFirestoreTransaction(...)` (RA-3B)                    (typed ref)
 //   - audit event via `writeAuditEvent({...})`                    (§5 helper)
 //
 // Idempotency: if every submitted field already matches the stored value,
@@ -428,39 +433,63 @@ async function assignmentsUpdateDraftHandler(
   const actor = await assertActiveTeacherInDistrict(request);
   const input = validateRequest(request.data);
 
-  const existing = await loadAssignment(input.assignmentId);
+  // RA-3B. The read, every check, and the write run in one transaction, so
+  // an update can never land on a record that `assignmentsPublish` moved
+  // out of `draft` after this call read it: a retried attempt re-reads the
+  // record and refuses with `assignments.invalidStatus`. Two concurrent
+  // draft updates keep their last-write-wins outcome (each attempt re-diffs
+  // against the record it read).
+  let changedFields: readonly string[];
+  try {
+    changedFields = await runFirestoreTransaction(async (tx) => {
+      const existing = await loadAssignment(tx, input.assignmentId);
 
-  if (
-    existing.teacherId !== actor.uid ||
-    existing.schoolId !== actor.schoolId
-  ) {
-    throw new PlatformError(
-      "assignments.forbidden",
-      "Caller does not own this assignment.",
-    );
-  }
+      if (
+        existing.teacherId !== actor.uid ||
+        existing.schoolId !== actor.schoolId
+      ) {
+        throw new PlatformError(
+          "assignments.forbidden",
+          "Caller does not own this assignment.",
+        );
+      }
 
-  if (existing.status !== "draft") {
-    throw new PlatformError(
-      "assignments.invalidStatus",
-      `Draft update requires status "draft" (current: "${existing.status}").`,
-    );
-  }
+      if (existing.status !== "draft") {
+        throw new PlatformError(
+          "assignments.invalidStatus",
+          `Draft update requires status "draft" (current: "${existing.status}").`,
+        );
+      }
 
-  if (input.resourceType !== undefined || input.lessonSlug !== undefined) {
-    const recordResourceType = parseAssignmentResourceType(existing.resourceType);
-    if (input.resourceType !== undefined && input.resourceType !== recordResourceType) {
+      if (input.resourceType !== undefined || input.lessonSlug !== undefined) {
+        const recordResourceType = parseAssignmentResourceType(existing.resourceType);
+        if (input.resourceType !== undefined && input.resourceType !== recordResourceType) {
+          throw new PlatformError(
+            "assignments.resourceTypeMismatch",
+            "resourceType is fixed when the assignment is created.",
+          );
+        }
+        if (input.lessonSlug !== undefined) {
+          assertAssignableActivity(input.lessonSlug, recordResourceType);
+        }
+      }
+
+      const diff = computeDiff(existing, input);
+      if (diff.changedFields.length > 0) {
+        tx.update(assignmentDraftUpdateDocRef(input.assignmentId), diff.write);
+      }
+      return diff.changedFields;
+    });
+  } catch (err) {
+    if (isTransactionContention(err)) {
       throw new PlatformError(
-        "assignments.resourceTypeMismatch",
-        "resourceType is fixed when the assignment is created.",
+        "assignments.updateConflict",
+        "The assignment changed while it was being updated. Try again.",
       );
     }
-    if (input.lessonSlug !== undefined) {
-      assertAssignableActivity(input.lessonSlug, recordResourceType);
-    }
+    throw err;
   }
 
-  const { write, changedFields } = computeDiff(existing, input);
   if (changedFields.length === 0) {
     safeLog(() =>
       log.info("assignments.updateDraftIdempotent", {
@@ -470,8 +499,6 @@ async function assignmentsUpdateDraftHandler(
     );
     return { assignmentId: input.assignmentId, alreadyUpdated: true };
   }
-
-  await assignmentDraftUpdateDocRef(input.assignmentId).update(write);
 
   await writeAuditEvent({
     actorUserId: actor.uid,
