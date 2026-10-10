@@ -178,6 +178,16 @@ export function renderTeacherUnitsPanel(
   recovery.hidden = true;
   createSection.appendChild(recovery);
 
+  // Read-only notices for this teacher's unconfirmed requests from a
+  // previous school (saved in this browser). Informational only: no
+  // controls, because this school's sign-in can't confirm or resend them.
+  const former = el("div", "shell-units-recovery shell-units-former");
+  former.setAttribute("data-testid", "units-former-school");
+  former.setAttribute("role", "region");
+  former.setAttribute("aria-labelledby", "units-former-heading");
+  former.hidden = true;
+  createSection.appendChild(former);
+
   const createForm = el("form", "shell-units-form");
   createForm.setAttribute("data-testid", "units-create-form");
   createForm.noValidate = true;
@@ -399,12 +409,82 @@ export function renderTeacherUnitsPanel(
     );
   };
 
+  let prevFormerCount = 0;
+  const renderFormerSchool = (s: TeacherUnitsViewState): void => {
+    const notices = s.formerSchool;
+    const count = notices.kind === "ok" ? notices.attempts.length + notices.unreadable : 0;
+    former.hidden = count === 0;
+    former.textContent = "";
+    if (count > 0 && notices.kind === "ok") {
+      const h = el(
+        "h4",
+        "shell-units-subheading",
+        count === 1 ? "Unit request from a previous school" : "Unit requests from a previous school",
+      );
+      h.id = "units-former-heading";
+      former.appendChild(h);
+      former.appendChild(
+        el(
+          "p",
+          "shell-units-recovery-message",
+          `This browser has ${count === 1 ? "a unit request" : `${count} unit requests`} you started at a previous school that ${count === 1 ? "was" : "were"} never confirmed. LyfeLabz can't check ${count === 1 ? "it" : "them"} while you're signed in for your current school, so ${count === 1 ? "it may or may not have" : "each may or may not have"} been created there. ${count === 1 ? "It" : "They"} won't be created again here. If you need to know what happened, contact your school administrator.`,
+        ),
+      );
+      const items = el("ul", "shell-units-recovery-list");
+      notices.attempts.forEach((a, i) => {
+        const item = el("li", "shell-units-recovery-item");
+        item.setAttribute("data-testid", `units-former-school-item-${i}`);
+        let started = "";
+        try {
+          started = new Date(a.createdAtMs).toLocaleDateString();
+        } catch {
+          started = "";
+        }
+        item.appendChild(
+          el(
+            "p",
+            "shell-units-recovery-note",
+            `"${a.title}" (${gradeLabel(a.grade)})${started ? `, started ${started}` : ""}`,
+          ),
+        );
+        items.appendChild(item);
+      });
+      if (notices.unreadable > 0) {
+        const item = el("li", "shell-units-recovery-item");
+        item.setAttribute("data-testid", "units-former-school-unreadable");
+        item.appendChild(
+          el(
+            "p",
+            "shell-units-recovery-note",
+            notices.unreadable === 1
+              ? "One saved request couldn't be read."
+              : `${notices.unreadable} saved requests couldn't be read.`,
+          ),
+        );
+        items.appendChild(item);
+      }
+      former.appendChild(items);
+      former.appendChild(
+        el("p", "shell-units-recovery-note", "You can still create a new unit here with the form below."),
+      );
+    }
+    if (count > prevFormerCount) {
+      announce(
+        count === 1
+          ? "One unconfirmed unit request from a previous school is listed in My Units."
+          : `${count} unconfirmed unit requests from a previous school are listed in My Units.`,
+      );
+    }
+    prevFormerCount = count;
+  };
+
   let prevCreateKind: TeacherUnitsViewState["create"]["kind"] = "idle";
   let prevConfirmed: TeacherUnitsViewState["lastConfirmed"] = null;
 
   const renderCreate = (s: TeacherUnitsViewState): void => {
     const create = s.create;
     renderRecovery(s);
+    renderFormerSchool(s);
     const locked =
       s.recoveries.length > 0 ||
       s.unreadable.length > 0 ||

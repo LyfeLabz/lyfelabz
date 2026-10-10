@@ -63,8 +63,34 @@ export type CreateAttemptListResult =
   // Storage is missing or threw.
   | { readonly kind: "unavailable" };
 
+// Read-only discovery of the SAME teacher's attempts stored under OTHER
+// school scopes in this browser (for example after a school transfer).
+// Ownership comes only from the storage key's teacher component, which must
+// equal this store's teacher exactly; a record's own contents never widen
+// what is listed. Nothing is written, rewritten, or removed.
+export type FormerSchoolAttempt = {
+  // Opaque identifier for the notice (the entry's storage key).
+  readonly id: string;
+  readonly status: PersistedCreateAttemptStatus;
+  readonly grade: PersistedCreateAttempt["payload"]["grade"];
+  readonly title: string;
+  readonly createdAtMs: number;
+};
+
+export type FormerSchoolListResult =
+  | {
+      readonly kind: "ok";
+      // Valid attempts from other schools, oldest first.
+      readonly attempts: ReadonlyArray<FormerSchoolAttempt>;
+      // Count of entries under other schools of this teacher that could not
+      // be validated (their contents are never shown).
+      readonly unreadable: number;
+    }
+  | { readonly kind: "unavailable" };
+
 export type CreateAttemptStore = CreateAttemptPersistence & {
   readonly list: () => CreateAttemptListResult;
+  readonly listFormerSchools: () => FormerSchoolListResult;
   // Explicit, acknowledged removal of ONE unreadable entry of this scope.
   // Refuses a valid record or a key outside the scope. Verified.
   readonly discardUnreadable: (storageKey: string) => boolean;
@@ -307,5 +333,78 @@ export function createTeacherUnitCreateAttemptStore(
     return removeVerified(storageKey);
   };
 
-  return Object.freeze({ list, save, clear, discardUnreadable });
+  // Entries for this teacher under any school: v2 attempt keys and legacy
+  // single-slot keys. The school component is the second path segment and
+  // must be non-empty; the current school is excluded (list() owns it).
+  const teacherPrefix = `${CREATE_ATTEMPT_STORAGE_PREFIX}${encodeURIComponent(scoped.teacherId)}/`;
+  const legacyTeacherPrefix = `${LEGACY_CREATE_ATTEMPT_STORAGE_PREFIX}${encodeURIComponent(scoped.teacherId)}/`;
+  const currentSchool = encodeURIComponent(scoped.schoolId);
+
+  const listFormerSchools = (): FormerSchoolListResult => {
+    if (!scopeOk) return { kind: "unavailable" };
+    try {
+      const store = getStore();
+      if (store === null) return { kind: "unavailable" };
+      const keys: string[] = [];
+      for (let i = 0; i < store.length; i++) {
+        const k = store.key(i);
+        if (k !== null) keys.push(k);
+      }
+      const attempts: FormerSchoolAttempt[] = [];
+      let unreadable = 0;
+      for (const k of keys.sort()) {
+        let encSchool: string;
+        let idemKey: string | null;
+        if (k.startsWith(teacherPrefix)) {
+          const rest = k.slice(teacherPrefix.length);
+          const slash = rest.indexOf("/");
+          if (slash <= 0) continue;
+          encSchool = rest.slice(0, slash);
+          idemKey = rest.slice(slash + 1);
+        } else if (k.startsWith(legacyTeacherPrefix) && !k.startsWith(CREATE_ATTEMPT_STORAGE_PREFIX)) {
+          encSchool = k.slice(legacyTeacherPrefix.length);
+          if (encSchool.length === 0 || encSchool.includes("/")) continue;
+          idemKey = null;
+        } else {
+          continue;
+        }
+        if (encSchool === currentSchool) continue;
+        const raw = store.getItem(k);
+        if (raw === null) continue;
+        let schoolId: string;
+        try {
+          schoolId = decodeURIComponent(encSchool);
+        } catch {
+          unreadable++;
+          continue;
+        }
+        const record =
+          idemKey === null || encodeURIComponent(schoolId) !== encSchool
+            ? null
+            : parseCreateAttemptRecord(raw, { teacherId: scoped.teacherId, schoolId }, idemKey);
+        if (record === null) {
+          unreadable++;
+          continue;
+        }
+        // An attempt the teacher already set aside at that school was an
+        // explicit decision there; only unconfirmed attempts are surfaced.
+        if (record.status === "abandoned") continue;
+        attempts.push(
+          Object.freeze({
+            id: k,
+            status: record.status,
+            grade: record.payload.grade,
+            title: record.payload.title,
+            createdAtMs: record.createdAtMs,
+          }),
+        );
+      }
+      attempts.sort((a, b) => a.createdAtMs - b.createdAtMs || (a.id < b.id ? -1 : 1));
+      return { kind: "ok", attempts: Object.freeze(attempts), unreadable };
+    } catch {
+      return { kind: "unavailable" };
+    }
+  };
+
+  return Object.freeze({ list, listFormerSchools, save, clear, discardUnreadable });
 }

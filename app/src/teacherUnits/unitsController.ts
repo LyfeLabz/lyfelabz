@@ -1,5 +1,5 @@
 import { normalizeTeacherUnitError, type TeacherUnitError } from "./errors";
-import type { CreateAttemptStore } from "./createAttemptStore";
+import type { CreateAttemptStore, FormerSchoolAttempt } from "./createAttemptStore";
 import {
   createMutationGate,
   createUnitCreateCoordinator,
@@ -73,6 +73,20 @@ export type CreateRecoveryEntry = {
   readonly own: boolean;
 };
 
+export type FormerSchoolNotices =
+  | {
+      readonly kind: "ok";
+      readonly attempts: ReadonlyArray<FormerSchoolAttempt>;
+      readonly unreadable: number;
+    }
+  | { readonly kind: "unavailable" };
+
+const NO_FORMER_SCHOOL: FormerSchoolNotices = Object.freeze({
+  kind: "ok",
+  attempts: Object.freeze([]),
+  unreadable: 0,
+});
+
 // Controller-level create refusals, in addition to the coordinator's.
 export type CreateBlockedReason =
   | CreateAttemptBlocked
@@ -94,6 +108,10 @@ export type TeacherUnitsViewState = {
   // Storage keys of records that could not be validated.
   readonly unreadable: ReadonlyArray<string>;
   readonly recoveryCheck: CreateRecoveryCheck;
+  // Read-only notices: this teacher's unconfirmed attempts saved in this
+  // browser under a school other than the mounted one. Never replayed,
+  // reconciled, restored, or discarded from here, and never blocking.
+  readonly formerSchool: FormerSchoolNotices;
   // The most recent attempt confirmed by reconciliation (restored or own).
   readonly lastConfirmed: { readonly unit: TeacherUnit; readonly replayed: boolean } | null;
   readonly busyUnitIds: ReadonlySet<string>;
@@ -235,9 +253,20 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   const ownKeys = new Set<string>();
   let storage: CreateStorageState = { kind: "ok" };
   let unreadable: ReadonlyArray<string> = [];
+  let formerSchool: FormerSchoolNotices = NO_FORMER_SCHOOL;
 
-  // Adopt every stored attempt this controller does not already track.
+  // Adopt every stored attempt this controller does not already track, and
+  // refresh the read-only former-school notices.
   const scan = (): void => {
+    try {
+      const former = deps.store.listFormerSchools();
+      formerSchool =
+        former.kind === "ok"
+          ? Object.freeze({ kind: "ok", attempts: former.attempts, unreadable: former.unreadable })
+          : Object.freeze({ kind: "unavailable" });
+    } catch {
+      formerSchool = Object.freeze({ kind: "unavailable" });
+    }
     const listed = deps.store.list();
     if (listed.kind === "unavailable") {
       storage = { kind: "unavailable" };
@@ -275,6 +304,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     recoveries: recoveries(),
     unreadable,
     recoveryCheck: { kind: "none" },
+    formerSchool,
     lastConfirmed: null,
     busyUnitIds: new Set<string>(),
   });
@@ -287,6 +317,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       storage,
       recoveries: recoveries(),
       unreadable,
+      formerSchool,
     });
     for (const l of Array.from(listeners)) {
       try {
