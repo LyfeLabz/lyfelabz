@@ -119,6 +119,18 @@ const INVALID_ARG_SUFFIXES = [
   ".malformedSession",
 ];
 
+// U1A teacher units. Exact codes, not suffixes: the same suffixes are used
+// by other domains (e.g. `classes.invalidTitle`, `classes.invalidGrade`,
+// `accommodations.invalidExpectedRevision`) whose established mapping
+// (`failed-precondition`) must not change.
+const INVALID_ARG_CODES = new Set([
+  "teacherUnits.invalidUnitId",
+  "teacherUnits.invalidExpectedRevision",
+  "teacherUnits.invalidGrade",
+  "teacherUnits.invalidTitle",
+  "teacherUnits.invalidDescription",
+]);
+
 function endsWithAny(code: string, suffixes: readonly string[]): boolean {
   for (const suffix of suffixes) {
     if (code.endsWith(suffix)) return true;
@@ -136,6 +148,7 @@ export function mapPlatformCodeToHttpsCode(code: string): FunctionsErrorCode {
   if (endsWithAny(code, NOT_FOUND_SUFFIXES)) return "not-found";
   if (endsWithAny(code, CONFLICT_SUFFIXES)) return "already-exists";
   if (endsWithAny(code, INVALID_ARG_SUFFIXES)) return "invalid-argument";
+  if (INVALID_ARG_CODES.has(code)) return "invalid-argument";
   if (code === "assignment-not-found") return "not-found";
   if (code === "session-not-found") return "not-found";
   if (code === "assessment-not-found") return "not-found";

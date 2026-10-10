@@ -833,6 +833,47 @@ service cloud.firestore {
       }
     }
 
+    // ---------- teacherUnits/{unitId} ----------
+    //
+    // U1A - Teacher Unit foundation (docs/platform/TEACHER_UNITS.md). One
+    // teacher-defined instructional unit, owned by exactly one teacher in
+    // one school. `teacherId` and `schoolId` are stamped at creation from
+    // the caller's verified identity and never change.
+    //
+    // Reads:
+    //   - `get` / `list`: the owning teacher only, while their canonical
+    //     `users/{uid}` record is an `active` `teacher` (Phase 8G.1 gate) AND
+    //     the unit belongs to the caller's current canonical school. A list
+    //     query is admissible only when its filters guarantee both
+    //     conditions for every returned document, so a client list must
+    //     filter `teacherId == uid` and `schoolId == <own schoolId>`; it can
+    //     never enumerate another teacher's or another school's units.
+    //
+    // Writes:
+    //   - All client writes denied. The `teacherUnits*` callables are the
+    //     sole writers and run through the Admin SDK, bypassing Rules.
+    //     Stated explicitly (not only via the terminal deny) to document
+    //     the callable-only writer contract at the surface.
+    match /teacherUnits/{unitId} {
+      allow get, list: if isSignedIn()
+        && resource.data.teacherId == request.auth.uid
+        && callerIsActiveTeacher()
+        && resource.data.schoolId == callerUserData().schoolId;
+      allow create, update, delete: if false;
+    }
+
+    // ---------- teacherUnitCreateReceipts/{receiptId} ----------
+    //
+    // U1A create retry receipts (docs/platform/TEACHER_UNITS.md). One
+    // server-written record per accepted `teacherUnitsCreate`, keyed by a
+    // hash of (teacherId, schoolId, idempotencyKey). Server-only: no client
+    // reads or writes, stated explicitly (mirroring `launchGrants` and
+    // `lmsOAuthStates`) so the server-only intent is documented at the
+    // surface.
+    match /teacherUnitCreateReceipts/{receiptId} {
+      allow read, write: if false;
+    }
+
     // ---------- presentationVariants/{indexId} ----------
     //
     // F5.2 Persistent Student Differentiation, Slice 3 (publication state

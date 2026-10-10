@@ -249,6 +249,17 @@ export const AUDIT_ACTIONS = [
   // equal-value write is a true no-op and emits NO audit event - this
   // action is written only when the record actually changed.
   "accommodations.configurationChanged",
+  // U1A - Teacher Unit foundation. Emitted by the `teacherUnits*` callables
+  // in the SAME transaction as the accepted state change, so an event exists
+  // exactly when the change committed. A request whose result already holds
+  // (no write), and a replayed create, emits none. The target is the
+  // `teacherUnit`; the payload carries only `grade`, the before/after
+  // `revision`, and, for `teacherUnits.updated`, the `changedFields` names.
+  // It never carries the teacher-authored title or description text.
+  "teacherUnits.created",
+  "teacherUnits.updated",
+  "teacherUnits.archived",
+  "teacherUnits.restored",
   // Sprint 30A.2 - Google Classroom best-score grade passback. Emitted by
   // the grade-passback synchronization engine (invoked either as a
   // post-commit side effect of `assessmentAttemptsFinalize` or by the

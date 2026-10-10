@@ -99,6 +99,15 @@ import {
   type StudentLabReportUpdateWrite,
 } from "../types/student-lab-report";
 import {
+  TEACHER_UNIT_CREATE_RECEIPTS_COLLECTION,
+  TEACHER_UNITS_COLLECTION,
+  type TeacherUnitCreateReceiptRecord,
+  type TeacherUnitCreateReceiptWrite,
+  type TeacherUnitCreationWrite,
+  type TeacherUnitRecord,
+  type TeacherUnitUpdateWrite,
+} from "../types/teacher-unit";
+import {
   PRESENTATION_VARIANTS_COLLECTION,
   presentationVariantIndexDocId,
   presentationVariantScopedIndexDocId,
@@ -1206,6 +1215,55 @@ export function studentLabReportUpdateDocRef(
   reportId: string,
 ): DocumentReference<StudentLabReportUpdateWrite> {
   return studentLabReportDocPath(studentId, reportId) as DocumentReference<StudentLabReportUpdateWrite>;
+}
+
+// -------------------- Teacher unit references --------------------
+//
+// U1A typed references for `teacherUnits/{unitId}`. Server-written only by
+// the `teacherUnits*` callables; the owning active teacher may read
+// directly (see the paired Rules block). Creation uses `Transaction.create()`
+// on a server-generated id; updates use the narrow update shape, which
+// cannot name an identity field.
+
+export function teacherUnitsCollectionRef(): CollectionReference<TeacherUnitRecord> {
+  return getAdminFirestore()
+    .collection(TEACHER_UNITS_COLLECTION) as CollectionReference<TeacherUnitRecord>;
+}
+
+export function teacherUnitDocRef(unitId: string): DocumentReference<TeacherUnitRecord> {
+  return teacherUnitsCollectionRef().doc(unitId);
+}
+
+export function teacherUnitCreationDocRef(
+  unitId: string,
+): DocumentReference<TeacherUnitCreationWrite> {
+  return getAdminFirestore()
+    .collection(TEACHER_UNITS_COLLECTION)
+    .doc(unitId) as DocumentReference<TeacherUnitCreationWrite>;
+}
+
+export function teacherUnitUpdateDocRef(
+  unitId: string,
+): DocumentReference<TeacherUnitUpdateWrite> {
+  return getAdminFirestore()
+    .collection(TEACHER_UNITS_COLLECTION)
+    .doc(unitId) as DocumentReference<TeacherUnitUpdateWrite>;
+}
+
+export function teacherUnitCreateReceiptDocRef(
+  receiptId: string,
+): DocumentReference<TeacherUnitCreateReceiptRecord> {
+  return getAdminFirestore()
+    .collection(TEACHER_UNIT_CREATE_RECEIPTS_COLLECTION)
+    .doc(receiptId) as DocumentReference<TeacherUnitCreateReceiptRecord>;
+}
+
+export function teacherUnitCreateReceiptCreationDocRef(
+  receiptId: string,
+): DocumentReference<TeacherUnitCreateReceiptWrite> {
+  return getAdminFirestore()
+    .collection(TEACHER_UNIT_CREATE_RECEIPTS_COLLECTION)
+    .doc(receiptId) as DocumentReference<TeacherUnitCreateReceiptWrite>;
 }
 
 // -------------------- Presentation variant index references --------------------

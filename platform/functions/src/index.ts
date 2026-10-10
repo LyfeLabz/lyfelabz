@@ -73,6 +73,14 @@ export {
 } from "./students";
 export { submissionsCreate, submissionsFinalize } from "./submissions";
 export {
+  teacherUnitsArchive,
+  teacherUnitsCreate,
+  teacherUnitsGet,
+  teacherUnitsList,
+  teacherUnitsRestore,
+  teacherUnitsUpdate,
+} from "./teacherUnits";
+export {
   teacherClassColorUpdate,
   teacherClassOrderUpdate,
   teacherPreferencesUpdate,

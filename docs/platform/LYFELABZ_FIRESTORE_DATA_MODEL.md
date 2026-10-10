@@ -24,6 +24,10 @@ PDR-031 (Assessment Revision Binding) and `ASSESSMENT_IMPLEMENTATION_CONTRACT.md
 
 This notice modifies no stored data.
 
+## U1A Reconciliation Notice
+
+A new server-owned collection, `teacherUnits/{unitId}`, holds teacher-defined instructional units (`TeacherUnit`, distinct from the client `CurriculumUnit` lesson-card type). Each unit is owned by one teacher in one school for one grade; `teacherId`, `schoolId`, and `grade` are immutable, ids are server-generated auto-ids, and every write is revision-checked in a transaction by the `teacherUnits*` callables. U1A stores `resourceIds: []` and `sortOrder: 0` without any operation that changes them. A second server-only collection, `teacherUnitCreateReceipts/{receiptId}`, holds one create retry receipt per created unit (`teacherId`, `schoolId`, `unitId`, `requestHash`, `createdAt`, `expiresAt`); no TTL policy is configured yet. Canonical: `TEACHER_UNITS.md`. Not deployed. This notice modifies no stored data.
+
 ## RA-3B Reconciliation Notice
 
 Non-lesson completion identity follows the same single-freeze rule as the assessment: a published non-lesson assignment carries `completionBinding` (see the assignment field list), which names the immutable `completionDefinitions/{assessmentRevisionId}` record and its content hash. `assignmentsPublish` and `assignmentsUpdateDraft` now run in Firestore transactions, so exactly one `draft` -> `published` transition commits and no draft update lands on a published record. Canonical: `FROZEN_COMPLETION_DEFINITIONS.md`. This notice modifies no stored data.

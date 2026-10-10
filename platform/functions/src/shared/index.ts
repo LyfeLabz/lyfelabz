@@ -187,6 +187,33 @@ export {
   studentLabReportUpdateDocRef,
 } from "./firestore/typed-ref";
 export {
+  teacherUnitCreateReceiptCreationDocRef,
+  teacherUnitCreateReceiptDocRef,
+  teacherUnitCreationDocRef,
+  teacherUnitDocRef,
+  teacherUnitUpdateDocRef,
+  teacherUnitsCollectionRef,
+} from "./firestore/typed-ref";
+export {
+  TEACHER_UNITS_COLLECTION,
+  TEACHER_UNIT_CREATE_RECEIPTS_COLLECTION,
+  TEACHER_UNIT_CREATE_RECEIPT_RETENTION_MS,
+  TEACHER_UNIT_DEFAULT_SORT_ORDER,
+  TEACHER_UNIT_DESCRIPTION_MAX_LENGTH,
+  TEACHER_UNIT_GRADES,
+  TEACHER_UNIT_INITIAL_REVISION,
+  TEACHER_UNIT_STATUSES,
+  TEACHER_UNIT_TITLE_MAX_LENGTH,
+  isTeacherUnitGrade,
+  type TeacherUnitCreateReceiptRecord,
+  type TeacherUnitCreateReceiptWrite,
+  type TeacherUnitCreationWrite,
+  type TeacherUnitGrade,
+  type TeacherUnitRecord,
+  type TeacherUnitStatus,
+  type TeacherUnitUpdateWrite,
+} from "./types/teacher-unit";
+export {
   launchGrantCreationDocRef,
   launchGrantDocRef,
   assessmentPresentationDocRef,
