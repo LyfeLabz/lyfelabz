@@ -215,6 +215,29 @@ Consequence: Functions release checkouts now need app dependencies installed (`n
 
 The app test `app/src/curriculum/unitPlaceableManifest.test.ts` remains as a fast developer check in `npm --prefix app run verify`.
 
+## 9.4 U2.2 My Units client (gated, not active)
+
+**Status:** implemented in the repository behind `TEACHER_UNITS_GATE_OPEN = false` (`app/src/index.ts`). Not active and not deployed. Opening the gate requires the U1A/U1B Functions and Rules to be deployed first, and separate authorization.
+
+- **Surface.** Curriculum shows a Browse | My Units switch (`shell/surfaces/curriculum.ts`, panel in `shell/surfaces/teacherUnitsPanel.ts`) only when the entry point supplies the `teacherUnits` seam. With the gate closed the seam is `null`: no switch, no `teacherUnits*` call, no create-recovery storage access, and the Curriculum DOM is unchanged. My Units is not a top-level navigation item. Its history entry is `shell-curriculum-units` (`#curriculum/units`).
+- **Scope.** Grade 6/7/8 listing, show-archived toggle, create, rename, edit description, archive, restore. No resource membership (U2.3) or ordering (U2.4) UI. The controller is created lazily on first open, defaulting to the active Curriculum grade filter; "All" falls back to Grade 6 because the teacher-level saved default grade was removed in Sprint 28.6F.
+- **Authority.** `teacherUnits/unitsController.ts` displays only server responses and sends the last server revision it holds. On `writeConflict` it fetches the unit with `teacherUnitsGet`, keeps the teacher's unsaved edits in the open editor, shows the current version, and waits for a deliberate save again. It never replays a stale revision.
+- **Lifetime guard.** Every asynchronous continuation checks that the controller is still mounted and that the current Firebase uid still equals the mounted teacher, so a late response cannot update another account's UI.
+
+### Durable create recovery
+
+- **Store (attempt-keyed).** `teacherUnits/createAttemptStore.ts`: same-browser `localStorage`, one entry per create attempt, `lyfelabz.teacherUnits.createAttempt.v2/<uid>/<schoolId>/<idempotencyKey>` (uid and school percent-encoded; the key grammar has no `/`). An attempt is written, read back, and removed only under its own key, so one intent (in this tab or another) cannot overwrite or remove another's evidence. There is no cross-entry read-check-write sequence, so no atomicity across entries is relied on or claimed; Web Locks or IndexedDB transactions are not needed. Every write is read back byte-identical before it counts; every removal is verified. An entry holding anything other than the same attempt (same key, payload, context) is never replaced.
+- **Strict validation.** A record is accepted only when it is version 2 and its grade, key grammar, title, and description pass the server's own rules (`teacherUnits/fieldRules.ts` mirrors `readTitle` / `readDescription`), its status and reason are consistent, and its stored key, teacher, and school equal the entry's scope. Anything else (including the pre-certification single-slot entry) is listed as unreadable: never replayed, never deleted automatically, and discarded only explicitly after an authoritative check.
+- **Coordinator hooks.** The U2.1 `createUnitCreateCoordinator` gained optional `persistence`, `restore`, and `now` hooks. Without them it is the unchanged U2.1 state machine. With them, the attempt (key, exact payload, teacher/school context, status, `createdAtMs`) is saved and verified before first dispatch; if that fails, nothing is sent. Later transitions are saved best-effort: a failed save leaves the earlier in-flight record, which restores as unresolved, and the key stays in memory.
+- **Resend refusals.** A pre-commit validation refusal of a same-key RESEND (reconcile) proves only that the resend did not commit. It never settles the attempt as rejected or removes its record: the attempt becomes unresolved `replayRefused`, reconcile is disabled, and it follows the check-then-set-aside path. Only a refusal of the first dispatch is a confirmed rejection.
+- **Restore and discovery.** On mount the controller lists every attempt in its scope and gives each restored attempt its own coordinator. Before a new create it rescans, so an attempt saved by another tab blocks the form until resolved (a UX guard only; attempts that race past it each keep their own record). An in-flight record restores as unresolved ("uncertain", possibly committed). Reconciliation resends the same key and payload only when the live context equals the pinned one. A new key needs explicit new-unit intent.
+- **Replay window.** Six days from `createdAtMs` (inside the approximately seven-day receipt retention, §5.3, with a day of margin; future-dated records are untrusted). Outside it the attempt becomes `replayExpired`: reconcile is disabled, the teacher must run an authoritative list check (all grades, archived included) before setting it aside, and an abandoned attempt keeps its "may already have been created" warning until explicitly dismissed. Nothing is deleted automatically.
+- **Sign-out.** Records are not deleted on sign-out. They are only ever read under the same uid and school.
+
+### Open blocker: school-scoped receipts (P1-B)
+
+Receipts are keyed by `sha256(op, teacherId, schoolId, key)` with the in-transaction verified school (§5.2). If a create commits in school A, its response is lost, and the teacher's canonical school becomes B, a same-key reconcile is authorized in B, finds no receipt, and creates a second unit in B. This is reproduced on the real handler against the Firestore emulator (`teacher-units.emulator.test.ts`, "scopes keys to the school: after a transfer the old key cannot reach the old unit"). The client refuses to reconcile once its live context shows a different school, but it cannot observe a change committed between its check and the server transaction, so the strict guarantee requires a server change. Proposed (not implemented; needs separate authorization): an additive optional `expectedSchoolId` on `teacherUnitsCreate`, compared inside the create transaction against the re-verified school, refusing with a new pre-write code before any receipt read or write. U2.2 must not be activated until this is resolved.
+
 ## 10. Capabilities and exclusions
 
 U1A delivers only the data model, Rules, and the six callables above, covering create, list, get, rename, edit description (both through `teacherUnitsUpdate`), archive, and restore.
@@ -223,7 +246,7 @@ U1B adds `teacherUnitsSetResources` and `teacherUnitsReorder` (section 9).
 
 Explicitly not in U1A or U1B:
 
-- **U2:** any teacher UI.
+- **U2:** any teacher UI (U2.2 My Units is now implemented behind a closed gate, section 9.4).
 - **U3:** assignment integration, including the conceptual publication snapshot `unitContext: { grade, unitId, unitTitle } | null`, which is not persisted anywhere and not added to the publisher.
 - **U4:** student grouping by unit.
 - **U5:** unit materials.

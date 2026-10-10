@@ -65,6 +65,12 @@ import type {
   LessonSummaryCallable,
 } from "./assignments/summary/types";
 import { subscribeAuthRerun } from "./session/authRerunSubscription";
+import { createFirebaseTeacherUnitsCallables } from "./teacherUnits/wire";
+import { createTeacherUnitCreateAttemptStore } from "./teacherUnits/createAttemptStore";
+import {
+  createTeacherUnitsSurfaceSeam,
+  type TeacherUnitsSurfaceSeam,
+} from "./teacherUnits/unitsController";
 import {
   startStudentPrefetch,
   withPrefetchedFirstCall,
@@ -201,6 +207,13 @@ async function run(): Promise<void> {
   // Sprint 28.6E: lesson-level (cross-assignment) View Summary callable.
   // Wired only for an active-teacher session; null for student/other.
   let lessonSummary: LessonSummaryCallable | null = null;
+  // U2.2 Teacher Unit Builder (docs/platform/TEACHER_UNITS.md "U2.2").
+  // Dark until separately authorized. While false: no Browse | My Units
+  // switch renders, no teacherUnits* callable is invoked, and the
+  // create-recovery store is never read or written. The U1A/U1B Functions
+  // and Rules must be deployed before this can be opened.
+  const TEACHER_UNITS_GATE_OPEN = false;
+  let teacherUnits: TeacherUnitsSurfaceSeam | null = null;
   // Sprint 17 Slice 4: certified `assignmentsListForStudent` callable
   // seam consumed by the activeStudent surface. Rebound per
   // active-student session so cross-session state cannot leak. Null on
@@ -726,6 +739,13 @@ async function run(): Promise<void> {
       updateClassColor = createFirebaseUpdateClassColor(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
       lessonSummary = createLessonSummaryCallable(functions);
+      teacherUnits = TEACHER_UNITS_GATE_OPEN
+        ? createTeacherUnitsSurfaceSeam({
+            callables: createFirebaseTeacherUnitsCallables(functions),
+            readFirebaseUid: () => auth.currentUser?.uid ?? null,
+            createStore: (scope) => createTeacherUnitCreateAttemptStore(scope),
+          })
+        : null;
       assignmentReopen = createAssignmentsReopenCallable(functions);
       assignmentUpdateDraft = createAssignmentsUpdateDraftCallable(functions);
       assignmentPublish = createAssignmentsPublishCallable(functions);
@@ -802,6 +822,7 @@ async function run(): Promise<void> {
       assignments = null;
       assignmentSummary = null;
       lessonSummary = null;
+      teacherUnits = null;
       assignmentReopen = null;
       assignmentUpdateDraft = null;
       assignmentPublish = null;
@@ -824,6 +845,7 @@ async function run(): Promise<void> {
       assignments = null;
       assignmentSummary = null;
       lessonSummary = null;
+      teacherUnits = null;
       assignmentReopen = null;
       assignmentUpdateDraft = null;
       assignmentPublish = null;
@@ -1134,6 +1156,7 @@ async function run(): Promise<void> {
     assignmentDetail: () => assignmentDetailSeam,
     assignmentSummary: () => assignmentSummary,
     lessonSummary: () => lessonSummary,
+    teacherUnits: () => teacherUnits,
     studentAssignmentsList: () => studentAssignmentsList,
     studentResultsList: () => studentResultsList,
     createClass: () => createClass,

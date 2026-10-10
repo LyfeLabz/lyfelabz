@@ -1000,6 +1000,149 @@
      lesson grid and card language, simpler than a lesson card: grade/topic
      pills, type eyebrow, title, owning lesson, and a single Open action. */
   .shell-curriculum-tabs { margin: 0.5rem 0 0.75rem 0; }
+  /* U2.2 My Units (gated; TEACHER_UNITS.md "U2.2"). The Browse | My Units
+     switch reuses the tab row above. The panel reuses the filter pills,
+     .shell-btn hierarchy, callout tokens, and card language; no new design
+     system. */
+  .shell-curriculum-view-switch { margin: 0 0 1rem 0; }
+  .shell-units-recovery-list { list-style: none; margin: 0 0 0.5rem 0; padding: 0; display: grid; gap: 0.75rem; }
+  .shell-units-recovery-intro { margin: 0 0 0.5rem 0; font-weight: 600; }
+  .shell-units { display: block; max-width: 52rem; }
+  .shell-units-heading { margin: 0 0 0.25rem 0; font-size: 1.25rem; color: var(--tw-ink); }
+  .shell-units-heading:focus { outline: none; }
+  .shell-units-intro { margin: 0 0 1rem 0; color: var(--tw-ink-muted); }
+  .shell-units-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .shell-units-archived-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--tw-ink-soft);
+    cursor: pointer;
+  }
+  .shell-units-status:empty { display: none; }
+  .shell-units-status { margin: 0 0 0.75rem 0; color: var(--tw-ink-soft); }
+  .shell-units-create { margin-bottom: 1.5rem; }
+  .shell-units-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow: var(--tw-shadow-card);
+  }
+  .shell-units-subheading { margin: 0; font-size: 1rem; color: var(--tw-ink); }
+  .shell-units-field { display: flex; flex-direction: column; gap: 0.25rem; }
+  .shell-units-field-label { font-size: 0.9rem; font-weight: 600; color: var(--tw-ink-soft); }
+  .shell-units-input {
+    font: inherit;
+    padding: 0.45rem 0.6rem;
+    min-height: 36px;
+    border: 1px solid var(--tw-control-edge);
+    border-radius: var(--tw-radius-control);
+    background: var(--tw-surface);
+    color: var(--tw-ink);
+    box-sizing: border-box;
+    width: 100%;
+  }
+  .shell-units-textarea { resize: vertical; min-height: 4.5rem; }
+  .shell-units-input:focus-visible { outline: var(--tw-focus-outline); outline-offset: 1px; }
+  .shell-units-input:disabled { background: var(--tw-surface-alt); color: var(--tw-ink-muted); }
+  .shell-units-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  /* A disabled primary keeps legible contrast instead of faded green. */
+  .shell-units .shell-btn-primary:disabled,
+  .shell-units .shell-btn-primary[aria-busy="true"] {
+    color: var(--tw-ink-muted);
+    background: var(--tw-surface-alt);
+    border-color: var(--tw-hairline);
+    box-shadow: none;
+    opacity: 1;
+  }
+  .shell-units-error,
+  .shell-units-notice--error {
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    color: var(--tw-callout-error-ink);
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-units-error .shell-btn { margin-top: 0.5rem; }
+  .shell-units-recovery,
+  .shell-units-created,
+  .shell-units-notice--conflict {
+    margin: 0 0 0.75rem 0;
+    padding: 0.75rem 0.9rem;
+    color: var(--tw-ink);
+    background: var(--tw-gold-wash);
+    border: 1px solid var(--tw-gold-border);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-units-created {
+    background: var(--tw-callout-info-bg);
+    border-color: var(--tw-callout-info-edge);
+    color: var(--tw-callout-info-ink);
+  }
+  .shell-units-recovery-message,
+  .shell-units-recovery-note,
+  .shell-units-created-message { margin: 0 0 0.5rem 0; }
+  .shell-units-recovery .shell-units-actions + .shell-units-recovery-note { margin: 0.5rem 0 0 0; }
+  .shell-units-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+  .shell-units-card {
+    padding: 0.9rem 1rem;
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+    box-shadow: var(--tw-shadow-card);
+  }
+  .shell-units-card--archived { background: var(--tw-surface-alt); }
+  .shell-units-card[aria-busy="true"] { opacity: 0.75; }
+  .shell-units-card-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+  .shell-units-card-title { margin: 0; font-size: 1.05rem; color: var(--tw-ink); overflow-wrap: anywhere; }
+  .shell-units-card-description {
+    margin: 0.35rem 0 0 0;
+    color: var(--tw-ink-soft);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .shell-units-card .shell-units-actions { margin-top: 0.75rem; }
+  .shell-units-card .shell-units-edit { margin-top: 0.5rem; box-shadow: none; padding: 0; border: none; }
+  .shell-units-editing { margin: 0; font-weight: 600; color: var(--tw-ink-soft); }
+  .shell-units-notice { margin-top: 0.6rem; }
+  .shell-units-badge {
+    display: inline-block;
+    padding: 0.1rem 0.55rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--tw-ink-muted);
+    background: var(--tw-surface);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-pill);
+  }
+  .shell-units-empty { margin: 0 0 0.75rem 0; color: var(--tw-ink-muted); }
+  @media (max-width: 480px) {
+    .shell-units-form { padding: 0.75rem; }
+    .shell-units-actions .shell-btn { flex: 1 1 auto; }
+  }
+  @media (pointer: coarse) {
+    .shell-units-input,
+    .shell-units-archived-toggle,
+    .shell-units .shell-btn { min-height: 44px; }
+  }
+  /* Several panel elements set display (flex, grid). Author display rules
+     beat the user-agent [hidden] rule, so the hidden state is enforced
+     explicitly (and last in this block): a hidden form, recovery list, or notice never shows. */
+  .shell-units[hidden],
+  .shell-units [hidden],
+  [data-testid="curriculum-browse"][hidden],
+  [data-testid="curriculum-units"][hidden] { display: none !important; }
   .shell-resource-card {
     display: flex;
     flex-direction: column;

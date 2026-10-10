@@ -21,6 +21,7 @@ import type { WorkspaceSurfaceKey } from "./navigation";
 //   Curriculum                        shell-surface(curriculum)
 //   Lesson Summary (View summary)     shell-lesson-summary(lessonSlug)
 //   Curriculum resource-type tab      shell-curriculum-tab(tab)
+//   Curriculum My Units (U2.2, gated) shell-curriculum-units
 //   Settings                          shell-surface(settings)
 //   Settings > Manage connection      shell-settings-integrations
 export type ClassWorkspaceSection = "assignments" | "roster" | "setup";
@@ -80,6 +81,7 @@ export type ShellHistoryState =
       readonly surface: "curriculum";
       readonly tab: CurriculumResourceTab;
     }
+  | { readonly kind: "shell-curriculum-units"; readonly surface: "curriculum" }
   | { readonly kind: "shell-settings-integrations"; readonly surface: "settings" };
 
 const CLASS_WORKSPACE_SECTIONS: ReadonlySet<string> = new Set([
@@ -156,6 +158,9 @@ export function parseShellHistoryState(
   ) {
     return { kind: "shell-curriculum-tab", surface: "curriculum", tab: v.tab };
   }
+  if (v.kind === "shell-curriculum-units" && v.surface === "curriculum") {
+    return { kind: "shell-curriculum-units", surface: "curriculum" };
+  }
   if (v.kind === "shell-settings-integrations" && v.surface === "settings") {
     return { kind: "shell-settings-integrations", surface: "settings" };
   }
@@ -217,6 +222,8 @@ export function hashForState(state: ShellHistoryState): string {
       return `#curriculum/summary/${encodeURIComponent(state.lessonSlug)}`;
     case "shell-curriculum-tab":
       return `#curriculum/${state.tab}`;
+    case "shell-curriculum-units":
+      return "#curriculum/units";
     case "shell-settings-integrations":
       return "#settings/integrations";
   }
@@ -253,6 +260,8 @@ export type CurriculumHistoryController = {
   // Select a non-Lesson resource tab (closing any open Lesson Summary);
   // false (no change) when that tab is not surfaced.
   readonly restoreTab: (tab: CurriculumResourceTab) => boolean;
+  // U2.2: show My Units; false (no change) when it is not enabled.
+  readonly restoreUnits: () => boolean;
 };
 
 export type SettingsHistoryController = {
