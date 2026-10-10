@@ -1,4 +1,5 @@
 import type { Session } from "../../session/types";
+import type { TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
 import type { ListClasses } from "../../classes/listClasses";
 import type {
   UpdateTeacherClassOrder,
@@ -119,6 +120,8 @@ export type WorkspaceDeps = {
   // Curriculum lesson-card View Summary surface (cross-assignment
   // aggregate analytics). Null in harnesses that do not exercise it.
   readonly lessonSummary?: LessonSummaryCallable | null;
+  // U2.2 My Units seam; null unless the entry-point gate is open.
+  readonly teacherUnits?: TeacherUnitsSurfaceSeam | null;
   // Sprint 20 internal beta: injected create-class callable seam.
   // Wired at the entry point; null in unit tests that do not exercise
   // creation. See src/classes/createClass.ts.
@@ -247,6 +250,7 @@ export const WORKSPACE_SURFACES: Readonly<
         assignmentSummary: deps.assignmentSummary ?? null,
         lessonSummary: deps.lessonSummary ?? null,
         curriculumHistory: deps.curriculumHistory ?? null,
+        teacherUnits: deps.teacherUnits ?? null,
       }),
   }),
   classes: Object.freeze({

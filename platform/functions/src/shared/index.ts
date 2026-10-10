@@ -388,6 +388,8 @@ export {
 } from "./types/enrollment";
 export {
   SCHOOLS_COLLECTION,
+  SCHOOL_ID_PATTERN,
+  isCanonicalSchoolId,
   type SchoolCreationWrite,
   type SchoolRecord,
 } from "./types/school";

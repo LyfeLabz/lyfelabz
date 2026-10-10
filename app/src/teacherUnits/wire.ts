@@ -236,6 +236,7 @@ export function createFirebaseTeacherUnitsCallables(
         title: req.title,
         ...(req.description !== undefined ? { description: req.description } : {}),
         idempotencyKey: req.idempotencyKey,
+        ...(req.expectedSchoolId !== undefined ? { expectedSchoolId: req.expectedSchoolId } : {}),
       };
       // Taken from the dispatched payload, never re-read from `req`: a
       // caller-owned accessor on another field could change `req.grade`

@@ -106,6 +106,17 @@ describe("teacherUnits wire", () => {
     });
   });
 
+  test("create sends expectedSchoolId only when given (U2.2, additive)", async () => {
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS);
+    nextResponse = { unit: unit({ revision: 1 }), replayed: false };
+    await c.create({ grade: "7", title: "T", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" });
+    await c.create({ grade: "7", title: "T", idempotencyKey: "key-12345679" });
+    expect(invocations.map((i) => i.payload)).toEqual([
+      { grade: "7", title: "T", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" },
+      { grade: "7", title: "T", idempotencyKey: "key-12345679" },
+    ]);
+  });
+
   test("list sends only provided options and keeps server order", async () => {
     const c = createFirebaseTeacherUnitsCallables(FUNCTIONS);
     nextResponse = {

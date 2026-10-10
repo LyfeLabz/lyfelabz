@@ -1,4 +1,5 @@
 import type { Session } from "../session/types";
+import type { TeacherUnitsSurfaceSeam } from "../teacherUnits/unitsController";
 import type { ListClasses } from "../classes/listClasses";
 import type {
   UpdateTeacherClassOrder,
@@ -114,6 +115,8 @@ export type ShellDeps = {
   // Sprint 28.6E: certified lesson-level summary callable consumed by the
   // Curriculum lesson-card View Summary surface.
   readonly lessonSummary?: LessonSummaryCallable | null;
+  // U2.2 My Units seam; null unless the entry-point gate is open.
+  readonly teacherUnits?: TeacherUnitsSurfaceSeam | null;
   // Sprint 20 internal beta: injected create-class callable seam.
   readonly createClass?: CreateClass | null;
   // Sprint 24B Phase 2: injected dependencies for the primary Import
@@ -291,6 +294,7 @@ export function mountTeacherShell(
     assignmentDetail: deps.assignmentDetail ?? null,
     assignmentSummary: deps.assignmentSummary ?? null,
     lessonSummary: deps.lessonSummary ?? null,
+    teacherUnits: deps.teacherUnits ?? null,
     createClass: deps.createClass ?? null,
     importFromClassroom: deps.importFromClassroom ?? null,
     activateClass: deps.activateClass ?? null,
@@ -670,6 +674,10 @@ export function mountTeacherShell(
         case "shell-curriculum-tab":
           navigateTo("curriculum", { fromPopstate: true });
           curriculumController?.restoreTab(parsed.tab);
+          return;
+        case "shell-curriculum-units":
+          navigateTo("curriculum", { fromPopstate: true });
+          curriculumController?.restoreUnits();
           return;
         case "shell-settings-integrations":
           navigateTo("settings", { fromPopstate: true });

@@ -1,4 +1,5 @@
 import type { RouteSurface } from "../router";
+import type { TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
 import type { ListClasses } from "../../classes/listClasses";
 import type {
   UpdateTeacherClassOrder,
@@ -185,6 +186,8 @@ export type SurfaceDeps = {
   // (cross-assignment) aggregate analytics. Supplied through a getter for
   // the same per-session rebind reason as `assignmentSummary`.
   readonly lessonSummary?: () => LessonSummaryCallable | null;
+  // U2.2 My Units seam; null unless TEACHER_UNITS_GATE_OPEN (index.ts).
+  readonly teacherUnits?: () => TeacherUnitsSurfaceSeam | null;
   // Sprint 17 Slice 4: certified `assignmentsListForStudent` callable
   // seam consumed by the activeStudent surface. Always supplied through
   // a getter so per-session state can rebind across reruns without
@@ -1055,6 +1058,8 @@ export const makeActiveTeacherSurface =
         : null;
     const lessonSummary =
       deps.lessonSummary !== undefined ? deps.lessonSummary() : null;
+    const teacherUnits =
+      deps.teacherUnits !== undefined ? deps.teacherUnits() : null;
     const createClass =
       deps.createClass !== undefined ? deps.createClass() : null;
     const importFromClassroom =
@@ -1105,6 +1110,7 @@ export const makeActiveTeacherSurface =
       assignmentDetail,
       assignmentSummary,
       lessonSummary,
+      teacherUnits,
       createClass,
       importFromClassroom,
       activateClass,

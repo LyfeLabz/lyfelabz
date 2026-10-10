@@ -129,6 +129,10 @@ const INVALID_ARG_CODES = new Set([
   "teacherUnits.invalidGrade",
   "teacherUnits.invalidTitle",
   "teacherUnits.invalidDescription",
+  // U2.2 (teacherUnitsCreate.expectedSchoolId). The paired
+  // `teacherUnits.schoolContextChanged` refusal keeps the default
+  // `failed-precondition`.
+  "teacherUnits.invalidExpectedSchoolId",
   // U1B
   "teacherUnits.invalidResourceIds",
   "teacherUnits.duplicateResource",

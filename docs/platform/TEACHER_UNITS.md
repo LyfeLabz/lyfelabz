@@ -62,7 +62,7 @@ All require an authenticated, `active`, canonical `teacher` whose school resolve
 
 | Callable | Request | Effect |
 | --- | --- | --- |
-| `teacherUnitsCreate` | `grade`, `title`, `description?`, `idempotencyKey` | Creates an active unit at revision 1, or replays the unit this key already created (section 5). Returns `{ unit, replayed }`. |
+| `teacherUnitsCreate` | `grade`, `title`, `description?`, `idempotencyKey`, `expectedSchoolId?` (U2.2, section 5.4) | Creates an active unit at revision 1, or replays the unit this key already created (section 5). Returns `{ unit, replayed }`. |
 | `teacherUnitsList` | `includeArchived?` (default false), `grade?` | Caller's own units in their current school, canonical order. Returns `{ units }`. Refuses (`teacherUnits.listLimitExceeded`) above 1000 records rather than truncating. |
 | `teacherUnitsGet` | `unitId` | One own unit, active or archived. Returns `{ unit }`. |
 | `teacherUnitsUpdate` | `unitId`, `expectedRevision`, `title?`, `description?` (at least one) | Rename and/or edit description. Archived units are read-only (`teacherUnits.invalidStatus`). |
@@ -75,7 +75,7 @@ Each unit is returned as `{ unitId, grade, title, description, status, archivedA
 
 There is no delete operation. U1A operations still reject `resourceIds` and `sortOrder` as request fields.
 
-**Error mapping.** The canonical code is always in `HttpsError.details.code`. Coarse HTTPS codes: `teacherUnits.invalidRequest`, `.invalidIdempotencyKey`, `.invalidUnitId`, `.invalidExpectedRevision`, `.invalidGrade`, `.invalidTitle`, `.invalidDescription`, and (U1B) `.invalidResourceIds`, `.duplicateResource`, `.resourceNotPlaceable`, `.invalidUnitOrder` -> `invalid-argument`; `.notFound` -> `not-found`; `.writeConflict` -> `already-exists`; `.invalidStatus`, `.idempotencyKeyConflict`, `.listLimitExceeded` -> `failed-precondition`. The U1A and U1B validation codes are listed as exact codes in `shared/errors/https-callable.ts` (not suffixes), so `classes.invalidTitle`, `classes.invalidGrade`, and `accommodations.invalidExpectedRevision` keep their existing `failed-precondition` mapping.
+**Error mapping.** The canonical code is always in `HttpsError.details.code`. Coarse HTTPS codes: `teacherUnits.invalidRequest`, `.invalidIdempotencyKey`, `.invalidUnitId`, `.invalidExpectedRevision`, `.invalidGrade`, `.invalidTitle`, `.invalidDescription`, (U2.2) `.invalidExpectedSchoolId`, and (U1B) `.invalidResourceIds`, `.duplicateResource`, `.resourceNotPlaceable`, `.invalidUnitOrder` -> `invalid-argument`; `.notFound` -> `not-found`; `.writeConflict` -> `already-exists`; `.invalidStatus`, `.idempotencyKeyConflict`, `.listLimitExceeded`, (U2.2) `.schoolContextChanged` -> `failed-precondition`. The U1A and U1B validation codes are listed as exact codes in `shared/errors/https-callable.ts` (not suffixes), so `classes.invalidTitle`, `classes.invalidGrade`, and `accommodations.invalidExpectedRevision` keep their existing `failed-precondition` mapping.
 
 ### 4.1 Authorization snapshot
 
@@ -110,7 +110,7 @@ The request hash covers the normalized values (trimmed title and description, de
 
 Two simultaneous requests with the same scope and key map to the same receipt document. Exactly one transaction commits; the other is retried by Firestore (or loses the `create()` precondition and is re-run once), observes the receipt, and replays. If contention exhausts the retries, the request fails with `teacherUnits.writeConflict` and is safe to retry with the same key.
 
-The receipt is scoped to the authoritative teacher **and** school. Another teacher using the same key, or the same teacher after a school transfer, gets a different receipt and a new unit; neither can reach the original unit through the key. A replay is authorized exactly like a first request (the authorization snapshot precedes the receipt read), so a suspended or transferred teacher cannot replay.
+The receipt is scoped to the authoritative teacher **and** school. Another teacher using the same key, or the same teacher after a school transfer, gets a different receipt and a new unit; neither can reach the original unit through the key. A replay is authorized exactly like a first request (the authorization snapshot precedes the receipt read), so a suspended or transferred teacher cannot replay. Without `expectedSchoolId`, a transferred teacher's same-key request is authorized in the new school and creates a new unit there; a client that sends `expectedSchoolId` is refused instead (section 5.4).
 
 ### 5.3 Receipt lifecycle and retention
 
@@ -119,6 +119,17 @@ The receipt is scoped to the authoritative teacher **and** school. Another teach
 - Each receipt carries `expiresAt`, calculated approximately seven days after creation (`TEACHER_UNIT_CREATE_RECEIPT_RETENTION_MS`) using the transaction attempt's clock rather than the server commit timestamp, so a Firestore TTL policy can remove it without a data migration.
 - **No TTL policy is configured in U1A.** Adding one is a `firestore.indexes.json` field-override change (the index deploy surface, guarded by `platform/firebase/tests/firestore-indexes.rules.test.ts`) and needs separate authorization. Until then receipts persist, one per unit.
 - A receipt is honored for as long as it exists, regardless of `expiresAt`. Once a TTL policy deletes it, the same key would create a new unit. The retry window that matters (a lost response, a reload) is seconds to minutes, far inside 7 days.
+
+### 5.4 School binding: `expectedSchoolId` (U2.2, additive)
+
+Receipts are scoped to the verified school (section 5.2). So if a create commits in school A, its response is lost, and the teacher's canonical membership and claims then move to school B, a same-key retry is authorized in B, finds no receipt there, and creates a second unit in B. That is an authorized cross-school duplicate, not an authorization bypass. The optional `expectedSchoolId` closes it for callers that send it.
+
+- **Field.** Optional. Absent means the U1A / U2.1 request, unchanged. When present it must be a canonical school id (`SCHOOL_ID_PATTERN` in `platform/functions/src/shared/types/school.ts`, the grammar `schoolsCreate` enforces), or the request is refused with `teacherUnits.invalidExpectedSchoolId` during validation, before any transaction (no write).
+- **Comparison.** Inside the create transaction, immediately after the authorization snapshot (section 4.1) and **before the receipt is read or any write is staged**, `expectedSchoolId` must equal the verified school. Otherwise the request is refused with `teacherUnits.schoolContextChanged` (`failed-precondition`): no unit, no receipt, no audit event. This applies identically to a first create and to a same-key replay.
+- **Never authority.** The field is only compared. The school written to the unit, the receipt id and record, and the audit event is always the server-verified one. `schoolId` itself remains a rejected server-owned request field, and every authorization refusal (section 4.1, including a transfer committed between the pre-check and the transaction, which is `claim-state-mismatch`) still applies first.
+- **Idempotency unchanged.** The field is not part of the request hash: an accepted value always equals the receipt's own school, so a legacy request and a school-bound request with the same key and payload replay each other. Concurrent same-key requests still admit exactly one unit.
+- **After a refusal.** The original unit (if the first dispatch committed) stays in school A. If the teacher's school becomes A again, the same bound key replays it. A teacher who still needs the unit in B creates it there with a new key, as an explicit new intent.
+- **Proof.** `teacher-units.emulator.test.ts`, "school binding: expectedSchoolId (U2.2 P1-B)", runs the real handler against the Firestore emulator: create and replay in A; lost response plus transfer to B refused with no unit, receipt, or audit in B; transfer committed between pre-check and transaction; transfer back to A replays; mismatched initial create writes nothing; legacy behavior (including the legacy cross-school scope) unchanged; malformed values rejected with no write; authorization and membership refusals intact; concurrent bound requests admit one unit. With the comparison removed, the transfer, mismatch, and authorization cases fail.
 
 ## 6. Revision and concurrency contract
 
@@ -215,6 +226,37 @@ Consequence: Functions release checkouts now need app dependencies installed (`n
 
 The app test `app/src/curriculum/unitPlaceableManifest.test.ts` remains as a fast developer check in `npm --prefix app run verify`.
 
+## 9.4 U2.2 My Units client (gated, not active)
+
+**Status:** implemented in the repository behind `TEACHER_UNITS_GATE_OPEN = false` (`app/src/index.ts`). Not active and not deployed. Opening the gate requires the U1A/U1B Functions and Rules to be deployed first, and separate authorization.
+
+- **Surface.** Curriculum shows a Browse | My Units switch (`shell/surfaces/curriculum.ts`, panel in `shell/surfaces/teacherUnitsPanel.ts`) only when the entry point supplies the `teacherUnits` seam. With the gate closed the seam is `null`: no switch, no `teacherUnits*` call, no create-recovery storage access, and the Curriculum DOM is unchanged. My Units is not a top-level navigation item. Its history entry is `shell-curriculum-units` (`#curriculum/units`).
+- **Scope.** Grade 6/7/8 listing, show-archived toggle, create, rename, edit description, archive, restore. No resource membership (U2.3) or ordering (U2.4) UI. The controller is created lazily on first open, defaulting to the active Curriculum grade filter; "All" falls back to Grade 6 because the teacher-level saved default grade was removed in Sprint 28.6F.
+- **Authority.** `teacherUnits/unitsController.ts` displays only server responses and sends the last server revision it holds. On `writeConflict` it fetches the unit with `teacherUnitsGet`, keeps the teacher's unsaved edits in the open editor, shows the current version, and waits for a deliberate save again. It never replays a stale revision.
+- **Lifetime guard.** Every asynchronous continuation checks that the controller is still mounted and that the current Firebase uid still equals the mounted teacher, so a late response cannot update another account's UI.
+
+### Durable create recovery
+
+- **Store (attempt-keyed).** `teacherUnits/createAttemptStore.ts`: same-browser `localStorage`, one entry per create attempt, `lyfelabz.teacherUnits.createAttempt.v2/<uid>/<schoolId>/<idempotencyKey>` (uid and school percent-encoded; the key grammar has no `/`). An attempt is written, read back, and removed only under its own key, so one intent (in this tab or another) cannot overwrite or remove another's evidence. There is no cross-entry read-check-write sequence, so no atomicity across entries is relied on or claimed; Web Locks or IndexedDB transactions are not needed. Every write is read back byte-identical before it counts; every removal is verified. An entry holding anything other than the same attempt (same key, payload, context) is never replaced.
+- **Strict validation.** A record is accepted only when it is version 2 and its grade, key grammar, title, and description pass the server's own rules (`teacherUnits/fieldRules.ts` mirrors `readTitle` / `readDescription`), its status and reason are consistent, and its stored key, teacher, and school equal the entry's scope. Anything else (including the pre-certification single-slot entry) is listed as unreadable: never replayed, never deleted automatically, and discarded only explicitly after an authoritative check.
+- **Coordinator hooks.** The U2.1 `createUnitCreateCoordinator` gained optional `persistence`, `restore`, and `now` hooks. Without them it is the unchanged U2.1 state machine. With them, the attempt (key, exact payload, teacher/school context, status, `createdAtMs`) is saved and verified before first dispatch; if that fails, nothing is sent. Later transitions are saved best-effort: a failed save leaves the earlier in-flight record, which restores as unresolved, and the key stays in memory.
+- **Resend refusals.** A pre-commit validation refusal of a same-key RESEND (reconcile) proves only that the resend did not commit. It never settles the attempt as rejected or removes its record: the attempt becomes unresolved `replayRefused`, reconcile is disabled, and it follows the check-then-set-aside path. Only a refusal of the first dispatch is a confirmed rejection.
+- **Restore and discovery.** On mount the controller lists every attempt in its scope and gives each restored attempt its own coordinator. Before a new create it rescans, so an attempt saved by another tab blocks the form until resolved (a UX guard only; attempts that race past it each keep their own record). An in-flight record restores as unresolved ("uncertain", possibly committed). Reconciliation resends the same key and payload only when the live context equals the pinned one. A new key needs explicit new-unit intent.
+- **Replay window.** Six days from `createdAtMs` (inside the approximately seven-day receipt retention, §5.3, with a day of margin; future-dated records are untrusted). Outside it the attempt becomes `replayExpired`: reconcile is disabled, the teacher must run an authoritative list check (all grades, archived included) before setting it aside, and an abandoned attempt keeps its "may already have been created" warning until explicitly dismissed. Nothing is deleted automatically.
+- **Sign-out.** Records are not deleted on sign-out. They are only ever read under the same uid and school.
+
+### School binding (P1-B, resolved in the repository)
+
+The cross-school duplicate described in section 5.4 is closed by the additive server field plus this client behavior (`teacherUnits/saveCoordination.ts`):
+
+- **Capture.** The attempt's teacher/school context is pinned when the create intent begins (the coordinator reads the live session at `submit`, and the controller only returns it when it equals the mounted session). The durable record already stores it as `context.schoolId` (record version 2, unchanged), validated to equal the entry's scope.
+- **Send.** Every dispatch, the first send and every reconcile (including a restored attempt after reload), carries `expectedSchoolId` equal to that pinned school. It is never re-read from the session and never replaced by a newly authorized school. A live context that differs from the pinned one still blocks reconciliation (`contextMismatch`) before anything is sent.
+- **`schoolContextChanged`.** Classified as unresolved reason `schoolContextChanged` on a first dispatch or a resend: never a confirmed rejection, never deleted. The original key, payload, school, and durable record are preserved; reconciliation is disabled (`blocked: "schoolContextChanged"`), so nothing is resent automatically or against another school. Setting it aside requires the authoritative check, like `replayRefused`. The teacher sees: "We couldn't confirm whether this unit was created. Your school changed after you asked for it, so LyfeLabz won't create it at your new school. If it was created, it belongs to your previous school. Reload the page to continue at your current school, and create the unit there only if you still need it."
+- **Old server.** A Functions deployment without the field rejects it as an unsupported field (`teacherUnits.invalidRequest`) during validation, before any transaction. On a first dispatch that is a confirmed pre-commit rejection (nothing written; the teacher cannot create until Functions are updated). On a resend it is `replayRefused`: unresolved, record kept, reconciliation disabled. The client never falls back to a request without the binding.
+- **Compatibility.** `wire.ts` sends `expectedSchoolId` only when the caller supplies it, so existing U2.1 callers of `create` that omit it send the unchanged U2.1 payload. The U2.2 coordinator always supplies it.
+
+**Rollout order (mandatory): Functions before Hosting.** Deploy the `teacherUnitsCreate` Function that accepts `expectedSchoolId` first, then any Hosting bundle that sends it. A Hosting client that sends the field to an older Function cannot create units (every create is rejected as `invalidRequest`, safely, with no write). Functions can be deployed alone: the field is optional, so the current client is unaffected. Rolling back Functions while a field-sending client is live has the same safe-but-blocked effect. The gate (`TEACHER_UNITS_GATE_OPEN = false`) stays closed until both are deployed and certified.
+
 ## 10. Capabilities and exclusions
 
 U1A delivers only the data model, Rules, and the six callables above, covering create, list, get, rename, edit description (both through `teacherUnitsUpdate`), archive, and restore.
@@ -223,7 +265,7 @@ U1B adds `teacherUnitsSetResources` and `teacherUnitsReorder` (section 9).
 
 Explicitly not in U1A or U1B:
 
-- **U2:** any teacher UI.
+- **U2:** any teacher UI (U2.2 My Units is now implemented behind a closed gate, section 9.4).
 - **U3:** assignment integration, including the conceptual publication snapshot `unitContext: { grade, unitId, unitTitle } | null`, which is not persisted anywhere and not added to the publisher.
 - **U4:** student grouping by unit.
 - **U5:** unit materials.
@@ -261,13 +303,14 @@ Recommended smallest future change (not applied; repository settings are owner-c
 ## 12. Tests
 
 - `platform/functions/src/teacherUnits/teacher-units.test.ts` (hermetic; runs in `npm test` and CI). Its in-memory transaction stages audit events with the other writes and commits all or nothing.
-- `platform/functions/src/teacherUnits/teacher-units.emulator.test.ts` (real Firestore emulator; `npm run test:emulator`; not run by CI). Certifies transactional atomicity, the authorization snapshot (suspension, role change, school transfer, school deletion, district reassignment and removal, each committed between pre-check and transaction), post-commit response refusal, create replay, concurrent same-key creates, changed-payload and unauthorized replay, school-scoped listing, overflow boundaries, and stale-revision no-ops.
+- `platform/functions/src/teacherUnits/teacher-units.emulator.test.ts` (real Firestore emulator; `npm run test:emulator`; not run by CI). Certifies transactional atomicity, the authorization snapshot (suspension, role change, school transfer, school deletion, district reassignment and removal, each committed between pre-check and transaction), post-commit response refusal, create replay, concurrent same-key creates, changed-payload and unauthorized replay, school-scoped listing, overflow boundaries, stale-revision no-ops, and (U2.2) the `expectedSchoolId` school binding (section 5.4).
+- U2.2 client: `app/src/teacherUnits/createAttempt.schoolBinding.test.ts` (binding on every dispatch, restored attempts, `schoolContextChanged` uncertainty, old-server `invalidRequest`), plus the panel case in `app/src/shell/surfaces/curriculum.teacher-units.test.ts`.
 - `platform/firebase/tests/teacher-units.rules.test.ts` (`npm run test:rules`; run by CI), including U1B direct-write denials for `resourceIds` and `sortOrder`.
 - U1B: the hermetic and emulator suites above cover add/remove/reorder, atomic rejection of non-placeable, unknown, duplicate, and malformed ids, Gravity Wells placement, cross-unit and co-teacher reuse, archived-unit refusal, archive/restore preservation, stale no-ops, stale-revision and incomplete-organization conflicts, simultaneous conflicting membership edits and reorders, reorder versus membership and archive races, every authorization-snapshot revocation, and post-commit response refusal. `scripts/unit-placement/check-parity.test.cjs` (run by Platform CI and Hosting `prepare`) proves the required parity gate and its wiring, including an empty canonical list and a real `npm run prebuild` run; `app/src/curriculum/unitPlaceableManifest.test.ts` is the app-side developer check (section 9.3).
 
 ## 13. Deployment surfaces (when authorized)
 
-- Functions: the eight `teacherUnits*` callables (six U1A, plus `teacherUnitsSetResources` and `teacherUnitsReorder`).
+- Functions: the eight `teacherUnits*` callables (six U1A, plus `teacherUnitsSetResources` and `teacherUnitsReorder`). U2.2 changes `teacherUnitsCreate` additively (`expectedSchoolId`, section 5.4); it must be deployed before any Hosting bundle that sends the field (section 9.4, rollout order).
 - Firestore Rules: the `teacherUnits/{unitId}` and `teacherUnitCreateReceipts/{receiptId}` blocks. Until deployed, the terminal default-deny refuses every direct client read; the callables work regardless.
 - Optional, separately authorized: a TTL field override on `teacherUnitCreateReceipts.expiresAt` in `firestore.indexes.json`.
 - U1B changes no Firestore Rules or indexes (the Rules file gains tests only).

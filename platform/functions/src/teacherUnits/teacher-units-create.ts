@@ -25,6 +25,7 @@ import {
   assertOnlyAllowedKeys,
   assertOwnedUnit,
   readDescription,
+  readExpectedSchoolId,
   readGrade,
   readIdempotencyKey,
   readOwnedTeacherUnit,
@@ -61,12 +62,30 @@ import {
 // Deduplication is by key only, never by title. A replay is authorized
 // exactly like a first request (refusals are evaluated before the receipt
 // is read). See docs/platform/TEACHER_UNITS.md.
+//
+// School binding (U2.2, additive). Because the receipt is scoped to the
+// verified school, a same-key retry after a school transfer finds no receipt
+// in the new school and would create a second unit there. A client that
+// sends the optional `expectedSchoolId` (the school its create intent was
+// made in) closes that gap: inside the same transaction, right after the
+// authorization snapshot and BEFORE the receipt is read or anything is
+// written, `expectedSchoolId` must equal the verified school, or the request
+// is refused with `teacherUnits.schoolContextChanged`. This applies to first
+// creates and same-key replays alike. The field is only compared; the
+// school written to the unit, receipt, and audit event is always the
+// server-verified one. Omitting it keeps the U1A behavior exactly, and it is
+// not part of the request hash (an accepted value always equals the
+// receipt's own school), so legacy and school-bound requests with one key
+// replay each other.
 
 export type TeacherUnitsCreateRequest = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description?: string;
   readonly idempotencyKey: string;
+  // U2.2, optional: the school the create intent was made in. Compared with
+  // the verified school; never used as the write's school.
+  readonly expectedSchoolId?: string;
 };
 
 export type TeacherUnitsCreateResponse = {
@@ -75,18 +94,38 @@ export type TeacherUnitsCreateResponse = {
   readonly replayed: boolean;
 };
 
-const ALLOWED_KEYS: readonly string[] = ["grade", "title", "description", "idempotencyKey"];
+const ALLOWED_KEYS: readonly string[] = [
+  "grade",
+  "title",
+  "description",
+  "idempotencyKey",
+  "expectedSchoolId",
+];
 
-type ValidatedCreate = Required<TeacherUnitsCreateRequest>;
+type ValidatedCreate = {
+  readonly grade: TeacherUnitGrade;
+  readonly title: string;
+  readonly description: string;
+  readonly idempotencyKey: string;
+  // Absent for legacy requests.
+  readonly expectedSchoolId?: string;
+};
 
 function validateRequest(data: unknown): ValidatedCreate {
   const payload = requestObject(data);
   assertOnlyAllowedKeys(payload, ALLOWED_KEYS);
+  const grade = readGrade(payload.grade);
+  const title = readTitle(payload.title);
+  const description =
+    payload.description === undefined ? "" : readDescription(payload.description);
+  const idempotencyKey = readIdempotencyKey(payload);
+  const expectedSchoolId = readExpectedSchoolId(payload);
   return {
-    grade: readGrade(payload.grade),
-    title: readTitle(payload.title),
-    description: payload.description === undefined ? "" : readDescription(payload.description),
-    idempotencyKey: readIdempotencyKey(payload),
+    grade,
+    title,
+    description,
+    idempotencyKey,
+    ...(expectedSchoolId !== undefined ? { expectedSchoolId } : {}),
   };
 }
 
@@ -146,6 +185,14 @@ export async function createTeacherUnit(
     try {
       outcome = await runFirestoreTransaction<CreateOutcome>(async (tx) => {
         const verified = await reassertTeacherContextInTransaction(tx, actor);
+        // School binding: refused before the receipt read and before any
+        // write is staged, for first creates and replays alike.
+        if (input.expectedSchoolId !== undefined && input.expectedSchoolId !== verified.schoolId) {
+          throw new PlatformError(
+            "teacherUnits.schoolContextChanged",
+            "The caller's school is not the school this request was made in.",
+          );
+        }
         const receiptSnapshot = await tx.get(teacherUnitCreateReceiptDocRef(receiptId));
         const receipt = receiptSnapshot.exists ? receiptSnapshot.data() : undefined;
 

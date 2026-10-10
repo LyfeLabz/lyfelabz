@@ -6,6 +6,7 @@ import {
   TEACHER_UNIT_DESCRIPTION_MAX_LENGTH,
   TEACHER_UNIT_GRADES,
   TEACHER_UNIT_TITLE_MAX_LENGTH,
+  isCanonicalSchoolId,
   isTeacherUnitGrade,
   requireDistrictContext,
   runFirestoreTransaction,
@@ -192,6 +193,24 @@ export function readIdempotencyKey(payload: Record<string, unknown>): string {
     );
   }
   return key;
+}
+
+// Optional `teacherUnitsCreate.expectedSchoolId` (U2.2): the school the
+// client's create intent was made in. Absent means the legacy (U1A/U2.1)
+// request; when present it must follow the canonical schoolId grammar
+// (`SCHOOL_ID_PATTERN`). It is only ever COMPARED with the server-verified
+// school inside the create transaction; it never supplies or overrides the
+// school a unit, receipt, or audit event is written under.
+export function readExpectedSchoolId(payload: Record<string, unknown>): string | undefined {
+  const value = payload.expectedSchoolId;
+  if (value === undefined) return undefined;
+  if (!isCanonicalSchoolId(value)) {
+    throw new PlatformError(
+      "teacherUnits.invalidExpectedSchoolId",
+      "expectedSchoolId must be a canonical school identifier.",
+    );
+  }
+  return value;
 }
 
 export function readExpectedRevision(payload: Record<string, unknown>): number {

@@ -90,7 +90,7 @@ describe("createUnitCreateCoordinator", () => {
     await c.submit(PAYLOAD);
     const r = await c.reconcile({ reauthorized: true });
     expect(r).toMatchObject({ kind: "settled", state: { kind: "created", replayed: true } });
-    expect(calls[1]).toEqual({ ...PAYLOAD, idempotencyKey: "key-0000001" });
+    expect(calls[1]).toEqual({ ...PAYLOAD, idempotencyKey: "key-0000001", expectedSchoolId: "s1" });
     expect(mint).toHaveBeenCalledTimes(1);
   });
 

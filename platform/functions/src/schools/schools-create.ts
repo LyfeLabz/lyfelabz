@@ -14,6 +14,7 @@ import {
   type SchoolCreationWrite,
   type SchoolRecord,
 } from "../shared";
+import { SCHOOL_ID_PATTERN } from "../shared/types/school";
 
 // Client-supplied request payload for schoolsCreate. The administrator
 // supplies the target schoolId explicitly so the callable is idempotent
@@ -57,13 +58,9 @@ export type SchoolsCreateResponse = {
 const SHORT_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 .'&-]*$/;
 const SHORT_NAME_MAX_LENGTH = 48;
 
-// The schoolId is the machine identifier: it is the Firestore document ID
-// and the value a teacher's record and claims carry, so it stays a strict
-// URL-safe token. Firestore document IDs cannot contain "/", cannot be "."
-// or "..", and cannot match the reserved __.*__ pattern; this accepted set
-// is stricter than the raw Firestore constraint. (This is distinct from
+// The schoolId is the machine identifier, validated against the canonical
+// `SCHOOL_ID_PATTERN` (shared/types/school.ts). (This is distinct from
 // shortName, which is a human-facing display label - see above.)
-const SCHOOL_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
