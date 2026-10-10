@@ -119,6 +119,22 @@ export type TeacherUnitsViewState = {
   readonly busyUnitIds: ReadonlySet<string>;
 };
 
+// What the latest accepted evidence says about one unit.
+export type UnitStateView =
+  // Returned by the newest evidence; `unit` is the full record (highest
+  // revision), resources included, whether or not it is shown.
+  | { readonly kind: "active" | "archived"; readonly unit: TeacherUnit }
+  // Omitted by a newer active-only list: archived or gone; contents unknown.
+  | { readonly kind: "notActive" }
+  // Not found, or omitted by a newer list that included archived units.
+  | { readonly kind: "absent" }
+  // Never observed by this controller.
+  | { readonly kind: "unknown" };
+
+const UNKNOWN_UNIT: UnitStateView = Object.freeze({ kind: "unknown" });
+const ABSENT_UNIT: UnitStateView = Object.freeze({ kind: "absent" });
+const NOT_ACTIVE_UNIT: UnitStateView = Object.freeze({ kind: "notActive" });
+
 export type UnitEdit = { readonly title?: string; readonly description?: string };
 
 export type UnitMutationResult =
@@ -152,6 +168,9 @@ export type TeacherUnitsController = {
   // The last server state seen for a unit, even when it is not in the
   // current list (for example archived while archived units are hidden).
   readonly getKnownUnit: (unitId: string) => TeacherUnit | null;
+  // Where the latest accepted evidence says a unit stands, independent of
+  // what the current view shows. Status messages use this, never the list.
+  readonly getUnitState: (unitId: string) => UnitStateView;
   readonly submitCreate: (payload: TeacherUnitCreatePayload) => Promise<void>;
   // Same-key, same-payload resend of one unconfirmed attempt.
   readonly reconcileCreate: (
@@ -345,7 +364,10 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       // refresh, or out-of-order response since then is reflected.
       recoveryCheck:
         recoveryCheck.kind === "checked"
-          ? Object.freeze({ kind: "checked", units: Object.freeze(presentUnits().sort(compareTeacherUnits)) })
+          ? Object.freeze({
+              kind: "checked",
+              units: Object.freeze(unitsWhere(["present", "notActive"]).sort(compareTeacherUnits)),
+            })
           : recoveryCheck,
     });
     for (const l of Array.from(listeners)) {
@@ -360,89 +382,139 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   const visible = (u: TeacherUnit): boolean =>
     u.grade === state.grade && (state.showArchived || u.status === "active");
 
-  // ---------- Response ordering (U2.3 remediation) ----------
+  // ---------- State consistency model (U2.3, TEACHER_UNITS.md) ----------
   //
-  // Responses can arrive in any order. Every request takes the next `clock`
-  // stamp when it is sent, and two rules keep an older response from
-  // overwriting newer state:
-  // - Revision monotonicity: the server increments `revision` on every
-  //   accepted change to a unit, so the held unit is replaced only by a
-  //   HIGHER revision. Equal revisions are the same server state.
-  // - Presence: whether a unit belongs in the list is decided by the most
-  //   recently SENT request that observed it. A unit read or written, a
-  //   unit included in a list, a unit a list omitted while it was within
-  //   that list's scope (grade and status), and a `notFound` each record
-  //   presence with their request's stamp. A response sent before that
-  //   record never changes it: an older single-unit read cannot bring back
-  //   a unit a newer list omitted, and an older list cannot hide a unit
-  //   confirmed since. Nothing is tombstoned: any later request that sees
-  //   the unit again lists it again.
+  // One logical `clock` orders client events. Every request reads it when
+  // it is DISPATCHED; a confirmed write also reads it when its response is
+  // RECEIVED. Evidence about a unit is stamped by what it can prove:
+  // - Reads (list, get, Check my units, a create REPLAY, and any no-op
+  //   response, which wrote nothing) observed the server at some moment
+  //   after dispatch, so they carry their dispatch stamp. A response never
+  //   gains authority by arriving late.
+  // - A confirmed write (first create, update, archive, restore, membership
+  //   change) committed before its response was received, so it carries
+  //   its receipt stamp: only a read dispatched AFTER the confirmation can
+  //   outrank it. A read that overlapped the write may have observed the
+  //   server before the commit and never hides or rolls it back.
+  // Per unit the controller keeps:
+  // - `known`: the full authoritative record with the HIGHEST revision
+  //   seen (status, title, and resources included, even when hidden).
+  //   Revisions are server-monotonic, so content never moves backwards.
+  // - `presence`: the newest evidence of where the unit stands, with its
+  //   stamp: "present" (returned by a read or write), "notActive" (omitted
+  //   by an active-only list it was in scope for: archived, or gone; its
+  //   current contents are unknown), or "absent" (`notFound`, or omitted by
+  //   a list that includes archived units). Older evidence never replaces
+  //   newer evidence; any newer evidence does, so nothing is tombstoned.
+  // The visible list is a projection: "present" units of the selected grade
+  // (and status). It is never evidence about a unit; `getUnitState` is.
   // This is client ordering only. Authorization and `expectedRevision`
   // stay server-enforced; nothing here is ever resent.
   let clock = 0;
-  const presence = new Map<string, { readonly at: number; readonly present: boolean }>();
+  type Presence = { readonly at: number; readonly kind: "present" | "notActive" | "absent" };
+  const presence = new Map<string, Presence>();
+  // A list is evidence about its whole scope, including units this
+  // controller has never seen (for example one a delayed create replay is
+  // about to return). The newest list per scope is kept.
+  type ListScope = {
+    readonly at: number;
+    readonly grade: TeacherUnitGrade | null; // null: every grade
+    readonly includeArchived: boolean;
+    readonly ids: ReadonlySet<string>;
+  };
+  const scopes = new Map<string, ListScope>();
+  const recordScope = (scope: ListScope): void => {
+    const key = `${scope.grade ?? "*"}:${scope.includeArchived}`;
+    const prev = scopes.get(key);
+    if (prev === undefined || prev.at < scope.at) scopes.set(key, scope);
+  };
+  // The newest list omission of `u` dispatched after `after`, if any. An
+  // active-only list says nothing new about a unit whose newest record is
+  // already archived (the same rule `acceptList` applies to held units).
+  const omissionAfter = (u: TeacherUnit, after: number): Presence | null => {
+    const newest = known.get(u.unitId) ?? u;
+    let found: Presence | null = null;
+    for (const sc of scopes.values()) {
+      if (sc.at <= after || (found !== null && sc.at <= found.at)) continue;
+      if ((sc.grade !== null && sc.grade !== u.grade) || sc.ids.has(u.unitId)) continue;
+      if (!sc.includeArchived && newest.status !== "active") continue;
+      found = { at: sc.at, kind: sc.includeArchived ? "absent" : "notActive" };
+    }
+    return found;
+  };
 
-  // Units the latest evidence says exist for this teacher and school.
-  const presentUnits = (): TeacherUnit[] =>
-    Array.from(known.values()).filter((u) => presence.get(u.unitId)?.present === true);
+  const unitsWhere = (kinds: ReadonlyArray<Presence["kind"]>): TeacherUnit[] =>
+    Array.from(known.values()).filter((u) => {
+      const p = presence.get(u.unitId);
+      return p !== undefined && kinds.includes(p.kind);
+    });
 
   const listedNow = (): UnitsListState =>
     Object.freeze({
       kind: "ready",
-      units: Object.freeze(presentUnits().filter(visible).sort(compareTeacherUnits)),
+      units: Object.freeze(unitsWhere(["present"]).filter(visible).sort(compareTeacherUnits)),
     });
 
-  // Record one authoritative unit read or written by a request sent at
-  // `at`. Returns the unit now held (which may be newer), or null when a
-  // request sent after `at` found the unit absent.
+  // Record one unit returned by a request whose evidence stamp is `at`.
+  // Returns the record now held (which may be newer), or null when newer
+  // evidence says the unit is not there.
   const accept = (unit: TeacherUnit, at: number): TeacherUnit | null => {
-    const p = presence.get(unit.unitId);
-    if (p !== undefined && p.at > at && !p.present) return null;
+    let p = presence.get(unit.unitId);
+    const omitted = omissionAfter(unit, p?.at ?? -1);
+    if (omitted !== null) {
+      p = omitted;
+      presence.set(unit.unitId, omitted);
+    }
     const held = known.get(unit.unitId);
+    if (p !== undefined && p.at > at && p.kind === "absent") return null;
+    // Content only moves forward, whatever the presence evidence.
     if (held === undefined || unit.revision > held.revision) known.set(unit.unitId, unit);
-    if (p === undefined || p.at <= at) presence.set(unit.unitId, { at, present: true });
-    return known.get(unit.unitId) ?? null;
+    const now = known.get(unit.unitId) as TeacherUnit;
+    if (p !== undefined && p.at > at && p.kind === "notActive") {
+      return now.status === "archived" ? now : null;
+    }
+    if (p === undefined || p.at <= at) presence.set(unit.unitId, { at, kind: "present" });
+    return now;
   };
 
   const relist = (): void => {
     if (state.list.kind === "ready") set({ list: listedNow() });
   };
 
-  // Adopt one authoritative unit (the list shows it only while it belongs
-  // to this view; it stays known either way). Default: received now.
-  const adopt = (unit: TeacherUnit, at: number = ++clock): TeacherUnit | null => {
+  const adopt = (unit: TeacherUnit, at: number): TeacherUnit | null => {
     const held = accept(unit, at);
     relist();
     return held;
   };
 
-  // `notFound` for a request sent at `at`; ignored when a request sent
-  // after that observed the unit.
+  // `notFound` observed by a request dispatched at `at`.
   const drop = (unitId: string, at: number): void => {
     const p = presence.get(unitId);
     if (p !== undefined && p.at > at) return;
     known.delete(unitId);
-    presence.set(unitId, { at, present: false });
+    presence.set(unitId, { at, kind: "absent" });
     relist();
   };
 
-  // Apply a list response requested at `at` whose scope is `inScope`: a
-  // held unit within that scope that the response omits is recorded absent.
+  // Apply a list dispatched at `at`. A held unit within its scope that the
+  // response omits is recorded `omitted` ("notActive" for an active-only
+  // list, "absent" when archived units were included).
   const acceptList = (
     units: ReadonlyArray<TeacherUnit>,
     at: number,
-    inScope: (u: TeacherUnit) => boolean,
+    scope: { readonly grade: TeacherUnitGrade | null; readonly includeArchived: boolean },
   ): void => {
-    const ids = new Set<string>();
-    for (const u of units) {
-      ids.add(u.unitId);
-      accept(u, at);
-    }
+    const ids = new Set(units.map((u) => u.unitId));
+    const omitted = scope.includeArchived ? "absent" : "notActive";
+    const inScope = (u: TeacherUnit): boolean =>
+      (scope.grade === null || u.grade === scope.grade) && (scope.includeArchived || u.status === "active");
+    for (const u of units) accept(u, at);
+    recordScope({ at, ...scope, ids });
     for (const [unitId, u] of known) {
       if (ids.has(unitId) || !inScope(u)) continue;
       const p = presence.get(unitId);
       if (p !== undefined && p.at > at) continue;
-      presence.set(unitId, { at, present: false });
+      presence.set(unitId, { at, kind: omitted });
     }
   };
 
@@ -456,11 +528,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     const outcome = await runTeacherUnitMutation(() => deps.callables.list({ grade, includeArchived }));
     if (!alive() || seq !== loadSeq) return;
     if (outcome.ok) {
-      acceptList(
-        outcome.result.units,
-        at,
-        (u) => u.grade === grade && (includeArchived || u.status === "active"),
-      );
+      acceptList(outcome.result.units, at, { grade, includeArchived });
       set({ list: listedNow() });
     } else {
       set({ list: { kind: "error", error: outcome.error } });
@@ -503,7 +571,8 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     if (!alive()) return { kind: "stale" };
     busy(unitId, false);
     if (outcome.ok) {
-      adopt(outcome.result.unit, at);
+      // A no-op wrote nothing: it is a read. A write is stamped on receipt.
+      adopt(outcome.result.unit, outcome.result.noop ? at : ++clock);
       return { kind: "saved", unit: outcome.result.unit, noop: outcome.result.noop };
     }
     const error = outcome.error;
@@ -589,15 +658,21 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     return "key" in p && p.key === key ? primary : null;
   };
 
+  // A create that committed now (`replayed: false`) is a write, stamped on
+  // receipt; a replay returns the unit's current state as read by the
+  // server after dispatch, so it is a read stamped at dispatch.
+  const createdAt = (replayed: boolean, dispatchedAt: number): number =>
+    replayed ? dispatchedAt : ++clock;
+
   // A restored attempt that reconciled to a confirmed unit leaves the
   // recovery list; its unit is adopted.
-  const settleRestored = (key: string): void => {
+  const settleRestored = (key: string, dispatchedAt: number): void => {
     const c = restored.get(key);
     if (c === undefined) return;
     const s = c.state();
     if (s.kind === "created") {
       restored.delete(key);
-      adopt(s.unit);
+      adopt(s.unit, createdAt(s.replayed, dispatchedAt));
       set({ lastConfirmed: { unit: s.unit, replayed: s.replayed } });
     }
   };
@@ -622,6 +697,14 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     },
     refresh: () => load(),
     getKnownUnit: (unitId: string) => known.get(unitId) ?? null,
+    getUnitState: (unitId: string): UnitStateView => {
+      const p = presence.get(unitId);
+      const u = known.get(unitId);
+      if (p === undefined) return UNKNOWN_UNIT;
+      if (p.kind === "absent") return ABSENT_UNIT;
+      if (p.kind === "notActive" || u === undefined) return NOT_ACTIVE_UNIT;
+      return Object.freeze({ kind: u.status === "archived" ? "archived" : "active", unit: u });
+    },
     submitCreate: async (payload) => {
       if (!alive()) return;
       // Discover attempts saved since mount (for example by another tab).
@@ -633,6 +716,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
         set({ createBlocked: "recoveryPending" });
         return;
       }
+      const dispatchedAt = ++clock;
       const result = primary.submit(payload);
       const s = primary.state();
       if (s.kind === "inFlight") ownKeys.add(s.key);
@@ -644,13 +728,14 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
         return;
       }
       const after = primary.state();
-      if (after.kind === "created") adopt(after.unit);
+      if (after.kind === "created") adopt(after.unit, createdAt(after.replayed, dispatchedAt));
       set({ createBlocked: null, recoveryCheck: { kind: "none" } });
     },
     reconcileCreate: async (key, options) => {
       if (!alive()) return;
       const c = coordinatorForKey(key);
       if (c === null) return;
+      const dispatchedAt = ++clock;
       const result = c.reconcile(options);
       set({ createBlocked: null });
       const settled = await result;
@@ -662,11 +747,11 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       if (c === primary) {
         const after = primary.state();
         if (after.kind === "created") {
-          adopt(after.unit);
+          adopt(after.unit, createdAt(after.replayed, dispatchedAt));
           set({ lastConfirmed: { unit: after.unit, replayed: after.replayed } });
         }
       } else {
-        settleRestored(key);
+        settleRestored(key, dispatchedAt);
       }
       set({ createBlocked: null });
     },
@@ -685,7 +770,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
         return;
       }
       // Every grade and status is in scope.
-      acceptList(outcome.result.units, at, () => true);
+      acceptList(outcome.result.units, at, { grade: null, includeArchived: true });
       // `units` is projected from the latest accepted state on every update
       // (see `set`), so recovery hints never show an older title.
       set({ recoveryCheck: { kind: "checked", units: Object.freeze([]) } });

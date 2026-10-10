@@ -749,17 +749,125 @@ export function renderTeacherUnitsPanel(
   const addButtonOf = (card: CardView): HTMLElement | null =>
     card.li.querySelector<HTMLElement>(`[data-testid="units-resources-add-${card.unit.unitId}"]`);
 
-  // The unit as the latest accepted server state lists it now (null when
-  // it is no longer listed). Messages about a settled request describe
-  // this, never the response alone, which may be older.
-  const listedUnit = (unitId: string): TeacherUnit | null => {
-    const s = controller.getState();
-    return s.list.kind === "ready" ? s.list.units.find((u) => u.unitId === unitId) ?? null : null;
+  // ---------- Membership confirmation evidence ----------
+  //
+  // A settled membership request is described from two facts only:
+  // 1. what the response proves: `noop` means the server wrote nothing
+  //    (never "saved"); otherwise the server committed the write;
+  // 2. what the latest accepted state of the WHOLE unit holds now
+  //    (`getUnitState`: active or archived with its full record, or not
+  //    current: omitted, not found, or never seen). Whether a card is shown
+  //    is never evidence: an archived unit may be hidden and still hold
+  //    the resource.
+  // Presence or absence is claimed only when that state supports it. A
+  // claim that a change "somewhere else" happened needs a newer revision
+  // than the response; anything else is stated neutrally.
+  const NOTHING_CHANGED_REFRESH = "Nothing was changed. Refresh to see this unit's current resources.";
+  const UNCERTAIN_NOW =
+    "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again.";
+  // The full current record, or null when the unit is not current.
+  const currentUnit = (unitId: string): TeacherUnit | null => {
+    const st = controller.getUnitState(unitId);
+    return st.kind === "active" || st.kind === "archived" ? st.unit : null;
   };
-  // The latest accepted title for a unit a response returned.
-  const latestTitle = (u: TeacherUnit): string => {
-    const k = controller.getKnownUnit(u.unitId);
-    return k !== null && k.revision >= u.revision ? k.title : u.title;
+  // Appended to a statement about the current state.
+  const archivedNote = (u: TeacherUnit): string => (u.status === "archived" ? ` "${u.title}" is archived.` : "");
+  // Appended after a change made elsewhere: where the teacher can see it.
+  const whereShown = (u: TeacherUnit): string =>
+    u.status === "archived" ? archivedNote(u) : isListed(u.unitId) ? " Its current resources are shown." : "";
+  const savedRefresh = (title: string): string =>
+    `Your change to "${title}" was saved. Refresh to see this unit's current resources.`;
+  type Outcome = { readonly announce: string } | { readonly uncertain: true };
+
+  const removeOutcome = (result: { unit: TeacherUnit; noop: boolean }, resourceId: string, name: string): Outcome => {
+    const cur = currentUnit(result.unit.unitId);
+    const write = !result.noop;
+    if (cur === null) return { announce: write ? savedRefresh(result.unit.title) : NOTHING_CHANGED_REFRESH };
+    if (!cur.resourceIds.includes(resourceId)) {
+      return {
+        announce:
+          (write ? `Removed "${name}" from "${cur.title}".` : `"${name}" isn't in "${cur.title}", so nothing was changed.`) +
+          archivedNote(cur),
+      };
+    }
+    if (cur.revision <= result.unit.revision) {
+      return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
+    }
+    return {
+      announce:
+        (write
+          ? `Your removal was saved, but "${name}" is in "${cur.title}" again because this unit changed somewhere else.`
+          : `Nothing was changed. "${name}" is in "${cur.title}" because this unit changed somewhere else.`) + whereShown(cur),
+    };
+  };
+
+  const addOutcome = (
+    result: { unit: TeacherUnit; noop: boolean },
+    ids: ReadonlyArray<string>,
+    before: ReadonlySet<string>,
+  ): Outcome => {
+    const cur = currentUnit(result.unit.unitId);
+    const write = !result.noop;
+    if (cur === null) return { announce: write ? savedRefresh(result.unit.title) : NOTHING_CHANGED_REFRESH };
+    // A write proves the ids it newly holds; a no-op proves every chosen id
+    // was already there when the server read the unit.
+    const targets = write ? ids.filter((id) => !before.has(id) && result.unit.resourceIds.includes(id)) : ids;
+    const missing = targets.some((id) => !cur.resourceIds.includes(id));
+    if (!missing) {
+      const n = targets.length;
+      return {
+        announce:
+          (write
+            ? `Added ${n === 1 ? "1 resource" : `${n} resources`} to "${cur.title}".`
+            : `Those resources are already in "${cur.title}", so nothing was changed.`) + archivedNote(cur),
+      };
+    }
+    if (cur.revision <= result.unit.revision) {
+      return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
+    }
+    return {
+      announce:
+        (write
+          ? `Your addition was saved, but "${cur.title}" changed somewhere else since, so not every resource you added is in it now.`
+          : `Nothing was changed. "${cur.title}" changed somewhere else since, so not every resource you chose is in it now.`) +
+        whereShown(cur),
+    };
+  };
+
+  const repairOutcome = (result: { unit: TeacherUnit; noop: boolean }, before: ReadonlySet<string>): Outcome => {
+    const cur = currentUnit(result.unit.unitId);
+    const write = !result.noop;
+    if (cur === null) return { announce: write ? savedRefresh(result.unit.title) : NOTHING_CHANGED_REFRESH };
+    if (retiredCount(cur) === 0) {
+      const removed = Array.from(before).filter((id) => !result.unit.resourceIds.includes(id)).length;
+      return {
+        announce:
+          (write
+            ? `Removed ${plural(removed, "unavailable resource", "unavailable resources")} from "${cur.title}".`
+            : `"${cur.title}" has no unavailable resources, so nothing was changed.`) + archivedNote(cur),
+      };
+    }
+    if (cur.revision <= result.unit.revision) {
+      return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
+    }
+    return {
+      announce:
+        (write
+          ? `Your change was saved, but "${cur.title}" has unavailable resources again because it changed somewhere else.`
+          : `Nothing was changed. "${cur.title}" has unavailable resources because it changed somewhere else.`) +
+        whereShown(cur),
+    };
+  };
+
+  // Shows a settled membership outcome; true when it was announced.
+  const showOutcome = (card: CardView, outcome: Outcome): boolean => {
+    if ("uncertain" in outcome) {
+      showNotice(card, UNCERTAIN_NOW, "conflict");
+      return false;
+    }
+    showNotice(card, null);
+    announce(outcome.announce);
+    return true;
   };
 
   // Notices for a membership request that did not confirm a change.
@@ -945,18 +1053,7 @@ export function renderTeacherUnitsPanel(
         clearPending();
         if (result.kind === "stale" || result.kind === "busy") return;
         if (result.kind === "saved") {
-          showNotice(card, null);
-          const added = ids.filter((id) => !before.has(id) && result.unit.resourceIds.includes(id));
-          const n = added.length;
-          const current = listedUnit(result.unit.unitId);
-          const changedSince = current !== null && added.some((id) => !current.resourceIds.includes(id));
-          announce(
-            result.noop
-              ? "Those resources are already in this unit."
-              : `Added ${n === 1 ? "1 resource" : `${n} resources`} to "${current?.title ?? latestTitle(result.unit)}".${
-                  changedSince ? " This unit changed somewhere else since. Its current resources are shown." : ""
-                }`,
-          );
+          showOutcome(card, addOutcome(result, ids, before));
           if (card.picker === picker) closePicker(card, true);
           return;
         }
@@ -982,35 +1079,14 @@ export function renderTeacherUnitsPanel(
       clearPending();
       if (result.kind === "stale" || result.kind === "busy") return;
       if (result.kind === "saved") {
-        const current = listedUnit(result.unit.unitId);
-        if (current !== null && current.resourceIds.includes(resourceId)) {
-          // The view still holds the resource. A newer server state means a
-          // change elsewhere put it back; otherwise the outcome is unknown.
-          if (current.revision > result.unit.revision) {
-            showNotice(card, null);
-            announce(
-              `Your removal was saved, but "${name}" is in "${current.title}" again because this unit changed somewhere else. Its current resources are shown.`,
-            );
-          } else {
-            showNotice(
-              card,
-              "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again.",
-              "conflict",
-            );
-          }
-          focus(
-            card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`) ??
-              addButtonOf(card) ??
-              card.li.querySelector<HTMLElement>("button"),
-          );
-          return;
-        }
-        showNotice(card, null);
-        const title = current?.title ?? latestTitle(result.unit);
-        announce(result.noop ? `"${name}" is no longer in "${title}".` : `Removed "${name}" from "${title}".`);
-        // Focus the row that took this one's place, else the Add button.
+        showOutcome(card, removeOutcome(result, resourceId, name));
+        // Focus the resource's row if it is still shown, else the row that
+        // took its place, else Add resources.
+        const still = card.li.querySelector<HTMLElement>(
+          `[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`,
+        );
         const removes = card.li.querySelectorAll<HTMLElement>("[data-action=remove-resource]");
-        focus(removes[Math.min(index, removes.length - 1)] ?? addButtonOf(card) ?? heading);
+        focus(still ?? removes[Math.min(index, removes.length - 1)] ?? addButtonOf(card) ?? heading);
         return;
       }
       membershipNotice(card, result, "remove");
@@ -1043,14 +1119,8 @@ export function renderTeacherUnitsPanel(
       clearPending();
       if (result.kind === "stale" || result.kind === "busy") return;
       if (result.kind === "saved") {
-        showNotice(card, null);
-        const removed = Array.from(before).filter((id) => !result.unit.resourceIds.includes(id)).length;
-        announce(
-          result.noop || removed === 0
-            ? `"${latestTitle(result.unit)}" has no unavailable resources now.`
-            : `Removed ${plural(removed, "unavailable resource", "unavailable resources")} from "${latestTitle(result.unit)}".`,
-        );
-        focus(addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
+        showOutcome(card, repairOutcome(result, before));
+        focus(retiredButtonOf(card) ?? addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
         return;
       }
       membershipNotice(card, result, "remove");
