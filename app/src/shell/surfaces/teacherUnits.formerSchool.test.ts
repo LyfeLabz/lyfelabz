@@ -202,8 +202,6 @@ describe("former-school notices", () => {
       reason: "uncertain",
       payload: { grade: "7", title: "Third", description: "" },
     });
-    // Set aside at its school already: an explicit decision, not surfaced.
-    seed(A, "key_SETASIDE", { status: "abandoned", reason: "uncertain" });
     const { host, ctl } = mount(B);
     await flush();
     const s = ctl.getState().formerSchool;
@@ -353,6 +351,199 @@ describe("lifecycle", () => {
       const m = mount(B);
       await flush();
       expect(getComputedStyle(q(m.host, "units-former-school") as HTMLElement).display).toBe("none");
+    } finally {
+      style.remove();
+    }
+  });
+});
+
+describe("set-aside attempts (P1)", () => {
+  test("an attempt set aside at A stays visible at B, unchanged, and is cleared only by its acknowledgment at A", async () => {
+    // 1. A real unresolved attempt at A, set aside through the panel.
+    const c = callables({ create: jest.fn().mockRejectedValue(new Error("network")) });
+    let m = mount(A, { c, mint: () => "key_SETASIDE" });
+    await flush();
+    const title = q(m.host, "units-create-title") as HTMLInputElement;
+    title.value = "Volcanoes";
+    title.dispatchEvent(new Event("input", { bubbles: true }));
+    (q(m.host, "units-create-form") as HTMLFormElement).dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    await flush();
+    expect(m.ctl.getState().create.kind).toBe("unresolved");
+    expect(m.ctl.abandonCreate("key_SETASIDE")).toBe(true);
+    expect(m.ctl.getState().create.kind).toBe("abandoned");
+    const asideKey = createAttemptStorageKey(A, "key_SETASIDE");
+    expect(JSON.parse(localStorage.getItem(asideKey) as string).status).toBe("abandoned");
+    m.view.dispose();
+    // A separate unresolved attempt at A.
+    seed(A, "key_OPEN0001", { createdAtMs: T0 + 5000, payload: { grade: "8", title: "Rivers", description: "" } });
+    // Another teacher's set-aside attempt and a malformed own entry.
+    seed(OTHER, "key_OTHER001", { status: "abandoned", reason: "uncertain" });
+    localStorage.setItem(createAttemptStorageKey(A, "key_BROKEN01"), "{oops");
+    const before = snapshot();
+
+    // 2-6. Transfer to B, then reload (remount) at B.
+    for (let i = 0; i < 2; i++) {
+      document.body.textContent = "";
+      const cb = callables();
+      m = mount(B, { c: cb });
+      await flush();
+      await m.ctl.checkRecovery();
+      const s = m.ctl.getState().formerSchool;
+      expect(s.kind === "ok" && s.attempts.map((a) => [a.title, a.status])).toEqual([
+        ["Volcanoes", "abandoned"],
+        ["Rivers", "inFlight"],
+      ]);
+      expect(s.kind === "ok" && s.unreadable).toBe(1);
+      const former = q(m.host, "units-former-school") as HTMLElement;
+      expect(former.hidden).toBe(false);
+      expect(q(m.host, "units-former-school-item-0")?.textContent).toContain('"Volcanoes" (Grade 7)');
+      expect(q(m.host, "units-former-school-item-0")?.textContent).toContain("set aside");
+      expect(q(m.host, "units-former-school-item-1")?.textContent).toContain('"Rivers" (Grade 8)');
+      expect(former.querySelectorAll("button, a, input, textarea, select, [tabindex]")).toHaveLength(0);
+      expect(cb.create).not.toHaveBeenCalled();
+      for (const call of cb.list.mock.calls) expect(JSON.stringify(call)).not.toContain("schoolA");
+      expect(m.ctl.getState().recoveries).toHaveLength(0);
+      expect(snapshot()).toEqual(before);
+      m.view.dispose();
+    }
+
+    // 7. Back at A, the explicit acknowledgment clears the evidence; then B no longer shows it.
+    document.body.textContent = "";
+    m = mount(A);
+    await flush();
+    expect(m.ctl.dismissAbandoned("key_SETASIDE")).toBe(true);
+    expect(localStorage.getItem(asideKey)).toBeNull();
+    m.view.dispose();
+    document.body.textContent = "";
+    m = mount(B);
+    await flush();
+    const after = m.ctl.getState().formerSchool;
+    expect(after.kind === "ok" && after.attempts.map((a) => a.title)).toEqual(["Rivers"]);
+  });
+});
+
+describe("status announcements (P2)", () => {
+  const status = (host: HTMLElement) => q(host, "units-status")?.textContent ?? "";
+
+  test("0 -> 2 -> 1 -> 0 -> 0 always reports the current count, and unchanged rescans stay quiet", async () => {
+    const m = mount(B);
+    await flush();
+    expect(status(m.host)).toBe("");
+    seed(A, "key_SCHOOLA1");
+    seed(C, "key_SCHOOLC1");
+    await m.ctl.checkRecovery();
+    expect(status(m.host)).toBe("2 unconfirmed unit requests from a previous school are listed in My Units.");
+    localStorage.removeItem(createAttemptStorageKey(C, "key_SCHOOLC1"));
+    await m.ctl.checkRecovery();
+    expect(status(m.host)).toBe("One unconfirmed unit request from a previous school is listed in My Units.");
+    expect(q(m.host, "units-former-school")?.textContent).toContain("a unit request");
+    localStorage.removeItem(createAttemptStorageKey(A, "key_SCHOOLA1"));
+    await m.ctl.checkRecovery();
+    expect(status(m.host)).toBe("No unit requests from a previous school are listed now.");
+    expect((q(m.host, "units-former-school") as HTMLElement).hidden).toBe(true);
+    const node = q(m.host, "units-status") as HTMLElement;
+    const writes = jest.fn();
+    new MutationObserver(writes).observe(node, { childList: true, characterData: true, subtree: true });
+    await m.ctl.checkRecovery();
+    await m.ctl.refresh();
+    await flush();
+    expect(writes).not.toHaveBeenCalled();
+    expect(status(m.host)).toBe("No unit requests from a previous school are listed now.");
+  });
+
+  test("an unchanged nonzero count is announced once", async () => {
+    seed(A, "key_SCHOOLA1");
+    const m = mount(B);
+    await flush();
+    expect(status(m.host)).toBe("One unconfirmed unit request from a previous school is listed in My Units.");
+    const node = q(m.host, "units-status") as HTMLElement;
+    const writes = jest.fn();
+    new MutationObserver(writes).observe(node, { childList: true, characterData: true, subtree: true });
+    await m.ctl.checkRecovery();
+    await flush();
+    expect(writes).not.toHaveBeenCalled();
+  });
+
+  test("a teacher change or school remount starts with a fresh status", async () => {
+    seed(A, "key_SCHOOLA1");
+    let m = mount(B);
+    await flush();
+    expect(status(m.host)).toContain("previous school");
+    m.view.dispose();
+    document.body.textContent = "";
+    // Another teacher at B: none of teacherA's notices or announcement.
+    m = mount({ teacherId: "teacherZ", schoolId: "schoolB" });
+    await flush();
+    expect(status(m.host)).toBe("");
+    expect((q(m.host, "units-former-school") as HTMLElement).hidden).toBe(true);
+    m.view.dispose();
+    document.body.textContent = "";
+    // Same teacher remounted at A: the record is a same-school recovery, no notice.
+    m = mount(A);
+    await flush();
+    expect(status(m.host)).toBe("");
+    expect((q(m.host, "units-former-school") as HTMLElement).hidden).toBe(true);
+  });
+
+  test("storage failure clears our announcement and never claims zero", async () => {
+    seed(A, "key_SCHOOLA1");
+    const m = mount(B);
+    await flush();
+    expect(status(m.host)).toContain("One unconfirmed");
+    const proto = Object.getPrototypeOf(localStorage) as Storage;
+    const get = jest.spyOn(proto, "getItem").mockImplementation(() => {
+      throw new Error("SecurityError");
+    });
+    await m.ctl.checkRecovery();
+    expect(m.ctl.getState().formerSchool).toEqual({ kind: "unavailable" });
+    expect(status(m.host)).toBe("");
+    expect(status(m.host)).not.toContain("No unit requests");
+    get.mockRestore();
+    expect(localStorage.getItem(createAttemptStorageKey(A, "key_SCHOOLA1"))).not.toBeNull();
+  });
+
+  test("other status messages are not erased or overwritten by a decrease", async () => {
+    seed(A, "key_SCHOOLA1");
+    seed(C, "key_SCHOOLC1");
+    const created = unit({ title: "Water" });
+    const c = callables({ create: jest.fn(async () => ({ unit: created, replayed: false })) });
+    const m = mount(B, { c });
+    await flush();
+    expect(status(m.host)).toContain("2 unconfirmed");
+    // A create success replaces the status; its submit also rescans.
+    localStorage.removeItem(createAttemptStorageKey(C, "key_SCHOOLC1"));
+    const title = q(m.host, "units-create-title") as HTMLInputElement;
+    title.value = "Water";
+    title.dispatchEvent(new Event("input", { bubbles: true }));
+    (q(m.host, "units-create-form") as HTMLFormElement).dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    await flush();
+    expect(status(m.host)).toBe('Created "Water" in Grade 7.');
+    // Decrease to zero leaves the success message alone.
+    localStorage.removeItem(createAttemptStorageKey(A, "key_SCHOOLA1"));
+    await m.ctl.checkRecovery();
+    expect(status(m.host)).toBe('Created "Water" in Grade 7.');
+    expect((q(m.host, "units-former-school") as HTMLElement).hidden).toBe(true);
+    // A new former-school attempt is still announced.
+    seed(A, "key_SCHOOLA2");
+    await m.ctl.checkRecovery();
+    expect(status(m.host)).toBe("One unconfirmed unit request from a previous school is listed in My Units.");
+  });
+
+  test("a visible-then-empty region is hidden under the application CSS", async () => {
+    const html = fs.readFileSync(path.join(__dirname, "../../../index.html"), "utf8");
+    const style = document.createElement("style");
+    style.textContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map((x) => x[1]).join("\n");
+    document.head.appendChild(style);
+    try {
+      seed(A, "key_SCHOOLA1");
+      const m = mount(B);
+      await flush();
+      const region = q(m.host, "units-former-school") as HTMLElement;
+      expect(getComputedStyle(region).display).not.toBe("none");
+      localStorage.removeItem(createAttemptStorageKey(A, "key_SCHOOLA1"));
+      await m.ctl.checkRecovery();
+      expect(region.hidden).toBe(true);
+      expect(getComputedStyle(region).display).toBe("none");
     } finally {
       style.remove();
     }

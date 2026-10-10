@@ -410,6 +410,7 @@ export function renderTeacherUnitsPanel(
   };
 
   let prevFormerCount = 0;
+  let formerAnnouncement: string | null = null;
   const renderFormerSchool = (s: TeacherUnitsViewState): void => {
     const notices = s.formerSchool;
     const count = notices.kind === "ok" ? notices.attempts.length + notices.unreadable : 0;
@@ -444,7 +445,7 @@ export function renderTeacherUnitsPanel(
           el(
             "p",
             "shell-units-recovery-note",
-            `"${a.title}" (${gradeLabel(a.grade)})${started ? `, started ${started}` : ""}`,
+            `"${a.title}" (${gradeLabel(a.grade)})${started ? `, started ${started}` : ""}${a.status === "abandoned" ? ", set aside" : ""}`,
           ),
         );
         items.appendChild(item);
@@ -468,14 +469,32 @@ export function renderTeacherUnitsPanel(
         el("p", "shell-units-recovery-note", "You can still create a new unit here with the form below."),
       );
     }
-    if (count > prevFormerCount) {
-      announce(
-        count === 1
-          ? "One unconfirmed unit request from a previous school is listed in My Units."
-          : `${count} unconfirmed unit requests from a previous school are listed in My Units.`,
-      );
+    // The status region is shared with other actions. Announce only real
+    // count changes, and clear only our own message, never another one.
+    // "unavailable" is unknown, not zero: drop our message, announce nothing.
+    const known = notices.kind === "ok";
+    if (!known || count !== prevFormerCount) {
+      const ours = formerAnnouncement !== null && status.textContent === formerAnnouncement;
+      let next: string | null = null;
+      // A new or larger count is new information; a smaller one only
+      // replaces our own (now obsolete) message.
+      if (known && count > 0 && (count > prevFormerCount || ours)) {
+        next =
+          count === 1
+            ? "One unconfirmed unit request from a previous school is listed in My Units."
+            : `${count} unconfirmed unit requests from a previous school are listed in My Units.`;
+      } else if (known && prevFormerCount > 0 && ours) {
+        next = "No unit requests from a previous school are listed now.";
+      }
+      if (next !== null) {
+        announce(next);
+        formerAnnouncement = next;
+      } else if (ours) {
+        status.textContent = "";
+        formerAnnouncement = null;
+      }
     }
-    prevFormerCount = count;
+    prevFormerCount = known ? count : 0;
   };
 
   let prevCreateKind: TeacherUnitsViewState["create"]["kind"] = "idle";

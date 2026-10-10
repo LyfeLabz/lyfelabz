@@ -80,7 +80,8 @@ export type FormerSchoolAttempt = {
 export type FormerSchoolListResult =
   | {
       readonly kind: "ok";
-      // Valid attempts from other schools, oldest first.
+      // Valid attempts from other schools (unconfirmed or set aside but
+      // still uncertain), oldest first.
       readonly attempts: ReadonlyArray<FormerSchoolAttempt>;
       // Count of entries under other schools of this teacher that could not
       // be validated (their contents are never shown).
@@ -386,9 +387,9 @@ export function createTeacherUnitCreateAttemptStore(
           unreadable++;
           continue;
         }
-        // An attempt the teacher already set aside at that school was an
-        // explicit decision there; only unconfirmed attempts are surfaced.
-        if (record.status === "abandoned") continue;
+        // "abandoned" (set aside) stays listed: its outcome is still
+        // uncertain. Only the explicit acknowledgment that removes the
+        // record (beginNewUnit / dismissAbandoned at its school) ends it.
         attempts.push(
           Object.freeze({
             id: k,
