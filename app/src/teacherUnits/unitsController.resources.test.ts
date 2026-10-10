@@ -5,7 +5,13 @@
  * placement guards, archived refusal, and conflict / lost-response /
  * authorization / context-change handling without blind retries.
  */
-import { createTeacherUnitsController, type TeacherUnitsController } from "./unitsController";
+import * as fs from "fs";
+import * as path from "path";
+import {
+  createTeacherUnitsController,
+  createTeacherUnitsSurfaceSeam,
+  type TeacherUnitsController,
+} from "./unitsController";
 import { createTeacherUnitCreateAttemptStore } from "./createAttemptStore";
 import { getPlaceableResources } from "./placeableResources";
 import type { TeacherUnit, TeacherUnitsCallables } from "./types";
@@ -92,7 +98,7 @@ function mount(
     callables: c as unknown as TeacherUnitsCallables,
     session: SCOPE,
     readCurrentContext,
-    store: createTeacherUnitCreateAttemptStore(SCOPE, () => memoryStorage()),
+    store: createTeacherUnitCreateAttemptStore(SCOPE, ((st) => () => st)(memoryStorage())),
     initialGrade: "7",
   });
 }
@@ -318,11 +324,11 @@ describe("concurrency and failures", () => {
     expect(c.setResources).toHaveBeenCalledTimes(1);
   });
 
-  test("a placement refusal re-reads the unit and reports the refusal", async () => {
-    const u = unit({ resourceIds: ["retired-resource"] });
+  test("a server placement refusal (deployed list differs) re-reads the unit and reports the refusal", async () => {
+    const u = unit();
     const { c } = server([u]);
     c.setResources.mockRejectedValueOnce({
-      details: { code: "teacherUnits.resourceNotPlaceable", resourceIds: ["retired-resource"] },
+      details: { code: "teacherUnits.resourceNotPlaceable", resourceIds: [R1] },
     });
     const ctl = mount(c);
     await flush();
@@ -365,5 +371,387 @@ describe("concurrency and failures", () => {
     // A request after the change is not sent at all.
     expect(await ctl.removeResource(u.unitId, R1)).toEqual({ kind: "stale" });
     expect(c.setResources).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------- Certification remediation (U2.3 P1/P2) ----------
+
+type Deferred<T> = { promise: Promise<T>; resolve: (v: T) => void; reject: (e: unknown) => void };
+function deferred<T>(): Deferred<T> {
+  let resolve!: (v: T) => void;
+  let reject!: (e: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+const NETWORK = () => Object.assign(new Error("lost"), { code: "unavailable" });
+const held = (ctl: TeacherUnitsController, unitId: string) => ctl.getKnownUnit(unitId);
+
+describe("retired-resource repair (P1)", () => {
+  test("several retired ids: one confirmed request removes all of them, keeping active order", async () => {
+    const u = unit({ resourceIds: ["retired-a", R2, "retired-b", R1, "retired-c"], revision: 7 });
+    const b = unit({ resourceIds: ["retired-a", R3] });
+    const { c } = server([u, b]);
+    const ctl = mount(c);
+    await flush();
+    const r = await ctl.removeRetiredResources(u.unitId);
+    expect(r.kind).toBe("saved");
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    expect(c.setResources).toHaveBeenCalledWith({ unitId: u.unitId, expectedRevision: 7, resourceIds: [R2, R1] });
+    expect(listed(ctl, u.unitId)?.resourceIds).toEqual([R2, R1]);
+    // Other units are untouched.
+    expect(listed(ctl, b.unitId)?.resourceIds).toEqual(["retired-a", R3]);
+  });
+
+  test("only retired ids: the unit becomes empty; no retired ids is a no-op without a call", async () => {
+    const u = unit({ resourceIds: ["retired-a", "retired-b"] });
+    const clean = unit({ resourceIds: [R1] });
+    const { c } = server([u, clean]);
+    const ctl = mount(c);
+    await flush();
+    await ctl.removeRetiredResources(u.unitId);
+    expect(c.setResources).toHaveBeenLastCalledWith(expect.objectContaining({ resourceIds: [] }));
+    expect(await ctl.removeRetiredResources(clean.unitId)).toMatchObject({ kind: "saved", noop: true });
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+  });
+
+  test("while retired ids remain, add and other removals are refused before sending", async () => {
+    const u = unit({ resourceIds: ["retired-a", "retired-b", R1] });
+    const { c } = server([u]);
+    const ctl = mount(c);
+    await flush();
+    expect((await ctl.addResources(u.unitId, [R2])).kind).toBe("error");
+    expect((await ctl.removeResource(u.unitId, R1)).kind).toBe("error");
+    expect((await ctl.removeResource(u.unitId, "retired-a")).kind).toBe("error");
+    expect(c.setResources).not.toHaveBeenCalled();
+  });
+
+  test("a single retired id can still be removed on its own", async () => {
+    const u = unit({ resourceIds: [R1, "retired-a"] });
+    const { c } = server([u]);
+    const ctl = mount(c);
+    await flush();
+    await ctl.removeResource(u.unitId, "retired-a");
+    expect(c.setResources).toHaveBeenCalledWith(expect.objectContaining({ resourceIds: [R1] }));
+  });
+
+  test("stale revision: conflict, re-read, never resent", async () => {
+    const u = unit({ resourceIds: ["retired-a", R1, "retired-b"] });
+    const { c, units } = server([u]);
+    const ctl = mount(c);
+    await flush();
+    units.set(u.unitId, { ...u, resourceIds: ["retired-a", R1, "retired-b", R2], revision: 2 });
+    const r = await ctl.removeRetiredResources(u.unitId);
+    expect(r.kind).toBe("conflict");
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    expect(listed(ctl, u.unitId)?.resourceIds).toEqual(["retired-a", R1, "retired-b", R2]);
+    await ctl.removeRetiredResources(u.unitId);
+    expect(c.setResources).toHaveBeenLastCalledWith({ unitId: u.unitId, expectedRevision: 2, resourceIds: [R1, R2] });
+  });
+
+  test("uncertain outcome: one call, re-read, reported uncertain", async () => {
+    const u = unit({ resourceIds: ["retired-a", "retired-b", R1] });
+    const { c, units } = server([u]);
+    c.setResources.mockImplementationOnce(async () => {
+      units.set(u.unitId, { ...u, resourceIds: [R1], revision: 2 });
+      throw NETWORK();
+    });
+    const ctl = mount(c);
+    await flush();
+    expect(await ctl.removeRetiredResources(u.unitId)).toMatchObject({ kind: "uncertain" });
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    expect(listed(ctl, u.unitId)?.resourceIds).toEqual([R1]);
+  });
+
+  test("archived units are refused without a call", async () => {
+    const u = unit({ status: "archived", archivedAtMillis: 1, resourceIds: ["retired-a", "retired-b"] });
+    const { c } = server([u]);
+    const ctl = mount(c);
+    ctl.setShowArchived(true);
+    await flush();
+    expect((await ctl.removeRetiredResources(u.unitId)).kind).toBe("archived");
+    expect(c.setResources).not.toHaveBeenCalled();
+  });
+});
+
+describe("out-of-order responses (P1)", () => {
+  test("1. an old list response arriving after a newer one is ignored", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const ctl = mount(c);
+    await flush();
+    const older = deferred<{ units: TeacherUnit[] }>();
+    const newer = deferred<{ units: TeacherUnit[] }>();
+    c.list.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
+    void ctl.refresh();
+    void ctl.refresh();
+    newer.resolve({ units: [{ ...u, resourceIds: [R2], revision: 3 }] });
+    await flush();
+    older.resolve({ units: [{ ...u, resourceIds: [], revision: 1 }] });
+    await flush();
+    expect(listed(ctl, u.unitId)?.revision).toBe(3);
+    expect(held(ctl, u.unitId)?.resourceIds).toEqual([R2]);
+  });
+
+  test("1b. a list requested before a confirmed mutation cannot roll it back", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const ctl = mount(c);
+    await flush();
+    const slow = deferred<{ units: TeacherUnit[] }>();
+    c.list.mockReturnValueOnce(slow.promise);
+    void ctl.refresh();
+    expect((await ctl.addResources(u.unitId, [R1])).kind).toBe("saved");
+    slow.resolve({ units: [u] }); // revision 1, before the add
+    await flush();
+    expect(listed(ctl, u.unitId)).toMatchObject({ revision: 2, resourceIds: [R1] });
+  });
+
+  test("1c. a list requested before a create still shows the created unit", async () => {
+    const u = unit();
+    const created = unit({ title: "New" });
+    const { c } = server([u]);
+    c.create.mockResolvedValueOnce({ unit: created, replayed: false });
+    const ctl = mount(c);
+    await flush();
+    const slow = deferred<{ units: TeacherUnit[] }>();
+    c.list.mockReturnValueOnce(slow.promise);
+    void ctl.refresh();
+    await ctl.submitCreate({ grade: "7", title: "New", description: "" });
+    expect(c.create).toHaveBeenCalledTimes(1);
+    slow.resolve({ units: [u] });
+    await flush();
+    expect(listed(ctl, created.unitId)).not.toBeNull();
+  });
+
+  test("2. a lost-response re-read arriving after a later successful mutation is ignored", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const reread = deferred<{ unit: TeacherUnit }>();
+    c.setResources
+      .mockRejectedValueOnce(NETWORK())
+      .mockResolvedValueOnce({ unit: { ...u, resourceIds: [R2], revision: 3 }, noop: false });
+    c.get.mockReturnValueOnce(reread.promise);
+    const ctl = mount(c);
+    await flush();
+    const first = ctl.addResources(u.unitId, [R1]);
+    await flush();
+    // The gate is free while the re-read is outstanding.
+    expect((await ctl.addResources(u.unitId, [R2])).kind).toBe("saved");
+    reread.resolve({ unit: { ...u, resourceIds: [R1], revision: 2 } });
+    const r = await first;
+    expect(r.kind).toBe("uncertain");
+    expect(r.kind === "uncertain" && r.latest?.revision).toBe(3);
+    expect(listed(ctl, u.unitId)).toMatchObject({ revision: 3, resourceIds: [R2] });
+  });
+
+  test("3. a conflict re-read arriving after newer state is established is ignored", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const reread = deferred<{ unit: TeacherUnit }>();
+    c.setResources.mockRejectedValueOnce({ details: { code: "teacherUnits.writeConflict", currentRevision: 4 } });
+    c.get.mockReturnValueOnce(reread.promise);
+    const ctl = mount(c);
+    await flush();
+    const pending = ctl.addResources(u.unitId, [R1]);
+    await flush();
+    c.list.mockResolvedValueOnce({ units: [{ ...u, resourceIds: [R3], revision: 5 }] });
+    await ctl.refresh();
+    reread.resolve({ unit: { ...u, resourceIds: [R2], revision: 4 } });
+    const r = await pending;
+    expect(r.kind).toBe("conflict");
+    expect(r.kind === "conflict" && r.latest?.revision).toBe(5);
+    expect(listed(ctl, u.unitId)).toMatchObject({ revision: 5, resourceIds: [R3] });
+  });
+
+  test("3b. a stale notFound re-read does not drop a unit adopted since", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const reread = deferred<{ unit: TeacherUnit }>();
+    c.setResources.mockRejectedValueOnce({ details: { code: "teacherUnits.writeConflict" } });
+    c.get.mockReturnValueOnce(reread.promise);
+    const ctl = mount(c);
+    await flush();
+    const pending = ctl.addResources(u.unitId, [R1]);
+    await flush();
+    c.list.mockResolvedValueOnce({ units: [{ ...u, revision: 2 }] });
+    await ctl.refresh();
+    reread.reject({ details: { code: "teacherUnits.notFound" } });
+    await pending;
+    expect(listed(ctl, u.unitId)?.revision).toBe(2);
+  });
+
+  test("4. teacher identity change during a pending add: response ignored, no further requests", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    let context: TeacherUnitCreateContext | null = SCOPE;
+    const slow = deferred<{ unit: TeacherUnit; noop: boolean }>();
+    c.setResources.mockReturnValueOnce(slow.promise);
+    const ctl = mount(c, () => context);
+    await flush();
+    const pending = ctl.addResources(u.unitId, [R1]);
+    context = { teacherId: "teacherB", schoolId: "schoolA" };
+    slow.resolve({ unit: { ...u, resourceIds: [R1], revision: 2 }, noop: false });
+    expect(await pending).toEqual({ kind: "stale" });
+    expect(held(ctl, u.unitId)?.revision).toBe(1);
+    await ctl.refresh();
+    expect(c.list).toHaveBeenCalledTimes(1);
+  });
+
+  test("5. school change during a pending refresh: the list is not applied", async () => {
+    const u = unit({ resourceIds: [R1] });
+    const { c } = server([u]);
+    let context: TeacherUnitCreateContext | null = SCOPE;
+    const ctl = mount(c, () => context);
+    await flush();
+    const slow = deferred<{ units: TeacherUnit[] }>();
+    c.list.mockReturnValueOnce(slow.promise);
+    void ctl.refresh();
+    context = { teacherId: "teacherA", schoolId: "schoolB" };
+    slow.resolve({ units: [{ ...u, resourceIds: [], revision: 9 }] });
+    await flush();
+    expect(held(ctl, u.unitId)?.revision).toBe(1);
+    expect(ctl.getState().list.kind).toBe("loading");
+  });
+
+  test("5b. school change during a conflict or lost-response re-read: nothing is adopted", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    let context: TeacherUnitCreateContext | null = SCOPE;
+    const reread = deferred<{ unit: TeacherUnit }>();
+    c.setResources.mockRejectedValueOnce(NETWORK());
+    c.get.mockReturnValueOnce(reread.promise);
+    const ctl = mount(c, () => context);
+    await flush();
+    const pending = ctl.addResources(u.unitId, [R1]);
+    await flush();
+    context = { teacherId: "teacherA", schoolId: "schoolB" };
+    reread.resolve({ unit: { ...u, resourceIds: [R1], revision: 2 } });
+    expect(await pending).toEqual({ kind: "stale" });
+    expect(held(ctl, u.unitId)?.revision).toBe(1);
+  });
+
+  test("5c. school change during a pending remove: response ignored", async () => {
+    const u = unit({ resourceIds: [R1] });
+    const { c } = server([u]);
+    let context: TeacherUnitCreateContext | null = SCOPE;
+    const slow = deferred<{ unit: TeacherUnit; noop: boolean }>();
+    c.setResources.mockReturnValueOnce(slow.promise);
+    const ctl = mount(c, () => context);
+    await flush();
+    const pending = ctl.removeResource(u.unitId, R1);
+    context = { teacherId: "teacherA", schoolId: "schoolB" };
+    slow.resolve({ unit: { ...u, resourceIds: [], revision: 2 }, noop: false });
+    expect(await pending).toEqual({ kind: "stale" });
+    expect(held(ctl, u.unitId)?.resourceIds).toEqual([R1]);
+  });
+
+  test("6. rapid refreshes resolving out of order: only the last request applies", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const ctl = mount(c);
+    await flush();
+    const d = [deferred<{ units: TeacherUnit[] }>(), deferred<{ units: TeacherUnit[] }>(), deferred<{ units: TeacherUnit[] }>()];
+    for (const x of d) c.list.mockReturnValueOnce(x.promise);
+    void ctl.refresh();
+    void ctl.refresh();
+    void ctl.refresh();
+    d[2].resolve({ units: [{ ...u, title: "Third", revision: 3 }] });
+    await flush();
+    d[0].resolve({ units: [{ ...u, title: "First", revision: 1 }] });
+    d[1].resolve({ units: [{ ...u, title: "Second", revision: 2 }] });
+    await flush();
+    expect(listed(ctl, u.unitId)?.title).toBe("Third");
+    expect(c.list).toHaveBeenCalledTimes(4);
+  });
+
+  test("7. a unit archived during an outstanding add stays archived when the add response arrives", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const slow = deferred<{ unit: TeacherUnit; noop: boolean }>();
+    c.setResources.mockReturnValueOnce(slow.promise);
+    const ctl = mount(c);
+    await flush();
+    const pending = ctl.addResources(u.unitId, [R1]);
+    c.list.mockResolvedValueOnce({
+      units: [{ ...u, resourceIds: [R1], status: "archived", archivedAtMillis: 5, revision: 3 }],
+    });
+    ctl.setShowArchived(true);
+    await flush();
+    slow.resolve({ unit: { ...u, resourceIds: [R1], revision: 2 }, noop: false });
+    await pending;
+    expect(held(ctl, u.unitId)).toMatchObject({ status: "archived", revision: 3 });
+    expect(listed(ctl, u.unitId)?.status).toBe("archived");
+  });
+
+  test("Check my units (all grades) cannot roll back a newer unit", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const ctl = mount(c);
+    await flush();
+    const slow = deferred<{ units: TeacherUnit[] }>();
+    c.list.mockReturnValueOnce(slow.promise);
+    const check = ctl.checkRecovery();
+    await ctl.addResources(u.unitId, [R1]);
+    slow.resolve({ units: [u] });
+    await check;
+    await flush();
+    expect(held(ctl, u.unitId)?.revision).toBe(2);
+    expect(listed(ctl, u.unitId)?.resourceIds).toEqual([R1]);
+  });
+});
+
+describe("production seam context guard (P2)", () => {
+  function seam(c: ReturnType<typeof server>["c"]) {
+    const live = { uid: "teacherA" as string | null, active: { uid: "teacherA", schoolId: "schoolA" } as { uid: string; schoolId: string } | null };
+    const s = createTeacherUnitsSurfaceSeam({
+      callables: c as unknown as TeacherUnitsCallables,
+      readFirebaseUid: () => live.uid,
+      readActiveTeacher: () => live.active,
+      createStore: (scope) => createTeacherUnitCreateAttemptStore(scope, () => memoryStorage()),
+    });
+    return { live, ctl: s.createController({ uid: "teacherA", schoolId: "schoolA", initialGrade: "7" }) };
+  }
+
+  test("a school change in the canonical session stops add, remove, and refresh, and ignores late responses", async () => {
+    const u = unit({ resourceIds: [R1] });
+    const { c } = server([u]);
+    const { live, ctl } = seam(c);
+    await flush();
+    const slow = deferred<{ unit: TeacherUnit; noop: boolean }>();
+    c.setResources.mockReturnValueOnce(slow.promise);
+    const pending = ctl.addResources(u.unitId, [R2]);
+    live.active = { uid: "teacherA", schoolId: "schoolB" }; // same Firebase uid
+    slow.resolve({ unit: { ...u, resourceIds: [R1, R2], revision: 2 }, noop: false });
+    expect(await pending).toEqual({ kind: "stale" });
+    expect(await ctl.removeResource(u.unitId, R1)).toEqual({ kind: "stale" });
+    expect(await ctl.removeRetiredResources(u.unitId)).toEqual({ kind: "stale" });
+    await ctl.refresh();
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    expect(c.list).toHaveBeenCalledTimes(1);
+    expect(ctl.getKnownUnit(u.unitId)?.revision).toBe(1);
+  });
+
+  test("a replaced or missing canonical session (re-bootstrap, sign-out) is stale too", async () => {
+    const u = unit();
+    const { c } = server([u]);
+    const { live, ctl } = seam(c);
+    await flush();
+    live.active = null;
+    expect(await ctl.addResources(u.unitId, [R1])).toEqual({ kind: "stale" });
+    live.active = { uid: "teacherB", schoolId: "schoolA" };
+    expect(await ctl.addResources(u.unitId, [R1])).toEqual({ kind: "stale" });
+    live.active = { uid: "teacherA", schoolId: "schoolA" };
+    live.uid = "teacherB";
+    expect(await ctl.addResources(u.unitId, [R1])).toEqual({ kind: "stale" });
+    expect(c.setResources).not.toHaveBeenCalled();
+  });
+
+  test("the entry point binds the seam to the current bootstrap run's canonical teacher and school", () => {
+    const src = fs.readFileSync(path.join(__dirname, "../index.ts"), "utf8");
+    expect(src).toMatch(/readActiveTeacher: \(\) =>\s*runToken === currentRunToken && lastActiveTeacher !== null/);
+    expect(src).toMatch(/schoolId: lastActiveTeacher\.schoolId/);
   });
 });

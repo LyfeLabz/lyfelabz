@@ -62,7 +62,11 @@ function server(initial: TeacherUnit[]) {
     archive: jest.fn(),
     restore: jest.fn(),
     setResources: jest.fn(
-      async (req: { unitId: string; expectedRevision: number; resourceIds: ReadonlyArray<string> }) => {
+      async (req: {
+        unitId: string;
+        expectedRevision: number;
+        resourceIds: ReadonlyArray<string>;
+      }): Promise<{ unit: TeacherUnit; noop: boolean }> => {
         const u = units.get(req.unitId) as TeacherUnit;
         if (u.revision !== req.expectedRevision) {
           throw { details: { code: "teacherUnits.writeConflict", currentRevision: u.revision } };
@@ -126,11 +130,13 @@ describe("unit contents", () => {
     expect(q(host, `units-resources-${b.unitId}`)?.textContent).toContain("No resources in this unit yet.");
   });
 
-  test("a stored id that is no longer placeable is shown and removable", async () => {
+  test("a single retired id is shown and removed through the confirmed repair", async () => {
     const a = unit({ resourceIds: ["retired-resource"] });
     const { host, c } = await panel([a]);
     expect(rowsOf(host, a.unitId)[0].textContent).toContain("no longer available");
-    (q(host, `units-resource-remove-${a.unitId}-retired-resource`) as HTMLButtonElement).click();
+    expect(q(host, `units-resource-remove-${a.unitId}-retired-resource`)).toBeNull();
+    (q(host, `units-retired-remove-${a.unitId}`) as HTMLButtonElement).click();
+    (q(host, `units-retired-confirm-${a.unitId}`) as HTMLButtonElement).click();
     await flush();
     expect(c.setResources).toHaveBeenCalledWith(expect.objectContaining({ resourceIds: [] }));
   });
@@ -374,5 +380,181 @@ describe("styles and copy", () => {
   test("panel copy and styles contain no em dashes", () => {
     const src = fs.readFileSync(path.join(__dirname, "teacherUnitsPanel.ts"), "utf8");
     expect(src.includes("\u2014")).toBe(false);
+  });
+});
+
+// ---------- Certification remediation (U2.3 P1/P2) ----------
+
+type Deferred<T> = { promise: Promise<T>; resolve: (v: T) => void; reject: (e: unknown) => void };
+function deferred<T>(): Deferred<T> {
+  let resolve!: (v: T) => void;
+  let reject!: (e: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+const noticeOf = (host: HTMLElement, unitId: string) =>
+  q(host, `units-card-${unitId}`)?.querySelector<HTMLElement>(":scope > .shell-units-notice") as HTMLElement;
+
+describe("retired-resource repair UI (P1)", () => {
+  test("shows the count, requires confirmation, removes only retired ids in one request, keeps order", async () => {
+    const a = unit({ resourceIds: ["retired-a", R2.id, "retired-b", R1.id], revision: 4 });
+    const { host, c } = await panel([a]);
+    const box = q(host, `units-retired-${a.unitId}`) as HTMLElement;
+    expect(box.textContent).toContain("2 resources in this unit are no longer available");
+    // Other changes are unavailable until the repair is done.
+    expect((q(host, `units-resources-add-${a.unitId}`) as HTMLButtonElement).disabled).toBe(true);
+    expect((q(host, `units-resource-remove-${a.unitId}-${R2.id}`) as HTMLButtonElement).disabled).toBe(true);
+    const start = q(host, `units-retired-remove-${a.unitId}`) as HTMLButtonElement;
+    expect(start.textContent).toBe("Remove 2 unavailable resources");
+    start.click();
+    expect(c.setResources).not.toHaveBeenCalled();
+    const confirm = q(host, `units-retired-confirm-${a.unitId}`) as HTMLButtonElement;
+    expect(document.activeElement).toBe(confirm);
+    expect(q(host, `units-retired-${a.unitId}`)?.textContent).toContain(
+      `Remove 2 unavailable resources from "${a.title}"? The other resources in this unit stay, in the same order.`,
+    );
+    confirm.click();
+    expect(status(host)).toBe(`Removing 2 unavailable resources from "${a.title}"...`);
+    await flush();
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    expect(c.setResources).toHaveBeenCalledWith({ unitId: a.unitId, expectedRevision: 4, resourceIds: [R2.id, R1.id] });
+    expect(status(host)).toBe(`Removed 2 unavailable resources from "${a.title}".`);
+    expect(q(host, `units-retired-${a.unitId}`)).toBeNull();
+    expect(rowsOf(host, a.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R2.id, R1.id]);
+    expect(document.activeElement).toBe(q(host, `units-resources-add-${a.unitId}`));
+    expect((q(host, `units-resources-add-${a.unitId}`) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  test("Cancel sends nothing and returns focus to the repair button", async () => {
+    const a = unit({ resourceIds: ["retired-a", "retired-b"] });
+    const { host, c } = await panel([a]);
+    (q(host, `units-retired-remove-${a.unitId}`) as HTMLButtonElement).click();
+    (q(host, `units-retired-cancel-${a.unitId}`) as HTMLButtonElement).click();
+    expect(c.setResources).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(q(host, `units-retired-remove-${a.unitId}`));
+  });
+
+  test("conflict: nothing claimed, the new count is shown, and confirmation is required again", async () => {
+    const a = unit({ resourceIds: ["retired-a", "retired-b"] });
+    const { host, c, units } = await panel([a]);
+    units.set(a.unitId, { ...a, resourceIds: ["retired-a", "retired-b", "retired-c"], revision: 2 });
+    (q(host, `units-retired-remove-${a.unitId}`) as HTMLButtonElement).click();
+    (q(host, `units-retired-confirm-${a.unitId}`) as HTMLButtonElement).click();
+    await flush();
+    await flush();
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    expect(status(host)).toBe("");
+    expect(noticeOf(host, a.unitId).textContent).toContain("nothing was removed");
+    expect(q(host, `units-retired-confirm-${a.unitId}`)).toBeNull();
+    expect(q(host, `units-retired-remove-${a.unitId}`)?.textContent).toBe("Remove 3 unavailable resources");
+    expect(document.activeElement).toBe(q(host, `units-retired-remove-${a.unitId}`));
+  });
+
+  test("uncertain: stated as uncertain, never as removed", async () => {
+    const a = unit({ resourceIds: ["retired-a", "retired-b", R1.id] });
+    const { host, c, units } = await panel([a]);
+    c.setResources.mockImplementationOnce(async () => {
+      units.set(a.unitId, { ...a, resourceIds: [R1.id], revision: 2 });
+      throw Object.assign(new Error("lost"), { code: "unavailable" });
+    });
+    (q(host, `units-retired-remove-${a.unitId}`) as HTMLButtonElement).click();
+    (q(host, `units-retired-confirm-${a.unitId}`) as HTMLButtonElement).click();
+    await flush();
+    await flush();
+    expect(status(host)).toBe("");
+    expect(noticeOf(host, a.unitId).textContent).toContain("couldn't confirm whether your change was saved");
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+  });
+
+  test("archived units show retired rows read-only with no repair control", async () => {
+    const a = unit({ status: "archived", archivedAtMillis: 1, resourceIds: ["retired-a", "retired-b"] });
+    const { host, ctl } = await panel([a]);
+    ctl.setShowArchived(true);
+    await flush();
+    expect(rowsOf(host, a.unitId)).toHaveLength(2);
+    expect(q(host, `units-retired-${a.unitId}`)).toBeNull();
+  });
+});
+
+describe("status messages (P2)", () => {
+  test("a settled request clears only its own pending message, never another card's", async () => {
+    const a = unit({ resourceIds: [R1.id] });
+    const b = unit({ resourceIds: [R2.id] });
+    const { host, c } = await panel([a, b]);
+    const da = deferred<{ unit: TeacherUnit; noop: boolean }>();
+    const db = deferred<{ unit: TeacherUnit; noop: boolean }>();
+    c.setResources.mockReturnValueOnce(da.promise).mockReturnValueOnce(db.promise);
+    (q(host, `units-resource-remove-${a.unitId}-${R1.id}`) as HTMLButtonElement).click();
+    (q(host, `units-resource-remove-${b.unitId}-${R2.id}`) as HTMLButtonElement).click();
+    expect(status(host)).toBe(`Removing "${R2.title}" from "${b.title}"...`);
+    da.reject({ details: { code: "role-forbidden" } });
+    await flush();
+    // A's failure does not erase B's pending message or claim anything.
+    expect(status(host)).toBe(`Removing "${R2.title}" from "${b.title}"...`);
+    expect(noticeOf(host, a.unitId).hidden).toBe(false);
+    expect(rowsOf(host, a.unitId)).toHaveLength(1);
+    db.resolve({ unit: { ...b, resourceIds: [], revision: 2 }, noop: false });
+    await flush();
+    expect(status(host)).toBe(`Removed "${R2.title}" from "${b.title}".`);
+  });
+
+  test("a late failure does not erase a newer confirmation from another card", async () => {
+    const a = unit({ resourceIds: [R1.id] });
+    const b = unit({ resourceIds: [R2.id] });
+    const { host, c } = await panel([a, b]);
+    const d = deferred<{ unit: TeacherUnit; noop: boolean }>();
+    c.setResources.mockReturnValueOnce(d.promise);
+    (q(host, `units-resource-remove-${a.unitId}-${R1.id}`) as HTMLButtonElement).click();
+    (q(host, `units-resource-remove-${b.unitId}-${R2.id}`) as HTMLButtonElement).click();
+    await flush();
+    expect(status(host)).toBe(`Removed "${R2.title}" from "${b.title}".`);
+    d.reject({ details: { code: "role-forbidden" } });
+    await flush();
+    expect(status(host)).toBe(`Removed "${R2.title}" from "${b.title}".`);
+    expect(rowsOf(host, a.unitId)).toHaveLength(1);
+    expect(noticeOf(host, a.unitId).hidden).toBe(false);
+  });
+
+  test("a stale response after a school change produces no success message and no change", async () => {
+    const a = unit({ resourceIds: [R1.id] });
+    const { units, c } = server([a]);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    let context: { teacherId: string; schoolId: string } | null = SCOPE;
+    const ctl = createTeacherUnitsController({
+      callables: c as unknown as TeacherUnitsCallables,
+      session: SCOPE,
+      readCurrentContext: () => context,
+      store: createTeacherUnitCreateAttemptStore(SCOPE, ((st) => () => st)(memoryStorage())),
+      initialGrade: "7",
+    });
+    renderTeacherUnitsPanel(host, ctl);
+    await flush();
+    const d = deferred<{ unit: TeacherUnit; noop: boolean }>();
+    c.setResources.mockReturnValueOnce(d.promise);
+    (q(host, `units-resource-remove-${a.unitId}-${R1.id}`) as HTMLButtonElement).click();
+    context = { teacherId: "teacherA", schoolId: "schoolB" };
+    d.resolve({ unit: { ...a, resourceIds: [], revision: 2 }, noop: false });
+    await flush();
+    expect(status(host)).toBe("");
+    expect(status(host)).not.toContain("Removed");
+    expect(rowsOf(host, a.unitId)).toHaveLength(1);
+    expect(units.get(a.unitId)?.resourceIds).toEqual([R1.id]);
+  });
+
+  test("a conflict on remove is not presented as success and the row stays", async () => {
+    const a = unit({ resourceIds: [R1.id, R2.id] });
+    const { host, units } = await panel([a]);
+    units.set(a.unitId, { ...a, resourceIds: [R1.id, R2.id, R3.id], revision: 2 });
+    (q(host, `units-resource-remove-${a.unitId}-${R1.id}`) as HTMLButtonElement).click();
+    await flush();
+    await flush();
+    expect(status(host)).toBe("");
+    expect(noticeOf(host, a.unitId).textContent).toContain("nothing was removed");
+    expect(rowsOf(host, a.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R1.id, R2.id, R3.id]);
+    expect(document.activeElement).toBe(q(host, `units-resource-remove-${a.unitId}-${R1.id}`));
   });
 });

@@ -70,6 +70,9 @@ type CardView = {
   gone: boolean;
   editor: EditorView | null;
   picker: PickerView | null;
+  // U2.3: retired-resource removal awaiting explicit confirmation; holds
+  // the count the teacher was shown (reset when that count changes).
+  confirmRetired: number | null;
   readonly notice: HTMLParagraphElement;
   readonly body: HTMLDivElement;
 };
@@ -186,7 +189,10 @@ export function renderTeacherUnitsPanel(
   status.setAttribute("aria-live", "polite");
   status.setAttribute("data-testid", "units-status");
   root.appendChild(status);
+  // Which pending membership request owns the current message (0: none).
+  let statusOwner = 0;
   const announce = (msg: string): void => {
+    statusOwner = 0;
     status.textContent = "";
     status.textContent = msg;
   };
@@ -723,16 +729,21 @@ export function renderTeacherUnitsPanel(
   // with the held revision). Nothing is shown as added or removed until the
   // server confirms it; the list always renders the last server state.
 
-  // Our own pending message in the shared status region; cleared (only if
-  // still ours) when the request settles without a confirmation.
-  let pendingMessage: string | null = null;
-  const announcePending = (msg: string): void => {
-    pendingMessage = msg;
+  // Each request announces its own pending message in the shared status
+  // region and, when it settles, clears only that message, and only if it
+  // is still showing. Another action's message is never cleared, and a
+  // settled request never leaves "Adding..." behind.
+  let pendingSeq = 0;
+  const announcePending = (msg: string): (() => void) => {
     announce(msg);
-  };
-  const clearPending = (): void => {
-    if (pendingMessage !== null && status.textContent === pendingMessage) status.textContent = "";
-    pendingMessage = null;
+    const token = ++pendingSeq;
+    statusOwner = token;
+    return () => {
+      if (statusOwner === token) {
+        statusOwner = 0;
+        status.textContent = "";
+      }
+    };
   };
 
   const addButtonOf = (card: CardView): HTMLElement | null =>
@@ -904,10 +915,13 @@ export function renderTeacherUnitsPanel(
         .filter((id) => picker.selected.has(id));
       const unitTitle = card.unit.title;
       const before = new Set(card.unit.resourceIds);
-      announcePending(`Adding ${ids.length === 1 ? "1 resource" : `${ids.length} resources`} to "${unitTitle}"...`);
+      const clearPending = announcePending(
+        `Adding ${ids.length === 1 ? "1 resource" : `${ids.length} resources`} to "${unitTitle}"...`,
+      );
       void controller.addResources(card.unit.unitId, ids).then((result) => {
         if (disposed) return;
         clearPending();
+        if (result.kind === "stale" || result.kind === "busy") return;
         if (result.kind === "saved") {
           showNotice(card, null);
           const n = ids.filter((id) => !before.has(id) && result.unit.resourceIds.includes(id)).length;
@@ -935,10 +949,11 @@ export function renderTeacherUnitsPanel(
 
   const removeResource = (card: CardView, resourceId: string, name: string, index: number): void => {
     const unitTitle = card.unit.title;
-    announcePending(`Removing "${name}" from "${unitTitle}"...`);
+    const clearPending = announcePending(`Removing "${name}" from "${unitTitle}"...`);
     void controller.removeResource(card.unit.unitId, resourceId).then((result) => {
       if (disposed) return;
       clearPending();
+      if (result.kind === "stale" || result.kind === "busy") return;
       if (result.kind === "saved") {
         showNotice(card, null);
         announce(
@@ -952,14 +967,97 @@ export function renderTeacherUnitsPanel(
         return;
       }
       membershipNotice(card, result, "remove");
-      if (result.kind !== "busy" && result.kind !== "stale") {
-        focus(
-          card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`) ??
-            addButtonOf(card) ??
-            card.li.querySelector<HTMLElement>("button"),
-        );
-      }
+      focus(
+        card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`) ??
+          addButtonOf(card) ??
+          card.li.querySelector<HTMLElement>("button"),
+      );
     });
+  };
+
+  const retiredCount = (u: TeacherUnit): number =>
+    resolveUnitResources(u.resourceIds).filter((r) => r.status === "unavailable").length;
+  const plural = (n: number, one: string, many: string): string => (n === 1 ? `1 ${one}` : `${n} ${many}`);
+  const retiredButtonOf = (card: CardView): HTMLElement | null =>
+    card.li.querySelector<HTMLElement>(`[data-testid="units-retired-remove-${card.unit.unitId}"]`);
+
+  // Explicitly confirmed removal of every retired membership in one request
+  // (the server refuses any list that still names one).
+  const removeRetired = (card: CardView, shown: number): void => {
+    const u = card.unit;
+    const before = new Set(u.resourceIds.filter((id) => resolveUnitResources([id])[0].status === "unavailable"));
+    card.confirmRetired = null;
+    const clearPending = announcePending(
+      `Removing ${plural(shown, "unavailable resource", "unavailable resources")} from "${u.title}"...`,
+    );
+    renderCardBody(card);
+    void controller.removeRetiredResources(u.unitId).then((result) => {
+      if (disposed) return;
+      clearPending();
+      if (result.kind === "stale" || result.kind === "busy") return;
+      if (result.kind === "saved") {
+        showNotice(card, null);
+        const removed = Array.from(before).filter((id) => !result.unit.resourceIds.includes(id)).length;
+        announce(
+          result.noop || removed === 0
+            ? `"${result.unit.title}" has no unavailable resources now.`
+            : `Removed ${plural(removed, "unavailable resource", "unavailable resources")} from "${result.unit.title}".`,
+        );
+        focus(addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
+        return;
+      }
+      membershipNotice(card, result, "remove");
+      focus(retiredButtonOf(card) ?? addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
+    });
+  };
+
+  const renderRetiredRepair = (card: CardView, busy: boolean, count: number): HTMLElement => {
+    const u = card.unit;
+    const box = el("div", "shell-units-notice shell-units-notice--conflict shell-units-retired");
+    box.setAttribute("data-testid", `units-retired-${u.unitId}`);
+    if (card.confirmRetired !== count) card.confirmRetired = null;
+    const actions = el("div", "shell-units-actions");
+    if (card.confirmRetired === null) {
+      box.appendChild(
+        el(
+          "p",
+          "shell-units-recovery-message",
+          `${count === 1 ? "1 resource in this unit is" : `${count} resources in this unit are`} no longer available. Remove ${count === 1 ? "it" : "them"} before adding or removing other resources.`,
+        ),
+      );
+      const start = button(`Remove ${plural(count, "unavailable resource", "unavailable resources")}`);
+      start.setAttribute("data-testid", `units-retired-remove-${u.unitId}`);
+      start.disabled = busy;
+      start.addEventListener("click", () => {
+        card.confirmRetired = count;
+        renderCardBody(card);
+        focus(card.li.querySelector<HTMLElement>(`[data-testid="units-retired-confirm-${u.unitId}"]`));
+      });
+      actions.appendChild(start);
+    } else {
+      box.appendChild(
+        el(
+          "p",
+          "shell-units-recovery-message",
+          `Remove ${plural(count, "unavailable resource", "unavailable resources")} from "${u.title}"? The other resources in this unit stay, in the same order.`,
+        ),
+      );
+      const confirm = button(`Remove ${count === 1 ? "it" : `all ${count}`}`, "danger");
+      confirm.setAttribute("data-testid", `units-retired-confirm-${u.unitId}`);
+      confirm.disabled = busy;
+      confirm.addEventListener("click", () => removeRetired(card, count));
+      const cancel = button("Cancel");
+      cancel.setAttribute("data-testid", `units-retired-cancel-${u.unitId}`);
+      cancel.addEventListener("click", () => {
+        card.confirmRetired = null;
+        renderCardBody(card);
+        focus(retiredButtonOf(card));
+      });
+      actions.appendChild(confirm);
+      actions.appendChild(cancel);
+    }
+    box.appendChild(actions);
+    return box;
   };
 
   const renderResources = (card: CardView, busy: boolean): HTMLElement => {
@@ -970,6 +1068,7 @@ export function renderTeacherUnitsPanel(
     section.setAttribute("role", "group");
     section.setAttribute("aria-labelledby", headingId);
     const resolved = resolveUnitResources(u.resourceIds);
+    const retired = retiredCount(u);
     const h = el(
       "h5",
       "shell-units-resources-heading",
@@ -997,17 +1096,16 @@ export function renderTeacherUnitsPanel(
           if (meta.length > 0) text.appendChild(el("span", "shell-units-resource-meta", meta.join(" \u00b7 ")));
         } else {
           text.appendChild(el("span", "shell-lesson-resource-title", name));
-          text.appendChild(
-            el("span", "shell-units-resource-meta", "Remove it to keep changing this unit's resources."),
-          );
         }
         li.appendChild(text);
-        if (u.status === "active") {
+        // Retired rows are removed together (below); one at a time would be
+        // refused while another retired id remains.
+        if (u.status === "active" && entry.status === "available") {
           const remove = button("Remove");
           remove.setAttribute("data-action", "remove-resource");
           remove.setAttribute("data-testid", `units-resource-remove-${u.unitId}-${entry.id}`);
           remove.setAttribute("aria-label", `Remove ${name} from ${u.title}`);
-          remove.disabled = busy;
+          remove.disabled = busy || retired > 0;
           remove.addEventListener("click", () => removeResource(card, entry.id, name, i));
           li.appendChild(remove);
         }
@@ -1016,9 +1114,12 @@ export function renderTeacherUnitsPanel(
       section.appendChild(ol);
     }
     if (u.status !== "active") {
+      card.confirmRetired = null;
       section.appendChild(
         el("p", "shell-units-recovery-note", "Restore this unit to add or remove resources."),
       );
+    } else if (retired > 0) {
+      section.appendChild(renderRetiredRepair(card, busy, retired));
     }
     return section;
   };
@@ -1086,7 +1187,7 @@ export function renderTeacherUnitsPanel(
           add.setAttribute("data-testid", `units-resources-add-${u.unitId}`);
           add.setAttribute("aria-label", `Add resources to ${u.title}`);
           add.setAttribute("aria-expanded", card.picker !== null ? "true" : "false");
-          add.disabled = busy;
+          add.disabled = busy || retiredCount(u) > 0;
           add.addEventListener("click", () => openPicker(card));
           actions.appendChild(add);
           const edit = button("Edit");
@@ -1139,7 +1240,7 @@ export function renderTeacherUnitsPanel(
     notice.setAttribute("role", "alert");
     notice.hidden = true;
     li.appendChild(notice);
-    return { li, unit, gone: false, editor: null, picker: null, notice, body };
+    return { li, unit, gone: false, editor: null, picker: null, confirmRetired: null, notice, body };
   };
 
   const renderList = (s: TeacherUnitsViewState): void => {

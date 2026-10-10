@@ -185,6 +185,11 @@ export type TeacherUnitsController = {
   ) => Promise<UnitMutationResult>;
   // Removes one id from this unit only.
   readonly removeResource: (unitId: string, resourceId: string) => Promise<UnitMutationResult>;
+  // Removes every retired id (stored but no longer RA-1 unitPlaceable) from
+  // this unit in one request, keeping the placeable ids in their order.
+  // The server refuses any list that still names a retired id, so a unit
+  // holding retired ids can only be repaired this way.
+  readonly removeRetiredResources: (unitId: string) => Promise<UnitMutationResult>;
   readonly dispose: () => void;
 };
 
@@ -347,37 +352,95 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   const visible = (u: TeacherUnit): boolean =>
     u.grade === state.grade && (state.showArchived || u.status === "active");
 
+  // ---------- Response ordering (U2.3 remediation) ----------
+  //
+  // Responses can arrive in any order. Two rules keep an older response from
+  // overwriting newer state:
+  // - Revision monotonicity: the server increments `revision` on every
+  //   accepted change to a unit, so a response carrying a LOWER revision
+  //   than the unit already held is older and is ignored. Equal revisions
+  //   are the same server state.
+  // - Request generations: every adopt or drop stamps the unit with the
+  //   next `stateSeq`. A response is applied with the `stateSeq` read when
+  //   its request was sent; it never re-adds a unit dropped after that, never
+  //   drops a unit adopted after that, and a list response keeps units
+  //   adopted after it was requested.
+  // This is client ordering only. Authorization and `expectedRevision`
+  // stay server-enforced; nothing here is ever resent.
+  let stateSeq = 0;
+  const touched = new Map<string, { readonly seq: number; readonly dropped: boolean }>();
+  const changedSince = (unitId: string, since: number) => {
+    const t = touched.get(unitId);
+    return t !== undefined && t.seq > since ? t : null;
+  };
+
+  // Record one authoritative unit read or written by a request sent at
+  // `since`. Returns the unit now held (which may be newer), or null when
+  // the unit was dropped after the request was sent.
+  const accept = (unit: TeacherUnit, since: number): TeacherUnit | null => {
+    const later = changedSince(unit.unitId, since);
+    if (later !== null && later.dropped) return null;
+    const held = known.get(unit.unitId);
+    if (held !== undefined && held.revision > unit.revision) return held;
+    if (held !== undefined && held.revision === unit.revision && later !== null) return held;
+    known.set(unit.unitId, unit);
+    touched.set(unit.unitId, { seq: ++stateSeq, dropped: false });
+    return unit;
+  };
+
   // Adopt one authoritative unit (or drop it from the list when it no
   // longer belongs to this view; it stays known).
-  const adopt = (unit: TeacherUnit): void => {
-    known.set(unit.unitId, unit);
-    if (state.list.kind !== "ready") return;
+  const adopt = (unit: TeacherUnit, since: number = stateSeq): TeacherUnit | null => {
+    const held = accept(unit, since);
+    if (held === null || held !== unit) return held;
+    if (state.list.kind !== "ready") return held;
     const rest = state.list.units.filter((u) => u.unitId !== unit.unitId);
     const next = visible(unit) ? [...rest, unit].sort(compareTeacherUnits) : rest;
     set({ list: { kind: "ready", units: Object.freeze(next) } });
+    return held;
   };
 
-  const drop = (unitId: string): void => {
+  // `notFound` for a request sent at `since`; ignored when the unit was
+  // adopted after that.
+  const drop = (unitId: string, since: number = stateSeq): void => {
+    if (changedSince(unitId, since) !== null) return;
     known.delete(unitId);
+    touched.set(unitId, { seq: ++stateSeq, dropped: true });
     if (state.list.kind !== "ready") return;
     set({
       list: { kind: "ready", units: Object.freeze(state.list.units.filter((u) => u.unitId !== unitId)) },
     });
   };
 
+  // Apply a list response requested at `since`; returns the effective units.
+  const acceptList = (units: ReadonlyArray<TeacherUnit>, since: number): TeacherUnit[] => {
+    const out = new Map<string, TeacherUnit>();
+    for (const u of units) {
+      const held = accept(u, since);
+      if (held !== null) out.set(held.unitId, held);
+    }
+    // Units adopted after the request (for example a confirmed create or
+    // membership change) that the older response does not include.
+    for (const [unitId, t] of touched) {
+      if (t.seq <= since || t.dropped || out.has(unitId)) continue;
+      const held = known.get(unitId);
+      if (held !== undefined) out.set(unitId, held);
+    }
+    return Array.from(out.values());
+  };
+
   const load = async (): Promise<void> => {
     if (!alive()) return;
     const seq = ++loadSeq;
+    const since = stateSeq;
     const grade = state.grade;
     const includeArchived = state.showArchived;
     set({ list: { kind: "loading" } });
     const outcome = await runTeacherUnitMutation(() => deps.callables.list({ grade, includeArchived }));
     if (!alive() || seq !== loadSeq) return;
     if (outcome.ok) {
-      for (const u of outcome.result.units) known.set(u.unitId, u);
-      const list = outcome.result.units
+      const list = acceptList(outcome.result.units, since)
         .filter((u) => u.grade === grade && (includeArchived || u.status === "active"))
-        .slice()
         .sort(compareTeacherUnits);
       set({ list: { kind: "ready", units: Object.freeze(list) } });
     } else {
@@ -392,6 +455,17 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     set({ busyUnitIds: next });
   };
 
+  // Read one unit after a failed mutation; returns the unit now held (null
+  // when it could not be read or no longer exists).
+  const reread = async (unitId: string): Promise<TeacherUnit | null | "stale"> => {
+    const since = stateSeq;
+    const fresh = await runTeacherUnitMutation(() => deps.callables.get({ unitId }));
+    if (!alive()) return "stale";
+    if (fresh.ok) return adopt(fresh.result.unit, since);
+    if (fresh.error.category === "notFound") drop(unitId, since);
+    return null;
+  };
+
   // Shared handling for revision-guarded single-unit mutations.
   const mutate = async (
     unitId: string,
@@ -402,6 +476,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     if (current === undefined) {
       return { kind: "error", error: normalizeTeacherUnitError({ details: { code: "teacherUnits.notFound" } }) };
     }
+    const since = stateSeq;
     const pending = gate.run(unitId, () => runTeacherUnitMutation(() => run(current)));
     if (pending === null) return { kind: "busy" };
     busy(unitId, true);
@@ -409,25 +484,18 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     if (!alive()) return { kind: "stale" };
     busy(unitId, false);
     if (outcome.ok) {
-      adopt(outcome.result.unit);
+      adopt(outcome.result.unit, since);
       return { kind: "saved", unit: outcome.result.unit, noop: outcome.result.noop };
     }
     const error = outcome.error;
     if (error.category === "notFound") {
-      drop(unitId);
+      drop(unitId, since);
       return { kind: "error", error };
     }
     if (error.category === "conflict" || error.category === "invalidStatus") {
       // Fetch the authoritative unit; never resend the stale request.
-      const fresh = await runTeacherUnitMutation(() => deps.callables.get({ unitId }));
-      if (!alive()) return { kind: "stale" };
-      let latest: TeacherUnit | null = null;
-      if (fresh.ok) {
-        latest = fresh.result.unit;
-        adopt(latest);
-      } else if (fresh.error.category === "notFound") {
-        drop(unitId);
-      }
+      const latest = await reread(unitId);
+      if (latest === "stale") return { kind: "stale" };
       if (latest !== null && latest.status === "archived") return { kind: "archived", latest, error };
       if (error.category === "invalidStatus") return { kind: "archived", latest, error };
       return { kind: "conflict", latest, error };
@@ -468,13 +536,31 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     }
     // A placement refusal is definitive (nothing written) but means the held
     // list may be stale: show the authoritative unit with the refusal.
-    const refused = result.error.category === "resourceRejected";
-    const fresh = await runTeacherUnitMutation(() => deps.callables.get({ unitId }));
-    if (!alive()) return { kind: "stale" };
-    if (fresh.ok) adopt(fresh.result.unit);
-    else if (fresh.error.category === "notFound") drop(unitId);
-    if (refused) return result;
-    return { kind: "uncertain", latest: fresh.ok ? fresh.result.unit : null, error: result.error };
+    const latest = await reread(unitId);
+    if (latest === "stale") return { kind: "stale" };
+    if (result.error.category === "resourceRejected") return result;
+    return { kind: "uncertain", latest, error: result.error };
+  };
+
+  // Retired = stored in the unit but not RA-1 unitPlaceable in this client.
+  const isRetired = (id: string): boolean => getPlaceableResourceById(id) === null;
+  const retiredIds = (u: TeacherUnit): ReadonlyArray<string> => u.resourceIds.filter(isRetired);
+
+  // A list the server would refuse (it still names a retired id) is not
+  // sent. `removing` is the one id the request drops, if any.
+  const retiredBlock = (unitId: string, removing: string | null): UnitMutationResult | null => {
+    const held = known.get(unitId);
+    if (held === undefined || held.status !== "active") return null;
+    const remaining = retiredIds(held).filter((id) => id !== removing);
+    if (remaining.length === 0) return null;
+    return {
+      kind: "error",
+      error: Object.freeze({
+        ...normalizeTeacherUnitError({ details: { code: "teacherUnits.resourceNotPlaceable", resourceIds: remaining } }),
+        message:
+          "This unit has resources that are no longer available. Remove them first, then change this unit's resources.",
+      }),
+    };
   };
 
   const coordinatorForKey = (key: string): CreateUnitCreateCoordinator | null => {
@@ -569,6 +655,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       if (!alive()) return;
       scan();
       set({ recoveryCheck: { kind: "checking" } });
+      const since = stateSeq;
       // Every grade and status: the unit may have been archived since.
       const outcome = await runTeacherUnitMutation(() =>
         deps.callables.list({ includeArchived: true }),
@@ -578,7 +665,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
         set({ recoveryCheck: { kind: "error", error: outcome.error } });
         return;
       }
-      for (const u of outcome.result.units) known.set(u.unitId, u);
+      acceptList(outcome.result.units, since);
       set({ recoveryCheck: { kind: "checked", units: Object.freeze(outcome.result.units.slice()) } });
       void load();
     },
@@ -653,6 +740,8 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     restoreUnit: (unitId) =>
       mutate(unitId, (u) => deps.callables.restore({ unitId, expectedRevision: u.revision })),
     addResources: (unitId, resourceIds) => {
+      const blocked = retiredBlock(unitId, null);
+      if (blocked !== null) return Promise.resolve(blocked);
       for (const id of resourceIds) {
         if (getPlaceableResourceById(id) === null) {
           return Promise.resolve<UnitMutationResult>({
@@ -688,9 +777,16 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       }
       return setMembership(unitId, appended);
     },
-    removeResource: (unitId, resourceId) =>
-      setMembership(unitId, (u) =>
+    removeResource: (unitId, resourceId) => {
+      const blocked = retiredBlock(unitId, resourceId);
+      if (blocked !== null) return Promise.resolve(blocked);
+      return setMembership(unitId, (u) =>
         u.resourceIds.includes(resourceId) ? u.resourceIds.filter((id) => id !== resourceId) : null,
+      );
+    },
+    removeRetiredResources: (unitId) =>
+      setMembership(unitId, (u) =>
+        retiredIds(u).length === 0 ? null : u.resourceIds.filter((id) => !isRetired(id)),
       ),
     dispose: () => {
       disposed = true;
@@ -719,6 +815,11 @@ export function createTeacherUnitsSurfaceSeam(deps: {
   readonly callables: TeacherUnitsCallables;
   // The current Firebase Auth uid (null when signed out), read at call time.
   readonly readFirebaseUid: () => string | null;
+  // The canonical active-teacher session the app currently holds (uid and
+  // school from bootstrap), or null once it is gone or being replaced (a
+  // sign-out, account switch, or new bootstrap after a school transfer).
+  // Read at call time.
+  readonly readActiveTeacher: () => { readonly uid: string; readonly schoolId: string } | null;
   readonly createStore: (scope: TeacherUnitCreateContext) => CreateAttemptStore;
 }): TeacherUnitsSurfaceSeam {
   return Object.freeze({
@@ -727,8 +828,14 @@ export function createTeacherUnitsSurfaceSeam(deps: {
       return createTeacherUnitsController({
         callables: deps.callables,
         session,
-        // The canonical Firebase uid must still be the mounted teacher's.
-        readCurrentContext: () => (deps.readFirebaseUid() === uid ? session : null),
+        // Both the Firebase uid and the canonical session's teacher AND
+        // school must still be the mounted ones. A client-side guard only:
+        // the server re-verifies identity and school on every call.
+        readCurrentContext: () => {
+          if (deps.readFirebaseUid() !== uid) return null;
+          const active = deps.readActiveTeacher();
+          return active !== null && active.uid === uid && active.schoolId === schoolId ? session : null;
+        },
         store: deps.createStore(session),
         initialGrade,
       });

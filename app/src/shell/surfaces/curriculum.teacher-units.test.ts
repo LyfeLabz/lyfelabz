@@ -168,6 +168,7 @@ describe("Browse | My Units switch", () => {
         return createTeacherUnitsSurfaceSeam({
           callables: c as unknown as TeacherUnitsCallables,
           readFirebaseUid: () => "teacherA",
+          readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),
           createStore: (scope) => createTeacherUnitCreateAttemptStore(scope, () => mem.storage),
         }).createController(input);
       },
