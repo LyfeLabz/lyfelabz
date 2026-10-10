@@ -14,6 +14,14 @@ import {
   type TeacherUnitsViewState,
   type UnitMutationResult,
 } from "../../teacherUnits/unitsController";
+import {
+  filterPlaceableResources,
+  getPlaceableResources,
+  resolveUnitResources,
+  resourceEligibility,
+} from "../../teacherUnits/placeableResources";
+import type { FlatResource } from "../../curriculum/resourceProjection";
+import { FORMAL_RESOURCE_LABEL, type FormalResourceType } from "../../curriculum/curriculumManifest";
 
 // U2.2 - My Units panel inside Curriculum (docs/platform/TEACHER_UNITS.md
 // §9.4). DOM only: no Firebase, no browser storage. Everything it shows
@@ -49,12 +57,19 @@ function gradeLabel(g: TeacherUnitGrade): string {
   return `Grade ${g}`;
 }
 
+// Teacher-facing type label, the same labels Curriculum Browse uses.
+function resourceTypeLabel(r: FlatResource): string {
+  if (r.type === "lesson") return "Lesson";
+  return FORMAL_RESOURCE_LABEL[r.type as FormalResourceType] ?? "Resource";
+}
+
 type CardView = {
   readonly li: HTMLLIElement;
   unit: TeacherUnit;
   // The server no longer returns this unit (deleted or another school).
   gone: boolean;
   editor: EditorView | null;
+  picker: PickerView | null;
   readonly notice: HTMLParagraphElement;
   readonly body: HTMLDivElement;
 };
@@ -65,6 +80,16 @@ type EditorView = {
   readonly description: HTMLTextAreaElement;
   readonly error: HTMLParagraphElement;
   readonly save: HTMLButtonElement;
+};
+
+// U2.3 resource picker: one long-lived form per card, so the teacher's
+// selection and search survive refreshes and conflicts.
+type PickerView = {
+  readonly form: HTMLFormElement;
+  readonly search: HTMLInputElement;
+  readonly options: HTMLUListElement;
+  readonly submit: HTMLButtonElement;
+  readonly selected: Set<string>;
 };
 
 export function renderTeacherUnitsPanel(
@@ -126,7 +151,7 @@ export function renderTeacherUnitsPanel(
   heading.tabIndex = -1;
   root.appendChild(heading);
   root.appendChild(
-    el("p", "shell-units-intro", "Create your own units for each grade. Adding resources to units comes later."),
+    el("p", "shell-units-intro", "Create your own units for each grade, then add LyfeLabz resources to them."),
   );
 
   // Grade selector and archived toggle.
@@ -627,6 +652,7 @@ export function renderTeacherUnitsPanel(
         );
         return;
       case "error":
+      case "uncertain":
         showNotice(card, result.error.message);
         return;
       case "busy":
@@ -691,6 +717,312 @@ export function renderTeacherUnitsPanel(
     focus(title);
   };
 
+  // ---------- Resources (U2.3) ----------
+  //
+  // Membership changes go through the controller (teacherUnitsSetResources
+  // with the held revision). Nothing is shown as added or removed until the
+  // server confirms it; the list always renders the last server state.
+
+  // Our own pending message in the shared status region; cleared (only if
+  // still ours) when the request settles without a confirmation.
+  let pendingMessage: string | null = null;
+  const announcePending = (msg: string): void => {
+    pendingMessage = msg;
+    announce(msg);
+  };
+  const clearPending = (): void => {
+    if (pendingMessage !== null && status.textContent === pendingMessage) status.textContent = "";
+    pendingMessage = null;
+  };
+
+  const addButtonOf = (card: CardView): HTMLElement | null =>
+    card.li.querySelector<HTMLElement>(`[data-testid="units-resources-add-${card.unit.unitId}"]`);
+
+  // Notices for a membership request that did not confirm a change.
+  const membershipNotice = (card: CardView, result: UnitMutationResult, action: "add" | "remove"): void => {
+    const nothing = action === "add" ? "nothing was added" : "nothing was removed";
+    switch (result.kind) {
+      case "conflict":
+        showNotice(
+          card,
+          result.latest === null
+            ? `This unit changed somewhere else, so ${nothing}, and its latest version couldn't be loaded. Refresh, then try again.`
+            : `This unit changed somewhere else, so ${nothing}. Its current resources are shown. Review them, then try again.`,
+          "conflict",
+        );
+        return;
+      case "archived":
+        showNotice(
+          card,
+          `This unit is archived, so ${nothing}. Restore it to change its resources.`,
+          "conflict",
+        );
+        return;
+      case "uncertain":
+        showNotice(
+          card,
+          result.latest === null
+            ? "LyfeLabz couldn't confirm whether your change was saved, and the unit couldn't be loaded. Refresh before trying again."
+            : "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again.",
+          "conflict",
+        );
+        return;
+      case "error":
+        showNotice(card, result.error.message);
+        return;
+      default:
+        return;
+    }
+  };
+
+  const closePicker = (card: CardView, focusAdd: boolean): void => {
+    card.picker?.form.remove();
+    card.picker = null;
+    if (card.li.isConnected) renderCardBody(card);
+    if (focusAdd) focus(addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button") ?? heading);
+  };
+
+  const renderPickerOptions = (card: CardView): void => {
+    const picker = card.picker;
+    if (picker === null) return;
+    const u = card.unit;
+    const busy = controller.getState().busyUnitIds.has(u.unitId);
+    const present = new Set(u.resourceIds);
+    // A resource that joined the unit (here or elsewhere) is no longer a choice.
+    for (const id of Array.from(picker.selected)) if (present.has(id)) picker.selected.delete(id);
+    const matches = filterPlaceableResources({ unitGrade: u.grade, search: picker.search.value });
+    const gradeHasResources = filterPlaceableResources({ unitGrade: u.grade }).length > 0;
+    rebuildKeepingFocus(
+      picker.options,
+      () => {
+        if (!gradeHasResources) {
+          picker.options.appendChild(
+            el("li", "shell-units-empty", `There are no LyfeLabz resources for ${gradeLabel(u.grade)} units yet.`),
+          );
+          return;
+        }
+        if (matches.length === 0) {
+          picker.options.appendChild(el("li", "shell-units-empty", "No resources match your search."));
+          return;
+        }
+        for (const r of matches) {
+          const li = el("li", "shell-units-picker-option");
+          const label = el("label", "shell-units-picker-label");
+          const box = el("input");
+          box.type = "checkbox";
+          box.value = r.id;
+          box.setAttribute("data-testid", `units-picker-option-${u.unitId}-${r.id}`);
+          const inUnit = present.has(r.id);
+          box.checked = inUnit || picker.selected.has(r.id);
+          box.disabled = inUnit || busy;
+          box.addEventListener("change", () => {
+            if (box.checked) picker.selected.add(r.id);
+            else picker.selected.delete(r.id);
+            updatePickerSubmit(card);
+          });
+          label.appendChild(box);
+          const text = el("span", "shell-units-resource-text");
+          text.appendChild(el("span", "shell-lesson-resource-type", resourceTypeLabel(r)));
+          text.appendChild(el("span", "shell-lesson-resource-title", r.title));
+          if (inUnit) text.appendChild(el("span", "shell-units-resource-meta", "Already in this unit"));
+          else if (resourceEligibility(r) === "organizeOnly") {
+            text.appendChild(el("span", "shell-units-resource-meta", "Can be organized here, not assigned"));
+          }
+          label.appendChild(text);
+          li.appendChild(label);
+          picker.options.appendChild(li);
+        }
+      },
+      () => picker.search,
+    );
+    updatePickerSubmit(card);
+  };
+
+  const updatePickerSubmit = (card: CardView): void => {
+    const picker = card.picker;
+    if (picker === null) return;
+    const busy = controller.getState().busyUnitIds.has(card.unit.unitId);
+    const n = picker.selected.size;
+    picker.submit.disabled = n === 0 || busy || card.unit.status !== "active";
+    picker.submit.setAttribute("aria-busy", busy ? "true" : "false");
+    picker.submit.textContent = busy ? "Adding..." : n === 0 ? "Add selected" : `Add selected (${n})`;
+  };
+
+  const openPicker = (card: CardView): void => {
+    if (card.picker !== null) {
+      focus(card.picker.search);
+      return;
+    }
+    const u = card.unit;
+    const form = el("form", "shell-units-form shell-units-picker");
+    form.noValidate = true;
+    form.setAttribute("data-testid", `units-picker-${u.unitId}`);
+    const headingId = uid("picker-heading");
+    form.setAttribute("aria-labelledby", headingId);
+    const h = el("h5", "shell-units-subheading", `Add resources to "${u.title}"`);
+    h.id = headingId;
+    form.appendChild(h);
+    form.appendChild(
+      el("p", "shell-units-recovery-note", `Showing LyfeLabz resources for ${gradeLabel(u.grade)}.`),
+    );
+    const search = el("input", "shell-units-input");
+    search.type = "search";
+    search.autocomplete = "off";
+    form.appendChild(field("Search resources", search, `units-picker-search-${u.unitId}`));
+    const fieldset = el("fieldset", "shell-units-picker-fieldset");
+    fieldset.appendChild(el("legend", "shell-units-field-label", "Choose resources"));
+    const options = el("ul", "shell-units-picker-options");
+    options.setAttribute("data-testid", `units-picker-options-${u.unitId}`);
+    fieldset.appendChild(options);
+    form.appendChild(fieldset);
+    const actions = el("div", "shell-units-actions");
+    const submit = button("Add selected", "primary");
+    submit.type = "submit";
+    submit.setAttribute("data-testid", `units-picker-submit-${u.unitId}`);
+    const cancel = button("Cancel");
+    cancel.setAttribute("data-testid", `units-picker-cancel-${u.unitId}`);
+    actions.appendChild(submit);
+    actions.appendChild(cancel);
+    form.appendChild(actions);
+    const picker: PickerView = { form, search, options, submit, selected: new Set<string>() };
+    card.picker = picker;
+
+    search.addEventListener("input", () => renderPickerOptions(card));
+    cancel.addEventListener("click", () => closePicker(card, true));
+    form.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        closePicker(card, true);
+      }
+    });
+    form.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      if (submit.disabled || picker.selected.size === 0) return;
+      // Canonical registry order, not click order.
+      const ids = getPlaceableResources()
+        .map((r) => r.id)
+        .filter((id) => picker.selected.has(id));
+      const unitTitle = card.unit.title;
+      const before = new Set(card.unit.resourceIds);
+      announcePending(`Adding ${ids.length === 1 ? "1 resource" : `${ids.length} resources`} to "${unitTitle}"...`);
+      void controller.addResources(card.unit.unitId, ids).then((result) => {
+        if (disposed) return;
+        clearPending();
+        if (result.kind === "saved") {
+          showNotice(card, null);
+          const n = ids.filter((id) => !before.has(id) && result.unit.resourceIds.includes(id)).length;
+          announce(
+            result.noop
+              ? "Those resources are already in this unit."
+              : `Added ${n === 1 ? "1 resource" : `${n} resources`} to "${result.unit.title}".`,
+          );
+          if (card.picker === picker) closePicker(card, true);
+          return;
+        }
+        membershipNotice(card, result, "add");
+        if (result.kind === "archived" && card.picker === picker) closePicker(card, true);
+        else if (card.picker === picker) {
+          renderPickerOptions(card);
+          focus(picker.submit.disabled ? picker.search : picker.submit);
+        } else focus(addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
+      });
+    });
+    card.li.insertBefore(form, card.notice);
+    renderCardBody(card);
+    renderPickerOptions(card);
+    focus(search);
+  };
+
+  const removeResource = (card: CardView, resourceId: string, name: string, index: number): void => {
+    const unitTitle = card.unit.title;
+    announcePending(`Removing "${name}" from "${unitTitle}"...`);
+    void controller.removeResource(card.unit.unitId, resourceId).then((result) => {
+      if (disposed) return;
+      clearPending();
+      if (result.kind === "saved") {
+        showNotice(card, null);
+        announce(
+          result.noop
+            ? `"${name}" is no longer in "${result.unit.title}".`
+            : `Removed "${name}" from "${result.unit.title}".`,
+        );
+        // Focus the row that took this one's place, else the Add button.
+        const removes = card.li.querySelectorAll<HTMLElement>("[data-action=remove-resource]");
+        focus(removes[Math.min(index, removes.length - 1)] ?? addButtonOf(card) ?? heading);
+        return;
+      }
+      membershipNotice(card, result, "remove");
+      if (result.kind !== "busy" && result.kind !== "stale") {
+        focus(
+          card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`) ??
+            addButtonOf(card) ??
+            card.li.querySelector<HTMLElement>("button"),
+        );
+      }
+    });
+  };
+
+  const renderResources = (card: CardView, busy: boolean): HTMLElement => {
+    const u = card.unit;
+    const section = el("div", "shell-units-resources");
+    section.setAttribute("data-testid", `units-resources-${u.unitId}`);
+    const headingId = uid("resources-heading");
+    section.setAttribute("role", "group");
+    section.setAttribute("aria-labelledby", headingId);
+    const resolved = resolveUnitResources(u.resourceIds);
+    const h = el(
+      "h5",
+      "shell-units-resources-heading",
+      resolved.length === 0 ? "Resources" : `Resources (${resolved.length})`,
+    );
+    h.id = headingId;
+    section.appendChild(h);
+    if (resolved.length === 0) {
+      section.appendChild(el("p", "shell-units-empty", "No resources in this unit yet."));
+    } else {
+      // Server order (unit.resourceIds); never re-sorted here.
+      const ol = el("ol", "shell-units-resource-list");
+      ol.setAttribute("data-testid", `units-resource-list-${u.unitId}`);
+      resolved.forEach((entry, i) => {
+        const li = el("li", "shell-units-resource");
+        li.setAttribute("data-resource-id", entry.id);
+        const text = el("span", "shell-units-resource-text");
+        const name = entry.status === "available" ? entry.resource.title : "A resource that is no longer available";
+        if (entry.status === "available") {
+          text.appendChild(el("span", "shell-lesson-resource-type", resourceTypeLabel(entry.resource)));
+          text.appendChild(el("span", "shell-lesson-resource-title", name));
+          const meta: string[] = [];
+          if (entry.resource.grade !== null) meta.push(`Grade ${entry.resource.grade}`);
+          if (resourceEligibility(entry.resource) === "organizeOnly") meta.push("Not assignable");
+          if (meta.length > 0) text.appendChild(el("span", "shell-units-resource-meta", meta.join(" \u00b7 ")));
+        } else {
+          text.appendChild(el("span", "shell-lesson-resource-title", name));
+          text.appendChild(
+            el("span", "shell-units-resource-meta", "Remove it to keep changing this unit's resources."),
+          );
+        }
+        li.appendChild(text);
+        if (u.status === "active") {
+          const remove = button("Remove");
+          remove.setAttribute("data-action", "remove-resource");
+          remove.setAttribute("data-testid", `units-resource-remove-${u.unitId}-${entry.id}`);
+          remove.setAttribute("aria-label", `Remove ${name} from ${u.title}`);
+          remove.disabled = busy;
+          remove.addEventListener("click", () => removeResource(card, entry.id, name, i));
+          li.appendChild(remove);
+        }
+        ol.appendChild(li);
+      });
+      section.appendChild(ol);
+    }
+    if (u.status !== "active") {
+      section.appendChild(
+        el("p", "shell-units-recovery-note", "Restore this unit to add or remove resources."),
+      );
+    }
+    return section;
+  };
+
   const renderCardBody = (card: CardView): void => {
     const u = card.unit;
     const busy = controller.getState().busyUnitIds.has(u.unitId);
@@ -746,8 +1078,17 @@ export function renderTeacherUnitsPanel(
         if (u.description.length > 0) {
           card.body.appendChild(el("p", "shell-units-card-description", u.description));
         }
+        card.body.appendChild(renderResources(card, busy));
         const actions = el("div", "shell-units-actions");
         if (u.status === "active") {
+          const add = button("Add resources");
+          add.setAttribute("data-action", "add-resources");
+          add.setAttribute("data-testid", `units-resources-add-${u.unitId}`);
+          add.setAttribute("aria-label", `Add resources to ${u.title}`);
+          add.setAttribute("aria-expanded", card.picker !== null ? "true" : "false");
+          add.disabled = busy;
+          add.addEventListener("click", () => openPicker(card));
+          actions.appendChild(add);
           const edit = button("Edit");
           edit.setAttribute("data-action", "edit");
           edit.setAttribute("data-testid", `units-edit-${u.unitId}`);
@@ -780,6 +1121,12 @@ export function renderTeacherUnitsPanel(
       },
       () => (card.li.isConnected ? card.li.querySelector<HTMLElement>("button") : heading),
     );
+    if (card.picker !== null) {
+      if (u.status !== "active") {
+        card.picker.form.remove();
+        card.picker = null;
+      } else renderPickerOptions(card);
+    }
   };
 
   const makeCard = (unit: TeacherUnit): CardView => {
@@ -792,7 +1139,7 @@ export function renderTeacherUnitsPanel(
     notice.setAttribute("role", "alert");
     notice.hidden = true;
     li.appendChild(notice);
-    return { li, unit, gone: false, editor: null, notice, body };
+    return { li, unit, gone: false, editor: null, picker: null, notice, body };
   };
 
   const renderList = (s: TeacherUnitsViewState): void => {

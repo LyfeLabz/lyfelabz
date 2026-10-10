@@ -13,8 +13,10 @@ import {
   type TeacherUnitCreatePayload,
 } from "./saveCoordination";
 import { validateUnitDescription, validateUnitTitle } from "./fieldRules";
+import { getPlaceableResourceById } from "./placeableResources";
 import {
   compareTeacherUnits,
+  TEACHER_UNIT_RESOURCES_MAX,
   type TeacherUnit,
   type TeacherUnitGrade,
   type TeacherUnitsCallables,
@@ -131,6 +133,11 @@ export type UnitMutationResult =
   // known). Nothing was saved; edits are the caller's to keep.
   | { readonly kind: "archived"; readonly latest: TeacherUnit | null; readonly error: TeacherUnitError }
   | { readonly kind: "error"; readonly error: TeacherUnitError }
+  // U2.3 membership only: the request may or may not have committed (lost
+  // response, malformed response, or a refusal that names resources).
+  // `latest` is the authoritative unit fetched afterwards (null when it
+  // could not be fetched). Never resent automatically.
+  | { readonly kind: "uncertain"; readonly latest: TeacherUnit | null; readonly error: TeacherUnitError }
   // Another mutation for this unit is in flight; nothing was sent.
   | { readonly kind: "busy" }
   // The controller was disposed or the account changed; ignore.
@@ -169,6 +176,15 @@ export type TeacherUnitsController = {
   readonly updateUnit: (unitId: string, edit: UnitEdit) => Promise<UnitMutationResult>;
   readonly archiveUnit: (unitId: string) => Promise<UnitMutationResult>;
   readonly restoreUnit: (unitId: string) => Promise<UnitMutationResult>;
+  // U2.3 membership (teacherUnitsSetResources). Both send the complete
+  // list derived from the last server state held, with its revision.
+  // Appends placeable ids not already in the unit, in the given order.
+  readonly addResources: (
+    unitId: string,
+    resourceIds: ReadonlyArray<string>,
+  ) => Promise<UnitMutationResult>;
+  // Removes one id from this unit only.
+  readonly removeResource: (unitId: string, resourceId: string) => Promise<UnitMutationResult>;
   readonly dispose: () => void;
 };
 
@@ -419,6 +435,48 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     return { kind: "error", error };
   };
 
+  // U2.3 membership. Archived units are refused before sending (the server
+  // refuses them too, TEACHER_UNITS.md §9.1). A failure whose outcome is
+  // unknown (network, malformed response) is reconciled by reading the
+  // unit, never by resending: a later deliberate attempt carries the
+  // re-read revision, so it cannot overwrite another session's change.
+  const setMembership = async (
+    unitId: string,
+    next: (current: TeacherUnit) => ReadonlyArray<string> | null,
+  ): Promise<UnitMutationResult> => {
+    if (!alive()) return { kind: "stale" };
+    const held = known.get(unitId);
+    if (held !== undefined && held.status !== "active") {
+      return {
+        kind: "archived",
+        latest: held,
+        error: normalizeTeacherUnitError({ details: { code: "teacherUnits.invalidStatus" } }),
+      };
+    }
+    if (held !== undefined && next(held) === null) return { kind: "saved", unit: held, noop: true };
+    const result = await mutate(unitId, (u) => {
+      const resourceIds = next(u) ?? u.resourceIds;
+      return deps.callables.setResources({ unitId, expectedRevision: u.revision, resourceIds });
+    });
+    if (
+      result.kind !== "error" ||
+      (result.error.category !== "network" &&
+        result.error.category !== "unexpected" &&
+        result.error.category !== "resourceRejected")
+    ) {
+      return result;
+    }
+    // A placement refusal is definitive (nothing written) but means the held
+    // list may be stale: show the authoritative unit with the refusal.
+    const refused = result.error.category === "resourceRejected";
+    const fresh = await runTeacherUnitMutation(() => deps.callables.get({ unitId }));
+    if (!alive()) return { kind: "stale" };
+    if (fresh.ok) adopt(fresh.result.unit);
+    else if (fresh.error.category === "notFound") drop(unitId);
+    if (refused) return result;
+    return { kind: "uncertain", latest: fresh.ok ? fresh.result.unit : null, error: result.error };
+  };
+
   const coordinatorForKey = (key: string): CreateUnitCreateCoordinator | null => {
     const r = restored.get(key);
     if (r !== undefined) return r;
@@ -594,6 +652,46 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       mutate(unitId, (u) => deps.callables.archive({ unitId, expectedRevision: u.revision })),
     restoreUnit: (unitId) =>
       mutate(unitId, (u) => deps.callables.restore({ unitId, expectedRevision: u.revision })),
+    addResources: (unitId, resourceIds) => {
+      for (const id of resourceIds) {
+        if (getPlaceableResourceById(id) === null) {
+          return Promise.resolve<UnitMutationResult>({
+            kind: "error",
+            error: normalizeTeacherUnitError({
+              details: { code: "teacherUnits.resourceNotPlaceable", resourceIds: [id] },
+            }),
+          });
+        }
+      }
+      // Duplicates are filtered against the held server list; the server
+      // still refuses any duplicate it sees (`duplicateResource`).
+      const appended = (u: TeacherUnit): ReadonlyArray<string> | null => {
+        const present = new Set(u.resourceIds);
+        const added: string[] = [];
+        for (const id of resourceIds) {
+          if (present.has(id)) continue;
+          present.add(id);
+          added.push(id);
+        }
+        return added.length === 0 ? null : [...u.resourceIds, ...added];
+      };
+      const held = known.get(unitId);
+      const next = held === undefined ? null : appended(held);
+      if (next !== null && next.length > TEACHER_UNIT_RESOURCES_MAX) {
+        return Promise.resolve<UnitMutationResult>({
+          kind: "error",
+          error: Object.freeze({
+            ...normalizeTeacherUnitError({ details: { code: "teacherUnits.invalidResourceIds" } }),
+            message: `A unit can hold up to ${TEACHER_UNIT_RESOURCES_MAX} resources. Remove some before adding more.`,
+          }),
+        });
+      }
+      return setMembership(unitId, appended);
+    },
+    removeResource: (unitId, resourceId) =>
+      setMembership(unitId, (u) =>
+        u.resourceIds.includes(resourceId) ? u.resourceIds.filter((id) => id !== resourceId) : null,
+      ),
     dispose: () => {
       disposed = true;
       listeners.clear();

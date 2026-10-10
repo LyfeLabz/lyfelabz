@@ -1127,13 +1127,40 @@
     border-radius: var(--tw-radius-pill);
   }
   .shell-units-empty { margin: 0 0 0.75rem 0; color: var(--tw-ink-muted); }
+  /* U2.3 unit resources and the Add resources picker. */
+  .shell-units-resources { margin-top: 0.75rem; }
+  .shell-units-resources-heading { margin: 0 0 0.4rem 0; font-size: 0.95rem; color: var(--tw-ink-soft); }
+  .shell-units-resources .shell-units-empty { margin: 0; }
+  .shell-units-resource-list,
+  .shell-units-picker-options { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+  .shell-units-resource {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-card);
+  }
+  .shell-units-resource-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; overflow-wrap: anywhere; }
+  .shell-units-resource-meta { font-size: 0.85rem; color: var(--tw-ink-muted); }
+  .shell-units-card .shell-units-picker { margin-top: 0.75rem; }
+  .shell-units-picker-fieldset { margin: 0; padding: 0; border: none; min-width: 0; }
+  .shell-units-picker-fieldset legend { margin-bottom: 0.4rem; padding: 0; }
+  .shell-units-picker-options { max-height: 22rem; overflow-y: auto; }
+  .shell-units-picker-label { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.35rem 0.25rem; cursor: pointer; }
+  .shell-units-picker-label input { margin-top: 0.2rem; flex: none; }
+  .shell-units-picker-label input:focus-visible { outline: var(--tw-focus-outline); outline-offset: 2px; }
+  .shell-units-picker-label input:disabled + .shell-units-resource-text { color: var(--tw-ink-muted); }
   @media (max-width: 480px) {
     .shell-units-form { padding: 0.75rem; }
     .shell-units-actions .shell-btn { flex: 1 1 auto; }
+    .shell-units-resource { flex-wrap: wrap; }
   }
   @media (pointer: coarse) {
     .shell-units-input,
     .shell-units-archived-toggle,
+    .shell-units-picker-label,
     .shell-units .shell-btn { min-height: 44px; }
   }
   /* Several panel elements set display (flex, grid). Author display rules
