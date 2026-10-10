@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/require-await */
 //
-// U1A hermetic unit tests for the `teacherUnits*` callables. Runs in the
+// U1A/U1B hermetic unit tests for the `teacherUnits*` callables. Runs in the
 // default `npm test` (and CI) with an in-memory Firestore stand-in whose
 // transaction models the read-set retry contract of
 // `Firestore.runTransaction`. The emulator suite
@@ -148,8 +148,14 @@ import { __teacherUnitsArchiveHandler } from "./teacher-units-archive";
 import { __teacherUnitsCreateHandler } from "./teacher-units-create";
 import { __teacherUnitsGetHandler } from "./teacher-units-get";
 import { __teacherUnitsListHandler } from "./teacher-units-list";
+import { __teacherUnitsReorderHandler } from "./teacher-units-reorder";
 import { __teacherUnitsRestoreHandler } from "./teacher-units-restore";
+import { __teacherUnitsSetResourcesHandler } from "./teacher-units-set-resources";
 import { __teacherUnitsUpdateHandler } from "./teacher-units-update";
+import {
+  UNIT_PLACEABLE_RESOURCE_ID_LIST,
+  isUnitPlaceableResourceId,
+} from "./unit-placeable-resources";
 
 const TEACHER = "teacher-a";
 const OTHER = "teacher-b";
@@ -408,5 +414,167 @@ describe("certification remediation (hermetic)", () => {
     ).toBe(code);
     expect(unitRows()[0]).toMatchObject({ status: "active", revision: 1 });
     expect(audits).toHaveLength(1);
+  });
+});
+
+describe("U1B resource membership (hermetic)", () => {
+  const setResources = (uid: string, data: unknown) => __teacherUnitsSetResourcesHandler(req(uid, data));
+  async function seedUnit(): Promise<string> {
+    return (await create(TEACHER, { grade: "7", title: "Earth" })).unit.unitId;
+  }
+
+  it("holds the RA-1 placement decisions the server enforces", () => {
+    expect(isUnitPlaceableResourceId("earths-layers")).toBe(true);
+    // Placeable but unassignable.
+    expect(isUnitPlaceableResourceId("simulation-gravity-wells")).toBe(true);
+    // Gated lesson and reusable tool.
+    expect(isUnitPlaceableResourceId("ragebaiting")).toBe(false);
+    expect(isUnitPlaceableResourceId("lab-report-assistant")).toBe(false);
+    expect(isUnitPlaceableResourceId(7)).toBe(false);
+    expect(new Set(UNIT_PLACEABLE_RESOURCE_ID_LIST).size).toBe(UNIT_PLACEABLE_RESOURCE_ID_LIST.length);
+  });
+
+  it("replaces the ordered list with one revision and audit", async () => {
+    const unitId = await seedUnit();
+    const result = await setResources(TEACHER, {
+      unitId,
+      expectedRevision: 1,
+      resourceIds: ["simulation-gravity-wells", "earths-layers"],
+    });
+    expect(result).toMatchObject({
+      noop: false,
+      unit: { resourceIds: ["simulation-gravity-wells", "earths-layers"], revision: 2 },
+    });
+    expect(audits[1]).toMatchObject({
+      action: "teacherUnits.resourcesUpdated",
+      payload: { grade: "7", previousRevision: 1, revision: 2, previousResourceCount: 0, resourceCount: 2 },
+    });
+    const again = await setResources(TEACHER, {
+      unitId,
+      expectedRevision: 1,
+      resourceIds: ["simulation-gravity-wells", "earths-layers"],
+    });
+    expect(again.noop).toBe(true);
+    expect(audits).toHaveLength(2);
+  });
+
+  it.each([
+    [["earths-layers", "ragebaiting"], "teacherUnits.resourceNotPlaceable"],
+    [["lab-report-assistant"], "teacherUnits.resourceNotPlaceable"],
+    [["earths-layers", "earths-layers"], "teacherUnits.duplicateResource"],
+    [[null], "teacherUnits.invalidResourceIds"],
+    [Array.from({ length: 101 }, () => "earths-layers"), "teacherUnits.invalidResourceIds"],
+    [undefined, "teacherUnits.invalidResourceIds"],
+  ])("rejects %p with no write", async (resourceIds, code) => {
+    const unitId = await seedUnit();
+    expect(await codeOf(setResources(TEACHER, { unitId, expectedRevision: 1, resourceIds }))).toBe(code);
+    expect(unitRows()[0]).toMatchObject({ resourceIds: [], revision: 1 });
+    expect(audits).toHaveLength(1);
+  });
+
+  it("refuses an archived unit and another teacher's unit", async () => {
+    const unitId = await seedUnit();
+    expect(
+      await codeOf(setResources(OTHER, { unitId, expectedRevision: 1, resourceIds: ["earths-layers"] })),
+    ).toBe("teacherUnits.notFound");
+    await __teacherUnitsArchiveHandler(req(TEACHER, { unitId, expectedRevision: 1 }));
+    expect(
+      await codeOf(setResources(TEACHER, { unitId, expectedRevision: 2, resourceIds: ["earths-layers"] })),
+    ).toBe("teacherUnits.invalidStatus");
+    expect(unitRows()[0]).toMatchObject({ resourceIds: [], status: "archived", revision: 2 });
+  });
+
+  it("accepts exactly one of several simultaneous edits at the same revision", async () => {
+    const unitId = await seedUnit();
+    const settled = await Promise.allSettled(
+      [["earths-layers"], ["water-cycle"], ["simulation-gravity-wells"]].map((resourceIds) =>
+        setResources(TEACHER, { unitId, expectedRevision: 1, resourceIds }),
+      ),
+    );
+    expect(settled.filter((x) => x.status === "fulfilled")).toHaveLength(1);
+    for (const x of settled.filter((y): y is PromiseRejectedResult => y.status === "rejected")) {
+      expect((x.reason as { code?: unknown }).code).toBe("teacherUnits.writeConflict");
+    }
+    expect(unitRows()[0].revision).toBe(2);
+  });
+});
+
+describe("U1B unit ordering (hermetic)", () => {
+  const reorder = (uid: string, data: unknown) => __teacherUnitsReorderHandler(req(uid, data));
+  const at = (unitId: string, expectedRevision = 1) => ({ unitId, expectedRevision });
+  async function seed(): Promise<string[]> {
+    const ids: string[] = [];
+    for (const title of ["A", "B", "C"]) ids.push((await create(TEACHER, { grade: "7", title })).unit.unitId);
+    return ids;
+  }
+
+  it("assigns positions 1..n, writing only moved units", async () => {
+    const [a, b, c] = await seed();
+    const result = await reorder(TEACHER, { grade: "7", units: [at(c), at(a), at(b)] });
+    expect(result.units.map((u) => [u.unitId, u.sortOrder, u.revision])).toEqual([
+      [c, 1, 2],
+      [a, 2, 2],
+      [b, 3, 2],
+    ]);
+    expect(audits.filter((x) => x.action === "teacherUnits.reordered")).toHaveLength(3);
+    const noop = await reorder(TEACHER, { grade: "7", units: [at(c), at(a), at(b)] });
+    expect(noop.noop).toBe(true);
+    expect(audits.filter((x) => x.action === "teacherUnits.reordered")).toHaveLength(3);
+  });
+
+  it("refuses foreign, incomplete, stale, and malformed orders with no write", async () => {
+    const [a, b, c] = await seed();
+    const foreign = (await create(OTHER, { grade: "7", title: "X" })).unit.unitId;
+    expect(await codeOf(reorder(TEACHER, { grade: "7", units: [at(a), at(b), at(c), at(foreign)] }))).toBe(
+      "teacherUnits.notFound",
+    );
+    expect(await codeOf(reorder(TEACHER, { grade: "6", units: [at(a), at(b), at(c)] }))).toBe(
+      "teacherUnits.notFound",
+    );
+    expect(await codeOf(reorder(TEACHER, { grade: "7", units: [at(b), at(a)] }))).toBe(
+      "teacherUnits.writeConflict",
+    );
+    expect(await codeOf(reorder(TEACHER, { grade: "7", units: [at(b, 2), at(a), at(c)] }))).toBe(
+      "teacherUnits.writeConflict",
+    );
+    expect(await codeOf(reorder(TEACHER, { grade: "7", units: [at(a), at(a)] }))).toBe(
+      "teacherUnits.invalidUnitOrder",
+    );
+    expect(await codeOf(reorder(TEACHER, { grade: "7", units: [] }))).toBe("teacherUnits.invalidUnitOrder");
+    expect(await codeOf(reorder(TEACHER, { grade: "7", units: [{ ...at(a), sortOrder: 4 }] }))).toBe(
+      "teacherUnits.invalidRequest",
+    );
+    expect(unitRows().map((u) => [u.sortOrder, u.revision])).toEqual([
+      [0, 1],
+      [0, 1],
+      [0, 1],
+      [0, 1],
+    ]);
+  });
+
+  it("accepts exactly one of several simultaneous reorders", async () => {
+    const [a, b, c] = await seed();
+    const settled = await Promise.allSettled([
+      reorder(TEACHER, { grade: "7", units: [at(c), at(b), at(a)] }),
+      reorder(TEACHER, { grade: "7", units: [at(b), at(c), at(a)] }),
+      reorder(TEACHER, { grade: "7", units: [at(b), at(a), at(c)] }),
+    ]);
+    expect(settled.filter((x) => x.status === "fulfilled")).toHaveLength(1);
+    for (const x of settled.filter((y): y is PromiseRejectedResult => y.status === "rejected")) {
+      expect((x.reason as { code?: unknown }).code).toBe("teacherUnits.writeConflict");
+    }
+    expect(unitRows().every((u) => u.revision === 2)).toBe(true);
+  });
+
+  it("maps the U1B validation codes to invalid-argument", () => {
+    const { mapPlatformCodeToHttpsCode } = jest.requireActual("../shared/errors/https-callable");
+    for (const code of [
+      "teacherUnits.invalidResourceIds",
+      "teacherUnits.duplicateResource",
+      "teacherUnits.resourceNotPlaceable",
+      "teacherUnits.invalidUnitOrder",
+    ]) {
+      expect(mapPlatformCodeToHttpsCode(code)).toBe("invalid-argument");
+    }
   });
 });

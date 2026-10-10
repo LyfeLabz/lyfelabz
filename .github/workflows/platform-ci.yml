@@ -5,11 +5,35 @@ on:
     paths:
       - 'platform/**'
       - '.github/workflows/platform-ci.yml'
+      # U1B unit-placement parity inputs: the RA-1 projection, the
+      # curriculum registry and generated manifest it reads, and the gate.
+      - 'app/src/curriculum/**'
+      - 'app/scripts/build-curriculum-manifest.cjs'
+      - 'app/scripts/curriculumRegistry.cjs'
+      - 'app/scripts/curriculumCatalog.cjs'
+      - 'app/scripts/curriculumParser.cjs'
+      - 'app/scripts/activityIdentifiers.cjs'
+      - 'app/package.json'
+      - 'app/package-lock.json'
+      - 'index.html'
+      - 'scripts/unit-placement/**'
   push:
     branches: [main]
     paths:
       - 'platform/**'
       - '.github/workflows/platform-ci.yml'
+      # U1B unit-placement parity inputs: the RA-1 projection, the
+      # curriculum registry and generated manifest it reads, and the gate.
+      - 'app/src/curriculum/**'
+      - 'app/scripts/build-curriculum-manifest.cjs'
+      - 'app/scripts/curriculumRegistry.cjs'
+      - 'app/scripts/curriculumCatalog.cjs'
+      - 'app/scripts/curriculumParser.cjs'
+      - 'app/scripts/activityIdentifiers.cjs'
+      - 'app/package.json'
+      - 'app/package-lock.json'
+      - 'index.html'
+      - 'scripts/unit-placement/**'
 
 jobs:
   functions:
@@ -41,6 +65,13 @@ jobs:
       - name: Install app dependencies
         working-directory: app
         run: npm ci
+      # U1B: required. The server teacher-unit placement list must equal
+      # the RA-1 projection (fails closed). `npm run build` below also runs
+      # it as `prebuild`; this step names it and runs the gate's own tests.
+      - name: Unit placement parity
+        run: |
+          node ../../scripts/unit-placement/check-parity.cjs
+          node --test ../../scripts/unit-placement/check-parity.test.cjs
       - name: Lint
         run: npm run lint
       - name: Typecheck

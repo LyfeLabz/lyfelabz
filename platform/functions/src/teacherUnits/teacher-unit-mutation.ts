@@ -23,7 +23,9 @@ import {
 } from "./teacher-unit-access";
 
 // U1A - the single compare-and-set core behind every mutation of an
-// existing unit (rename, description edit, archive, restore).
+// existing unit (rename, description edit, archive, restore, and the U1B
+// membership change). The U1B reorder spans several units and has its own
+// transaction with the same steps (teacher-units-reorder.ts).
 //
 // One Firestore transaction:
 //   1. re-verify the caller's canonical authorization (active teacher, same
@@ -61,6 +63,8 @@ export type TeacherUnitChange = {
   readonly fields: TeacherUnitChangeFields;
   readonly action: AuditAction;
   readonly changedFields: readonly string[];
+  // Extra audit payload fields (U1B counts). Never teacher-authored text.
+  readonly auditPayload?: Readonly<Record<string, number>>;
 };
 
 export type TeacherUnitMutationResponse = {
@@ -129,6 +133,7 @@ export async function mutateOwnedTeacherUnit(
           ...(change.action === "teacherUnits.updated"
             ? { changedFields: [...change.changedFields] }
             : {}),
+          ...(change.auditPayload ?? {}),
         },
       });
       return { wrote: true, revision, change };

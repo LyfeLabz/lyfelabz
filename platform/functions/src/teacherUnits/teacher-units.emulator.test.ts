@@ -1,4 +1,4 @@
-// U1A emulator-backed proofs for the `teacherUnits*` callables.
+// U1A/U1B emulator-backed proofs for the `teacherUnits*` callables.
 //
 // Runs against the REAL Firestore emulator (`npm run test:emulator`, which
 // wraps jest in `firebase emulators:exec` with the offline `demo-bootstrap`
@@ -22,7 +22,9 @@ import {
 } from "./teacher-units-create";
 import { __teacherUnitsGetHandler } from "./teacher-units-get";
 import { __teacherUnitsListHandler, listOwnedTeacherUnits } from "./teacher-units-list";
+import { __teacherUnitsReorderHandler, reorderTeacherUnits } from "./teacher-units-reorder";
 import { __teacherUnitsRestoreHandler } from "./teacher-units-restore";
+import { __teacherUnitsSetResourcesHandler } from "./teacher-units-set-resources";
 import { __teacherUnitsUpdateHandler } from "./teacher-units-update";
 
 const PROJECT = "demo-bootstrap";
@@ -148,6 +150,10 @@ const restore = (w: World, uid: string, data: unknown) =>
 const get = (w: World, uid: string, data: unknown) => __teacherUnitsGetHandler(req(w, uid, data));
 const list = (w: World, uid: string, data: unknown = {}) =>
   __teacherUnitsListHandler(req(w, uid, data));
+const setResources = (w: World, uid: string, data: unknown) =>
+  __teacherUnitsSetResourcesHandler(req(w, uid, data));
+const reorder = (w: World, uid: string, data: unknown) =>
+  __teacherUnitsReorderHandler(req(w, uid, data));
 
 async function createUnit(w: World, title = "Earth Systems", grade = "7", uid = w.teacher) {
   const { unit } = await create(w, uid, { grade, title });
@@ -1016,6 +1022,524 @@ d("U1A teacher units (emulator)", () => {
         mutateOwnedTeacherUnit(actorOf(), unit.unitId, 1, () => null),
         "district-mismatch",
       );
+    });
+  });
+
+  // ---------- U1B resource membership and ordering ----------
+
+  // Canonical ids from the RA-1 projection: two placeable lessons, the
+  // placeable-but-unassignable Gravity Wells simulation, the gated lesson,
+  // and the tool.
+  const LESSON_A = "earths-layers";
+  const LESSON_B = "water-cycle";
+  const GRAVITY_WELLS = "simulation-gravity-wells";
+  const GATED_LESSON = "ragebaiting";
+  const TOOL = "lab-report-assistant";
+
+  describe("U1B resource membership", () => {
+    it("adds, reorders, and removes resources, one revision and audit per accepted change", async () => {
+      const unit = await createUnit(w);
+      const added = await setResources(w, w.teacher, {
+        unitId: unit.unitId,
+        expectedRevision: 1,
+        resourceIds: [LESSON_A, GRAVITY_WELLS],
+      });
+      expect(added).toMatchObject({ noop: false, unit: { resourceIds: [LESSON_A, GRAVITY_WELLS], revision: 2 } });
+      const reordered = await setResources(w, w.teacher, {
+        unitId: unit.unitId,
+        expectedRevision: 2,
+        resourceIds: [GRAVITY_WELLS, LESSON_B, LESSON_A],
+      });
+      expect(reordered.unit).toMatchObject({ resourceIds: [GRAVITY_WELLS, LESSON_B, LESSON_A], revision: 3 });
+      const removed = await setResources(w, w.teacher, {
+        unitId: unit.unitId,
+        expectedRevision: 3,
+        resourceIds: [LESSON_B],
+      });
+      expect(removed.unit).toMatchObject({ resourceIds: [LESSON_B], revision: 4 });
+      expect(await unitData(unit.unitId)).toMatchObject({
+        resourceIds: [LESSON_B],
+        revision: 4,
+        title: "Earth Systems",
+        sortOrder: 0,
+        teacherId: w.teacher,
+        schoolId: w.schoolId,
+        grade: "7",
+      });
+      const audits = (await auditsFor(unit.unitId)).filter((a) => a.action === "teacherUnits.resourcesUpdated");
+      expect(audits.map((a) => a.payload).sort((a, b) => (a as { revision: number }).revision - (b as { revision: number }).revision)).toEqual([
+        { grade: "7", previousRevision: 1, revision: 2, previousResourceCount: 0, resourceCount: 2 },
+        { grade: "7", previousRevision: 2, revision: 3, previousResourceCount: 2, resourceCount: 3 },
+        { grade: "7", previousRevision: 3, revision: 4, previousResourceCount: 3, resourceCount: 1 },
+      ]);
+      expect(audits[0]).toMatchObject({ targetType: "teacherUnit", schoolId: w.schoolId, districtId: w.districtId });
+    });
+
+    it.each([
+      ["a gated lesson", [LESSON_A, GATED_LESSON], "teacherUnits.resourceNotPlaceable"],
+      ["a reusable tool", [TOOL], "teacherUnits.resourceNotPlaceable"],
+      ["an unknown id", [LESSON_A, "not-a-resource"], "teacherUnits.resourceNotPlaceable"],
+      ["a duplicate id", [LESSON_A, LESSON_B, LESSON_A], "teacherUnits.duplicateResource"],
+      ["a non-string id", [LESSON_A, 7], "teacherUnits.invalidResourceIds"],
+      ["a non-array", LESSON_A, "teacherUnits.invalidResourceIds"],
+    ])("rejects %s atomically", async (_label, resourceIds, code) => {
+      const unit = await createUnit(w);
+      await setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_B] });
+      const before = await unitData(unit.unitId);
+      await expectCode(
+        setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 2, resourceIds }),
+        code,
+      );
+      expect(await unitData(unit.unitId)).toEqual(before);
+      expect(await auditsFor(unit.unitId)).toHaveLength(2);
+    });
+
+    it("names every non-placeable id in the refusal", async () => {
+      const unit = await createUnit(w);
+      const details = await expectCode(
+        setResources(w, w.teacher, {
+          unitId: unit.unitId,
+          expectedRevision: 1,
+          resourceIds: [GATED_LESSON, LESSON_A, TOOL],
+        }),
+        "teacherUnits.resourceNotPlaceable",
+      );
+      expect(details).toMatchObject({ resourceIds: [GATED_LESSON, TOOL] });
+    });
+
+    it("allows one resource in several units (no cross-unit uniqueness)", async () => {
+      const first = await createUnit(w, "First");
+      const second = await createUnit(w, "Second");
+      const coTeacherUnit = await createUnit(w, "Co-teacher", "7", w.otherTeacher);
+      for (const [uid, unitId] of [
+        [w.teacher, first.unitId],
+        [w.teacher, second.unitId],
+        [w.otherTeacher, coTeacherUnit.unitId],
+      ] as const) {
+        await setResources(w, uid, { unitId, expectedRevision: 1, resourceIds: [GRAVITY_WELLS, LESSON_A] });
+      }
+      for (const unitId of [first.unitId, second.unitId, coTeacherUnit.unitId]) {
+        expect((await unitData(unitId))?.resourceIds).toEqual([GRAVITY_WELLS, LESSON_A]);
+      }
+    });
+
+    it("refuses an archived unit, and archive and restore preserve membership and ordering", async () => {
+      const unit = await createUnit(w);
+      await setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_B, LESSON_A] });
+      await reorder(w, w.teacher, { grade: "7", units: [{ unitId: unit.unitId, expectedRevision: 2 }] });
+      await archive(w, w.teacher, { unitId: unit.unitId, expectedRevision: 3 });
+      await expectCode(
+        setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 4, resourceIds: [LESSON_A] }),
+        "teacherUnits.invalidStatus",
+      );
+      expect(await unitData(unit.unitId)).toMatchObject({ status: "archived", revision: 4, resourceIds: [LESSON_B, LESSON_A], sortOrder: 1 });
+      const restored = await restore(w, w.teacher, { unitId: unit.unitId, expectedRevision: 4 });
+      expect(restored.unit).toMatchObject({
+        unitId: unit.unitId,
+        status: "active",
+        resourceIds: [LESSON_B, LESSON_A],
+        sortOrder: 1,
+        revision: 5,
+      });
+    });
+
+    it("is a no-op for the stored list, even at a stale revision, and conflicts on a real change", async () => {
+      const unit = await createUnit(w);
+      await setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_A, LESSON_B] });
+      const noop = await setResources(w, w.teacher, {
+        unitId: unit.unitId,
+        expectedRevision: 1,
+        resourceIds: [LESSON_A, LESSON_B],
+      });
+      expect(noop).toMatchObject({ noop: true, unit: { revision: 2 } });
+      const details = await expectCode(
+        setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_B, LESSON_A] }),
+        "teacherUnits.writeConflict",
+      );
+      expect(details).toMatchObject({ currentRevision: 2 });
+      expect(await unitData(unit.unitId)).toMatchObject({ resourceIds: [LESSON_A, LESSON_B], revision: 2 });
+      expect(await auditsFor(unit.unitId)).toHaveLength(2);
+    });
+
+    it("accepts exactly one of several simultaneous membership edits at the same revision", async () => {
+      const unit = await createUnit(w);
+      const lists = [[LESSON_A], [LESSON_B], [GRAVITY_WELLS], [LESSON_A, LESSON_B], [LESSON_B, GRAVITY_WELLS]];
+      const settled = await Promise.allSettled(
+        lists.map((resourceIds) => setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds })),
+      );
+      const accepted = settled.filter(
+        (s): s is PromiseFulfilledResult<Awaited<ReturnType<typeof setResources>>> => s.status === "fulfilled",
+      );
+      expect(accepted).toHaveLength(1);
+      for (const s of settled.filter((x): x is PromiseRejectedResult => x.status === "rejected")) {
+        expect((s.reason as { code?: unknown }).code).toBe("teacherUnits.writeConflict");
+      }
+      const stored = await unitData(unit.unitId);
+      expect(stored).toMatchObject({ revision: 2, resourceIds: accepted[0].value.unit.resourceIds });
+      expect((await auditsFor(unit.unitId)).filter((a) => a.action === "teacherUnits.resourcesUpdated")).toHaveLength(1);
+    });
+
+    it("turns an identical concurrent membership edit into one write and one authorized no-op", async () => {
+      const unit = await createUnit(w);
+      const results = await Promise.all(
+        [1, 2].map(() =>
+          setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_A, LESSON_B] }),
+        ),
+      );
+      expect(results.map((r) => r.noop).sort()).toEqual([false, true]);
+      expect(await unitData(unit.unitId)).toMatchObject({ revision: 2, resourceIds: [LESSON_A, LESSON_B] });
+      expect((await auditsFor(unit.unitId)).filter((a) => a.action === "teacherUnits.resourcesUpdated")).toHaveLength(1);
+    });
+
+    it("serializes a simultaneous membership edit and archive at the same revision", async () => {
+      const unit = await createUnit(w);
+      const settled = await Promise.allSettled([
+        setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_A] }),
+        archive(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1 }),
+      ]);
+      expect(settled.filter((s) => s.status === "fulfilled")).toHaveLength(1);
+      const stored = await unitData(unit.unitId);
+      expect(stored?.revision).toBe(2);
+      if (settled[0].status === "fulfilled") {
+        expect(stored).toMatchObject({ status: "active", resourceIds: [LESSON_A] });
+      } else {
+        expect(stored).toMatchObject({ status: "archived", resourceIds: [] });
+      }
+    });
+
+    it("hides another teacher's unit and refuses non-teachers", async () => {
+      const unit = await createUnit(w);
+      await expectCode(
+        setResources(w, w.otherTeacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_A] }),
+        "teacherUnits.notFound",
+      );
+      await expectCode(
+        setResources(w, w.crossSchoolTeacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_A] }),
+        "teacherUnits.notFound",
+      );
+      await expectCode(
+        setResources(w, w.student, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_A] }),
+        "role-forbidden",
+      );
+      expect(await unitData(unit.unitId)).toMatchObject({ resourceIds: [], revision: 1 });
+    });
+
+    it("rejects server-owned fields beside resourceIds", async () => {
+      const unit = await createUnit(w);
+      for (const field of ["teacherId", "schoolId", "grade", "sortOrder", "revision", "status"]) {
+        await expectCode(
+          setResources(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, resourceIds: [LESSON_A], [field]: "x" }),
+          "teacherUnits.invalidRequest",
+        );
+      }
+      // U1A operations still refuse membership and ordering fields.
+      await expectCode(
+        update(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, title: "x", resourceIds: [LESSON_A] }),
+        "teacherUnits.invalidRequest",
+      );
+      expect(await unitData(unit.unitId)).toMatchObject({ resourceIds: [], revision: 1 });
+    });
+
+    it.each(REVOCATIONS)("refuses after %s and writes nothing", async (_label, revoke, code) => {
+      const unit = await createUnit(w);
+      const before = await unitData(unit.unitId);
+      const actor = actorOf();
+      await revoke(w);
+      await expectCode(
+        mutateOwnedTeacherUnit(actor, unit.unitId, 1, () => ({
+          fields: { resourceIds: [LESSON_A] },
+          action: "teacherUnits.resourcesUpdated",
+          changedFields: ["resourceIds"],
+        })),
+        code,
+      );
+      expect(await unitData(unit.unitId)).toEqual(before);
+      expect(await auditsFor(unit.unitId)).toHaveLength(1);
+    });
+  });
+
+  describe("U1B unit ordering", () => {
+    async function seedOrganization(): Promise<{ a: string; b: string; c: string }> {
+      const a = (await createUnit(w, "A")).unitId;
+      const b = (await createUnit(w, "B")).unitId;
+      const c = (await createUnit(w, "C")).unitId;
+      return { a, b, c };
+    }
+    const at = (unitId: string, expectedRevision = 1) => ({ unitId, expectedRevision });
+
+    it("orders the grade organization, writing and auditing only moved units", async () => {
+      const { a, b, c } = await seedOrganization();
+      const first = await reorder(w, w.teacher, { grade: "7", units: [at(c), at(a), at(b)] });
+      expect(first.noop).toBe(false);
+      expect(first.units.map((u) => [u.unitId, u.sortOrder, u.revision])).toEqual([
+        [c, 1, 2],
+        [a, 2, 2],
+        [b, 3, 2],
+      ]);
+      expect((await list(w, w.teacher, { grade: "7" })).units.map((u) => u.unitId)).toEqual([c, a, b]);
+
+      // Swap the last two; `c` keeps position 1 and is not written.
+      const second = await reorder(w, w.teacher, { grade: "7", units: [at(c, 2), at(b, 2), at(a, 2)] });
+      expect(second.units.map((u) => [u.unitId, u.sortOrder, u.revision])).toEqual([
+        [c, 1, 2],
+        [b, 2, 3],
+        [a, 3, 3],
+      ]);
+      const reorderedAudits = async (id: string) =>
+        (await auditsFor(id)).filter((x) => x.action === "teacherUnits.reordered");
+      expect(await reorderedAudits(c)).toHaveLength(1);
+      expect(await reorderedAudits(a)).toHaveLength(2);
+      expect((await reorderedAudits(b)).map((x) => x.payload)).toEqual(
+        expect.arrayContaining([
+          { grade: "7", previousRevision: 2, revision: 3, previousSortOrder: 3, sortOrder: 2 },
+        ]),
+      );
+      expect(await unitData(a)).toMatchObject({ title: "A", resourceIds: [], status: "active" });
+    });
+
+    it("is a no-op when the order already holds, even at stale revisions", async () => {
+      const { a, b, c } = await seedOrganization();
+      await reorder(w, w.teacher, { grade: "7", units: [at(a), at(b), at(c)] });
+      const noop = await reorder(w, w.teacher, { grade: "7", units: [at(a), at(b), at(c)] });
+      expect(noop.noop).toBe(true);
+      expect(noop.units.map((u) => u.revision)).toEqual([2, 2, 2]);
+    });
+
+    it("refuses a stale revision and an incomplete organization, writing nothing", async () => {
+      const { a, b, c } = await seedOrganization();
+      await update(w, w.teacher, { unitId: b, expectedRevision: 1, title: "B2" });
+      const before = await Promise.all([a, b, c].map(unitData));
+      const details = await expectCode(
+        reorder(w, w.teacher, { grade: "7", units: [at(c), at(b), at(a)] }),
+        "teacherUnits.writeConflict",
+      );
+      expect(details).toMatchObject({ unitId: b, currentRevision: 2 });
+      await expectCode(
+        reorder(w, w.teacher, { grade: "7", units: [at(c), at(a)] }),
+        "teacherUnits.writeConflict",
+      );
+      expect(await Promise.all([a, b, c].map(unitData))).toEqual(before);
+    });
+
+    it.each(["other teacher", "other grade", "archived", "missing"])(
+      "refuses a %s unit with the uniform notFound",
+      async (kind) => {
+        const { a, b, c } = await seedOrganization();
+        let extra: string;
+        if (kind === "other teacher") extra = (await createUnit(w, "X", "7", w.otherTeacher)).unitId;
+        else if (kind === "other grade") extra = (await createUnit(w, "X", "6")).unitId;
+        else if (kind === "archived") {
+          extra = (await createUnit(w, "X")).unitId;
+          await archive(w, w.teacher, { unitId: extra, expectedRevision: 1 });
+        } else extra = "A".repeat(20);
+        await expectCode(
+          reorder(w, w.teacher, { grade: "7", units: [at(c), at(b), at(a), at(extra)] }),
+          "teacherUnits.notFound",
+        );
+        expect((await Promise.all([a, b, c].map(unitData))).map((u) => u?.sortOrder)).toEqual([0, 0, 0]);
+      },
+    );
+
+    it("keeps co-teacher and per-grade organizations independent", async () => {
+      const { a, b } = { a: (await createUnit(w, "A")).unitId, b: (await createUnit(w, "B")).unitId };
+      const grade6 = (await createUnit(w, "G6", "6")).unitId;
+      const coA = (await createUnit(w, "CoA", "7", w.otherTeacher)).unitId;
+      const coB = (await createUnit(w, "CoB", "7", w.otherTeacher)).unitId;
+      await reorder(w, w.teacher, { grade: "7", units: [at(b), at(a)] });
+      await reorder(w, w.otherTeacher, { grade: "7", units: [at(coA), at(coB)] });
+      expect((await list(w, w.teacher, { grade: "7" })).units.map((u) => u.unitId)).toEqual([b, a]);
+      expect((await list(w, w.otherTeacher, { grade: "7" })).units.map((u) => u.unitId)).toEqual([coA, coB]);
+      expect(await unitData(grade6)).toMatchObject({ sortOrder: 0, revision: 1 });
+    });
+
+    it("never writes archived units; a restored unit keeps its preserved position", async () => {
+      const { a, b, c } = await seedOrganization();
+      await reorder(w, w.teacher, { grade: "7", units: [at(c), at(b), at(a)] });
+      await archive(w, w.teacher, { unitId: b, expectedRevision: 2 });
+      const archivedBefore = await unitData(b);
+      await reorder(w, w.teacher, { grade: "7", units: [at(a, 2), at(c, 2)] });
+      expect(await unitData(b)).toEqual(archivedBefore);
+      await restore(w, w.teacher, { unitId: b, expectedRevision: 3 });
+      // a=1, c=2, and b keeps its preserved 2, tying with c; b was created
+      // first, so the canonical tie-break places it ahead of c.
+      expect((await list(w, w.teacher, { grade: "7" })).units.map((u) => [u.unitId, u.sortOrder])).toEqual([
+        [a, 1],
+        [b, 2],
+        [c, 2],
+      ]);
+    });
+
+    it("sorts a unit created after the last reorder first, until it is placed", async () => {
+      const { a, b, c } = await seedOrganization();
+      await reorder(w, w.teacher, { grade: "7", units: [at(a), at(b), at(c)] });
+      const d4 = (await createUnit(w, "D")).unitId;
+      expect((await list(w, w.teacher, { grade: "7" })).units.map((u) => u.unitId)).toEqual([d4, a, b, c]);
+      await expectCode(
+        reorder(w, w.teacher, { grade: "7", units: [at(a, 2), at(b, 2), at(c, 2)] }),
+        "teacherUnits.writeConflict",
+      );
+      await reorder(w, w.teacher, { grade: "7", units: [at(a, 2), at(b, 2), at(c, 2), at(d4)] });
+      expect((await list(w, w.teacher, { grade: "7" })).units.map((u) => u.unitId)).toEqual([a, b, c, d4]);
+    });
+
+    it("accepts exactly one of several simultaneous conflicting reorders", async () => {
+      const { a, b, c } = await seedOrganization();
+      const orders = [
+        [c, b, a],
+        [b, c, a],
+        [b, a, c],
+        [c, a, b],
+      ];
+      const settled = await Promise.allSettled(
+        orders.map((order) => reorder(w, w.teacher, { grade: "7", units: order.map((id) => at(id)) })),
+      );
+      const accepted = settled
+        .map((s, i) => ({ s, order: orders[i] }))
+        .filter((x) => x.s.status === "fulfilled");
+      expect(accepted).toHaveLength(1);
+      for (const s of settled.filter((x): x is PromiseRejectedResult => x.status === "rejected")) {
+        expect((s.reason as { code?: unknown }).code).toBe("teacherUnits.writeConflict");
+      }
+      expect((await list(w, w.teacher, { grade: "7" })).units.map((u) => u.unitId)).toEqual(accepted[0].order);
+      const stored = await Promise.all([a, b, c].map(unitData));
+      expect(new Set(stored.map((u) => u?.sortOrder))).toEqual(new Set([1, 2, 3]));
+      expect(stored.every((u) => u?.revision === 2)).toBe(true);
+    });
+
+    it("turns identical concurrent reorders into one write and one authorized no-op", async () => {
+      const { a, b, c } = await seedOrganization();
+      const results = await Promise.all(
+        [1, 2].map(() => reorder(w, w.teacher, { grade: "7", units: [at(c), at(b), at(a)] })),
+      );
+      expect(results.map((r) => r.noop).sort()).toEqual([false, true]);
+      expect((await Promise.all([a, b, c].map(unitData))).map((u) => [u?.sortOrder, u?.revision])).toEqual([
+        [3, 2],
+        [2, 2],
+        [1, 2],
+      ]);
+    });
+
+    it("lets independent operations both succeed: reorders of two grades and a create in a third", async () => {
+      const g7 = [(await createUnit(w, "A")).unitId, (await createUnit(w, "B")).unitId];
+      const g6 = [(await createUnit(w, "C", "6")).unitId, (await createUnit(w, "D", "6")).unitId];
+      const [r7, r6, created] = await Promise.all([
+        reorder(w, w.teacher, { grade: "7", units: [at(g7[1]), at(g7[0])] }),
+        reorder(w, w.teacher, { grade: "6", units: [at(g6[1]), at(g6[0])] }),
+        createUnit(w, "New", "8"),
+      ]);
+      expect([r7.noop, r6.noop]).toEqual([false, false]);
+      expect(await unitData(created.unitId)).toMatchObject({ sortOrder: 0, revision: 1 });
+      expect((await unitData(g6[1]))?.sortOrder).toBe(1);
+    });
+
+    it("refuses a reorder whose organization gained a same-grade unit before the reorder began (sequential, fails closed, no write)", async () => {
+      const { a, b } = { a: (await createUnit(w, "A")).unitId, b: (await createUnit(w, "B")).unitId };
+      await createUnit(w, "Concurrent");
+      await expectCode(
+        reorder(w, w.teacher, { grade: "7", units: [at(b), at(a)] }),
+        "teacherUnits.writeConflict",
+      );
+      expect((await Promise.all([a, b].map(unitData))).map((u) => [u?.sortOrder, u?.revision])).toEqual([
+        [0, 1],
+        [0, 1],
+      ]);
+    });
+
+    it("serializes a genuinely concurrent same-grade create and reorder into one valid outcome", async () => {
+      const { a, b } = { a: (await createUnit(w, "A")).unitId, b: (await createUnit(w, "B")).unitId };
+      const [reordered, created] = await Promise.allSettled([
+        reorder(w, w.teacher, { grade: "7", units: [at(b), at(a)] }),
+        createUnit(w, "Racing"),
+      ]);
+      // The create never conflicts with a reorder.
+      expect(created.status).toBe("fulfilled");
+      const newId = (created as PromiseFulfilledResult<{ unitId: string }>).value.unitId;
+      expect(await unitData(newId)).toMatchObject({ sortOrder: 0, revision: 1 });
+      const stored = await Promise.all([a, b].map(unitData));
+      if (reordered.status === "fulfilled") {
+        // Reorder serialized first: it ordered the two units it named.
+        expect(stored.map((u) => [u?.sortOrder, u?.revision])).toEqual([[2, 2], [1, 2]]);
+      } else {
+        // Create serialized first: the reorder no longer named the whole
+        // organization and wrote nothing.
+        expect((reordered.reason as { code?: unknown }).code).toBe("teacherUnits.writeConflict");
+        expect(stored.map((u) => [u?.sortOrder, u?.revision])).toEqual([[0, 1], [0, 1]]);
+      }
+    });
+
+    it("lets an edit to an unmoved unit succeed alongside a reorder", async () => {
+      const { a, b, c } = await seedOrganization();
+      await reorder(w, w.teacher, { grade: "7", units: [at(a), at(b), at(c)] });
+      // Swap b and c; a stays at position 1 and is not written by the reorder.
+      const settled = await Promise.allSettled([
+        reorder(w, w.teacher, { grade: "7", units: [at(a, 2), at(c, 2), at(b, 2)] }),
+        update(w, w.teacher, { unitId: a, expectedRevision: 2, title: "A renamed" }),
+      ]);
+      const [reorderResult, renameResult] = settled;
+      expect(renameResult.status).toBe("fulfilled");
+      // The reorder compares every named revision, so it succeeds only if it
+      // serialized before the rename; it never overwrites the rename.
+      const storedA = await unitData(a);
+      expect(storedA).toMatchObject({ title: "A renamed", sortOrder: 1, revision: 3 });
+      if (reorderResult.status === "fulfilled") {
+        expect((await list(w, w.teacher, { grade: "7" })).units.map((u) => u.unitId)).toEqual([a, c, b]);
+      } else {
+        expect((reorderResult.reason as { code?: unknown }).code).toBe("teacherUnits.writeConflict");
+      }
+    });
+
+    it("serializes a reorder and a membership edit at the same revision", async () => {
+      const { a, b } = { a: (await createUnit(w, "A")).unitId, b: (await createUnit(w, "B")).unitId };
+      const settled = await Promise.allSettled([
+        reorder(w, w.teacher, { grade: "7", units: [at(b), at(a)] }),
+        setResources(w, w.teacher, { unitId: b, expectedRevision: 1, resourceIds: [LESSON_A] }),
+      ]);
+      expect(settled.filter((s) => s.status === "fulfilled")).toHaveLength(1);
+      const storedB = await unitData(b);
+      expect(storedB?.revision).toBe(2);
+      if (settled[0].status === "fulfilled") {
+        expect(storedB).toMatchObject({ sortOrder: 1, resourceIds: [] });
+        expect(await unitData(a)).toMatchObject({ sortOrder: 2, revision: 2 });
+      } else {
+        expect(storedB).toMatchObject({ sortOrder: 0, resourceIds: [LESSON_A] });
+        expect(await unitData(a)).toMatchObject({ sortOrder: 0, revision: 1 });
+      }
+    });
+
+    it.each([
+      ["an empty list", []],
+      ["a duplicate unit", "dup"],
+      ["a malformed entry", [{ unitId: "A".repeat(20) }]],
+    ])("rejects %s before any read", async (_label, units) => {
+      const { a } = { a: (await createUnit(w, "A")).unitId };
+      const payload = units === "dup" ? [at(a), at(a)] : units;
+      await expect(reorder(w, w.teacher, { grade: "7", units: payload })).rejects.toBeDefined();
+      expect(await unitData(a)).toMatchObject({ sortOrder: 0, revision: 1 });
+    });
+
+    it.each(REVOCATIONS)("refuses after %s and writes nothing", async (_label, revoke, code) => {
+      const { a, b, c } = await seedOrganization();
+      const before = await Promise.all([a, b, c].map(unitData));
+      const actor = actorOf();
+      await revoke(w);
+      await expectCode(
+        reorderTeacherUnits(actor, { grade: "7", units: [at(c), at(b), at(a)] }),
+        code,
+      );
+      expect(await Promise.all([a, b, c].map(unitData))).toEqual(before);
+    });
+
+    it("refuses the response, not the write, after a post-commit revocation", async () => {
+      const { a, b } = { a: (await createUnit(w, "A")).unitId, b: (await createUnit(w, "B")).unitId };
+      await expectCode(
+        reorderTeacherUnits(
+          actorOf(),
+          { grade: "7", units: [at(b), at(a)] },
+          { afterCommit: async () => { await db.doc(`users/${w.teacher}`).update({ status: "suspended" }); } },
+        ),
+        "account-inactive",
+      );
+      expect(await unitData(b)).toMatchObject({ sortOrder: 1, revision: 2 });
     });
   });
 });

@@ -1,4 +1,4 @@
-// teacherUnits/ domain entry point (U1A). See docs/platform/TEACHER_UNITS.md.
+// teacherUnits/ domain entry point (U1A, U1B). See docs/platform/TEACHER_UNITS.md.
 
 export {
   teacherUnitsArchive,
@@ -21,10 +21,20 @@ export {
   type TeacherUnitsListResponse,
 } from "./teacher-units-list";
 export {
+  teacherUnitsReorder,
+  type TeacherUnitsReorderRequest,
+  type TeacherUnitsReorderResponse,
+} from "./teacher-units-reorder";
+export {
   teacherUnitsRestore,
   type TeacherUnitsRestoreRequest,
   type TeacherUnitsRestoreResponse,
 } from "./teacher-units-restore";
+export {
+  teacherUnitsSetResources,
+  type TeacherUnitsSetResourcesRequest,
+  type TeacherUnitsSetResourcesResponse,
+} from "./teacher-units-set-resources";
 export {
   teacherUnitsUpdate,
   type TeacherUnitsUpdateRequest,

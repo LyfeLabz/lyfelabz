@@ -20,9 +20,10 @@ import {
 // direct client write is denied. See docs/platform/TEACHER_UNITS.md.
 //
 // U1A scope: create, list, get, rename, edit description, archive, restore.
-// Resource membership (`resourceIds`) and ordering (`sortOrder`) are stored
-// with fixed initial values and are not mutable by any U1A operation; they
-// belong to U1B.
+// U1B adds resource membership (`teacherUnitsSetResources` writes the
+// ordered `resourceIds`) and grade-organization ordering
+// (`teacherUnitsReorder` writes `sortOrder`). No other operation changes
+// either field.
 
 export const TEACHER_UNITS_COLLECTION = "teacherUnits";
 
@@ -47,18 +48,31 @@ export const TEACHER_UNIT_TITLE_MAX_LENGTH = 120;
 export const TEACHER_UNIT_DESCRIPTION_MAX_LENGTH = 1000;
 
 // Revision contract: a new unit starts at revision 1. Every ACCEPTED
-// state-changing mutation (rename, description edit, archive, restore)
-// increments it by exactly 1 in the same transaction that changes the
+// state-changing mutation (rename, description edit, archive, restore,
+// membership change, and a reorder that moves the unit) increments it by exactly 1 in the same transaction that changes the
 // record. A request whose result already holds (same title, same
 // description, archive of an archived unit, restore of an active unit)
 // writes nothing and leaves the revision unchanged.
 export const TEACHER_UNIT_INITIAL_REVISION = 1;
 
-// U1A ordering placeholder. Every unit is created with `sortOrder: 0`; no
-// U1A operation changes it. Readers order units by (sortOrder asc,
-// createdAt asc, unitId asc), so with the placeholder the effective order
-// is creation order. U1B defines the real ordering operation.
+// Every unit is created with `sortOrder: 0`. Readers order units by
+// (sortOrder asc, createdAt asc, unitId asc), so until a reorder the
+// effective order is creation order. `teacherUnitsReorder` (U1B) assigns
+// positions 1..n across one teacher-grade organization, so a unit created
+// after the last reorder (still 0) sorts ahead of the ordered units, in
+// creation order, until the next reorder places it.
 export const TEACHER_UNIT_DEFAULT_SORT_ORDER = 0;
+export const TEACHER_UNIT_FIRST_ORDERED_POSITION = 1;
+
+// U1B membership bound: at most this many resources in one unit. A
+// resource may appear in any number of units (no cross-unit uniqueness),
+// but at most once within one unit.
+export const TEACHER_UNIT_RESOURCES_MAX = 100;
+
+// U1B reorder bound: a teacher-grade organization larger than this cannot
+// be reordered in one request (each moved unit is one transactional write
+// plus one audit event, inside Firestore's per-transaction write limit).
+export const TEACHER_UNITS_REORDER_MAX = 200;
 
 export type TeacherUnitRecord = {
   // Ownership and identity. Stamped at creation from the caller's verified
@@ -73,9 +87,11 @@ export type TeacherUnitRecord = {
   readonly archivedAt: Timestamp | null;
   readonly createdAt: Timestamp;
   readonly updatedAt: Timestamp;
-  // U1B. Always [] in U1A.
+  // U1B. Ordered canonical resource ids (RA-1 `unitPlaceable`), no
+  // duplicates. `[]` at creation; written only by `teacherUnitsSetResources`.
   readonly resourceIds: readonly string[];
-  // U1B. Always TEACHER_UNIT_DEFAULT_SORT_ORDER in U1A.
+  // U1B. Position in the teacher-grade organization; written only by
+  // `teacherUnitsReorder`. TEACHER_UNIT_DEFAULT_SORT_ORDER at creation.
   readonly sortOrder: number;
   readonly revision: number;
 };
@@ -96,13 +112,16 @@ export type TeacherUnitCreationWrite = {
 };
 
 // Narrow update shape: identity fields (`teacherId`, `schoolId`, `grade`,
-// `createdAt`), `resourceIds`, and `sortOrder` are deliberately absent, so
-// no U1A update can name them.
+// `createdAt`) are deliberately absent, so no update can name them.
+// `resourceIds` and `sortOrder` (U1B) are written only by their dedicated
+// operations.
 export type TeacherUnitUpdateWrite = {
   readonly title?: string;
   readonly description?: string;
   readonly status?: TeacherUnitStatus;
   readonly archivedAt?: FieldValue | null;
+  readonly resourceIds?: readonly string[];
+  readonly sortOrder?: number;
   readonly updatedAt: FieldValue;
   readonly revision: number;
 };

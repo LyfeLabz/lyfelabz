@@ -260,6 +260,13 @@ export const AUDIT_ACTIONS = [
   "teacherUnits.updated",
   "teacherUnits.archived",
   "teacherUnits.restored",
+  // U1B - resource membership and ordering, same transactional contract.
+  // `teacherUnits.resourcesUpdated` payload: `grade`, revisions, and the
+  // before/after resource counts. `teacherUnits.reordered` (one event per
+  // unit whose position moved): `grade`, revisions, and the before/after
+  // `sortOrder`. Neither carries teacher-authored text.
+  "teacherUnits.resourcesUpdated",
+  "teacherUnits.reordered",
   // Sprint 30A.2 - Google Classroom best-score grade passback. Emitted by
   // the grade-passback synchronization engine (invoked either as a
   // post-commit side effect of `assessmentAttemptsFinalize` or by the

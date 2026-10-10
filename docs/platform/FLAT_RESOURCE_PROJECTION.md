@@ -4,9 +4,10 @@ Shared, read-only contract describing every canonical curriculum resource and
 what the platform supports for it today. Owned by Resource Architecture;
 intended for Curriculum and Units Modernization to consume.
 
-Status: implemented as an accessor only. No existing surface consumes it yet.
-Teacher-defined units and Gravity Wells authenticated assignments are **not**
-implemented.
+Status: implemented as an accessor. Its `unitPlaceable` field is consumed by
+U1B teacher-unit membership through a server copy kept in step by a drift test
+(`TEACHER_UNITS.md` section 9.3). Gravity Wells authenticated assignments are
+**not** implemented.
 
 ## Source of truth
 

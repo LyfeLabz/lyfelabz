@@ -1,6 +1,6 @@
-# Teacher Units (U1A Foundation)
+# Teacher Units (U1A Foundation, U1B Membership and Ordering)
 
-**Status:** U1A implemented in the repository (Functions code, Firestore Rules, tests), including the Sol 6.1 certification remediation (transactional authorization snapshots, in-transaction school and district checks, create retry receipts, school-scoped listing). **Not deployed.** No teacher UI calls these operations, so teacher units are not available to teachers. Nothing here is live until the Functions callables and the Firestore Rules blocks are deployed, and no product surface uses them until U2.
+**Status:** U1A implemented in the repository (Functions code, Firestore Rules, tests), including the Sol 6.1 certification remediation (transactional authorization snapshots, in-transaction school and district checks, create retry receipts, school-scoped listing). U1B (resource membership and unit ordering, section 9) implemented in the repository on top of U1A. **Not deployed.** No teacher UI calls these operations, so teacher units are not available to teachers. Nothing here is live until the Functions callables and the Firestore Rules blocks are deployed, and no product surface uses them until U2.
 
 **Canonical for:** the `TeacherUnit` domain type, the `teacherUnits/{unitId}` and `teacherUnitCreateReceipts/{receiptId}` collections, the `teacherUnits*` callables, and their security, consistency, and concurrency contract.
 
@@ -21,7 +21,7 @@ The two types share no code and must not be merged or aliased.
 
 A unit is owned by exactly one teacher, in that teacher's school, for one grade (**teacher-grade ownership**). `teacherId` and `schoolId` come only from the caller's verified canonical identity (`requireDistrictContext`: the `users/{uid}` record wins over claims, and the school's `districtId` must match the signed claim). A request that names `teacherId`, `schoolId`, or any other server-owned field is rejected.
 
-A unit stamped with a school that is no longer the teacher's current canonical school is not readable or mutable by that teacher (callables return `teacherUnits.notFound` or never read it; Rules deny). It is retained, not deleted or migrated. There is no recovery path in U1A (see section 10).
+A unit stamped with a school that is no longer the teacher's current canonical school is not readable or mutable by that teacher (callables return `teacherUnits.notFound` or never read it; Rules deny). It is retained, not deleted or migrated. There is no recovery path in U1A (see section 11).
 
 ## 3. Storage
 
@@ -33,20 +33,20 @@ A unit stamped with a school that is no longer the teacher's current canonical s
 | --- | --- | --- |
 | `teacherId` | string | Caller uid at creation. Immutable. |
 | `schoolId` | string | Caller's canonical school at creation. Immutable. |
-| `grade` | `"6"` \| `"7"` \| `"8"` | Same closed set as `classesActivate` and the teacher default-grade preference. Immutable. A Grade 8 unit is valid; which resources it may hold is a U1B question. |
+| `grade` | `"6"` \| `"7"` \| `"8"` | Same closed set as `classesActivate` and the teacher default-grade preference. Immutable. A Grade 8 unit is valid. Membership is not grade-restricted (section 9.1). |
 | `title` | string | Trimmed, 1-120 code points, no control characters. |
 | `description` | string | Trimmed, 0-1000 code points; line breaks and tabs allowed, other control characters rejected. Defaults to `""`. |
 | `status` | `"active"` \| `"archived"` | |
 | `archivedAt` | Timestamp \| null | `null` while active; server time of the archive transition while archived. |
 | `createdAt` | Timestamp | Server timestamp. Immutable. |
 | `updatedAt` | Timestamp | Server timestamp of the last accepted mutation. |
-| `resourceIds` | string[] | `[]` at creation. No U1A operation changes it (U1B). |
-| `sortOrder` | number | U1A placeholder `0` for every unit. No U1A operation changes it (U1B). |
+| `resourceIds` | string[] | Ordered canonical resource ids, each RA-1 `unitPlaceable`, no duplicates, at most 100. `[]` at creation. Written only by `teacherUnitsSetResources` (section 9.1). |
+| `sortOrder` | number | `0` at creation. Written only by `teacherUnitsReorder`, which assigns positions `1..n` (section 9.2). |
 | `revision` | integer | See section 6. |
 
 No `districtId` is stored (the approved record does not include one); the district is resolved from the school on every call, and audit events carry it.
 
-Reader order is `sortOrder` ascending, then `createdAt`, then `unitId`. With the U1A placeholder this is creation order.
+Reader order is `sortOrder` ascending, then `createdAt`, then `unitId`. Before any reorder this is creation order.
 
 ### `teacherUnitCreateReceipts/{receiptId}` (server-only)
 
@@ -54,7 +54,7 @@ One receipt per accepted create (section 5). Fields: `teacherId`, `schoolId`, `u
 
 ### Indexes
 
-No composite index is required. Both the list callable and a direct client list use two equality filters (`teacherId`, `schoolId`) with no ordering clause, which Firestore serves from the automatic single-field indexes. No TTL policy is configured (section 5.3).
+No composite index is required. The list callable, the reorder callable, and a direct client list use two equality filters (`teacherId`, `schoolId`) with no ordering clause, which Firestore serves from the automatic single-field indexes. No TTL policy is configured (section 5.3).
 
 ## 4. Operations (Cloud Functions callables)
 
@@ -68,12 +68,14 @@ All require an authenticated, `active`, canonical `teacher` whose school resolve
 | `teacherUnitsUpdate` | `unitId`, `expectedRevision`, `title?`, `description?` (at least one) | Rename and/or edit description. Archived units are read-only (`teacherUnits.invalidStatus`). |
 | `teacherUnitsArchive` | `unitId`, `expectedRevision` | `active` -> `archived`, sets `archivedAt`. |
 | `teacherUnitsRestore` | `unitId`, `expectedRevision` | `archived` -> `active`, sets `archivedAt` to `null`. |
+| `teacherUnitsSetResources` (U1B) | `unitId`, `expectedRevision`, `resourceIds` | Replaces the unit's ordered resource list (add, remove, and reorder in one request). Archived units are read-only. Returns `{ unit, noop }`. Section 9.1. |
+| `teacherUnitsReorder` (U1B) | `grade`, `units: [{ unitId, expectedRevision }]` | Orders the caller's active units of one grade. Returns `{ units, noop }` (the grade's active units in canonical order). Section 9.2. |
 
-Each unit is returned as `{ unitId, grade, title, description, status, archivedAtMillis, createdAtMillis, updatedAtMillis, resourceIds, sortOrder, revision }`. Mutations return `{ unit, noop }`.
+Each unit is returned as `{ unitId, grade, title, description, status, archivedAtMillis, createdAtMillis, updatedAtMillis, resourceIds, sortOrder, revision }`. Single-unit mutations return `{ unit, noop }`.
 
-There is no delete operation, no resource-membership operation, and no ordering operation.
+There is no delete operation. U1A operations still reject `resourceIds` and `sortOrder` as request fields.
 
-**Error mapping.** The canonical code is always in `HttpsError.details.code`. Coarse HTTPS codes: `teacherUnits.invalidRequest`, `.invalidIdempotencyKey`, `.invalidUnitId`, `.invalidExpectedRevision`, `.invalidGrade`, `.invalidTitle`, `.invalidDescription` -> `invalid-argument`; `.notFound` -> `not-found`; `.writeConflict` -> `already-exists`; `.invalidStatus`, `.idempotencyKeyConflict`, `.listLimitExceeded` -> `failed-precondition`. The U1A validation codes are listed as exact codes in `shared/errors/https-callable.ts` (not suffixes), so `classes.invalidTitle`, `classes.invalidGrade`, and `accommodations.invalidExpectedRevision` keep their existing `failed-precondition` mapping.
+**Error mapping.** The canonical code is always in `HttpsError.details.code`. Coarse HTTPS codes: `teacherUnits.invalidRequest`, `.invalidIdempotencyKey`, `.invalidUnitId`, `.invalidExpectedRevision`, `.invalidGrade`, `.invalidTitle`, `.invalidDescription`, and (U1B) `.invalidResourceIds`, `.duplicateResource`, `.resourceNotPlaceable`, `.invalidUnitOrder` -> `invalid-argument`; `.notFound` -> `not-found`; `.writeConflict` -> `already-exists`; `.invalidStatus`, `.idempotencyKeyConflict`, `.listLimitExceeded` -> `failed-precondition`. The U1A and U1B validation codes are listed as exact codes in `shared/errors/https-callable.ts` (not suffixes), so `classes.invalidTitle`, `classes.invalidGrade`, and `accommodations.invalidExpectedRevision` keep their existing `failed-precondition` mapping.
 
 ### 4.1 Authorization snapshot
 
@@ -123,9 +125,13 @@ The receipt is scoped to the authoritative teacher **and** school. Another teach
 - A new unit has `revision: 1`.
 - Every accepted state-changing mutation increments `revision` by exactly 1, in the same Firestore transaction that compares it.
 - Each mutation runs in one transaction: authorization snapshot (section 4.1) -> read the unit -> verify ownership -> compute the change -> compare `expectedRevision` -> write the change, `revision + 1`, server `updatedAt`, and the audit event.
-- **No-op rule.** Full authorization and ownership are verified first. Then, if the request's result already holds (same title/description, archive of an archived unit, restore of an active unit), nothing is written, the revision and `archivedAt` are unchanged, no audit event is written, the current revision is returned with `noop: true`, and `expectedRevision` is not compared. Nothing can be overwritten by a write that does not happen. This makes a retried archive or restore safe after a lost response.
+- **No-op rule.** Full authorization and ownership are verified first. Then, if the request's result already holds (same title/description, archive of an archived unit, restore of an active unit, the stored resource list, every unit already at its requested position), nothing is written, the revision and `archivedAt` are unchanged, no audit event is written, the current revision is returned with `noop: true`, and `expectedRevision` is not compared. Nothing can be overwritten by a write that does not happen. This makes a retried archive or restore safe after a lost response.
 - **Conflict.** Otherwise a mismatched `expectedRevision` is refused with `teacherUnits.writeConflict` (HTTPS `already-exists`) and `details.currentRevision`. Nothing is written. Transaction contention that exhausts Firestore's retries is also reported as `teacherUnits.writeConflict` (without `currentRevision`).
-- Two writers holding the same revision can never both commit: the loser's transaction is retried by Firestore, observes the new revision, and is refused.
+- Concurrency outcomes (U1A and U1B alike). Every operation is one Firestore transaction; the outcome of concurrent requests is whatever Firestore's transaction serialization produces, and this contract does not promise that a given pair always succeeds or always fails. What is guaranteed:
+  - **Conflicting state-changing writes** to the same unit from the same revision cannot both commit. The loser's transaction is retried by Firestore, observes the new revision, and is refused with `teacherUnits.writeConflict` (or `teacherUnits.invalidStatus` when the winner archived the unit). Nothing is overwritten.
+  - **Identical requests** (same rename, same archive or restore, same resource list, same unit order) may produce one state-changing write and one authorized no-op: the second, retried against the new state, finds its result already holds (`noop: true`, no write, no audit event). This is the U1A no-op rule applied under concurrency.
+  - **Operations on different state** (two different units, two grades, two teachers' organizations, a create in another grade) do not contend and succeed in a valid serialized order.
+  - **Create, restore, and reorder in the same grade** follow serialization: if the create or restore commits before the reorder's snapshot, the reorder no longer names the complete organization and is refused with `teacherUnits.writeConflict` (nothing written); if it commits after, both succeed and the created unit sits at position 0 (a restored unit at its preserved position). Either outcome is valid.
 - Client timestamps are never used for conflict detection.
 - Every refusal is raised inside the transaction before any write is staged, or before the transaction starts; a refused request leaves the record, its revision, and the audit trail unchanged.
 
@@ -137,42 +143,132 @@ Firestore Rules (`platform/firebase/firestore.rules`):
 - `teacherUnits/{unitId}` `create`, `update`, `delete`: denied for every client. The callables are the sole writers (Admin SDK).
 - `teacherUnitCreateReceipts/{receiptId}`: all client reads and writes denied.
 
-Audit: `teacherUnits.created`, `teacherUnits.updated`, `teacherUnits.archived`, `teacherUnits.restored`, written in the same transaction as the change (target type `teacherUnit`), attributed to the in-transaction verified school and district. Payloads carry only `grade`, the revision(s), and for updates the changed field names. They never carry the title or description text. A replayed create and a no-op mutation emit none.
+Audit: `teacherUnits.created`, `teacherUnits.updated`, `teacherUnits.archived`, `teacherUnits.restored`, and (U1B) `teacherUnits.resourcesUpdated` (payload adds `previousResourceCount`, `resourceCount`) and `teacherUnits.reordered` (one per moved unit; payload adds `previousSortOrder`, `sortOrder`), written in the same transaction as the change (target type `teacherUnit`), attributed to the in-transaction verified school and district. Payloads carry only `grade`, the revision(s), and for updates the changed field names. They never carry the title or description text. A replayed create and a no-op mutation emit none.
 
 ## 8. Archival semantics
 
-Archive and restore are reversible status transitions of the same document. They preserve the unit id, owner, school, grade, title, description, `resourceIds`, `sortOrder`, and `createdAt`. Neither deletes the document or touches any assignment. Restore sets `archivedAt` back to `null`; the archive history is in the audit events. An archived unit cannot be edited until it is restored.
+Archive and restore are reversible status transitions of the same document. They preserve the unit id, owner, school, grade, title, description, `resourceIds`, `sortOrder`, and `createdAt`. Neither deletes the document or touches any assignment. Restore sets `archivedAt` back to `null`; the archive history is in the audit events. An archived unit cannot be edited (title, description, or resources) until it is restored, and a reorder never writes it.
 
-## 9. U1A capabilities and exclusions
+## 9. Resource membership and ordering (U1B)
+
+### 9.1 Membership: `teacherUnitsSetResources`
+
+The request carries the complete ordered `resourceIds` the unit should hold; adding, removing, and reordering resources are all this one operation, one revision, and one audit event. It runs through the U1A compare-and-set core (`mutateOwnedTeacherUnit`), so authorization snapshot, ownership, no-op, revision, and audit behavior are exactly section 4.1 and section 6.
+
+Validation runs before any read or write, and any failure refuses the whole request with nothing written:
+
+- `resourceIds` must be an array of strings, at most `TEACHER_UNIT_RESOURCES_MAX` (100) (`teacherUnits.invalidResourceIds`);
+- no id may repeat within the unit (`teacherUnits.duplicateResource`, `details.resourceId`);
+- every id must be RA-1 `unitPlaceable` (`teacherUnits.resourceNotPlaceable`, `details.resourceIds` lists every failing id). Unknown ids, gated resources (for example the gated lesson `ragebaiting`), and reusable tools (`lab-report-assistant`) all fail.
+
+Approved semantics:
+
+- Placement requires `unitPlaceable` only. It does **not** require `authenticatedAssignment`: Gravity Wells (`simulation-gravity-wells`) is placeable and stays unassignable. Placing a resource does not make it assignable.
+- A resource may appear in any number of units (the teacher's own units in any grade, and co-teachers' units). There is no cross-unit uniqueness check or index.
+- Membership is not restricted by the resource's grade; the approved rule is placeability alone.
+- An archived unit refuses with `teacherUnits.invalidStatus`. Archive and restore preserve `resourceIds` exactly.
+- A list identical to the stored one (same ids, same order) is a no-op. Validation precedes the no-op check, so a list naming an id that is no longer placeable is refused even if it matches the stored list; the teacher removes the id by sending the list without it.
+- Stored ids are not rewritten when the curriculum changes. A resource that later stops being placeable remains in existing units until a teacher saves the unit without it.
+
+### 9.2 Ordering: `teacherUnitsReorder`
+
+A teacher-grade organization is every **active** unit the caller owns, in their current canonical school, for one grade: exactly what `teacherUnitsList({ grade })` returns. Co-teachers and other grades are separate organizations.
+
+The request names that complete set in the desired order, each unit with the `expectedRevision` the caller last observed (at most `TEACHER_UNITS_REORDER_MAX`, 200). Unit `i` (0-based) receives `sortOrder = i + 1`. In one transaction:
+
+1. re-verify the caller's canonical authorization (section 4.1);
+2. read the caller's units with the same `teacherId` + `schoolId` query as list (no new index) and keep the active units of the grade;
+3. any requested id that is not one of them is refused with the uniform `teacherUnits.notFound` (missing, another teacher's, another school's, another grade's, or archived); a request that omits one of them is refused with `teacherUnits.writeConflict` (the caller's view is stale, for example a unit was created or restored since);
+4. if every unit already holds its requested position, nothing is written (`noop: true`, revisions not compared);
+5. otherwise every requested `expectedRevision` must match (`teacherUnits.writeConflict`, `details: { unitId, currentRevision }` for the first mismatch);
+6. each unit whose position changes gets its new `sortOrder`, `revision + 1`, a server `updatedAt`, and one `teacherUnits.reordered` audit event, all in the same commit. Units whose position does not change are not written.
+
+Malformed requests (empty list, repeated unit, entry not `{ unitId, expectedRevision }`) are refused before any read (`teacherUnits.invalidUnitOrder`, `.invalidUnitId`, `.invalidExpectedRevision`, or `.invalidRequest`).
+
+Concurrency (section 6): two **different** reorders of one organization from the same revisions cannot both commit. Each reads every unit in the organization, so the loser's read set moved; Firestore retries it, and the retry is refused on revision. Two **identical** reorders may produce one write and one authorized no-op. A reorder compares the revision of every unit it names but writes only the units whose position changes, so a concurrent edit to a unit the reorder **moves** conflicts with it at that unit's revision (they cannot both commit from the same revision), while an edit to an **unmoved** unit may succeed alongside the reorder: if the reorder serializes first, both commit; if the edit serializes first, the reorder's comparison fails and it is refused with nothing written. A concurrent create or restore in the grade follows section 6 (serialization-dependent). A reorder that commits rewrites each moved unit's revision, so a client holding an older revision for one of those units must reload before its next edit.
+
+Ordering decisions (current behavior, recorded for review; not changed without approval):
+
+- **New units start at position 0.** Create is unchanged from U1A, so a unit created after the last reorder sorts ahead of the ordered units (positions 1..n), in creation order, until the next reorder, which must include it.
+- **Restored units retain their previous position.** Archived units are outside the organization and are never written by a reorder; a unit keeps its `sortOrder` through archive and restore and is placed by that preserved value until the next reorder includes it.
+- **Ties are deterministic:** equal `sortOrder` values are ordered by `createdAt`, then `unitId` (for example two new units at 0, or a restored unit whose preserved position equals another unit's).
+- **A complete reorder supports at most 200 active units** (`TEACHER_UNITS_REORDER_MAX`) per teacher-grade organization.
+
+Post-commit response: the same contract as U1A mutations. The response is produced by an authorized read (`listOwnedTeacherUnits`) after the commit; a revocation between the commit and that read refuses the response while the reorder stands.
+
+### 9.3 Authoritative placement validation and drift prevention
+
+Functions cannot import the client curriculum bundle, so the server validates against a generated copy of one RA-1 field: `platform/functions/src/teacherUnits/unit-placeable-resources.json` holds the canonical ids for which `getFlatResources()` (`app/src/curriculum/resourceProjection.ts`) reports `unitPlaceable: true`, in canonical registry order (62 ids today). `unit-placeable-resources.ts` loads it into a frozen set and refuses to load an empty list or a duplicate id. It carries no resource data and is not a registry; RA-1 remains the single derivation of placement eligibility (`FLAT_RESOURCE_PROJECTION.md`).
+
+**Required parity gate.** `scripts/unit-placement/check-parity.cjs` is the release invariant. It (1) runs `build-curriculum-manifest.cjs --check`, because RA-1 reads the generated manifest; (2) bundles and evaluates the real RA-1 accessor with the app's esbuild (it does not re-derive placement); (3) requires the server file to have exactly `description` and `resourceIds` and to equal the canonical ids, order included. An empty canonical list (zero placeable resources, which the server loader would refuse), noncanonical, non-placeable, stale, missing, duplicated, or reordered ids, a missing or malformed file, or missing app dependencies all fail closed (exit 1) and print the exact replacement list. It is invoked by every supported path:
+
+| Path | How the gate runs |
+| --- | --- |
+| Any Functions build: `npm --prefix platform/functions run build`, CI, and the Functions `predeploy` of every `firebase deploy --only functions[...]` (including single-function deploys) | `prebuild` script in `platform/functions/package.json` |
+| Any Hosting deploy: both targets, a single target, production (`firebase.json`) or staging (`firebase.staging.json`) | `build-pair.cjs` (the only Hosting `predeploy`) runs it before building, and records `unitPlacement: { count, fingerprint }` in `dist/hosting-release/pair-build.json` |
+| `scripts/hosting-release/prepare.cjs` | through the pair build, plus the gate's test suite in its Hosting tests, plus app verify (`unitPlaceableManifest.test.ts`) |
+| Platform CI (`.github/workflows/platform-ci.yml`) | explicit "Unit placement parity" step (gate and its tests) and the `prebuild`; the workflow also triggers on the RA-1 inputs (`app/src/curriculum/**`, the curriculum build scripts, `app/package*.json`, root `index.html`) and on `scripts/unit-placement/**`, as well as on `platform/**` (which includes the server file) |
+
+Consequence: Functions release checkouts now need app dependencies installed (`npm --prefix app ci`), as Hosting release checkouts already do; without them the Functions build refuses. `scripts/unit-placement/check-parity.test.cjs` proves the gate refuses each drift class and that each entry point above invokes it.
+
+**What the gate does not prove.** It checks the source tree being built. It does not prove which placement list a deployed Functions or Hosting artifact carries, and Hosting and Functions remain separately deployable. Today the effect of a deployed mismatch is bounded: the server list is the only enforcement, no teacher UI calls these callables yet, and a mismatch can only make the server refuse (`resourceNotPlaceable`) an id a future client offers, or accept one it does not offer; it cannot admit a resource outside the server's own deployed list. Deployed-version coordination is deferred as a mandatory U2 activation safeguard (section 11).
+
+The app test `app/src/curriculum/unitPlaceableManifest.test.ts` remains as a fast developer check in `npm --prefix app run verify`.
+
+## 10. Capabilities and exclusions
 
 U1A delivers only the data model, Rules, and the six callables above, covering create, list, get, rename, edit description (both through `teacherUnitsUpdate`), archive, and restore.
 
-Explicitly not in U1A:
+U1B adds `teacherUnitsSetResources` and `teacherUnitsReorder` (section 9).
 
-- **U1B:** adding, removing, or reordering resources in a unit; server-side placeability validation (the `unitPlaceable` projection in `FLAT_RESOURCE_PROJECTION.md`); unit ordering; any cross-unit membership rule.
+Explicitly not in U1A or U1B:
+
 - **U2:** any teacher UI.
 - **U3:** assignment integration, including the conceptual publication snapshot `unitContext: { grade, unitId, unitTitle } | null`, which is not persisted anywhere and not added to the publisher.
 - **U4:** student grouping by unit.
 - **U5:** unit materials.
 
-U1A does not change the assignment publisher, the assignment lifecycle, assessment revision contracts, completion definitions, resource evidence, Student My Science, or non-lesson assignability.
+U1A and U1B do not change the assignment publisher, `unitContext`, the assignment lifecycle, assessment revision contracts, completion definitions, resource evidence, Student My Science, or non-lesson assignability.
 
-## 10. Known limitations
+## 11. Known limitations
 
 - Units created at a teacher's previous school are retained but unreachable by that teacher after a transfer; U1A has no recovery or transfer operation.
 - Receipts persist until a TTL policy is authorized and deployed (section 5.3).
 - `teacherUnitsList` returns everything in one response up to 1000 units per teacher per school (archived units count toward the ceiling); there is no pagination.
 - Post-commit revocation (section 4.1) can leave a committed write whose response was refused; for creates, the key replays it once the caller is authorized again.
+- A grade organization larger than 200 active units cannot be reordered in one request.
+- The server placement list is a deploy-time copy (section 9.3): after a registry change, membership validation follows the new list only once Functions are redeployed.
+- **Deployed-version coordination: deferred, mandatory U2 activation safeguard.** The parity gate proves source-tree parity only; it does not prove which placement list deployed Functions or a deployed (or cached) Hosting client carries, and Hosting and Functions remain independently deployable. Nothing is implemented in U1B. Before U2 activates any client surface that offers placement choices, a coordination mechanism must be designed, approved, and certified that accounts for:
+  - a shared clean source commit for the Functions and Hosting releases;
+  - the eligibility fingerprint (SHA-256 of the ordered RA-1 placeable ids, printed by the gate and recorded in `pair-build.json` as `unitPlacement.fingerprint`);
+  - the actual deployed Functions fingerprint (observable from the running server, not assumed from source);
+  - the deployed Hosting artifact fingerprint;
+  - partial rollout and rollback (one surface deployed or rolled back without the other);
+  - cached clients still running an older bundle;
+  - fail-closed activation: on any mismatch the client must not offer placement choices it cannot prove the server accepts.
+  No deployment policy is changed by U1B.
 
-## 11. Tests
+## 11.1 CI enforcement status
+
+Three different things, not to be conflated:
+
+- **CI runs automatically.** `.github/workflows/platform-ci.yml` (workflow "Platform CI") runs on pull requests and pushes to `main` that touch its path filters, which now include the U1B parity inputs (section 9.3).
+- **CI passes.** A run's jobs succeed. The check runs are named `Functions (lint, typecheck, test, build)` (which includes the "Unit placement parity" step and the `prebuild` gate) and `Firestore Rules tests` (verified against the check runs recorded on commit `6c404d8`).
+- **GitHub requires CI before integration.** Not configured. As verified for U1B, `main` has no branch protection (`GET /branches/main/protection` returns 404 "Branch not protected") and no repository rulesets. A failing or missing run therefore does not mechanically block a merge or a direct push to `main`. The parity gate is still mechanically enforced at build and deploy time (Functions `prebuild`, Hosting pair build), independent of GitHub settings.
+
+Recommended smallest future change (not applied; repository settings are owner-controlled): a repository ruleset (or classic branch protection) on `main` requiring the status check `Functions (lint, typecheck, test, build)` (and optionally `Firestore Rules tests`) from GitHub Actions, with changes integrated through pull requests. Caveat: Platform CI uses path filters, so a pull request that touches none of them never produces the check, and a required check that never reports blocks the merge. Before requiring it, either remove the workflow's path filters or accept that every pull request must trigger it. Until such a rule is configured and verified, do not describe CI as required by GitHub.
+
+## 12. Tests
 
 - `platform/functions/src/teacherUnits/teacher-units.test.ts` (hermetic; runs in `npm test` and CI). Its in-memory transaction stages audit events with the other writes and commits all or nothing.
 - `platform/functions/src/teacherUnits/teacher-units.emulator.test.ts` (real Firestore emulator; `npm run test:emulator`; not run by CI). Certifies transactional atomicity, the authorization snapshot (suspension, role change, school transfer, school deletion, district reassignment and removal, each committed between pre-check and transaction), post-commit response refusal, create replay, concurrent same-key creates, changed-payload and unauthorized replay, school-scoped listing, overflow boundaries, and stale-revision no-ops.
-- `platform/firebase/tests/teacher-units.rules.test.ts` (`npm run test:rules`; run by CI).
+- `platform/firebase/tests/teacher-units.rules.test.ts` (`npm run test:rules`; run by CI), including U1B direct-write denials for `resourceIds` and `sortOrder`.
+- U1B: the hermetic and emulator suites above cover add/remove/reorder, atomic rejection of non-placeable, unknown, duplicate, and malformed ids, Gravity Wells placement, cross-unit and co-teacher reuse, archived-unit refusal, archive/restore preservation, stale no-ops, stale-revision and incomplete-organization conflicts, simultaneous conflicting membership edits and reorders, reorder versus membership and archive races, every authorization-snapshot revocation, and post-commit response refusal. `scripts/unit-placement/check-parity.test.cjs` (run by Platform CI and Hosting `prepare`) proves the required parity gate and its wiring, including an empty canonical list and a real `npm run prebuild` run; `app/src/curriculum/unitPlaceableManifest.test.ts` is the app-side developer check (section 9.3).
 
-## 12. Deployment surfaces (when authorized)
+## 13. Deployment surfaces (when authorized)
 
-- Functions: the six `teacherUnits*` callables.
+- Functions: the eight `teacherUnits*` callables (six U1A, plus `teacherUnitsSetResources` and `teacherUnitsReorder`).
 - Firestore Rules: the `teacherUnits/{unitId}` and `teacherUnitCreateReceipts/{receiptId}` blocks. Until deployed, the terminal default-deny refuses every direct client read; the callables work regardless.
 - Optional, separately authorized: a TTL field override on `teacherUnitCreateReceipts.expiresAt` in `firestore.indexes.json`.
+- U1B changes no Firestore Rules or indexes (the Rules file gains tests only).
 - No composite index, Storage, Hosting, or Auth change.

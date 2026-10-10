@@ -234,6 +234,26 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
       await assertFails(updateDoc(doc(db, "teacherUnits", UNIT_ID), { revision: 99 }));
     });
 
+    // U1B: membership and ordering are written only by
+    // `teacherUnitsSetResources` and `teacherUnitsReorder`.
+    it("denies the owner writing resource membership or ordering directly", async () => {
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
+      await assertFails(
+        updateDoc(doc(db, "teacherUnits", UNIT_ID), { resourceIds: ["simulation-gravity-wells"] }),
+      );
+      await assertFails(updateDoc(doc(db, "teacherUnits", UNIT_ID), { resourceIds: ["not-a-resource"] }));
+      await assertFails(updateDoc(doc(db, "teacherUnits", UNIT_ID), { sortOrder: 3 }));
+      await assertFails(
+        updateDoc(doc(db, "teacherUnits", UNIT_ID), { sortOrder: 1, revision: 2, resourceIds: [] }),
+      );
+    });
+
+    it("denies another teacher writing membership or ordering of the owner's unit", async () => {
+      const db = testEnv.authenticatedContext(OTHER_TEACHER_UID).firestore();
+      await assertFails(updateDoc(doc(db, "teacherUnits", UNIT_ID), { resourceIds: ["earths-layers"] }));
+      await assertFails(updateDoc(doc(db, "teacherUnits", UNIT_ID), { sortOrder: 1 }));
+    });
+
     it("denies the owner deleting their own unit", async () => {
       const db = testEnv.authenticatedContext(OWNER_UID).firestore();
       await assertFails(deleteDoc(doc(db, "teacherUnits", UNIT_ID)));

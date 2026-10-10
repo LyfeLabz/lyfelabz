@@ -77,7 +77,9 @@ export {
   teacherUnitsCreate,
   teacherUnitsGet,
   teacherUnitsList,
+  teacherUnitsReorder,
   teacherUnitsRestore,
+  teacherUnitsSetResources,
   teacherUnitsUpdate,
 } from "./teacherUnits";
 export {

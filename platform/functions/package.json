@@ -8,6 +8,7 @@
   },
   "main": "lib/index.js",
   "scripts": {
+    "prebuild": "node ../../scripts/unit-placement/check-parity.cjs",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --ext .ts src",

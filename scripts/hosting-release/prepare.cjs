@@ -48,7 +48,8 @@ const HOSTING_TEST_FILES = Object.freeze([
   'scripts/marketing-hosting/delivery.test.cjs',
   'scripts/hosting-release/config.test.cjs',
   'scripts/hosting-release/pair.test.cjs',
-  'scripts/hosting-release/release.test.cjs'
+  'scripts/hosting-release/release.test.cjs',
+  'scripts/unit-placement/check-parity.test.cjs'
 ]);
 
 // Source and configuration gates that need no build, network, or git writes.

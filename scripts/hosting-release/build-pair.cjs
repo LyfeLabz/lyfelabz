@@ -10,6 +10,11 @@
 //   4. the pair ownership/parity gate passes;
 //   5. dist/hosting-release/pair-build.json records the source and file hashes.
 //
+// Before any of that, the U1B unit-placement parity gate must pass
+// (scripts/unit-placement/check-parity.cjs): the server teacher-unit
+// placement list must equal the RA-1 projection this bundle is built from.
+// Its fingerprint is recorded with the pair.
+//
 // A two-target deploy runs this hook once per target. The second run is a
 // deterministic rebuild of identical bytes (a few seconds), which is cheaper
 // to trust than any skip-if-unchanged guard.
@@ -21,6 +26,7 @@ const path = require('node:path');
 const { assertCatalogCurrent } = require('../../app/scripts/curriculumCatalog.cjs');
 const { buildApplicationArtifact } = require('../app-hosting/build.cjs');
 const { buildMarketingArtifact } = require('../marketing-hosting/build.cjs');
+const { assertUnitPlacementParity } = require('../unit-placement/check-parity.cjs');
 const {
   artifactFiles,
   productionConfigFile,
@@ -49,10 +55,11 @@ function hashInventory(directory) {
   return Object.fromEntries(artifactFiles(directory).map((file) => [file, sha256(fs.readFileSync(path.join(directory, file)))]));
 }
 
-function buildPair({ runBundleBuild = true, log = console.log } = {}) {
+function buildPair({ runBundleBuild = true, log = console.log, placementParity = assertUnitPlacementParity } = {}) {
   const config = readConfigFile(productionConfigFile);
   const targets = readHostingTargets(config);
   assertCatalogCurrent();
+  const unitPlacement = placementParity();
   if (runBundleBuild) {
     execFileSync(APP_BUNDLE_BUILD[0], APP_BUNDLE_BUILD[1], { cwd: repositoryRoot, stdio: 'inherit' });
   }
@@ -66,6 +73,7 @@ function buildPair({ runBundleBuild = true, log = console.log } = {}) {
     schemaVersion: 1,
     builtAt: new Date().toISOString(),
     source: gitSource(),
+    unitPlacement,
     pair,
     files: { app: hashInventory(appDirectory), marketing: hashInventory(marketingDirectory) }
   };

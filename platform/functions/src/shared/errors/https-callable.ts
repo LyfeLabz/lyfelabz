@@ -129,6 +129,11 @@ const INVALID_ARG_CODES = new Set([
   "teacherUnits.invalidGrade",
   "teacherUnits.invalidTitle",
   "teacherUnits.invalidDescription",
+  // U1B
+  "teacherUnits.invalidResourceIds",
+  "teacherUnits.duplicateResource",
+  "teacherUnits.resourceNotPlaceable",
+  "teacherUnits.invalidUnitOrder",
 ]);
 
 function endsWithAny(code: string, suffixes: readonly string[]): boolean {
