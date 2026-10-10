@@ -37,6 +37,12 @@ import { TEACHER_UNIT_IDEMPOTENCY_KEY_PATTERN, isTeacherUnitGrade } from "./type
 //   deleted without an explicit, acknowledged discard.
 // - Nothing is deleted automatically (not on sign-out, expiry, or when
 //   malformed).
+// - School binding (U2.2). A record's `context.schoolId` is the school its
+//   create intent began in. It is validated to equal the entry's own scope,
+//   and the coordinator sends exactly it as `expectedSchoolId` on every
+//   reconcile, so a restored attempt is never resent under a newly
+//   authorized school. The record format is unchanged (version 2): the
+//   binding was already stored, so existing records keep it.
 
 export const CREATE_ATTEMPT_STORAGE_PREFIX = "lyfelabz.teacherUnits.createAttempt.v2/";
 // The pre-certification single-slot prefix (never activated). Entries under
@@ -73,6 +79,7 @@ const REASONS: ReadonlySet<string> = new Set([
   "idempotencyKeyConflict",
   "replayExpired",
   "replayRefused",
+  "schoolContextChanged",
 ]);
 
 function getStorage(): Storage | null {

@@ -30,6 +30,9 @@ export type TeacherUnitErrorCategory =
   | "limitExceeded"
   // Signed out, inactive, wrong role, or school/district context changed.
   | "unauthorized"
+  // Create only (U2.2): the caller's verified school is no longer the
+  // school the create intent was made in (`expectedSchoolId`).
+  | "schoolContextChanged"
   // Could not reach the server, or the result is unknown. Retry is safe
   // only where the operation is idempotent (see `retry`).
   | "network"
@@ -99,6 +102,7 @@ const FIELD_MESSAGES: Readonly<Record<TeacherUnitErrorField, string>> = Object.f
 const INVALID_REQUEST_CODES: ReadonlySet<string> = new Set([
   "teacherUnits.invalidRequest",
   "teacherUnits.invalidIdempotencyKey",
+  "teacherUnits.invalidExpectedSchoolId",
   "teacherUnits.invalidUnitId",
   "teacherUnits.invalidExpectedRevision",
   "teacherUnits.invalidResourceIds",
@@ -224,6 +228,18 @@ export function normalizeTeacherUnitError(err: unknown): TeacherUnitError {
         "refresh",
         code,
         "We couldn't confirm whether this unit was created. Refresh your units to check before creating it again.",
+      );
+    case "teacherUnits.schoolContextChanged":
+      // Create only (U2.2): the request named the school its intent was made
+      // in, and the server's verified school is now different. The server
+      // refused before writing, but an EARLIER dispatch of the same attempt
+      // may have committed in the original school, so this never claims the
+      // unit was not created. The create coordinator keeps it unresolved.
+      return make(
+        "schoolContextChanged",
+        "refresh",
+        code,
+        "Your school changed, so we couldn't confirm whether this unit was created. Reload the page to continue at your current school.",
       );
     case "teacherUnits.listLimitExceeded":
       return make(

@@ -40,6 +40,8 @@ const BLOCKED_MESSAGES: Partial<Record<CreateBlockedReason, string>> = Object.fr
     "This request belongs to a different sign-in or school, so it can't be checked here. Reload the page.",
   replayExpired: "This request is too old to check again safely. Check your units instead.",
   replayRefused: "This request can't be checked again. Check your units instead.",
+  schoolContextChanged:
+    "Your school changed, so this request can't be checked again here. Reload the page to continue at your current school.",
   newUnitIntentRequired: "Choose Create another unit first.",
 });
 
@@ -283,7 +285,8 @@ export function renderTeacherUnitsPanel(
     entry.state.kind === "unresolved" &&
     (entry.state.reason === "replayExpired" ||
       entry.state.reason === "replayRefused" ||
-      entry.state.reason === "idempotencyKeyConflict");
+      entry.state.reason === "idempotencyKeyConflict" ||
+      entry.state.reason === "schoolContextChanged");
 
   const renderRecoveryEntry = (s: TeacherUnitsViewState, entry: CreateRecoveryEntry): HTMLElement => {
     const item = el("li", "shell-units-recovery-item");

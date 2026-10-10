@@ -306,7 +306,7 @@ describe("My Units panel", () => {
     type(q(host, "units-create-title"), "  Water Cycle ");
     submit(q(host, "units-create-form"));
     await flush();
-    expect(c.create).toHaveBeenCalledWith({ grade: "7", title: "Water Cycle", description: "", idempotencyKey: "key_00000001" });
+    expect(c.create).toHaveBeenCalledWith({ grade: "7", title: "Water Cycle", description: "", idempotencyKey: "key_00000001", expectedSchoolId: "schoolA" });
     expect(q(host, "units-created")?.textContent).toContain('Created "Water Cycle"');
     expect(q(host, `units-card-${created.unitId}`)).not.toBeNull();
     expect(mem.map.size).toBe(0);
@@ -332,7 +332,7 @@ describe("My Units panel", () => {
     expect((q(host, "units-create-submit") as HTMLButtonElement).disabled).toBe(true);
     (q(host, "units-recovery-reconcile-key_ORIGINAL") as HTMLButtonElement).click();
     await flush();
-    expect(c.create).toHaveBeenCalledWith({ grade: "7", title: "Earth", description: "", idempotencyKey: "key_ORIGINAL" });
+    expect(c.create).toHaveBeenCalledWith({ grade: "7", title: "Earth", description: "", idempotencyKey: "key_ORIGINAL", expectedSchoolId: "schoolA" });
     expect(rec.hidden).toBe(true);
     expect(mem.map.has(createAttemptStorageKey(SCOPE, "key_ORIGINAL"))).toBe(false);
     expect(q(host, "units-status")?.textContent).toBe('Confirmed: "Earth" was created.');
@@ -358,6 +358,34 @@ describe("My Units panel", () => {
     expect(q(host, "units-recovery")?.hidden).toBe(true);
     expect((q(host, "units-create-submit") as HTMLButtonElement).disabled).toBe(false);
     expect(c.create).not.toHaveBeenCalled();
+  });
+
+  test("a school change keeps the request unresolved: no Check again, Set aside only after Check my units", async () => {
+    const mem = memoryStorage();
+    createTeacherUnitCreateAttemptStore(SCOPE, () => mem.storage).save(
+      { key: "key_ORIGINAL", payload: { grade: "7", title: "Earth", description: "" }, context: SCOPE, status: "inFlight", reason: null, createdAtMs: T0 },
+    );
+    const create = jest.fn().mockRejectedValueOnce(
+      Object.assign(new Error("x"), { code: "failed-precondition", details: { code: "teacherUnits.schoolContextChanged" } }),
+    );
+    const c = callables({ create });
+    const { host } = panel({ c, mem });
+    await flush();
+    (q(host, "units-recovery-reconcile-key_ORIGINAL") as HTMLButtonElement).click();
+    await flush();
+    expect(create).toHaveBeenCalledWith({ grade: "7", title: "Earth", description: "", idempotencyKey: "key_ORIGINAL", expectedSchoolId: "schoolA" });
+    const rec = q(host, "units-recovery") as HTMLElement;
+    expect(rec.hidden).toBe(false);
+    expect(rec.textContent).toContain("Your school changed");
+    expect(rec.textContent).toContain("couldn't confirm whether this unit was created");
+    expect(q(host, "units-recovery-reconcile-key_ORIGINAL")).toBeNull();
+    expect((q(host, "units-recovery-abandon-key_ORIGINAL") as HTMLButtonElement).disabled).toBe(true);
+    expect((q(host, "units-create-submit") as HTMLButtonElement).disabled).toBe(true);
+    expect(mem.map.has(createAttemptStorageKey(SCOPE, "key_ORIGINAL"))).toBe(true);
+    (q(host, "units-recovery-check") as HTMLButtonElement).click();
+    await flush();
+    expect((q(host, "units-recovery-abandon-key_ORIGINAL") as HTMLButtonElement).disabled).toBe(false);
+    expect(create).toHaveBeenCalledTimes(1);
   });
 
   test("edit conflict keeps the teacher's draft, shows the current version, and saves again deliberately", async () => {
@@ -485,7 +513,7 @@ describe("My Units panel", () => {
     again.focus();
     again.click();
     await flush();
-    expect(c.create).toHaveBeenCalledWith({ grade: "7", title: "From A", description: "", idempotencyKey: "key_TABAAAAA" });
+    expect(c.create).toHaveBeenCalledWith({ grade: "7", title: "From A", description: "", idempotencyKey: "key_TABAAAAA", expectedSchoolId: "schoolA" });
     expect(q(host, "units-recovery-item-key_TABAAAAA")).toBeNull();
     expect(q(host, "units-recovery-item-key_TABBBBBB")).not.toBeNull();
     // Focus does not fall to the body when the clicked control disappears.

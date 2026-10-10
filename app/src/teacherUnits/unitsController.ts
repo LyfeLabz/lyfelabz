@@ -185,7 +185,8 @@ function requiresCheck(s: RecoveryAttemptState): boolean {
     s.kind === "unresolved" &&
     (s.reason === "replayExpired" ||
       s.reason === "replayRefused" ||
-      s.reason === "idempotencyKeyConflict")
+      s.reason === "idempotencyKeyConflict" ||
+      s.reason === "schoolContextChanged")
   );
 }
 

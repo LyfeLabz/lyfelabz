@@ -2,6 +2,20 @@ import type { FieldValue, Timestamp } from "firebase-admin/firestore";
 
 export const SCHOOLS_COLLECTION = "schools";
 
+// Canonical schoolId grammar. The schoolId is the machine identifier: it is
+// the Firestore document ID and the value a teacher's record and claims
+// carry, so it stays a strict URL-safe token. Firestore document IDs cannot
+// contain "/", cannot be "." or "..", and cannot match the reserved __.*__
+// pattern; this accepted set is stricter than the raw Firestore constraint.
+// Enforced by `schoolsCreate` for every new school, and reused wherever a
+// request names a schoolId it expects (e.g. `teacherUnitsCreate`
+// `expectedSchoolId`).
+export const SCHOOL_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
+
+export function isCanonicalSchoolId(value: unknown): value is string {
+  return typeof value === "string" && SCHOOL_ID_PATTERN.test(value);
+}
+
 // Canonical school record shape per Data Model §3.2.
 //
 // Required fields: name, shortName, timezone, createdAt.

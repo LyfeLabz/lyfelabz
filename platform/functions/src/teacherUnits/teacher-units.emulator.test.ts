@@ -949,6 +949,213 @@ d("U1A teacher units (emulator)", () => {
     });
   });
 
+  // U2.2 P1-B: `teacherUnitsCreate.expectedSchoolId`. Every case runs the
+  // real handler (real `requireDistrictContext`, real transaction, real
+  // receipt `create()` precondition) against the emulator.
+  describe("school binding: expectedSchoolId (U2.2 P1-B)", () => {
+    async function auditsByActor(uid: string): Promise<Record<string, unknown>[]> {
+      const snap = await db.collection("auditEvents").where("actorUserId", "==", uid).get();
+      return snap.docs.map((doc) => doc.data());
+    }
+    async function receiptExists(uid: string, schoolId: string, key: string): Promise<boolean> {
+      return (await db.doc(`teacherUnitCreateReceipts/${teacherUnitCreateReceiptId(uid, schoolId, key)}`).get()).exists;
+    }
+    // Canonical membership AND signed claims now name school B.
+    async function transferToOtherSchool(): Promise<void> {
+      await db.doc(`users/${w.teacher}`).update({ schoolId: w.otherSchoolId });
+    }
+    const inOtherSchool = (data: unknown) =>
+      __teacherUnitsCreateHandler(req(w, w.teacher, data, { schoolId: w.otherSchoolId }));
+
+    it("1. creates in school A when expectedSchoolId names A", async () => {
+      const idempotencyKey = freshKey();
+      const first = await create(w, w.teacher, { grade: "7", title: "Earth", idempotencyKey, expectedSchoolId: w.schoolId });
+      expect(first.replayed).toBe(false);
+      expect(await unitData(first.unit.unitId)).toMatchObject({ teacherId: w.teacher, schoolId: w.schoolId });
+      expect(await receiptExists(w.teacher, w.schoolId, idempotencyKey)).toBe(true);
+      expect(await auditsFor(first.unit.unitId)).toEqual([
+        expect.objectContaining({ action: "teacherUnits.created", schoolId: w.schoolId }),
+      ]);
+    });
+
+    it("2. replays a same-key request in school A idempotently", async () => {
+      const idempotencyKey = freshKey();
+      const data = { grade: "7", title: "Earth", idempotencyKey, expectedSchoolId: w.schoolId };
+      const first = await create(w, w.teacher, data);
+      const replay = await create(w, w.teacher, data);
+      expect(replay).toEqual({ replayed: true, unit: first.unit });
+      expect(await unitIdsOwnedBy(w.teacher)).toEqual([first.unit.unitId]);
+      expect(await receiptsOwnedBy(w.teacher)).toHaveLength(1);
+      expect(await auditsByActor(w.teacher)).toHaveLength(1);
+    });
+
+    it("3-4. after a lost response and a transfer to B, the same-key retry creates nothing in B (no unit, receipt, or audit)", async () => {
+      const idempotencyKey = freshKey();
+      const data = { grade: "7", title: "Earth", idempotencyKey, expectedSchoolId: w.schoolId };
+      // The server commits in A; the client never sees the response.
+      const original = await create(w, w.teacher, data);
+      await transferToOtherSchool();
+      // The client retries the ORIGINAL key and payload, still bound to A,
+      // while the server now authorizes the teacher in B.
+      await expectCode(inOtherSchool(data), "teacherUnits.schoolContextChanged");
+      // Repeating it changes nothing either.
+      await expectCode(inOtherSchool(data), "teacherUnits.schoolContextChanged");
+
+      expect(await unitIdsOwnedBy(w.teacher)).toEqual([original.unit.unitId]);
+      const inB = await db
+        .collection("teacherUnits")
+        .where("teacherId", "==", w.teacher)
+        .where("schoolId", "==", w.otherSchoolId)
+        .get();
+      expect(inB.size).toBe(0);
+      expect(await receiptExists(w.teacher, w.otherSchoolId, idempotencyKey)).toBe(false);
+      expect(await receiptsOwnedBy(w.teacher)).toEqual([
+        expect.objectContaining({ schoolId: w.schoolId, unitId: original.unit.unitId }),
+      ]);
+      const audits = await auditsByActor(w.teacher);
+      expect(audits).toHaveLength(1);
+      expect(audits.filter((a) => a.schoolId === w.otherSchoolId)).toEqual([]);
+      // The original unit in A is untouched.
+      expect(await unitData(original.unit.unitId)).toMatchObject({ schoolId: w.schoolId, revision: 1, title: "Earth" });
+    });
+
+    it("3b. the same retry bound to A is refused even when the transfer lands between pre-check and transaction", async () => {
+      const idempotencyKey = freshKey();
+      const input = { grade: "7" as const, title: "Earth", description: "", idempotencyKey, expectedSchoolId: w.schoolId };
+      await createTeacherUnit(actorOf(), input);
+      await transferToOtherSchool();
+      // Pre-check already authorized the teacher in A (stale actor): the
+      // in-transaction snapshot refuses it.
+      await expectCode(createTeacherUnit(actorOf(), input), "claim-state-mismatch");
+      // Pre-check authorized the teacher in B: the school binding refuses it.
+      await expectCode(createTeacherUnit(actorOf(w.teacher, w.otherSchoolId), input), "teacherUnits.schoolContextChanged");
+      expect(await unitIdsOwnedBy(w.teacher)).toHaveLength(1);
+      expect(await receiptsOwnedBy(w.teacher)).toHaveLength(1);
+      expect(await auditsByActor(w.teacher)).toHaveLength(1);
+    });
+
+    it("3c. a transfer back to A lets the bound key replay the original unit", async () => {
+      const idempotencyKey = freshKey();
+      const data = { grade: "7", title: "Earth", idempotencyKey, expectedSchoolId: w.schoolId };
+      const original = await create(w, w.teacher, data);
+      await transferToOtherSchool();
+      await expectCode(inOtherSchool(data), "teacherUnits.schoolContextChanged");
+      await db.doc(`users/${w.teacher}`).update({ schoolId: w.schoolId });
+      expect(await create(w, w.teacher, data)).toEqual({ replayed: true, unit: original.unit });
+      expect(await unitIdsOwnedBy(w.teacher)).toEqual([original.unit.unitId]);
+    });
+
+    it("5. a mismatched expectedSchoolId on an initial create writes nothing", async () => {
+      for (const expectedSchoolId of [w.otherSchoolId, "school-that-does-not-exist"]) {
+        const idempotencyKey = freshKey();
+        await expectCode(
+          create(w, w.teacher, { grade: "7", title: "Earth", idempotencyKey, expectedSchoolId }),
+          "teacherUnits.schoolContextChanged",
+        );
+        expect(await receiptExists(w.teacher, w.schoolId, idempotencyKey)).toBe(false);
+        expect(await receiptExists(w.teacher, w.otherSchoolId, idempotencyKey)).toBe(false);
+      }
+      expect(await unitIdsOwnedBy(w.teacher)).toEqual([]);
+      expect(await receiptsOwnedBy(w.teacher)).toEqual([]);
+      expect(await auditsByActor(w.teacher)).toEqual([]);
+    });
+
+    it("6. legacy requests without the field keep the U1A behavior (including the legacy cross-school key scope)", async () => {
+      const idempotencyKey = freshKey();
+      const legacy = { grade: "7", title: "Earth", idempotencyKey };
+      const first = await create(w, w.teacher, legacy);
+      expect(first.replayed).toBe(false);
+      expect(await create(w, w.teacher, legacy)).toEqual({ replayed: true, unit: first.unit });
+      // Legacy and school-bound requests with one key are the same request.
+      expect(await create(w, w.teacher, { ...legacy, expectedSchoolId: w.schoolId })).toEqual({
+        replayed: true,
+        unit: first.unit,
+      });
+      await expectCode(create(w, w.teacher, { ...legacy, title: "Other" }), "teacherUnits.idempotencyKeyConflict");
+      expect(await auditsByActor(w.teacher)).toHaveLength(1);
+      // Unchanged legacy semantics: without the binding the key is scoped to
+      // the new school (the gap the field closes for callers that send it).
+      await transferToOtherSchool();
+      const moved = await inOtherSchool(legacy);
+      expect(moved.replayed).toBe(false);
+      expect((await unitData(moved.unit.unitId))?.schoolId).toBe(w.otherSchoolId);
+    });
+
+    it.each([[""], [" "], ["has/slash"], ["-leading"], ["trailing-"], ["x".repeat(65)], ["__reserved__"], [42], [null], [true], [["a"]]])(
+      "7. rejects malformed expectedSchoolId %p with no write",
+      async (expectedSchoolId) => {
+        await expectCode(
+          create(w, w.teacher, { grade: "7", title: "Earth", expectedSchoolId }),
+          "teacherUnits.invalidExpectedSchoolId",
+        );
+        expect(await unitIdsOwnedBy(w.teacher)).toEqual([]);
+        expect(await receiptsOwnedBy(w.teacher)).toEqual([]);
+        expect(await auditsByActor(w.teacher)).toEqual([]);
+      },
+    );
+
+    it("8. never substitutes for server authorization or membership checks", async () => {
+      // Students, suspended teachers, and unauthenticated callers are refused
+      // even when they name the right school.
+      await expectCode(
+        __teacherUnitsCreateHandler(req(w, w.student, { grade: "7", title: "x", idempotencyKey: freshKey(), expectedSchoolId: w.schoolId })),
+        "role-forbidden",
+      );
+      await expectCode(
+        __teacherUnitsCreateHandler(req(w, w.suspendedTeacher, { grade: "7", title: "x", idempotencyKey: freshKey(), expectedSchoolId: w.schoolId })),
+        "account-inactive",
+      );
+      await expectCode(
+        __teacherUnitsCreateHandler(req(w, null, { grade: "7", title: "x", idempotencyKey: freshKey(), expectedSchoolId: w.schoolId })),
+        "unauthenticated",
+      );
+      // A token claiming school B for a teacher canonically in A is still a
+      // claim mismatch, whichever school the request names.
+      for (const expectedSchoolId of [w.schoolId, w.otherSchoolId]) {
+        await expectCode(
+          __teacherUnitsCreateHandler(
+            req(w, w.teacher, { grade: "7", title: "x", idempotencyKey: freshKey(), expectedSchoolId }, { schoolId: w.otherSchoolId }),
+          ),
+          "claim-state-mismatch",
+        );
+      }
+      // A teacher in school B cannot create in A by naming A.
+      await expectCode(
+        create(w, w.crossSchoolTeacher, { grade: "7", title: "x", expectedSchoolId: w.schoolId }),
+        "teacherUnits.schoolContextChanged",
+      );
+      // `schoolId` itself remains a server-owned request field.
+      await expectCode(
+        create(w, w.teacher, { grade: "7", title: "x", expectedSchoolId: w.schoolId, schoolId: w.schoolId }),
+        "teacherUnits.invalidRequest",
+      );
+      // A school deleted or moved to another district is refused by the
+      // in-transaction snapshot before the binding is consulted.
+      await db.doc(`schools/${w.schoolId}`).update({ districtId: `${w.districtId}-other` });
+      await expectCode(
+        createTeacherUnit(actorOf(), { grade: "7", title: "x", description: "", idempotencyKey: freshKey(), expectedSchoolId: w.schoolId }),
+        "district-mismatch",
+      );
+      for (const uid of [w.teacher, w.crossSchoolTeacher, w.student, w.suspendedTeacher]) {
+        expect(await unitIdsOwnedBy(uid)).toEqual([]);
+        expect(await receiptsOwnedBy(uid)).toEqual([]);
+        expect(await auditsByActor(uid)).toEqual([]);
+      }
+    });
+
+    it("admits exactly one unit for simultaneous school-bound requests with one key", async () => {
+      const idempotencyKey = freshKey();
+      const data = { grade: "7", title: "Race", idempotencyKey, expectedSchoolId: w.schoolId };
+      const settled = await Promise.allSettled(Array.from({ length: 5 }, () => create(w, w.teacher, data)));
+      for (const r of settled) {
+        if (r.status === "rejected") expect((r.reason as { code?: unknown }).code).toBe("teacherUnits.writeConflict");
+      }
+      expect(await unitIdsOwnedBy(w.teacher)).toHaveLength(1);
+      expect(await receiptsOwnedBy(w.teacher)).toHaveLength(1);
+      expect(await auditsByActor(w.teacher)).toHaveLength(1);
+    });
+  });
+
   describe("school-scoped listing (P2)", () => {
     async function transferTeacherWithUnits(oldCount: number, newCount: number) {
       for (let i = 0; i < oldCount; i += 1) await createUnit(w, `Old ${String(i)}`);

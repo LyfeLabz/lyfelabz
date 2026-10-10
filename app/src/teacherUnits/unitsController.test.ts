@@ -412,7 +412,7 @@ describe("durable create recovery through the controller", () => {
     expect(second.ctl.getState().createBlocked).toBe("recoveryPending");
     expect(c2.create).not.toHaveBeenCalled();
     await second.ctl.reconcileCreate("key_00000001");
-    expect(c2.create).toHaveBeenCalledWith({ grade: "7", title: "Earth", description: "", idempotencyKey: "key_00000001" });
+    expect(c2.create).toHaveBeenCalledWith({ grade: "7", title: "Earth", description: "", idempotencyKey: "key_00000001", expectedSchoolId: "schoolA" });
     const s = second.ctl.getState();
     expect(s.recoveries).toEqual([]);
     expect(s.lastConfirmed).toEqual({ unit: created, replayed: true });

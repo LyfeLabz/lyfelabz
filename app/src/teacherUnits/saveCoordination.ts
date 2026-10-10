@@ -98,6 +98,21 @@ export function defaultMintIdempotencyKey(): string {
 // - `idempotencyKeyConflict` means the key's receipt belongs to a different
 //   payload. Since this coordinator pins the payload to the key, that is
 //   unexpected; it is kept unresolved rather than silently replaced.
+// - Receipts are scoped to the server-verified school, so a same-key retry
+//   after a school transfer would find no receipt and create a second unit
+//   in the new school. Every dispatch (first send and every reconcile)
+//   therefore carries `expectedSchoolId`: the school pinned to the attempt
+//   when the intent began (`context.schoolId`), never a school read later.
+//   The server compares it with its verified school inside the create
+//   transaction and refuses a mismatch with `schoolContextChanged` before
+//   any receipt read or write. That refusal is kept unresolved (an earlier
+//   dispatch may have committed in the original school), reconciliation is
+//   disabled, and nothing is ever resent against another school.
+// - A server that predates `expectedSchoolId` rejects the unknown field with
+//   `invalidRequest` during validation (before any transaction). On a first
+//   dispatch that is a confirmed pre-commit rejection (nothing written); on
+//   a resend it is `replayRefused` (unresolved), never a rejection. The
+//   coordinator never falls back to a request without the school binding.
 //
 // So the key is discarded only after a CONFIRMED creation or a CONFIRMED
 // pre-commit rejection. Every other outcome leaves the attempt unresolved
@@ -190,7 +205,13 @@ export type UnresolvedCreateReason =
   // refusal says nothing about the original dispatch (which may have
   // committed), so the attempt stays unresolved and is never treated as a
   // confirmed rejection or deleted.
-  | "replayRefused";
+  | "replayRefused"
+  // U2.2: the server's verified school is no longer the attempt's pinned
+  // school (`teacherUnits.schoolContextChanged`). Nothing was written by
+  // the refused request, but an earlier dispatch may have committed in the
+  // original school. Reconciliation is disabled; the attempt is never
+  // resent against another school.
+  | "schoolContextChanged";
 
 type PinnedAttempt = {
   readonly key: string;
@@ -239,7 +260,9 @@ export type CreateAttemptBlocked =
   | "replayExpired"
   // U2.2: the resend was refused (see "replayRefused"); resending again
   // cannot help.
-  | "replayRefused";
+  | "replayRefused"
+  // U2.2: the server reported a school change (see "schoolContextChanged").
+  | "schoolContextChanged";
 
 export type CreateAttemptResult =
   | { readonly kind: "blocked"; readonly reason: CreateAttemptBlocked }
@@ -249,6 +272,7 @@ export type CreateAttemptResult =
 const PRE_COMMIT_REJECTION_CODES: ReadonlySet<string> = new Set([
   "teacherUnits.invalidRequest",
   "teacherUnits.invalidIdempotencyKey",
+  "teacherUnits.invalidExpectedSchoolId",
   "teacherUnits.invalidGrade",
   "teacherUnits.invalidTitle",
   "teacherUnits.invalidDescription",
@@ -267,6 +291,8 @@ export function classifyCreateFailure(
       return { kind: "unresolved", reason: "contention" };
     case "idempotencyKeyConflict":
       return { kind: "unresolved", reason: "idempotencyKeyConflict" };
+    case "schoolContextChanged":
+      return { kind: "unresolved", reason: "schoolContextChanged" };
     default:
       return { kind: "unresolved", reason: "uncertain" };
   }
@@ -304,6 +330,11 @@ const UNRESOLVED_CREATE_FEEDBACK: Readonly<
   },
   replayRefused: {
     message: `${UNCONFIRMED_CREATE} LyfeLabz couldn't check it again because the request was refused, so it can't be checked automatically. Refresh your units to see whether it already exists before creating a different unit.`,
+    recovery: "refresh",
+  },
+  // Never resent against the new school, never described as not created.
+  schoolContextChanged: {
+    message: `${UNCONFIRMED_CREATE} Your school changed after you asked for it, so LyfeLabz won't create it at your new school. If it was created, it belongs to your previous school. Reload the page to continue at your current school, and create the unit there only if you still need it.`,
     recovery: "refresh",
   },
 });
@@ -520,6 +551,9 @@ export function createUnitCreateCoordinator(deps: {
         title: attempt.payload.title,
         description: attempt.payload.description,
         idempotencyKey: attempt.key,
+        // The school pinned when this intent began (restored attempts carry
+        // it from their durable record). Never re-read from the session.
+        expectedSchoolId: attempt.context.schoolId,
       }),
     );
     if (outcome.ok) {
@@ -607,6 +641,7 @@ export function createUnitCreateCoordinator(deps: {
       if (!sameContext(state.context, current)) return blocked("contextMismatch");
       if (state.reason === "replayExpired") return blocked("replayExpired");
       if (state.reason === "replayRefused") return blocked("replayRefused");
+      if (state.reason === "schoolContextChanged") return blocked("schoolContextChanged");
       if (persistence !== null && !isCreateReplayEligible(attemptCreatedAtMs, now())) {
         const { key, payload, context } = state;
         state = Object.freeze({

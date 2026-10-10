@@ -118,8 +118,10 @@ jest.mock("../shared", () => {
   const actual = jest.requireActual("../shared/types/teacher-unit");
   const { PlatformError } = jest.requireActual("../shared/errors/platform-error");
   const { isTransactionContention } = jest.requireActual("../shared/firestore/transaction");
+  const { isCanonicalSchoolId } = jest.requireActual("../shared/types/school");
   return {
     ...actual,
+    isCanonicalSchoolId,
     PlatformError,
     isTransactionContention,
     platformCallable: (h: unknown) => h,
@@ -414,6 +416,74 @@ describe("certification remediation (hermetic)", () => {
     ).toBe(code);
     expect(unitRows()[0]).toMatchObject({ status: "active", revision: 1 });
     expect(audits).toHaveLength(1);
+  });
+});
+
+describe("teacherUnitsCreate expectedSchoolId (U2.2, hermetic)", () => {
+  const receiptRows = () => [...store.keys()].filter((p) => p.startsWith("teacherUnitCreateReceipts/"));
+
+  it("creates and replays when expectedSchoolId names the verified school", async () => {
+    const first = await create(TEACHER, { grade: "7", title: "Earth", idempotencyKey: "bound-key-1", expectedSchoolId: SCHOOL });
+    expect(first.replayed).toBe(false);
+    expect(unitRows()).toEqual([expect.objectContaining({ teacherId: TEACHER, schoolId: SCHOOL })]);
+    const again = await create(TEACHER, { grade: "7", title: "Earth", idempotencyKey: "bound-key-1", expectedSchoolId: SCHOOL });
+    expect(again).toEqual({ replayed: true, unit: first.unit });
+    // Legacy and bound requests with one key are the same request.
+    const legacy = await create(TEACHER, { grade: "7", title: "Earth", idempotencyKey: "bound-key-1" });
+    expect(legacy).toEqual({ replayed: true, unit: first.unit });
+    expect(unitRows()).toHaveLength(1);
+    expect(receiptRows()).toHaveLength(1);
+    expect(audits).toHaveLength(1);
+  });
+
+  it("refuses a mismatched expectedSchoolId with no unit, receipt, or audit", async () => {
+    expect(
+      await codeOf(create(TEACHER, { grade: "7", title: "Earth", expectedSchoolId: "school-2" })),
+    ).toBe("teacherUnits.schoolContextChanged");
+    expect(unitRows()).toEqual([]);
+    expect(receiptRows()).toEqual([]);
+    expect(audits).toEqual([]);
+  });
+
+  it("refuses a same-key replay after a transfer, without writing in the new school", async () => {
+    await create(TEACHER, { grade: "7", title: "Earth", idempotencyKey: "transfer-key", expectedSchoolId: SCHOOL });
+    store.set("schools/school-2", { data: { districtId: "district-1" }, version: ++version });
+    setUser(TEACHER, { status: "active", role: "teacher", schoolId: "school-2" });
+    expect(
+      await codeOf(create(TEACHER, { grade: "7", title: "Earth", idempotencyKey: "transfer-key", expectedSchoolId: SCHOOL })),
+    ).toBe("teacherUnits.schoolContextChanged");
+    expect(unitRows()).toEqual([expect.objectContaining({ schoolId: SCHOOL })]);
+    expect(receiptRows()).toHaveLength(1);
+    expect(audits).toHaveLength(1);
+  });
+
+  it.each([[""], ["has/slash"], ["-leading"], ["trailing_"], ["x".repeat(65)], ["__reserved__"], [12], [null], [{}]])(
+    "rejects expectedSchoolId %p with no write",
+    async (expectedSchoolId) => {
+      expect(await codeOf(create(TEACHER, { grade: "7", title: "Earth", expectedSchoolId }))).toBe(
+        "teacherUnits.invalidExpectedSchoolId",
+      );
+      expect(unitRows()).toEqual([]);
+      expect(receiptRows()).toEqual([]);
+      expect(audits).toEqual([]);
+    },
+  );
+
+  it("never lets expectedSchoolId stand in for authorization", async () => {
+    setUser("student-1", { status: "active", role: "student", schoolId: SCHOOL });
+    expect(await codeOf(create("student-1", { grade: "7", title: "x", expectedSchoolId: SCHOOL }))).toBe(
+      "role-forbidden",
+    );
+    setUser(TEACHER, { status: "suspended", role: "teacher", schoolId: SCHOOL });
+    expect(await codeOf(create(TEACHER, { grade: "7", title: "x", expectedSchoolId: SCHOOL }))).toBe(
+      "account-inactive",
+    );
+    // `schoolId` itself is still a server-owned field.
+    expect(
+      await codeOf(create(OTHER, { grade: "7", title: "x", expectedSchoolId: SCHOOL, schoolId: SCHOOL })),
+    ).toBe("teacherUnits.invalidRequest");
+    expect(unitRows()).toEqual([]);
+    expect(audits).toEqual([]);
   });
 });
 

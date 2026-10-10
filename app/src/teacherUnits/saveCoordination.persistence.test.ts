@@ -236,7 +236,7 @@ describe("interrupted create recovery", () => {
 
     const r = await second.c.reconcile();
     expect(r.kind).toBe("settled");
-    expect(second.calls).toEqual([{ ...PAYLOAD, idempotencyKey: "key_00000001" }]);
+    expect(second.calls).toEqual([{ ...PAYLOAD, idempotencyKey: "key_00000001", expectedSchoolId: "schoolA" }]);
     expect(second.c.state()).toEqual({ kind: "created", unit: unit(), replayed: true });
     expect(stored(fs)).toBeNull();
     expect(second.mint).not.toHaveBeenCalled();
