@@ -751,7 +751,7 @@ describe("production seam context guard (P2)", () => {
 
   test("the entry point binds the seam to the current bootstrap run's canonical teacher and school", () => {
     const src = fs.readFileSync(path.join(__dirname, "../index.ts"), "utf8");
-    expect(src).toMatch(/readActiveTeacher: \(\) =>\s*runToken === currentRunToken && lastActiveTeacher !== null/);
-    expect(src).toMatch(/schoolId: lastActiveTeacher\.schoolId/);
+    // Bound to the run's own session (see unitsController.recert.test.ts).
+    expect(src).toMatch(/readActiveTeacher: bootstrapActiveTeacherReader\(\{\s*runToken,\s*session,/);
   });
 });

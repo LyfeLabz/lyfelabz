@@ -68,6 +68,7 @@ import { subscribeAuthRerun } from "./session/authRerunSubscription";
 import { createFirebaseTeacherUnitsCallables } from "./teacherUnits/wire";
 import { createTeacherUnitCreateAttemptStore } from "./teacherUnits/createAttemptStore";
 import {
+  bootstrapActiveTeacherReader,
   createTeacherUnitsSurfaceSeam,
   type TeacherUnitsSurfaceSeam,
 } from "./teacherUnits/unitsController";
@@ -743,13 +744,17 @@ async function run(): Promise<void> {
         ? createTeacherUnitsSurfaceSeam({
             callables: createFirebaseTeacherUnitsCallables(functions),
             readFirebaseUid: () => auth.currentUser?.uid ?? null,
-            // Only while this bootstrap run is current: a new run (sign-out,
-            // account switch, re-bootstrap after a school change) makes
-            // this teacher's controllers stale immediately.
-            readActiveTeacher: () =>
-              runToken === currentRunToken && lastActiveTeacher !== null
-                ? { uid: lastActiveTeacher.uid, schoolId: lastActiveTeacher.schoolId }
-                : null,
+            // Only this run's own session, while this run is current and
+            // has installed it: a new run (sign-out, account switch,
+            // re-bootstrap after a school change) makes this teacher's
+            // controllers stale immediately, and the previous run's cached
+            // teacher never counts as current.
+            readActiveTeacher: bootstrapActiveTeacherReader({
+              runToken,
+              session,
+              readCurrentRunToken: () => currentRunToken,
+              readActiveSession: () => lastActiveTeacher,
+            }),
             createStore: (scope) => createTeacherUnitCreateAttemptStore(scope),
           })
         : null;

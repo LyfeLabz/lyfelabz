@@ -749,6 +749,19 @@ export function renderTeacherUnitsPanel(
   const addButtonOf = (card: CardView): HTMLElement | null =>
     card.li.querySelector<HTMLElement>(`[data-testid="units-resources-add-${card.unit.unitId}"]`);
 
+  // The unit as the latest accepted server state lists it now (null when
+  // it is no longer listed). Messages about a settled request describe
+  // this, never the response alone, which may be older.
+  const listedUnit = (unitId: string): TeacherUnit | null => {
+    const s = controller.getState();
+    return s.list.kind === "ready" ? s.list.units.find((u) => u.unitId === unitId) ?? null : null;
+  };
+  // The latest accepted title for a unit a response returned.
+  const latestTitle = (u: TeacherUnit): string => {
+    const k = controller.getKnownUnit(u.unitId);
+    return k !== null && k.revision >= u.revision ? k.title : u.title;
+  };
+
   // Notices for a membership request that did not confirm a change.
   const membershipNotice = (card: CardView, result: UnitMutationResult, action: "add" | "remove"): void => {
     const nothing = action === "add" ? "nothing was added" : "nothing was removed";
@@ -784,6 +797,12 @@ export function renderTeacherUnitsPanel(
       default:
         return;
     }
+  };
+
+  // Why the card's picker may not add right now, or null.
+  const pickerBlocked = (card: CardView): "archived" | "retired" | null => {
+    if (card.unit.status !== "active") return "archived";
+    return retiredCount(card.unit) > 0 ? "retired" : null;
   };
 
   const closePicker = (card: CardView, focusAdd: boolean): void => {
@@ -854,7 +873,7 @@ export function renderTeacherUnitsPanel(
     if (picker === null) return;
     const busy = controller.getState().busyUnitIds.has(card.unit.unitId);
     const n = picker.selected.size;
-    picker.submit.disabled = n === 0 || busy || card.unit.status !== "active";
+    picker.submit.disabled = n === 0 || busy || pickerBlocked(card) !== null;
     picker.submit.setAttribute("aria-busy", busy ? "true" : "false");
     picker.submit.textContent = busy ? "Adding..." : n === 0 ? "Add selected" : `Add selected (${n})`;
   };
@@ -908,6 +927,9 @@ export function renderTeacherUnitsPanel(
     });
     form.addEventListener("submit", (ev) => {
       ev.preventDefault();
+      // Eligibility is re-checked against the current unit, not the state
+      // the picker was opened with.
+      if (card.picker !== picker || pickerBlocked(card) !== null) return;
       if (submit.disabled || picker.selected.size === 0) return;
       // Canonical registry order, not click order.
       const ids = getPlaceableResources()
@@ -924,11 +946,16 @@ export function renderTeacherUnitsPanel(
         if (result.kind === "stale" || result.kind === "busy") return;
         if (result.kind === "saved") {
           showNotice(card, null);
-          const n = ids.filter((id) => !before.has(id) && result.unit.resourceIds.includes(id)).length;
+          const added = ids.filter((id) => !before.has(id) && result.unit.resourceIds.includes(id));
+          const n = added.length;
+          const current = listedUnit(result.unit.unitId);
+          const changedSince = current !== null && added.some((id) => !current.resourceIds.includes(id));
           announce(
             result.noop
               ? "Those resources are already in this unit."
-              : `Added ${n === 1 ? "1 resource" : `${n} resources`} to "${result.unit.title}".`,
+              : `Added ${n === 1 ? "1 resource" : `${n} resources`} to "${current?.title ?? latestTitle(result.unit)}".${
+                  changedSince ? " This unit changed somewhere else since. Its current resources are shown." : ""
+                }`,
           );
           if (card.picker === picker) closePicker(card, true);
           return;
@@ -955,12 +982,32 @@ export function renderTeacherUnitsPanel(
       clearPending();
       if (result.kind === "stale" || result.kind === "busy") return;
       if (result.kind === "saved") {
+        const current = listedUnit(result.unit.unitId);
+        if (current !== null && current.resourceIds.includes(resourceId)) {
+          // The view still holds the resource. A newer server state means a
+          // change elsewhere put it back; otherwise the outcome is unknown.
+          if (current.revision > result.unit.revision) {
+            showNotice(card, null);
+            announce(
+              `Your removal was saved, but "${name}" is in "${current.title}" again because this unit changed somewhere else. Its current resources are shown.`,
+            );
+          } else {
+            showNotice(
+              card,
+              "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again.",
+              "conflict",
+            );
+          }
+          focus(
+            card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`) ??
+              addButtonOf(card) ??
+              card.li.querySelector<HTMLElement>("button"),
+          );
+          return;
+        }
         showNotice(card, null);
-        announce(
-          result.noop
-            ? `"${name}" is no longer in "${result.unit.title}".`
-            : `Removed "${name}" from "${result.unit.title}".`,
-        );
+        const title = current?.title ?? latestTitle(result.unit);
+        announce(result.noop ? `"${name}" is no longer in "${title}".` : `Removed "${name}" from "${title}".`);
         // Focus the row that took this one's place, else the Add button.
         const removes = card.li.querySelectorAll<HTMLElement>("[data-action=remove-resource]");
         focus(removes[Math.min(index, removes.length - 1)] ?? addButtonOf(card) ?? heading);
@@ -1000,8 +1047,8 @@ export function renderTeacherUnitsPanel(
         const removed = Array.from(before).filter((id) => !result.unit.resourceIds.includes(id)).length;
         announce(
           result.noop || removed === 0
-            ? `"${result.unit.title}" has no unavailable resources now.`
-            : `Removed ${plural(removed, "unavailable resource", "unavailable resources")} from "${result.unit.title}".`,
+            ? `"${latestTitle(result.unit)}" has no unavailable resources now.`
+            : `Removed ${plural(removed, "unavailable resource", "unavailable resources")} from "${latestTitle(result.unit)}".`,
         );
         focus(addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
         return;
@@ -1127,6 +1174,22 @@ export function renderTeacherUnitsPanel(
   const renderCardBody = (card: CardView): void => {
     const u = card.unit;
     const busy = controller.getState().busyUnitIds.has(u.unitId);
+    // An open picker follows the current unit: it closes when the unit is
+    // archived or now holds unavailable resources (the repair comes first).
+    let refocus = false;
+    const blocked = card.picker !== null ? pickerBlocked(card) : null;
+    if (card.picker !== null && blocked !== null) {
+      refocus = card.picker.form.contains(doc.activeElement);
+      card.picker.form.remove();
+      card.picker = null;
+      if (blocked === "retired") {
+        showNotice(
+          card,
+          "Some resources in this unit are no longer available, so adding resources was closed. Remove the unavailable resources first, then add resources again.",
+          "conflict",
+        );
+      }
+    }
     card.li.classList.toggle("shell-units-card--archived", u.status === "archived");
     card.li.setAttribute("aria-busy", busy ? "true" : "false");
     rebuildKeepingFocus(
@@ -1222,11 +1285,11 @@ export function renderTeacherUnitsPanel(
       },
       () => (card.li.isConnected ? card.li.querySelector<HTMLElement>("button") : heading),
     );
-    if (card.picker !== null) {
-      if (u.status !== "active") {
-        card.picker.form.remove();
-        card.picker = null;
-      } else renderPickerOptions(card);
+    if (card.picker !== null) renderPickerOptions(card);
+    if (refocus) {
+      focus(
+        retiredButtonOf(card) ?? addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button") ?? heading,
+      );
     }
   };
 

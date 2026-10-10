@@ -331,6 +331,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   });
 
   const set = (patch: Partial<TeacherUnitsViewState>): void => {
+    const recoveryCheck = patch.recoveryCheck ?? state.recoveryCheck;
     state = Object.freeze({
       ...state,
       ...patch,
@@ -339,6 +340,13 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       recoveries: recoveries(),
       unreadable,
       formerSchool,
+      // A completed check reports the units the latest accepted state holds
+      // (every grade and status), not the response as it arrived: a rename,
+      // refresh, or out-of-order response since then is reflected.
+      recoveryCheck:
+        recoveryCheck.kind === "checked"
+          ? Object.freeze({ kind: "checked", units: Object.freeze(presentUnits().sort(compareTeacherUnits)) })
+          : recoveryCheck,
     });
     for (const l of Array.from(listeners)) {
       try {
@@ -354,95 +362,106 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
 
   // ---------- Response ordering (U2.3 remediation) ----------
   //
-  // Responses can arrive in any order. Two rules keep an older response from
+  // Responses can arrive in any order. Every request takes the next `clock`
+  // stamp when it is sent, and two rules keep an older response from
   // overwriting newer state:
   // - Revision monotonicity: the server increments `revision` on every
-  //   accepted change to a unit, so a response carrying a LOWER revision
-  //   than the unit already held is older and is ignored. Equal revisions
-  //   are the same server state.
-  // - Request generations: every adopt or drop stamps the unit with the
-  //   next `stateSeq`. A response is applied with the `stateSeq` read when
-  //   its request was sent; it never re-adds a unit dropped after that, never
-  //   drops a unit adopted after that, and a list response keeps units
-  //   adopted after it was requested.
+  //   accepted change to a unit, so the held unit is replaced only by a
+  //   HIGHER revision. Equal revisions are the same server state.
+  // - Presence: whether a unit belongs in the list is decided by the most
+  //   recently SENT request that observed it. A unit read or written, a
+  //   unit included in a list, a unit a list omitted while it was within
+  //   that list's scope (grade and status), and a `notFound` each record
+  //   presence with their request's stamp. A response sent before that
+  //   record never changes it: an older single-unit read cannot bring back
+  //   a unit a newer list omitted, and an older list cannot hide a unit
+  //   confirmed since. Nothing is tombstoned: any later request that sees
+  //   the unit again lists it again.
   // This is client ordering only. Authorization and `expectedRevision`
   // stay server-enforced; nothing here is ever resent.
-  let stateSeq = 0;
-  const touched = new Map<string, { readonly seq: number; readonly dropped: boolean }>();
-  const changedSince = (unitId: string, since: number) => {
-    const t = touched.get(unitId);
-    return t !== undefined && t.seq > since ? t : null;
-  };
+  let clock = 0;
+  const presence = new Map<string, { readonly at: number; readonly present: boolean }>();
+
+  // Units the latest evidence says exist for this teacher and school.
+  const presentUnits = (): TeacherUnit[] =>
+    Array.from(known.values()).filter((u) => presence.get(u.unitId)?.present === true);
+
+  const listedNow = (): UnitsListState =>
+    Object.freeze({
+      kind: "ready",
+      units: Object.freeze(presentUnits().filter(visible).sort(compareTeacherUnits)),
+    });
 
   // Record one authoritative unit read or written by a request sent at
-  // `since`. Returns the unit now held (which may be newer), or null when
-  // the unit was dropped after the request was sent.
-  const accept = (unit: TeacherUnit, since: number): TeacherUnit | null => {
-    const later = changedSince(unit.unitId, since);
-    if (later !== null && later.dropped) return null;
+  // `at`. Returns the unit now held (which may be newer), or null when a
+  // request sent after `at` found the unit absent.
+  const accept = (unit: TeacherUnit, at: number): TeacherUnit | null => {
+    const p = presence.get(unit.unitId);
+    if (p !== undefined && p.at > at && !p.present) return null;
     const held = known.get(unit.unitId);
-    if (held !== undefined && held.revision > unit.revision) return held;
-    if (held !== undefined && held.revision === unit.revision && later !== null) return held;
-    known.set(unit.unitId, unit);
-    touched.set(unit.unitId, { seq: ++stateSeq, dropped: false });
-    return unit;
+    if (held === undefined || unit.revision > held.revision) known.set(unit.unitId, unit);
+    if (p === undefined || p.at <= at) presence.set(unit.unitId, { at, present: true });
+    return known.get(unit.unitId) ?? null;
   };
 
-  // Adopt one authoritative unit (or drop it from the list when it no
-  // longer belongs to this view; it stays known).
-  const adopt = (unit: TeacherUnit, since: number = stateSeq): TeacherUnit | null => {
-    const held = accept(unit, since);
-    if (held === null || held !== unit) return held;
-    if (state.list.kind !== "ready") return held;
-    const rest = state.list.units.filter((u) => u.unitId !== unit.unitId);
-    const next = visible(unit) ? [...rest, unit].sort(compareTeacherUnits) : rest;
-    set({ list: { kind: "ready", units: Object.freeze(next) } });
+  const relist = (): void => {
+    if (state.list.kind === "ready") set({ list: listedNow() });
+  };
+
+  // Adopt one authoritative unit (the list shows it only while it belongs
+  // to this view; it stays known either way). Default: received now.
+  const adopt = (unit: TeacherUnit, at: number = ++clock): TeacherUnit | null => {
+    const held = accept(unit, at);
+    relist();
     return held;
   };
 
-  // `notFound` for a request sent at `since`; ignored when the unit was
-  // adopted after that.
-  const drop = (unitId: string, since: number = stateSeq): void => {
-    if (changedSince(unitId, since) !== null) return;
+  // `notFound` for a request sent at `at`; ignored when a request sent
+  // after that observed the unit.
+  const drop = (unitId: string, at: number): void => {
+    const p = presence.get(unitId);
+    if (p !== undefined && p.at > at) return;
     known.delete(unitId);
-    touched.set(unitId, { seq: ++stateSeq, dropped: true });
-    if (state.list.kind !== "ready") return;
-    set({
-      list: { kind: "ready", units: Object.freeze(state.list.units.filter((u) => u.unitId !== unitId)) },
-    });
+    presence.set(unitId, { at, present: false });
+    relist();
   };
 
-  // Apply a list response requested at `since`; returns the effective units.
-  const acceptList = (units: ReadonlyArray<TeacherUnit>, since: number): TeacherUnit[] => {
-    const out = new Map<string, TeacherUnit>();
+  // Apply a list response requested at `at` whose scope is `inScope`: a
+  // held unit within that scope that the response omits is recorded absent.
+  const acceptList = (
+    units: ReadonlyArray<TeacherUnit>,
+    at: number,
+    inScope: (u: TeacherUnit) => boolean,
+  ): void => {
+    const ids = new Set<string>();
     for (const u of units) {
-      const held = accept(u, since);
-      if (held !== null) out.set(held.unitId, held);
+      ids.add(u.unitId);
+      accept(u, at);
     }
-    // Units adopted after the request (for example a confirmed create or
-    // membership change) that the older response does not include.
-    for (const [unitId, t] of touched) {
-      if (t.seq <= since || t.dropped || out.has(unitId)) continue;
-      const held = known.get(unitId);
-      if (held !== undefined) out.set(unitId, held);
+    for (const [unitId, u] of known) {
+      if (ids.has(unitId) || !inScope(u)) continue;
+      const p = presence.get(unitId);
+      if (p !== undefined && p.at > at) continue;
+      presence.set(unitId, { at, present: false });
     }
-    return Array.from(out.values());
   };
 
   const load = async (): Promise<void> => {
     if (!alive()) return;
     const seq = ++loadSeq;
-    const since = stateSeq;
+    const at = ++clock;
     const grade = state.grade;
     const includeArchived = state.showArchived;
     set({ list: { kind: "loading" } });
     const outcome = await runTeacherUnitMutation(() => deps.callables.list({ grade, includeArchived }));
     if (!alive() || seq !== loadSeq) return;
     if (outcome.ok) {
-      const list = acceptList(outcome.result.units, since)
-        .filter((u) => u.grade === grade && (includeArchived || u.status === "active"))
-        .sort(compareTeacherUnits);
-      set({ list: { kind: "ready", units: Object.freeze(list) } });
+      acceptList(
+        outcome.result.units,
+        at,
+        (u) => u.grade === grade && (includeArchived || u.status === "active"),
+      );
+      set({ list: listedNow() });
     } else {
       set({ list: { kind: "error", error: outcome.error } });
     }
@@ -458,11 +477,11 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   // Read one unit after a failed mutation; returns the unit now held (null
   // when it could not be read or no longer exists).
   const reread = async (unitId: string): Promise<TeacherUnit | null | "stale"> => {
-    const since = stateSeq;
+    const at = ++clock;
     const fresh = await runTeacherUnitMutation(() => deps.callables.get({ unitId }));
     if (!alive()) return "stale";
-    if (fresh.ok) return adopt(fresh.result.unit, since);
-    if (fresh.error.category === "notFound") drop(unitId, since);
+    if (fresh.ok) return adopt(fresh.result.unit, at);
+    if (fresh.error.category === "notFound") drop(unitId, at);
     return null;
   };
 
@@ -476,7 +495,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     if (current === undefined) {
       return { kind: "error", error: normalizeTeacherUnitError({ details: { code: "teacherUnits.notFound" } }) };
     }
-    const since = stateSeq;
+    const at = ++clock;
     const pending = gate.run(unitId, () => runTeacherUnitMutation(() => run(current)));
     if (pending === null) return { kind: "busy" };
     busy(unitId, true);
@@ -484,12 +503,12 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     if (!alive()) return { kind: "stale" };
     busy(unitId, false);
     if (outcome.ok) {
-      adopt(outcome.result.unit, since);
+      adopt(outcome.result.unit, at);
       return { kind: "saved", unit: outcome.result.unit, noop: outcome.result.noop };
     }
     const error = outcome.error;
     if (error.category === "notFound") {
-      drop(unitId, since);
+      drop(unitId, at);
       return { kind: "error", error };
     }
     if (error.category === "conflict" || error.category === "invalidStatus") {
@@ -655,7 +674,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       if (!alive()) return;
       scan();
       set({ recoveryCheck: { kind: "checking" } });
-      const since = stateSeq;
+      const at = ++clock;
       // Every grade and status: the unit may have been archived since.
       const outcome = await runTeacherUnitMutation(() =>
         deps.callables.list({ includeArchived: true }),
@@ -665,8 +684,11 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
         set({ recoveryCheck: { kind: "error", error: outcome.error } });
         return;
       }
-      acceptList(outcome.result.units, since);
-      set({ recoveryCheck: { kind: "checked", units: Object.freeze(outcome.result.units.slice()) } });
+      // Every grade and status is in scope.
+      acceptList(outcome.result.units, at, () => true);
+      // `units` is projected from the latest accepted state on every update
+      // (see `set`), so recovery hints never show an older title.
+      set({ recoveryCheck: { kind: "checked", units: Object.freeze([]) } });
       void load();
     },
     abandonCreate: (key) => {
@@ -810,6 +832,27 @@ export type TeacherUnitsSurfaceSeam = {
     readonly initialGrade: TeacherUnitGrade;
   }) => TeacherUnitsController;
 };
+
+// The seam's `readActiveTeacher` for ONE bootstrap run (U2.3 remediation).
+// It names that run's own resolved session, and only while that run is
+// still current AND the app's active-teacher slot holds that same session
+// object. A cached teacher from an earlier run (for example the same uid
+// at a former school, still held while a new run is finishing) therefore
+// never makes a controller current, and every new run, sign-out, or
+// account switch makes earlier controllers stale. The server re-verifies
+// identity and school on every call regardless.
+export function bootstrapActiveTeacherReader<
+  S extends { readonly uid: string; readonly schoolId: string },
+>(run: {
+  readonly runToken: number;
+  readonly session: S;
+  readonly readCurrentRunToken: () => number;
+  readonly readActiveSession: () => S | null;
+}): () => { readonly uid: string; readonly schoolId: string } | null {
+  const identity = Object.freeze({ uid: run.session.uid, schoolId: run.session.schoolId });
+  return () =>
+    run.readCurrentRunToken() === run.runToken && run.readActiveSession() === run.session ? identity : null;
+}
 
 export function createTeacherUnitsSurfaceSeam(deps: {
   readonly callables: TeacherUnitsCallables;
