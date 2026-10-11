@@ -74,9 +74,16 @@ type CardView = {
   // U2.3: retired-resource removal awaiting explicit confirmation; holds
   // the count the teacher was shown (reset when that count changes).
   confirmRetired: number | null;
+  // What the card's notice says, kept so it can be reworded for where the
+  // unit is when the notice moves to the panel's outcome region.
+  noticeText: NoticeText | null;
   readonly notice: HTMLParagraphElement;
   readonly body: HTMLDivElement;
 };
+
+// A notice's wording. A function receives where the unit's resources can be
+// checked now (null while its card is shown) and words the notice for it.
+type NoticeText = string | ((where: string | null) => string);
 
 type EditorView = {
   readonly form: HTMLFormElement;
@@ -190,37 +197,43 @@ export function renderTeacherUnitsPanel(
   status.setAttribute("aria-live", "polite");
   status.setAttribute("data-testid", "units-status");
   root.appendChild(status);
-  // Outcome notices for units whose card is not shown (archived and
-  // hidden, refreshed away, or no longer found). A card's own notice is used
-  // while the card is attached; an outcome is never written into a detached
-  // card. One notice per unit: a later outcome for the same unit replaces
-  // it, other units' notices are never touched, and each can be dismissed.
-  // The panel is torn down on any teacher or school change, so notices
-  // never carry across accounts or schools.
+  // Outcome region: outcomes for units whose card is not shown (archived
+  // and hidden, refreshed away, or no longer found), which would otherwise
+  // be lost with the card or overwritten in the shared status region.
+  // Policy: every settled operation adds its OWN entry (a stable operation
+  // id); no entry is replaced by another operation's outcome, for the same
+  // unit or another; Dismiss removes only its entry. Problems (refusals,
+  // conflicts, unknown outcomes) are alerts and are never evicted;
+  // confirmations are polite status entries, and only the oldest of those
+  // is evicted beyond OUTCOMES_MAX. The panel is torn down on any teacher or
+  // school change, so entries never carry across accounts or schools.
+  const OUTCOMES_MAX = 8;
   const outcomes = el("div", "shell-units-outcomes");
   outcomes.setAttribute("data-testid", "units-outcomes");
   root.appendChild(outcomes);
-  const outcomeNotices = new Map<string, HTMLElement>();
-  const clearOutcome = (unitId: string): void => {
-    outcomeNotices.get(unitId)?.remove();
-    outcomeNotices.delete(unitId);
-  };
-  const setOutcome = (unitId: string, title: string, msg: string, kind: "conflict" | "error"): void => {
-    clearOutcome(unitId);
-    const box = el("div", `shell-units-notice shell-units-notice--${kind}`);
-    box.setAttribute("role", "alert");
-    box.setAttribute("data-testid", `units-outcome-${unitId}`);
+  let outcomeSeq = 0;
+  const recordOutcome = (title: string, msg: string, kind: "conflict" | "error" | "confirmed"): void => {
+    const id = ++outcomeSeq;
+    const box = el(
+      "div",
+      kind === "confirmed" ? "shell-units-notice shell-units-outcome--confirmed" : `shell-units-notice shell-units-notice--${kind}`,
+    );
+    box.setAttribute("role", kind === "confirmed" ? "status" : "alert");
+    box.setAttribute("data-testid", `units-outcome-${id}`);
+    box.setAttribute("data-outcome-kind", kind);
     box.appendChild(el("p", "", `"${title}": ${msg}`));
     const dismiss = button("Dismiss");
-    dismiss.setAttribute("data-testid", `units-outcome-dismiss-${unitId}`);
+    dismiss.setAttribute("data-testid", `units-outcome-dismiss-${id}`);
     dismiss.setAttribute("aria-label", `Dismiss notice about ${title}`);
     dismiss.addEventListener("click", () => {
-      clearOutcome(unitId);
-      focus(heading);
+      const next = (box.nextElementSibling ?? box.previousElementSibling)?.querySelector<HTMLElement>("button");
+      box.remove();
+      focus(next ?? heading);
     });
     box.appendChild(dismiss);
     outcomes.appendChild(box);
-    outcomeNotices.set(unitId, box);
+    const confirmations = Array.from(outcomes.querySelectorAll<HTMLElement>('[data-outcome-kind="confirmed"]'));
+    if (outcomes.children.length > OUTCOMES_MAX && confirmations.length > 0) confirmations[0].remove();
   };
   // Which pending membership request owns the current message (0: none).
   let statusOwner = 0;
@@ -649,23 +662,27 @@ export function renderTeacherUnitsPanel(
   };
 
   // A unit's outcome notice: in its card while the card is attached, else
-  // in the panel's outcome region, so it always stays visible and announced.
-  const showNotice = (card: CardView, msg: string | null, kind: "conflict" | "error" = "error"): void => {
+  // a new entry in the outcome region (never a detached card). Clearing
+  // (null) clears only the card's own notice, never another operation's
+  // entry in the outcome region.
+  const showNotice = (card: CardView, text: NoticeText | null, kind: "conflict" | "error" = "error"): void => {
     const unitId = card.unit.unitId;
-    clearOutcome(unitId);
-    const attached = msg !== null && card.li.isConnected;
+    const attached = text !== null && card.li.isConnected;
+    card.noticeText = attached ? text : null;
     card.notice.hidden = !attached;
-    card.notice.textContent = attached ? msg : "";
+    card.notice.textContent = attached ? wordNotice(text as NoticeText, unitId) : "";
     card.notice.className = `shell-units-notice shell-units-notice--${kind}`;
-    if (msg !== null && !attached) {
-      setOutcome(unitId, controller.getKnownUnit(unitId)?.title ?? card.unit.title, msg, kind);
+    if (text !== null && !attached) {
+      recordOutcome(controller.getKnownUnit(unitId)?.title ?? card.unit.title, wordNotice(text, unitId), kind);
     }
   };
-  // A card leaving the list hands a visible notice to the outcome region.
+  // A card leaving the list hands its visible notice to the outcome
+  // region, reworded for where the unit is now.
   const keepNotice = (card: CardView): void => {
-    if (card.notice.hidden || card.notice.textContent === "") return;
+    if (card.notice.hidden || card.noticeText === null) return;
     const kind = card.notice.className.includes("--conflict") ? "conflict" : "error";
-    setOutcome(card.unit.unitId, card.unit.title, card.notice.textContent ?? "", kind);
+    recordOutcome(card.unit.title, wordNotice(card.noticeText, card.unit.unitId), kind);
+    card.noticeText = null;
   };
 
   const handleResult = (card: CardView, result: UnitMutationResult, verb: string): void => {
@@ -814,16 +831,20 @@ export function renderTeacherUnitsPanel(
   // only while its card is in the list.
   const whereNow = (unitId: string): string | null => {
     if (isListed(unitId)) return null;
-    return controller.getUnitState(unitId).kind === "archived"
-      ? "This unit is archived, so it isn't shown. Turn on Show archived units to see its resources."
-      : "This unit isn't in your current list. Refresh to see its resources.";
+    const kind = controller.getUnitState(unitId).kind;
+    if (kind === "archived") {
+      return "This unit is archived, so it isn't shown. Turn on Show archived units to see its resources.";
+    }
+    if (kind === "absent") return "This unit is no longer in your units.";
+    return "This unit isn't in your current list. Refresh to see its resources.";
   };
-  const uncertainText = (unitId: string): string => {
-    const where = whereNow(unitId);
-    return where === null
+  // Every notice is worded at the moment it is shown or moved.
+  const wordNotice = (text: NoticeText, unitId: string): string =>
+    typeof text === "string" ? text : text(whereNow(unitId));
+  const UNCERTAIN: NoticeText = (where) =>
+    where === null
       ? "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again."
       : `LyfeLabz couldn't confirm whether your change was saved. ${where} Check before trying again.`;
-  };
   // The full current record, or null when the unit is not current.
   const currentUnit = (unitId: string): TeacherUnit | null => {
     const st = controller.getUnitState(unitId);
@@ -934,27 +955,31 @@ export function renderTeacherUnitsPanel(
   // Shows a settled membership outcome; true when it was announced.
   const showOutcome = (card: CardView, outcome: Outcome): boolean => {
     if ("uncertain" in outcome) {
-      showNotice(card, uncertainText(card.unit.unitId), "conflict");
+      showNotice(card, UNCERTAIN, "conflict");
       return false;
     }
     showNotice(card, null);
     announce(outcome.announce);
+    // A hidden unit's confirmation has no card to show it: keep it.
+    if (!card.li.isConnected || !isListed(card.unit.unitId)) {
+      recordOutcome(controller.getKnownUnit(card.unit.unitId)?.title ?? card.unit.title, outcome.announce, "confirmed");
+    }
     return true;
   };
 
   // Notices for a membership request that did not confirm a change.
   const membershipNotice = (card: CardView, result: UnitMutationResult, action: "add" | "remove"): void => {
     const nothing = action === "add" ? "nothing was added" : "nothing was removed";
-    const where = whereNow(card.unit.unitId);
     switch (result.kind) {
       case "conflict":
         showNotice(
           card,
           result.latest === null
             ? `This unit changed somewhere else, so ${nothing}, and its latest version couldn't be loaded. Refresh, then try again.`
-            : where === null
-              ? `This unit changed somewhere else, so ${nothing}. Its current resources are shown. Review them, then try again.`
-              : `This unit changed somewhere else, so ${nothing}. ${where}`,
+            : (where) =>
+                where === null
+                  ? `This unit changed somewhere else, so ${nothing}. Its current resources are shown. Review them, then try again.`
+                  : `This unit changed somewhere else, so ${nothing}. ${where}`,
           "conflict",
         );
         return;
@@ -970,7 +995,7 @@ export function renderTeacherUnitsPanel(
           card,
           result.latest === null
             ? "LyfeLabz couldn't confirm whether your change was saved, and the unit couldn't be loaded. Refresh before trying again."
-            : uncertainText(card.unit.unitId),
+            : UNCERTAIN,
           "conflict",
         );
         return;
@@ -1448,7 +1473,7 @@ export function renderTeacherUnitsPanel(
     notice.setAttribute("role", "alert");
     notice.hidden = true;
     li.appendChild(notice);
-    return { li, unit, gone: false, editor: null, picker: null, confirmRetired: null, notice, body };
+    return { li, unit, gone: false, editor: null, picker: null, confirmRetired: null, noticeText: null, notice, body };
   };
 
   const renderList = (s: TeacherUnitsViewState): void => {

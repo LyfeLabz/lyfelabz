@@ -444,6 +444,17 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     readonly ids: ReadonlySet<string>;
   };
   const scopes = new Map<string, ListScope>();
+  // Combines two pieces of evidence. The newer one wins, except that an
+  // active-only omission ("archived, or gone") and a full-scope absence are
+  // consistent, and the absence is the more informative: in either order
+  // the unit stays "absent" (as of the newer stamp). Only a positive read
+  // restores presence.
+  const merged = (prev: Presence | undefined, next: Presence): Presence => {
+    if (prev === undefined) return next;
+    const newer = prev.at > next.at ? prev : next;
+    const kinds = new Set([prev.kind, next.kind]);
+    return kinds.has("absent") && kinds.has("notActive") ? { at: newer.at, kind: "absent" } : newer;
+  };
   const recordScope = (scope: ListScope): void => {
     const key = `${scope.grade ?? "*"}:${scope.includeArchived}`;
     const prev = scopes.get(key);
@@ -483,8 +494,8 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     let p = presence.get(unit.unitId);
     const omitted = omissionAfter(unit, p?.at ?? -1);
     if (omitted !== null) {
-      p = omitted;
-      presence.set(unit.unitId, omitted);
+      p = merged(p, omitted);
+      presence.set(unit.unitId, p);
     }
     // Content only moves forward, whatever the presence evidence: a record
     // is kept even when newer evidence says the unit is absent, so a later
@@ -549,9 +560,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     recordScope({ at, ...scope, ids });
     for (const [unitId, u] of known) {
       if (ids.has(unitId) || !inScope(u)) continue;
-      const p = presence.get(unitId);
-      if (p !== undefined && p.at > at) continue;
-      presence.set(unitId, { at, kind: omitted });
+      presence.set(unitId, merged(presence.get(unitId), { at, kind: omitted }));
     }
   };
 
@@ -599,6 +608,27 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     const current = heldUnit(unitId);
     if (current === undefined) {
       return { kind: "error", error: normalizeTeacherUnitError({ details: { code: "teacherUnits.notFound" } }) };
+    }
+    // Mutation eligibility. A retained record is not evidence the unit can
+    // be changed: when the newest evidence (an active-only omission) says
+    // it is no longer active but the record still says active, nothing is
+    // sent. The unit is read instead (a read, never a resend) and reported
+    // like a server refusal, so the teacher decides again with fresh state.
+    if (presence.get(unitId)?.kind === "notActive" && current.status === "active") {
+      const latest = await reread(unitId);
+      if (latest === "stale") return { kind: "stale" };
+      if (latest !== null && latest.status === "archived") {
+        return {
+          kind: "archived",
+          latest,
+          error: normalizeTeacherUnitError({ details: { code: "teacherUnits.invalidStatus" } }),
+        };
+      }
+      return {
+        kind: "conflict",
+        latest,
+        error: normalizeTeacherUnitError({ details: { code: "teacherUnits.writeConflict" } }),
+      };
     }
     const at = ++clock;
     const pending = gate.run(unitId, () => runTeacherUnitMutation(() => run(current)));
