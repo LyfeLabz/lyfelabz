@@ -160,8 +160,8 @@ describe("B: outcomes of separate operations do not overwrite one another", () =
     await checkWith(h, [archived({ ...a, resourceIds: [R2.id] }, 3), archived({ ...b, resourceIds: [R2.id] }, 3)]);
     const order: Array<[number, TeacherUnit]> = reversed ? [[1, b], [0, a]] : [[0, a], [1, b]];
     for (const [i, u] of order) await confirmRemove(h, i, u, [R2.id], 2);
-    const msgA = `Removed "${R1.title}" from "Plants". "Plants" is archived.`;
-    const msgB = `Removed "${R1.title}" from "Water". "Water" is archived.`;
+    const msgA = `Removed "${R1.title}" from "Plants". "Plants" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`;
+    const msgB = `Removed "${R1.title}" from "Water". "Water" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`;
     expect(notices(h, msgA)).toHaveLength(1);
     expect(notices(h, msgB)).toHaveLength(1);
     // The live region carries the latest; neither outcome is lost.
@@ -257,7 +257,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
     expect(moved[0].textContent).toContain(
-      "This unit is archived, so it isn't shown. Turn on Show archived units to see its resources.",
+      "This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.",
     );
     expect(moved[0].textContent).toContain(`"Plants"`);
   });
@@ -277,7 +277,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
     const moved = notices(h, "nothing was removed");
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
-    expect(moved[0].textContent).toContain("This unit isn't in your current list. Refresh to see its resources.");
+    expect(moved[0].textContent).toContain("This unit's current state hasn't been confirmed. Refresh to check it.");
   });
 
   test("conflict moved while another unit's operation is pending; that operation's outcome is separate", async () => {

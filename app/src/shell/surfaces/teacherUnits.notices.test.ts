@@ -680,7 +680,7 @@ describe("audit: every retained notice derives its current-state wording", () =>
     const [n] = noticesFor(h, a);
     expect(n.textContent).toContain("couldn't confirm whether your change was saved");
     expect(n.textContent).not.toContain("couldn't be loaded");
-    expect(n.textContent).toContain("The resources shown are what this unit holds now");
+    expect(n.textContent).toContain("The resources shown are the latest version LyfeLabz has loaded");
   });
 
   test("uncertain write followed by absence: no instruction to check or retry the unit", async () => {
@@ -731,7 +731,7 @@ describe("audit: every retained notice derives its current-state wording", () =>
     await refreshWith(h, [{ ...a, resourceIds: [R1.id], revision: 3 }]);
     const [n] = noticesFor(h, a);
     expect(n.textContent).not.toMatch(/is already in this unit/);
-    expect(n.textContent).toContain("was already in this unit");
+    expect(n.textContent).toContain("contained repeated resource IDs");
   });
 
   test("the status region's location claim is re-derived while it is still showing", async () => {
@@ -766,7 +766,7 @@ describe("audit: every retained notice derives its current-state wording", () =>
     await tick();
     const rec = q(h.host, "units-recovery") as HTMLElement;
     expect(rec.textContent).not.toMatch(/can't make changes right now/);
-    expect(rec.textContent).toContain("wasn't allowed to load them when it tried");
+    expect(rec.textContent).toContain("an authorization check failed when LyfeLabz tried");
   });
 
   test("combined: several notices coexist; each follows only its own unit; identity, order, and dismissal hold", async () => {
@@ -794,7 +794,7 @@ describe("audit: every retained notice derives its current-state wording", () =>
     expect(before).toHaveLength(2);
     expect(Array.from(outcomes.children).map((e) => e.getAttribute("data-unit-id"))).toEqual([b.unitId, c.unitId]);
     const textOf = (u: TeacherUnit) => noticesFor(h, u).map((n) => n.textContent ?? "");
-    const REFUSAL = "wasn't allowed to make this change when you tried";
+    const REFUSAL = "An authorization check failed during this request";
     expect(textOf(c)[0]).toContain(REFUSAL);
     expect(textOf(c)[0]).toContain("Choose Grade 7 to see it");
     // Unit state changes: A renamed, B repaired, a write on D succeeds.

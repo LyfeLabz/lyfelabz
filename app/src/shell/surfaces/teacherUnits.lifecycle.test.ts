@@ -145,7 +145,7 @@ beforeEach(() => {
 });
 
 const LOCATION_CLAIMS = {
-  hidden: "isn't shown",
+  hidden: "isn't in the list",
   archived: "is archived",
   absent: "no longer in your units",
   notInList: "isn't in your current list",

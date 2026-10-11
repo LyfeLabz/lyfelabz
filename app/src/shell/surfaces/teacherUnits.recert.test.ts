@@ -109,8 +109,8 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
-describe("P2: removal is announced only when the current state reflects it", () => {
-  test("a removal confirmed after a newer state re-added the resource is not announced as removed", async () => {
+describe("P2: historical removal and current membership are separate", () => {
+  test("a removal confirmed after a newer state re-added the resource announces the historical removal and current re-add", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const h = await panel([a]);
     (q(h.host, `units-resource-remove-${a.unitId}-${R1.id}`) as HTMLButtonElement).click();
@@ -120,9 +120,9 @@ describe("P2: removal is announced only when the current state reflects it", () 
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R2.id], revision: 2 }, noop: false });
     await tick();
     expect(status(h.host)).toBe(
-      `Your removal was saved, but "${R1.title}" is in "${a.title}" again because this unit changed somewhere else. Its current resources are shown.`,
+      `Removed "${R1.title}" from "${a.title}". Your change was saved. "${R1.title}" is in "${a.title}" again after this unit changed. Its current resources are shown.`,
     );
-    expect(status(h.host)).not.toContain("Removed");
+    expect(status(h.host)).toContain("Removed");
     expect(q(h.host, "units-status")?.getAttribute("aria-live")).toBe("polite");
     expect(rowIds(h.host, a.unitId)).toEqual([R2.id, R1.id]);
     expect(h.c.setResources).toHaveBeenCalledTimes(1);
@@ -138,14 +138,14 @@ describe("P2: removal is announced only when the current state reflects it", () 
     expect(rowIds(h.host, a.unitId)).toEqual([R2.id]);
   });
 
-  test("an older success arriving after the unit was renamed names the current title", async () => {
+  test("an older success arriving after the unit was renamed keeps the historical title and separately names the latest title", async () => {
     const a = unit({ title: "Old Name", resourceIds: [R1.id, R2.id] });
     const h = await panel([a]);
     (q(h.host, `units-resource-remove-${a.unitId}-${R1.id}`) as HTMLButtonElement).click();
     await refresh(h, [{ ...a, title: "New Name", resourceIds: [R2.id], revision: 3 }]);
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R2.id], revision: 2 }, noop: false });
     await tick();
-    expect(status(h.host)).toBe(`Removed "${R1.title}" from "New Name".`);
+    expect(status(h.host)).toBe(`Removed "${R1.title}" from "Old Name". Its latest loaded name is "New Name".`);
   });
 
   test("an uncertain removal stays uncertain and is not retried", async () => {
@@ -162,7 +162,7 @@ describe("P2: removal is announced only when the current state reflects it", () 
     expect(h.c.setResources).toHaveBeenCalledTimes(1);
   });
 
-  test("an add confirmed before a rename names the current title", async () => {
+  test("an add confirmed before a rename keeps the historical title and separately names the latest title", async () => {
     const a = unit({ title: "Old Name" });
     const h = await panel([a]);
     (q(h.host, `units-resources-add-${a.unitId}`) as HTMLButtonElement).click();
@@ -173,7 +173,7 @@ describe("P2: removal is announced only when the current state reflects it", () 
     await refresh(h, [{ ...a, title: "New Name", resourceIds: [R1.id], revision: 3 }]);
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R1.id], revision: 2 }, noop: false });
     await tick();
-    expect(status(h.host)).toBe(`Added 1 resource to "New Name".`);
+    expect(status(h.host)).toBe(`Added 1 resource to "Old Name". Its latest loaded name is "New Name".`);
   });
 });
 
@@ -197,7 +197,7 @@ describe("P2: an open Add picker follows the current unit", () => {
     expect(h.form.isConnected).toBe(false);
     expect(noticeOf(h.host, a.unitId).hidden).toBe(false);
     expect(noticeOf(h.host, a.unitId).textContent).toBe(
-      "Some resources in this unit are no longer available, so adding resources was closed. Remove the unavailable resources first, then add resources again.",
+      "Some resources in this unit were no longer available, so adding resources was closed. Remove the unavailable resources first, then add resources again.",
     );
     const repair = q(h.host, `units-retired-remove-${a.unitId}`) as HTMLButtonElement;
     expect(repair.disabled).toBe(false);

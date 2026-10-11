@@ -151,7 +151,7 @@ describe("B: addition and removal messages follow the committed write", () => {
     h.calls.setResources[0].d.resolve({ unit: { ...a, resourceIds: [], revision: 3 }, noop: false });
     await tick();
     expect(status(h.host)).toBe(
-      `Your addition was saved, but "${a.title}" changed somewhere else since, so not every resource you added is in it now. Its current resources are shown.`,
+      `Added 1 resource to "${a.title}". Your change was saved. "${a.title}" changed since that request, so not every resource you added is in it now. Its current resources are shown.`,
     );
     expect(status(h.host)).not.toMatch(/Added 0/);
   });
@@ -165,14 +165,14 @@ describe("B: addition and removal messages follow the committed write", () => {
     expect(status(h.host)).toBe(`Added 1 resource to "${a.title}".`);
   });
 
-  test("two added, one removed elsewhere before the read: no count is claimed for what is not there", async () => {
+  test("two added, one removed elsewhere before the read: historical count and live missing membership are separate", async () => {
     const a = unit();
     const h = await panel([a]);
     addVia(h, a, [R1.id, R2.id]);
     h.calls.setResources[0].d.resolve({ unit: { ...a, resourceIds: [R2.id], revision: 3 }, noop: false });
     await tick();
     expect(status(h.host)).toBe(
-      `Your addition was saved, but "${a.title}" changed somewhere else since, so not every resource you added is in it now. Its current resources are shown.`,
+      `Added 2 resources to "${a.title}". Your change was saved. "${a.title}" changed since that request, so not every resource you added is in it now. Its current resources are shown.`,
     );
   });
 
@@ -190,14 +190,14 @@ describe("B: addition and removal messages follow the committed write", () => {
     // Added elsewhere first: the server writes nothing (revision 2 is not ours).
     h2.calls.setResources[0].d.resolve({ unit: { ...b, resourceIds: [R1.id], revision: 2 }, noop: true });
     await tick();
-    expect(status(h2.host)).toBe(`Those resources are already in "${b.title}", so nothing was changed.`);
+    expect(status(h2.host)).toBe(`Nothing was changed. Those resources are already in "${b.title}" now.`);
 
     const c = unit({ title: "Air" });
     const h3 = await panel([c]);
     addVia(h3, c, [R1.id]);
     h3.calls.setResources[0].d.resolve({ unit: archived(c, 3, { resourceIds: [R1.id] }), noop: false });
     await tick();
-    expect(status(h3.host)).toBe(`Added 1 resource to "${c.title}". "${c.title}" is archived.`);
+    expect(status(h3.host)).toBe(`Added 1 resource to "${c.title}". "${c.title}" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`);
 
     const d = unit({ title: "Rocks" });
     const h4 = await panel([d]);
@@ -206,7 +206,7 @@ describe("B: addition and removal messages follow the committed write", () => {
     h4.calls.setResources[0].d.resolve({ unit: { ...d, resourceIds: [R1.id], revision: 2 }, noop: false });
     await tick();
     expect(status(h4.host)).toBe(
-      `Your addition was saved, but "${d.title}" changed somewhere else since, so not every resource you added is in it now. Its current resources are shown.`,
+      `Added 1 resource to "${d.title}". Your change was saved. "${d.title}" changed since that request, so not every resource you added is in it now. Its current resources are shown.`,
     );
   });
 
@@ -218,7 +218,7 @@ describe("B: addition and removal messages follow the committed write", () => {
     h.calls.setResources[0].d.resolve({ unit: { ...a, resourceIds: [R2.id, R1.id], revision: 3 }, noop: false });
     await tick();
     expect(status(h.host)).toBe(
-      `Your removal was saved, but "${R1.title}" is in "${a.title}" again because this unit changed somewhere else. Its current resources are shown.`,
+      `Removed "${R1.title}" from "${a.title}". Your change was saved. "${R1.title}" is in "${a.title}" again after this unit changed. Its current resources are shown.`,
     );
     expect(attachedAlerts().some((e) => (e.textContent ?? "").includes("couldn't confirm"))).toBe(false);
   });
@@ -398,8 +398,8 @@ describe("post-commit read matrix (add vs another session's removal vs refresh)"
       }
       const label = order.map((e) => e.op + e.ev).join(" ");
       expect([label, /Added 0/.test(msg)]).toEqual([label, false]);
-      if (msg.startsWith("Added 1 resource")) expect([label, held?.resourceIds.includes(R1.id)]).toEqual([label, true]);
-      if (msg.startsWith("Your addition was saved")) {
+      if (msg.startsWith("Added 1 resource") && !msg.includes("not every resource")) expect([label, held?.resourceIds.includes(R1.id)]).toEqual([label, true]);
+      if (msg.includes("not every resource")) {
         expect([label, committed, held?.resourceIds.includes(R1.id)]).toEqual([label, true, false]);
       }
       if (committed) {
